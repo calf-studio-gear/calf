@@ -49,7 +49,8 @@ public:
 
     jack_host_gui(GtkWidget *_toplevel);
     void create(synth::jack_host_base *_host);
-    static void value_changed(PhatKnob *widget, gpointer value);
+    static void knob_value_changed(PhatKnob *widget, gpointer value);
+    static void combo_value_changed(GtkComboBox *widget, gpointer value);
 };
 
 jack_host_gui::jack_host_gui(GtkWidget *_toplevel)
@@ -58,7 +59,7 @@ jack_host_gui::jack_host_gui(GtkWidget *_toplevel)
     
 }
 
-void jack_host_gui::value_changed(PhatKnob *widget, gpointer value)
+void jack_host_gui::knob_value_changed(PhatKnob *widget, gpointer value)
 {
     jack_host_param *jhp = (jack_host_param *)value;
     jack_host_base &jh = *jhp->gui->host;
@@ -66,6 +67,15 @@ void jack_host_gui::value_changed(PhatKnob *widget, gpointer value)
     float cvalue = jh.get_param_props()[jhp->param_no].from_01 (phat_knob_get_value (widget));
     jh.get_params()[nparam] = cvalue;
     // printf("%d -> %f\n", nparam, cvalue);
+    jh.set_params();
+}
+
+void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
+{
+    jack_host_param *jhp = (jack_host_param *)value;
+    jack_host_base &jh = *jhp->gui->host;
+    int nparam = jhp->param_no;
+    jh.get_params()[nparam] = gtk_combo_box_get_active (widget) + jh.get_param_props()[jhp->param_no].min;
     jh.set_params();
 }
 
@@ -86,9 +96,25 @@ void jack_host_gui::create(synth::jack_host_base *_host)
         GtkWidget *label = gtk_label_new (host->get_param_names()[host->get_input_count() + host->get_output_count() + i]);
         gtk_table_attach (GTK_TABLE (table), label, 0, 1, i, i + 1, GTK_EXPAND, GTK_EXPAND, 2, 2);
         
-        GtkWidget *slider  = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
-        gtk_signal_connect (GTK_OBJECT (slider), "value-changed", G_CALLBACK (value_changed), (gpointer)&params[i]);
-        gtk_table_attach (GTK_TABLE (table), slider, 1, 2, i, i + 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
+        parameter_properties &props = host->get_param_props()[i];
+        
+        GtkWidget *widget;
+        
+        if ((props.flags & PF_TYPEMASK) == PF_ENUM && 
+            (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
+        {
+            widget  = gtk_combo_box_new_text ();
+            for (int j = (int)props.min; j <= (int)props.max; j++)
+                gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j]);
+            gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)host->get_params()[i] - (int)props.min);
+            gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
+        }
+        else
+        {
+            widget  = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
+            gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
+        }
+        gtk_table_attach (GTK_TABLE (table), widget, 1, 2, i, i + 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
     }
     
     gtk_container_add (GTK_CONTAINER (toplevel), table);

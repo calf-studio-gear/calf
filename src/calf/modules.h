@@ -161,26 +161,35 @@ public:
     float *outs[out_count];
     float *params[param_count];
     static const char *param_names[];
-    dsp::biquad<float> left, right;
+    dsp::biquad<float> left[3], right[3];
     uint32_t srate;
     static parameter_properties param_props[];
+    int order;
     
     void params_changed() {
         float freq = *params[par_cutoff];
+        // XXXKF this is resonance of a single stage, obviously for three stages, resonant gain will be different
         float q = *params[par_resonance];
-        int mode = (*params[par_mode] <= 0.5 ? 0 : 1);
+        // XXXKF this is highly inefficient
+        int mode = (int)*params[par_mode];
+        order = (mode < 3) ? mode + 1 : mode - 2;
         // printf("freq = %f q = %f mode = %d\n", freq, q, mode);
-        if (mode == 0) {
-            left.set_lp_rbj(freq, q, srate);
-            right.set_lp_rbj(freq, q, srate);
+        if (mode < 3) {
+            left[0].set_lp_rbj(freq, q, srate);
         } else {
-            left.set_hp_rbj(freq, q, srate);
-            right.set_hp_rbj(freq, q, srate);
+            left[0].set_hp_rbj(freq, q, srate);
+        }
+        right[0].copy_coeffs(left[0]);
+        for (int i = 1; i < order; i++) {
+            left[i].copy_coeffs(left[0]);
+            right[i].copy_coeffs(left[0]);
         }
     }
     void activate() {
-        left.reset();
-        right.reset();
+        for (int i=0; i < order; i++) {
+            left[i].reset();
+            right[i].reset();
+        }
     }
     void deactivate() {
     }
@@ -192,16 +201,51 @@ public:
         srate = sr;
         params_changed();
     }
-    inline int process_channel(dsp::biquad<float> &filter, float *in, float *out, uint32_t numsamples, int inmask) {
+    inline int process_channel(dsp::biquad<float> *filter, float *in, float *out, uint32_t numsamples, int inmask) {
         if (inmask) {
-            for (uint32_t i = 0; i < numsamples; i++)
-                out[i] = filter.process_d1(in[i]);
+            switch(order) {
+                case 1:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[0].process_d1(in[i]);
+                    break;
+                case 2:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[1].process_d1(filter[0].process_d1(in[i]));
+                    break;
+                case 3:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[2].process_d1(filter[1].process_d1(filter[0].process_d1(in[i])));
+                    break;
+            }
         } else {
-            for (uint32_t i = 0; i < numsamples; i++)
-                out[i] = filter.process_d1_zeroin();
+            if (filter[order - 1].empty_d1())
+                return 0;
+            switch(order) {
+                case 1:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[0].process_d1_zeroin();
+                    break;
+                case 2:
+                    if (filter[0].empty_d1())
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[1].process_d1_zeroin();
+                    else
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[1].process_d1(filter[0].process_d1_zeroin());
+                    break;
+                case 3:
+                    if (filter[1].empty_d1())
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[2].process_d1_zeroin();
+                    else
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[2].process_d1(filter[1].process_d1(filter[0].process_d1_zeroin()));
+                    break;
+            }
         }
-        filter.sanitize_d1();
-        return filter.empty_d1() ? 0 : inmask;
+        for (int i = 0; i < order; i++)
+            filter[i].sanitize_d1();
+        return filter[order - 1].empty_d1() ? 0 : inmask;
     }
     uint32_t process(uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (outputs_mask & 1) {

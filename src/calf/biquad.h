@@ -172,6 +172,16 @@ public:
 		b1 = 2*(ab0-ab2)*q;
 		b2 = (ab0-ab1+ab2)*q;
 	}
+    
+    template<class U>
+    inline void copy_coeffs(const biquad<U> &src)
+    {
+        a0 = src.a0;
+        a1 = src.a1;
+        a2 = src.a2;
+        b1 = src.b1;
+        b2 = src.b2;
+    }
 
     // direct I form with four state variables
     inline T process_d1(T in)

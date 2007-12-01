@@ -71,14 +71,18 @@ synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
 const char *filter_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Cutoff", "Resonance", "Mode"};
 
 const char *filter_choices[] = {
-    "Lowpass",
-    "Highpass"
+    "12dB/oct Lowpass",
+    "24dB/oct Lowpass",
+    "36dB/oct Lowpass",
+    "12dB/oct Highpass",
+    "24dB/oct Highpass",
+    "36dB/oct Highpass",
 };
 
 parameter_properties filter_audio_module::param_props[] = {
-    { 2000,      20,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
+    { 2000,      10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
     { 0.707,  0.707,   20,  1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL },
-    { 0,          0,    1,    1, PF_ENUM | PF_CTL_COMBO, filter_choices },
+    { 0,          0,    5,    1, PF_ENUM | PF_CTL_COMBO, filter_choices },
 };
 
 static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
