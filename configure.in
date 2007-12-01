@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([calf],[0.0.1],[wdev@foltman.com])
+AC_INIT([calf],[0.0.2],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
@@ -49,6 +49,14 @@ AC_ARG_WITH(ladspa_dir,
   [with_ladspa_dir="$prefix/lib/ladspa/"])
 AC_MSG_RESULT($with_ladspa_dir)
 AC_SUBST(with_ladspa_dir)
+
+AC_MSG_CHECKING(where to install LADSPA RDF file)
+AC_ARG_WITH(ladspa_rdf_dir,
+  AC_HELP_STRING([--with-ladspa-rdf-dir],[install RDF file to DIR (default=$prefix/share/ladspa/rdf/)]),
+  ,
+  [with_ladspa_rdf_dir="$prefix/share/ladspa/rdf/"])
+AC_MSG_RESULT($with_ladspa_rdf_dir)
+AC_SUBST(with_ladspa_rdf_dir)
 
 # Checks for library functions.
 AC_CHECK_FUNCS([floor memset pow])

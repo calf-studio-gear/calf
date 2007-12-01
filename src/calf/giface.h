@@ -57,13 +57,20 @@ enum parameter_flags
   PF_CTLOPTIONS = 0xFF0000,
   PF_CTLO_HORIZ = 0x010000,
   PF_CTLO_VERT = 0x020000,
+  
+  PF_UNITS = 0xFF000000,
+  PF_UNIT_DB = 0x01000000,
+  PF_UNIT_COEF = 0x02000000,
+  PF_UNIT_HZ = 0x03000000,
+  PF_UNIT_SEC = 0x04000000,
+  PF_UNIT_MSEC = 0x05000000,
 };
 
 struct parameter_properties
 {
   float def_value, min, max, step;
   uint32_t flags;
-  const char *choices;
+  const char **choices;
   float from_01(float value01);
   float to_01(float value);
 };
@@ -101,15 +108,19 @@ struct ladspa_info
     const char *name;
     const char *maker;
     const char *copyright;
-    const char **port_names;
+    const char *plugin_type;
 };
+
+extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
 
 template<class Module>
 struct ladspa_wrapper
 {
     LADSPA_Descriptor descriptor;
+    ladspa_info &info;
 
     ladspa_wrapper(ladspa_info &i) 
+    : info(i)
     {
         init_descriptor(i);
     }
@@ -126,7 +137,7 @@ struct ladspa_wrapper
         descriptor.Copyright = i.copyright;
         descriptor.Properties = LADSPA_PROPERTY_INPLACE_BROKEN | (Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0);
         descriptor.PortCount = ins + outs + params;
-        descriptor.PortNames = i.port_names ? i.port_names : Module::param_names;
+        descriptor.PortNames = Module::param_names;
         descriptor.PortDescriptors = new LADSPA_PortDescriptor[descriptor.PortCount];
         descriptor.PortRangeHints = new LADSPA_PortRangeHint[descriptor.PortCount];
         for (int i = 0; i < ins + outs + params; i++)
@@ -138,7 +149,7 @@ struct ladspa_wrapper
             if (i < ins + outs)
                 prh.HintDescriptor = 0;
             else {            
-                prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_DEFAULT_MINIMUM;
+                prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
                 parameter_properties &pp = Module::param_props[i - ins - outs];
                 prh.LowerBound = pp.min;
                 prh.UpperBound = pp.max;
@@ -191,8 +202,11 @@ struct ladspa_wrapper
             mod->ins[port] = DataLocation;
         else if (port < ins + outs)
             mod->outs[port - ins] = DataLocation;
-        else if (port < ins + outs + params)
-            mod->params[port - ins - outs] = DataLocation;
+        else if (port < ins + outs + params) {
+            int i = port - ins - outs;
+            mod->params[i] = DataLocation;
+            *mod->params[i] = Module::param_props[i].def_value;
+        }
     }
 
     static void cb_activate(LADSPA_Handle Instance) {
@@ -222,6 +236,10 @@ struct ladspa_wrapper
         Module *const mod = (Module *)Instance;
         delete mod;
     }
+    
+    std::string generate_rdf() {
+        return synth::generate_ladspa_rdf(info, Module::param_props, Module::param_names, Module::param_count, Module::in_count + Module::out_count);
+    };
 };
 
 struct audio_exception: public std::exception

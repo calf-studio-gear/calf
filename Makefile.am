@@ -4,7 +4,7 @@ SUBDIRS = $(SRCDIRS)
 
 distdir = $(PACKAGE)-$(VERSION)
 
-EXTRADIST = TODO
+EXTRADIST = TODO autogen.sh
 
 clean-local:
 	rm -f *~ *.old

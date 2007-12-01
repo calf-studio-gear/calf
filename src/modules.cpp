@@ -32,7 +32,7 @@ parameter_properties amp_audio_module::param_props[] = {
     { 1, 0, 4, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL }
 };
 
-static synth::ladspa_info amp_info = { 0x847c, "Amp", "Calf Const Amp", "Krzysztof Foltman", copyright, NULL };
+static synth::ladspa_info amp_info = { 0x847c, "Amp", "Calf Const Amp", "Krzysztof Foltman", copyright, "AmplifierPlugin" };
 
 synth::ladspa_wrapper<amp_audio_module> amp(amp_info);
 
@@ -41,14 +41,14 @@ synth::ladspa_wrapper<amp_audio_module> amp(amp_info);
 const char *flanger_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Min. delay", "Mod. depth", "Mod. rate", "Feedback", "Amount"};
 
 parameter_properties flanger_audio_module::param_props[] = {
-    { 0.1,      0.1, 10, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 0.5,      0.1, 10, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 0.25,    0.01, 20, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 0.90,   -0.99, 0.99, 1.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL },
-    { 1, 0, 2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL },
+    { 0.1,      0.1, 10, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL },
+    { 0.5,      0.1, 10, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL },
+    { 0.25,    0.01, 20, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
+    { 0.90,   -0.99, 0.99, 1.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF, NULL },
+    { 1, 0, 2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL },
 };
 
-static synth::ladspa_info flanger_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", copyright, NULL };
+static synth::ladspa_info flanger_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", copyright, "FlangerPlugin" };
 
 synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
 
@@ -57,12 +57,12 @@ synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
 const char *reverb_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Dec. time", "HF Damp", "Amount"};
 
 parameter_properties reverb_audio_module::param_props[] = {
-    { 1.5,      1.0,  4.0, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 5000,    2000,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 0.25,       0,    2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL },
+    { 1.5,      1.0,  4.0, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL },
+    { 5000,    2000,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
+    { 0.25,       0,    2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL },
 };
 
-static synth::ladspa_info reverb_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", copyright, NULL };
+static synth::ladspa_info reverb_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", copyright, "ReverbPlugin" };
 
 synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
 
@@ -70,13 +70,18 @@ synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
 
 const char *filter_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Cutoff", "Resonance", "Mode"};
 
-parameter_properties filter_audio_module::param_props[] = {
-    { 2000,      20,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 0.707,  0.707,   20,  1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL },
-    { 0,          0,    1,    1, PF_INT | PF_CTL_COMBO, "Lowpass\0Highpass\0" },
+const char *filter_choices[] = {
+    "Lowpass",
+    "Highpass"
 };
 
-static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, NULL };
+parameter_properties filter_audio_module::param_props[] = {
+    { 2000,      20,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
+    { 0.707,  0.707,   20,  1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL },
+    { 0,          0,    1,    1, PF_ENUM | PF_CTL_COMBO, filter_choices },
+};
+
+static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
 
 synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 
@@ -96,3 +101,13 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 
 };
 
+std::string get_builtin_modules_rdf()
+{
+    std::string rdf;
+    
+    rdf += flanger.generate_rdf();
+    rdf += reverb.generate_rdf();
+    rdf += filter.generate_rdf();
+    
+    return rdf;
+}

@@ -216,4 +216,6 @@ public:
     }
 };
 
+extern std::string get_builtin_modules_rdf();
+
 #endif
