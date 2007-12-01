@@ -1,0 +1,188 @@
+/* Calf DSP Library
+ * Standalone application module wrapper example.
+ * Copyright (C) 2007 Krzysztof Foltman
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+#include <getopt.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <config.h>
+#include <jack/jack.h>
+#include <calf/giface.h>
+#include <calf/modules.h>
+#include <gtk/gtk.h>
+#include <phat/phat.h>
+
+using namespace synth;
+
+class jack_host_gui;
+
+struct jack_host_param
+{
+    jack_host_gui *gui;
+    int param_no;
+};
+
+class jack_host_gui
+{
+protected:
+    int param_count;
+public:
+    GtkWidget *toplevel;
+    GtkWidget *table;
+    synth::jack_host_base *host;
+    jack_host_param *params;
+
+    jack_host_gui(GtkWidget *_toplevel);
+    void create(synth::jack_host_base *_host);
+    static void value_changed(PhatKnob *widget, gpointer value);
+};
+
+jack_host_gui::jack_host_gui(GtkWidget *_toplevel)
+: toplevel(_toplevel)
+{
+    
+}
+
+void jack_host_gui::value_changed(PhatKnob *widget, gpointer value)
+{
+    jack_host_param *jhp = (jack_host_param *)value;
+    jack_host_base &jh = *jhp->gui->host;
+    int nparam = jhp->param_no;
+    float cvalue = jh.get_param_props()[jhp->param_no].from_01 (phat_knob_get_value (widget));
+    jh.get_params()[nparam] = cvalue;
+    // printf("%d -> %f\n", nparam, cvalue);
+    jh.set_params();
+}
+
+void jack_host_gui::create(synth::jack_host_base *_host)
+{
+    host = _host;
+    param_count = host->get_param_count();
+    params = new jack_host_param[param_count];
+    
+    for (int i = 0; i < param_count; i++) {
+        params[i].gui = this;
+        params[i].param_no = i;
+    }
+
+    table = gtk_table_new (param_count, 2, FALSE);
+    
+    for (int i = 0; i < param_count; i++) {
+        GtkWidget *label = gtk_label_new (host->get_param_names()[host->get_input_count() + host->get_output_count() + i]);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i, i + 1, GTK_EXPAND, GTK_EXPAND, 2, 2);
+        
+        GtkWidget *slider  = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
+        gtk_signal_connect (GTK_OBJECT (slider), "value-changed", G_CALLBACK (value_changed), (gpointer)&params[i]);
+        gtk_table_attach (GTK_TABLE (table), slider, 1, 2, i, i + 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
+    }
+    
+    gtk_container_add (GTK_CONTAINER (toplevel), table);
+}
+
+// I don't need anyone to tell me this is stupid. I already know that :)
+jack_host_gui *gui;
+
+//float par_values[1] = { 0.3 };
+
+void destroy(GtkWindow *window, gpointer data)
+{
+    gtk_main_quit();
+}
+
+void make_gui(jack_host_base *jh)
+{
+    GtkWidget *toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        
+    gui = new jack_host_gui(toplevel);
+    gui->create(jh);
+
+    gtk_signal_connect (GTK_OBJECT(toplevel), "destroy", G_CALLBACK(destroy), NULL);
+    gtk_widget_show_all(toplevel);
+    
+}
+
+static struct option long_options[] = {
+    {"help", 0, 0, 'h'},
+    {"version", 0, 0, 'v'},
+    {"client", 1, 0, 'c'},
+    {"effect", 1, 0, 'e'},
+    {"input", 1, 0, 'i'},
+    {"output", 1, 0, 'o'},
+    {0,0,0,0},
+};
+
+char *effect_name = "flanger";
+char *client_name = "calfhost";
+char *input_name = "input";
+char *output_name = "output";
+
+int main(int argc, char *argv[])
+{
+    gtk_init(&argc, &argv);
+    while(1) {
+        int option_index;
+        int c = getopt_long(argc, argv, "c:e:i:o:hv", long_options, &option_index);
+        if (c == -1)
+            break;
+        switch(c) {
+            case 'h':
+                printf("Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>] [--output <name>] [--help] [--version]\n", argv[0]);
+                return 0;
+            case 'v':
+                printf("%s\n", PACKAGE_STRING);
+                return 0;
+            case 'e':
+                effect_name = optarg;
+                break;
+            case 'c':
+                client_name = optarg;
+                break;
+            case 'i':
+                input_name = optarg;
+                break;
+            case 'o':
+                output_name = optarg;
+                break;
+        }
+    }
+    try {
+        jack_host_base *jh = NULL;
+        if (!strcmp(effect_name, "reverb"))
+            jh = new jack_host<reverb_audio_module>();
+        else if (!strcmp(effect_name, "flanger"))
+            jh = new jack_host<flanger_audio_module>();
+        else if (!strcmp(effect_name, "filter"))
+            jh = new jack_host<filter_audio_module>();
+        else {
+            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter\n");
+            return 1;
+        }
+        jh->open(client_name, input_name, output_name);
+        make_gui(jh);
+        gtk_main();
+        delete gui;
+        jh->close();
+        delete jh;
+    }
+    catch(std::exception &e)
+    {
+        fprintf(stderr, "%s\n", e.what());
+        exit(1);
+    }
+    return 0;
+}

@@ -1,0 +1,59 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.61)
+AC_INIT([calf],[0.0.1],[wdev@foltman.com])
+AC_CONFIG_SRCDIR([config.h.in])
+AC_CONFIG_HEADER([config.h])
+
+AM_INIT_AUTOMAKE([std-options])
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
+
+# Checks for libraries.
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES(GUI_DEPS, glib-2.0 >= 2.10.0 gtk+-2.0 >= 2.12.0 phat >= 0.4.1 jack >= 0.103.0)
+AC_CHECK_LIB([jack], [jack_port_new])
+
+CXXFLAGS="$CXXFLAGS -ffast-math $GUI_DEPS_CFLAGS"
+LDFLAGS="$LDFLAGS $GUI_DEPS_LIBS"
+
+AC_SUBST(GUI_DEPS_CFLAGS)
+AC_SUBST(GUI_DEPS_LIBS)
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([memory.h stdint.h stdlib.h ladspa.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_INT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+AC_TYPE_UINT8_T
+
+AC_MSG_CHECKING(where to install LADSPA plugins)
+AC_ARG_WITH(ladspa_dir,
+  AC_HELP_STRING([--with-ladspa-dir],[install LADSPA plugins to DIR (default=$prefix/lib/ladspa/)]),
+  ,
+  [with_ladspa_dir="$prefix/lib/ladspa/"])
+AC_MSG_RESULT($with_ladspa_dir)
+AC_SUBST(with_ladspa_dir)
+
+# Checks for library functions.
+AC_CHECK_FUNCS([floor memset pow])
+
+AC_CONFIG_FILES([Makefile
+                 src/Makefile
+                 src/calf/Makefile])
+AC_OUTPUT

@@ -1,0 +1,34 @@
+1. More effects
+
+- auto-wah
+- envelope follower
+- better reverb (more features, use nested allpasses, use 1-pole 
+  1-zero allpass instead of fractional delays)
+- dynamic processing
+- distortion?
+
+2. Some instruments
+
+- update and merge the old electric organ thingy
+- some virtual analogue thing
+
+3. DSP library
+
+- profiling framework
+- optimized code (the one I have now only pretends to be optimized :) )
+- underflow handling
+
+4. Wrappers
+
+- LADSPA: proper rdf
+- better jack host (controls etc)
+- BSE
+- buzztard
+- Linux VST
+- LV2
+
+5. Organization stuff (autotools etc)
+
+- correct compilation and installation of LADSPA plugins (current version is a hack!)
+- switch to -O3
+- get to work on 64-bit architectures
