@@ -24,8 +24,11 @@
 #include <assert.h>
 #include "biquad.h"
 #include "audio_fx.h"
+#include "inertia.h"
 
-using namespace synth;
+namespace synth {
+
+using namespace dsp;
 
 class amp_audio_module
 {
@@ -155,7 +158,7 @@ public:
 class filter_audio_module
 {
 public:    
-    enum { par_cutoff, par_resonance, par_mode, param_count };
+    enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true };
     float *ins[in_count]; 
     float *outs[out_count];
@@ -165,31 +168,59 @@ public:
     uint32_t srate;
     static parameter_properties param_props[];
     int order;
+    inertia<exponential_ramp> inertia_cutoff;
+    once_per_n timer;
     
-    void params_changed() {
-        float freq = *params[par_cutoff];
+    filter_audio_module()
+    : inertia_cutoff(exponential_ramp(128), 20)
+    , timer(128)
+    {
+    }
+    
+    void calculate_filter()
+    {
+        float freq = inertia_cutoff.get_last();
+        // printf("freq=%g inr.cnt=%d timer.left=%d\n", freq, inertia_cutoff.count, timer.left);
         // XXXKF this is resonance of a single stage, obviously for three stages, resonant gain will be different
         float q = *params[par_resonance];
-        // XXXKF this is highly inefficient
+        // XXXKF this is highly inefficient and should be replaced as soon as I have fast f2i in primitives.h
         int mode = (int)*params[par_mode];
-        order = (mode < 3) ? mode + 1 : mode - 2;
         // printf("freq = %f q = %f mode = %d\n", freq, q, mode);
         if (mode < 3) {
             left[0].set_lp_rbj(freq, q, srate);
+            order = mode + 1;
         } else {
             left[0].set_hp_rbj(freq, q, srate);
+            order = mode - 2;
         }
+        // XXXKF this is highly inefficient and should be replaced as soon as I have fast f2i in primitives.h
+        int inertia = (int)*params[par_inertia];
+        if (inertia != inertia_cutoff.ramp.length())
+            inertia_cutoff.ramp.set_length(inertia);
+        
         right[0].copy_coeffs(left[0]);
         for (int i = 1; i < order; i++) {
             left[i].copy_coeffs(left[0]);
             right[i].copy_coeffs(left[0]);
         }
     }
+    void params_changed()
+    {
+        inertia_cutoff.set_inertia(*params[par_cutoff]);
+        calculate_filter();
+    }
+    void on_timer()
+    {
+        inertia_cutoff.step();
+        calculate_filter();
+    }
     void activate() {
         for (int i=0; i < order; i++) {
             left[i].reset();
             right[i].reset();
         }
+        timer = once_per_n(srate / 1000);
+        timer.start();
     }
     void deactivate() {
     }
@@ -248,18 +279,30 @@ public:
         return filter[order - 1].empty_d1() ? 0 : inmask;
     }
     uint32_t process(uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        if (outputs_mask & 1) {
-            outputs_mask &= ~1;
-            outputs_mask |= process_channel(left, ins[0], outs[0], numsamples, inputs_mask & 1);
+        uint32_t ostate = 0;
+        uint32_t offset = 0;
+        while(offset < numsamples) {
+            uint32_t numnow = numsamples - offset;
+            // if inertia's inactive, we can calculate the whole buffer at once
+            if (inertia_cutoff.active())
+                numnow = timer.get(numnow);
+            if (outputs_mask & 1) {
+                ostate |= process_channel(left, ins[0] + offset, outs[0] + offset, numnow, inputs_mask & 1);
+            }
+            if (outputs_mask & 2) {
+                ostate |= process_channel(right, ins[1] + offset, outs[1] + offset, numnow, inputs_mask & 2);
+            }
+            if (timer.elapsed()) {
+                on_timer();
+            }
+            offset += numnow;
         }
-        if (outputs_mask & 2) {
-            outputs_mask &= ~2;
-            outputs_mask |= process_channel(right, ins[1], outs[1], numsamples, inputs_mask & 2);
-        }
-        return outputs_mask;
+        return ostate;
     }
 };
 
 extern std::string get_builtin_modules_rdf();
+
+};
 
 #endif

@@ -24,6 +24,8 @@
 #include <calf/giface.h>
 #include <calf/modules.h>
 
+using namespace synth;
+
 const char *copyright = "(C) 2001-2007 Krzysztof Foltman, license: LGPL";
 
 const char *amp_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Gain"};
@@ -68,7 +70,7 @@ synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *filter_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Cutoff", "Resonance", "Mode"};
+const char *filter_audio_module::param_names[] = {"In L", "In R", "Out L", "Out R", "Cutoff", "Resonance", "Mode", "Inertia"};
 
 const char *filter_choices[] = {
     "12dB/oct Lowpass",
@@ -83,6 +85,7 @@ parameter_properties filter_audio_module::param_props[] = {
     { 2000,      10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
     { 0.707,  0.707,   20,  1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL },
     { 0,          0,    5,    1, PF_ENUM | PF_CTL_COMBO, filter_choices },
+    { 20,         5,  100,    1, PF_INT | PF_SCALE_LOG | PF_CTL_KNOB, NULL},
 };
 
 static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
@@ -96,22 +99,22 @@ extern "C" {
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
     switch (Index) {
-        case 0: return &filter.descriptor;
-        case 1: return &flanger.descriptor;
-        case 2: return &reverb.descriptor;
+        case 0: return &::filter.descriptor;
+        case 1: return &::flanger.descriptor;
+        case 2: return &::reverb.descriptor;
         default: return NULL;
     }
 }
 
 };
 
-std::string get_builtin_modules_rdf()
+std::string synth::get_builtin_modules_rdf()
 {
     std::string rdf;
     
-    rdf += flanger.generate_rdf();
-    rdf += reverb.generate_rdf();
-    rdf += filter.generate_rdf();
+    rdf += ::flanger.generate_rdf();
+    rdf += ::reverb.generate_rdf();
+    rdf += ::filter.generate_rdf();
     
     return rdf;
 }

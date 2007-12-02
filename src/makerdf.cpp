@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     
     rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
 
-    rdf += get_builtin_modules_rdf();
+    rdf += synth::get_builtin_modules_rdf();
     
     rdf += "</rdf:RDF>\n";
     

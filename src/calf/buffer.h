@@ -21,9 +21,6 @@
 #ifndef __BUFFER_H
 #define __BUFFER_H
 
-#include <typeinfo>
-#include <audio/wave.h>
-
 namespace dsp {
 
 /// decrease by N if >= N (useful for circular buffers)
@@ -234,21 +231,6 @@ class mono_auto_buffer: public auto_buffer<N, T> {
 template<int N, class T = float>
 class stereo_auto_buffer: public auto_buffer<N, stereo_sample<T> > {
 };
-
-template<class T>
-bool load_wave(dsp::dynamic_buffer<T> &dest, const char *file_name) {
-    WaveInfo *file = WaveOpenFileForReading(file_name);
-    typedef dsp::sample_traits<T> st;
-    if (file->channels == st::channels && file->bitsPerSample == st::bps) {
-        dest.resize(file->numSamples);
-        WaveReadFile((char *)dest.data(), dest.size()*sizeof(T), file);
-        WaveCloseFile(file);
-        return true;
-    }
-    WaveCloseFile(file);
-    fprintf(stderr, "Sorry, need a %d channels and %d bps, got %d channels and %d bps\n", st::channels, st::bps, file->channels, file->bitsPerSample);
-    return false;
-}
 
 };
 
