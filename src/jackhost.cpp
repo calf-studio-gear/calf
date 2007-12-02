@@ -35,6 +35,7 @@ struct jack_host_param
 {
     jack_host_gui *gui;
     int param_no;
+    GtkWidget *label;
 };
 
 class jack_host_gui
@@ -48,7 +49,7 @@ public:
     jack_host_param *params;
 
     jack_host_gui(GtkWidget *_toplevel);
-    void create(synth::jack_host_base *_host);
+    void create(synth::jack_host_base *_host, const char *title);
     static void knob_value_changed(PhatKnob *widget, gpointer value);
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
 };
@@ -63,11 +64,13 @@ void jack_host_gui::knob_value_changed(PhatKnob *widget, gpointer value)
 {
     jack_host_param *jhp = (jack_host_param *)value;
     jack_host_base &jh = *jhp->gui->host;
+    const parameter_properties &props = jh.get_param_props()[jhp->param_no];
     int nparam = jhp->param_no;
-    float cvalue = jh.get_param_props()[jhp->param_no].from_01 (phat_knob_get_value (widget));
+    float cvalue = props.from_01 (phat_knob_get_value (widget));
     jh.get_params()[nparam] = cvalue;
     // printf("%d -> %f\n", nparam, cvalue);
     jh.set_params();
+    gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
 }
 
 void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
@@ -79,7 +82,7 @@ void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
     jh.set_params();
 }
 
-void jack_host_gui::create(synth::jack_host_base *_host)
+void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
 {
     host = _host;
     param_count = host->get_param_count();
@@ -90,11 +93,16 @@ void jack_host_gui::create(synth::jack_host_base *_host)
         params[i].param_no = i;
     }
 
-    table = gtk_table_new (param_count, 2, FALSE);
+    table = gtk_table_new (param_count + 1, 3, FALSE);
     
+    GtkWidget *title_label = gtk_label_new ("");
+    gtk_label_set_markup (GTK_LABEL (title_label), (string("<b>")+title+"</b>").c_str());
+    gtk_table_attach (GTK_TABLE (table), title_label, 0, 3, 0, 1, GTK_EXPAND, GTK_EXPAND, 2, 2);
+
     for (int i = 0; i < param_count; i++) {
         GtkWidget *label = gtk_label_new (host->get_param_names()[host->get_input_count() + host->get_output_count() + i]);
-        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i, i + 1, GTK_EXPAND, GTK_EXPAND, 2, 2);
+        gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_EXPAND, 2, 2);
         
         parameter_properties &props = host->get_param_props()[i];
         
@@ -108,15 +116,25 @@ void jack_host_gui::create(synth::jack_host_base *_host)
                 gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j]);
             gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)host->get_params()[i] - (int)props.min);
             gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
         }
         else
         {
-            widget  = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
-            gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
+            GtkWidget *knob = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
+            gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
+            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+
+            widget  = gtk_label_new ("");
+            gtk_label_set_width_chars (GTK_LABEL (widget), 12);
+            gtk_misc_set_alignment (GTK_MISC (widget), 0.0, 0.5);
+            gtk_table_attach (GTK_TABLE (table), widget, 2, 3, i + 1, i + 2, GTK_FILL, GTK_EXPAND, 0, 0);
+            params[i].label = widget;
+            // gtk_widget_set_size_request (widget, widget->allocation.width, widget->allocation.height);
+            // gtk_widget_set_size_request (widget, 100, 10);
+            
+            knob_value_changed (PHAT_KNOB (knob), (gpointer)&params[i]);
         }
-        gtk_table_attach (GTK_TABLE (table), widget, 1, 2, i, i + 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
     }
-    
     gtk_container_add (GTK_CONTAINER (toplevel), table);
 }
 
@@ -130,12 +148,13 @@ void destroy(GtkWindow *window, gpointer data)
     gtk_main_quit();
 }
 
-void make_gui(jack_host_base *jh)
+void make_gui(jack_host_base *jh, const char *title, const char *effect)
 {
     GtkWidget *toplevel = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title (GTK_WINDOW (toplevel), title);
         
     gui = new jack_host_gui(toplevel);
-    gui->create(jh);
+    gui->create(jh, effect);
 
     gtk_signal_connect (GTK_OBJECT(toplevel), "destroy", G_CALLBACK(destroy), NULL);
     gtk_widget_show_all(toplevel);
@@ -152,10 +171,10 @@ static struct option long_options[] = {
     {0,0,0,0},
 };
 
-char *effect_name = "flanger";
-char *client_name = "calfhost";
-char *input_name = "input";
-char *output_name = "output";
+const char *effect_name = "flanger";
+const char *client_name = "calfhost";
+const char *input_name = "input";
+const char *output_name = "output";
 
 int main(int argc, char *argv[])
 {
@@ -167,7 +186,10 @@ int main(int argc, char *argv[])
             break;
         switch(c) {
             case 'h':
-                printf("Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>] [--output <name>] [--help] [--version]\n", argv[0]);
+            case '?':
+                printf("JACK host for Calf effects\n"
+                    "Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>] [--output <name>] [--help] [--version]\n", 
+                    argv[0]);
                 return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);
@@ -199,7 +221,7 @@ int main(int argc, char *argv[])
             return 1;
         }
         jh->open(client_name, input_name, output_name);
-        make_gui(jh);
+        make_gui(jh, client_name, effect_name);
         gtk_main();
         delete gui;
         jh->close();

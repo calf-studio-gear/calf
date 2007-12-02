@@ -2,32 +2,64 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([calf],[0.0.4],[wdev@foltman.com])
+AC_INIT([calf],[0.0.5],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
-AM_INIT_AUTOMAKE([std-options])
+AM_INIT_AUTOMAKE(1.8)
+
+if test "x$prefix" = "xNONE"; then 
+  prefix=$ac_default_prefix
+fi
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES(GUI_DEPS, glib-2.0 >= 2.10.0 gtk+-2.0 >= 2.12.0 phat >= 0.4.1 jack >= 0.103.0)
-AC_CHECK_LIB([jack], [jack_port_new])
-
-CXXFLAGS="$CXXFLAGS -ffast-math $GUI_DEPS_CFLAGS"
-LDFLAGS="$LDFLAGS $GUI_DEPS_LIBS"
-
-AC_SUBST(GUI_DEPS_CFLAGS)
-AC_SUBST(GUI_DEPS_LIBS)
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([memory.h stdint.h stdlib.h ladspa.h])
+AC_CHECK_HEADERS([memory.h stdint.h stdlib.h ladspa.h time.h])
+
+AC_CHECK_HEADER(ladspa.h, LADSPA_FOUND="yes", LADSPA_FOUND="no")
+
+AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
+
+if test "$have_jack_header" = "yes"; then
+  PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
+    AC_CHECK_LIB([jack], [jack_port_new], JACK_FOUND="yes", JACK_FOUND="no"),
+    JACK_FOUND="no")
+else
+  JACK_FOUND="no"
+fi
+
+AC_SUBST(GUI_DEPS_CFLAGS)
+AC_SUBST(GUI_DEPS_LIBS)
+AC_SUBST(JACK_DEPS_CFLAGS)
+AC_SUBST(JACK_DEPS_LIBS)
+
+if test "$JACK_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.4.0 phat >= 0.4.1, 
+    [
+      CFLAGS="$CFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
+      CPPFLAGS="$CPPFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
+      AC_CHECK_HEADERS([phat/phatknob.h], 
+        JACK_ENABLED="yes", 
+        JACK_ENABLED="no (phat library is too old, SVN version required)")
+    ],
+    JACK_ENABLED="no (GTK+ or phat is missing or too old)"
+  )
+else
+  JACK_ENABLED="no"
+fi
+
+AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
+AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -64,4 +96,12 @@ AC_CHECK_FUNCS([floor memset pow])
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/calf/Makefile])
+AC_MSG_RESULT([
+    Calf configured
+
+    LADSPA enabled:         $LADSPA_FOUND
+    JACK host enabled:      $JACK_ENABLED
+    
+    Installation prefix:    $prefix
+])
 AC_OUTPUT

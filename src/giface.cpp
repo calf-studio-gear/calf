@@ -18,16 +18,16 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <config.h>
 #include <assert.h>
 #include <memory.h>
-#include <jack/jack.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
 
 using namespace synth;
 using namespace std;
 
-float parameter_properties::from_01(float value01)
+float parameter_properties::from_01(float value01) const
 {
     switch(flags & PF_SCALEMASK)
     {
@@ -46,7 +46,7 @@ float parameter_properties::from_01(float value01)
     }
 }
 
-float parameter_properties::to_01(float value)
+float parameter_properties::to_01(float value) const
 {
     switch(flags & PF_SCALEMASK)
     {
@@ -67,11 +67,30 @@ float parameter_properties::to_01(float value)
     }
 }
 
+std::string parameter_properties::to_string(float value) const
+{
+    char buf[32];
+    if ((flags & PF_SCALEMASK) == PF_SCALE_PERC) {
+        sprintf(buf, "%g%%", 99.0 * value);
+        return string(buf);
+    }
+    sprintf(buf, "%g", value);
+    
+    switch(flags & PF_UNITMASK) {
+    case PF_UNIT_DB: return string(buf) + " dB";
+    case PF_UNIT_HZ: return string(buf) + " Hz";
+    case PF_UNIT_SEC: return string(buf) + " s";
+    case PF_UNIT_MSEC: return string(buf) + " ms";
+    }
+    return string(buf);
+}
+
 static std::string i2s(int value)
 {
     char buf[32];
     sprintf(buf, "%d", value);
-    return buf;
+    
+    return string(buf);
 }
 
 static string f2s(double value)
@@ -95,9 +114,11 @@ static string rdf_escape(const string &src)
     return dest;
 }
 
+#if USE_LADSPA
+
 static std::string unit_to_string(parameter_properties &props)
 {
-    uint32_t flags = props.flags & PF_UNITS;
+    uint32_t flags = props.flags & PF_UNITMASK;
     
     switch(flags) {
         case PF_UNIT_DB:
@@ -164,3 +185,5 @@ std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_proper
     rdf += "  </ladspa:" + plugin_type + ">\n";
     return rdf;
 }
+
+#endif

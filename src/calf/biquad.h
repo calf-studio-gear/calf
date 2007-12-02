@@ -217,7 +217,7 @@ public:
     // direct II form with two state variables
     inline T process_d2(T in)
     {
-        T tmp = in - y1 * b1 - y2 * b2;
+        T tmp = in - w1 * b1 - w2 * b2;
         T out = tmp * a0 + w1 * a1 + w2 * a2;
         w2 = w1;
         w1 = tmp;
@@ -225,9 +225,10 @@ public:
     }
     
     // direct II form with two state variables, lowpass version
+    // interesting fact: this is actually slower than the general version!
     inline T process_d2_lp(T in)
     {
-        T tmp = in - y1 * b1 - y2 * b2;
+        T tmp = in - w1 * b1 - w2 * b2;
         T out = (tmp + w1 + w1 + w2) * a0;
         w2 = w1;
         w1 = tmp;

@@ -23,8 +23,12 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#if USE_LADSPA
 #include <ladspa.h>
+#endif
+#if USE_JACK
 #include <jack/jack.h>
+#endif
 #include <exception>
 #include <string>
 
@@ -58,7 +62,7 @@ enum parameter_flags
   PF_CTLO_HORIZ = 0x010000,
   PF_CTLO_VERT = 0x020000,
   
-  PF_UNITS = 0xFF000000,
+  PF_UNITMASK = 0xFF000000,
   PF_UNIT_DB = 0x01000000,
   PF_UNIT_COEF = 0x02000000,
   PF_UNIT_HZ = 0x03000000,
@@ -68,11 +72,12 @@ enum parameter_flags
 
 struct parameter_properties
 {
-  float def_value, min, max, step;
-  uint32_t flags;
-  const char **choices;
-  float from_01(float value01);
-  float to_01(float value);
+    float def_value, min, max, step;
+    uint32_t flags;
+    const char **choices;
+    float from_01(float value01) const;
+    float to_01(float value) const;
+    std::string to_string(float value) const;
 };
 
 struct midi_event {
@@ -110,6 +115,8 @@ struct ladspa_info
     const char *copyright;
     const char *plugin_type;
 };
+
+#if USE_LADSPA
 
 extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
 
@@ -242,6 +249,8 @@ struct ladspa_wrapper
     };
 };
 
+#endif
+
 struct audio_exception: public std::exception
 {
     const char *text;
@@ -252,6 +261,8 @@ public:
     virtual const char *what() { return text; }
     virtual ~audio_exception() throw () {}
 };
+
+#if USE_JACK
 
 class jack_host_base {
 public:
@@ -418,6 +429,8 @@ public:
     virtual const char ** get_param_names() { return Module::param_names; }
     virtual parameter_properties* get_param_props() { return Module::param_props; }
 };
+
+#endif
 
 };
 

@@ -9,17 +9,20 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <jack/jack.h> header file. */
+#undef HAVE_JACK_JACK_H
+
 /* Define to 1 if you have the <ladspa.h> header file. */
 #undef HAVE_LADSPA_H
-
-/* Define to 1 if you have the `jack' library (-ljack). */
-#undef HAVE_LIBJACK
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* Define to 1 if you have the <phat/phatknob.h> header file. */
+#undef HAVE_PHAT_PHATKNOB_H
 
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
@@ -44,6 +47,9 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
