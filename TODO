@@ -1,16 +1,20 @@
 1. More effects
 
-- auto-wah
+- auto-wah (might be integrated into filter)
 - envelope follower
 - better reverb (more features, use nested allpasses, use 1-pole 
   1-zero allpass instead of fractional delays)
-- dynamic processing
+- dynamics processing
 - distortion?
+- windy rotary speakery stuff
+- true phaser
+- filter: more types
 
 2. Some instruments
 
 - update and merge the old electric organ thingy
 - some virtual analogue thing
+- FM (by reusing my MMX code, or something)
 
 3. DSP library
 
@@ -20,7 +24,7 @@
 
 4. Wrappers
 
-- LADSPA: proper rdf
+- LADSPA: proper rdf (get clearance from drobilla ;) )
 - better jack host (controls etc)
 - BSE
 - buzztard
@@ -32,3 +36,4 @@
 - correct compilation and installation of LADSPA plugins (current version is a hack!)
 - switch to -O3
 - get to work on 64-bit architectures
+- i18n (gettext or whatever)

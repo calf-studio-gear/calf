@@ -214,6 +214,8 @@ public:
     }
 };
 
+#if ENABLE_EXPERIMENTAL
+
 /**
  * This is crap, not really sounding like rotary speaker.
  * I needed it for tests, maybe I'll give it more time later.
@@ -253,6 +255,8 @@ public:
         }
     }
 };
+
+#endif
 
 /**
  * A classic allpass loop reverb with modulated allpass filter.
@@ -326,7 +330,6 @@ public:
         static const float l5dec=exp(-1573.f/fDec), r5dec=exp(-1671.f/fDec);
         static const float l6dec=exp(-1877.f/fDec), r6dec=exp(-1781.f/fDec);
         
-        phase += dphase;
         unsigned int ipart = phase.ipart();
         
         // the interpolated LFO might be an overkill here

@@ -85,8 +85,13 @@ inline uint64_t rdtsc()
 }
 #endif
 
+struct benchmark_globals
+{
+    static bool warned;
+};
+
 template<typename Target, class Stat>
-class simple_benchmark
+class simple_benchmark: public benchmark_globals
 {
 public:
     Target target;
@@ -98,12 +103,16 @@ public:
     {
     }
     
-    int measure(int runs, int repeats)
+    void measure(int runs, int repeats)
     {
         int priority = getpriority(PRIO_PROCESS, getpid());
         stat.start(runs);
-        if (setpriority(PRIO_PROCESS, getpid(), -20) < 0)
-            fprintf(stderr, "Warning: could not set process priority, measurements can be worthless\n");
+        if (setpriority(PRIO_PROCESS, getpid(), -20) < 0) {
+            if (!warned) {
+                fprintf(stderr, "Warning: could not set process priority, measurements can be worthless\n");
+                warned = true;
+            }
+        }
         for (int i = 0; i < runs; i++) {
             target.prepare();
             // XXXKF measuring CPU time with clock() sucks, 

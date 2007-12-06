@@ -61,10 +61,10 @@ void fill(T *data, int size, T value) {
 }
 
 template<class T>
-void zero(T *data, int size) {
+void zero(T *data, unsigned int size) {
     T value;
     dsp::zero(value);
-    for (int i=0; i<size; i++)
+    for (unsigned int i=0; i<size; i++)
         *data++ = value;
 }
 

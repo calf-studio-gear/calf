@@ -15,6 +15,9 @@
 /* Define to 1 if you have the <ladspa.h> header file. */
 #undef HAVE_LADSPA_H
 
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 

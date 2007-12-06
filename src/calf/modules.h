@@ -18,8 +18,8 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#ifndef __CALF_AMP_H
-#define __CALF_AMP_H
+#ifndef __CALF_MODULES_H
+#define __CALF_MODULES_H
 
 #include <assert.h>
 #include "biquad.h"
@@ -62,6 +62,15 @@ public:
     }
 };
 
+inline void default_handle_event(uint8_t *data, int len, float *params[], unsigned int param_count)
+{
+    if (data[0] == 0x7F && len >= 8) {
+        midi_event *p = (midi_event *)data;
+        if (p->param2 < param_count)
+            *params[p->param2] = p->param3;
+    }
+}
+
 class flanger_audio_module
 {
 public:
@@ -79,9 +88,8 @@ public:
         left.setup(sr);
         right.setup(sr);
     }
-    void handle_midi_event_now(synth::midi_event event) {
-    }
-    void handle_param_event_now(uint32_t param, float value) {
+    void handle_event(uint8_t *data, int len) {
+        default_handle_event(data, len, params, param_count);
     }
     void params_changed() {
         float dry = 1.0;
@@ -134,9 +142,8 @@ public:
     }
     void deactivate() {
     }
-    void handle_midi_event_now(synth::midi_event event) {
-    }
-    void handle_param_event_now(uint32_t param, float value) {
+    void handle_event(uint8_t *data, int len) {
+        default_handle_event(data, len, params, param_count);
     }
     void set_sample_rate(uint32_t sr) {
         srate = sr;
@@ -215,6 +222,7 @@ public:
         calculate_filter();
     }
     void activate() {
+        calculate_filter();
         for (int i=0; i < order; i++) {
             left[i].reset();
             right[i].reset();
@@ -224,9 +232,8 @@ public:
     }
     void deactivate() {
     }
-    void handle_midi_event_now(synth::midi_event event) {
-    }
-    void handle_param_event_now(uint32_t param, float value) {
+    void handle_event(uint8_t *data, int len) {
+        default_handle_event(data, len, params, param_count);
     }
     void set_sample_rate(uint32_t sr) {
         srate = sr;

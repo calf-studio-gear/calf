@@ -229,17 +229,17 @@ public:
     inline T process_d2_lp(T in)
     {
         T tmp = in - w1 * b1 - w2 * b2;
-        T out = (tmp + w1 + w1 + w2) * a0;
+        T out = (tmp  + w2 + w1* 2) * a0;
         w2 = w1;
         w1 = tmp;
         return out;
     }
     
-    bool empty_d1() {
+    inline bool empty_d1() {
         return (y1 == 0.f && y2 == 0.f);
     }
     
-    bool empty_d2() {
+    inline bool empty_d2() {
         return (w1 == 0.f && w2 == 0.f);
     }
     

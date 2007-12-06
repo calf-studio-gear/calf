@@ -11,13 +11,20 @@ bin_PROGRAMS =
 noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = libcalf.la libcalfstatic.la
 
-AM_CXXFLAGS = -O3 -ffast-math -march=pentium4 -finline-limit=8
+AM_CXXFLAGS = -ffast-math -march=pentium4 -finline-limit=80
 
 if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
+if USE_PHAT
+AM_CXXFLAGS += -DUSE_PHAT=1 $(PHAT_DEPS_CFLAGS)
+calfjackhost_LDADD += $(PHAT_DEPS_LIBS)
+endif
+endif
+if ENABLE_EXPERIMENTAL
+AM_CXXFLAGS += -DENABLE_EXPERIMENTAL=1
 endif
 
 if USE_LADSPA

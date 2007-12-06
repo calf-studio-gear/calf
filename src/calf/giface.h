@@ -83,8 +83,8 @@ struct parameter_properties
 struct midi_event {
     uint8_t command;
     uint8_t param1;
-    uint8_t param2;
-    uint8_t pad;
+    uint16_t param2;
+    float param3;
 };
 
 /// this is not a real class, just an empty example
@@ -97,8 +97,7 @@ public:
     float **outs;
     float **params;
     void set_sample_rate(uint32_t sr);
-    void handle_midi_event_now(midi_event event) {}
-    void handle_param_event_now(uint32_t param, float value) {}
+    void handle_event(uint8_t *data, int len) {}
     // all or most params changed
     void params_changed() {}
     uint32_t process_audio(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);

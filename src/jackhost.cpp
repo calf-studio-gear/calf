@@ -24,8 +24,11 @@
 #include <jack/jack.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 #include <gtk/gtk.h>
-#include <phat/phat.h>
+#if USE_PHAT
+#include <phat/phatknob.h>
+#endif
 
 using namespace synth;
 
@@ -50,8 +53,12 @@ public:
 
     jack_host_gui(GtkWidget *_toplevel);
     void create(synth::jack_host_base *_host, const char *title);
-    static void knob_value_changed(PhatKnob *widget, gpointer value);
+    static void hscale_value_changed(GtkHScale *widget, gpointer value);
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
+
+#if USE_PHAT
+    static void knob_value_changed(PhatKnob *widget, gpointer value);
+#endif
 };
 
 jack_host_gui::jack_host_gui(GtkWidget *_toplevel)
@@ -60,15 +67,14 @@ jack_host_gui::jack_host_gui(GtkWidget *_toplevel)
     
 }
 
-void jack_host_gui::knob_value_changed(PhatKnob *widget, gpointer value)
+void jack_host_gui::hscale_value_changed(GtkHScale *widget, gpointer value)
 {
     jack_host_param *jhp = (jack_host_param *)value;
     jack_host_base &jh = *jhp->gui->host;
     const parameter_properties &props = jh.get_param_props()[jhp->param_no];
     int nparam = jhp->param_no;
-    float cvalue = props.from_01 (phat_knob_get_value (widget));
+    float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
     jh.get_params()[nparam] = cvalue;
-    // printf("%d -> %f\n", nparam, cvalue);
     jh.set_params();
     gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
 }
@@ -81,6 +87,21 @@ void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
     jh.get_params()[nparam] = gtk_combo_box_get_active (widget) + jh.get_param_props()[jhp->param_no].min;
     jh.set_params();
 }
+
+#if USE_PHAT
+void jack_host_gui::knob_value_changed(PhatKnob *widget, gpointer value)
+{
+    jack_host_param *jhp = (jack_host_param *)value;
+    jack_host_base &jh = *jhp->gui->host;
+    const parameter_properties &props = jh.get_param_props()[jhp->param_no];
+    int nparam = jhp->param_no;
+    float cvalue = props.from_01 (phat_knob_get_value (widget));
+    jh.get_params()[nparam] = cvalue;
+    // printf("%d -> %f\n", nparam, cvalue);
+    jh.set_params();
+    gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
+}
+#endif
 
 void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
 {
@@ -97,12 +118,12 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
     
     GtkWidget *title_label = gtk_label_new ("");
     gtk_label_set_markup (GTK_LABEL (title_label), (string("<b>")+title+"</b>").c_str());
-    gtk_table_attach (GTK_TABLE (table), title_label, 0, 3, 0, 1, GTK_EXPAND, GTK_EXPAND, 2, 2);
+    gtk_table_attach (GTK_TABLE (table), title_label, 0, 3, 0, 1, GTK_EXPAND, GTK_SHRINK, 2, 2);
 
     for (int i = 0; i < param_count; i++) {
         GtkWidget *label = gtk_label_new (host->get_param_names()[host->get_input_count() + host->get_output_count() + i]);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_EXPAND, 2, 2);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_SHRINK, 2, 2);
         
         parameter_properties &props = host->get_param_props()[i];
         
@@ -116,23 +137,36 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
                 gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j]);
             gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)host->get_params()[i] - (int)props.min);
             gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
         else
         {
+#if USE_PHAT
             GtkWidget *knob = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
             gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
-            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, GTK_SHRINK, GTK_SHRINK, 0, 0);
+#else
+            GtkWidget *knob = gtk_hscale_new_with_range (0, 1, 0.01);
+            gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)&params[i]);
+            gtk_widget_set_size_request (knob, 200, -1);
+            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
+#endif
 
             widget  = gtk_label_new ("");
             gtk_label_set_width_chars (GTK_LABEL (widget), 12);
             gtk_misc_set_alignment (GTK_MISC (widget), 0.0, 0.5);
-            gtk_table_attach (GTK_TABLE (table), widget, 2, 3, i + 1, i + 2, GTK_FILL, GTK_EXPAND, 0, 0);
+            gtk_table_attach (GTK_TABLE (table), widget, 2, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
             params[i].label = widget;
             // gtk_widget_set_size_request (widget, widget->allocation.width, widget->allocation.height);
             // gtk_widget_set_size_request (widget, 100, 10);
             
+#if USE_PHAT
             knob_value_changed (PHAT_KNOB (knob), (gpointer)&params[i]);
+#else
+            gtk_range_set_value (GTK_RANGE (knob), host->get_param_props()[i].to_01 (host->get_params()[i]));
+            gtk_scale_set_draw_value (GTK_SCALE (knob), false);
+            hscale_value_changed (GTK_HSCALE (knob), (gpointer)&params[i]);
+#endif
         }
     }
     gtk_container_add (GTK_CONTAINER (toplevel), table);
@@ -217,7 +251,7 @@ int main(int argc, char *argv[])
         else if (!strcmp(effect_name, "filter"))
             jh = new jack_host<filter_audio_module>();
         else {
-            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter\n");
+            fprintf(stderr, "Unknown filter name; allowed are: reverb, fastverb, flanger, filter\n");
             return 1;
         }
         jh->open(client_name, input_name, output_name);

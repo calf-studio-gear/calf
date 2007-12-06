@@ -25,6 +25,7 @@
 #endif
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 
 using namespace synth;
 
