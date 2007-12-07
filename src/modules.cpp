@@ -104,6 +104,25 @@ synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
+#ifdef ENABLE_EXPERIMENTAL
+const char *monosynth_audio_module::param_names[] = {"Out L", "Out R", "Cutoff", "Resonance", "Filter Env", "Decay"};
+
+parameter_properties monosynth_audio_module::param_props[] = {
+    { 33,        10,16000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
+    { 3,        0.7,    4, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
+    { 6000,       0,10800, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL },
+    { 2000,      10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL },
+};
+
+static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
+
+#if USE_LADSPA
+synth::ladspa_wrapper<monosynth_audio_module> monosynth(monosynth_info);
+#endif
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////
 
 #if USE_LADSPA
 extern "C" {

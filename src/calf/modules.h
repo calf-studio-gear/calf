@@ -33,7 +33,7 @@ using namespace dsp;
 class amp_audio_module
 {
 public:
-    enum { in_count = 2, out_count = 2, param_count = 1, rt_capable = true };
+    enum { in_count = 2, out_count = 2, param_count = 1, support_midi = false, rt_capable = true };
     float *ins[2]; 
     float *outs[2];
     float *params[1];
@@ -50,11 +50,12 @@ public:
     }
     void deactivate() {
     }
-    uint32_t process(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!inputs_mask)
             return 0;
         float gain = *params[0];
-        for (uint32_t i=0; i<nsamples; i++) {
+        numsamples += offset;
+        for (uint32_t i = offset; i < numsamples; i++) {
             outs[0][i] = ins[0][i] * gain;
             outs[1][i] = ins[1][i] * gain;
         }
@@ -75,7 +76,7 @@ class flanger_audio_module
 {
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *param_names[];
     dsp::simple_flanger<float, 2048> left, right;
     float *ins[in_count]; 
@@ -111,9 +112,9 @@ public:
     }
     void deactivate() {
     }
-    uint32_t process(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        left.process(outs[0], ins[0], nsamples);
-        right.process(outs[1], ins[1], nsamples);
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        left.process(outs[0] + offset, ins[0] + offset, nsamples);
+        right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
 };
@@ -122,7 +123,7 @@ class reverb_audio_module
 {
 public:    
     enum { par_decay, par_hfdamp, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *param_names[];
     dsp::reverb<float> reverb;
     uint32_t srate;
@@ -149,9 +150,10 @@ public:
         srate = sr;
         reverb.setup(sr);
     }
-    uint32_t process(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         float wet = *params[par_amount];
-        for (uint32_t i=0; i<nsamples; i++) {
+        numsamples += offset;
+        for (uint32_t i = offset; i < numsamples; i++) {
             float l = ins[0][i], r = ins[1][i];
             float rl = l, rr = r;
             reverb.process(rl, rr);
@@ -166,7 +168,7 @@ class filter_audio_module
 {
 public:    
     enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -285,9 +287,9 @@ public:
             filter[i].sanitize_d1();
         return filter[order - 1].empty_d1() ? 0 : inmask;
     }
-    uint32_t process(uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         uint32_t ostate = 0;
-        uint32_t offset = 0;
+        numsamples += offset;
         while(offset < numsamples) {
             uint32_t numnow = numsamples - offset;
             // if inertia's inactive, we can calculate the whole buffer at once

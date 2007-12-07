@@ -81,6 +81,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_HZ: return string(buf) + " Hz";
     case PF_UNIT_SEC: return string(buf) + " s";
     case PF_UNIT_MSEC: return string(buf) + " ms";
+    case PF_UNIT_CENTS: return string(buf) + " ct";
     }
     return string(buf);
 }

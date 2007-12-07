@@ -44,6 +44,11 @@ public:
     T w1, w2;
     // filter coefficients
     Coeff a0, a1, a2, b1, b2;
+
+    biquad()
+    {
+        reset();
+    }
     
     /** Lowpass filter based on Robert Bristow-Johnson's equations
      * Perhaps every synth code that doesn't use SVF uses these

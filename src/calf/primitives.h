@@ -44,6 +44,14 @@ inline void zero(int32_t &v) { v = 0; };
 inline void zero(int16_t &v) { v = 0; };
 inline void zero(int8_t &v) { v = 0; };
 
+template<class T>
+void zero(T *data, unsigned int size) {
+    T value;
+    dsp::zero(value);
+    for (unsigned int i=0; i<size; i++)
+        *data++ = value;
+}
+
 const double PI = 4.0 * atan(1.0);
     
 template<class T = float>struct stereo_sample {

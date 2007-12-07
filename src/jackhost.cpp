@@ -23,6 +23,7 @@
 #include <config.h>
 #include <jack/jack.h>
 #include <calf/giface.h>
+#include <calf/jackhost.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <gtk/gtk.h>
@@ -175,8 +176,6 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
 // I don't need anyone to tell me this is stupid. I already know that :)
 jack_host_gui *gui;
 
-//float par_values[1] = { 0.3 };
-
 void destroy(GtkWindow *window, gpointer data)
 {
     gtk_main_quit();
@@ -209,20 +208,22 @@ const char *effect_name = "flanger";
 const char *client_name = "calfhost";
 const char *input_name = "input";
 const char *output_name = "output";
+const char *midi_name = "midi";
 
 int main(int argc, char *argv[])
 {
     gtk_init(&argc, &argv);
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:e:i:o:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:e:i:o:m:hv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
             case 'h':
             case '?':
                 printf("JACK host for Calf effects\n"
-                    "Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>] [--output <name>] [--help] [--version]\n", 
+                    "Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>]"
+                    "       [--output <name>] [--midi <name>] [--help] [--version]\n", 
                     argv[0]);
                 return 0;
             case 'v':
@@ -240,6 +241,9 @@ int main(int argc, char *argv[])
             case 'o':
                 output_name = optarg;
                 break;
+            case 'm':
+                midi_name = optarg;
+                break;
         }
     }
     try {
@@ -250,11 +254,15 @@ int main(int argc, char *argv[])
             jh = new jack_host<flanger_audio_module>();
         else if (!strcmp(effect_name, "filter"))
             jh = new jack_host<filter_audio_module>();
+#ifdef ENABLE_EXPERIMENTAL
+        else if (!strcmp(effect_name, "monosynth"))
+            jh = new jack_host<monosynth_audio_module>();
+#endif
         else {
-            fprintf(stderr, "Unknown filter name; allowed are: reverb, fastverb, flanger, filter\n");
+            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter\n");
             return 1;
         }
-        jh->open(client_name, input_name, output_name);
+        jh->open(client_name, input_name, output_name, midi_name);
         make_gui(jh, client_name, effect_name);
         gtk_main();
         delete gui;

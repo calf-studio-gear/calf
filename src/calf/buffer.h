@@ -60,14 +60,6 @@ void fill(T *data, int size, T value) {
         *data++ = value;
 }
 
-template<class T>
-void zero(T *data, unsigned int size) {
-    T value;
-    dsp::zero(value);
-    for (unsigned int i=0; i<size; i++)
-        *data++ = value;
-}
-
 template<class T, class U>
 void copy(T *dest, U *src, int size, T scale = 1, T add = 0) {
     for (int i=0; i<size; i++) 
