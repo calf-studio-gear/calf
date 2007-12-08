@@ -31,30 +31,6 @@ namespace dsp {
 #endif
 
 /**
- * typical precalculated sine table
- */
-template<class T, int N, int Multiplier>
-class sine_table
-{
-public:
-    static bool initialized;
-    static T data[N+1];
-    sine_table() {
-        if (initialized)
-            return;
-        initialized = true;
-        for (int i=0; i<N+1; i++)
-            data[i] = (T)(Multiplier*sin(i*2*M_PI*(1.0/N)));
-    }
-};
-
-template<class T, int N, int Multiplier>
-bool sine_table<T,N,Multiplier>::initialized = false;
-
-template<class T, int N, int Multiplier>
-T sine_table<T,N,Multiplier>::data[N+1];
-
-/**
  * Audio effect base class. Not really useful until it gets more developed.
  */
 class audio_effect

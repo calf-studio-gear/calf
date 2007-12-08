@@ -27,32 +27,12 @@
 #include "biquad.h"
 #include "audio_fx.h"
 #include "inertia.h"
+#include "osc.h"
 
 namespace synth {
 
 using namespace dsp;
-    
-/// Very simple, non-bandlimited saw oscillator. Should not be used for anything
-/// else than testing/prototyping.
-struct simple_oscillator
-{
-    uint32_t phase, phasedelta;
-    void reset()
-    {
-        phase = 0;
-    }
-    void set_freq(float freq, float sr)
-    {
-        phasedelta = (int)(freq * 65536.0 * 256.0 * 16.0 / sr) << 4;
-    }
-    inline float get()
-    {
-        float value = (phase >> 16 ) / 65535.0 - 0.5;
-        phase += phasedelta;
-        return value;
-    }
-};
-    
+        
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 class monosynth_audio_module
 {
@@ -65,7 +45,9 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    simple_oscillator osc1, osc2;
+    dsp::sine_table<float, 2048, 1> waveform_sine;
+    waveform_family<11> waves_saw;
+    waveform_oscillator<11> osc1, osc2;
     bool running;
     int last_key;
     
@@ -92,6 +74,7 @@ public:
                 float freq = 440 * pow(2.0, (last_key - 69) / 12.0);
                 osc1.set_freq(freq*0.995, srate);
                 osc2.set_freq(freq*1.005, srate);
+                osc2.waveform = osc1.waveform = waves_saw.get_level(osc1.phasedelta);
                 if (!running)
                 {
                     osc1.reset();
@@ -121,6 +104,11 @@ public:
         output_pos = 0;
         filter.reset();
         filter2.reset();
+        float data[2048];
+        for (int i = 0 ; i < 2048; i++)
+            data[i] = (float)(-1.f + i / 1024.f);
+        bandlimiter<11> bl;
+        waves_saw.make(bl, data);
     }
     void deactivate() {
     }

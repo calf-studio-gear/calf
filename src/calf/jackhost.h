@@ -148,6 +148,7 @@ public:
     
     virtual void init_module() {
         module.set_sample_rate(sample_rate);
+        module.activate();
         module.params_changed();
     }
     
