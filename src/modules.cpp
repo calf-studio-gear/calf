@@ -105,13 +105,25 @@ synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 
 ////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
-const char *monosynth_audio_module::param_names[] = {"Out L", "Out R", "Cutoff", "Resonance", "Filter Env", "Decay"};
+const char *monosynth_audio_module::param_names[] = {"Out L", "Out R", "Osc1 Wave", "Osc2 Wave", "Osc 1/2 Detune", "Osc 2 Transpose", "Phase Mode", "Osc Mix", "Cutoff", "Resonance", "Env->Cutoff", "Env->Res", "Decay", "Key Follow", "Legato"};
+
+const char *monosynth_waveform_names[] = { "Sawtooth", "Square", "Pulse", "Sine", "Triangle" };
+const char *monosynth_mode_names[] = { "0 : 0", "0 : 180", "0 : 90", "90 : 90", "90 : 270", "Random" };
 
 parameter_properties monosynth_audio_module::param_props[] = {
+    { wave_saw,         0,wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names },
+    { wave_pulse,         0,wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names },
+    { 10,         0,  100, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL },
+    { 12,       -24,   24, 1.01, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL },
+    { 0,          0,    5, 1.01, PF_ENUM | PF_CTL_COMBO, monosynth_mode_names },
+    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC, NULL },
     { 33,        10,16000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL },
-    { 2,        0.7,    4, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
-    { 8000,       0,10800, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL },
-    { 350,      10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL },
+    { 2,        0.7,    8, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL },
+    { 8000,  -10800,10800, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL },
+    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL },
+    { 350,       10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL },
+    { 0,          0,    1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
+    { 0,          0,    1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
 };
 
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };

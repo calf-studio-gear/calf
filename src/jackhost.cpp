@@ -56,6 +56,7 @@ public:
     void create(synth::jack_host_base *_host, const char *title);
     static void hscale_value_changed(GtkHScale *widget, gpointer value);
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
+    static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
 
 #if USE_PHAT
     static void knob_value_changed(PhatKnob *widget, gpointer value);
@@ -86,6 +87,15 @@ void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
     jack_host_base &jh = *jhp->gui->host;
     int nparam = jhp->param_no;
     jh.get_params()[nparam] = gtk_combo_box_get_active (widget) + jh.get_param_props()[jhp->param_no].min;
+    jh.set_params();
+}
+
+void jack_host_gui::toggle_value_changed(GtkCheckButton *widget, gpointer value)
+{
+    jack_host_param *jhp = (jack_host_param *)value;
+    jack_host_base &jh = *jhp->gui->host;
+    int nparam = jhp->param_no;
+    jh.get_params()[nparam] = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + jh.get_param_props()[jhp->param_no].min;
     jh.set_params();
 }
 
@@ -138,6 +148,14 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
                 gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j]);
             gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)host->get_params()[i] - (int)props.min);
             gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
+        }
+        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                 (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
+        {
+            widget  = gtk_check_button_new ();
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)host->get_params()[i] - (int)props.min);
+            gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (toggle_value_changed), (gpointer)&params[i]);
             gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
         else

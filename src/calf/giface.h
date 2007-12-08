@@ -72,6 +72,7 @@ enum parameter_flags
   PF_UNIT_SEC = 0x04000000,
   PF_UNIT_MSEC = 0x05000000,
   PF_UNIT_CENTS = 0x06000000,
+  PF_UNIT_SEMITONES = 0x07000000,
 };
 
 struct parameter_properties

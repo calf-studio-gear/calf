@@ -29,21 +29,37 @@ using namespace std;
 
 float parameter_properties::from_01(float value01) const
 {
+    float value = dsp::clip(value01, 0.f, 1.f);
     switch(flags & PF_SCALEMASK)
     {
     case PF_SCALE_DEFAULT:
     case PF_SCALE_LINEAR:
     case PF_SCALE_PERC:
     default:
-        return min + (max - min) * value01;
+        value = min + (max - min) * value01;
+        break;
     case PF_SCALE_LOG:
-        return min * pow(max / min, value01);
+        value = min * pow(max / min, value01);
+        break;
     case PF_SCALE_GAIN:
         if (value01 < 0.0001)
-            return min;
-        float rmin = 1.0f / 4096.0f;
-        return rmin * pow(max / rmin, value01);
+            value = min;
+        else {
+            float rmin = 1.0f / 4096.0f;
+            value = rmin * pow(max / rmin, value01);
+        }
+        break;
     }
+    switch(flags & PF_TYPEMASK)
+    {
+    case PF_INT:
+    case PF_BOOL:
+    case PF_ENUM:
+    case PF_ENUM_MULTI:
+        value = (int)value;
+        break;
+    }
+    return value;
 }
 
 float parameter_properties::to_01(float value) const
@@ -82,6 +98,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_SEC: return string(buf) + " s";
     case PF_UNIT_MSEC: return string(buf) + " ms";
     case PF_UNIT_CENTS: return string(buf) + " ct";
+    case PF_UNIT_SEMITONES: return string(buf) + "#";
     }
     return string(buf);
 }

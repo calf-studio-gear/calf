@@ -397,6 +397,16 @@ bool sine_table<T,N,Multiplier>::initialized = false;
 template<class T, int N, int Multiplier>
 T sine_table<T,N,Multiplier>::data[N+1];
 
+/// fast float to int conversion using default rounding mode
+inline int fastf2i_drm(float f)
+{
+	volatile int v;
+	__asm ( "flds %1; fistpl %0" : "=m"(v) : "m"(f));
+	return v;
+}
+
+
+
 };
 
 #endif
