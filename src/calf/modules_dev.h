@@ -59,7 +59,7 @@ public:
     biquad<float> filter2;
     int wave1, wave2;
     float freq, cutoff, decay_factor;
-    float detune, xpose, xfade;
+    float detune, xpose, xfade, pitchbend;
     int voice_age;
     float odcr;
     int queue_note_on;
@@ -74,8 +74,7 @@ public:
     void note_on()
     {
         freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
-        osc1.set_freq(freq * (2 - detune), srate);
-        osc2.set_freq(freq * (detune) * xpose, srate);
+        set_frequency();
         osc1.waveform = waves[wave1].get_level(osc1.phasedelta);
         osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
         
@@ -132,8 +131,17 @@ public:
             if (data[1] == last_key)
                 gate = false;
             break;
+        case 14:
+            float value = data[1] + 128 *data[2] - 8192;
+            pitchbend = pow(2.0, value / 8192.0);
+            break;
         }
         default_handle_event(data, len, params, param_count);
+    }
+    void set_frequency()
+    {
+        osc1.set_freq(freq * (2 - detune) * pitchbend, srate);
+        osc2.set_freq(freq * (detune)  * pitchbend * xpose, srate);
     }
     void params_changed() {
         decay_factor = odcr * 1000.0 / *params[par_decay];
@@ -143,11 +151,13 @@ public:
         xpose = pow(2.0, *params[par_osc2xpose] / 12.0);
         xfade = *params[par_oscmix];
         legato = *params[par_legato] >= 0.5f;
+        set_frequency();
     }
     void activate() {
         running = false;
         output_pos = 0;
         queue_note_on = -1;
+        pitchbend = 1.f;
         filter.reset();
         filter2.reset();
         float data[2048];
@@ -192,6 +202,7 @@ public:
             dsp::zero(buffer, step_size);
             return;
         }
+        set_frequency();
         float env = max(0.f, 1.f - voice_age * decay_factor);
         cutoff = *params[par_cutoff] * pow(2.0f, env * *params[par_envmod] * (1.f / 1200.f));
         if (*params[par_keyfollow] >= 0.5f)
