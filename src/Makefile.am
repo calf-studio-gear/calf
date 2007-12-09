@@ -11,7 +11,7 @@ bin_PROGRAMS =
 noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = libcalf.la libcalfstatic.la
 
-AM_CXXFLAGS = -ffast-math -march=pentium4 -finline-limit=80
+AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80
 
 if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1
