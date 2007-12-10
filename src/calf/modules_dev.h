@@ -28,11 +28,12 @@
 #include "audio_fx.h"
 #include "inertia.h"
 #include "osc.h"
+#include "organ.h"
 
 namespace synth {
 
 using namespace dsp;
-        
+
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
 class monosynth_audio_module
@@ -47,7 +48,6 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    dsp::sine_table<float, 2048, 1> waveform_sine;
     waveform_family<11> waves[wave_count];
     waveform_oscillator<11> osc1, osc2;
     bool running, stopping, gate;
@@ -272,7 +272,61 @@ public:
         return 3;
     }
 };
+
+struct organ_audio_module: public drawbar_organ
+{
+public:
+    enum { par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, par_foldover,
+        par_percmode, par_percharm, par_vibrato, par_master, param_count };
+    enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
+    static const char *param_names[];
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    organ_parameters par_values;
+    uint32_t srate;
+
+    organ_audio_module()
+    : drawbar_organ(&par_values)
+    {
+    }
+    static parameter_properties param_props[];
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+    void handle_event(uint8_t *data, int len) {
+        switch(*data >> 4)
+        {
+        case 9:
+            note_on(data[1], data[2]);
+            break;
+        case 8:
+            note_off(data[1], data[2]);
+            break;
+        case 11:
+            control_change(data[1], data[2]);
+            break;
+        }
+        default_handle_event(data, len, params, param_count);
+    }
+    void params_changed() {
+        for (int i = 0; i < param_count; i++)
+            ((float *)&par_values)[i] = *params[i];
+        set_vibrato(parameters->get_vibrato_mode());
+    }
+    void activate() {
+        setup(srate);
+    }
+    void deactivate() {
+    }
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        float *o[2] = { outs[0] + offset, outs[1] + offset };
+        render_to(o, nsamples);
+        return 3;
+    }
     
+};
+
 };
 
 #endif

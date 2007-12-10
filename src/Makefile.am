@@ -37,10 +37,10 @@ endif
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = 
 
-libcalf_la_SOURCES = modules.cpp giface.cpp
+libcalf_la_SOURCES = modules.cpp giface.cpp synth.cpp
 libcalf_la_LDFLAGS = -rpath $(ladspadir) -version-info 0:0:0
 
-libcalfstatic_la_SOURCES = modules.cpp giface.cpp
+libcalfstatic_la_SOURCES = modules.cpp giface.cpp synth.cpp
 libcalfstatic_la_LDFLAGS = -static
 
 clean-local:

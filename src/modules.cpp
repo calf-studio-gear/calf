@@ -105,7 +105,40 @@ synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 
 ////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
-const char *monosynth_audio_module::param_names[] = {"Out L", "Out R", "Osc1 Wave", "Osc2 Wave", "Osc 1/2 Detune", "Osc 2 Transpose", "Phase Mode", "Osc Mix", "Cutoff", "Resonance", "Env->Cutoff", "Env->Res", "Decay", "Key Follow", "Legato"};
+const char *organ_audio_module::param_names[] = {"Out L", "Out R", "32'", "16'", "10 2/3'", "8'", "4'", "3 1/5'", "2 2/3'", "2'", "1'", "Foldover", "Perc Mode", "Perc Harm", "Vibrato Speed", "Master Volume"};
+
+const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
+const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
+const char *organ_vibrato_speed_names[] = { "Off", "Slow", "Fast" };
+
+parameter_properties organ_audio_module::param_props[] = {
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+
+    { 1,         0,  1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
+    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names },
+    { 3,         2,  3, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names },
+    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_vibrato_speed_names },
+
+    { 0.2,         0,  1, 1.01, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL },
+};
+
+static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
+
+#if USE_LADSPA
+synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
+#endif
+
+#endif
+////////////////////////////////////////////////////////////////////////////
+#ifdef ENABLE_EXPERIMENTAL
 
 const char *monosynth_waveform_names[] = { "Sawtooth", "Square", "Pulse", "Sine", "Triangle" };
 const char *monosynth_mode_names[] = { "0 : 0", "0 : 180", "0 : 90", "90 : 90", "90 : 270", "Random" };
@@ -125,6 +158,8 @@ parameter_properties monosynth_audio_module::param_props[] = {
     { 0,          0,    1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
     { 0,          0,    1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
 };
+
+const char *monosynth_audio_module::param_names[] = {"Out L", "Out R", "Osc1 Wave", "Osc2 Wave", "Osc 1/2 Detune", "Osc 2 Transpose", "Phase Mode", "Osc Mix", "Cutoff", "Resonance", "Env->Cutoff", "Env->Res", "Decay", "Key Follow", "Legato"};
 
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 

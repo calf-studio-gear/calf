@@ -47,11 +47,12 @@ enum parameter_flags
   PF_ENUM_MULTI = 0x0004, 
   
   PF_SCALEMASK = 0x0FF0,
-  PF_SCALE_DEFAULT = 0x0000,
-  PF_SCALE_LINEAR = 0x0010,
-  PF_SCALE_LOG = 0x0020,
-  PF_SCALE_GAIN = 0x0030,
-  PF_SCALE_PERC = 0x0040,
+  PF_SCALE_DEFAULT = 0x0000, ///< no scale given
+  PF_SCALE_LINEAR = 0x0010, ///< linear scale
+  PF_SCALE_LOG = 0x0020, ///< log scale
+  PF_SCALE_GAIN = 0x0030, ///< gain = -96dB..0 or -inf dB
+  PF_SCALE_PERC = 0x0040, ///< percent
+  PF_SCALE_QUAD = 0x0050, ///< quadratic scale (decent for some gain/amplitude values)
 
   PF_CTLMASK = 0x0F000,
   PF_CTL_DEFAULT = 0x00000,

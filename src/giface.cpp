@@ -38,6 +38,9 @@ float parameter_properties::from_01(float value01) const
     default:
         value = min + (max - min) * value01;
         break;
+    case PF_SCALE_QUAD:
+        value = min + (max - min) * value01 * value01;
+        break;
     case PF_SCALE_LOG:
         value = min * pow(max / min, value01);
         break;
@@ -71,6 +74,8 @@ float parameter_properties::to_01(float value) const
     case PF_SCALE_PERC:
     default:
         return (value - min) / (max - min);
+    case PF_SCALE_QUAD:
+        return sqrt((value - min) / (max - min));
     case PF_SCALE_LOG:
         value /= min;
         return log(value) / log(max / min);

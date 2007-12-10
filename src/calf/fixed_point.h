@@ -236,54 +236,6 @@ inline fixed_point<T, FractBits> operator*(int v, fixed_point<T, FractBits> v2) 
 /// wave position (unsigned 64-bit int including 24-bit fractional part)
 typedef fixed_point<unsigned long long int, 24> wpos;
 
-/// really bad place for it, should move it to some other file
-template<class T>
-class wave_player {
-    T *data;
-    bool is_active;
-    unsigned int size;
-    wpos pos, rate;
-public:
-    void set_wave(T *_data, int _size) { 
-        data = _data;
-        size = _size;
-        is_active = false;
-    }
-    void get_wave(T *&_data, int &_size) {
-        _data = data;
-        _size = size;
-    }
-    void set_pos(wpos _pos) {
-        pos = _pos;
-        is_active = true;
-    }
-    wpos get_pos() {
-        return pos;
-    }
-    void set_rate(wpos _rate) {
-        rate = _rate;
-    }
-    template<class U>U get() {
-        U result;
-        if (!is_active) {
-            dsp::zero(result);
-            return result;
-        }
-        unsigned int ipos = pos.ipart();
-        if (ipos>=size) {
-            dsp::zero(result);
-            is_active = false;
-            return result;
-        }
-        result = pos.lerp_ptr_lookup_int<T, 12, stereo_sample<int> >(data);
-        pos += rate;
-        return result;
-    }
-    bool get_active() {
-        return is_active;
-    }
-};
-
 };
 
 #endif

@@ -93,7 +93,7 @@ public:
  * Single-tap chorus without feedback.
  * Perhaps MaxDelay should be a bit longer!
  */
-template<class T, int MaxDelay=256>
+template<class T, int MaxDelay=512>
 class simple_chorus: public chorus_base
 {
 protected:
@@ -104,6 +104,7 @@ public:
         dry = 0.5f;
         wet = 0.5f;
         min_delay = 0.005f;
+        mod_depth = 0.0025f;
         setup(44100);
     }
     void reset() {
@@ -116,10 +117,11 @@ public:
         phase = 0;
         set_rate(get_rate());
         set_min_delay(get_min_delay());
+        set_mod_depth(get_mod_depth());
     }
     template<class OutIter, class InIter>
     void process(OutIter buf_out, InIter buf_in, int nsamples) {
-        int mds = min_delay_samples + mod_depth_samples * 256 + 65536;
+        int mds = min_delay_samples + mod_depth_samples * 256 + 2*65536;
         int mdepth = mod_depth_samples;
         for (int i=0; i<nsamples; i++) {
             phase += dphase;
@@ -150,6 +152,8 @@ protected:
     simple_delay<MaxDelay,T> delay;
     float fb;
 public:
+    simple_flanger()
+    : fb(0) {}
     void reset() {
         delay.reset();
     }

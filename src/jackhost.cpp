@@ -1,21 +1,23 @@
-/* Calf DSP Library
+/* Calf DSP Library Utility Application - calfjackhost
  * Standalone application module wrapper example.
  * Copyright (C) 2007 Krzysztof Foltman
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Note: This module uses phat graphics library, so it's 
+ * licensed under GPL license, not LGPL.
  *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this program; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 #include <getopt.h>
 #include <stdint.h>
@@ -145,7 +147,7 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
         {
             widget  = gtk_combo_box_new_text ();
             for (int j = (int)props.min; j <= (int)props.max; j++)
-                gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j]);
+                gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j - (int)props.min]);
             gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)host->get_params()[i] - (int)props.min);
             gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
             gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
@@ -275,9 +277,15 @@ int main(int argc, char *argv[])
 #ifdef ENABLE_EXPERIMENTAL
         else if (!strcmp(effect_name, "monosynth"))
             jh = new jack_host<monosynth_audio_module>();
+        else if (!strcmp(effect_name, "organ"))
+            jh = new jack_host<organ_audio_module>();
 #endif
         else {
+#ifdef ENABLE_EXPERIMENTAL
+            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter, organ, monosynth\n");
+#else
             fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter\n");
+#endif
             return 1;
         }
         jh->open(client_name, input_name, output_name, midi_name);

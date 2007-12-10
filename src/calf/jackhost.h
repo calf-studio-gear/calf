@@ -1,5 +1,9 @@
-/* Calf DSP Library
+/* Calf DSP Library Utility Application - calfjackhost
  * API wrapper for JACK Audio Connection Kit
+ *
+ * Note: while this header file is licensed under LGPL license,
+ * the application as a whole is GPLed because of partial dependency
+ * on phat graphics library.
  *
  * Copyright (C) 2007 Krzysztof Foltman
  *
