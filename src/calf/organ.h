@@ -113,8 +113,8 @@ public:
                 float *drawbars = parameters->drawbars;
                 float osc = 
                     drawbars[0]*sine(phase)+
-                    drawbars[1]*sine(2*phase)+
-                    drawbars[2]*sine(3*phase)+
+                    drawbars[1]*sine(3*phase)+
+                    drawbars[2]*sine(2*phase)+
                     drawbars[3]*sine(h4*phase)+
                     drawbars[4]*sine(h6*phase)+
                     drawbars[5]*sine(h8*phase)+
@@ -172,7 +172,7 @@ public:
         // XXXKF the decay needs work!
         float age_const = mode == 1 ? 0.001f : 0.0003f;
         for (int i = 0; i < nsamples; i++) {
-            float osc = 0.2 * sine(harmonic * phase);
+            float osc = 0.5 * sine(harmonic * phase);
             buf[i] += osc * amp.get();
             amp.age_exp(age_const, 0.0001f);
             phase += dphase;
@@ -191,7 +191,9 @@ struct drawbar_organ: public synth::basic_synth {
     percussion_voice percussion;
     // chorus instead of rotary speaker is, well, cheesy
     // let me think of something better some day
-    dsp::simple_chorus<float> chorus, chorus2;
+    dsp::simple_flanger<float, 4096> chorus, chorus2;
+    dsp::biquad<float> crossover1, crossover2;
+    dsp::simple_delay<8, float> phaseshift;
     
     drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
@@ -204,14 +206,24 @@ struct drawbar_organ: public synth::basic_synth {
         basic_synth::render_to(bufptr, nsamples);
         if (percussion.get_active())
             percussion.render_to(buf, nsamples);
-        float chorus_buffer[4096];
-        float chorus_buffer2[4096];
-        chorus.process(chorus_buffer, buf, nsamples);
-        chorus2.process(chorus_buffer2, buf, nsamples);
         float gain = parameters->master;
+        if (parameters->get_vibrato_mode())
+        {
+            float chorus_buffer[4096];
+            float chorus_buffer2[4096];
+            chorus.process(chorus_buffer, buf, nsamples);
+            chorus2.process(chorus_buffer2, buf, nsamples);
+            for (int i=0; i<nsamples; i++) {
+                float lower_drum = crossover1.process_d2(chorus_buffer[i]);
+                float upper_drum = crossover2.process_d2(chorus_buffer2[i]);
+                output[0][i] = gain*(buf[i] + lower_drum - upper_drum);
+                output[1][i] = gain*(buf[i] - phaseshift.process(lower_drum - upper_drum, 7));
+            }
+        }
+        else
         for (int i=0; i<nsamples; i++) {
-            output[0][i] = gain*(buf[i] + chorus_buffer[i] - chorus_buffer2[i]);
-            output[1][i] = gain*(buf[i] - chorus_buffer[i] + chorus_buffer2[i]);
+            output[0][i] = gain*buf[i];
+            output[1][i] = gain*buf[i];
         }
     }
     synth::voice *alloc_voice() {
@@ -222,34 +234,41 @@ struct drawbar_organ: public synth::basic_synth {
     }
     virtual void setup(int sr) {
         basic_synth::setup(sr);
+        crossover1.set_lp_rbj(800.f, 0.7, (float)sr);
+        crossover2.set_hp_rbj(800.f, 0.7, (float)sr);
+        set_vibrato();
         chorus.setup(sr);chorus2.setup(sr);
-        chorus.set_min_delay(0.001f);chorus2.set_min_delay(0.0015f);
-        chorus.set_mod_depth(0.002f);chorus2.set_mod_depth(0.001f);
+        chorus.set_min_delay(0.0041f);chorus2.set_min_delay(0.0025f);
+        chorus.set_mod_depth(0.0024f);chorus2.set_mod_depth(0.0034f);
 
-        chorus.set_rate(0.63);chorus2.set_rate(0.63);
-        chorus.set_wet(0.25f);chorus2.set_wet(0.25f);
+        chorus.set_rate(0.63f);chorus2.set_rate(0.63f);
+        chorus.set_wet(0.5f);chorus2.set_wet(0.5f);
         chorus.set_dry(0.0f);chorus2.set_dry(0.0f);
         percussion.setup(sr);
     }
-    void set_vibrato(int mode)
+    void set_vibrato()
     {
         switch(parameters->get_vibrato_mode())
         {
-            case 0:
-                chorus.set_wet(0.f);
-                chorus2.set_wet(0.f);
-                break;
             case 1:
-                chorus.set_wet(0.5f);
-                chorus2.set_wet(0.5f);
-                chorus.set_rate(0.6f);
-                chorus2.set_rate(0.66f);
+                chorus.set_min_delay(0.0061f);
+                chorus2.set_min_delay(0.0085f);
+                chorus.set_mod_depth(0.003f);
+                chorus2.set_mod_depth(0.0035f);
+                chorus.set_fb(0.3f);
+                chorus2.set_fb(-0.3f);
+                chorus.set_rate(40.0 / 60.0);
+                chorus2.set_rate(48.0 / 60.0);
                 break;
             case 2:
-                chorus.set_wet(0.5f);
-                chorus2.set_wet(0.5f);
-                chorus.set_rate(6.33f);
-                chorus2.set_rate(6.63f);
+                chorus.set_min_delay(0.0061f);
+                chorus2.set_min_delay(0.0085f);
+                chorus.set_mod_depth(0.0014f);
+                chorus2.set_mod_depth(0.0017f);
+                chorus.set_fb(0.3f);
+                chorus2.set_fb(-0.3f);
+                chorus.set_rate(342.0 / 60.0);
+                chorus2.set_rate(400.0 / 60.0);
                 break;
         }
     }

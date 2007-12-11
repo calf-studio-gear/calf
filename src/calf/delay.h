@@ -69,6 +69,19 @@ struct simple_delay {
         int ppos = wrap_around<N>(pos + N - delay);
         odata = data[ppos];
     }
+    
+    /**
+     * Read and write during the same function call
+     */
+    inline T process(T idata, int delay)
+    {
+        assert(delay >= 0 && delay < N);
+        int ppos = wrap_around<N>(pos + N - delay);
+        T odata = data[ppos];
+        data[pos] = idata;
+        pos = wrap_around<N>(pos+1);
+        return odata;
+    }
 
     /** Read one C-channel sample at fractional position.
      * This version can be used for modulated delays, because

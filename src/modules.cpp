@@ -105,17 +105,17 @@ synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 
 ////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
-const char *organ_audio_module::param_names[] = {"Out L", "Out R", "32'", "16'", "10 2/3'", "8'", "4'", "3 1/5'", "2 2/3'", "2'", "1'", "Foldover", "Perc Mode", "Perc Harm", "Vibrato Speed", "Master Volume"};
+const char *organ_audio_module::param_names[] = {"Out L", "Out R", "16'", "5 1/3'", "8'", "4'", "2 2/3'", "2'", "1 3/5'", "1 1/3'", "1'", "Foldover", "Perc Mode", "Perc Harm", "Vibrato Speed", "Master Volume"};
 
 const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
-const char *organ_vibrato_speed_names[] = { "Off", "Slow", "Fast" };
+const char *organ_vibrato_speed_names[] = { "Off", "Swell", "Tremolo" };
 
 parameter_properties organ_audio_module::param_props[] = {
     { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
     { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
     { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
     { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
     { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
     { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },

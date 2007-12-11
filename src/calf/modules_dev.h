@@ -312,7 +312,7 @@ public:
     void params_changed() {
         for (int i = 0; i < param_count; i++)
             ((float *)&par_values)[i] = *params[i];
-        set_vibrato(parameters->get_vibrato_mode());
+        set_vibrato();
     }
     void activate() {
         setup(srate);

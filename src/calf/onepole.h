@@ -53,7 +53,7 @@ public:
         // x+1  x-1
 		Coeff x = tan (PI * fc / (2 * sr));
 		Coeff q = 1/(1+x);
-		b1 = a0 = (x-1) / (1+x);
+		b1 = a0 = (x-1)*q;
         a1 = 1;
     }
     
@@ -83,7 +83,7 @@ public:
         y1 = out;
         return out;
     }
-    
+
     inline T process_hp(T in)
     {
         T out = (in - x1) * a0 - y1 * b1;
