@@ -40,7 +40,8 @@ class monosynth_audio_module
 {
 public:
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_count };
-    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_cutoff, par_resonance, par_envmod, par_envtores, par_decay, par_keyfollow, par_legato, param_count };
+    enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
+    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_decay, par_keyfollow, par_legato, par_vel2amp, par_vel2filter, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
     static const char *param_names[];
@@ -53,13 +54,13 @@ public:
     bool running, stopping, gate;
     int last_key;
     
-    float buffer[step_size];
+    float buffer[step_size], buffer2[step_size];
     uint32_t output_pos;
     biquad<float> filter;
     biquad<float> filter2;
-    int wave1, wave2;
-    float freq, cutoff, decay_factor;
-    float detune, xpose, xfade, pitchbend;
+    int wave1, wave2, filter_type;
+    float freq, cutoff, decay_factor, fgain, separation;
+    float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
     int voice_age;
     float odcr;
     int queue_note_on;
@@ -74,6 +75,8 @@ public:
     void note_on()
     {
         freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
+        ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
+        fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
         set_frequency();
         osc1.waveform = waves[wave1].get_level(osc1.phasedelta);
         osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
@@ -123,6 +126,7 @@ public:
             if (data[2]) {
                 queue_note_on = data[1];
                 last_key = data[1];
+                queue_vel = data[2] / 127.f;
             }
             // printf("note on %d %d\n", data[1], data[2]);
             break;
@@ -144,7 +148,9 @@ public:
         osc2.set_freq(freq * (detune)  * pitchbend * xpose, srate);
     }
     void params_changed() {
+        filter_type = fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
+        separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
         wave1 = dsp::clip(dsp::fastf2i_drm(*params[par_wave1]), 0, (int)wave_count - 1);
         wave2 = dsp::clip(dsp::fastf2i_drm(*params[par_wave2]), 0, (int)wave_count - 1);
         detune = pow(2.0, *params[par_detune] / 1200.0);
@@ -193,30 +199,20 @@ public:
     }
     void deactivate() {
     }
-    void calculate_step() {
-        if (queue_note_on != -1)
-            note_on();
-        else if (stopping)
+    inline float softclip(float wave) const
+    {
+        float abswave = fabs(wave);
+        if (abswave > 0.75)
         {
-            running = false;
-            dsp::zero(buffer, step_size);
-            return;
+            abswave = abswave - 0.5 * (abswave - 0.75);
+            if (abswave > 1.0)
+                abswave = 1.0;
+            wave = (wave > 0.0) ? abswave : - abswave;
         }
-        set_frequency();
-        float env = max(0.f, 1.f - voice_age * decay_factor);
-        cutoff = *params[par_cutoff] * pow(2.0f, env * *params[par_envmod] * (1.f / 1200.f));
-        if (*params[par_keyfollow] >= 0.5f)
-            cutoff *= freq / 264.0f;
-        if (cutoff < 10.f)
-            cutoff = 10.f;
-        if (cutoff > 16000.f)
-            cutoff = 16000.f;
-        float resonance = *params[par_resonance];
-        float e2r = *params[par_envtores];
-        resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env) * e2r;
-        filter.set_lp_rbj(cutoff, resonance, srate);
-        float fgain = min(0.5, 0.5 / resonance);
-        filter2.copy_coeffs(filter);
+        return wave;
+    }
+    void calculate_buffer_ser()
+    {
         for (uint32_t i = 0; i < step_size; i++) 
         {
             float osc1val = osc1.get();
@@ -224,22 +220,121 @@ public:
             float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
             wave = filter.process_d1(wave);
             wave = filter2.process_d1(wave);
-            // primitive waveshaping (hard-knee)
-            float abswave = fabs(wave);
-            if (abswave > 0.75)
-            {
-                abswave = abswave - 0.5 * (abswave - 0.75);
-                if (abswave > 1.0)
-                    abswave = 1.0;
-                wave = (wave > 0.0) ? abswave : - abswave;
-                
-            }
-            buffer[i] = dsp::clip(wave, -1.f, +1.f);
+            buffer[i] = softclip(wave);
+        }
+    }
+    void calculate_buffer_single()
+    {
+        for (uint32_t i = 0; i < step_size; i++) 
+        {
+            float osc1val = osc1.get();
+            float osc2val = osc2.get();
+            float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
+            wave = filter.process_d1(wave);
+            buffer[i] = softclip(wave);
+        }
+    }
+    void calculate_buffer_stereo()
+    {
+        for (uint32_t i = 0; i < step_size; i++) 
+        {
+            float osc1val = osc1.get();
+            float osc2val = osc2.get();
+            float wave1 = osc1val + (osc2val - osc1val) * xfade;
+            float wave2 = osc1val + ((-osc2val) - osc1val) * xfade;
+            buffer[i] = softclip(fgain * filter.process_d1(wave1));
+            buffer2[i] = softclip(fgain * filter2.process_d1(wave2));
+        }
+    }
+    bool is_stereo_filter() const
+    {
+        return filter_type == flt_2lp12 || filter_type == flt_2bp6;
+    }
+    void calculate_step() {
+        if (queue_note_on != -1)
+            note_on();
+        else if (stopping)
+        {
+            running = false;
+            dsp::zero(buffer, step_size);
+            if (is_stereo_filter())
+                dsp::zero(buffer2, step_size);
+            return;
+        }
+        set_frequency();
+        float env = max(0.f, 1.f - voice_age * decay_factor);
+        cutoff = *params[par_cutoff] * pow(2.0f, env * fltctl * *params[par_envmod] * (1.f / 1200.f));
+        if (*params[par_keyfollow] >= 0.5f)
+            cutoff *= freq / 264.0f;
+        cutoff = dsp::clip(cutoff , 10.f, 18000.f);
+        float resonance = *params[par_resonance];
+        float e2r = *params[par_envtores];
+        resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env) * e2r;
+        float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
+        switch(filter_type)
+        {
+        case flt_lp12:
+            filter.set_lp_rbj(cutoff, resonance, srate);
+            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            break;
+        case flt_hp12:
+            filter.set_hp_rbj(cutoff, resonance, srate);
+            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            break;
+        case flt_lp24:
+            filter.set_lp_rbj(cutoff, resonance, srate);
+            filter2.set_lp_rbj(cutoff2, resonance, srate);
+            fgain = min(0.5f, 0.5f / resonance) * ampctl;
+            break;
+        case flt_lpbr:
+            filter.set_lp_rbj(cutoff, resonance, srate);
+            filter2.set_br_rbj(cutoff2, resonance, srate);
+            fgain = min(0.5f, 0.5f / resonance) * ampctl;        
+            break;
+        case flt_hpbr:
+            filter.set_hp_rbj(cutoff, resonance, srate);
+            filter2.set_br_rbj(cutoff2, resonance, srate);
+            fgain = min(0.5f, 0.5f / resonance) * ampctl;        
+            break;
+        case flt_2lp12:
+            filter.set_lp_rbj(cutoff, resonance, srate);
+            filter2.set_lp_rbj(cutoff2, resonance, srate);
+            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            break;
+        case flt_bp6:
+            filter.set_bp_rbj(cutoff, resonance, srate);
+            fgain = ampctl;
+            break;
+        case flt_2bp6:
+            filter.set_bp_rbj(cutoff, resonance, srate);
+            filter2.set_bp_rbj(cutoff2, resonance, srate);
+            fgain = ampctl;        
+            break;
+        }
+        switch(filter_type)
+        {
+        case flt_lp24:
+        case flt_lpbr:
+        case flt_hpbr: // Oomek's wish
+            calculate_buffer_ser();
+            break;
+        case flt_lp12:
+        case flt_hp12:
+        case flt_bp6:
+            calculate_buffer_single();
+            break;
+        case flt_2lp12:
+        case flt_2bp6:
+            calculate_buffer_stereo();
+            break;
         }
         if (!gate)
         {
             for (int i = 0; i < step_size; i++)
                 buffer[i] *= (step_size - i) * (1.0f / step_size);
+            if (is_stereo_filter())
+                for (int i = 0; i < step_size; i++)
+                    buffer2[i] *= (step_size - i) * (1.0f / step_size);
             stopping = true;
         }
 
@@ -260,8 +355,13 @@ public:
             if(op < op_end) {
                 uint32_t ip = output_pos;
                 uint32_t len = std::min(step_size - output_pos, op_end - op);
-                for(uint32_t i = 0 ; i < len; i++)
-                    outs[0][op + i] = outs[1][op + i] = buffer[ip + i];
+                if (is_stereo_filter())
+                    for(uint32_t i = 0 ; i < len; i++)
+                        outs[0][op + i] = buffer[ip + i],
+                        outs[1][op + i] = buffer2[ip + i];
+                else
+                    for(uint32_t i = 0 ; i < len; i++)
+                        outs[0][op + i] = outs[1][op + i] = buffer[ip + i];
                 op += len;
                 output_pos += len;
                 if (output_pos == step_size)
