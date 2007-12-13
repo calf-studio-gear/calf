@@ -18,6 +18,9 @@ AM_CXXFLAGS += -DUSE_JACK=1
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
+if OLD_JACK
+AM_CXXFLAGS += -DOLD_JACK=1
+endif
 if USE_PHAT
 AM_CXXFLAGS += -DUSE_PHAT=1 $(PHAT_DEPS_CFLAGS)
 calfjackhost_LDADD += $(PHAT_DEPS_LIBS)

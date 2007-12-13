@@ -38,6 +38,10 @@ else
   JACK_FOUND="no"
 fi
 
+if test "$JACK_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
+fi
+
 CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
 
 AC_SUBST(GUI_DEPS_CFLAGS)
@@ -80,6 +84,7 @@ AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
 AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 AM_CONDITIONAL(USE_PHAT, test "$PHAT_ENABLED" = "yes")
 AM_CONDITIONAL(ENABLE_EXPERIMENTAL, test "$set_enable_experimental" = "yes")
+AM_CONDITIONAL(OLD_JACK, test "$OLD_JACK" = "yes")
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -121,6 +126,7 @@ AC_MSG_RESULT([
 
     LADSPA enabled:         $LADSPA_FOUND
     JACK host enabled:      $JACK_ENABLED
+    Old-style JACK MIDI:    $OLD_JACK
     PHAT library enabled:   $PHAT_ENABLED
     
     Installation prefix:    $prefix

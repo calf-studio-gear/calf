@@ -174,10 +174,18 @@ public:
         if (Module::support_midi)
         {
             jack_midi_event_t event;
+#ifdef OLD_JACK
+            int count = jack_midi_get_event_count(host->midi_port.data, nframes);
+#else
             int count = jack_midi_get_event_count(host->midi_port.data);
+#endif
             for (int i = 0; i < count; i++)
             {
+#ifdef OLD_JACK
+                jack_midi_event_get(&event, host->midi_port.data, i, nframes);
+#else
                 jack_midi_event_get(&event, host->midi_port.data, i);
+#endif
                 mask = module->process(time, event.time - time, -1, -1);
                 for (int i = 0; i < Module::out_count; i++) {
                     if (!(mask & (1 << i)))
