@@ -109,23 +109,23 @@ const char *organ_audio_module::param_names[] = {"Out L", "Out R", "16'", "5 1/3
 
 const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
-const char *organ_vibrato_speed_names[] = { "Off", "Swell", "Tremolo" };
+const char *organ_vibrato_speed_names[] = { "Off", "Swell", "Tremolo", "HoldPedal", "ModWheel" };
 
 parameter_properties organ_audio_module::param_props[] = {
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB, NULL },
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
+    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL },
 
     { 1,         0,  1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL },
     { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names },
     { 3,         2,  3, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names },
-    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_vibrato_speed_names },
+    { 1,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, organ_vibrato_speed_names },
 
     { 0.2,         0,  1, 1.01, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL },
 };

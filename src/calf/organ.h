@@ -194,10 +194,12 @@ struct drawbar_organ: public synth::basic_synth {
     dsp::simple_flanger<float, 4096> chorus, chorus2;
     dsp::biquad<float> crossover1, crossover2;
     dsp::simple_delay<8, float> phaseshift;
+    float mwhl_value, hold_value;
     
     drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
+        mwhl_value = hold_value = 0.f;
     }
     void render_to(float *output[], int nsamples)
     {
@@ -245,32 +247,43 @@ struct drawbar_organ: public synth::basic_synth {
         chorus.set_wet(0.5f);chorus2.set_wet(0.5f);
         chorus.set_dry(0.0f);chorus2.set_dry(0.0f);
         percussion.setup(sr);
+        mwhl_value = hold_value = 0.f;
+    }
+    virtual void control_change(int ctl, int val)
+    {
+        int mode = parameters->get_vibrato_mode();
+        if (mode == 3 && ctl == 64)
+        {
+            hold_value = val / 127.f;
+            set_vibrato();
+            return;
+        }
+        if (mode == 4 && ctl == 1)
+        {
+            mwhl_value = val / 127.f;
+            set_vibrato();
+            return;
+        }
+        synth::basic_synth::control_change(ctl, val);
     }
     void set_vibrato()
     {
-        switch(parameters->get_vibrato_mode())
-        {
-            case 1:
-                chorus.set_min_delay(0.0061f);
-                chorus2.set_min_delay(0.0085f);
-                chorus.set_mod_depth(0.003f);
-                chorus2.set_mod_depth(0.0035f);
-                chorus.set_fb(0.3f);
-                chorus2.set_fb(-0.3f);
-                chorus.set_rate(40.0 / 60.0);
-                chorus2.set_rate(48.0 / 60.0);
-                break;
-            case 2:
-                chorus.set_min_delay(0.0061f);
-                chorus2.set_min_delay(0.0085f);
-                chorus.set_mod_depth(0.0014f);
-                chorus2.set_mod_depth(0.0017f);
-                chorus.set_fb(0.3f);
-                chorus2.set_fb(-0.3f);
-                chorus.set_rate(342.0 / 60.0);
-                chorus2.set_rate(400.0 / 60.0);
-                break;
-        }
+        int mode = parameters->get_vibrato_mode();
+        if (!mode)
+            return;
+        float speed = mode - 1;
+        if (mode == 3)
+            speed = hold_value;
+        if (mode == 4)
+            speed = mwhl_value;
+        chorus.set_mod_depth(0.002f - 0.0015f*speed);
+        chorus2.set_mod_depth(0.0025f - 0.002f*speed);
+        chorus.set_min_delay(0.0061f);
+        chorus2.set_min_delay(0.0085f);
+        chorus.set_rate((40.0 + (342 - 40)*speed) / 60.0);
+        chorus2.set_rate((48.0 + (400 - 48)*speed) / 60.0);
+        chorus.set_fb(0.3f);
+        chorus2.set_fb(-0.3f);
     }
 };
 

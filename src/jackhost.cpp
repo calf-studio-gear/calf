@@ -56,9 +56,12 @@ public:
 
     jack_host_gui(GtkWidget *_toplevel);
     void create(synth::jack_host_base *_host, const char *title);
+    GtkWidget *create_label(int param_idx);
     static void hscale_value_changed(GtkHScale *widget, gpointer value);
+    static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
     static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
+
 
 #if USE_PHAT
     static void knob_value_changed(PhatKnob *widget, gpointer value);
@@ -75,12 +78,24 @@ void jack_host_gui::hscale_value_changed(GtkHScale *widget, gpointer value)
 {
     jack_host_param *jhp = (jack_host_param *)value;
     jack_host_base &jh = *jhp->gui->host;
-    const parameter_properties &props = jh.get_param_props()[jhp->param_no];
     int nparam = jhp->param_no;
+    const parameter_properties &props = jh.get_param_props()[nparam];
     float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
     jh.get_params()[nparam] = cvalue;
     jh.set_params();
-    gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
+    // gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
+}
+
+gchar *jack_host_gui::hscale_format_value(GtkScale *widget, double arg1, gpointer value)
+{
+    jack_host_param *jhp = (jack_host_param *)value;
+    jack_host_base &jh = *jhp->gui->host;
+    const parameter_properties &props = jh.get_param_props()[jhp->param_no];
+    float cvalue = props.from_01 (arg1);
+    
+    // for testing
+    // return g_strdup_printf ("%s = %g", props.to_string (cvalue).c_str(), arg1);
+    return g_strdup (props.to_string (cvalue).c_str());
 }
 
 void jack_host_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
@@ -116,6 +131,15 @@ void jack_host_gui::knob_value_changed(PhatKnob *widget, gpointer value)
 }
 #endif
 
+GtkWidget *jack_host_gui::create_label(int param_idx)
+{
+    GtkWidget *widget  = gtk_label_new ("");
+    gtk_label_set_width_chars (GTK_LABEL (widget), 12);
+    gtk_misc_set_alignment (GTK_MISC (widget), 0.0, 0.5);
+    params[param_idx].label = widget;
+    return widget;
+}
+
 void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
 {
     host = _host;
@@ -136,7 +160,7 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
     for (int i = 0; i < param_count; i++) {
         GtkWidget *label = gtk_label_new (host->get_param_names()[host->get_input_count() + host->get_output_count() + i]);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_SHRINK, 2, 2);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_FILL, 2, 2);
         
         parameter_properties &props = host->get_param_props()[i];
         
@@ -160,34 +184,28 @@ void jack_host_gui::create(synth::jack_host_base *_host, const char *title)
             gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (toggle_value_changed), (gpointer)&params[i]);
             gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
-        else
-        {
 #if USE_PHAT
+        else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
+        {
             GtkWidget *knob = phat_knob_new_with_range (host->get_param_props()[i].to_01 (host->get_params()[i]), 0, 1, 0.01);
             gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
             gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, GTK_SHRINK, GTK_SHRINK, 0, 0);
-#else
+            gtk_table_attach (GTK_TABLE (table), create_label(i), 2, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
+            knob_value_changed (PHAT_KNOB (knob), (gpointer)&params[i]);
+        }
+#endif
+        else
+        {
+            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
+            
             GtkWidget *knob = gtk_hscale_new_with_range (0, 1, 0.01);
             gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)&params[i]);
+            gtk_signal_connect (GTK_OBJECT (knob), "format-value", G_CALLBACK (hscale_format_value), (gpointer)&params[i]);
             gtk_widget_set_size_request (knob, 200, -1);
-            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
-#endif
-
-            widget  = gtk_label_new ("");
-            gtk_label_set_width_chars (GTK_LABEL (widget), 12);
-            gtk_misc_set_alignment (GTK_MISC (widget), 0.0, 0.5);
-            gtk_table_attach (GTK_TABLE (table), widget, 2, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
-            params[i].label = widget;
-            // gtk_widget_set_size_request (widget, widget->allocation.width, widget->allocation.height);
-            // gtk_widget_set_size_request (widget, 100, 10);
+            gtk_table_attach (GTK_TABLE (table), knob, 1, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
             
-#if USE_PHAT
-            knob_value_changed (PHAT_KNOB (knob), (gpointer)&params[i]);
-#else
             gtk_range_set_value (GTK_RANGE (knob), host->get_param_props()[i].to_01 (host->get_params()[i]));
-            gtk_scale_set_draw_value (GTK_SCALE (knob), false);
             hscale_value_changed (GTK_HSCALE (knob), (gpointer)&params[i]);
-#endif
         }
     }
     gtk_container_add (GTK_CONTAINER (toplevel), table);
