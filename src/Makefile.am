@@ -36,6 +36,9 @@ bin_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
 endif
+if USE_DSSI
+AM_CXXFLAGS += -DUSE_DSSI=1
+endif
 
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = 

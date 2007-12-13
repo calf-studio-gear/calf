@@ -12,9 +12,6 @@
 /* Define to 1 if you have the <jack/jack.h> header file. */
 #undef HAVE_JACK_JACK_H
 
-/* Define to 1 if you have the <ladspa.h> header file. */
-#undef HAVE_LADSPA_H
-
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
 

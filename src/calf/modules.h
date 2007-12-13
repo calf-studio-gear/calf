@@ -30,6 +30,15 @@ namespace synth {
 
 using namespace dsp;
 
+inline void default_handle_event(uint8_t *data, int len, float *params[], unsigned int param_count)
+{
+    if (data[0] == 0x7F && len >= 8) {
+        midi_event *p = (midi_event *)data;
+        if (p->param2 < param_count)
+            *params[p->param2] = p->param3;
+    }
+}
+
 class amp_audio_module
 {
 public:
@@ -42,8 +51,9 @@ public:
     static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
     }
-    void handle_midi_event_now(synth::midi_event event);
-    void handle_param_event_now(uint32_t param, float value);
+    void handle_event(uint8_t *data, int len) {
+        default_handle_event(data, len, params, param_count);
+    }
     void params_changed() {
     }
     void activate() {
@@ -62,15 +72,6 @@ public:
         return inputs_mask;
     }
 };
-
-inline void default_handle_event(uint8_t *data, int len, float *params[], unsigned int param_count)
-{
-    if (data[0] == 0x7F && len >= 8) {
-        midi_event *p = (midi_event *)data;
-        if (p->param2 < param_count)
-            *params[p->param2] = p->param3;
-    }
-}
 
 class flanger_audio_module
 {

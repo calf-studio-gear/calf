@@ -27,6 +27,9 @@
 #if USE_LADSPA
 #include <ladspa.h>
 #endif
+#if USE_DSSI
+#include <dssi.h>
+#endif
 #if USE_JACK
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -129,6 +132,9 @@ template<class Module>
 struct ladspa_wrapper
 {
     LADSPA_Descriptor descriptor;
+#if USE_DSSI
+    DSSI_Descriptor dssi_descriptor;
+#endif
     ladspa_info &info;
 
     ladspa_wrapper(ladspa_info &i) 
@@ -190,6 +196,15 @@ struct ladspa_wrapper
         descriptor.set_run_adding_gain = NULL;
         descriptor.deactivate = cb_deactivate;
         descriptor.cleanup = cb_cleanup;
+#if USE_DSSI
+        memset(&dssi_descriptor, 0, sizeof(dssi_descriptor));
+        dssi_descriptor.DSSI_API_Version = 1;
+        dssi_descriptor.LADSPA_Plugin = &descriptor;
+        dssi_descriptor.configure = cb_configure;
+        // XXXKF make one default program
+        dssi_descriptor.run_synth = cb_run_synth;
+        
+#endif
     }
 
     static LADSPA_Handle cb_instantiate(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate)
@@ -226,18 +241,81 @@ struct ladspa_wrapper
         mod->set_sample_rate(mod->srate);
         mod->activate();
     }
+    
+    static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
+    {
+        for (int i=0; i<Module::out_count; i++) {
+            if ((mask & (1 << i)) == 0) {
+                dsp::zero(module->outs[i] + offset, nsamples);
+            }
+        }
+    }
 
     static void cb_run(LADSPA_Handle Instance, unsigned long SampleCount) {
         Module *const mod = (Module *)Instance;
         mod->params_changed();
         uint32_t out_mask = mod->process(0, SampleCount, -1, -1);
-        for (int i=0; i<Module::out_count; i++) {
-          if ((out_mask & (1 << i)) == 0) {
-            if (mod->outs[i])
-              memset(mod->outs[i], 0, sizeof(float) * SampleCount);
-          }
+        zero_by_mask(mod, out_mask, 0, SampleCount);
+    }
+
+#if USE_DSSI
+    static void cb_run_synth(LADSPA_Handle Instance, unsigned long SampleCount, 
+            snd_seq_event_t *Events, unsigned long EventCount) {
+        Module *const mod = (Module *)Instance;
+        mod->params_changed();
+        
+        uint32_t offset = 0;
+        for (uint32_t e = 0; e < EventCount; e++)
+        {
+            uint32_t timestamp = Events[e].time.tick;
+            if (timestamp != offset) {
+                uint32_t out_mask = mod->process(offset, timestamp - offset, -1, -1);
+                zero_by_mask(mod, out_mask, offset, timestamp - offset);
+            }
+            process_dssi_event(mod, Events[e]);
+            offset = timestamp;
+        }
+        if (offset != SampleCount)
+        {
+            uint32_t out_mask = mod->process(offset, SampleCount - offset, -1, -1);
+            zero_by_mask(mod, out_mask, offset, SampleCount - offset);
         }
     }
+    
+    static char *cb_configure(LADSPA_Handle Instance,
+		       const char *Key,
+		       const char *Value)
+    {
+        // XXXKF some day...
+        // Module *const mod = (Module *)Instance;
+        // return mod->configure(Key, Value);
+        return NULL;
+    }
+    
+    char *configure(const char *key, const char *value)
+    {
+        return NULL;
+    }
+    
+    static void process_dssi_event(Module *module, snd_seq_event_t &event)
+    {
+        uint8_t data[4];
+        switch(event.type) {
+            case SND_SEQ_EVENT_NOTEON:
+                data[0] = 0x90 + event.data.note.channel;
+                data[1] = event.data.note.note;
+                data[2] = event.data.note.velocity;
+                module->handle_event(data, 3);
+                break;
+            case SND_SEQ_EVENT_NOTEOFF:
+                data[0] = 0x80 + event.data.note.channel;
+                data[1] = event.data.note.note;
+                data[2] = event.data.note.velocity;
+                module->handle_event(data, 3);
+                break;
+        }
+    }
+#endif
 
     static void cb_deactivate(LADSPA_Handle Instance) {
         Module *const mod = (Module *)Instance;
@@ -253,6 +331,7 @@ struct ladspa_wrapper
         return synth::generate_ladspa_rdf(info, Module::param_props, Module::param_names, Module::param_count, Module::in_count + Module::out_count);
     };
 };
+
 
 #endif
 

@@ -201,6 +201,21 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 
 };
 
+#if USE_DSSI && ENABLE_EXPERIMENTAL
+extern "C" {
+
+const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
+{
+    switch (Index) {
+        case 0: return &::monosynth.dssi_descriptor;
+        case 1: return &::organ.dssi_descriptor;
+        default: return NULL;
+    }
+}
+
+};
+#endif
+
 std::string synth::get_builtin_modules_rdf()
 {
     std::string rdf;
