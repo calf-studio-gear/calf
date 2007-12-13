@@ -59,6 +59,10 @@ if USE_LADSPA
 	install -c -m 755 $(top_builddir)/src/.libs/libcalf.so.0.0.0 $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(DESTDIR)$(bindir)/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 endif
+if USE_DSSI
+	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
+	install -c -m 755 $(top_builddir)/src/.libs/libcalf.so.0.0.0 $(DESTDIR)$(with_dssi_dir)/calf.so
+endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
 uninstall-hook:
@@ -66,6 +70,9 @@ if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(RM) -f $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 	rmdir $(DESTDIR)$(with_ladspa_rdf_dir)
+endif
+if USE_DSSI
+	$(RM) -f $(DESTDIR)$(with_dssi_dir)/calf.so
 endif
 
 #install:

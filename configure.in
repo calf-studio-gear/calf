@@ -118,6 +118,14 @@ AC_ARG_WITH(ladspa_rdf_dir,
 AC_MSG_RESULT($with_ladspa_rdf_dir)
 AC_SUBST(with_ladspa_rdf_dir)
 
+AC_MSG_CHECKING(where to install DSSI plugins)
+AC_ARG_WITH(dssi_dir,
+  AC_HELP_STRING([--with-dssi-dir],[install DSSI plugins to DIR (default=$prefix/lib/dssi/)]),
+  ,
+  [with_dssi_dir="$prefix/lib/dssi/"])
+AC_MSG_RESULT($with_dssi_dir)
+AC_SUBST(with_dssi_dir)
+
 # Checks for library functions.
 AC_CHECK_FUNCS([floor memset pow])
 
@@ -128,7 +136,7 @@ AC_MSG_RESULT([
     Calf configured
 
     LADSPA enabled:         $LADSPA_FOUND
-    DSSI enabeld:           $DSSI_FOUND
+    DSSI enabled:           $DSSI_FOUND
     JACK host enabled:      $JACK_ENABLED
     Old-style JACK MIDI:    $OLD_JACK
     PHAT library enabled:   $PHAT_ENABLED
