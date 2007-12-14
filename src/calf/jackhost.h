@@ -27,9 +27,11 @@
 
 #if USE_JACK
 
+#include "gui.h"
+
 namespace synth {
 
-class jack_host_base {
+class jack_host_base: public plugin_ctl_iface {
 public:
     typedef int (*process_func)(jack_nframes_t nframes, void *p);
     struct port {
@@ -45,15 +47,12 @@ public:
     port midi_port;
     virtual int get_input_count()=0;
     virtual int get_output_count()=0;
-    virtual int get_param_count()=0;
     virtual port *get_inputs()=0;
     virtual port *get_outputs()=0;
     virtual float *get_params()=0;
     virtual void init_module()=0;
     virtual void cache_ports()=0;
     virtual process_func get_process_func()=0;
-    virtual const char ** get_param_names()=0;
-    virtual parameter_properties* get_param_props()=0;
     virtual bool get_midi()=0;
     
     jack_host_base() {
@@ -128,7 +127,7 @@ public:
         for (int i = 0; i < output_count; i++)
             outputs[i].data = NULL;
     }
-    
+
     virtual ~jack_host_base() {
         if (client)
             close();
@@ -155,6 +154,8 @@ public:
         module.activate();
         module.params_changed();
     }
+
+    virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props; }
     
     static int do_jack_process(jack_nframes_t nframes, void *p) {
         jack_host *host = (jack_host *)p;
@@ -225,9 +226,15 @@ public:
     virtual int get_output_count() { return Module::out_count; }
     virtual int get_param_count() { return Module::param_count; }
     virtual process_func get_process_func() { return do_jack_process; }
-    virtual const char ** get_param_names() { return Module::param_names; }
-    virtual parameter_properties* get_param_props() { return Module::param_props; }
+    virtual const char ** get_param_names() { return Module::param_names + Module::in_count + Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
+    virtual float get_param_value(int param_no) {
+        return params[param_no];
+    }
+    virtual void set_param_value(int param_no, float value) {
+        params[param_no] = value;
+        changed = true;
+    }
 };
 
 #endif

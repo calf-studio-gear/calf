@@ -131,9 +131,10 @@ extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_proper
 template<class Module>
 struct ladspa_wrapper
 {
-    LADSPA_Descriptor descriptor;
+    static LADSPA_Descriptor descriptor;
 #if USE_DSSI
-    DSSI_Descriptor dssi_descriptor;
+    static DSSI_Descriptor dssi_descriptor;
+    static DSSI_Program_Descriptor dssi_default_program;
 #endif
     ladspa_info &info;
 
@@ -201,9 +202,14 @@ struct ladspa_wrapper
         dssi_descriptor.DSSI_API_Version = 1;
         dssi_descriptor.LADSPA_Plugin = &descriptor;
         dssi_descriptor.configure = cb_configure;
+        dssi_descriptor.get_program = cb_get_program;
+        dssi_descriptor.select_program = cb_select_program;
         // XXXKF make one default program
         dssi_descriptor.run_synth = cb_run_synth;
         
+        dssi_default_program.Bank = 0;
+        dssi_default_program.Program = 0;
+        dssi_default_program.Name = "default";
 #endif
     }
 
@@ -220,6 +226,21 @@ struct ladspa_wrapper
         return mod;
     }
 
+#if USE_DSSI
+    static const DSSI_Program_Descriptor *cb_get_program(LADSPA_Handle Instance, unsigned long index) {
+        if (index != 0)
+            return NULL;
+        return &dssi_default_program;
+    }
+    
+    static void cb_select_program(LADSPA_Handle Instance, unsigned long Bank, unsigned long Program) {
+        Module *const mod = (Module *)Instance;
+        for (int i =0 ; i < Module::param_count; i++)
+            *mod->params[i] = Module::param_props[i].def_value;
+    }
+    
+#endif
+    
     static void cb_connect(LADSPA_Handle Instance, unsigned long port, LADSPA_Data *DataLocation) {
         unsigned long ins = Module::in_count;
         unsigned long outs = Module::out_count;
@@ -240,6 +261,10 @@ struct ladspa_wrapper
         Module *const mod = (Module *)Instance;
         mod->set_sample_rate(mod->srate);
         mod->activate();
+        /*
+        for (int i =0 ; i < Module::param_count; i++)
+            *mod->params[i] = Module::param_props[i].def_value;
+        */
     }
     
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
@@ -292,11 +317,6 @@ struct ladspa_wrapper
         return NULL;
     }
     
-    char *configure(const char *key, const char *value)
-    {
-        return NULL;
-    }
-    
     static void process_dssi_event(Module *module, snd_seq_event_t &event)
     {
         uint8_t data[4];
@@ -331,6 +351,19 @@ struct ladspa_wrapper
         return synth::generate_ladspa_rdf(info, Module::param_props, Module::param_names, Module::param_count, Module::in_count + Module::out_count);
     };
 };
+
+template<class Module>
+LADSPA_Descriptor ladspa_wrapper<Module>::descriptor;
+
+#if USE_DSSI
+
+template<class Module>
+DSSI_Descriptor ladspa_wrapper<Module>::dssi_descriptor;
+
+template<class Module>
+DSSI_Program_Descriptor ladspa_wrapper<Module>::dssi_default_program;
+
+#endif
 
 
 #endif

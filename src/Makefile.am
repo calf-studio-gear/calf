@@ -9,7 +9,7 @@ ladspadir = $(with_ladspa_dir)
 bin_PROGRAMS = 
 
 noinst_PROGRAMS = calfbenchmark
-noinst_LTLIBRARIES = libcalf.la libcalfstatic.la
+noinst_LTLIBRARIES = libcalf.la libcalfstatic.la libcalfgui.la
 
 AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80
 
@@ -17,7 +17,7 @@ if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
-calfjackhost_LDADD = libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
+calfjackhost_LDADD = libcalfstatic.la libcalfgui.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
 if OLD_JACK
 AM_CXXFLAGS += -DOLD_JACK=1
 endif
@@ -48,6 +48,9 @@ libcalf_la_LDFLAGS = -rpath $(ladspadir) -version-info 0:0:0
 
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp synth.cpp
 libcalfstatic_la_LDFLAGS = -static
+
+libcalfgui_la_SOURCES = gui.cpp
+libcalfgui_la_LDFLAGS = -static
 
 clean-local:
 	$(RM) -f calfjackhost *~

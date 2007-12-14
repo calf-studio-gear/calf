@@ -209,6 +209,9 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
     switch (Index) {
         case 0: return &::monosynth.dssi_descriptor;
         case 1: return &::organ.dssi_descriptor;
+        case 2: return &::filter.dssi_descriptor;
+        case 3: return &::flanger.dssi_descriptor;
+        case 4: return &::reverb.dssi_descriptor;
         default: return NULL;
     }
 }
