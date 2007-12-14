@@ -319,19 +319,21 @@ struct ladspa_wrapper
     
     static void process_dssi_event(Module *module, snd_seq_event_t &event)
     {
-        uint8_t data[4];
         switch(event.type) {
             case SND_SEQ_EVENT_NOTEON:
-                data[0] = 0x90 + event.data.note.channel;
-                data[1] = event.data.note.note;
-                data[2] = event.data.note.velocity;
-                module->handle_event(data, 3);
+                module->note_on(event.data.note.note, event.data.note.velocity);
                 break;
             case SND_SEQ_EVENT_NOTEOFF:
-                data[0] = 0x80 + event.data.note.channel;
-                data[1] = event.data.note.note;
-                data[2] = event.data.note.velocity;
-                module->handle_event(data, 3);
+                module->note_off(event.data.note.note, event.data.note.velocity);
+                break;
+            case SND_SEQ_EVENT_PGMCHANGE:
+                module->program_change(event.data.control.value);
+                break;
+            case SND_SEQ_EVENT_CONTROLLER:
+                module->control_change(event.data.control.param, event.data.control.value);
+                break;
+            case SND_SEQ_EVENT_PITCHBEND:
+                module->pitch_bend(event.data.control.value);
                 break;
         }
     }

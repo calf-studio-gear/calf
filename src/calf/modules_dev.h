@@ -36,7 +36,7 @@ using namespace dsp;
 
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
-class monosynth_audio_module
+class monosynth_audio_module: public null_audio_module
 {
 public:
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_count };
@@ -72,7 +72,7 @@ public:
         crate = sr / step_size;
         odcr = (float)(1.0 / crate);
     }
-    void note_on()
+    void delayed_note_on()
     {
         freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
         ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
@@ -119,28 +119,20 @@ public:
             voice_age = 0;
         queue_note_on = -1;
     }
-    void handle_event(uint8_t *data, int len) {
-        switch(*data >> 4)
-        {
-        case 9:
-            if (data[2]) {
-                queue_note_on = data[1];
-                last_key = data[1];
-                queue_vel = data[2] / 127.f;
-            }
-            // printf("note on %d %d\n", data[1], data[2]);
-            break;
-        case 8:
-            // printf("note off %d %d\n", data[1], data[2]);
-            if (data[1] == last_key)
-                gate = false;
-            break;
-        case 14:
-            float value = data[1] + 128 *data[2] - 8192;
-            pitchbend = pow(2.0, value / 8192.0);
-            break;
-        }
-        default_handle_event(data, len, params, param_count);
+    void note_on(int note, int vel)
+    {
+        queue_note_on = note;
+        last_key = note;
+        queue_vel = vel / 127.f;
+    }
+    void note_off(int note, int vel)
+    {
+        if (note == last_key)
+            gate = false;
+    }
+    void pitch_bend(int value)
+    {
+        pitchbend = pow(2.0, value / 8192.0);
     }
     void set_frequency()
     {
@@ -252,7 +244,7 @@ public:
     }
     void calculate_step() {
         if (queue_note_on != -1)
-            note_on();
+            delayed_note_on();
         else if (stopping)
         {
             running = false;
@@ -373,9 +365,12 @@ public:
     }
 };
 
-struct organ_audio_module: public drawbar_organ
+struct organ_audio_module: public null_audio_module, public drawbar_organ
 {
 public:
+    using drawbar_organ::note_on;
+    using drawbar_organ::note_off;
+    using drawbar_organ::control_change;
     enum { par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, par_foldover,
         par_percmode, par_percharm, par_vibrato, par_master, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
@@ -393,21 +388,6 @@ public:
     static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
         srate = sr;
-    }
-    void handle_event(uint8_t *data, int len) {
-        switch(*data >> 4)
-        {
-        case 9:
-            note_on(data[1], data[2]);
-            break;
-        case 8:
-            note_off(data[1], data[2]);
-            break;
-        case 11:
-            control_change(data[1], data[2]);
-            break;
-        }
-        default_handle_event(data, len, params, param_count);
     }
     void params_changed() {
         for (int i = 0; i < param_count; i++)

@@ -30,16 +30,21 @@ namespace synth {
 
 using namespace dsp;
 
-inline void default_handle_event(uint8_t *data, int len, float *params[], unsigned int param_count)
+class null_audio_module
 {
-    if (data[0] == 0x7F && len >= 8) {
-        midi_event *p = (midi_event *)data;
-        if (p->param2 < param_count)
-            *params[p->param2] = p->param3;
-    }
-}
+public:
+    inline void note_on(int note, int velocity) {}
+    inline void note_off(int note, int velocity) {}
+    inline void program_change(int program) {}
+    inline void control_change(int controller, int value) {}
+    inline void pitch_bend(int value) {} // -8192 to 8191
+    inline void params_changed() {}
+    inline void activate() {}
+    inline void deactivate() {}
+    inline void set_sample_rate(uint32_t sr) { }
+};
 
-class amp_audio_module
+class amp_audio_module: public null_audio_module
 {
 public:
     enum { in_count = 2, out_count = 2, param_count = 1, support_midi = false, rt_capable = true };
@@ -49,17 +54,6 @@ public:
     uint32_t srate;
     static const char *param_names[];
     static parameter_properties param_props[];
-    void set_sample_rate(uint32_t sr) {
-    }
-    void handle_event(uint8_t *data, int len) {
-        default_handle_event(data, len, params, param_count);
-    }
-    void params_changed() {
-    }
-    void activate() {
-    }
-    void deactivate() {
-    }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!inputs_mask)
             return 0;
@@ -73,7 +67,7 @@ public:
     }
 };
 
-class flanger_audio_module
+class flanger_audio_module: public null_audio_module
 {
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_amount, param_count };
@@ -89,9 +83,6 @@ public:
         srate = sr;
         left.setup(sr);
         right.setup(sr);
-    }
-    void handle_event(uint8_t *data, int len) {
-        default_handle_event(data, len, params, param_count);
     }
     void params_changed() {
         float dry = 1.0;
@@ -120,7 +111,7 @@ public:
     }
 };
 
-class reverb_audio_module
+class reverb_audio_module: public null_audio_module
 {
 public:    
     enum { par_decay, par_hfdamp, par_amount, param_count };
@@ -144,9 +135,6 @@ public:
     }
     void deactivate() {
     }
-    void handle_event(uint8_t *data, int len) {
-        default_handle_event(data, len, params, param_count);
-    }
     void set_sample_rate(uint32_t sr) {
         srate = sr;
         reverb.setup(sr);
@@ -165,7 +153,7 @@ public:
     }
 };
 
-class filter_audio_module
+class filter_audio_module: public null_audio_module
 {
 public:    
     enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
@@ -234,9 +222,6 @@ public:
         timer.start();
     }
     void deactivate() {
-    }
-    void handle_event(uint8_t *data, int len) {
-        default_handle_event(data, len, params, param_count);
     }
     void set_sample_rate(uint32_t sr) {
         srate = sr;

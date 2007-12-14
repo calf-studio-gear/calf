@@ -155,8 +155,31 @@ public:
         module.params_changed();
     }
 
-    virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props; }
+    virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
     
+    static void handle_event(Module *module, uint8_t *buffer, uint32_t size)
+    {
+        int value;
+        switch(buffer[0] >> 4)
+        {
+        case 8:
+            module->note_off(buffer[1], buffer[2]);
+            break;
+        case 9:
+            module->note_on(buffer[1], buffer[2]);
+            break;
+        case 10:
+            module->program_change(buffer[1]);
+            break;
+        case 11:
+            module->control_change(buffer[1], buffer[2]);
+            break;
+        case 14:
+            value = buffer[1] + 128 * buffer[2] - 8192;
+            module->pitch_bend(value);
+            break;
+        }
+    }
     static int do_jack_process(jack_nframes_t nframes, void *p) {
         jack_host *host = (jack_host *)p;
         Module *module = &host->module;
@@ -193,7 +216,7 @@ public:
                         dsp::zero(module->outs[i] + time, event.time - time);
                 }
                 
-                module->handle_event(event.buffer, event.size);
+                handle_event(module, event.buffer, event.size);
                 
                 time = event.time;
             }
