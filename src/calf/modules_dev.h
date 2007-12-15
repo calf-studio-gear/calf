@@ -63,7 +63,7 @@ public:
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
     float odcr, porta_time;
     int queue_note_on;
-    bool legato;
+    int legato;
     adsr envelope;
     
     static parameter_properties param_props[];
@@ -83,8 +83,10 @@ public:
         osc1.waveform = waves[wave1].get_level(osc1.phasedelta);
         osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
         
-        if (!running || envelope.released())
+        if (!running)
         {
+            if (legato >= 2)
+                porta_time = -1.f;
             osc1.reset();
             osc2.reset();
             filter.reset();
@@ -115,10 +117,13 @@ public:
             envelope.note_on();
             running = true;
         }
+        if (legato >= 2 && !gate)
+            porta_time = -1.f;
         gate = true;
         stopping = false;
-        if (!legato)
+        if (!(legato & 1) || envelope.released()) {
             envelope.note_on();
+        }
         queue_note_on = -1;
     }
     void note_on(int note, int vel)
@@ -154,7 +159,7 @@ public:
         detune = pow(2.0, *params[par_detune] / 1200.0);
         xpose = pow(2.0, *params[par_osc2xpose] / 12.0);
         xfade = *params[par_oscmix];
-        legato = *params[par_legato] >= 0.5f;
+        legato = dsp::fastf2i_drm(*params[par_legato]);
         set_frequency();
     }
     void activate() {
@@ -281,7 +286,7 @@ public:
         cutoff = dsp::clip(cutoff , 10.f, 18000.f);
         float resonance = *params[par_resonance];
         float e2r = *params[par_envtores];
-        resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env) * e2r;
+        resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r;
         float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
         switch(filter_type)
         {
