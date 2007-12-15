@@ -138,7 +138,6 @@ synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
 
 #endif
 ////////////////////////////////////////////////////////////////////////////
-#ifdef ENABLE_EXPERIMENTAL
 
 const char *monosynth_audio_module::param_names[] = {
     "Out L", "Out R", 
@@ -196,8 +195,6 @@ static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynt
 synth::ladspa_wrapper<monosynth_audio_module> monosynth(monosynth_info);
 #endif
 
-#endif
-
 ////////////////////////////////////////////////////////////////////////////
 
 #if USE_LADSPA
@@ -215,17 +212,19 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 
 };
 
-#if USE_DSSI && ENABLE_EXPERIMENTAL
+#if USE_DSSI
 extern "C" {
 
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
     switch (Index) {
-        case 0: return &::monosynth.dssi_descriptor;
-        case 1: return &::organ.dssi_descriptor;
-        case 2: return &::filter.dssi_descriptor;
-        case 3: return &::flanger.dssi_descriptor;
-        case 4: return &::reverb.dssi_descriptor;
+        case 0: return &::filter.dssi_descriptor;
+        case 1: return &::flanger.dssi_descriptor;
+        case 2: return &::reverb.dssi_descriptor;
+        case 3: return &::monosynth.dssi_descriptor;
+#ifdef ENABLE_EXPERIMENTAL
+        case 4: return &::organ.dssi_descriptor;
+#endif
         default: return NULL;
     }
 }
@@ -240,6 +239,7 @@ std::string synth::get_builtin_modules_rdf()
     rdf += ::flanger.generate_rdf();
     rdf += ::reverb.generate_rdf();
     rdf += ::filter.generate_rdf();
+    rdf += ::monosynth.generate_rdf();
     
     return rdf;
 }

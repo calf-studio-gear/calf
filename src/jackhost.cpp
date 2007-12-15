@@ -58,6 +58,7 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
     {"effect", 1, 0, 'e'},
+    {"plugin", 1, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {0,0,0,0},
@@ -74,14 +75,14 @@ int main(int argc, char *argv[])
     gtk_init(&argc, &argv);
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:e:i:o:m:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:e:i:o:m:p:hv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
             case 'h':
             case '?':
                 printf("JACK host for Calf effects\n"
-                    "Syntax: %s [--effect reverb|flanger|filter] [--client <name>] [--input <name>]"
+                    "Syntax: %s [--plugin reverb|flanger|filter|monosynth] [--client <name>] [--input <name>]"
                     "       [--output <name>] [--midi <name>] [--help] [--version]\n", 
                     argv[0]);
                 return 0;
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
                 printf("%s\n", PACKAGE_STRING);
                 return 0;
             case 'e':
+            case 'p':
                 effect_name = optarg;
                 break;
             case 'c':
@@ -113,17 +115,17 @@ int main(int argc, char *argv[])
             jh = new jack_host<flanger_audio_module>();
         else if (!strcmp(effect_name, "filter"))
             jh = new jack_host<filter_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
         else if (!strcmp(effect_name, "monosynth"))
             jh = new jack_host<monosynth_audio_module>();
+#ifdef ENABLE_EXPERIMENTAL
         else if (!strcmp(effect_name, "organ"))
             jh = new jack_host<organ_audio_module>();
 #endif
         else {
 #ifdef ENABLE_EXPERIMENTAL
-            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter, organ, monosynth\n");
+            fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth, organ\n");
 #else
-            fprintf(stderr, "Unknown filter name; allowed are: reverb, flanger, filter\n");
+            fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth\n");
 #endif
             return 1;
         }

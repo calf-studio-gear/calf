@@ -300,4 +300,6 @@ extern std::string get_builtin_modules_rdf();
 
 };
 
+#include "modules_synths.h"
+
 #endif
