@@ -41,7 +41,7 @@ class monosynth_audio_module: public null_audio_module
 public:
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_count };
     enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
-    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_decay, par_keyfollow, par_legato, par_vel2amp, par_vel2filter, param_count };
+    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2amp, par_vel2filter, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
     static const char *param_names[];
@@ -59,12 +59,12 @@ public:
     biquad<float> filter;
     biquad<float> filter2;
     int wave1, wave2, filter_type;
-    float freq, cutoff, decay_factor, fgain, separation;
+    float freq, start_freq, target_freq, cutoff, decay_factor, fgain, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
-    int voice_age;
-    float odcr;
+    float odcr, porta_time;
     int queue_note_on;
     bool legato;
+    adsr envelope;
     
     static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
@@ -74,14 +74,16 @@ public:
     }
     void delayed_note_on()
     {
-        freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
+        porta_time = 0.f;
+        start_freq = freq;
+        target_freq = freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
         ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
         fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
         set_frequency();
         osc1.waveform = waves[wave1].get_level(osc1.phasedelta);
         osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
         
-        if (!running)
+        if (!running || envelope.released())
         {
             osc1.reset();
             osc2.reset();
@@ -110,13 +112,13 @@ public:
             default:
                 break;
             }
-            voice_age = 0;
+            envelope.note_on();
             running = true;
         }
         gate = true;
         stopping = false;
         if (!legato)
-            voice_age = 0;
+            envelope.note_on();
         queue_note_on = -1;
     }
     void note_on(int note, int vel)
@@ -127,8 +129,10 @@ public:
     }
     void note_off(int note, int vel)
     {
-        if (note == last_key)
+        if (note == last_key) {
             gate = false;
+            envelope.note_off();
+        }
     }
     void pitch_bend(int value)
     {
@@ -140,6 +144,8 @@ public:
         osc2.set_freq(freq * (detune)  * pitchbend * xpose, srate);
     }
     void params_changed() {
+        float sf = 0.001f;
+        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, *params[par_sustain], *params[par_release] * sf, srate / step_size);
         filter_type = fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
         separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
@@ -253,8 +259,22 @@ public:
                 dsp::zero(buffer2, step_size);
             return;
         }
+        float porta_total_time = *params[par_portamento] * 0.001f;
+        
+        if (porta_total_time >= 0.00101f && porta_time >= 0) {
+            // XXXKF this is criminal, optimize!
+            float point = porta_time / porta_total_time;
+            if (point >= 1.0f) {
+                freq = target_freq;
+                porta_time = -1;
+            } else {
+                freq = start_freq * pow(target_freq / start_freq, point);
+                porta_time += odcr;
+            }
+        }
         set_frequency();
-        float env = max(0.f, 1.f - voice_age * decay_factor);
+        envelope.advance();
+        float env = envelope.value;
         cutoff = *params[par_cutoff] * pow(2.0f, env * fltctl * *params[par_envmod] * (1.f / 1200.f));
         if (*params[par_keyfollow] >= 0.5f)
             cutoff *= freq / 264.0f;
@@ -320,7 +340,7 @@ public:
             calculate_buffer_stereo();
             break;
         }
-        if (!gate)
+        if (envelope.state == adsr::STOP)
         {
             for (int i = 0; i < step_size; i++)
                 buffer[i] *= (step_size - i) * (1.0f / step_size);
@@ -329,8 +349,6 @@ public:
                     buffer2[i] *= (step_size - i) * (1.0f / step_size);
             stopping = true;
         }
-
-        voice_age++;
     }
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!running && queue_note_on == -1)

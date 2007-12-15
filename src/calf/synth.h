@@ -156,6 +156,99 @@ public:
     virtual ~basic_synth();
 };
 
+// temporarily here, will be moved to separate file later
+// this is a weird envelope and perhaps won't turn out to
+// be a good idea in the long run, still, worth trying
+class adsr
+{
+public:
+    enum env_state { STOP, ATTACK, DECAY, SUSTAIN, RELEASE, LOCKDECAY };
+    
+    env_state state;
+    // note: these are *rates*, not times
+    float attack, decay, sustain, release;
+    float value;
+    
+    adsr()
+    {
+        attack = decay = sustain = release = 0.f;
+        reset();
+    }
+    inline void reset()
+    {
+        value = 0.f;
+        state = STOP;
+    }
+    inline void set(float a, float d, float s, float r, float er)
+    {
+        attack = 1.0 / (a * er);
+        decay = (1 - s) / (d * er);
+        sustain = s;
+        release = s / (r * er);
+    }
+    inline bool released()
+    {
+        return state == LOCKDECAY || state == RELEASE || state == STOP;
+    }
+    inline void note_on()
+    {
+        state = ATTACK;
+    }
+    inline void note_off()
+    {
+        if (state == STOP)
+            return;
+        if (value > sustain && decay > release)
+            state = LOCKDECAY;
+        else
+            state = RELEASE;
+    }
+    inline void advance()
+    {
+        switch(state)
+        {
+        case ATTACK:
+            value += attack;
+            if (value >= 1.0) {
+                value = 1.0;
+                state = DECAY;
+            }
+            break;
+        case DECAY:
+            value -= decay;
+            if (value < sustain)
+            {
+                value = sustain;
+                state = SUSTAIN;
+            }
+            break;
+        case LOCKDECAY:
+            value -= decay;
+            if (value < sustain)
+            {
+                if (value < 0.f)
+                    value = 0.f;
+                state = RELEASE;
+            }
+            break;
+        case SUSTAIN:
+            value = sustain;
+            break;
+        case RELEASE:
+            value -= release;
+            if (value < 0.f) {
+                value = 0.f;
+                state = STOP;
+            }
+            break;
+        case STOP:
+            value = 0.f;
+            break;
+        }
+    }
+};
+
+
 }
 
 #endif
