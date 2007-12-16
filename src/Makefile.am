@@ -14,7 +14,7 @@ noinst_LTLIBRARIES = libcalf.la libcalfstatic.la libcalfgui.la
 AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80
 
 if USE_JACK
-AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS)
+AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfstatic.la libcalfgui.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
