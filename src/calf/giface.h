@@ -381,6 +381,9 @@ public:
     virtual ~audio_exception() throw () {}
 };
 
+// this should go into some utility library, perhaps
+std::string xml_escape(const std::string &src);
+
 };
 
 #endif

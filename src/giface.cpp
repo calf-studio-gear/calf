@@ -130,7 +130,7 @@ static string f2s(double value)
     return buf;
 }
 
-static string rdf_escape(const string &src)
+std::string synth::xml_escape(const std::string &src)
 {
     string dest;
     for (size_t i = 0; i < src.length(); i++) {
@@ -185,8 +185,8 @@ std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_proper
     string plugin_type = string(info.plugin_type); 
     
     rdf += "  <ladspa:" + plugin_type + " rdf:about=\"" + plugin_id + "\">\n";
-    rdf += "    <dc:creator>" + rdf_escape(info.maker) + "</dc:creator>\n";
-    rdf += "    <dc:title>" + rdf_escape(info.name) + "</dc:title>\n";
+    rdf += "    <dc:creator>" + xml_escape(info.maker) + "</dc:creator>\n";
+    rdf += "    <dc:title>" + xml_escape(info.name) + "</dc:title>\n";
     
     for (unsigned int i = 0; i < count; i++) {
         rdf += 

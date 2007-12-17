@@ -22,6 +22,7 @@
 #ifndef __CALF_GUI_H
 #define __CALF_GUI_H
 
+#include <vector>
 #include <gtk/gtk.h>
 #if USE_PHAT
 #include <phat/phatknob.h>
@@ -35,7 +36,20 @@ struct param_control
 {
     plugin_gui *gui;
     int param_no;
-    GtkWidget *label;
+    GtkWidget *label, *widget;
+    
+    param_control() { gui = NULL; param_no = -1; label = NULL; }
+    inline parameter_properties &get_props();
+    
+    virtual GtkWidget *create_label(int param_idx);
+    virtual void update_label();
+    /// called to create a widget for a control
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no)=0;
+    /// called to transfer the value from control to parameter(s)
+    virtual void get()=0;
+    /// called to transfer the value from parameter(s) to control
+    virtual void set()=0;
+    virtual ~param_control() {}
 };
 
 struct plugin_ctl_iface
@@ -48,6 +62,49 @@ struct plugin_ctl_iface
     virtual ~plugin_ctl_iface() {}
 };
 
+struct hscale_param_control: public param_control
+{
+    GtkHScale *scale;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void hscale_value_changed(GtkHScale *widget, gpointer value);
+    static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
+};
+
+struct toggle_param_control: public param_control
+{
+    GtkCheckButton *scale;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
+};
+
+struct combo_box_param_control: public param_control
+{
+    GtkComboBox *scale;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void combo_value_changed(GtkComboBox *widget, gpointer value);
+};
+
+#if USE_PHAT
+struct knob_param_control: public param_control
+{
+    PhatKnob *knob;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void knob_value_changed(PhatKnob *widget, gpointer value);
+};
+#endif
+
 class plugin_gui
 {
 protected:
@@ -56,20 +113,21 @@ public:
     GtkWidget *toplevel;
     GtkWidget *table;
     plugin_ctl_iface *plugin;
-    param_control *params;
+    std::vector<param_control *> params;
 
     plugin_gui(GtkWidget *_toplevel);
-    void create(plugin_ctl_iface *_plugin, const char *title);
-    GtkWidget *create_label(int param_idx);
-    static void hscale_value_changed(GtkHScale *widget, gpointer value);
-    static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
-    static void combo_value_changed(GtkComboBox *widget, gpointer value);
-    static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
+    GtkWidget *create(plugin_ctl_iface *_plugin, const char *title);
+    void refresh();
 
 #if USE_PHAT
     static void knob_value_changed(PhatKnob *widget, gpointer value);
 #endif
 };
+
+inline parameter_properties &param_control::get_props() 
+{ 
+    return  *gui->plugin->get_param_props(param_no);
+}
 
 };
 

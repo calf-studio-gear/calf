@@ -25,28 +25,98 @@
 
 using namespace synth;
 
-plugin_gui::plugin_gui(GtkWidget *_toplevel)
-: toplevel(_toplevel)
+
+/******************************** controls ********************************/
+
+GtkWidget *param_control::create_label(int param_idx)
 {
+    label = gtk_label_new ("");
+    gtk_label_set_width_chars (GTK_LABEL (label), 12);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+    return label;
+}
+
+void param_control::update_label()
+{
+    parameter_properties &props = get_props();
+    gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
+}
+
+// combo box
+
+GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
     
+    parameter_properties &props = get_props();
+    widget  = gtk_combo_box_new_text ();
+    for (int j = (int)props.min; j <= (int)props.max; j++)
+        gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j - (int)props.min]);
+    gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
+    
+    return widget;
 }
 
-void plugin_gui::hscale_value_changed(GtkHScale *widget, gpointer value)
+void combo_box_param_control::set()
+{
+    parameter_properties &props = get_props();
+    gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
+}
+
+void combo_box_param_control::get()
+{
+    parameter_properties &props = get_props();
+    gui->plugin->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min);
+}
+
+void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    int nparam = jhp->param_no;
-    const parameter_properties &props = *pif.get_param_props(nparam);
+    jhp->get();
+}
+
+// horizontal fader
+
+GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+
+    gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
+    
+    widget = gtk_hscale_new_with_range (0, 1, 0.01);
+    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
+    gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
+    gtk_widget_set_size_request (widget, 200, -1);
+
+    return widget;
+}
+
+void hscale_param_control::set()
+{
+    parameter_properties &props = get_props();
+    gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+    hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
+}
+
+void hscale_param_control::get()
+{
+    parameter_properties &props = get_props();
     float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
-    pif.set_param_value(nparam, cvalue);
-    // gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
+    gui->plugin->set_param_value(param_no, cvalue);
 }
 
-gchar *plugin_gui::hscale_format_value(GtkScale *widget, double arg1, gpointer value)
+void hscale_param_control::hscale_value_changed(GtkHScale *widget, gpointer value)
 {
-    param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    const parameter_properties &props = *pif.get_param_props (jhp->param_no);
+    hscale_param_control *jhp = (hscale_param_control *)value;
+    jhp->get();
+}
+
+gchar *hscale_param_control::hscale_format_value(GtkScale *widget, double arg1, gpointer value)
+{
+    hscale_param_control *jhp = (hscale_param_control *)value;
+    const parameter_properties &props = jhp->get_props();
     float cvalue = props.from_01 (arg1);
     
     // for testing
@@ -54,111 +124,146 @@ gchar *plugin_gui::hscale_format_value(GtkScale *widget, double arg1, gpointer v
     return g_strdup (props.to_string (cvalue).c_str());
 }
 
-void plugin_gui::combo_value_changed(GtkComboBox *widget, gpointer value)
-{
-    param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    int nparam = jhp->param_no;
-    pif.set_param_value(nparam, gtk_combo_box_get_active (widget) + pif.get_param_props (jhp->param_no)->min);
-}
+// check box
 
-void plugin_gui::toggle_value_changed(GtkCheckButton *widget, gpointer value)
+GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
 {
-    param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    int nparam = jhp->param_no;
-    pif.set_param_value(nparam, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + pif.get_param_props (jhp->param_no)->min);
-}
-
-#if USE_PHAT
-void plugin_gui::knob_value_changed(PhatKnob *widget, gpointer value)
-{
-    param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    const parameter_properties &props = *pif.get_param_props (jhp->param_no);
-    int nparam = jhp->param_no;
-    float cvalue = props.from_01 (phat_knob_get_value (widget));
-    pif.set_param_value(nparam, cvalue);
-    gtk_label_set_text (GTK_LABEL (jhp->label), props.to_string(cvalue).c_str());
-}
-#endif
-
-GtkWidget *plugin_gui::create_label(int param_idx)
-{
-    GtkWidget *widget  = gtk_label_new ("");
-    gtk_label_set_width_chars (GTK_LABEL (widget), 12);
-    gtk_misc_set_alignment (GTK_MISC (widget), 0.0, 0.5);
-    params[param_idx].label = widget;
+    gui = _gui;
+    param_no = _param_no;
+    
+    widget  = gtk_check_button_new ();
+    gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (toggle_value_changed), (gpointer)this);
     return widget;
 }
 
-void plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
+void toggle_param_control::toggle_value_changed(GtkCheckButton *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    jhp->get();
+}
+
+void toggle_param_control::get()
+{
+    const parameter_properties &props = get_props();
+    plugin_ctl_iface &pif = *gui->plugin;
+    pif.set_param_value(param_no, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + props.min);
+}
+
+void toggle_param_control::set()
+{
+    const parameter_properties &props = get_props();
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
+}
+
+// knob
+
+#if USE_PHAT
+GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    const parameter_properties &props = get_props();
+    
+    widget = phat_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
+    gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
+    return widget;
+}
+
+void knob_param_control::get()
+{
+    const parameter_properties &props = get_props();
+    float value = props.from_01(phat_knob_get_value(PHAT_KNOB(widget)));
+    gui->plugin->set_param_value(param_no, value);
+}
+
+void knob_param_control::set()
+{
+    const parameter_properties &props = get_props();
+    phat_knob_set_value(PHAT_KNOB(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+    knob_value_changed(PHAT_KNOB(widget), (gpointer)this);
+}
+
+void knob_param_control::knob_value_changed(PhatKnob *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    plugin_ctl_iface &pif = *jhp->gui->plugin;
+    const parameter_properties &props = jhp->get_props();
+    float cvalue = props.from_01 (phat_knob_get_value (widget));
+    pif.set_param_value(jhp->param_no, cvalue);
+    jhp->update_label();
+}
+#endif
+
+/******************************** GUI proper ********************************/
+
+plugin_gui::plugin_gui(GtkWidget *_toplevel)
+: toplevel(_toplevel)
+{
+    
+}
+
+
+GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
 {
     plugin = _plugin;
     param_count = plugin->get_param_count();
-    params = new param_control[param_count];
-    
+    params.resize(param_count);
     for (int i = 0; i < param_count; i++) {
-        params[i].gui = this;
-        params[i].param_no = i;
+        params[i] = NULL;
     }
-
-    table = gtk_table_new (param_count + 1, 3, FALSE);
     
-    GtkWidget *title_label = gtk_label_new ("");
-    gtk_label_set_markup (GTK_LABEL (title_label), (std::string("<b>")+title+"</b>").c_str());
-    gtk_table_attach (GTK_TABLE (table), title_label, 0, 3, 0, 1, GTK_EXPAND, GTK_SHRINK, 2, 2);
-
+    table = gtk_table_new (param_count, 3, FALSE);
+    
     for (int i = 0; i < param_count; i++) {
+        int trow = i;
         GtkWidget *label = gtk_label_new (plugin->get_param_names()[i]);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i + 1, i + 2, GTK_FILL, GTK_FILL, 2, 2);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
         
         parameter_properties &props = *plugin->get_param_props(i);
         
-        GtkWidget *widget;
+        GtkWidget *widget = NULL;
         
         if ((props.flags & PF_TYPEMASK) == PF_ENUM && 
             (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
         {
-            widget  = gtk_combo_box_new_text ();
-            for (int j = (int)props.min; j <= (int)props.max; j++)
-                gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j - (int)props.min]);
-            gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)plugin->get_param_value(i) - (int)props.min);
-            gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)&params[i]);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
+            params[i] = new combo_box_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
         else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                  (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
         {
-            widget  = gtk_check_button_new ();
-            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)plugin->get_param_value(i) - (int)props.min);
-            gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (toggle_value_changed), (gpointer)&params[i]);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, i + 1, i + 2, GTK_EXPAND, GTK_SHRINK, 0, 0);
+            params[i] = new toggle_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
 #if USE_PHAT
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
-            GtkWidget *knob = phat_knob_new_with_range (props.to_01 (plugin->get_param_value(i)), 0, 1, 0.01);
-            gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (knob_value_changed), (gpointer)&params[i]);
-            gtk_table_attach (GTK_TABLE (table), knob, 1, 2, i + 1, i + 2, GTK_SHRINK, GTK_SHRINK, 0, 0);
-            gtk_table_attach (GTK_TABLE (table), create_label(i), 2, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
-            knob_value_changed (PHAT_KNOB (knob), (gpointer)&params[i]);
+            params[i] = new knob_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (table), params[i]->create_label(i), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
         }
 #endif
         else
         {
-            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
-            
-            GtkWidget *knob = gtk_hscale_new_with_range (0, 1, 0.01);
-            gtk_signal_connect (GTK_OBJECT (knob), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)&params[i]);
-            gtk_signal_connect (GTK_OBJECT (knob), "format-value", G_CALLBACK (hscale_format_value), (gpointer)&params[i]);
-            gtk_widget_set_size_request (knob, 200, -1);
-            gtk_table_attach (GTK_TABLE (table), knob, 1, 3, i + 1, i + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
-            
-            gtk_range_set_value (GTK_RANGE (knob), props.to_01 (plugin->get_param_value(i)));
-            hscale_value_changed (GTK_HSCALE (knob), (gpointer)&params[i]);
+            params[i] = new hscale_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
         }
+        params[i]->set();
     }
-    gtk_container_add (GTK_CONTAINER (toplevel), table);
+    return table;
 }
+
+void plugin_gui::refresh()
+{
+    for (unsigned int i = 0; i < params.size(); i++)
+    {
+        if (params[i] != NULL)
+            params[i]->set();
+    }
+}
+
