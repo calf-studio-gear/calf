@@ -1,3 +1,8 @@
+Calf is a pack of audio plugins - effects and instruments, currently in
+development. The goal is to create a set of plugins using decent algorithms
+and parameter settings, available in a form which is compatible with as many
+open source applications as possible.
+
 How to use Calf plugins:
 
 * LADSPA plugins
