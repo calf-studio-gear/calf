@@ -22,9 +22,11 @@
  
 #include <calf/giface.h>
 #include <calf/gui.h>
+#include <calf/preset.h>
+#include <calf/preset_gui.h>
 
 using namespace synth;
-
+using namespace std;
 
 /******************************** controls ********************************/
 
@@ -196,12 +198,16 @@ void knob_param_control::knob_value_changed(PhatKnob *widget, gpointer value)
 
 /******************************** GUI proper ********************************/
 
-plugin_gui::plugin_gui(GtkWidget *_toplevel)
-: toplevel(_toplevel)
+plugin_gui::plugin_gui(plugin_gui_window *_window)
+: window(_window)
 {
     
 }
 
+static void action_destroy_notify(gpointer data)
+{
+    delete (activate_preset_params *)data;
+}
 
 GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
 {
@@ -267,3 +273,125 @@ void plugin_gui::refresh()
     }
 }
 
+/******************************* Actions **************************************************/
+ 
+static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
+{
+    store_preset(GTK_WINDOW(gui_win->toplevel), gui_win->gui);
+}
+
+static void exit_gui(GtkAction *action, plugin_gui_window *gui_win)
+{
+    gtk_widget_destroy(GTK_WIDGET(gui_win->toplevel));
+}
+
+static const GtkActionEntry actions[] = {
+    { "HostMenuAction", "", "_Host", NULL, "Application-wide actions", NULL },
+    { "exit", "", "E_xit", NULL, "Exit the application", (GCallback)exit_gui },
+    { "PresetMenuAction", "", "_Preset", NULL, "Preset operations", NULL },
+    { "store-preset", "", "_Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
+};
+
+/***************************** GUI window ********************************************/
+
+static const char *ui_xml = 
+"<ui>\n"
+"  <menubar>\n"
+"    <menu action=\"HostMenuAction\">\n"
+"      <menuitem action=\"exit\"/>\n"
+"    </menu>\n"
+"    <menu action=\"PresetMenuAction\">\n"
+"      <menuitem action=\"store-preset\"/>\n"
+"      <separator/>\n"
+"      <placeholder name=\"presets\"/>\n"
+"    </menu>\n"
+"  </menubar>\n"
+"</ui>\n"
+;
+
+static const char *preset_pre_xml = 
+"<ui>\n"
+"  <menubar>\n"
+"    <menu action=\"PresetMenuAction\">\n"
+"      <placeholder name=\"presets\">\n";
+
+static const char *preset_post_xml = 
+"      </placeholder>\n"
+"    </menu>\n"
+"  </menubar>\n"
+"</ui>\n"
+;
+
+plugin_gui_window::plugin_gui_window()
+{
+    toplevel = NULL;
+    ui_mgr = NULL;
+    std_actions = NULL;
+    preset_actions = NULL;
+}
+
+string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp)
+{
+    string preset_xml = preset_pre_xml;
+    for (unsigned int i = 0; i < presets.size(); i++)
+    {
+        if (presets[i].plugin != gui->effect_name)
+            continue;
+        stringstream ss;
+        ss << "preset" << i;
+        preset_xml += "          <menuitem name=\""+presets[i].name+"\" action=\""+ss.str()+"\"/>\n";
+        
+        GtkActionEntry ae = { ss.str().c_str(), NULL, presets[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
+        gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i), action_destroy_notify);
+    }
+    preset_xml += preset_post_xml;
+    return preset_xml;
+}
+
+void plugin_gui_window::fill_gui_presets()
+{
+    if(preset_actions) {
+        gtk_ui_manager_remove_action_group(ui_mgr, preset_actions);
+        preset_actions = NULL;
+    }
+    
+    preset_actions = gtk_action_group_new("presets");
+    string preset_xml = make_gui_preset_list(preset_actions);
+    gtk_ui_manager_insert_action_group(ui_mgr, preset_actions, 0);    
+    GError *error = NULL;
+    gtk_ui_manager_add_ui_from_string(ui_mgr, preset_xml.c_str(), -1, &error);
+}
+
+void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const char *effect)
+{
+    toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
+    
+    gtk_window_set_title(GTK_WINDOW (toplevel), (string(title) + " - " + effect).c_str());
+    gtk_container_add(GTK_CONTAINER(toplevel), GTK_WIDGET(vbox));
+
+    gui = new plugin_gui(this);
+    gui->effect_name = effect;
+
+    ui_mgr = gtk_ui_manager_new();
+    std_actions = gtk_action_group_new("default");
+    gtk_action_group_add_actions(std_actions, actions, sizeof(actions)/sizeof(actions[0]), this);
+    GError *error = NULL;
+    gtk_ui_manager_insert_action_group(ui_mgr, std_actions, 0);
+    gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
+    fill_gui_presets();
+    
+    gtk_container_add(GTK_CONTAINER(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"));
+    
+    GtkWidget *table = gui->create(_jh, effect);
+
+    gtk_container_add(GTK_CONTAINER(vbox), table);
+
+    gtk_widget_show_all(GTK_WIDGET(toplevel));
+    
+}
+
+plugin_gui_window::~plugin_gui_window()
+{
+    delete gui;
+}

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([calf],[0.0.6],[wdev@foltman.com])
+AC_INIT([calf],[0.0.7],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
@@ -29,6 +29,9 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h time.h math.h])
 AC_CHECK_HEADER(ladspa.h, LADSPA_FOUND="yes", LADSPA_FOUND="no")
 
 AC_CHECK_HEADER(dssi.h, DSSI_FOUND="yes", DSSI_FOUND="no")
+
+AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
+AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
 
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
 

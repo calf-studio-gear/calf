@@ -11,7 +11,7 @@ bin_PROGRAMS =
 noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = libcalf.la libcalfstatic.la libcalfgui.la
 
-AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80
+AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
 if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
@@ -43,19 +43,23 @@ endif
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = 
 
-libcalf_la_SOURCES = modules.cpp giface.cpp synth.cpp
-libcalf_la_LDFLAGS = -rpath $(ladspadir) -version-info 0:0:0
+libcalf_la_SOURCES = modules.cpp giface.cpp synth.cpp preset.cpp
+libcalf_la_LDFLAGS = -rpath $(ladspadir) -version-info 0:0:0 -lexpat
 
-libcalfstatic_la_SOURCES = modules.cpp giface.cpp synth.cpp
-libcalfstatic_la_LDFLAGS = -static
+libcalfstatic_la_SOURCES = modules.cpp giface.cpp synth.cpp preset.cpp
+libcalfstatic_la_LDFLAGS = -static -lexpat
 
-libcalfgui_la_SOURCES = gui.cpp
+libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp
 libcalfgui_la_LDFLAGS = -static
 
 clean-local:
 	$(RM) -f calfjackhost *~
 
 install-data-hook:
+if USE_JACK
+	install -d -m 755 $(DESTDIR)$(pkglibdir)    
+	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkglibdir)
+endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
 	install -d -m 755 $(DESTDIR)$(with_ladspa_rdf_dir)
@@ -69,6 +73,10 @@ endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
 uninstall-hook:
+if USE_JACK
+	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
+	rmdir $(DESTDIR)$(pkglibdir)    
+endif
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(RM) -f $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf

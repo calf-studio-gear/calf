@@ -4,7 +4,7 @@ SUBDIRS = $(SRCDIRS)
 
 distdir = $(PACKAGE)-$(VERSION)
 
-EXTRADIST = TODO autogen.sh
+EXTRA_DIST = TODO autogen.sh calf.glade
 
 clean-local:
 	rm -f *~ *.old

@@ -53,6 +53,34 @@ struct plugin_preset
     }
 };
 
+struct preset_exception
+{
+    std::string message, param, fulltext;
+    int error;
+    preset_exception(const char *_message, const char *_param, int _error)
+    : message(_message), param(_param), error(_error)
+    {
+    }
+    const char *what() {
+        if (error)
+            fulltext = message + " " + param + " (" + strerror(error) + ")";
+        else
+            fulltext = message + " " + param;
+        return fulltext.c_str();
+    }
+    ~preset_exception()
+    {
+    }
+};
+
+extern std::string get_preset_filename();
+extern void load_presets(const char *filename);
+extern void save_presets(const char *filename);
+extern void add_preset(const plugin_preset &sp);
+
+// this global variable is a temporary measure
+extern std::vector<plugin_preset> presets;
+
 };
 
 #endif

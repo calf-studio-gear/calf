@@ -105,23 +105,42 @@ struct knob_param_control: public param_control
 };
 #endif
 
+class plugin_gui_window;
+
 class plugin_gui
 {
 protected:
     int param_count;
 public:
-    GtkWidget *toplevel;
+    plugin_gui_window *window;
     GtkWidget *table;
+    const char *effect_name;
     plugin_ctl_iface *plugin;
     std::vector<param_control *> params;
 
-    plugin_gui(GtkWidget *_toplevel);
+    plugin_gui(plugin_gui_window *_window);
     GtkWidget *create(plugin_ctl_iface *_plugin, const char *title);
+
     void refresh();
 
 #if USE_PHAT
     static void knob_value_changed(PhatKnob *widget, gpointer value);
 #endif
+};
+
+class plugin_gui_window
+{
+public:
+    plugin_gui *gui;
+    GtkWindow *toplevel;
+    GtkUIManager *ui_mgr;
+    GtkActionGroup *std_actions, *preset_actions;
+
+    plugin_gui_window();
+    std::string make_gui_preset_list(GtkActionGroup *grp);
+    void fill_gui_presets();
+    void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
+    ~plugin_gui_window();
 };
 
 inline parameter_properties &param_control::get_props() 

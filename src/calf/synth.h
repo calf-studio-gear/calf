@@ -166,8 +166,8 @@ public:
     
     env_state state;
     // note: these are *rates*, not times
-    float attack, decay, sustain, release;
-    float value;
+    double attack, decay, sustain, release;
+    double value;
     
     adsr()
     {
@@ -233,6 +233,10 @@ public:
             break;
         case SUSTAIN:
             value = sustain;
+            if (value < 0.00001f) {
+                value = 0;
+                state = STOP;
+            }
             break;
         case RELEASE:
             value -= release;
