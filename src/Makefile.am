@@ -9,7 +9,7 @@ ladspadir = $(with_ladspa_dir)
 bin_PROGRAMS = 
 
 noinst_PROGRAMS = calfbenchmark
-noinst_LTLIBRARIES = libcalf.la libcalfstatic.la libcalfgui.la
+noinst_LTLIBRARIES = calf.la libcalfstatic.la libcalfgui.la
 
 AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
@@ -43,8 +43,8 @@ endif
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = 
 
-libcalf_la_SOURCES = modules.cpp giface.cpp synth.cpp preset.cpp
-libcalf_la_LDFLAGS = -rpath $(ladspadir) -version-info 0:0:0 -lexpat
+calf_la_SOURCES = modules.cpp giface.cpp synth.cpp preset.cpp
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
 
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp synth.cpp preset.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat
@@ -63,12 +63,12 @@ endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
 	install -d -m 755 $(DESTDIR)$(with_ladspa_rdf_dir)
-	install -c -m 755 $(top_builddir)/src/.libs/libcalf.so.0.0.0 $(DESTDIR)$(with_ladspa_dir)/calf.so
+	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(DESTDIR)$(bindir)/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 endif
 if USE_DSSI
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
-	install -c -m 755 $(top_builddir)/src/.libs/libcalf.so.0.0.0 $(DESTDIR)$(with_dssi_dir)/calf.so
+	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share

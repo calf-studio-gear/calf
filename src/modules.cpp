@@ -40,7 +40,7 @@ parameter_properties amp_audio_module::param_props[] = {
 static synth::ladspa_info amp_info = { 0x847c, "Amp", "Calf Const Amp", "Krzysztof Foltman", copyright, "AmplifierPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<amp_audio_module> amp(amp_info);
+static synth::ladspa_wrapper<amp_audio_module> amp(amp_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ parameter_properties flanger_audio_module::param_props[] = {
 static synth::ladspa_info flanger_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", copyright, "FlangerPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
+static synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ parameter_properties reverb_audio_module::param_props[] = {
 static synth::ladspa_info reverb_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", copyright, "ReverbPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
+static synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ parameter_properties filter_audio_module::param_props[] = {
 static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
+static synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ parameter_properties organ_audio_module::param_props[] = {
 static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
+static synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
 #endif
 
 #endif
@@ -192,7 +192,7 @@ parameter_properties monosynth_audio_module::param_props[] = {
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
 #if USE_LADSPA
-synth::ladspa_wrapper<monosynth_audio_module> monosynth(monosynth_info);
+static synth::ladspa_wrapper<monosynth_audio_module> monosynth(monosynth_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////

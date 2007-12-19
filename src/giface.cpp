@@ -48,7 +48,7 @@ float parameter_properties::from_01(float value01) const
         if (value01 < 0.00001)
             value = min;
         else {
-            float rmin = 1.0f / 1024.0f;
+            float rmin = std::max(1.0f / 1024.0f, min);
             value = rmin * pow(max / rmin, value01);
         }
         break;
@@ -82,7 +82,7 @@ float parameter_properties::to_01(float value) const
     case PF_SCALE_GAIN:
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return 0;
-        float rmin = 1.0f / 1024.0f;
+        float rmin = std::max(1.0f / 1024.0f, min);
         value /= rmin;
         return log(value) / log(max / rmin);
     }
@@ -98,7 +98,7 @@ std::string parameter_properties::to_string(float value) const
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return "-inf dB"; // XXXKF change to utf-8 infinity
-        sprintf(buf, "%0.1f dB", (float)(6 * log(value) / log(2)));
+        sprintf(buf, "%0.1f dB", 6.0 * log(value) / log(2));
         return string(buf);
     }
     sprintf(buf, "%g", value);
@@ -111,6 +111,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_CENTS: return string(buf) + " ct";
     case PF_UNIT_SEMITONES: return string(buf) + "#";
     }
+
     return string(buf);
 }
 
