@@ -154,7 +154,7 @@ struct ladspa_wrapper
         descriptor.Name = i.name;
         descriptor.Maker = i.maker;
         descriptor.Copyright = i.copyright;
-        descriptor.Properties = LADSPA_PROPERTY_INPLACE_BROKEN | (Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0);
+        descriptor.Properties = Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0;
         descriptor.PortCount = ins + outs + params;
         descriptor.PortNames = Module::param_names;
         descriptor.PortDescriptors = new LADSPA_PortDescriptor[descriptor.PortCount];
