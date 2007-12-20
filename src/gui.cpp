@@ -222,11 +222,11 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
     
     for (int i = 0; i < param_count; i++) {
         int trow = i;
-        GtkWidget *label = gtk_label_new (plugin->get_param_names()[i]);
+        parameter_properties &props = *plugin->get_param_props(i);
+        GtkWidget *label = gtk_label_new (props.name);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
         gtk_table_attach (GTK_TABLE (table), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
         
-        parameter_properties &props = *plugin->get_param_props(i);
         
         GtkWidget *widget = NULL;
         
@@ -367,7 +367,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
     
-    gtk_window_set_title(GTK_WINDOW (toplevel), (string(title) + " - " + effect).c_str());
+    gtk_window_set_title(GTK_WINDOW (toplevel), title);
     gtk_container_add(GTK_CONTAINER(toplevel), GTK_WIDGET(vbox));
 
     gui = new plugin_gui(this);

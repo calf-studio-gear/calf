@@ -58,7 +58,6 @@ struct plugin_ctl_iface
     virtual float get_param_value(int param_no) = 0;
     virtual void set_param_value(int param_no, float value) = 0;
     virtual int get_param_count() = 0;
-    virtual const char ** get_param_names()=0;
     virtual ~plugin_ctl_iface() {}
 };
 

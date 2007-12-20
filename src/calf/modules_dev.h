@@ -42,7 +42,7 @@ public:
     enum { par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, par_foldover,
         par_percmode, par_percharm, par_vibrato, par_master, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
-    static const char *param_names[];
+    static const char *port_names[];
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];

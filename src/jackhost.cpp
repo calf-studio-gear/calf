@@ -40,11 +40,27 @@ using namespace std;
 // I don't need anyone to tell me this is stupid. I already know that :)
 plugin_gui_window *gui_win;
 
-const char *effect_name = "flanger";
+jack_client client;
+
 const char *client_name = "calfhost";
-const char *input_name = "input";
-const char *output_name = "output";
-const char *midi_name = "midi";
+
+jack_host_base *synth::create_jack_host(const char *effect_name)
+{
+    if (!strcmp(effect_name, "reverb"))
+        return new jack_host<reverb_audio_module>();
+    else if (!strcmp(effect_name, "flanger"))
+        return new jack_host<flanger_audio_module>();
+    else if (!strcmp(effect_name, "filter"))
+        return new jack_host<filter_audio_module>();
+    else if (!strcmp(effect_name, "monosynth"))
+        return new jack_host<monosynth_audio_module>();
+#ifdef ENABLE_EXPERIMENTAL
+    else if (!strcmp(effect_name, "organ"))
+        return new jack_host<organ_audio_module>();
+#endif
+    else
+        return NULL;
+}
 
 void destroy(GtkWindow *window, gpointer data)
 {
@@ -55,50 +71,80 @@ static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
-    {"effect", 1, 0, 'e'},
-    {"plugin", 1, 0, 'p'},
+    {"effect", 0, 0, 'e'},
+    {"plugin", 0, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {0,0,0,0},
 };
 
+void print_help(char *argv[])
+{
+    printf("JACK host for Calf effects\n"
+        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>]\n"
+        "       [--help] [--version] pluginname ...\n", 
+        argv[0]);
+}
+
+int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
+{
+    jack_client *self = (jack_client *)p;
+    for(unsigned int i = 0; i < self->plugins.size(); i++)
+        self->plugins[i]->process(nframes);
+    return 0;
+}
+
+int jack_client::do_jack_bufsize(jack_nframes_t numsamples, void *p)
+{
+    jack_client *self = (jack_client *)p;
+    for(unsigned int i = 0; i < self->plugins.size(); i++)
+        self->plugins[i]->cache_ports();
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
+    vector<string> names;
+    vector<jack_host_base *> hosts;
+    vector<plugin_gui_window *> guis;
     gtk_init(&argc, &argv);
     glade_init();
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:e:i:o:m:p:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:o:m:ephv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
             case 'h':
             case '?':
-                printf("JACK host for Calf effects\n"
-                    "Syntax: %s [--plugin reverb|flanger|filter|monosynth] [--client <name>] [--input <name>]"
-                    "       [--output <name>] [--midi <name>] [--help] [--version]\n", 
-                    argv[0]);
+                print_help(argv);
                 return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);
                 return 0;
             case 'e':
             case 'p':
-                effect_name = optarg;
+                fprintf(stderr, "Warning: switch -%c is deprecated!\n", c);
                 break;
             case 'c':
                 client_name = optarg;
                 break;
             case 'i':
-                input_name = optarg;
+                client.input_name = string(optarg) + "_%d";
                 break;
             case 'o':
-                output_name = optarg;
+                client.output_name = string(optarg) + "_%d";
                 break;
             case 'm':
-                midi_name = optarg;
+                client.midi_name = string(optarg) + "_%d";
                 break;
         }
+    }
+    while(optind < argc)
+        names.push_back(argv[optind++]);
+    if (!names.size()) {
+        print_help(argv);
+        return 0;
     }
     try {
         struct stat st;
@@ -106,36 +152,37 @@ int main(int argc, char *argv[])
             load_presets(get_preset_filename().c_str());
         else if (!stat(PKGLIBDIR "/presets.xml", &st))
             load_presets(PKGLIBDIR "/presets.xml");
-        jack_host_base *jh = NULL;
-        if (!strcmp(effect_name, "reverb"))
-            jh = new jack_host<reverb_audio_module>();
-        else if (!strcmp(effect_name, "flanger"))
-            jh = new jack_host<flanger_audio_module>();
-        else if (!strcmp(effect_name, "filter"))
-            jh = new jack_host<filter_audio_module>();
-        else if (!strcmp(effect_name, "monosynth"))
-            jh = new jack_host<monosynth_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
-        else if (!strcmp(effect_name, "organ"))
-            jh = new jack_host<organ_audio_module>();
-#endif
-        else {
-#ifdef ENABLE_EXPERIMENTAL
-            fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth, organ\n");
-#else
-            fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth\n");
-#endif
-            return 1;
+        
+        client.open(client_name);
+        for (unsigned int i = 0; i < names.size(); i++) {
+            jack_host_base *jh = create_jack_host(names[i].c_str());
+            if (!jh) {
+    #ifdef ENABLE_EXPERIMENTAL
+                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth, organ\n");
+    #else
+                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth\n");
+    #endif
+                return 1;
+            }
+            jh->open(&client);
+            gui_win = new plugin_gui_window;
+            gui_win->create(jh, (string(client_name)+" - "+names[i]).c_str(), names[i].c_str());
+            gtk_signal_connect(GTK_OBJECT(gui_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
+            guis.push_back(gui_win);
+            hosts.push_back(jh);
+            client.add(jh);
         }
-        jh->open(client_name, input_name, output_name, midi_name);
-        gui_win = new plugin_gui_window;
-        gui_win->create(jh, client_name, effect_name);
-        gtk_signal_connect(GTK_OBJECT(gui_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
+        client.activate();
         gtk_main();
-        delete gui_win;
-        jh->close();
+        client.deactivate();
+        for (unsigned int i = 0; i < names.size(); i++) {
+            delete guis[i];
+            hosts[i]->close();
+            delete hosts[i];
+        }
+        client.close();
+        
         save_presets(get_preset_filename().c_str());
-        delete jh;
     }
     catch(std::exception &e)
     {

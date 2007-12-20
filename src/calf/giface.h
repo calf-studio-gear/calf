@@ -84,6 +84,7 @@ struct parameter_properties
     float def_value, min, max, step;
     uint32_t flags;
     const char **choices;
+    const char *short_name, *name;
     float from_01(float value01) const;
     float to_01(float value) const;
     std::string to_string(float value) const;
@@ -156,7 +157,7 @@ struct ladspa_wrapper
         descriptor.Copyright = i.copyright;
         descriptor.Properties = Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0;
         descriptor.PortCount = ins + outs + params;
-        descriptor.PortNames = Module::param_names;
+        descriptor.PortNames = new char *[descriptor.PortCount];
         descriptor.PortDescriptors = new LADSPA_PortDescriptor[descriptor.PortCount];
         descriptor.PortRangeHints = new LADSPA_PortRangeHint[descriptor.PortCount];
         for (int i = 0; i < ins + outs + params; i++)
@@ -165,11 +166,13 @@ struct ladspa_wrapper
             ((int *)descriptor.PortDescriptors)[i] = i < ins ? LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO
                                                   : i < ins + outs ? LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO
                                                                    : LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
-            if (i < ins + outs)
+            if (i < ins + outs) {
                 prh.HintDescriptor = 0;
-            else {            
+                ((const char **)descriptor.PortNames)[i] = Module::port_names[i];
+            } else {            
                 prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
                 parameter_properties &pp = Module::param_props[i - ins - outs];
+                ((const char **)descriptor.PortNames)[i] = pp.name;
                 prh.LowerBound = pp.min;
                 prh.UpperBound = pp.max;
                 switch(pp.flags & PF_TYPEMASK) {
@@ -350,7 +353,7 @@ struct ladspa_wrapper
     }
     
     std::string generate_rdf() {
-        return synth::generate_ladspa_rdf(info, Module::param_props, Module::param_names, Module::param_count, Module::in_count + Module::out_count);
+        return synth::generate_ladspa_rdf(info, Module::param_props, (const char **)descriptor.PortNames, Module::param_count, Module::in_count + Module::out_count);
     };
 };
 

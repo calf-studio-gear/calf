@@ -31,6 +31,61 @@
 
 namespace synth {
 
+class jack_host_base;
+    
+class jack_client {
+public:
+    jack_client_t *client;
+    int input_nr, output_nr, midi_nr;
+    std::string input_name, output_name, midi_name;
+    std::vector<jack_host_base *> plugins;
+    int sample_rate;
+
+    jack_client()
+    {
+        input_nr = output_nr = midi_nr = 1;
+        input_name = "input_%d";
+        output_name = "output_%d";
+        midi_name = "midi_%d";
+        sample_rate = 0;
+        client = NULL;
+    }
+    
+    void add(jack_host_base *plugin)
+    {
+        plugins.push_back(plugin);
+    }
+    
+    void open(const char *client_name)
+    {
+        jack_status_t status;
+        client = jack_client_open(client_name, JackNullOption, &status);
+        if (!client)
+            throw audio_exception("Could not initialize Jack subsystem");
+        sample_rate = jack_get_sample_rate(client);
+        jack_set_process_callback(client, do_jack_process, this);
+        jack_set_buffer_size_callback(client, do_jack_bufsize, this);
+    }
+    
+    void activate()
+    {
+        jack_activate(client);        
+    }
+
+    void deactivate()
+    {
+        jack_deactivate(client);        
+    }
+    
+    void close()
+    {
+        jack_client_close(client);
+    }
+    
+    static int do_jack_process(jack_nframes_t nframes, void *p);
+    static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
+};
+    
 class jack_host_base: public plugin_ctl_iface {
 public:
     typedef int (*process_func)(jack_nframes_t nframes, void *p);
@@ -40,9 +95,7 @@ public:
         port() : handle(NULL), data(NULL) {}
         ~port() { }
     };
-    jack_client_t *client;
-    jack_status_t status;
-    int sample_rate;
+    jack_client *client;
     bool changed;
     port midi_port;
     virtual int get_input_count()=0;
@@ -52,12 +105,11 @@ public:
     virtual float *get_params()=0;
     virtual void init_module()=0;
     virtual void cache_ports()=0;
-    virtual process_func get_process_func()=0;
     virtual bool get_midi()=0;
+    virtual int process(jack_nframes_t nframes)=0;
     
     jack_host_base() {
         client = NULL;
-        sample_rate = 0;
         changed = true;
     }
     
@@ -70,62 +122,47 @@ public:
         changed = true;
     }
     
-    void open(const char *client_name, const char *in_prefix, const char *out_prefix, const char *midi_name)
+    void open(jack_client *_client)
     {
-        client = jack_client_open(client_name, JackNullOption, &status);
+        client = _client; //jack_client_open(client_name, JackNullOption, &status);
         
-        if (!client)
-            throw audio_exception("Could not initialize Jack subsystem");
-        
-        sample_rate = jack_get_sample_rate(client);
-        
-        create_ports(in_prefix, out_prefix, midi_name);
+        create_ports();
         
         cache_ports();
         
-        jack_set_process_callback(client, get_process_func(), this);
-        jack_set_buffer_size_callback(client, do_jack_bufsize, this);
-
         init_module();
         changed = false;
-
-        jack_activate(client);        
     }
     
-    virtual void create_ports(const char *in_prefix, const char *out_prefix, const char *midi_name) {
+    virtual void create_ports() {
         char buf[32];
         port *inputs = get_inputs();
         port *outputs = get_outputs();
         int in_count = get_input_count(), out_count = get_output_count();
         for (int i=0; i<in_count; i++) {
-            sprintf(buf, "%s%d", in_prefix, i+1);
-            inputs[i].handle = jack_port_register(client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+            sprintf(buf, client->input_name.c_str(), client->input_nr++);
+            inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
             inputs[i].data = NULL;
         }
         for (int i=0; i<out_count; i++) {
-            sprintf(buf, "%s%d", out_prefix, i+1);
-            outputs[i].handle = jack_port_register(client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+            sprintf(buf, client->output_name.c_str(), client->output_nr++);
+            outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
             outputs[i].data = NULL;
         }
-        if (get_midi())
-            midi_port.handle = jack_port_register(client, midi_name, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-    }
-    
-    static int do_jack_bufsize(jack_nframes_t numsamples, void *p) {
-        jack_host_base *app = (jack_host_base *)p;
-        app->cache_ports();
-        return 0;
+        if (get_midi()) {
+            sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
+            midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+        }
     }
     
     void close() {
-        jack_client_close(client);
-        client = NULL;
         port *inputs = get_inputs(), *outputs = get_outputs();
         int input_count = get_input_count(), output_count = get_output_count();
         for (int i = 0; i < input_count; i++)
             inputs[i].data = NULL;
         for (int i = 0; i < output_count; i++)
             outputs[i].data = NULL;
+        client = NULL;
     }
 
     virtual ~jack_host_base() {
@@ -150,47 +187,46 @@ public:
     }
     
     virtual void init_module() {
-        module.set_sample_rate(sample_rate);
+        module.set_sample_rate(client->sample_rate);
         module.activate();
         module.params_changed();
     }
 
     virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
     
-    static void handle_event(Module *module, uint8_t *buffer, uint32_t size)
+    void handle_event(uint8_t *buffer, uint32_t size)
     {
         int value;
         switch(buffer[0] >> 4)
         {
         case 8:
-            module->note_off(buffer[1], buffer[2]);
+            module.note_off(buffer[1], buffer[2]);
             break;
         case 9:
-            module->note_on(buffer[1], buffer[2]);
+            module.note_on(buffer[1], buffer[2]);
             break;
         case 10:
-            module->program_change(buffer[1]);
+            module.program_change(buffer[1]);
             break;
         case 11:
-            module->control_change(buffer[1], buffer[2]);
+            module.control_change(buffer[1], buffer[2]);
             break;
         case 14:
             value = buffer[1] + 128 * buffer[2] - 8192;
-            module->pitch_bend(value);
+            module.pitch_bend(value);
             break;
         }
     }
-    static int do_jack_process(jack_nframes_t nframes, void *p) {
-        jack_host *host = (jack_host *)p;
-        Module *module = &host->module;
+    int process(jack_nframes_t nframes)
+    {
         for (int i=0; i<Module::in_count; i++) {
-            module->ins[i] = host->inputs[i].data = (float *)jack_port_get_buffer(host->inputs[i].handle, 0);
+            module.ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, 0);
         }
         if (Module::support_midi)
-            host->midi_port.data = (float *)jack_port_get_buffer(host->midi_port.handle, 0);
-        if (host->changed) {
-            module->params_changed();
-            host->changed = false;
+            midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, 0);
+        if (changed) {
+            module.params_changed();
+            changed = false;
         }
 
         unsigned int time = 0;
@@ -199,33 +235,33 @@ public:
         {
             jack_midi_event_t event;
 #ifdef OLD_JACK
-            int count = jack_midi_get_event_count(host->midi_port.data, nframes);
+            int count = jack_midi_get_event_count(midi_port.data, nframes);
 #else
-            int count = jack_midi_get_event_count(host->midi_port.data);
+            int count = jack_midi_get_event_count(midi_port.data);
 #endif
             for (int i = 0; i < count; i++)
             {
 #ifdef OLD_JACK
-                jack_midi_event_get(&event, host->midi_port.data, i, nframes);
+                jack_midi_event_get(&event, midi_port.data, i, nframes);
 #else
-                jack_midi_event_get(&event, host->midi_port.data, i);
+                jack_midi_event_get(&event, midi_port.data, i);
 #endif
-                mask = module->process(time, event.time - time, -1, -1);
+                mask = module.process(time, event.time - time, -1, -1);
                 for (int i = 0; i < Module::out_count; i++) {
                     if (!(mask & (1 << i)))
-                        dsp::zero(module->outs[i] + time, event.time - time);
+                        dsp::zero(module.outs[i] + time, event.time - time);
                 }
                 
-                handle_event(module, event.buffer, event.size);
+                handle_event(event.buffer, event.size);
                 
                 time = event.time;
             }
         }
-        mask = module->process(time, nframes - time, -1, -1);
+        mask = module.process(time, nframes - time, -1, -1);
         for (int i = 0; i < Module::out_count; i++) {
             // zero unfilled outputs
             if (!(mask & (1 << i)))
-                dsp::zero(module->outs[i] + time, nframes - time);
+                dsp::zero(module.outs[i] + time, nframes - time);
         }
         return 0;
     }
@@ -248,8 +284,6 @@ public:
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual int get_param_count() { return Module::param_count; }
-    virtual process_func get_process_func() { return do_jack_process; }
-    virtual const char ** get_param_names() { return Module::param_names + Module::in_count + Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
     virtual float get_param_value(int param_no) {
         return params[param_no];
@@ -259,6 +293,8 @@ public:
         changed = true;
     }
 };
+
+extern jack_host_base *create_jack_host(const char *name);
 
 #endif
 

@@ -40,7 +40,7 @@ public:
     enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2amp, par_vel2filter, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
-    static const char *param_names[];
+    static const char *port_names[];
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];

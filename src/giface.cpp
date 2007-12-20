@@ -192,9 +192,9 @@ std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_proper
     for (unsigned int i = 0; i < count; i++) {
         rdf += 
             "    <ladspa:hasPort>\n"
-            "      <ladspa:InputControlPort rdf:about=\"" + plugin_id + "."+i2s(i )+"\" "
+            "      <ladspa:InputControlPort rdf:about=\"" + plugin_id + "."+i2s(i)+"\" "
             + unit_to_string(params[i]) +
-            "ladspa:hasLabel=\"par_"+i2s(i + ctl_ofs)+"\" "
+            "ladspa:hasLabel=\"" + params[i].short_name + "\" "
             + scale_to_string(params[i]) + 
             ">\n"
             "    </ladspa:hasPort>\n";

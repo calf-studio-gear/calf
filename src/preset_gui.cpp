@@ -46,7 +46,7 @@ void store_preset_ok(GtkAction *action, plugin_gui *gui)
     sp.plugin = gui->effect_name;
     int count = gui->plugin->get_param_count();
     for (int i = 0; i < count; i++) {
-        sp.param_names.push_back(gui->plugin->get_param_names()[i]);
+        sp.param_names.push_back(gui->plugin->get_param_props(i)->name);
         sp.values.push_back(gui->plugin->get_param_value(i));
     }
     add_preset(sp);
@@ -83,7 +83,7 @@ void synth::activate_preset(GtkAction *action, activate_preset_params *params)
     map<string, int> names;
     int count = gui->plugin->get_param_count();
     for (int i = 0; i < count; i++) 
-        names[gui->plugin->get_param_names()[i]] = i;
+        names[gui->plugin->get_param_props(i)->name] = i;
     // no support for unnamed parameters... tough luck :)
     for (unsigned int i = 0; i < min(p.param_names.size(), p.values.size()); i++)
     {

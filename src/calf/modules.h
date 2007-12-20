@@ -52,7 +52,7 @@ public:
     float *outs[2];
     float *params[1];
     uint32_t srate;
-    static const char *param_names[];
+    static const char *port_names[];
     static parameter_properties param_props[];
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!inputs_mask)
@@ -72,7 +72,7 @@ class flanger_audio_module: public null_audio_module
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    static const char *param_names[];
+    static const char *port_names[];
     dsp::simple_flanger<float, 2048> left, right;
     float *ins[in_count]; 
     float *outs[out_count];
@@ -116,7 +116,7 @@ class reverb_audio_module: public null_audio_module
 public:    
     enum { par_decay, par_hfdamp, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    static const char *param_names[];
+    static const char *port_names[];
     dsp::reverb<float> reverb;
     uint32_t srate;
     float *ins[in_count]; 
@@ -161,7 +161,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static const char *param_names[];
+    static const char *port_names[];
     dsp::biquad<float> left[3], right[3];
     uint32_t srate;
     static parameter_properties param_props[];
