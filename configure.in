@@ -58,7 +58,7 @@ PHAT_ENABLED="no"
 if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.4.0 libglade-2.0 >= 2.4.0, 
     JACK_ENABLED="yes",
-    JACK_ENABLED="no (GTK+ is missing or too old)"
+    JACK_ENABLED="no (GTK+ or libglade is missing or too old)"
   )
 else
   JACK_ENABLED="no"
