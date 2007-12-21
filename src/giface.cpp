@@ -110,6 +110,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_MSEC: return string(buf) + " ms";
     case PF_UNIT_CENTS: return string(buf) + " ct";
     case PF_UNIT_SEMITONES: return string(buf) + "#";
+    case PF_UNIT_BPM: return string(buf) + " bpm";
     }
 
     return string(buf);

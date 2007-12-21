@@ -77,6 +77,12 @@ public:
         jack_deactivate(client);        
     }
     
+    void connect(const std::string &p1, const std::string &p2)
+    {
+        if (jack_connect(client, p1.c_str(), p2.c_str()) != 0)
+            throw audio_exception(("Could not connect ports "+p1+" and "+p2).c_str());
+    }
+    
     void close()
     {
         jack_client_close(client);
@@ -92,12 +98,14 @@ public:
     struct port {
         jack_port_t *handle;
         float *data;
+        std::string name;
         port() : handle(NULL), data(NULL) {}
         ~port() { }
     };
     jack_client *client;
     bool changed;
     port midi_port;
+    std::string name;
     virtual int get_input_count()=0;
     virtual int get_output_count()=0;
     virtual port *get_inputs()=0;
@@ -141,16 +149,19 @@ public:
         int in_count = get_input_count(), out_count = get_output_count();
         for (int i=0; i<in_count; i++) {
             sprintf(buf, client->input_name.c_str(), client->input_nr++);
+            inputs[i].name = buf;
             inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
             inputs[i].data = NULL;
         }
         for (int i=0; i<out_count; i++) {
             sprintf(buf, client->output_name.c_str(), client->output_nr++);
+            outputs[i].name = buf;
             outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
             outputs[i].data = NULL;
         }
         if (get_midi()) {
             sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
+            midi_port.name = buf;
             midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
         }
     }

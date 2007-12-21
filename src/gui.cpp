@@ -85,8 +85,6 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
 
-    gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
-    
     widget = gtk_hscale_new_with_range (0, 1, 0.01);
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
@@ -255,6 +253,7 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
 #endif
         else
         {
+            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
             params[i] = new hscale_param_control();
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);

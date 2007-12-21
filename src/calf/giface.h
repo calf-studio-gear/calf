@@ -40,6 +40,10 @@
 
 namespace synth {
 
+enum {
+    MAX_SAMPLE_RUN = 256
+};
+    
 enum parameter_flags
 {
   PF_TYPEMASK = 0x000F,
@@ -77,6 +81,7 @@ enum parameter_flags
   PF_UNIT_MSEC = 0x05000000,
   PF_UNIT_CENTS = 0x06000000,
   PF_UNIT_SEMITONES = 0x07000000,
+  PF_UNIT_BPM = 0x08000000,
 };
 
 struct parameter_properties
@@ -282,8 +287,18 @@ struct ladspa_wrapper
     static void cb_run(LADSPA_Handle Instance, unsigned long SampleCount) {
         Module *const mod = (Module *)Instance;
         mod->params_changed();
-        uint32_t out_mask = mod->process(0, SampleCount, -1, -1);
-        zero_by_mask(mod, out_mask, 0, SampleCount);
+        process_slice(mod, 0, SampleCount);
+    }
+    
+    static inline void process_slice(Module *mod, uint32_t offset, uint32_t end)
+    {
+        while(offset < end)
+        {
+            uint32_t newend = std::min(offset + MAX_SAMPLE_RUN, end);
+            uint32_t out_mask = mod->process(offset, newend - offset, -1, -1);
+            zero_by_mask(mod, out_mask, offset, newend - offset);
+            offset = newend;
+        }
     }
 
 #if USE_DSSI
@@ -296,18 +311,13 @@ struct ladspa_wrapper
         for (uint32_t e = 0; e < EventCount; e++)
         {
             uint32_t timestamp = Events[e].time.tick;
-            if (timestamp != offset) {
-                uint32_t out_mask = mod->process(offset, timestamp - offset, -1, -1);
-                zero_by_mask(mod, out_mask, offset, timestamp - offset);
-            }
+            if (timestamp != offset)
+                process_slice(mod, offset, timestamp);
             process_dssi_event(mod, Events[e]);
             offset = timestamp;
         }
         if (offset != SampleCount)
-        {
-            uint32_t out_mask = mod->process(offset, SampleCount - offset, -1, -1);
-            zero_by_mask(mod, out_mask, offset, SampleCount - offset);
-        }
+            process_slice(mod, offset, SampleCount);
     }
     
     static char *cb_configure(LADSPA_Handle Instance,

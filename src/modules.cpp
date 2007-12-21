@@ -104,6 +104,38 @@ static synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
+
+const char *vintage_delay_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
+
+const char *vintage_delay_mixmodes[] = {
+    "Stereo",
+    "Ping-Pong",
+};
+
+const char *vintage_delay_fbmodes[] = {
+    "Plain",
+    "Tape",
+    "Old Tape",
+};
+
+parameter_properties vintage_delay_audio_module::param_props[] = {
+    { 120,      30,    300, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_BPM, NULL, "bpm", "Tempo" },
+    {  4,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "subdiv", "Subdivide"},
+    {  3,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_l", "Time L"},
+    {  5,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_r", "Time R"},
+    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "feedback", "Feedback" },
+    { 0.25,       0,    2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "amount", "Amount" },
+    { 1,         0,  1, 1.01, PF_ENUM | PF_CTL_COMBO, vintage_delay_mixmodes, "mix_mode", "Mix mode" },
+    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, vintage_delay_fbmodes, "medium", "Medium" },
+};
+
+static synth::ladspa_info vintage_delay_info = { 0x847f, "vintage_delay", "Calf vintage Delay", "Krzysztof Foltman", copyright, "DelayPlugin" };
+
+#if USE_LADSPA
+static synth::ladspa_wrapper<vintage_delay_audio_module> vintage_delay(vintage_delay_info);
+#endif
+
+////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
@@ -123,7 +155,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h16", "1'" },
 
     { 1,         0,  1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
-    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc mode", "Perc. mode" },
+    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
     { 3,         2,  3, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
     { 1,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, organ_vibrato_speed_names, "vib_speed", "Vibrato mode" },
 
@@ -202,6 +234,7 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
         case 0: return &::filter.descriptor;
         case 1: return &::flanger.descriptor;
         case 2: return &::reverb.descriptor;
+        case 3: return &::vintage_delay.descriptor;
         default: return NULL;
     }
 }
@@ -218,8 +251,9 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
         case 1: return &::flanger.dssi_descriptor;
         case 2: return &::reverb.dssi_descriptor;
         case 3: return &::monosynth.dssi_descriptor;
+        case 4: return &::vintage_delay.dssi_descriptor;
 #ifdef ENABLE_EXPERIMENTAL
-        case 4: return &::organ.dssi_descriptor;
+        case 5: return &::organ.dssi_descriptor;
 #endif
         default: return NULL;
     }

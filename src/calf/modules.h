@@ -296,6 +296,106 @@ public:
     }
 };
 
+class vintage_delay_audio_module: public null_audio_module
+{
+public:    
+    // 1MB of delay memory per channel... uh, RAM is cheap
+    enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
+    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    static const char *port_names[];
+    float buffers[2][MAX_DELAY];
+    int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
+    float amt_left, amt_right, fb_left, fb_right;
+    dsp::biquad<float> biquad_left[2], biquad_right[2];
+    
+    uint32_t srate;
+    static parameter_properties param_props[];
+    
+    vintage_delay_audio_module()
+    {
+        old_medium = -1;
+    }
+    
+    void params_changed()
+    {
+        float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
+        deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
+        deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
+        amt_left = amt_right = *params[par_amount];
+        fb_left = fb_right = *params[par_feedback];
+        mixmode = dsp::fastf2i_drm(*params[par_mixmode]);
+        medium = dsp::fastf2i_drm(*params[par_medium]);
+        if (mixmode == 0)
+            fb_right = pow(fb_left, *params[par_time_r] / *params[par_time_l]);
+        if (medium != old_medium)
+            calc_filters();
+    }
+    void activate() {
+        bufptr = 0;
+    }
+    void deactivate() {
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+        old_medium = -1;
+        params_changed();
+    }
+    void calc_filters()
+    {
+        // parameters are heavily influenced by gordonjcp and his tape delay unit
+        // although, don't blame him if it sounds bad - I've messed with them too :)
+        biquad_left[0].set_lp_rbj(6000, 0.707, srate);
+        biquad_left[1].set_bp_rbj(4500, 0.250, srate);
+        biquad_right[0].copy_coeffs(biquad_left[0]);
+        biquad_right[1].copy_coeffs(biquad_left[1]);
+    }
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        uint32_t ostate = 3; // XXXKF optimize!
+        uint32_t end = offset + numsamples;
+        int v = mixmode ? 1 : 0;
+        int orig_bufptr = bufptr;
+        for(uint32_t i = offset; i < end; i++)
+        {
+            float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK], in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_left, out_right, del_left, del_right;
+
+            out_left = ins[0][i] + in_left * amt_left;
+            out_right = ins[1][i] + in_right * amt_right;
+            del_left = ins[0][i] + in_left * fb_left;
+            del_right = ins[1][i] + in_right * fb_right;
+            
+            outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+            bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+        }
+        if (medium > 0) {
+            bufptr = orig_bufptr;
+            if (medium == 2)
+            {
+                for(uint32_t i = offset; i < end; i++)
+                {
+                    buffers[0][bufptr] = biquad_left[0].process_d2_lp(biquad_left[1].process_d2(buffers[0][bufptr]));
+                    buffers[1][bufptr] = biquad_right[0].process_d2_lp(biquad_right[1].process_d2(buffers[1][bufptr]));
+                    bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+                }
+                biquad_left[0].sanitize_d2();biquad_right[0].sanitize_d2();
+            } else {
+                for(uint32_t i = offset; i < end; i++)
+                {
+                    buffers[0][bufptr] = biquad_left[1].process_d2(buffers[0][bufptr]);
+                    buffers[1][bufptr] = biquad_right[1].process_d2(buffers[1][bufptr]);
+                    bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+                }
+            }
+            biquad_left[1].sanitize_d2();biquad_right[1].sanitize_d2();
+            
+        }
+        return ostate;
+    }
+};
+
 extern std::string get_builtin_modules_rdf();
 
 };

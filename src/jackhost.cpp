@@ -19,6 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include <set>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -54,6 +55,8 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
         return new jack_host<filter_audio_module>();
     else if (!strcmp(effect_name, "monosynth"))
         return new jack_host<monosynth_audio_module>();
+    else if (!strcmp(effect_name, "vintagedelay"))
+        return new jack_host<vintage_delay_audio_module>();
 #ifdef ENABLE_EXPERIMENTAL
     else if (!strcmp(effect_name, "organ"))
         return new jack_host<organ_audio_module>();
@@ -105,8 +108,9 @@ int jack_client::do_jack_bufsize(jack_nframes_t numsamples, void *p)
 int main(int argc, char *argv[])
 {
     vector<string> names;
-    vector<jack_host_base *> hosts;
+    vector<jack_host_base *> plugins;
     vector<plugin_gui_window *> guis;
+    set<int> chains;
     gtk_init(&argc, &argv);
     glade_init();
     while(1) {
@@ -140,8 +144,13 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-    while(optind < argc)
-        names.push_back(argv[optind++]);
+    while(optind < argc) {
+        if (!strcmp(argv[optind], "!")) {
+            chains.insert(names.size());
+            optind++;
+        } else
+            names.push_back(argv[optind++]);
+    }
     if (!names.size()) {
         print_help(argv);
         return 0;
@@ -154,14 +163,15 @@ int main(int argc, char *argv[])
             load_presets(PKGLIBDIR "/presets.xml");
         
         client.open(client_name);
+        string cnp = string(client_name) + ":";
         for (unsigned int i = 0; i < names.size(); i++) {
             jack_host_base *jh = create_jack_host(names[i].c_str());
             if (!jh) {
-    #ifdef ENABLE_EXPERIMENTAL
-                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth, organ\n");
-    #else
-                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, monosynth\n");
-    #endif
+#ifdef ENABLE_EXPERIMENTAL
+                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ\n");
+#else
+                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth\n");
+#endif
                 return 1;
             }
             jh->open(&client);
@@ -169,16 +179,52 @@ int main(int argc, char *argv[])
             gui_win->create(jh, (string(client_name)+" - "+names[i]).c_str(), names[i].c_str());
             gtk_signal_connect(GTK_OBJECT(gui_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
             guis.push_back(gui_win);
-            hosts.push_back(jh);
+            plugins.push_back(jh);
             client.add(jh);
         }
         client.activate();
+        for (unsigned int i = 0; i < plugins.size(); i++) {
+            if (chains.count(i)) {
+                if (!i)
+                {
+                    if (plugins[0]->get_output_count() < 2)
+                    {
+                        fprintf(stderr, "Cannot connect input to plugin %s - incompatible ports\n", plugins[0]->name.c_str());
+                    } else {
+                        client.connect("system:capture_1", cnp + plugins[0]->get_inputs()[0].name);
+                        client.connect("system:capture_2", cnp + plugins[0]->get_inputs()[1].name);
+                    }
+                }
+                else
+                {
+                    if (plugins[i - 1]->get_output_count() < 2 || plugins[i]->get_input_count() < 2)
+                    {
+                        fprintf(stderr, "Cannot connect plugins %s and %s - incompatible ports\n", plugins[i - 1]->name.c_str(), plugins[i]->name.c_str());
+                    }
+                    else {
+                        client.connect(cnp + plugins[i - 1]->get_outputs()[0].name, cnp + plugins[i]->get_inputs()[0].name);
+                        client.connect(cnp + plugins[i - 1]->get_outputs()[1].name, cnp + plugins[i]->get_inputs()[1].name);
+                    }
+                }
+            }
+        }
+        if (chains.count(plugins.size()) && plugins.size())
+        {
+            int last = plugins.size() - 1;
+            if (plugins[last]->get_output_count() < 2)
+            {
+                fprintf(stderr, "Cannot connect plugin %s to output - incompatible ports\n", plugins[last]->name.c_str());
+            } else {
+                client.connect(cnp + plugins[last]->get_outputs()[0].name, "system:playback_1");
+                client.connect(cnp + plugins[last]->get_outputs()[1].name, "system:playback_2");
+            }
+        }
         gtk_main();
         client.deactivate();
         for (unsigned int i = 0; i < names.size(); i++) {
             delete guis[i];
-            hosts[i]->close();
-            delete hosts[i];
+            plugins[i]->close();
+            delete plugins[i];
         }
         client.close();
         
