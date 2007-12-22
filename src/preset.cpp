@@ -29,32 +29,39 @@
 using namespace synth;
 using namespace std;
 
-vector<plugin_preset> synth::presets;
+synth::preset_list synth::global_presets;
 
-string synth::get_preset_filename()
+std::string plugin_preset::to_xml()
+{
+    std::stringstream ss;
+    ss << "<preset bank=\"" << bank << "\" program=\"" << program << "\" plugin=\"" << xml_escape(plugin) << "\" name=\"" << xml_escape(name) << "\">\n";
+    for (unsigned int i = 0; i < values.size(); i++) {
+        if (i < param_names.size())
+            ss << "  <param name=\"" << xml_escape(param_names[i]) << "\" value=\"" << values[i] << "\" />\n";
+        else
+            ss << "  <param value=\"" << values[i] << "\" />\n";
+    }
+    // XXXKF I'm not writing blob here, because I don't use blobs yet anyway
+    ss << "</preset>\n";
+    return ss.str();
+}
+
+string synth::preset_list::get_preset_filename()
 {
     const char *home = getenv("HOME");
     return string(home)+"/.calfpresets";
 }
 
-enum PresetParserState
+void preset_list::xml_start_element_handler(void *user_data, const char *name, const char *attrs[])
 {
-    START,
-    LIST,
-    PRESET,
-    VALUE,
-};
-
-static PresetParserState xml_parser_state;
-static plugin_preset parser_preset;
-
-static void xml_start_element_handler(void *user_data, const char *name, const char *attrs[])
-{
-    switch(xml_parser_state)
+    preset_list &self = *(preset_list *)user_data;
+    parser_state &state = self.state;
+    plugin_preset &parser_preset = self.parser_preset;
+    switch(state)
     {
     case START:
         if (!strcmp(name, "presets")) {
-            xml_parser_state = LIST;
+            state = LIST;
             return;
         }
         break;
@@ -67,15 +74,15 @@ static void xml_start_element_handler(void *user_data, const char *name, const c
             parser_preset.param_names.clear();
             parser_preset.values.clear();
             for(; *attrs; attrs += 2) {
-                if (!strcmp(attrs[0], "bank")) parser_preset.bank = atoi(attrs[1]);
+                if (!strcmp(attrs[0], "bank")) self.parser_preset.bank = atoi(attrs[1]);
                 else
-                if (!strcmp(attrs[0], "program")) parser_preset.program = atoi(attrs[1]);
+                if (!strcmp(attrs[0], "program")) self.parser_preset.program = atoi(attrs[1]);
                 else
-                if (!strcmp(attrs[0], "name")) parser_preset.name = attrs[1];
+                if (!strcmp(attrs[0], "name")) self.parser_preset.name = attrs[1];
                 else
-                if (!strcmp(attrs[0], "plugin")) parser_preset.plugin = attrs[1];
+                if (!strcmp(attrs[0], "plugin")) self.parser_preset.plugin = attrs[1];
             }
-            xml_parser_state = PRESET;
+            state = PRESET;
             return;
         }
         break;
@@ -91,9 +98,9 @@ static void xml_start_element_handler(void *user_data, const char *name, const c
                     str >> value;
                 }
             }
-            parser_preset.param_names.push_back(name);
-            parser_preset.values.push_back(value);
-            xml_parser_state = VALUE;
+            self.parser_preset.param_names.push_back(name);
+            self.parser_preset.values.push_back(value);
+            state = VALUE;
             return;
         }
         break;
@@ -104,28 +111,31 @@ static void xml_start_element_handler(void *user_data, const char *name, const c
     throw preset_exception("Invalid XML element: %s", name, 0);
 }
 
-static void xml_end_element_handler(void *user_data, const char *name)
+void preset_list::xml_end_element_handler(void *user_data, const char *name)
 {
-    switch(xml_parser_state)
+    preset_list &self = *(preset_list *)user_data;
+    preset_vector &presets = self.presets;
+    parser_state &state = self.state;
+    switch(state)
     {
     case START:
         break;
     case LIST:
         if (!strcmp(name, "presets")) {
-            xml_parser_state = START;
+            state = START;
             return;
         }
         break;
     case PRESET:
         if (!strcmp(name, "preset")) {
-            presets.push_back(parser_preset);
-            xml_parser_state = LIST;
+            presets.push_back(self.parser_preset);
+            state = LIST;
             return;
         }
         break;
     case VALUE:
         if (!strcmp(name, "param")) {
-            xml_parser_state = PRESET;
+            state = PRESET;
             return;
         }
         break;
@@ -133,10 +143,11 @@ static void xml_end_element_handler(void *user_data, const char *name)
     throw preset_exception("Invalid XML element close: %s", name, 0);
 }
 
-void synth::load_presets(const char *filename)
+void preset_list::load(const char *filename)
 {
-    xml_parser_state = START;
+    state = START;
     XML_Parser parser = XML_ParserCreate("UTF-8");
+    XML_SetUserData(parser, this);
     int fd = open(filename, O_RDONLY);
     if (fd < 0) 
         throw preset_exception("Could not load the presets from ", filename, errno);
@@ -148,13 +159,17 @@ void synth::load_presets(const char *filename)
         // XXXKF not an optimal error/EOF handling :)
         if (len <= 0)
             break;
-        XML_Parse(parser, buf, len, 0);
+        XML_Status status = XML_Parse(parser, buf, len, 0);
+        if (status == XML_STATUS_ERROR)
+            throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", filename, errno);
     } while(1);
-    XML_Parse(parser, buf, 0, 1);
+    XML_Status status = XML_Parse(parser, buf, 0, 1);
+    if (status == XML_STATUS_ERROR)
+        throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", filename, errno);
     close(fd);
 }
 
-void synth::save_presets(const char *filename)
+void preset_list::save(const char *filename)
 {
     string xml = "<presets>\n";
     for (unsigned int i = 0; i < presets.size(); i++)
@@ -168,7 +183,7 @@ void synth::save_presets(const char *filename)
     close(fd);
 }
 
-void synth::add_preset(const plugin_preset &sp)
+void preset_list::add(const plugin_preset &sp)
 {
     presets.push_back(sp);
 }

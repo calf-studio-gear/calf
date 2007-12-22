@@ -110,6 +110,7 @@ public:
     virtual int get_output_count()=0;
     virtual port *get_inputs()=0;
     virtual port *get_outputs()=0;
+    virtual port *get_midi_port() { return get_midi() ? &midi_port : NULL; }
     virtual float *get_params()=0;
     virtual void init_module()=0;
     virtual void cache_ports()=0;

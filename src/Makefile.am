@@ -57,8 +57,9 @@ clean-local:
 	$(RM) -f calfjackhost *~
 
 install-data-hook:
-if USE_JACK
 	install -d -m 755 $(DESTDIR)$(pkglibdir)    
+	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkglibdir)
+if USE_JACK
 	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkglibdir)
 endif
 if USE_LADSPA
@@ -76,8 +77,9 @@ endif
 uninstall-hook:
 if USE_JACK
 	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
-	rmdir $(DESTDIR)$(pkglibdir)    
 endif
+	rm -f $(DESTDIR)$(pkglibdir)/presets.xml
+	rmdir $(DESTDIR)$(pkglibdir)    
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(RM) -f $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf

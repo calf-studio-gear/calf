@@ -332,15 +332,16 @@ plugin_gui_window::plugin_gui_window()
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp)
 {
     string preset_xml = preset_pre_xml;
-    for (unsigned int i = 0; i < presets.size(); i++)
+    preset_vector &pvec = global_presets.presets;
+    for (unsigned int i = 0; i < pvec.size(); i++)
     {
-        if (presets[i].plugin != gui->effect_name)
+        if (global_presets.presets[i].plugin != gui->effect_name)
             continue;
         stringstream ss;
         ss << "preset" << i;
-        preset_xml += "          <menuitem name=\""+presets[i].name+"\" action=\""+ss.str()+"\"/>\n";
+        preset_xml += "          <menuitem name=\""+pvec[i].name+"\" action=\""+ss.str()+"\"/>\n";
         
-        GtkActionEntry ae = { ss.str().c_str(), NULL, presets[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
+        GtkActionEntry ae = { ss.str().c_str(), NULL, pvec[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
         gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i), action_destroy_notify);
     }
     preset_xml += preset_post_xml;

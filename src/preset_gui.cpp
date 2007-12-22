@@ -46,10 +46,20 @@ void store_preset_ok(GtkAction *action, plugin_gui *gui)
     sp.plugin = gui->effect_name;
     int count = gui->plugin->get_param_count();
     for (int i = 0; i < count; i++) {
-        sp.param_names.push_back(gui->plugin->get_param_props(i)->name);
+        sp.param_names.push_back(gui->plugin->get_param_props(i)->short_name);
         sp.values.push_back(gui->plugin->get_param_value(i));
     }
-    add_preset(sp);
+    preset_list tmp;
+    try {
+        tmp.load(tmp.get_preset_filename().c_str());
+    }
+    catch(...)
+    {
+        tmp = global_presets;
+    }
+    tmp.add(sp);
+    global_presets = tmp;
+    global_presets.save(tmp.get_preset_filename().c_str());
     gtk_widget_destroy(store_preset_dlg);
     gui->window->fill_gui_presets();
 }
@@ -77,19 +87,25 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
 void synth::activate_preset(GtkAction *action, activate_preset_params *params)
 {
     plugin_gui *gui = params->gui;
-    plugin_preset &p = presets[params->preset];
+    plugin_preset &p = global_presets.presets[params->preset];
     if (p.plugin != gui->effect_name)
         return;
     map<string, int> names;
     int count = gui->plugin->get_param_count();
-    for (int i = 0; i < count; i++) 
+    // this is deliberately done in two separate loops - if you wonder why, just think for a while :)
+    for (int i = 0; i < count; i++)
         names[gui->plugin->get_param_props(i)->name] = i;
+    for (int i = 0; i < count; i++)
+        names[gui->plugin->get_param_props(i)->short_name] = i;
     // no support for unnamed parameters... tough luck :)
     for (unsigned int i = 0; i < min(p.param_names.size(), p.values.size()); i++)
     {
         map<string, int>::iterator pos = names.find(p.param_names[i]);
-        if (pos == names.end())
+        if (pos == names.end()) {
+            // XXXKF should have a mechanism for notifying a GUI
+            printf("Warning: unknown parameter %s for plugin %s\n", p.param_names[i].c_str(), gui->effect_name);
             continue;
+        }
         gui->plugin->set_param_value(pos->second, p.values[i]);
     }
     gui->refresh();

@@ -37,27 +37,14 @@ struct plugin_preset
     std::vector<std::string> param_names;
     std::vector<float> values;
     std::string blob;
-    std::string to_xml()
-    {
-        std::stringstream ss;
-        ss << "<preset bank=\"" << bank << "\" program=\"" << program << "\" plugin=\"" << plugin << "\" name=\"" << xml_escape(name) << "\">\n";
-        for (unsigned int i = 0; i < values.size(); i++) {
-            if (i < param_names.size())
-                ss << "  <param name=\"" << param_names[i] << "\" value=\"" << values[i] << "\" />\n";
-            else
-                ss << "  <param value=\"" << values[i] << "\" />\n";
-        }
-        // XXXKF I'm not writing blob here, because I don't use blobs yet anyway
-        ss << "</preset>\n";
-        return ss.str();
-    }
+    std::string to_xml();
 };
 
 struct preset_exception
 {
     std::string message, param, fulltext;
     int error;
-    preset_exception(const char *_message, const char *_param, int _error)
+    preset_exception(const std::string &_message, const std::string &_param, int _error)
     : message(_message), param(_param), error(_error)
     {
     }
@@ -73,13 +60,32 @@ struct preset_exception
     }
 };
 
-extern std::string get_preset_filename();
-extern void load_presets(const char *filename);
-extern void save_presets(const char *filename);
-extern void add_preset(const plugin_preset &sp);
+typedef std::vector<plugin_preset> preset_vector;
 
-// this global variable is a temporary measure
-extern std::vector<plugin_preset> presets;
+struct preset_list
+{
+    enum parser_state
+    {
+        START,
+        LIST,
+        PRESET,
+        VALUE,
+    } state;
+
+    preset_vector presets;
+    plugin_preset parser_preset;
+
+    static std::string get_preset_filename();
+    void load(const char *filename);
+    void save(const char *filename);
+    void add(const plugin_preset &sp);
+    
+protected:
+    static void xml_start_element_handler(void *user_data, const char *name, const char *attrs[]);
+    static void xml_end_element_handler(void *user_data, const char *name);
+};
+
+extern preset_list global_presets;
 
 };
 

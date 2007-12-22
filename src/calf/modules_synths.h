@@ -37,7 +37,7 @@ class monosynth_audio_module: public null_audio_module
 public:
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_count };
     enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
-    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2amp, par_vel2filter, param_count };
+    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_envtoamp, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2filter, par_vel2amp, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
     static const char *port_names[];
@@ -52,10 +52,11 @@ public:
     
     float buffer[step_size], buffer2[step_size];
     uint32_t output_pos;
+    onepole<float> phaseshifter;
     biquad<float> filter;
     biquad<float> filter2;
     int wave1, wave2, filter_type;
-    float freq, start_freq, target_freq, cutoff, decay_factor, fgain, separation;
+    float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
     float odcr, porta_time;
     int queue_note_on;
@@ -67,6 +68,9 @@ public:
         srate = sr;
         crate = sr / step_size;
         odcr = (float)(1.0 / crate);
+        phaseshifter.set_ap(1000.f, sr);
+        fgain = 0.f;
+        fgain_delta = 0.f;
     }
     void delayed_note_on()
     {
@@ -120,6 +124,7 @@ public:
         if (!(legato & 1) || envelope.released()) {
             envelope.note_on();
         }
+        envelope.advance();
         queue_note_on = -1;
     }
     void note_on(int note, int vel)
@@ -220,6 +225,7 @@ public:
             wave = filter.process_d1(wave);
             wave = filter2.process_d1(wave);
             buffer[i] = softclip(wave);
+            fgain += fgain_delta;
         }
     }
     void calculate_buffer_single()
@@ -231,6 +237,7 @@ public:
             float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
             wave = filter.process_d1(wave);
             buffer[i] = softclip(wave);
+            fgain += fgain_delta;
         }
     }
     void calculate_buffer_stereo()
@@ -240,9 +247,10 @@ public:
             float osc1val = osc1.get();
             float osc2val = osc2.get();
             float wave1 = osc1val + (osc2val - osc1val) * xfade;
-            float wave2 = osc1val + ((-osc2val) - osc1val) * xfade;
+            float wave2 = phaseshifter.process_ap(wave1);
             buffer[i] = softclip(fgain * filter.process_d1(wave1));
             buffer2[i] = softclip(fgain * filter2.process_d1(wave2));
+            fgain += fgain_delta;
         }
     }
     bool is_stereo_filter() const
@@ -282,48 +290,52 @@ public:
         cutoff = dsp::clip(cutoff , 10.f, 18000.f);
         float resonance = *params[par_resonance];
         float e2r = *params[par_envtores];
+        float e2a = *params[par_envtoamp];
         resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r;
         float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
+        float newfgain = 0.f;
         switch(filter_type)
         {
         case flt_lp12:
             filter.set_lp_rbj(cutoff, resonance, srate);
-            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            newfgain = min(0.7f, 0.7f / resonance) * ampctl;
             break;
         case flt_hp12:
             filter.set_hp_rbj(cutoff, resonance, srate);
-            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            newfgain = min(0.7f, 0.7f / resonance) * ampctl;
             break;
         case flt_lp24:
             filter.set_lp_rbj(cutoff, resonance, srate);
             filter2.set_lp_rbj(cutoff2, resonance, srate);
-            fgain = min(0.5f, 0.5f / resonance) * ampctl;
+            newfgain = min(0.5f, 0.5f / resonance) * ampctl;
             break;
         case flt_lpbr:
             filter.set_lp_rbj(cutoff, resonance, srate);
             filter2.set_br_rbj(cutoff2, resonance, srate);
-            fgain = min(0.5f, 0.5f / resonance) * ampctl;        
+            newfgain = min(0.5f, 0.5f / resonance) * ampctl;        
             break;
         case flt_hpbr:
             filter.set_hp_rbj(cutoff, resonance, srate);
             filter2.set_br_rbj(cutoff2, resonance, srate);
-            fgain = min(0.5f, 0.5f / resonance) * ampctl;        
+            newfgain = min(0.5f, 0.5f / resonance) * ampctl;        
             break;
         case flt_2lp12:
             filter.set_lp_rbj(cutoff, resonance, srate);
             filter2.set_lp_rbj(cutoff2, resonance, srate);
-            fgain = min(0.7f, 0.7f / resonance) * ampctl;
+            newfgain = min(0.7f, 0.7f / resonance) * ampctl;
             break;
         case flt_bp6:
             filter.set_bp_rbj(cutoff, resonance, srate);
-            fgain = ampctl;
+            newfgain = ampctl;
             break;
         case flt_2bp6:
             filter.set_bp_rbj(cutoff, resonance, srate);
             filter2.set_bp_rbj(cutoff2, resonance, srate);
-            fgain = ampctl;        
+            newfgain = ampctl;        
             break;
         }
+        newfgain *= 1.0 - (1.0 - env) * e2a;
+        fgain_delta = (newfgain - fgain) * (1.0 / step_size);
         switch(filter_type)
         {
         case flt_lp24:

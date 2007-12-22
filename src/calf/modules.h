@@ -361,6 +361,7 @@ public:
         for(uint32_t i = offset; i < end; i++)
         {
             float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK], in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_left, out_right, del_left, del_right;
+            dsp::sanitize(in_left), dsp::sanitize(in_right);
 
             out_left = ins[0][i] + in_left * amt_left;
             out_right = ins[1][i] + in_right * amt_right;

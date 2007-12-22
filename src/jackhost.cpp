@@ -78,6 +78,7 @@ static struct option long_options[] = {
     {"plugin", 0, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
+    {"connect-midi", 1, 0, 'M'},
     {0,0,0,0},
 };
 
@@ -85,7 +86,7 @@ void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
         "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>]\n"
-        "       [--help] [--version] pluginname ...\n", 
+        "       [--connect-midi <name>] [--help] [--version] pluginname ...\n", 
         argv[0]);
 }
 
@@ -111,11 +112,12 @@ int main(int argc, char *argv[])
     vector<jack_host_base *> plugins;
     vector<plugin_gui_window *> guis;
     set<int> chains;
+    string autoconnect_midi;
     gtk_init(&argc, &argv);
     glade_init();
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:o:m:ephv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:o:m:M:ephv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -142,6 +144,9 @@ int main(int argc, char *argv[])
             case 'm':
                 client.midi_name = string(optarg) + "_%d";
                 break;
+            case 'M':
+                autoconnect_midi = string(optarg);
+                break;
         }
     }
     while(optind < argc) {
@@ -157,11 +162,17 @@ int main(int argc, char *argv[])
     }
     try {
         struct stat st;
-        if (!stat(get_preset_filename().c_str(), &st))
-            load_presets(get_preset_filename().c_str());
-        else if (!stat(PKGLIBDIR "/presets.xml", &st))
-            load_presets(PKGLIBDIR "/presets.xml");
-        
+        if (!stat(preset_list::get_preset_filename().c_str(), &st))
+            global_presets.load(preset_list::get_preset_filename().c_str());
+        if (global_presets.presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st))
+            global_presets.load(PKGLIBDIR "/presets.xml");
+    }
+    catch(synth::preset_exception &e)
+    {
+        fprintf(stderr, "Error while loading presets: %s\n", e.what());
+        exit(1);
+    }
+    try {
         client.open(client_name);
         string cnp = string(client_name) + ":";
         for (unsigned int i = 0; i < names.size(); i++) {
@@ -219,6 +230,13 @@ int main(int argc, char *argv[])
                 client.connect(cnp + plugins[last]->get_outputs()[1].name, "system:playback_2");
             }
         }
+        if (autoconnect_midi != "") {
+            for (unsigned int i = 0; i < plugins.size(); i++)
+            {
+                if (plugins[i]->get_midi())
+                    client.connect(autoconnect_midi, cnp + plugins[i]->get_midi_port()->name);
+            }
+        }
         gtk_main();
         client.deactivate();
         for (unsigned int i = 0; i < names.size(); i++) {
@@ -228,7 +246,8 @@ int main(int argc, char *argv[])
         }
         client.close();
         
-        save_presets(get_preset_filename().c_str());
+        // this is now done on preset add
+        // save_presets(get_preset_filename().c_str());
     }
     catch(std::exception &e)
     {
