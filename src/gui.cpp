@@ -366,6 +366,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
     
+    GtkRequisition req, req2;
     gtk_window_set_title(GTK_WINDOW (toplevel), title);
     gtk_container_add(GTK_CONTAINER(toplevel), GTK_WIDGET(vbox));
 
@@ -381,6 +382,11 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     fill_gui_presets();
     
     gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
+
+    // determine size without content
+    gtk_widget_show_all(GTK_WIDGET(toplevel));
+    gtk_widget_size_request(GTK_WIDGET(toplevel), &req2);
+    // printf("size request %dx%d\n", req2.width, req2.height);
     
     GtkWidget *table = gui->create(_jh, effect);
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -389,9 +395,13 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), table);
     
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
-
-    gtk_widget_show_all(GTK_WIDGET(toplevel));
     
+    gtk_widget_show_all(GTK_WIDGET(sw));
+    gtk_widget_size_request(table, &req);
+    // printf("size request %dx%d\n", req.width, req.height);
+    gtk_window_resize(GTK_WINDOW(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
+    // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
+
 }
 
 plugin_gui_window::~plugin_gui_window()
