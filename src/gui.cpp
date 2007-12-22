@@ -380,11 +380,15 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
     fill_gui_presets();
     
-    gtk_container_add(GTK_CONTAINER(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"));
+    gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
     
     GtkWidget *table = gui->create(_jh, effect);
-
-    gtk_container_add(GTK_CONTAINER(vbox), table);
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), table);
+    
+    gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
 
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     

@@ -129,7 +129,7 @@ parameter_properties vintage_delay_audio_module::param_props[] = {
     { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, vintage_delay_fbmodes, "medium", "Medium" },
 };
 
-static synth::ladspa_info vintage_delay_info = { 0x847f, "vintage_delay", "Calf vintage Delay", "Krzysztof Foltman", copyright, "DelayPlugin" };
+static synth::ladspa_info vintage_delay_info = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", copyright, "DelayPlugin" };
 
 #if USE_LADSPA
 static synth::ladspa_wrapper<vintage_delay_audio_module> vintage_delay(vintage_delay_info);
