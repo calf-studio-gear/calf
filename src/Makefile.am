@@ -9,12 +9,13 @@ ladspadir = $(with_ladspa_dir)
 bin_PROGRAMS = 
 
 noinst_PROGRAMS = calfbenchmark
-noinst_LTLIBRARIES = calf.la libcalfstatic.la libcalfgui.la
+noinst_LTLIBRARIES = calf.la libcalfstatic.la
 
 AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
 if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
+noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfgui.la libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
