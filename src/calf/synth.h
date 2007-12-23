@@ -167,11 +167,11 @@ public:
     env_state state;
     // note: these are *rates*, not times
     double attack, decay, sustain, release;
-    double value;
+    double value, thisrelease, releasemul;
     
     adsr()
     {
-        attack = decay = sustain = release = 0.f;
+        attack = decay = sustain = release = thisrelease = releasemul = 0.f;
         reset();
     }
     inline void reset()
@@ -185,6 +185,7 @@ public:
         decay = (1 - s) / (d * er);
         sustain = s;
         release = s / (r * er);
+        thisrelease = releasemul * release;
     }
     inline bool released()
     {
@@ -198,10 +199,16 @@ public:
     {
         if (state == STOP)
             return;
-        if (value > sustain && decay > release)
-            state = LOCKDECAY;
+        if (sustain > 0)
+            releasemul = value / sustain;
         else
+            releasemul = 1.f;
+        thisrelease = releasemul * release;
+        if (value > sustain && decay > thisrelease)
+            state = LOCKDECAY;
+        else {
             state = RELEASE;
+        }
     }
     inline void advance()
     {
@@ -229,6 +236,8 @@ public:
                 if (value < 0.f)
                     value = 0.f;
                 state = RELEASE;
+                thisrelease = release;
+                releasemul = 1.f;
             }
             break;
         case SUSTAIN:
@@ -239,8 +248,8 @@ public:
             }
             break;
         case RELEASE:
-            value -= release;
-            if (value < 0.f) {
+            value -= thisrelease;
+            if (value <= 0.f) {
                 value = 0.f;
                 state = STOP;
             }

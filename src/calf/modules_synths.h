@@ -209,11 +209,11 @@ public:
         waves[wave_varistep].make(bl, data);
 
         for (int i = 0; i < 2048; i++) {
-            data[i] = -1 + fmod (i * i / 8192.0, 2.0);
+            data[i] = (min(1.f, (float)(i / 64.f))) * (-1 + fmod (i * i / 8192.0, 2.0));
         }
         waves[wave_skewsaw].make(bl, data);
         for (int i = 0; i < 2048; i++) {
-            data[i] = fmod (i * i / 2048.0, 2.0) < 1.0 ? -1.0 : +1.0;
+            data[i] = (min(1.f, (float)(i / 64.f))) * (fmod (i * i / 2048.0, 2.0) < 1.0 ? -1.0 : +1.0);
         }
         waves[wave_skewsqr].make(bl, data);
     }
