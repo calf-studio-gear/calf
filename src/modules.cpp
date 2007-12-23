@@ -171,53 +171,6 @@ static synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
 #endif
 ////////////////////////////////////////////////////////////////////////////
 
-const char *monosynth_audio_module::port_names[] = {
-    "Out L", "Out R", 
-};
-
-const char *monosynth_waveform_names[] = { "Sawtooth", "Square", "Pulse", "Sine", "Triangle", "Varistep", "Skewed Saw", "Skewed Square" };
-const char *monosynth_mode_names[] = { "0 : 0", "0 : 180", "0 : 90", "90 : 90", "90 : 270", "Random" };
-const char *monosynth_legato_names[] = { "Retrig", "Legato", "Fng Retrig", "Fng Legato" };
-
-const char *monosynth_filter_choices[] = {
-    "12dB/oct Lowpass",
-    "24dB/oct Lowpass",
-    "2x12dB/oct Lowpass",
-    "12dB/oct Highpass",
-    "Lowpass+Notch",
-    "Highpass+Notch",
-    "6dB/oct Bandpass",
-    "2x6dB/oct Bandpass",
-};
-
-parameter_properties monosynth_audio_module::param_props[] = {
-    { wave_saw,         0, wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
-    { wave_sqr,         0, wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o2_wave", "Osc2 Wave" },
-    { 10,         0,  100, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "o12_detune", "O1<>2 Detune" },
-    { 12,       -24,   24, 1.01, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o2_xpose", "Osc 2 transpose" },
-    { 0,          0,    5, 1.01, PF_ENUM | PF_CTL_COMBO, monosynth_mode_names, "phase_mode", "Phase mode" },
-    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC, NULL, "o12_mix", "O1<>2 Mix" },
-    { 1,          0,    7, 1.01, PF_ENUM | PF_CTL_COMBO, monosynth_filter_choices, "filter", "Filter" },
-    { 33,        10,16000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "cutoff", "Cutoff" },
-    { 2,        0.7,    8, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL, "res", "Resonance" },
-    { 0,      -2400, 2400, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "filter_sep", "Separation" },
-    { 8000,  -10800,10800, 1.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "env2cutoff", "Env->Cutoff" },
-    { 1,          0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "env2res", "Env->Res" },
-    { 1,          0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "env2amp", "Env->Amp" },
-    
-    { 1,          1,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_a", "Attack" },
-    { 350,       10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_d", "Decay" },
-    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_s", "Sustain" },
-    { 50,       10,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_r", "Release" },
-    
-    { 0,          0,    1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL, "key_follow", "Key Follow" },
-    { 0,          0,    3, 1.01, PF_ENUM | PF_CTL_COMBO, monosynth_legato_names, "legato", "Legato Mode" },
-    { 1,          1, 2000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "portamento", "Portamento" },
-    
-    { 0.5,        0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "vel2filter", "Vel->Filter" },
-    { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "vel2amp", "Vel->Amp" },
-};
-
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
 #if USE_LADSPA

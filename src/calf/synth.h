@@ -166,17 +166,18 @@ public:
     
     env_state state;
     // note: these are *rates*, not times
-    double attack, decay, sustain, release;
-    double value, thisrelease, releasemul;
+    double attack, decay, sustain, release, release_time;
+    double value, thisrelease, thiss;
     
     adsr()
     {
-        attack = decay = sustain = release = thisrelease = releasemul = 0.f;
+        attack = decay = sustain = release = thisrelease = thiss = 0.f;
         reset();
     }
     inline void reset()
     {
         value = 0.f;
+        thiss = 0.f;
         state = STOP;
     }
     inline void set(float a, float d, float s, float r, float er)
@@ -184,8 +185,14 @@ public:
         attack = 1.0 / (a * er);
         decay = (1 - s) / (d * er);
         sustain = s;
-        release = s / (r * er);
-        thisrelease = releasemul * release;
+        release_time = r * er;
+        release = s / release_time;
+        // in release:
+        // lock thiss setting (start of release for current note) and unlock thisrelease setting (current note's release rate)
+        if (state != RELEASE)
+            thiss = s;
+        else
+            thisrelease = thiss / release_time;
     }
     inline bool released()
     {
@@ -194,19 +201,22 @@ public:
     inline void note_on()
     {
         state = ATTACK;
+        thiss = sustain;
     }
     inline void note_off()
     {
         if (state == STOP)
             return;
-        if (sustain > 0)
-            releasemul = value / sustain;
-        else
-            releasemul = 1.f;
-        thisrelease = releasemul * release;
-        if (value > sustain && decay > thisrelease)
+        thiss = std::max(sustain, value);
+        thisrelease = thiss / release_time;
+        // we're in attack or decay, and if decay is faster than release
+        if (value > sustain && decay > thisrelease) {
+            // use standard release time later (because we'll be switching at sustain point)
+            thisrelease = release;
             state = LOCKDECAY;
-        else {
+        } else {
+            // in attack/decay, but use fixed release time
+            // in case value fell below sustain, assume it didn't (for the purpose of calculating release rate only)
             state = RELEASE;
         }
     }
@@ -237,7 +247,6 @@ public:
                     value = 0.f;
                 state = RELEASE;
                 thisrelease = release;
-                releasemul = 1.f;
             }
             break;
         case SUSTAIN:
