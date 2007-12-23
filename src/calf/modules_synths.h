@@ -35,7 +35,7 @@ namespace synth {
 class monosynth_audio_module: public null_audio_module
 {
 public:
-    enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_count };
+    enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_varistep, wave_skewsaw, wave_skewsqr, wave_count };
     enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
     enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_envtoamp, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2filter, par_vel2amp, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
@@ -200,6 +200,22 @@ public:
             data[i + 1536] = -1 + i / 512.0;
         }
         waves[wave_triangle].make(bl, data);
+        
+        for (int i = 0, j = 1; i < 2048; i++) {
+            data[i] = -1 + j / 1024.0;
+            if (i == j)
+                j *= 2;
+        }
+        waves[wave_varistep].make(bl, data);
+
+        for (int i = 0; i < 2048; i++) {
+            data[i] = -1 + fmod (i * i / 8192.0, 2.0);
+        }
+        waves[wave_skewsaw].make(bl, data);
+        for (int i = 0; i < 2048; i++) {
+            data[i] = fmod (i * i / 2048.0, 2.0) < 1.0 ? -1.0 : +1.0;
+        }
+        waves[wave_skewsqr].make(bl, data);
     }
     void deactivate() {
     }
