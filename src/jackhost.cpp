@@ -24,7 +24,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <config.h>
-#include <sys/stat.h>
 #include <glade/glade.h>
 #include <jack/jack.h>
 #include <calf/giface.h>
@@ -161,11 +160,7 @@ int main(int argc, char *argv[])
         return 0;
     }
     try {
-        struct stat st;
-        if (!stat(preset_list::get_preset_filename().c_str(), &st))
-            global_presets.load(preset_list::get_preset_filename().c_str());
-        if (global_presets.presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st))
-            global_presets.load(PKGLIBDIR "/presets.xml");
+        global_presets.load_defaults();
     }
     catch(synth::preset_exception &e)
     {

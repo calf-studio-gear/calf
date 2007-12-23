@@ -270,6 +270,7 @@ std::string synth::get_builtin_modules_rdf()
     rdf += ::flanger.generate_rdf();
     rdf += ::reverb.generate_rdf();
     rdf += ::filter.generate_rdf();
+    rdf += ::vintage_delay.generate_rdf();
     rdf += ::monosynth.generate_rdf();
     
     return rdf;

@@ -90,24 +90,7 @@ void synth::activate_preset(GtkAction *action, activate_preset_params *params)
     plugin_preset &p = global_presets.presets[params->preset];
     if (p.plugin != gui->effect_name)
         return;
-    map<string, int> names;
-    int count = gui->plugin->get_param_count();
-    // this is deliberately done in two separate loops - if you wonder why, just think for a while :)
-    for (int i = 0; i < count; i++)
-        names[gui->plugin->get_param_props(i)->name] = i;
-    for (int i = 0; i < count; i++)
-        names[gui->plugin->get_param_props(i)->short_name] = i;
-    // no support for unnamed parameters... tough luck :)
-    for (unsigned int i = 0; i < min(p.param_names.size(), p.values.size()); i++)
-    {
-        map<string, int>::iterator pos = names.find(p.param_names[i]);
-        if (pos == names.end()) {
-            // XXXKF should have a mechanism for notifying a GUI
-            printf("Warning: unknown parameter %s for plugin %s\n", p.param_names[i].c_str(), gui->effect_name);
-            continue;
-        }
-        gui->plugin->set_param_value(pos->second, p.values[i]);
-    }
+    p.activate(gui->plugin);
     gui->refresh();
 }
 

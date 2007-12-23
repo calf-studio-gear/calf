@@ -37,6 +37,7 @@
 #include <exception>
 #include <string>
 #include "primitives.h"
+#include "preset.h"
 
 namespace synth {
 
@@ -95,6 +96,15 @@ struct parameter_properties
     std::string to_string(float value) const;
 };
 
+struct plugin_ctl_iface
+{
+    virtual parameter_properties *get_param_props(int param_no) = 0;
+    virtual float get_param_value(int param_no) = 0;
+    virtual void set_param_value(int param_no, float value) = 0;
+    virtual int get_param_count() = 0;
+    virtual ~plugin_ctl_iface() {}
+};
+
 struct midi_event {
     uint8_t command;
     uint8_t param1;
@@ -135,15 +145,50 @@ struct ladspa_info
 extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
 
 template<class Module>
+struct ladspa_instance: public Module, public plugin_ctl_iface
+{
+    ladspa_instance()
+    {
+        for (int i=0; i < Module::in_count; i++)
+            Module::ins[i] = NULL;
+        for (int i=0; i < Module::out_count; i++)
+            Module::outs[i] = NULL;
+        for (int i=0; i < Module::param_count; i++)
+            Module::params[i] = NULL;
+    }
+    virtual parameter_properties *get_param_props(int param_no)
+    {
+        return &Module::param_props[param_no];
+    }
+    virtual float get_param_value(int param_no)
+    {
+        return *Module::params[param_no];
+    }
+    virtual void set_param_value(int param_no, float value)
+    {
+        *Module::params[param_no] = value;
+    }
+    virtual int get_param_count()
+    {
+        return Module::param_count;
+    }
+};
+
+template<class Module>
 struct ladspa_wrapper
 {
+    typedef ladspa_instance<Module> instance;
+    
     static LADSPA_Descriptor descriptor;
 #if USE_DSSI
     static DSSI_Descriptor dssi_descriptor;
     static DSSI_Program_Descriptor dssi_default_program;
+
+    static std::vector<plugin_preset> *presets;
+    static std::vector<DSSI_Program_Descriptor> *preset_descs;
 #endif
     ladspa_info &info;
-
+    
     ladspa_wrapper(ladspa_info &i) 
     : info(i)
     {
@@ -212,39 +257,67 @@ struct ladspa_wrapper
         dssi_descriptor.configure = cb_configure;
         dssi_descriptor.get_program = cb_get_program;
         dssi_descriptor.select_program = cb_select_program;
-        // XXXKF make one default program
         dssi_descriptor.run_synth = cb_run_synth;
         
+        presets = new std::vector<plugin_preset>;
+        preset_descs = new std::vector<DSSI_Program_Descriptor>;
+
+        preset_list plist;
+        plist.load_defaults();
+        // XXXKF this assumes that plugin name in preset is case-insensitive equal to plugin label
+        // if I forget about this, I'll be in a deep trouble
         dssi_default_program.Bank = 0;
         dssi_default_program.Program = 0;
         dssi_default_program.Name = "default";
+
+        int pos = 1;
+        for (unsigned int i = 0; i < plist.presets.size(); i++)
+        {
+            plugin_preset &pp = plist.presets[i];
+            if (strcasecmp(pp.plugin.c_str(), descriptor.Label))
+                continue;
+            DSSI_Program_Descriptor pd;
+            pd.Bank = pos >> 7;
+            pd.Program = pos++;
+            pd.Name = pp.name.c_str();
+            preset_descs->push_back(pd);
+            presets->push_back(pp);
+        }
+        // printf("presets = %p:%d name = %s\n", presets, presets->size(), descriptor.Label);
+        
 #endif
     }
 
     static LADSPA_Handle cb_instantiate(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate)
     {
-        Module *mod = new Module();
-        for (int i=0; i<Module::in_count; i++)
-            mod->ins[i] = NULL;
-        for (int i=0; i<Module::out_count; i++)
-            mod->outs[i] = NULL;
-        for (int i=0; i<Module::param_count; i++)
-            mod->params[i] = NULL;
+        instance *mod = new instance();
         mod->srate = sample_rate;
         return mod;
     }
 
 #if USE_DSSI
     static const DSSI_Program_Descriptor *cb_get_program(LADSPA_Handle Instance, unsigned long index) {
-        if (index != 0)
+        if (index > presets->size())
             return NULL;
+        if (index)
+            return &(*preset_descs)[index - 1];
         return &dssi_default_program;
     }
     
     static void cb_select_program(LADSPA_Handle Instance, unsigned long Bank, unsigned long Program) {
-        Module *const mod = (Module *)Instance;
-        for (int i =0 ; i < Module::param_count; i++)
-            *mod->params[i] = Module::param_props[i].def_value;
+        instance *mod = (instance *)Instance;
+        unsigned int no = (Bank << 7) + Program - 1;
+        // printf("no = %d presets = %p:%d\n", no, presets, presets->size());
+        if (no == -1U) {
+            for (int i =0 ; i < Module::param_count; i++)
+                *mod->params[i] = Module::param_props[i].def_value;
+            return;
+        }
+        if (no >= presets->size())
+            return;
+        plugin_preset &p = (*presets)[no];
+        // printf("activating preset %s\n", p.name.c_str());
+        p.activate(mod);
     }
     
 #endif
@@ -253,7 +326,7 @@ struct ladspa_wrapper
         unsigned long ins = Module::in_count;
         unsigned long outs = Module::out_count;
         unsigned long params = Module::param_count;
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         if (port < ins)
             mod->ins[port] = DataLocation;
         else if (port < ins + outs)
@@ -266,7 +339,7 @@ struct ladspa_wrapper
     }
 
     static void cb_activate(LADSPA_Handle Instance) {
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         mod->set_sample_rate(mod->srate);
         mod->activate();
         /*
@@ -285,7 +358,7 @@ struct ladspa_wrapper
     }
 
     static void cb_run(LADSPA_Handle Instance, unsigned long SampleCount) {
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         mod->params_changed();
         process_slice(mod, 0, SampleCount);
     }
@@ -304,7 +377,7 @@ struct ladspa_wrapper
 #if USE_DSSI
     static void cb_run_synth(LADSPA_Handle Instance, unsigned long SampleCount, 
             snd_seq_event_t *Events, unsigned long EventCount) {
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         mod->params_changed();
         
         uint32_t offset = 0;
@@ -353,12 +426,12 @@ struct ladspa_wrapper
 #endif
 
     static void cb_deactivate(LADSPA_Handle Instance) {
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         mod->deactivate();
     }
 
     static void cb_cleanup(LADSPA_Handle Instance) {
-        Module *const mod = (Module *)Instance;
+        instance *const mod = (instance *)Instance;
         delete mod;
     }
     
@@ -378,6 +451,11 @@ DSSI_Descriptor ladspa_wrapper<Module>::dssi_descriptor;
 template<class Module>
 DSSI_Program_Descriptor ladspa_wrapper<Module>::dssi_default_program;
 
+template<class Module>
+std::vector<plugin_preset> *ladspa_wrapper<Module>::presets;
+
+template<class Module>
+std::vector<DSSI_Program_Descriptor> *ladspa_wrapper<Module>::preset_descs;
 #endif
 
 

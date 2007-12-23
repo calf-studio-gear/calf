@@ -22,9 +22,11 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <expat.h>
 #include <calf/preset.h>
+#include <calf/giface.h>
 
 using namespace synth;
 using namespace std;
@@ -46,6 +48,28 @@ std::string plugin_preset::to_xml()
     return ss.str();
 }
 
+void plugin_preset::activate(plugin_ctl_iface *plugin)
+{
+    map<string, int> names;
+    int count = plugin->get_param_count();
+    // this is deliberately done in two separate loops - if you wonder why, just think for a while :)
+    for (int i = 0; i < count; i++)
+        names[plugin->get_param_props(i)->name] = i;
+    for (int i = 0; i < count; i++)
+        names[plugin->get_param_props(i)->short_name] = i;
+    // no support for unnamed parameters... tough luck :)
+    for (unsigned int i = 0; i < min(param_names.size(), values.size()); i++)
+    {
+        map<string, int>::iterator pos = names.find(param_names[i]);
+        if (pos == names.end()) {
+            // XXXKF should have a mechanism for notifying a GUI
+            printf("Warning: unknown parameter %s for plugin %s\n", param_names[i].c_str(), this->plugin.c_str());
+            continue;
+        }
+        plugin->set_param_value(pos->second, values[i]);
+    }
+}
+    
 string synth::preset_list::get_preset_filename()
 {
     const char *home = getenv("HOME");
@@ -141,6 +165,27 @@ void preset_list::xml_end_element_handler(void *user_data, const char *name)
         break;
     }
     throw preset_exception("Invalid XML element close: %s", name, 0);
+}
+
+bool preset_list::load_defaults()
+{
+    try {
+        struct stat st;
+        if (!stat(preset_list::get_preset_filename().c_str(), &st)) {
+            load(preset_list::get_preset_filename().c_str());
+            if (!presets.empty())
+                return true;
+        }
+        if (presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st)) {
+            load(PKGLIBDIR "/presets.xml");
+            return true;
+        }
+    }
+    catch(preset_exception &ex)
+    {
+        return false;
+    }
+    return false;
 }
 
 void preset_list::load(const char *filename)

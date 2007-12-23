@@ -52,15 +52,6 @@ struct param_control
     virtual ~param_control() {}
 };
 
-struct plugin_ctl_iface
-{
-    virtual parameter_properties *get_param_props(int param_no) = 0;
-    virtual float get_param_value(int param_no) = 0;
-    virtual void set_param_value(int param_no, float value) = 0;
-    virtual int get_param_count() = 0;
-    virtual ~plugin_ctl_iface() {}
-};
-
 struct hscale_param_control: public param_control
 {
     GtkHScale *scale;

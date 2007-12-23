@@ -25,10 +25,11 @@
 #include <string>
 #include <sstream>
 #include <ostream>
-#include "giface.h"
 
 namespace synth {
 
+class plugin_ctl_iface;
+    
 struct plugin_preset
 {
     int bank, program;
@@ -37,7 +38,9 @@ struct plugin_preset
     std::vector<std::string> param_names;
     std::vector<float> values;
     std::string blob;
-    std::string to_xml();
+
+    std::string to_xml();    
+    void activate(plugin_ctl_iface *plugin);
 };
 
 struct preset_exception
@@ -76,6 +79,7 @@ struct preset_list
     plugin_preset parser_preset;
 
     static std::string get_preset_filename();
+    bool load_defaults();
     void load(const char *filename);
     void save(const char *filename);
     void add(const plugin_preset &sp);
