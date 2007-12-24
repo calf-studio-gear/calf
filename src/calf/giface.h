@@ -466,8 +466,7 @@ struct audio_exception: public std::exception
     const char *text;
     std::string container;
 public:
-    audio_exception(const char *_text) : text(_text) {}
-    audio_exception(const std::string &t) : text(container.c_str()), container(t) {}
+    audio_exception(const std::string &t) : container(t) { text = container.c_str(); }
     virtual const char *what() const throw () { return text; }
     virtual ~audio_exception() throw () {}
 };

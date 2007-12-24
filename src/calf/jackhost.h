@@ -80,7 +80,7 @@ public:
     void connect(const std::string &p1, const std::string &p2)
     {
         if (jack_connect(client, p1.c_str(), p2.c_str()) != 0)
-            throw audio_exception(("Could not connect ports "+p1+" and "+p2).c_str());
+            throw audio_exception("Could not connect ports "+p1+" and "+p2);
     }
     
     void close()
