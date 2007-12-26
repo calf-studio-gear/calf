@@ -212,6 +212,7 @@ void preset_list::load(const char *filename)
     if (status == XML_STATUS_ERROR)
         throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", filename, errno);
     close(fd);
+    XML_ParserFree(parser);
 }
 
 void preset_list::save(const char *filename)

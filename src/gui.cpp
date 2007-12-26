@@ -30,7 +30,7 @@ using namespace std;
 
 /******************************** controls ********************************/
 
-GtkWidget *param_control::create_label(int param_idx)
+GtkWidget *param_control::create_label()
 {
     label = gtk_label_new ("");
     gtk_label_set_width_chars (GTK_LABEL (label), 12);
@@ -42,6 +42,12 @@ void param_control::update_label()
 {
     parameter_properties &props = get_props();
     gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
+}
+
+void param_control::hook_params()
+{
+    if (param_no != -1)
+        gui->add_param_ctl(param_no, this);
 }
 
 // combo box
@@ -62,6 +68,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 
 void combo_box_param_control::set()
 {
+    _GUARD_CHANGE_
     parameter_properties &props = get_props();
     gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
@@ -69,7 +76,7 @@ void combo_box_param_control::set()
 void combo_box_param_control::get()
 {
     parameter_properties &props = get_props();
-    gui->plugin->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min);
+    gui->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min, this);
 }
 
 void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer value)
@@ -93,18 +100,31 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
+void hscale_param_control::init_xml(const char *element)
+{
+    if (attribs.count("width"))
+        gtk_widget_set_size_request (widget, get_int("width", 200), -1);
+    if (attribs.count("position"))
+    {
+        string v = attribs["position"];
+        if (v == "top") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_TOP);
+        if (v == "bottom") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_BOTTOM);
+    }
+}
+
 void hscale_param_control::set()
 {
+    _GUARD_CHANGE_
     parameter_properties &props = get_props();
     gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-    hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
+    // hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
 }
 
 void hscale_param_control::get()
 {
     parameter_properties &props = get_props();
     float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
-    gui->plugin->set_param_value(param_no, cvalue);
+    gui->set_param_value(param_no, cvalue, this);
 }
 
 void hscale_param_control::hscale_value_changed(GtkHScale *widget, gpointer value)
@@ -122,6 +142,36 @@ gchar *hscale_param_control::hscale_format_value(GtkScale *widget, double arg1, 
     // for testing
     // return g_strdup_printf ("%s = %g", props.to_string (cvalue).c_str(), arg1);
     return g_strdup (props.to_string (cvalue).c_str());
+}
+
+// label
+
+GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui, param_no = _param_no;
+    string text = "<no name>";
+    if (param_no != -1)
+        text = get_props().name;
+    widget = gtk_label_new(text.c_str());
+    return widget;
+}
+
+// value
+
+GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui, param_no = _param_no;
+    widget = gtk_label_new ("");
+    gtk_label_set_width_chars (GTK_LABEL (widget), 12);
+    gtk_misc_set_alignment (GTK_MISC (widget), 0.5, 0.5);
+    return widget;
+}
+
+void value_param_control::set()
+{
+    _GUARD_CHANGE_
+    parameter_properties &props = get_props();
+    gtk_label_set_text (GTK_LABEL (widget), props.to_string(gui->plugin->get_param_value(param_no)).c_str());    
 }
 
 // check box
@@ -145,12 +195,12 @@ void toggle_param_control::toggle_value_changed(GtkCheckButton *widget, gpointer
 void toggle_param_control::get()
 {
     const parameter_properties &props = get_props();
-    plugin_ctl_iface &pif = *gui->plugin;
-    pif.set_param_value(param_no, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + props.min);
+    gui->set_param_value(param_no, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + props.min, this);
 }
 
 void toggle_param_control::set()
 {
+    _GUARD_CHANGE_
     const parameter_properties &props = get_props();
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
@@ -173,11 +223,14 @@ void knob_param_control::get()
 {
     const parameter_properties &props = get_props();
     float value = props.from_01(phat_knob_get_value(PHAT_KNOB(widget)));
-    gui->plugin->set_param_value(param_no, value);
+    gui->set_param_value(param_no, value, this);
+    if (label)
+        update_label();
 }
 
 void knob_param_control::set()
 {
+    _GUARD_CHANGE_
     const parameter_properties &props = get_props();
     phat_knob_set_value(PHAT_KNOB(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
     knob_value_changed(PHAT_KNOB(widget), (gpointer)this);
@@ -186,11 +239,7 @@ void knob_param_control::set()
 void knob_param_control::knob_value_changed(PhatKnob *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
-    plugin_ctl_iface &pif = *jhp->gui->plugin;
-    const parameter_properties &props = jhp->get_props();
-    float cvalue = props.from_01 (phat_knob_get_value (widget));
-    pif.set_param_value(jhp->param_no, cvalue);
-    jhp->update_label();
+    jhp->get();
 }
 #endif
 
@@ -207,7 +256,7 @@ static void action_destroy_notify(gpointer data)
     delete (activate_preset_params *)data;
 }
 
-GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
+GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
 {
     plugin = _plugin;
     param_count = plugin->get_param_count();
@@ -216,14 +265,14 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
         params[i] = NULL;
     }
     
-    table = gtk_table_new (param_count, 3, FALSE);
+    container = gtk_table_new (param_count, 3, FALSE);
     
     for (int i = 0; i < param_count; i++) {
         int trow = i;
         parameter_properties &props = *plugin->get_param_props(i);
         GtkWidget *label = gtk_label_new (props.name);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-        gtk_table_attach (GTK_TABLE (table), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
+        gtk_table_attach (GTK_TABLE (container), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
         
         
         GtkWidget *widget = NULL;
@@ -233,22 +282,22 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
         {
             params[i] = new combo_box_param_control();
             widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
         else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                  (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
         {
             params[i] = new toggle_param_control();
             widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
 #if USE_PHAT
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
             params[i] = new knob_param_control();
             widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
-            gtk_table_attach (GTK_TABLE (table), params[i]->create_label(i), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
         }
 #endif
         else
@@ -256,11 +305,246 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin, const char *title)
             gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
             params[i] = new hscale_param_control();
             widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (table), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
+            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
         }
         params[i]->set();
     }
+    return container;
+}
+
+void control_base::require_attribute(const char *name)
+{
+    if (attribs.count(name) == 0) {
+        g_error("Missing attribute: %s", name);
+    }
+}
+
+void control_base::require_int_attribute(const char *name)
+{
+    if (attribs.count(name) == 0) {
+        g_error("Missing attribute: %s", name);
+    }
+    if (attribs[name].empty() || attribs[name].find_first_not_of("0123456789") != string::npos) {
+        g_error("Wrong data type on attribute: %s (required integer)", name);
+    }
+}
+
+int control_base::get_int(const char *name, int def_value)
+{
+    if (attribs.count(name) == 0)
+        return def_value;
+    const std::string &v = attribs[name];
+    if (v.empty() || v.find_first_not_of("-+0123456789") != string::npos)
+        return def_value;
+    return atoi(v.c_str());
+}
+
+float control_base::get_float(const char *name, float def_value)
+{
+    if (attribs.count(name) == 0)
+        return def_value;
+    const std::string &v = attribs[name];
+    if (v.empty() || v.find_first_not_of("-+0123456789.") != string::npos)
+        return def_value;
+    stringstream ss(v);
+    float value;
+    ss >> value;
+    return value;
+}
+
+/******************************** GtkTable container ********************************/
+
+GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    require_int_attribute("rows");
+    require_int_attribute("cols");
+    GtkWidget *table = gtk_table_new(get_int("rows", 1), get_int("cols", 1), false);
+    container = GTK_CONTAINER(table);
     return table;
+}
+
+void table_container::add(GtkWidget *widget, control_base *base)
+{
+    base->require_int_attribute("attach-x");
+    base->require_int_attribute("attach-y");
+    int x = base->get_int("attach-x"), y = base->get_int("attach-y");
+    int w = base->get_int("attach-w", 1), h = base->get_int("attach-h", 1);
+    int fillx = (base->get_int("fill-x", 1) ? GTK_FILL : 0) | (base->get_int("expand-x", 1) ? GTK_EXPAND : 0) | (base->get_int("shrink-x", 0) ? GTK_SHRINK : 0);
+    int filly = (base->get_int("fill-y", 1) ? GTK_FILL : 0) | (base->get_int("expand-y", 1) ? GTK_EXPAND : 0) | (base->get_int("shrink-y", 0) ? GTK_SHRINK : 0);
+    int padx = base->get_int("pad-x", 2);
+    int pady = base->get_int("pad-y", 2);
+    gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
+} 
+
+/******************************** alignment contaner ********************************/
+
+GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkWidget *align = gtk_alignment_new(get_float("align-x", 0.5), get_float("align-y", 0.5), get_float("scale-x", 0), get_float("scale-y", 0));
+    container = GTK_CONTAINER(align);
+    return align;
+}
+
+/******************************** GtkFrame contaner ********************************/
+
+GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkWidget *frame = gtk_frame_new(attribs["label"].c_str());
+    container = GTK_CONTAINER(frame);
+    return frame;
+}
+
+/******************************** GtkBox type of containers ********************************/
+
+void box_container::add(GtkWidget *w, control_base *base)
+{
+    gtk_container_add_with_properties(container, w, "expand", get_int("expand", 1), "fill", get_int("fill", 1), NULL);
+}
+
+/******************************** GtkHBox container ********************************/
+
+GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkWidget *hbox = gtk_hbox_new(false, get_int("spacing", 2));
+    container = GTK_CONTAINER(hbox);
+    return hbox;
+}
+
+/******************************** GtkVBox container ********************************/
+
+GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkWidget *vbox = gtk_vbox_new(false, get_int("spacing", 2));
+    container = GTK_CONTAINER(vbox);
+    return vbox;
+}
+
+/******************************** GUI proper ********************************/
+
+param_control *plugin_gui::create_control_from_xml(const char *element, const char *attributes[])
+{
+    if (!strcmp(element, "knob"))
+        return new knob_param_control;
+    if (!strcmp(element, "hscale"))
+        return new hscale_param_control;
+    if (!strcmp(element, "combo"))
+        return new combo_box_param_control;
+    if (!strcmp(element, "toggle"))
+        return new toggle_param_control;
+    if (!strcmp(element, "label"))
+        return new label_param_control;
+    if (!strcmp(element, "value"))
+        return new value_param_control;
+    return NULL;
+}
+
+control_container *plugin_gui::create_container_from_xml(const char *element, const char *attributes[])
+{
+    if (!strcmp(element, "table"))
+        return new table_container;
+    if (!strcmp(element, "vbox"))
+        return new vbox_container;
+    if (!strcmp(element, "hbox"))
+        return new hbox_container;
+    if (!strcmp(element, "align"))
+        return new alignment_container;
+    if (!strcmp(element, "frame"))
+        return new frame_container;
+    return NULL;
+}
+
+void plugin_gui::xml_element_start(void *data, const char *element, const char *attributes[])
+{
+    plugin_gui *gui = (plugin_gui *)data;
+    gui->xml_element_start(element, attributes);
+}
+
+void plugin_gui::xml_element_start(const char *element, const char *attributes[])
+{
+    control_base::xml_attribute_map xam;
+    while(*attributes)
+    {
+        xam[attributes[0]] = attributes[1];
+        attributes += 2;
+    }
+    
+    control_container *cc = create_container_from_xml(element, attributes);
+    if (cc != NULL)
+    {
+        cc->attribs = xam;
+        cc->create(this, element, xam);
+        gtk_container_set_border_width(cc->container, cc->get_int("border"));
+
+        container_stack.push_back(cc);
+        current_control = NULL;
+        return;
+    }
+    if (!container_stack.empty())
+    {
+        current_control = create_control_from_xml(element, attributes);
+        if (current_control)
+        {
+            current_control->attribs = xam;
+            int param_no = -1;
+            if (xam.count("param"))
+            {
+                map<string, int>::iterator it = param_name_map.find(xam["param"]);
+                if (it == param_name_map.end())
+                    g_error("Unknown parameter %s", xam["param"].c_str());
+                else
+                    param_no = it->second;
+            }
+            current_control->create(this, param_no);
+            current_control->init_xml(element);
+            current_control->set();
+            current_control->hook_params();
+            params.push_back(current_control);
+            return;
+        }
+    }
+    g_error("Unxpected element %s in GUI definition\n", element);
+}
+
+void plugin_gui::xml_element_end(void *data, const char *element)
+{
+    plugin_gui *gui = (plugin_gui *)data;
+    if (gui->current_control)
+    {
+        (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
+        gui->current_control = NULL;
+        return;
+    }
+    unsigned int ss = gui->container_stack.size();
+    if (ss > 1) {
+        gui->container_stack[ss - 2]->add(GTK_WIDGET(gui->container_stack[ss - 1]->container), gui->container_stack[ss - 1]);
+    }
+    else
+        gui->top_container = gui->container_stack[0];
+    gui->container_stack.pop_back();
+}
+
+
+GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xml)
+{
+    current_control = NULL;
+    top_container = NULL;
+    parser = XML_ParserCreate("UTF-8");
+    plugin = _plugin;
+    container_stack.clear();
+    
+    param_name_map.clear();
+    int size = plugin->get_param_count();
+    for (int i = 0; i < size; i++)
+        param_name_map[plugin->get_param_props(i)->short_name] = i;
+    
+    XML_SetUserData(parser, this);
+    XML_SetElementHandler(parser, xml_element_start, xml_element_end);
+    XML_Status status = XML_Parse(parser, xml, strlen(xml), 1);
+    if (status == XML_STATUS_ERROR)
+        g_error("Parse error: %s in XML", XML_ErrorString(XML_GetErrorCode(parser)));
+    
+    XML_ParserFree(parser);
+    return GTK_WIDGET(top_container->container);
 }
 
 void plugin_gui::refresh()
@@ -271,6 +555,19 @@ void plugin_gui::refresh()
             params[i]->set();
     }
 }
+
+void plugin_gui::set_param_value(int param_no, float value, param_control *originator)
+{
+    plugin->set_param_value(param_no, value);
+    std::multimap<int, param_control *>::iterator it = par2ctl.find(param_no);
+    while(it != par2ctl.end() && it->first == param_no)
+    {
+        if (it->second != originator)
+            it->second->set();
+        it++;
+    }
+}
+
 
 /******************************* Actions **************************************************/
  
@@ -389,16 +686,21 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_widget_size_request(GTK_WIDGET(toplevel), &req2);
     // printf("size request %dx%d\n", req2.width, req2.height);
     
-    GtkWidget *table = gui->create(_jh, effect);
+    GtkWidget *container;
+    const char *xml = _jh->get_gui_xml();
+    if (xml)
+        container = gui->create_from_xml(_jh, xml);
+    else
+        container = gui->create(_jh);
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), table);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), container);
     
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
     gtk_widget_show_all(GTK_WIDGET(sw));
-    gtk_widget_size_request(table, &req);
+    gtk_widget_size_request(container, &req);
     // printf("size request %dx%d\n", req.width, req.height);
     gtk_window_resize(GTK_WINDOW(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));

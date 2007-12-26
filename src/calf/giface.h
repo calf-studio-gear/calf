@@ -102,6 +102,7 @@ struct plugin_ctl_iface
     virtual float get_param_value(int param_no) = 0;
     virtual void set_param_value(int param_no, float value) = 0;
     virtual int get_param_count() = 0;
+    virtual const char *get_gui_xml() = 0;
     virtual ~plugin_ctl_iface() {}
 };
 
@@ -128,6 +129,7 @@ public:
     uint32_t process_audio(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     static int get_in_channels();
     static int get_out_channels();
+    static const char *get_xml_iface() { return NULL; }
 };
 
 struct ladspa_info
@@ -171,6 +173,9 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual int get_param_count()
     {
         return Module::param_count;
+    }
+    virtual const char *get_gui_xml() {
+        return Module::get_gui_xml();
     }
 };
 
@@ -437,7 +442,7 @@ struct ladspa_wrapper
     
     std::string generate_rdf() {
         return synth::generate_ladspa_rdf(info, Module::param_props, (const char **)descriptor.PortNames, Module::param_count, Module::in_count + Module::out_count);
-    };
+    }
 };
 
 template<class Module>

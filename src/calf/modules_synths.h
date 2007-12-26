@@ -64,6 +64,7 @@ public:
     synth::adsr envelope;
     
     static parameter_properties param_props[];
+    static const char *get_gui_xml();
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
     void note_on(int note, int vel)

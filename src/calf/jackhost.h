@@ -304,6 +304,9 @@ public:
         params[param_no] = value;
         changed = true;
     }
+    virtual const char *get_gui_xml() {
+        return Module::get_gui_xml();
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

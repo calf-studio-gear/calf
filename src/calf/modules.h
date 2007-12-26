@@ -42,6 +42,7 @@ public:
     inline void activate() {}
     inline void deactivate() {}
     inline void set_sample_rate(uint32_t sr) { }
+    inline static const char *get_gui_xml() { return NULL; }
 };
 
 class amp_audio_module: public null_audio_module
