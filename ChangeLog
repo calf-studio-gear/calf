@@ -2,3 +2,11 @@ Version 0.0.9
 
 + started creating an XML-based GUI (for monosynth only in this version)
 + created a GTK+ control for displaying waveforms and filter response graphs
+in Monosynth (and maybe others in future)
++ Monosynth: notch filter changes (made notch bandwidth proportional to Q,
+just for fun, might be a bad idea)
++ Monosynth: more waves
++ Monosynth: capped Sustain level to 0.999 so that decay time actually means
+something with Sustain = 100% (not a great way to do it, but acceptable in
+this case)
++ autotools configuration update (detect Cairo and require newer GTK+)

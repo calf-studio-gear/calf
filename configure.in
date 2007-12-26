@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([calf],[0.0.8],[wdev@foltman.com])
+AC_INIT([calf],[0.0.9],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
@@ -56,9 +56,9 @@ AC_SUBST(JACK_DEPS_LIBS)
 
 PHAT_ENABLED="no"
 if test "$JACK_FOUND" = "yes"; then
-  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.4.0 libglade-2.0 >= 2.4.0, 
+  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
     JACK_ENABLED="yes",
-    JACK_ENABLED="no (GTK+ or libglade is missing or too old)"
+    JACK_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
   )
 else
   JACK_ENABLED="no"
