@@ -91,7 +91,7 @@ public:
     }
     void params_changed() {
         float sf = 0.001f;
-        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, *params[par_sustain], *params[par_release] * sf, srate / step_size);
+        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);
         filter_type = fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
         separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
@@ -120,6 +120,7 @@ public:
     void calculate_buffer_ser();
     void calculate_buffer_single();
     void calculate_buffer_stereo();
+    bool get_graph(int index, float *data, int points);
     inline bool is_stereo_filter() const
     {
         return filter_type == flt_2lp12 || filter_type == flt_2bp6;

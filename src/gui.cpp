@@ -243,6 +243,43 @@ void knob_param_control::knob_value_changed(PhatKnob *widget, gpointer value)
 }
 #endif
 
+// line graph
+
+gboolean line_graph_param_control::update(void *data)
+{
+    line_graph_param_control *self = (line_graph_param_control *)data;
+    self->set();
+    return TRUE;
+}
+
+GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    const parameter_properties &props = get_props();
+    
+    widget = calf_line_graph_new ();
+    CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
+    clg->source = gui->plugin->get_line_graph_iface();
+    clg->source_id = param_no;
+    
+    if (get_int("refresh", 0))
+        g_idle_add(update, this);
+    
+    return widget;
+}
+
+void line_graph_param_control::set()
+{
+    gtk_widget_queue_draw(widget);
+}
+
+line_graph_param_control::~line_graph_param_control()
+{
+    if (get_int("refresh", 0))
+        g_idle_remove_by_data(this);
+}
+
 /******************************** GUI proper ********************************/
 
 plugin_gui::plugin_gui(plugin_gui_window *_window)
@@ -435,6 +472,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new label_param_control;
     if (!strcmp(element, "value"))
         return new value_param_control;
+    if (!strcmp(element, "line-graph"))
+        return new line_graph_param_control;
     return NULL;
 }
 
@@ -662,6 +701,7 @@ void plugin_gui_window::fill_gui_presets()
 void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const char *effect)
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
     
     GtkRequisition req, req2;

@@ -50,6 +50,12 @@ public:
         reset();
     }
     
+    inline void set_null()
+    {
+        a0 = 1.0;
+        b1 = b2 = a1 = a2 = 0.f;
+    }
+    
     /** Lowpass filter based on Robert Bristow-Johnson's equations
      * Perhaps every synth code that doesn't use SVF uses these
      * equations :)

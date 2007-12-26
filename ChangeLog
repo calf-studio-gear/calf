@@ -1,3 +1,4 @@
 Version 0.0.9
 
 + started creating an XML-based GUI (for monosynth only in this version)
++ created a GTK+ control for displaying waveforms and filter response graphs

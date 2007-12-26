@@ -96,6 +96,12 @@ struct parameter_properties
     std::string to_string(float value) const;
 };
 
+struct line_graph_iface
+{
+    virtual bool get_graph(int index, float *data, int points) = 0;
+    virtual ~line_graph_iface() {}
+};
+
 struct plugin_ctl_iface
 {
     virtual parameter_properties *get_param_props(int param_no) = 0;
@@ -103,6 +109,7 @@ struct plugin_ctl_iface
     virtual void set_param_value(int param_no, float value) = 0;
     virtual int get_param_count() = 0;
     virtual const char *get_gui_xml() = 0;
+    virtual line_graph_iface *get_line_graph_iface() = 0;
     virtual ~plugin_ctl_iface() {}
 };
 
@@ -176,6 +183,10 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
     virtual const char *get_gui_xml() {
         return Module::get_gui_xml();
+    }
+    virtual line_graph_iface *get_line_graph_iface()
+    {
+        return this;
     }
 };
 

@@ -30,7 +30,7 @@ namespace synth {
 
 using namespace dsp;
 
-class null_audio_module
+class null_audio_module: public line_graph_iface
 {
 public:
     inline void note_on(int note, int velocity) {}
@@ -42,6 +42,7 @@ public:
     inline void activate() {}
     inline void deactivate() {}
     inline void set_sample_rate(uint32_t sr) { }
+    inline bool get_graph(int index, float *data, int points) { return false; }
     inline static const char *get_gui_xml() { return NULL; }
 };
 

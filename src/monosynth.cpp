@@ -20,6 +20,7 @@
  */
 #include <assert.h>
 #include <memory.h>
+#include <complex>
 #if USE_JACK
 #include <jack/jack.h>
 #endif
@@ -28,6 +29,7 @@
 #include <calf/modules_synths.h>
 
 using namespace synth;
+using namespace std;
 
 const char *monosynth_audio_module::port_names[] = {
     "Out L", "Out R", 
@@ -53,15 +55,21 @@ static const char *monosynth_gui_xml =
     "<vbox border=\"10\">"
         "<hbox spacing=\"10\">"
             "<frame label=\"Oscillators\">"
-                "<vbox border=\"10\">"
+                "<vbox border=\"10\" spacing=\"10\">"
                     "<table rows=\"2\" cols=\"2\">"
                     "<label attach-x=\"0\" attach-y=\"0\" param=\"o1_wave\" />"
                     "<label attach-x=\"1\" attach-y=\"0\" param=\"o2_wave\" />"
                     "<combo attach-x=\"0\" attach-y=\"1\" param=\"o1_wave\" />"
                     "<combo attach-x=\"1\" attach-y=\"1\" param=\"o2_wave\" />"
                     "</table>"
-                    "<label param=\"o12_mix\"/>"
-                    "<hscale param=\"o12_mix\" position=\"bottom\"/>"
+                    "<hbox>"
+                        "<line-graph param=\"o1_wave\"/>"
+                        "<vbox>"
+                            "<label param=\"o12_mix\"/>"
+                            "<hscale param=\"o12_mix\" position=\"bottom\"/>"
+                        "</vbox>"
+                        "<line-graph param=\"o2_wave\"/>"
+                    "</hbox>"
                     "<hbox>"
                         "<vbox>"
                         "  <label param=\"o12_detune\" />"
@@ -85,6 +93,7 @@ static const char *monosynth_gui_xml =
                     "<align align-x=\"0.5\" align-y=\"0.5\">"
                         "<hbox>"
                             "<label param=\"filter\" /><combo param=\"filter\" />"
+                            "<line-graph param=\"filter\" refresh=\"1\"/>"
                         "</hbox>"
                     "</align>"
                     "<hbox>"
@@ -289,6 +298,38 @@ void monosynth_audio_module::activate() {
     waves[wave_test8].make(bl, data);
 }
 
+bool monosynth_audio_module::get_graph(int index, float *data, int points)
+{
+    // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
+    if (index == par_wave1 || index == par_wave2) {
+        int wave = dsp::clip(dsp::fastf2i_drm(*params[index]), 0, (int)wave_count - 1);
+
+        float *waveform = waves[wave].get_level(0);
+        for (int i = 0; i < points; i++)
+            data[i] = 0.5 * (waveform[i * 2047 / points] + waveform[i * 2047 / points + 1]);
+        return true;
+    }
+    if (index == par_filtertype) {
+        if (!running)
+            return false;
+        for (int i = 0; i < points; i++)
+        {
+            typedef complex<double> cfloat;
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * PI / srate;
+            cfloat z = 1.0 / exp(cfloat(0.0, freq));
+            
+            float level = abs((cfloat(filter.a0) + double(filter.a1) * z + double(filter.a2) * z*z) / (cfloat(1.0) + double(filter.b1) * z + double(filter.b2) * z*z));
+            if (!is_stereo_filter())
+                level *= abs((cfloat(filter2.a0) + double(filter2.a1) * z + double(filter2.a2) * z*z) / (cfloat(1.0) + double(filter2.b1) * z + double(filter2.b2) * z*z));
+            level *= fgain;
+            
+            data[i] = log(level) / log(1024.0) + 0.25;
+        }
+        return true;
+    }
+    return false;
+}
+
 void monosynth_audio_module::calculate_buffer_ser()
 {
     for (uint32_t i = 0; i < step_size; i++) 
@@ -437,10 +478,12 @@ void monosynth_audio_module::calculate_step()
     {
     case flt_lp12:
         filter.set_lp_rbj(cutoff, resonance, srate);
+        filter2.set_null();
         newfgain = min(0.7f, 0.7f / resonance) * ampctl;
         break;
     case flt_hp12:
         filter.set_hp_rbj(cutoff, resonance, srate);
+        filter2.set_null();
         newfgain = min(0.7f, 0.7f / resonance) * ampctl;
         break;
     case flt_lp24:
@@ -450,12 +493,12 @@ void monosynth_audio_module::calculate_step()
         break;
     case flt_lpbr:
         filter.set_lp_rbj(cutoff, resonance, srate);
-        filter2.set_br_rbj(cutoff2, resonance, srate);
+        filter2.set_br_rbj(cutoff2, 1.0 / resonance, srate);
         newfgain = min(0.5f, 0.5f / resonance) * ampctl;        
         break;
     case flt_hpbr:
         filter.set_hp_rbj(cutoff, resonance, srate);
-        filter2.set_br_rbj(cutoff2, resonance, srate);
+        filter2.set_br_rbj(cutoff2, 1.0 / resonance, srate);
         newfgain = min(0.5f, 0.5f / resonance) * ampctl;        
         break;
     case flt_2lp12:
@@ -465,6 +508,7 @@ void monosynth_audio_module::calculate_step()
         break;
     case flt_bp6:
         filter.set_bp_rbj(cutoff, resonance, srate);
+        filter2.set_null();
         newfgain = ampctl;
         break;
     case flt_2bp6:

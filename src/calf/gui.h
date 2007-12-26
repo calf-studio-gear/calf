@@ -29,6 +29,7 @@
 #if USE_PHAT
 #include <phat/phatknob.h>
 #endif
+#include "custom_ctl.h"
 
 namespace synth {
 
@@ -160,6 +161,17 @@ struct combo_box_param_control: public param_control
     virtual void get();
     virtual void set();
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
+};
+
+struct line_graph_param_control: public param_control
+{
+    CalfLineGraph *graph;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set();
+    virtual ~line_graph_param_control();
+    static gboolean update(void *data);
 };
 
 #if USE_PHAT

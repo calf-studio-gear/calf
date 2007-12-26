@@ -307,6 +307,10 @@ public:
     virtual const char *get_gui_xml() {
         return Module::get_gui_xml();
     }
+    virtual line_graph_iface *get_line_graph_iface()
+    {
+        return &module;
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

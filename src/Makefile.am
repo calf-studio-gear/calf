@@ -50,7 +50,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp synth.cpp preset.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
-libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp
+libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp
 libcalfgui_la_LDFLAGS = -static
 
 clean-local:
