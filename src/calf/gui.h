@@ -174,17 +174,19 @@ struct line_graph_param_control: public param_control
     static gboolean update(void *data);
 };
 
-#if USE_PHAT
 struct knob_param_control: public param_control
 {
+#if USE_PHAT
     PhatKnob *knob;
+#else
+    CalfKnob *knob;
+#endif
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
-    static void knob_value_changed(PhatKnob *widget, gpointer value);
+    static void knob_value_changed(GtkWidget *widget, gpointer value);
 };
-#endif
 
 class plugin_gui_window;
 

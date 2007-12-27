@@ -59,6 +59,7 @@ clean-local:
 install-data-hook:
 	install -d -m 755 $(DESTDIR)$(pkglibdir)    
 	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkglibdir)
+	install -c -m 644 $(top_srcdir)/knob.png $(DESTDIR)$(pkglibdir)
 if USE_JACK
 	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkglibdir)
 endif
@@ -79,6 +80,7 @@ if USE_JACK
 	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
 endif
 	rm -f $(DESTDIR)$(pkglibdir)/presets.xml
+	rm -f $(DESTDIR)$(pkglibdir)/knob.png
 	rmdir $(DESTDIR)$(pkglibdir)    
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so

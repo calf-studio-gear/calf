@@ -219,10 +219,31 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
+#else
+
+GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    const parameter_properties &props = get_props();
+    
+    //widget = calf_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
+    widget = calf_knob_new();
+    CALF_KNOB(widget)->knob_type = get_int("type");
+    gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
+    return widget;
+}
+
+#endif
+
 void knob_param_control::get()
 {
     const parameter_properties &props = get_props();
+#if USE_PHAT
     float value = props.from_01(phat_knob_get_value(PHAT_KNOB(widget)));
+#else
+    float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
+#endif
     gui->set_param_value(param_no, value, this);
     if (label)
         update_label();
@@ -232,16 +253,20 @@ void knob_param_control::set()
 {
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
+#if USE_PHAT
     phat_knob_set_value(PHAT_KNOB(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-    knob_value_changed(PHAT_KNOB(widget), (gpointer)this);
+#else
+    gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+#endif
+    if (label)
+        update_label();
 }
 
-void knob_param_control::knob_value_changed(PhatKnob *widget, gpointer value)
+void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
 }
-#endif
 
 // line graph
 
@@ -328,7 +353,6 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
-#if USE_PHAT
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
             params[i] = new knob_param_control();
@@ -336,7 +360,6 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
             gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
             gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);
         }
-#endif
         else
         {
             gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
