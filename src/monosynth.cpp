@@ -93,7 +93,7 @@ static const char *monosynth_gui_xml =
                     "<align align-x=\"0.5\" align-y=\"0.5\">"
                         "<hbox>"
                             "<label param=\"filter\" /><combo param=\"filter\" />"
-                            "<line-graph param=\"filter\" refresh=\"1\"/>"
+                            "<line-graph param=\"filter\" refresh=\"1\" width=\"80\" height=\"60\"/>"
                         "</hbox>"
                     "</align>"
                     "<hbox>"

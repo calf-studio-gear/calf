@@ -162,4 +162,96 @@
   <param name="vel2filter" value="0" />
   <param name="vel2amp" value="1" />
 </preset>
+<preset bank="0" program="0" plugin="filter" name="Totally muted">
+  <param name="freq" value="10" />
+  <param name="res" value="0.707" />
+  <param name="mode" value="2" />
+  <param name="inertia" value="20" />
+</preset>
+<preset bank="0" program="0" plugin="filter" name="Disco">
+  <param name="freq" value="193.821" />
+  <param name="res" value="1.37956" />
+  <param name="mode" value="0" />
+  <param name="inertia" value="74" />
+</preset>
+<preset bank="0" program="0" plugin="filter" name="Distant Headphones">
+  <param name="freq" value="305.818" />
+  <param name="res" value="0.707" />
+  <param name="mode" value="3" />
+  <param name="inertia" value="74" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Slow Resonant">
+  <param name="min_delay" value="0.125893" />
+  <param name="mod_depth" value="0.362218" />
+  <param name="mod_rate" value="0.146848" />
+  <param name="feedback" value="-0.882" />
+  <param name="amount" value="1" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Waterlike">
+  <param name="min_delay" value="0.47863" />
+  <param name="mod_depth" value="0.72272" />
+  <param name="mod_rate" value="1.67185" />
+  <param name="feedback" value="-0.1692" />
+  <param name="amount" value="0.926588" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Fast Sweep">
+  <param name="min_delay" value="0.1" />
+  <param name="mod_depth" value="4.35482" />
+  <param name="mod_rate" value="5.2282" />
+  <param name="feedback" value="0.7614" />
+  <param name="amount" value="0.926588" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Tooth Killer">
+  <param name="min_delay" value="0.363078" />
+  <param name="mod_depth" value="0.181539" />
+  <param name="mod_rate" value="0.100419" />
+  <param name="feedback" value="0.99" />
+  <param name="amount" value="0.31864" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Warble">
+  <param name="min_delay" value="0.218776" />
+  <param name="mod_depth" value="0.181539" />
+  <param name="mod_rate" value="20" />
+  <param name="feedback" value="-0.99" />
+  <param name="amount" value="0.31864" />
+</preset>
+<preset bank="0" program="0" plugin="reverb" name="Large Empty Hall">
+  <param name="decay_time" value="2.00689" />
+  <param name="hf_damp" value="20000" />
+  <param name="amount" value="0.366022" />
+</preset>
+<preset bank="0" program="0" plugin="reverb" name="DiscoVerb">
+  <param name="decay_time" value="1" />
+  <param name="hf_damp" value="3396.49" />
+  <param name="amount" value="0.269807" />
+</preset>
+<preset bank="0" program="0" plugin="reverb" name="Large Occupied Hall">
+  <param name="decay_time" value="1.45397" />
+  <param name="hf_damp" value="9795.58" />
+  <param name="amount" value="0.184284" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Claribone">
+  <param name="o1_wave" value="1" />
+  <param name="o2_wave" value="2" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="12" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.5" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="79.7022" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="0" />
+  <param name="env2cutoff" value="9620.51" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="93.4008" />
+  <param name="adsr_d" value="46.3296" />
+  <param name="adsr_s" value="0.749556" />
+  <param name="adsr_r" value="50" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="2" />
+  <param name="portamento" value="44.7214" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0" />
+</preset>
 </presets>

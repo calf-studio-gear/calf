@@ -57,9 +57,6 @@ calf_line_graph_size_request (GtkWidget *widget,
     g_assert(CALF_IS_LINE_GRAPH(widget));
     
     // CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-
-    requisition->width = 64;
-    requisition->height = 64;
 }
 
 static void
@@ -85,7 +82,10 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
 static void
 calf_line_graph_init (CalfLineGraph *self)
 {
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_NO_WINDOW);
+    GtkWidget *widget = GTK_WIDGET(self);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
 }
 
 GtkWidget *
@@ -153,9 +153,6 @@ calf_knob_size_request (GtkWidget *widget,
     g_assert(CALF_IS_KNOB(widget));
     
     CalfKnob *self = CALF_KNOB(widget);
-
-    requisition->width = 40;
-    requisition->height = 40;
 }
 
 static gboolean
@@ -213,7 +210,10 @@ calf_knob_class_init (CalfKnobClass *klass)
 static void
 calf_knob_init (CalfKnob *self)
 {
+    GtkWidget *widget = GTK_WIDGET(self);
     GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
 }
 
 GtkWidget *
