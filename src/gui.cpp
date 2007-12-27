@@ -767,10 +767,20 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // printf("size request %dx%d\n", req.width, req.height);
     gtk_window_resize(GTK_WINDOW(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-
+    all_windows.insert(this);
 }
 
 plugin_gui_window::~plugin_gui_window()
 {
+    all_windows.erase(this);
     delete gui;
 }
+
+std::set<plugin_gui_window *> plugin_gui_window::all_windows;
+
+void plugin_gui_window::refresh_all_presets()
+{
+    for (std::set<plugin_gui_window *>::iterator i = all_windows.begin(); i != all_windows.end(); i++)
+        (*i)->fill_gui_presets();
+}
+

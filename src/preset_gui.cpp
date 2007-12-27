@@ -61,7 +61,7 @@ void store_preset_ok(GtkAction *action, plugin_gui *gui)
     global_presets = tmp;
     global_presets.save(tmp.get_preset_filename().c_str());
     gtk_widget_destroy(store_preset_dlg);
-    gui->window->fill_gui_presets();
+    plugin_gui_window::refresh_all_presets();
 }
 
 void store_preset_cancel(GtkAction *action, plugin_gui *gui)

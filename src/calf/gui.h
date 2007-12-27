@@ -24,6 +24,7 @@
 
 #include <expat.h>
 #include <map>
+#include <set>
 #include <vector>
 #include <gtk/gtk.h>
 #if USE_PHAT
@@ -232,13 +233,16 @@ public:
     GtkWindow *toplevel;
     GtkUIManager *ui_mgr;
     GtkActionGroup *std_actions, *preset_actions;
+    static std::set<plugin_gui_window *> all_windows;
 
     plugin_gui_window();
     std::string make_gui_preset_list(GtkActionGroup *grp);
     void fill_gui_presets();
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
+    static void refresh_all_presets();
     ~plugin_gui_window();
 };
+
 
 inline parameter_properties &param_control::get_props() 
 { 
