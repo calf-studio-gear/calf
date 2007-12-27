@@ -14,7 +14,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
-    GdkColor sc = { 0, 0, 0, 0 }, sc2 = { 0, 0, 65535, 0 };
+    GdkColor sc = { 0, 0, 0, 0 };
 
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
@@ -22,11 +22,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     if (lg->source) {
         float *data = new float[2 * sx];
-        if (lg->source->get_graph(lg->source_id, data, 2 * sx))
+        GdkColor sc2 = { 0, 0, 65535, 0 };
+        gdk_cairo_set_source_color(c, &sc2);
+        cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
+        cairo_set_line_width(c, 1);
+        for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, c); gn++)
         {
-            gdk_cairo_set_source_color(c, &sc2);
-            cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
-            cairo_set_line_width(c, 1);
             for (int i = 0; i < 2 * sx; i++)
             {
                 int y = oy + sy / 2 - (sy / 2 - 1) * data[i];

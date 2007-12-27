@@ -39,6 +39,10 @@
 #include "primitives.h"
 #include "preset.h"
 
+struct _cairo;
+    
+typedef struct _cairo cairo_t;
+    
 namespace synth {
 
 enum {
@@ -98,7 +102,7 @@ struct parameter_properties
 
 struct line_graph_iface
 {
-    virtual bool get_graph(int index, float *data, int points) = 0;
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) = 0;
     virtual ~line_graph_iface() {}
 };
 

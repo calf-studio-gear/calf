@@ -120,7 +120,7 @@ public:
     void calculate_buffer_ser();
     void calculate_buffer_single();
     void calculate_buffer_stereo();
-    bool get_graph(int index, float *data, int points);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     inline bool is_stereo_filter() const
     {
         return filter_type == flt_2lp12 || filter_type == flt_2bp6;

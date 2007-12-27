@@ -298,10 +298,12 @@ void monosynth_audio_module::activate() {
     waves[wave_test8].make(bl, data);
 }
 
-bool monosynth_audio_module::get_graph(int index, float *data, int points)
+bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
     if (index == par_wave1 || index == par_wave2) {
+        if (subindex)
+            return false;
         int wave = dsp::clip(dsp::fastf2i_drm(*params[index]), 0, (int)wave_count - 1);
 
         float *waveform = waves[wave].get_level(0);
@@ -312,13 +314,16 @@ bool monosynth_audio_module::get_graph(int index, float *data, int points)
     if (index == par_filtertype) {
         if (!running)
             return false;
+        if (subindex > (is_stereo_filter() ? 1 : 0))
+            return false;
         for (int i = 0; i < points; i++)
         {
             typedef complex<double> cfloat;
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * PI / srate;
             cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
-            float level = abs((cfloat(filter.a0) + double(filter.a1) * z + double(filter.a2) * z*z) / (cfloat(1.0) + double(filter.b1) * z + double(filter.b2) * z*z));
+            biquad<float> &f = subindex ? filter2 : filter;
+            float level = abs((cfloat(f.a0) + double(f.a1) * z + double(f.a2) * z*z) / (cfloat(1.0) + double(f.b1) * z + double(f.b2) * z*z));
             if (!is_stereo_filter())
                 level *= abs((cfloat(filter2.a0) + double(filter2.a1) * z + double(filter2.a2) * z*z) / (cfloat(1.0) + double(filter2.b1) * z + double(filter2.b2) * z*z));
             level *= fgain;
