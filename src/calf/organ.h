@@ -32,13 +32,11 @@ struct organ_parameters {
     float foldover;
     float percussion_mode;
     float harmonic;
-    float vibrato_mode;
     float master;
 
     inline bool get_foldover() { return foldover >= 0.5f; }
     inline int get_percussion_mode() { return dsp::fastf2i_drm(percussion_mode); }
     inline int get_harmonic() { return dsp::fastf2i_drm(harmonic); }
-    inline int get_vibrato_mode() { return dsp::fastf2i_drm(vibrato_mode); }
 };
 
 class organ_voice_base
@@ -86,7 +84,7 @@ public:
     void calc_foldover() {
         h4 = 4, h6 = 6, h8 = 8, h10 = 10, h12 = 12, h16 = 16;
         if (!parameters->get_foldover()) return;
-        const int foc = 108, foc2 = 108 + 12, foc3 = 108 + 24;
+        const int foc = 120, foc2 = 120 + 12, foc3 = 120 + 24;
         if (note + 24 >= foc) h4 = 2;
         if (note + 24 >= foc2) h4 = 1;
         if (note + 36 >= foc) h8 = 4;
@@ -189,17 +187,10 @@ public:
 struct drawbar_organ: public synth::basic_synth {
     organ_parameters *parameters;
     percussion_voice percussion;
-    // chorus instead of rotary speaker is, well, cheesy
-    // let me think of something better some day
-    dsp::simple_flanger<float, 4096> chorus, chorus2;
-    dsp::biquad<float> crossover1, crossover2;
-    dsp::simple_delay<8, float> phaseshift;
-    float mwhl_value, hold_value;
     
     drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
-        mwhl_value = hold_value = 0.f;
     }
     void render_to(float *output[], int nsamples)
     {
@@ -209,20 +200,6 @@ struct drawbar_organ: public synth::basic_synth {
         if (percussion.get_active())
             percussion.render_to(buf, nsamples);
         float gain = parameters->master;
-        if (parameters->get_vibrato_mode())
-        {
-            float chorus_buffer[4096];
-            float chorus_buffer2[4096];
-            chorus.process(chorus_buffer, buf, nsamples);
-            chorus2.process(chorus_buffer2, buf, nsamples);
-            for (int i=0; i<nsamples; i++) {
-                float lower_drum = crossover1.process_d2(chorus_buffer[i]);
-                float upper_drum = crossover2.process_d2(chorus_buffer2[i]);
-                output[0][i] = gain*(buf[i] + lower_drum - upper_drum);
-                output[1][i] = gain*(buf[i] - phaseshift.process(lower_drum - upper_drum, 7));
-            }
-        }
-        else
         for (int i=0; i<nsamples; i++) {
             output[0][i] = gain*buf[i];
             output[1][i] = gain*buf[i];
@@ -236,54 +213,7 @@ struct drawbar_organ: public synth::basic_synth {
     }
     virtual void setup(int sr) {
         basic_synth::setup(sr);
-        crossover1.set_lp_rbj(800.f, 0.7, (float)sr);
-        crossover2.set_hp_rbj(800.f, 0.7, (float)sr);
-        set_vibrato();
-        chorus.setup(sr);chorus2.setup(sr);
-        chorus.set_min_delay(0.0041f);chorus2.set_min_delay(0.0025f);
-        chorus.set_mod_depth(0.0024f);chorus2.set_mod_depth(0.0034f);
-
-        chorus.set_rate(0.63f);chorus2.set_rate(0.63f);
-        chorus.set_wet(0.5f);chorus2.set_wet(0.5f);
-        chorus.set_dry(0.0f);chorus2.set_dry(0.0f);
         percussion.setup(sr);
-        mwhl_value = hold_value = 0.f;
-    }
-    virtual void control_change(int ctl, int val)
-    {
-        int mode = parameters->get_vibrato_mode();
-        if (mode == 3 && ctl == 64)
-        {
-            hold_value = val / 127.f;
-            set_vibrato();
-            return;
-        }
-        if (mode == 4 && ctl == 1)
-        {
-            mwhl_value = val / 127.f;
-            set_vibrato();
-            return;
-        }
-        synth::basic_synth::control_change(ctl, val);
-    }
-    void set_vibrato()
-    {
-        int mode = parameters->get_vibrato_mode();
-        if (!mode)
-            return;
-        float speed = mode - 1;
-        if (mode == 3)
-            speed = hold_value;
-        if (mode == 4)
-            speed = mwhl_value;
-        chorus.set_mod_depth(0.002f - 0.0015f*speed);
-        chorus2.set_mod_depth(0.0025f - 0.002f*speed);
-        chorus.set_min_delay(0.0061f);
-        chorus2.set_min_delay(0.0085f);
-        chorus.set_rate((40.0 + (342 - 40)*speed) / 60.0);
-        chorus2.set_rate((48.0 + (400 - 48)*speed) / 60.0);
-        chorus.set_fb(0.3f);
-        chorus2.set_fb(-0.3f);
     }
 };
 

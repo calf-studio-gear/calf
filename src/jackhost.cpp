@@ -59,6 +59,8 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
 #ifdef ENABLE_EXPERIMENTAL
     else if (!strcmp(effect_name, "organ"))
         return new jack_host<organ_audio_module>();
+    else if (!strcmp(effect_name, "rotaryspeaker"))
+        return new jack_host<rotary_speaker_audio_module>();
 #endif
     else
         return NULL;
@@ -174,7 +176,7 @@ int main(int argc, char *argv[])
             jack_host_base *jh = create_jack_host(names[i].c_str());
             if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
-                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ\n");
+                fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker\n");
 #else
                 fprintf(stderr, "Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth\n");
 #endif

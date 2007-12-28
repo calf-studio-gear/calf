@@ -98,6 +98,22 @@ struct simple_delay {
         odata = lerp(data[ppos], data[pppos], udelay);
     }
     
+    /** Read one C-channel sample at fractional position.
+     * This version can be used for modulated delays, because
+     * it uses linear interpolation.
+     * @param odata value to write into
+     * @param delay delay relative to current writing pos
+     * @param udelay fractional delay (0..1)
+     */
+    inline T get_interp_1616(unsigned int delay) {
+        float udelay = (float)((delay & 0xFFFF) * (1.0 / 65536.0));
+        delay = delay >> 16;
+//        assert(delay >= 0 && delay < N-1);
+        int ppos = wrap_around<N>(pos + N - delay);
+        int pppos = wrap_around<N>(ppos + N - 1);
+        return lerp(data[ppos], data[pppos], udelay);
+    }
+    
     /**
      * Comb filter. Feedback delay line with given delay and feedback values
      * @param in input signal
