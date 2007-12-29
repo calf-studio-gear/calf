@@ -140,10 +140,10 @@ public:
     }
     void update_speed()
     {
-        cos_h = 16384*16384*cos(dphase_h * 2 * PI);
-        sin_h = 16384*16384*sin(dphase_h * 2 * PI);
-        cos_l = 16384*16384*cos(dphase_l * 2 * PI);
-        sin_l = 16384*16384*sin(dphase_l * 2 * PI);
+        cos_h = (int)(16384*16384*cos(dphase_h * 2 * PI));
+        sin_h = (int)(16384*16384*sin(dphase_h * 2 * PI));
+        cos_l = (int)(16384*16384*cos(dphase_l * 2 * PI));
+        sin_l = (int)(16384*16384*sin(dphase_l * 2 * PI));
     }
     static inline void update_euler(long long int &x, long long int &y, int dx, int dy)
     {
@@ -156,10 +156,10 @@ public:
     {
         if (vibrato_mode)
         {
-            long long int xl0 = 10000*16384*cos(phase_l * 2 * PI);
-            long long int yl0 = 10000*16384*sin(phase_l * 2 * PI);
-            long long int xh0 = 10000*16384*cos(phase_h * 2 * PI);
-            long long int yh0 = 10000*16384*sin(phase_h * 2 * PI);
+            long long int xl0 = (int)(10000*16384*cos(phase_l * 2 * PI));
+            long long int yl0 = (int)(10000*16384*sin(phase_l * 2 * PI));
+            long long int xh0 = (int)(10000*16384*cos(phase_h * 2 * PI));
+            long long int yh0 = (int)(10000*16384*sin(phase_h * 2 * PI));
             // printf("xl=%d yl=%d dx=%d dy=%d\n", (int)(xl0>>14), (int)(yl0 >> 14), cos_l, sin_l);
             for (unsigned int i = 0; i < nsamples; i++) {
                 float in_l = ins[0][i + offset], in_r = ins[1][i + offset];

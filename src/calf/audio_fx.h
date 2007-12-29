@@ -186,6 +186,7 @@ public:
             int ifv = v >> 16;
             T fd; // signal from delay's output
             this->delay.get_interp(fd, ifv, (v & 0xFFFF)*(1.0/65536.0));
+            sanitize(fd);
             T sdry = in * this->dry;
             T swet = fd * this->wet;
             *buf_out++ = sdry + swet;
