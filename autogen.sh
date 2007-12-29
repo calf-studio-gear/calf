@@ -1,6 +1,7 @@
 #!/bin/sh
 aclocal
-autoheader
-automake --force-missing
-autoconf
+libtoolize --force --automake --copy
+autoheader --force
+autoconf --force
+automake --force-missing --copy
 ./configure --prefix=/usr $@
