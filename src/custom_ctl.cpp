@@ -132,6 +132,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 
     // printf("adjustment = %p value = %f\n", adj, adj->value);
     int ox = widget->allocation.x, oy = widget->allocation.y;
+    
+    ox += (widget->allocation.width - 40) / 2;
+    oy += (widget->allocation.height - 40) / 2;
+    
     int phase = (adj->value - adj->lower) * 64 / (adj->upper - adj->lower);
     if (self->knob_type == 1 && phase == 32) {
         double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;

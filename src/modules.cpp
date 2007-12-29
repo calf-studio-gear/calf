@@ -137,49 +137,16 @@ static synth::ladspa_wrapper<vintage_delay_audio_module> vintage_delay(vintage_d
 
 ////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
-const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
+static synth::ladspa_info rotary_speaker_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", copyright, "SimulationPlugin" };
 
-const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
-const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
-
-parameter_properties organ_audio_module::param_props[] = {
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h1", "16'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h3", "5 1/3'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h2", "8'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h4", "4'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h6", "2 2/3'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h8", "2'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h10", "1 3/5'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h12", "1 1/3'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h16", "1'" },
-
-    { 1,         0,  1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
-    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
-    { 3,         2,  3, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
-
-    { 0.1,         0,  1, 1.01, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "amount", "Amount" },
-};
+#if USE_LADSPA
+static synth::ladspa_wrapper<rotary_speaker_audio_module> rotary_speaker(rotary_speaker_info);
+#endif
 
 static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
 #if USE_LADSPA
 static synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
-#endif
-
-////////////////////////////////////////////////////////////////////////////
-
-const char *rotary_speaker_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
-
-const char *rotary_speaker_speed_names[] = { "Off", "Swell", "Tremolo", "HoldPedal", "ModWheel" };
-
-parameter_properties rotary_speaker_audio_module::param_props[] = {
-    { 2,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
-};
-
-static synth::ladspa_info rotary_speaker_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", copyright, "SimulationPlugin" };
-
-#if USE_LADSPA
-static synth::ladspa_wrapper<rotary_speaker_audio_module> rotary_speaker(rotary_speaker_info);
 #endif
 
 #endif

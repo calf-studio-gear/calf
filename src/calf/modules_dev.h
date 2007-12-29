@@ -54,6 +54,8 @@ public:
     {
     }
     static parameter_properties param_props[];
+    static const char *get_gui_xml();
+
     void set_sample_rate(uint32_t sr) {
         srate = sr;
     }

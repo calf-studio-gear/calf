@@ -131,7 +131,6 @@ struct value_param_control: public param_control
     virtual void set();
 };
 
-
 struct hscale_param_control: public param_control
 {
     GtkHScale *scale;
@@ -142,6 +141,17 @@ struct hscale_param_control: public param_control
     virtual void init_xml(const char *element);
     static void hscale_value_changed(GtkHScale *widget, gpointer value);
     static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
+};
+
+struct vscale_param_control: public param_control
+{
+    GtkHScale *scale;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    virtual void init_xml(const char *element);
+    static void vscale_value_changed(GtkHScale *widget, gpointer value);
 };
 
 struct toggle_param_control: public param_control

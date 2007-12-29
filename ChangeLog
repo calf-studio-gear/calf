@@ -1,8 +1,8 @@
 Version 0.0.9
 
 + started creating an XML-based GUI (for monosynth only in this version)
-+ created a GTK+ control for displaying waveforms and filter response graphs
-in Monosynth (and maybe others in future)
++ LineGraph: new GTK+ control for displaying waveforms and filter response
+graphs in Monosynth (and maybe others in future)
 + Monosynth: notch filter changes (made notch bandwidth proportional to Q,
 just for fun, might be a bad idea)
 + Monosynth: more waves
@@ -10,3 +10,8 @@ just for fun, might be a bad idea)
 something with Sustain = 100% (not a great way to do it, but acceptable in
 this case)
 + autotools configuration update (detect Cairo and require newer GTK+)
++ Knob: new GTK+ control based on GtkRange, with my primitive bitmap set
+(generated with Python and Cairo)
++ Organ: added a GUI too, very provisional
++ new effect: Rotary Speaker (split off Organ), unoptimized so far (uses
+trig function in inner loop, icky!)

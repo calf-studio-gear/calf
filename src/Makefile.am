@@ -44,10 +44,10 @@ endif
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = 
 
-calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp synth.cpp preset.cpp
+calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp 
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
 
-libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp synth.cpp preset.cpp
+libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
 libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp

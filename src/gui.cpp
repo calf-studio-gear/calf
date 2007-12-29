@@ -144,6 +144,48 @@ gchar *hscale_param_control::hscale_format_value(GtkScale *widget, double arg1, 
     return g_strdup (props.to_string (cvalue).c_str());
 }
 
+// vertical fader
+
+GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+
+    widget = gtk_vscale_new_with_range (0, 1, 0.01);
+    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
+    gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
+    gtk_widget_set_size_request (widget, -1, 200);
+
+    return widget;
+}
+
+void vscale_param_control::init_xml(const char *element)
+{
+    if (attribs.count("height"))
+        gtk_widget_set_size_request (widget, -1, get_int("height", 200));
+}
+
+void vscale_param_control::set()
+{
+    _GUARD_CHANGE_
+    parameter_properties &props = get_props();
+    gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+    // vscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
+}
+
+void vscale_param_control::get()
+{
+    parameter_properties &props = get_props();
+    float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
+    gui->set_param_value(param_no, cvalue, this);
+}
+
+void vscale_param_control::vscale_value_changed(GtkHScale *widget, gpointer value)
+{
+    vscale_param_control *jhp = (vscale_param_control *)value;
+    jhp->get();
+}
+
 // label
 
 GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
@@ -215,6 +257,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     const parameter_properties &props = get_props();
     
     widget = phat_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
+    gtk_widget_set_size_request(widget, 50, 50);
     gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     return widget;
 }
@@ -489,6 +532,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new knob_param_control;
     if (!strcmp(element, "hscale"))
         return new hscale_param_control;
+    if (!strcmp(element, "vscale"))
+        return new vscale_param_control;
     if (!strcmp(element, "combo"))
         return new combo_box_param_control;
     if (!strcmp(element, "toggle"))
