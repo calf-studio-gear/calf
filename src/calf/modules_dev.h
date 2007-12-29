@@ -93,12 +93,15 @@ public:
     uint32_t srate;
     int vibrato_mode;
     static parameter_properties param_props[];
-    float mwhl_value, hold_value;
+    float mwhl_value, hold_value, aspeed_l, aspeed_h, dspeed;
 
     rotary_speaker_audio_module()
     {
         mwhl_value = hold_value = 0.f;
         phase_h = phase_l = 0.f;
+        aspeed_l = 1.f;
+        aspeed_h = 1.f;
+        dspeed = 0.f;
     }    
     void set_sample_rate(uint32_t sr) {
         srate = sr;
@@ -131,15 +134,15 @@ public:
             speed = hold_value;
         if (vibrato_mode == 4)
             speed = mwhl_value;
-        speed = (speed < 0.5f) ? 0 : 1;
-        float speed_h = 48 + (400-48) * speed;
-        float speed_l = 40 + (342-40) * speed;
-        dphase_h = speed_h / (60 * srate);
-        dphase_l = speed_l / (60 * srate);
+        dspeed = (speed < 0.5f) ? 0 : 1;
         update_speed();
     }
     void update_speed()
     {
+        float speed_h = 48 + (400-48) * aspeed_h;
+        float speed_l = 40 + (342-40) * aspeed_l;
+        dphase_h = speed_h / (60 * srate);
+        dphase_l = speed_l / (60 * srate);
         cos_h = (int)(16384*16384*cos(dphase_h * 2 * PI));
         sin_h = (int)(16384*16384*sin(dphase_h * 2 * PI));
         cos_l = (int)(16384*16384*cos(dphase_l * 2 * PI));
@@ -151,7 +154,20 @@ public:
         long long int ny = (x * dy + y * dx) >> 28;
         x = nx;
         y = ny;
-    }    
+    }
+    inline bool update_speed(float &aspeed, float delta_decc, float delta_acc)
+    {
+        if (aspeed < dspeed) {
+            aspeed = min(1.f, aspeed + delta_acc);
+            return true;
+        }
+        else if (aspeed > dspeed) 
+        {
+            aspeed = max(0.f, aspeed - delta_decc);
+            return true;
+        }        
+        return false;
+    }
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
     {
         if (vibrato_mode)
@@ -200,6 +216,11 @@ public:
             crossover2r.sanitize_d2();
             phase_l = fmod(phase_l + nsamples * dphase_l, 1.0);
             phase_h = fmod(phase_h + nsamples * dphase_h, 1.0);
+            float delta = nsamples * 1.0 / srate;
+            bool u1 = update_speed(aspeed_l, delta * 0.2, delta * 0.14);
+            bool u2 = update_speed(aspeed_h, delta, delta * 0.5);
+            if (u1 || u2)
+                set_vibrato();
         } else
         {
             memcpy(outs[0] + offset, ins[0] + offset, sizeof(float) * nsamples);
