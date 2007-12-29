@@ -13,5 +13,6 @@ this case)
 + Knob: new GTK+ control based on GtkRange, with my primitive bitmap set
 (generated with Python and Cairo)
 + Organ: added a GUI too, very provisional
-+ new effect: Rotary Speaker (split off Organ), unoptimized so far (uses
-trig function in inner loop, icky!)
++ new effect: Rotary Speaker (split off Organ)
++ denormal fixes
+

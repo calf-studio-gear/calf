@@ -101,7 +101,7 @@ int parameter_properties::get_char_count() const
         len = std::max(len, strlen(buf)) + 2;
         return (int)len;
     }
-    return std::max(to_string(min).length(), std::max(to_string(max).length(), to_string(max - 0.0000001).length()));
+    return std::max(to_string(min).length(), std::max(to_string(max).length(), to_string(max * 0.999999).length()));
 }
 
 std::string parameter_properties::to_string(float value) const
