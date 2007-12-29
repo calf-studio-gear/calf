@@ -203,8 +203,9 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
 GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
+    parameter_properties &props = get_props();
     widget = gtk_label_new ("");
-    gtk_label_set_width_chars (GTK_LABEL (widget), 12);
+    gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
     gtk_misc_set_alignment (GTK_MISC (widget), 0.5, 0.5);
     return widget;
 }

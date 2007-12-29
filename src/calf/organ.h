@@ -199,7 +199,7 @@ struct drawbar_organ: public synth::basic_synth {
         basic_synth::render_to(bufptr, nsamples);
         if (percussion.get_active())
             percussion.render_to(buf, nsamples);
-        float gain = parameters->master;
+        float gain = parameters->master * 0.05;
         for (int i=0; i<nsamples; i++) {
             output[0][i] = gain*buf[i];
             output[1][i] = gain*buf[i];

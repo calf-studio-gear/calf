@@ -88,11 +88,27 @@ float parameter_properties::to_01(float value) const
     }
 }
 
+int parameter_properties::get_char_count() const
+{
+    if ((flags & PF_SCALEMASK) == PF_SCALE_PERC)
+        return 6;
+    if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
+        char buf[256];
+        uint32_t len = 0;
+        sprintf(buf, "%0.0f dB", 6.0 * log(min) / log(2));
+        len = strlen(buf);
+        sprintf(buf, "%0.0f dB", 6.0 * log(max) / log(2));
+        len = std::max(len, strlen(buf)) + 2;
+        return (int)len;
+    }
+    return std::max(to_string(min).length(), std::max(to_string(max).length(), to_string(max - 0.0000001).length()));
+}
+
 std::string parameter_properties::to_string(float value) const
 {
     char buf[32];
     if ((flags & PF_SCALEMASK) == PF_SCALE_PERC) {
-        sprintf(buf, "%g%%", 100.0 * value);
+        sprintf(buf, "%0.f%%", 100.0 * value);
         return string(buf);
     }
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
@@ -101,6 +117,17 @@ std::string parameter_properties::to_string(float value) const
         sprintf(buf, "%0.1f dB", 6.0 * log(value) / log(2));
         return string(buf);
     }
+    
+    switch(flags & PF_TYPEMASK)
+    {
+    case PF_INT:
+    case PF_BOOL:
+    case PF_ENUM:
+    case PF_ENUM_MULTI:
+        value = (int)value;
+        break;
+    }
+
     sprintf(buf, "%g", value);
     
     switch(flags & PF_UNITMASK) {

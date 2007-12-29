@@ -38,11 +38,13 @@ const char *organ_audio_module::get_gui_xml()
     return 
     "<vbox border=\"10\">"
         "<hbox>"
-            "<label param=\"foldover\"/>"
-            "<toggle param=\"foldover\"/>"
             "<vbox>"
-            "<label param=\"perc_mode\"/>"
-            "<combo param=\"perc_mode\"/>"
+                "<label param=\"foldover\"/>"
+                "<align><toggle param=\"foldover\"/></align>"
+            "</vbox>"
+            "<vbox>"
+                "<label param=\"perc_mode\"/>"
+                "<combo param=\"perc_mode\"/>"
             "</vbox>"
             "<vbox>"
                 "<label param=\"perc_hrm\"/>"
@@ -101,21 +103,21 @@ const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 
 parameter_properties organ_audio_module::param_props[] = {
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h1", "16'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h3", "5 1/3'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h2", "8'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h4", "4'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h6", "2 2/3'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h8", "2'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h10", "1 3/5'" },
-    { 0,         0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h12", "1 1/3'" },
-    { 0.3,       0,  1, 1.01, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_FADER, NULL, "h16", "1'" },
+    { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h1", "16'" },
+    { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h3", "5 1/3'" },
+    { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h2", "8'" },
+    { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h4", "4'" },
+    { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h6", "2 2/3'" },
+    { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h8", "2'" },
+    { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h10", "1 3/5'" },
+    { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h12", "1 1/3'" },
+    { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h16", "1'" },
 
-    { 1,         0,  1, 1.01, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
-    { 1,         0,  2, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
-    { 3,         2,  3, 1.01, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
+    { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
+    { 1,         0,  2, 3, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
+    { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
 
-    { 0.1,         0,  1, 1.01, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Master" },
+    { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Master" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

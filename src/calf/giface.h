@@ -98,6 +98,7 @@ struct parameter_properties
     float from_01(float value01) const;
     float to_01(float value) const;
     std::string to_string(float value) const;
+    int get_char_count() const;
 };
 
 struct line_graph_iface
