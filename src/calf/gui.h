@@ -177,6 +177,7 @@ struct combo_box_param_control: public param_control
 struct line_graph_param_control: public param_control
 {
     CalfLineGraph *graph;
+    int source_id;
 
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}

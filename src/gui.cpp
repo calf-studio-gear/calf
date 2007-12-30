@@ -269,7 +269,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    const parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     
     //widget = calf_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
     widget = calf_knob_new();
@@ -325,7 +325,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    const parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     
     widget = calf_line_graph_new ();
     CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
@@ -335,20 +335,27 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     clg->source_id = param_no;
     
     if (get_int("refresh", 0))
-        g_idle_add(update, this);
+        source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, update, this, NULL); // 30 fps should be enough for everybody
     
     return widget;
 }
 
 void line_graph_param_control::set()
 {
-    gtk_widget_queue_draw(widget);
+    GtkWidget *tw = gtk_widget_get_toplevel(widget);
+    if (tw && GTK_WIDGET_TOPLEVEL(tw))
+    {
+        int ws = gdk_window_get_state(widget->window);
+        if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
+            return;
+        gtk_widget_queue_draw(widget);
+    }
 }
 
 line_graph_param_control::~line_graph_param_control()
 {
     if (get_int("refresh", 0))
-        g_idle_remove_by_data(this);
+        g_source_remove(source_id);
 }
 
 /******************************** GUI proper ********************************/
