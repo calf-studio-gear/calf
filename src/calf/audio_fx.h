@@ -258,10 +258,10 @@ class reverb: public audio_effect
 public:
     reverb()
     {
-        setup(44100);
         phase = 0.0;
         time = 1.0;
         cutoff = 9000;
+        setup(44100);
     }
     virtual void setup(int sample_rate) {
         sr = sample_rate;
@@ -275,7 +275,16 @@ public:
     }
     void set_time(float time) {
         this->time = time;
-        fb = pow(1.0f/4096.0f, (float)(1700/(time*sr)));
+        // fb = pow(1.0f/4096.0f, (float)(1700/(time*sr)));
+        fb = 1.0 - 0.3 / (time * sr / 44100.0);
+    }
+    float get_fb()
+    {
+        return this->fb;
+    }
+    void set_fb(float fb)
+    {
+        this->fb = fb;
     }
     float get_cutoff() {
         return cutoff;
@@ -294,15 +303,16 @@ public:
         apL5.reset();apR5.reset();
         apL6.reset();apR6.reset();
         lp_left.reset();lp_right.reset();
+        old_left = 0; old_right = 0;
     }
     void process(T &left, T &right)
     {
-        const int tl1 =  697, tr1 =  783;
-        const int tl2 =  957, tr2 =  929;
-        const int tl3 =  649, tr3 =  531;
-        const int tl4 = 1249, tr4 = 1377;
-        const int tl5 = 1573, tr5 = 1671;
-        const int tl6 = 1877, tr6 = 1781;
+        const int tl1 =  697 << 16, tr1 =  783 << 16;
+        const int tl2 =  957 << 16, tr2 =  929 << 16;
+        const int tl3 =  649 << 16, tr3 =  531 << 16;
+        const int tl4 = 1249 << 16, tr4 = 1377 << 16;
+        const int tl5 = 1573 << 16, tr5 = 1671 << 16;
+        const int tl6 = 1877 << 16, tr6 = 1781 << 16;
         static const float fDec=1700.f;
         static const float l1dec=exp(-697.f/fDec), r1dec=exp(-783.f/fDec);
         static const float l2dec=exp(-975.f/fDec), r2dec=exp(-929.f/fDec);
@@ -323,24 +333,26 @@ public:
         phase += dphase;
         
         left += old_right;
-        left = apL1.process_allpass_comb_lerp16(left, tl1 * 65536 - 45*lfo, l1dec);
-        left = apL2.process_allpass_comb_lerp16(left, tl2 * 65536 + 47*lfo, l2dec);
+        left = apL1.process_allpass_comb_lerp16(left, tl1 - 45*lfo, l1dec);
+        left = apL2.process_allpass_comb_lerp16(left, tl2 + 47*lfo, l2dec);
         float out_left = left;
-        left = apL3.process_allpass_comb_lerp16(left, tl3 * 65536 + 54*lfo, l3dec);
-        left = apL4.process_allpass_comb_lerp16(left, tl4 * 65536 - 69*lfo, l4dec);
-        left = apL5.process_allpass_comb_lerp16(left, tl5 * 65536 - 69*lfo, l5dec);
-        left = apL6.process_allpass_comb_lerp16(left, tl6 * 65536 - 46*lfo, l6dec);
+        left = apL3.process_allpass_comb_lerp16(left, tl3 + 54*lfo, l3dec);
+        left = apL4.process_allpass_comb_lerp16(left, tl4 - 69*lfo, l4dec);
+        left = apL5.process_allpass_comb_lerp16(left, tl5 - 69*lfo, l5dec);
+        left = apL6.process_allpass_comb_lerp16(left, tl6 - 46*lfo, l6dec);
         old_left = lp_left.process(left * fb);
+        sanitize(old_left);
 
         right += old_left;
-        right = apR1.process_allpass_comb_lerp16(right, tr1 * 65536 - 45*lfo, r1dec);
-        right = apR2.process_allpass_comb_lerp16(right, tr2 * 65536 + 47*lfo, r2dec);
+        right = apR1.process_allpass_comb_lerp16(right, tr1 - 45*lfo, r1dec);
+        right = apR2.process_allpass_comb_lerp16(right, tr2 + 47*lfo, r2dec);
         float out_right = right;
-        right = apR3.process_allpass_comb_lerp16(right, tr3 * 65536 + 54*lfo, r3dec);
-        right = apR4.process_allpass_comb_lerp16(right, tr4 * 65536 - 69*lfo, r4dec);
-        right = apR5.process_allpass_comb_lerp16(right, tr5 * 65536 - 69*lfo, r5dec);
-        right = apR6.process_allpass_comb_lerp16(right, tr6 * 65536 - 46*lfo, r6dec);
+        right = apR3.process_allpass_comb_lerp16(right, tr3 + 54*lfo, r3dec);
+        right = apR4.process_allpass_comb_lerp16(right, tr4 - 69*lfo, r4dec);
+        right = apR5.process_allpass_comb_lerp16(right, tr5 - 69*lfo, r5dec);
+        right = apR6.process_allpass_comb_lerp16(right, tr6 - 46*lfo, r6dec);
         old_right = lp_right.process(right * fb);
+        sanitize(old_right);
         
         left = out_left, right = out_right;
     }

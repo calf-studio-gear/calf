@@ -286,6 +286,40 @@ void effect_test()
     dsp::do_simple_benchmark<effect_benchmark<synth::filter_audio_module> >(5, 10000);
 }
 
+void reverbir_calc()
+{
+    enum { LEN = 1048576 };
+    static float data[2][LEN];
+    
+    for (int t = 1; t < 38; t++)
+    {
+        reverb<float> rvb;
+        
+        memset(data, 0, sizeof(data));
+        data[0][0] = 1;
+        data[1][0] = 0;
+        
+        rvb.set_cutoff(22000);
+        rvb.setup(44100);
+        rvb.reset();
+        rvb.set_fb(t < 19 ? t * 0.05 : 0.905 + (t - 19) * 0.005);
+        
+        for (int i = 0; i < LEN; i++)
+            rvb.process(data[0][i], data[1][i]);
+
+        int i;
+        for (i = LEN - 1; i > 0; i--)
+        {
+            // printf("[%d]=%f\n", i, data[0][i]);
+            if (fabs(data[0][i]) < 0.001 && fabs(data[1][i]) < 0.001)
+                continue;
+            break;
+        }
+        if (i < LEN - 1)
+            printf("%f\t%f\n", rvb.get_fb(), i / 44100.0);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     while(1) {
@@ -315,6 +349,9 @@ int main(int argc, char *argv[])
 
     if (!unit || !strcmp(unit, "effects"))
         effect_test();
+
+    if (!strcmp(unit, "reverbir"))
+        reverbir_calc();
 
     return 0;
 }
