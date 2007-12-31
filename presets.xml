@@ -254,4 +254,131 @@
   <param name="vel2filter" value="0.5" />
   <param name="vel2amp" value="0" />
 </preset>
+<preset bank="0" program="0" plugin="monosynth" name="Digi String">
+  <param name="o1_wave" value="10" />
+  <param name="o2_wave" value="1" />
+  <param name="o12_detune" value="4" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.47" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="320.58" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="-2400" />
+  <param name="env2cutoff" value="8000" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="key_follow" value="0" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Barkline">
+  <param name="o1_wave" value="2" />
+  <param name="o2_wave" value="0" />
+  <param name="o12_detune" value="3" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="4" />
+  <param name="o12_mix" value="0.79" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="32.5581" />
+  <param name="res" value="1.99542" />
+  <param name="filter_sep" value="-144" />
+  <param name="env2cutoff" value="10800" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="47.5775" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="12.7287" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.76" />
+  <param name="vel2amp" value="0" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Kill Dat Sub">
+  <param name="o1_wave" value="3" />
+  <param name="o2_wave" value="9" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="1" />
+  <param name="o12_mix" value="1" />
+  <param name="filter" value="0" />
+  <param name="cutoff" value="115.668" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="0" />
+  <param name="env2cutoff" value="656.001" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1.34596" />
+  <param name="adsr_d" value="26.4069" />
+  <param name="adsr_s" value="0.22" />
+  <param name="adsr_r" value="50" />
+  <param name="key_follow" value="0" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0" />
+  <param name="vel2amp" value="0" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Boom Bass">
+  <param name="o1_wave" value="12" />
+  <param name="o2_wave" value="13" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="12" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.5" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="132.264" />
+  <param name="res" value="1.72407" />
+  <param name="filter_sep" value="-480" />
+  <param name="env2cutoff" value="6912" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="239.341" />
+  <param name="adsr_s" value="0.3" />
+  <param name="adsr_r" value="134.309" />
+  <param name="key_follow" value="0.5" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Crystal Harp">
+  <param name="o1_wave" value="15" />
+  <param name="o2_wave" value="15" />
+  <param name="o12_detune" value="3" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="5" />
+  <param name="o12_mix" value="0.5" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="224.691" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="0" />
+  <param name="env2cutoff" value="8000" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="key_follow" value="0" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0" />
+</preset>
+<preset bank="0" program="0" plugin="flanger" name="Chorus Lite">
+  <param name="min_delay" value="10" />
+  <param name="mod_depth" value="2.08435" />
+  <param name="mod_rate" value="0.910155" />
+  <param name="feedback" value="0.0683999" />
+  <param name="amount" value="0.632878" />
+</preset>
 </presets>
