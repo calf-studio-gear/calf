@@ -76,7 +76,7 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
     {"effect", 0, 0, 'e'},
-    {"plugin", 0, 0, 'p'},
+    {"preset", 0, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {"connect-midi", 1, 0, 'M'},
@@ -87,7 +87,7 @@ void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
         "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>]\n"
-        "       [--connect-midi <name>] [--help] [--version] pluginname ...\n", 
+        "       [--connect-midi <name|capture-index>] [--help] [--version] [!] [--preset <name>] pluginname [!] ...\n", 
         argv[0]);
 }
 
@@ -113,12 +113,14 @@ int main(int argc, char *argv[])
     vector<jack_host_base *> plugins;
     vector<plugin_gui_window *> guis;
     set<int> chains;
+    map<int, string> preset_options;
+    map<int, string> presets;
     string autoconnect_midi;
     gtk_init(&argc, &argv);
     glade_init();
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:o:m:M:ephv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:o:m:M:ep:hv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -130,8 +132,10 @@ int main(int argc, char *argv[])
                 printf("%s\n", PACKAGE_STRING);
                 return 0;
             case 'e':
-            case 'p':
                 fprintf(stderr, "Warning: switch -%c is deprecated!\n", c);
+                break;
+            case 'p':
+                preset_options[optind] = optarg;
                 break;
             case 'c':
                 client_name = optarg;
@@ -146,7 +150,10 @@ int main(int argc, char *argv[])
                 client.midi_name = string(optarg) + "_%d";
                 break;
             case 'M':
-                autoconnect_midi = string(optarg);
+                if (atoi(optarg))
+                    autoconnect_midi = "system:midi_capture_" + string(optarg);
+                else
+                    autoconnect_midi = string(optarg);
                 break;
         }
     }
@@ -154,8 +161,14 @@ int main(int argc, char *argv[])
         if (!strcmp(argv[optind], "!")) {
             chains.insert(names.size());
             optind++;
-        } else
+        } else {
+            while (!preset_options.empty() && preset_options.begin()->first < optind) {
+                presets[names.size()] = preset_options.begin()->second;
+                // printf("preset[%s] = %s\n", argv[optind], presets[names.size()].c_str());
+                preset_options.erase(preset_options.begin());
+            }
             names.push_back(argv[optind++]);
+        }
     }
     if (!names.size()) {
         print_help(argv);
@@ -171,8 +184,10 @@ int main(int argc, char *argv[])
     }
     try {
         client.open(client_name);
-        string cnp = string(client_name) + ":";
+        string cnp = client.get_name() + ":";
         for (unsigned int i = 0; i < names.size(); i++) {
+            // if (presets.count(i))
+            //    printf("%s : %s\n", names[i].c_str(), presets[i].c_str());
             jack_host_base *jh = create_jack_host(names[i].c_str());
             if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
@@ -189,6 +204,24 @@ int main(int argc, char *argv[])
             guis.push_back(gui_win);
             plugins.push_back(jh);
             client.add(jh);
+            if (presets.count(i)) {
+                string cur_plugin = names[i];
+                string preset = presets[i];
+                preset_vector &pvec = global_presets.presets;
+                bool found = false;
+                for (unsigned int i = 0; i < pvec.size(); i++) {
+                    if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
+                    {
+                        pvec[i].activate(jh);
+                        gui_win->gui->refresh();
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    fprintf(stderr, "Warning: unknown preset %s %s\n", preset.c_str(), cur_plugin.c_str());
+                }
+            }
         }
         client.activate();
         for (unsigned int i = 0; i < plugins.size(); i++) {
