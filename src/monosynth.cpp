@@ -231,6 +231,7 @@ void monosynth_audio_module::activate() {
     running = false;
     output_pos = 0;
     queue_note_on = -1;
+    stop_count = 0;
     pitchbend = 1.f;
     filter.reset();
     filter2.reset();
@@ -277,7 +278,6 @@ void monosynth_audio_module::activate() {
     }
     waves[wave_skewsaw].make(bl, data);
     for (int i = 0; i < 2048; i++) {
-        int ii = (i < 1024) ? i : (2048 - i);
         data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i / 2048.0) * (fmod (i * i / 262144.0, 2.0) < 1.0 ? -1.0 : +1.0);
     }
     waves[wave_skewsqr].make(bl, data);
@@ -414,6 +414,7 @@ void monosynth_audio_module::calculate_buffer_stereo()
 
 void monosynth_audio_module::delayed_note_on()
 {
+    stop_count = 0;
     porta_time = 0.f;
     start_freq = freq;
     target_freq = freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
@@ -558,7 +559,18 @@ void monosynth_audio_module::calculate_step()
         newfgain = ampctl;        
         break;
     }
-    newfgain *= 1.0 - (1.0 - env) * e2a;
+    float aenv = env;
+    /* isn't as good as expected
+    if (e2a > 1.0) { // extra-steep release on amplitude envelope only
+        if (envelope.state == adsr::RELEASE && env < envelope.sustain) {
+            aenv -= (envelope.sustain - env) * (e2a - 1.0);
+            if (aenv < 0.f) aenv = 0.f;
+            printf("aenv = %f\n", aenv);
+        }
+        e2a = 1.0;
+    }
+    */
+    newfgain *= 1.0 - (1.0 - aenv) * e2a;
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
     switch(filter_type)
     {
@@ -579,11 +591,14 @@ void monosynth_audio_module::calculate_step()
     }
     if (envelope.state == adsr::STOP)
     {
+        enum { ramp = step_size * 4 };
         for (int i = 0; i < step_size; i++)
-            buffer[i] *= (step_size - i) * (1.0f / step_size);
+            buffer[i] *= (ramp - i - stop_count) * (1.0f / ramp);
         if (is_stereo_filter())
             for (int i = 0; i < step_size; i++)
-                buffer2[i] *= (step_size - i) * (1.0f / step_size);
-        stopping = true;
+                buffer2[i] *= (ramp - i - stop_count) * (1.0f / ramp);
+        stop_count += step_size;
+        if (stop_count >= ramp)
+            stopping = true;
     }
 }

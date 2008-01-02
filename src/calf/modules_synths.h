@@ -59,7 +59,7 @@ public:
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
     float odcr, porta_time;
-    int queue_note_on;
+    int queue_note_on, stop_count;
     int legato;
     synth::adsr envelope;
     
