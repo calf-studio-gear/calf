@@ -1,18 +1,32 @@
 Version 0.0.9
 
-+ started creating an XML-based GUI (for monosynth only in this version)
++ started creating an XML-based GUI
 + LineGraph: new GTK+ control for displaying waveforms and filter response
-graphs in Monosynth (and maybe others in future)
+  graphs in Monosynth (and maybe others in future)
 + Monosynth: notch filter changes (made notch bandwidth proportional to Q,
-just for fun, might be a bad idea)
-+ Monosynth: more waves
+  just for fun, might be a bad idea)
++ Monosynth: more waveforms (these might be final?)
 + Monosynth: capped Sustain level to 0.999 so that decay time actually means
-something with Sustain = 100% (not a great way to do it, but acceptable in
-this case)
-+ autotools configuration update (detect Cairo and require newer GTK+)
+  something with Sustain = 100% (not a great way to do it, but acceptable in
+  this case)
++ Monosynth: GUI refreshes less often (which means less CPU use)
++ Monosynth: less clicks on sounds using LP filter with very low cutoff 
+  (using ramp of 256 samples instead of 64 samples as before)
 + Knob: new GTK+ control based on GtkRange, with my primitive bitmap set
-(generated with Python and Cairo)
+  (generated with Python and Cairo)
 + Organ: added a GUI too, very provisional
-+ new effect: Rotary Speaker (split off Organ)
-+ denormal fixes
-
++ Organ: fixed Hold pedal (doesn't release the notes which are still depressed)
++ RotarySpeaker: new effect (split off Organ)
++ all: denormal fixes (still some denormals present in reverb)
++ Reverb: better time setting (decay time somewhat corresponds to -60dB
+  attenuation time)
++ JackHost: -M switch allows for automatic connection to JACK MIDI event source
+  (use -M system:midi_capture_2 or -M 2 for autoconnection to
+  system:midi_capture_2; of course, the short numeric form only work for
+  system:midi_capture_ ports)
++ JackHost: -p switch selects a preset automatically
++ JackHost: better size setting algorithm
++ JackHost: duplicate client name (causing JACK to rename the client) doesn't
+  break autoconnecting functionality
++ autotools configuration update (detect Cairo and require newer GTK+)
++ more presets
