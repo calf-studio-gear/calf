@@ -65,6 +65,7 @@ void basic_synth::note_on(int note, int vel)
         keystack_hold.push(note);
     else
         keystack.push(note);
+    gate.set(note);
     v->note_on(note, vel);
     active_voices.push_back(v);
     if (perc) {
@@ -72,7 +73,13 @@ void basic_synth::note_on(int note, int vel)
     }
 }
 
-
+void basic_synth::note_off(int note, int vel) {
+    gate.reset(note);
+    if (keystack.pop(note)) {
+        kill_note(note, vel, keystack_hold.has(note));
+    }        
+}
+    
 void basic_synth::control_change(int ctl, int val)
 {
     if (ctl == 64) { // HOLD controller
@@ -81,8 +88,15 @@ void basic_synth::control_change(int ctl, int val)
         if (!hold && prev && !sostenuto) {
             // HOLD was released - release all keys which were previously held
             for (int i=0; i<keystack_hold.count(); i++) {
-                kill_note(keystack_hold.nth(i), 0, false);
+                int note = keystack_hold.nth(i);
+                if (!gate.test(note)) {
+                    kill_note(note, 0, false);
+                    keystack_hold.pop(note);
+                    i--;
+                }
             }
+            for (int i=0; i<keystack_hold.count(); i++)
+                keystack.push(keystack_hold.nth(i));
             keystack_hold.clear();
         }
     }

@@ -24,6 +24,7 @@
 
 #include <list>
 #include <stack>
+#include <bitset>
 #include "primitives.h"
 #include "audio_fx.h"
 
@@ -134,6 +135,7 @@ protected:
     bool hold, sostenuto;
     std::list<synth::voice *> active_voices;
     std::stack<synth::voice *> unused_voices;
+    std::bitset<128> gate;
 
     void kill_note(int note, int vel, bool just_one);
 public:
@@ -148,11 +150,7 @@ public:
     virtual void note_on(int note, int vel);
     virtual void first_note_on(int note, int vel) {}
     virtual void control_change(int ctl, int val);
-    virtual void note_off(int note, int vel) {
-        if (keystack.pop(note)) {
-            kill_note(note, vel, keystack_hold.has(note));
-        }        
-    }
+    virtual void note_off(int note, int vel);
     virtual ~basic_synth();
 };
 
