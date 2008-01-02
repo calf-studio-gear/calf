@@ -62,7 +62,7 @@ static const char *monosynth_gui_xml =
                         "<combo attach-x=\"0\" attach-y=\"1\" param=\"o1_wave\" />"
                         "<combo attach-x=\"1\" attach-y=\"1\" param=\"o2_wave\" />"
                     "</table>"
-                    "<line-graph param=\"o1_wave\"/>"
+//                    "<line-graph param=\"o1_wave\"/>"
                     "<hbox>"
                         "<line-graph param=\"o1_wave\"/>"
                         "<vbox>"
