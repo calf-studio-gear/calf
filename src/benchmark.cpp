@@ -26,8 +26,15 @@
 #include <calf/modules_dev.h>
 #include <calf/benchmark.h>
 
+// #define TEST_OSC
+
 using namespace std;
 using namespace dsp;
+
+#ifdef TEST_OSC
+#include <calf/osctl.h>
+using namespace osctl;
+#endif
 
 bool benchmark_globals::warned = false;
 
@@ -320,6 +327,39 @@ void reverbir_calc()
     }
 }
 
+#ifdef TEST_OSC
+void osctl_test()
+{
+    string sdata = string("\000\000\000\003123\000test\000\000\000\000\000\000\000\001\000\000\000\002", 24);
+    osc_stream is(sdata);
+    vector<osc_data> data;
+    is.read("bsii", data);
+    assert(is.pos == sdata.length());
+    assert(data.size() == 4);
+    assert(data[0].type == osc_blob);
+    assert(data[1].type == osc_string);
+    assert(data[2].type == osc_i32);
+    assert(data[3].type == osc_i32);
+    assert(data[0].strval == "123");
+    assert(data[1].strval == "test");
+    assert(data[2].i32val == 1);
+    assert(data[3].i32val == 2);
+    osc_stream os("");
+    os.write(data);
+    assert(os.buffer == sdata);
+    osc_server srv;
+    srv.bind("0.0.0.0", 4541);
+    
+    osc_client cli;
+    cli.bind("0.0.0.0", 0);
+    cli.set_addr("0.0.0.0", 4541);
+    if (!cli.send("/blah", data))
+        g_error("Could not send the OSC message");
+    
+    g_main_loop_run(g_main_loop_new(NULL, FALSE));
+}
+#endif
+
 int main(int argc, char *argv[])
 {
     while(1) {
@@ -340,6 +380,11 @@ int main(int argc, char *argv[])
                 break;
         }
     }
+    
+#ifdef TEST_OSC
+    if (!strcmp(unit, "osc"))
+        osctl_test();
+#endif
     
     if (!unit || !strcmp(unit, "biquad"))
         biquad_test();

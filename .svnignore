@@ -1,0 +1,10 @@
+config.h
+config.log
+config.guess
+configure
+calf-*.tar.gz
+autom4te.cache
+stamp-h1
+libtool
+aclocal.m4
+Makefile.in
