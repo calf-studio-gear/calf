@@ -300,6 +300,18 @@ bool osc_client::send(const std::string &address, const std::vector<osc_data> &a
     
     for (unsigned int i = 0; i < args.size(); i++)
         str.write(args[i]);    
+    
+    // printf("sending %s\n", str.buffer.c_str());
 
+    return ::sendto(socket, str.buffer.data(), str.buffer.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)str.buffer.length();
+}
+
+bool osc_client::send(const std::string &address)
+{
+    vector<osc_data> data;
+    std::string type_tag = ",";
+    osc_stream str;
+    str.write(prefix + address);
+    str.write(type_tag);
     return ::sendto(socket, str.buffer.data(), str.buffer.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)str.buffer.length();
 }

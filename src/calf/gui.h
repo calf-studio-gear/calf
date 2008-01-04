@@ -212,6 +212,7 @@ protected:
     std::vector<control_container *> container_stack;
     control_container *top_container;
     std::map<std::string, int> param_name_map;
+    int ignore_stack;
 public:
     plugin_gui_window *window;
     GtkWidget *container;
@@ -227,6 +228,7 @@ public:
 
     void add_param_ctl(int param, param_control *ctl) { par2ctl.insert(std::pair<int, param_control *>(param, ctl)); }
     void refresh();
+    void refresh(int param_no, param_control *originator = NULL);
     void xml_element_start(const char *element, const char *attributes[]);
     void set_param_value(int param_no, float value, param_control *originator = NULL);
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
@@ -244,6 +246,7 @@ public:
     GtkWindow *toplevel;
     GtkUIManager *ui_mgr;
     GtkActionGroup *std_actions, *preset_actions;
+    std::set<std::string> conditions;
     static std::set<plugin_gui_window *> all_windows;
 
     plugin_gui_window();

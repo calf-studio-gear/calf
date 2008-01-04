@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <sstream>
 #include <ostream>
 
@@ -77,12 +78,14 @@ struct preset_list
 
     preset_vector presets;
     plugin_preset parser_preset;
+    std::map<std::string, int> last_preset_ids;
 
     static std::string get_preset_filename();
     bool load_defaults();
     void load(const char *filename);
     void save(const char *filename);
     void add(const plugin_preset &sp);
+    void get_for_plugin(preset_vector &vec, const char *plugin);
     
 protected:
     static void xml_start_element_handler(void *user_data, const char *name, const char *attrs[]);

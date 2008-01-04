@@ -204,6 +204,7 @@ struct osc_client: public osc_socket
     void set_addr(const char *hostaddr, int port);
     void set_url(const char *url);
     bool send(const std::string &address, const std::vector<osc_data> &args);
+    bool send(const std::string &address);
 };
 
 };

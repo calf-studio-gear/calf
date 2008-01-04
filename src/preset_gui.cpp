@@ -90,7 +90,8 @@ void synth::activate_preset(GtkAction *action, activate_preset_params *params)
     plugin_preset &p = global_presets.presets[params->preset];
     if (p.plugin != gui->effect_name)
         return;
-    p.activate(gui->plugin);
+    if (!gui->plugin->activate_preset(p.bank, p.program))
+        p.activate(gui->plugin);
     gui->refresh();
 }
 

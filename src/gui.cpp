@@ -343,7 +343,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
 void line_graph_param_control::set()
 {
     GtkWidget *tw = gtk_widget_get_toplevel(widget);
-    if (tw && GTK_WIDGET_TOPLEVEL(tw))
+    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
     {
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
@@ -578,6 +578,10 @@ void plugin_gui::xml_element_start(void *data, const char *element, const char *
 
 void plugin_gui::xml_element_start(const char *element, const char *attributes[])
 {
+    if (ignore_stack) {
+        ignore_stack++;
+        return;
+    }
     control_base::xml_attribute_map xam;
     while(*attributes)
     {
@@ -585,6 +589,21 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         attributes += 2;
     }
     
+    if (!strcmp(element, "if"))
+    {
+        if (!xam.count("cond") || xam["cond"].empty())
+            g_error("Incorrect <if cond=\"[!]symbol\"> element");
+        string cond = xam["cond"];
+        int exp_count = 1;
+        if (cond.substr(0, 1) == "!") {
+            exp_count = 0;
+            cond.erase(0, 1);
+        }
+        if (window->conditions.count(cond) == exp_count)
+            return;
+        ignore_stack = 1;
+        return;
+    }
     control_container *cc = create_container_from_xml(element, attributes);
     if (cc != NULL)
     {
@@ -625,6 +644,12 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
 void plugin_gui::xml_element_end(void *data, const char *element)
 {
     plugin_gui *gui = (plugin_gui *)data;
+    if (gui->ignore_stack) {
+        gui->ignore_stack--;
+        return;
+    }
+    if (!strcmp(element, "if"))
+        return;
     if (gui->current_control)
     {
         (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
@@ -648,6 +673,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     parser = XML_ParserCreate("UTF-8");
     plugin = _plugin;
     container_stack.clear();
+    ignore_stack = 0;
     
     param_name_map.clear();
     int size = plugin->get_param_count();
@@ -673,9 +699,8 @@ void plugin_gui::refresh()
     }
 }
 
-void plugin_gui::set_param_value(int param_no, float value, param_control *originator)
+void plugin_gui::refresh(int param_no, param_control *originator)
 {
-    plugin->set_param_value(param_no, value);
     std::multimap<int, param_control *>::iterator it = par2ctl.find(param_no);
     while(it != par2ctl.end() && it->first == param_no)
     {
@@ -683,6 +708,12 @@ void plugin_gui::set_param_value(int param_no, float value, param_control *origi
             it->second->set();
         it++;
     }
+}
+
+void plugin_gui::set_param_value(int param_no, float value, param_control *originator)
+{
+    plugin->set_param_value(param_no, value);
+    refresh(param_no);
 }
 
 
@@ -828,7 +859,6 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     //gtk_widget_set_size_request(GTK_WIDGET(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-    gtk_widget_show_all(GTK_WIDGET(toplevel));
     all_windows.insert(this);
 }
 

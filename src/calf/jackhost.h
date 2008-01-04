@@ -308,6 +308,11 @@ public:
     virtual int get_output_count() { return Module::out_count; }
     virtual int get_param_count() { return Module::param_count; }
     virtual bool get_midi() { return Module::support_midi; }
+    virtual bool activate_preset(int bank, int program) { return false; }
+    virtual int get_param_port_offset() 
+    {
+        return Module::in_count + Module::out_count;
+    }
     virtual float get_param_value(int param_no) {
         return params[param_no];
     }

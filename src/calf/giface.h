@@ -115,6 +115,8 @@ struct plugin_ctl_iface
     virtual int get_param_count() = 0;
     virtual const char *get_gui_xml() = 0;
     virtual line_graph_iface *get_line_graph_iface() = 0;
+    virtual int get_param_port_offset() = 0;
+    virtual bool activate_preset(int bank, int program) = 0;
     virtual ~plugin_ctl_iface() {}
 };
 
@@ -186,12 +188,19 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     {
         return Module::param_count;
     }
+    virtual int get_param_port_offset() 
+    {
+        return Module::in_count + Module::out_count;
+    }
     virtual const char *get_gui_xml() {
         return Module::get_gui_xml();
     }
     virtual line_graph_iface *get_line_graph_iface()
     {
         return this;
+    }
+    virtual bool activate_preset(int bank, int program) { 
+        return false;
     }
 };
 

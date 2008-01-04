@@ -199,8 +199,11 @@ int main(int argc, char *argv[])
             }
             jh->open(&client);
             gui_win = new plugin_gui_window;
+            gui_win->conditions.insert("jackhost");
+            gui_win->conditions.insert("directlink");
             gui_win->create(jh, (string(client_name)+" - "+names[i]).c_str(), names[i].c_str());
             gtk_signal_connect(GTK_OBJECT(gui_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
+            gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
             guis.push_back(gui_win);
             plugins.push_back(jh);
             client.add(jh);

@@ -45,7 +45,7 @@ calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD =  -lglib-2.0 libcalfgui.la
 
 calfdssigui_SOURCES = dssigui.cpp
-calfdssigui_LDADD =  -lglib-2.0 libcalfgui.la
+calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp 
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat

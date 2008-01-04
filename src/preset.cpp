@@ -91,6 +91,7 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
         break;
     case LIST:
         if (!strcmp(name, "preset")) {
+            
             parser_preset.bank = parser_preset.program = 0;
             parser_preset.name = "";
             parser_preset.plugin = "";
@@ -98,14 +99,16 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
             parser_preset.param_names.clear();
             parser_preset.values.clear();
             for(; *attrs; attrs += 2) {
-                if (!strcmp(attrs[0], "bank")) self.parser_preset.bank = atoi(attrs[1]);
-                else
-                if (!strcmp(attrs[0], "program")) self.parser_preset.program = atoi(attrs[1]);
-                else
                 if (!strcmp(attrs[0], "name")) self.parser_preset.name = attrs[1];
                 else
                 if (!strcmp(attrs[0], "plugin")) self.parser_preset.plugin = attrs[1];
             }
+            // autonumbering of programs for DSSI
+            if (!self.last_preset_ids.count(self.parser_preset.plugin))
+                self.last_preset_ids[self.parser_preset.plugin] = 0;
+            self.parser_preset.program = ++self.last_preset_ids[self.parser_preset.plugin];
+            self.parser_preset.bank = (self.parser_preset.program >> 7);
+            self.parser_preset.program &= 127;
             state = PRESET;
             return;
         }
@@ -227,6 +230,15 @@ void preset_list::save(const char *filename)
     if (fd < 0 || ((unsigned)write(fd, xml.c_str(), xml.length()) != xml.length()))
         throw preset_exception("Could not save the presets in ", filename, errno);
     close(fd);
+}
+
+void preset_list::get_for_plugin(preset_vector &vec, const char *plugin)
+{
+    for (unsigned int i = 0; i < presets.size(); i++)
+    {
+        if (presets[i].plugin == plugin)
+            vec.push_back(presets[i]);
+    }
 }
 
 void preset_list::add(const plugin_preset &sp)
