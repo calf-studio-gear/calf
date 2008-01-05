@@ -151,6 +151,7 @@ public:
             outs[0][i] = l + wet*rl;
             outs[1][i] = r + wet*rr;
         }
+        reverb.extra_sanitize();
         return outputs_mask;
     }
 };

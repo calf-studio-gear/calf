@@ -254,6 +254,9 @@ class reverb: public audio_effect
     onepole<T> lp_left, lp_right;
     T old_left, old_right;
     float time, fb, cutoff;
+    int tl[6], tr[6];
+    float ldec[6], rdec[6];
+    
     int sr;
 public:
     reverb()
@@ -269,6 +272,21 @@ public:
         set_cutoff(cutoff);
         phase = 0.0;
         dphase = 0.5*128/sr;
+
+        tl[0] =  697 << 16, tr[0] =  783 << 16;
+        tl[1] =  957 << 16, tr[1] =  929 << 16;
+        tl[2] =  649 << 16, tr[2] =  531 << 16;
+        tl[3] = 1249 << 16, tr[3] = 1377 << 16;
+        tl[4] = 1573 << 16, tr[4] = 1671 << 16;
+        tl[5] = 1877 << 16, tr[5] = 1781 << 16;
+        
+        float fDec=1700.f;
+        ldec[0]=exp(-697.f/fDec),  rdec[0]=exp(-783.f/fDec);
+        ldec[1]=exp(-975.f/fDec),  rdec[1]=exp(-929.f/fDec);
+        ldec[2]=exp(-649.f/fDec),  rdec[2]=exp(-531.f/fDec);
+        ldec[3]=exp(-1249.f/fDec), rdec[3]=exp(-1377.f/fDec);
+        ldec[4]=exp(-1573.f/fDec), rdec[4]=exp(-1671.f/fDec);
+        ldec[5]=exp(-1877.f/fDec), rdec[5]=exp(-1781.f/fDec);
     }
     float get_time() {
         return time;
@@ -307,20 +325,6 @@ public:
     }
     void process(T &left, T &right)
     {
-        const int tl1 =  697 << 16, tr1 =  783 << 16;
-        const int tl2 =  957 << 16, tr2 =  929 << 16;
-        const int tl3 =  649 << 16, tr3 =  531 << 16;
-        const int tl4 = 1249 << 16, tr4 = 1377 << 16;
-        const int tl5 = 1573 << 16, tr5 = 1671 << 16;
-        const int tl6 = 1877 << 16, tr6 = 1781 << 16;
-        static const float fDec=1700.f;
-        static const float l1dec=exp(-697.f/fDec), r1dec=exp(-783.f/fDec);
-        static const float l2dec=exp(-975.f/fDec), r2dec=exp(-929.f/fDec);
-        static const float l3dec=exp(-649.f/fDec), r3dec=exp(-531.f/fDec);
-        static const float l4dec=exp(-1249.f/fDec), r4dec=exp(-1377.f/fDec);
-        static const float l5dec=exp(-1573.f/fDec), r5dec=exp(-1671.f/fDec);
-        static const float l6dec=exp(-1877.f/fDec), r6dec=exp(-1781.f/fDec);
-        
         unsigned int ipart = phase.ipart();
         
         // the interpolated LFO might be an overkill here
@@ -333,28 +337,33 @@ public:
         phase += dphase;
         
         left += old_right;
-        left = apL1.process_allpass_comb_lerp16(left, tl1 - 45*lfo, l1dec);
-        left = apL2.process_allpass_comb_lerp16(left, tl2 + 47*lfo, l2dec);
+        left = apL1.process_allpass_comb_lerp16(left, tl[0] - 45*lfo, ldec[0]);
+        left = apL2.process_allpass_comb_lerp16(left, tl[1] + 47*lfo, ldec[1]);
         float out_left = left;
-        left = apL3.process_allpass_comb_lerp16(left, tl3 + 54*lfo, l3dec);
-        left = apL4.process_allpass_comb_lerp16(left, tl4 - 69*lfo, l4dec);
-        left = apL5.process_allpass_comb_lerp16(left, tl5 - 69*lfo, l5dec);
-        left = apL6.process_allpass_comb_lerp16(left, tl6 - 46*lfo, l6dec);
+        left = apL3.process_allpass_comb_lerp16(left, tl[2] + 54*lfo, ldec[2]);
+        left = apL4.process_allpass_comb_lerp16(left, tl[3] - 69*lfo, ldec[3]);
+        left = apL5.process_allpass_comb_lerp16(left, tl[4] - 69*lfo, ldec[4]);
+        left = apL6.process_allpass_comb_lerp16(left, tl[5] - 46*lfo, ldec[5]);
         old_left = lp_left.process(left * fb);
         sanitize(old_left);
 
         right += old_left;
-        right = apR1.process_allpass_comb_lerp16(right, tr1 - 45*lfo, r1dec);
-        right = apR2.process_allpass_comb_lerp16(right, tr2 + 47*lfo, r2dec);
+        right = apR1.process_allpass_comb_lerp16(right, tr[0] - 45*lfo, rdec[0]);
+        right = apR2.process_allpass_comb_lerp16(right, tr[1] + 47*lfo, rdec[1]);
         float out_right = right;
-        right = apR3.process_allpass_comb_lerp16(right, tr3 + 54*lfo, r3dec);
-        right = apR4.process_allpass_comb_lerp16(right, tr4 - 69*lfo, r4dec);
-        right = apR5.process_allpass_comb_lerp16(right, tr5 - 69*lfo, r5dec);
-        right = apR6.process_allpass_comb_lerp16(right, tr6 - 46*lfo, r6dec);
+        right = apR3.process_allpass_comb_lerp16(right, tr[2] + 54*lfo, rdec[2]);
+        right = apR4.process_allpass_comb_lerp16(right, tr[3] - 69*lfo, rdec[3]);
+        right = apR5.process_allpass_comb_lerp16(right, tr[4] - 69*lfo, rdec[4]);
+        right = apR6.process_allpass_comb_lerp16(right, tr[5] - 46*lfo, rdec[5]);
         old_right = lp_right.process(right * fb);
         sanitize(old_right);
         
         left = out_left, right = out_right;
+    }
+    void extra_sanitize()
+    {
+        lp_left.sanitize();
+        lp_right.sanitize();
     }
 };
 
