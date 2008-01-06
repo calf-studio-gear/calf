@@ -1,3 +1,11 @@
+Version 0.0.10
+
++ First attempt at DSSI GUI, does not support some features from JACK host,
+  but that's inevitable because of API limitations
++ Reverb: improvements (more parameters, fixed denormals)
++ Knob: added custom support for scroll wheel (instead of one inherited from
+GtkRange)
+
 Version 0.0.9
 
 + started creating an XML-based GUI

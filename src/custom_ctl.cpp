@@ -136,7 +136,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     ox += (widget->allocation.width - 40) / 2;
     oy += (widget->allocation.height - 40) / 2;
     
-    int phase = (adj->value - adj->lower) * 64 / (adj->upper - adj->lower);
+    int phase = (int)((adj->value - adj->lower) * 64 / (adj->upper - adj->lower));
     if (self->knob_type == 1 && phase == 32) {
         double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;
         if (pt < 0)
@@ -196,6 +196,34 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     return FALSE;
 }
 
+static gboolean
+calf_knob_scroll (GtkWidget *widget, GdkEventScroll *event)
+{
+    g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
+    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+    
+    float oldvalue = adj->value;
+
+    float halfrange = (adj->upper + adj->lower) / 2;
+    int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
+    int step;
+    int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
+    if (event->direction)
+        step = oldstep - 1;
+    else
+        step = oldstep + 1;
+    
+    // trying to reduce error cumulation here, by counting from lowest or from highest
+    float value = adj->lower + step * adj->step_increment;
+    if (step >= nsteps / 2)
+        value = adj->upper - (nsteps - step) * adj->step_increment;
+    gtk_range_set_value(GTK_RANGE(widget), value);
+    // printf("step %d:%d nsteps %d value %f:%f\n", oldstep, step, nsteps, oldvalue, value);
+        
+    return FALSE;
+}
+
 static void
 calf_knob_class_init (CalfKnobClass *klass)
 {
@@ -206,6 +234,7 @@ calf_knob_class_init (CalfKnobClass *klass)
     widget_class->button_press_event = calf_knob_button_press;
     widget_class->button_release_event = calf_knob_button_release;
     widget_class->motion_notify_event = calf_knob_pointer_motion;
+    widget_class->scroll_event = calf_knob_scroll;
     GError *error = NULL;
     klass->knob_image = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob.png", &error);
     g_assert(klass->knob_image != NULL);

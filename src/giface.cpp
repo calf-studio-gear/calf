@@ -59,7 +59,10 @@ float parameter_properties::from_01(float value01) const
     case PF_BOOL:
     case PF_ENUM:
     case PF_ENUM_MULTI:
-        value = (int)value;
+        if (value > 0)
+            value = (int)(value + 0.5);
+        else
+            value = (int)(value - 0.5);
         break;
     }
     return value;
@@ -86,6 +89,20 @@ float parameter_properties::to_01(float value) const
         value /= rmin;
         return log(value) / log(max / rmin);
     }
+}
+
+float parameter_properties::get_increment() const
+{
+    float increment = 0.01;
+    if (step > 1)
+        increment = 1.0 / (step - 1);
+    else 
+    if (step > 0 && step < 1)
+        increment = step;
+    else
+    if ((flags & PF_TYPEMASK) != PF_FLOAT)
+        increment = 1.0 / (max - min);
+    return increment;
 }
 
 int parameter_properties::get_char_count() const

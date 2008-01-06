@@ -256,8 +256,9 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     const parameter_properties &props = get_props();
-    
-    widget = phat_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
+
+    float increment = props.get_increment();
+    widget = phat_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, increment);
     gtk_widget_set_size_request(widget, 50, 50);
     gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     return widget;
@@ -269,10 +270,12 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    // const parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     
     //widget = calf_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
     widget = calf_knob_new();
+    float increment = props.get_increment();
+    gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
     CALF_KNOB(widget)->knob_type = get_int("type");
     gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     return widget;
@@ -594,7 +597,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         if (!xam.count("cond") || xam["cond"].empty())
             g_error("Incorrect <if cond=\"[!]symbol\"> element");
         string cond = xam["cond"];
-        int exp_count = 1;
+        unsigned int exp_count = 1;
         if (cond.substr(0, 1) == "!") {
             exp_count = 0;
             cond.erase(0, 1);
