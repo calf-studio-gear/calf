@@ -44,6 +44,7 @@ public:
     inline void set_sample_rate(uint32_t sr) { }
     inline bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
     inline static const char *get_gui_xml() { return NULL; }
+    inline static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
 };
 
 class amp_audio_module: public null_audio_module

@@ -82,7 +82,7 @@ struct plugin_proxy_base: public plugin_ctl_iface
 };
 
 template<class Module>
-struct plugin_proxy: public plugin_proxy_base
+struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 {
     float params[Module::param_count];
     virtual parameter_properties *get_param_props(int param_no) {
@@ -115,7 +115,7 @@ struct plugin_proxy: public plugin_proxy_base
         return Module::get_gui_xml();
     }
     virtual line_graph_iface *get_line_graph_iface() {
-        return NULL;
+        return this;
     }
     virtual bool activate_preset(int bank, int program) { 
         if (send_osc) {
@@ -126,6 +126,9 @@ struct plugin_proxy: public plugin_proxy_base
             return false;
         }
         return false;
+    }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) {
+        return Module::get_static_graph(index, subindex, params[index], data, points, context);
     }
 };
 

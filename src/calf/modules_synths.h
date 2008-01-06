@@ -45,7 +45,7 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    waveform_family<11> waves[wave_count];
+    static waveform_family<11> waves[wave_count];
     waveform_oscillator<11> osc1, osc2;
     bool running, stopping, gate;
     int last_key;
@@ -65,6 +65,7 @@ public:
     
     static parameter_properties param_props[];
     static const char *get_gui_xml();
+    static void generate_waves();
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
     void note_on(int note, int vel)
@@ -121,6 +122,7 @@ public:
     void calculate_buffer_single();
     void calculate_buffer_stereo();
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context);
     inline bool is_stereo_filter() const
     {
         return filter_type == flt_2lp12 || filter_type == flt_2bp6;

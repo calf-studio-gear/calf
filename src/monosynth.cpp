@@ -64,16 +64,12 @@ static const char *monosynth_gui_xml =
                     "</table>"
 //                    "<line-graph param=\"o1_wave\"/>"
                     "<hbox>"
-                        "<if cond=\"directlink\">"
-                            "<line-graph param=\"o1_wave\"/>"
-                        "</if>"
+                        "<line-graph param=\"o1_wave\"/>"
                         "<vbox>"
                             "<label param=\"o12_mix\"/>"
                             "<hscale param=\"o12_mix\" position=\"bottom\"/>"
                         "</vbox>"
-                        "<if cond=\"directlink\">"
-                            "<line-graph param=\"o2_wave\"/>"
-                        "</if>"
+                        "<line-graph param=\"o2_wave\"/>"
                     "</hbox>"
                     "<hbox>"
                         "<vbox>"
@@ -241,6 +237,12 @@ void monosynth_audio_module::activate() {
     pitchbend = 1.f;
     filter.reset();
     filter2.reset();
+}
+
+waveform_family<11> monosynth_audio_module::waves[wave_count];
+
+void monosynth_audio_module::generate_waves()
+{
     float data[2048];
     bandlimiter<11> bl;
 
@@ -340,19 +342,29 @@ void monosynth_audio_module::activate() {
     waves[wave_test8].make(bl, data);
 }
 
-bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+void __attribute__((constructor)) generate_monosynth_waves() 
 {
-    // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
+    monosynth_audio_module::generate_waves();
+}
+
+bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context)
+{
     if (index == par_wave1 || index == par_wave2) {
         if (subindex)
             return false;
-        int wave = dsp::clip(dsp::fastf2i_drm(*params[index]), 0, (int)wave_count - 1);
+        int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
         float *waveform = waves[wave].get_level(0);
         for (int i = 0; i < points; i++)
             data[i] = 0.5 * (waveform[i * 2047 / points] + waveform[i * 2047 / points + 1]);
         return true;
     }
+    return false;
+}
+
+bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+{
+    // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
     if (index == par_filtertype) {
         if (!running)
             return false;
@@ -374,7 +386,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         }
         return true;
     }
-    return false;
+    return get_static_graph(index, subindex, *params[index], data, points, context);
 }
 
 void monosynth_audio_module::calculate_buffer_ser()
