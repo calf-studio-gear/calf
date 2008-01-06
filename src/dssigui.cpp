@@ -34,6 +34,8 @@ using namespace synth;
 #include <calf/osctl.h>
 using namespace osctl;
 
+#define debug_printf(...)
+
 #if 0
 void osctl_test()
 {
@@ -162,10 +164,13 @@ void help(char *argv[])
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
+    {"debug", 0, 0, 'd'},
     {0,0,0,0},
 };
 
 GMainLoop *mainloop;
+
+static bool osc_debug = false;
 
 struct dssi_osc_server: public osc_server, public osc_message_sink
 {
@@ -173,7 +178,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
     plugin_gui_window window;
     string effect_name, title;
     osc_client cli;
-    bool in_program;
+    bool in_program, enable_dump;
     vector<plugin_preset> presets;
     
     dssi_osc_server()
@@ -184,10 +189,12 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
     {
-        printf("on_destroy, have to send \"exiting\"\n");
+        debug_printf("on_destroy, have to send \"exiting\"\n");
         bool result = self->cli.send("/exiting");
-        printf("result = %d\n", result ? 1 : 0);
+        debug_printf("result = %d\n", result ? 1 : 0);
         g_main_loop_quit(mainloop);
+        // eliminate a warning with empty debug_printf
+        result = false;
     }
     
     void create_window()
@@ -204,22 +211,23 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
     
     void receive_osc_message(std::string address, std::string type_tag, const std::vector<osc_data> &args)
     {
-        dump.receive_osc_message(address, type_tag, args);
+        if (osc_debug)
+            dump.receive_osc_message(address, type_tag, args);
         if (address == prefix + "/update" && args.size() && args[0].type == osc_string)
         {
-            printf("UPDATE: %s\n", args[0].strval.c_str());
+            debug_printf("UPDATE: %s\n", args[0].strval.c_str());
             return;
         }
         if (address == prefix + "/quit")
         {
-            printf("QUIT\n");
+            debug_printf("QUIT\n");
             g_main_loop_quit(mainloop);
             return;
         }
         if (address == prefix + "/program"&& args.size() >= 2 && args[0].type == osc_i32 && args[1].type == osc_i32)
         {
             unsigned int nr = args[0].i32val * 128 + args[1].i32val;
-            printf("PROGRAM %d\n", nr);
+            debug_printf("PROGRAM %d\n", nr);
             if (nr == 0)
             {
                 bool sosc = plugin->send_osc;
@@ -248,7 +256,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
         {
             int idx = args[0].i32val - plugin->get_param_port_offset();
             float val = args[1].f32val;
-            printf("CONTROL %d %f\n", idx, val);
+            debug_printf("CONTROL %d %f\n", idx, val);
             bool sosc = plugin->send_osc;
             plugin->send_osc = false;
             window.gui->set_param_value(idx, val);
@@ -270,13 +278,20 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
 
 int main(int argc, char *argv[])
 {
+    char *debug_var = getenv("OSC_DEBUG");
+    if (debug_var && atoi(debug_var))
+        osc_debug = true;
+    
     gtk_init(&argc, &argv);
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "dhv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
+            case 'd':
+                osc_debug = true;
+                break;
             case 'h':
                 help(argv);
                 return 0;
@@ -315,7 +330,7 @@ int main(int argc, char *argv[])
     srv.cli.bind();
     srv.cli.set_url(argv[optind]);
     
-    printf("URI = %s\n", srv.get_uri().c_str());
+    debug_printf("URI = %s\n", srv.get_uri().c_str());
     
     vector<osc_data> data;
     data.push_back(osc_data(srv.get_uri(), osc_string));
@@ -326,7 +341,7 @@ int main(int argc, char *argv[])
     }
     
     g_main_loop_run(mainloop);
-    printf("exited\n");
+    debug_printf("exited\n");
     
     return 0;
 }
