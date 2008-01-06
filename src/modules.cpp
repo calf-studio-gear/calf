@@ -65,9 +65,13 @@ static synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
 
 const char *reverb_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
+const char *reverb_room_sizes[] = { "Small", "Medium", "Large", "Tunnel-like" };
+
 parameter_properties reverb_audio_module::param_props[] = {
     { 1.5,      0.5, 15.0, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "decay_time", "Decay time" },
     { 5000,    2000,20000, 1.01, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hf_damp", "High Frq Damp" },
+    { 2,          0,    3, 1.01, PF_ENUM | PF_CTL_COMBO , reverb_room_sizes, "room_size", "Room size", },
+    { 0.5,        0,    1, 1.01, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "diffusion", "Diffusion" },
     { 0.25,       0,    2, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "amount", "Amount" },
 };
 

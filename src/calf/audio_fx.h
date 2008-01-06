@@ -253,7 +253,8 @@ class reverb: public audio_effect
     sine_table<int, 128, 10000> sine;
     onepole<T> lp_left, lp_right;
     T old_left, old_right;
-    float time, fb, cutoff;
+    int type;
+    float time, fb, cutoff, diffusion;
     int tl[6], tr[6];
     float ldec[6], rdec[6];
     
@@ -264,6 +265,8 @@ public:
         phase = 0.0;
         time = 1.0;
         cutoff = 9000;
+        type = 2;
+        diffusion = 1.f;
         setup(44100);
     }
     virtual void setup(int sample_rate) {
@@ -272,21 +275,51 @@ public:
         set_cutoff(cutoff);
         phase = 0.0;
         dphase = 0.5*128/sr;
-
-        tl[0] =  697 << 16, tr[0] =  783 << 16;
-        tl[1] =  957 << 16, tr[1] =  929 << 16;
-        tl[2] =  649 << 16, tr[2] =  531 << 16;
-        tl[3] = 1249 << 16, tr[3] = 1377 << 16;
-        tl[4] = 1573 << 16, tr[4] = 1671 << 16;
-        tl[5] = 1877 << 16, tr[5] = 1781 << 16;
+        update_times();
+    }
+    void update_times()
+    {
+        switch(type)
+        {
+        case 0:
+            tl[0] =  397 << 16, tr[0] =  383 << 16;
+            tl[1] =  457 << 16, tr[1] =  429 << 16;
+            tl[2] =  549 << 16, tr[2] =  631 << 16;
+            tl[3] =  649 << 16, tr[3] =  756 << 16;
+            tl[4] =  773 << 16, tr[4] =  803 << 16;
+            tl[5] =  877 << 16, tr[5] =  901 << 16;
+            break;
+        case 1:
+            tl[0] =  697 << 16, tr[0] =  783 << 16;
+            tl[1] =  957 << 16, tr[1] =  929 << 16;
+            tl[2] =  649 << 16, tr[2] =  531 << 16;
+            tl[3] = 1049 << 16, tr[3] = 1177 << 16;
+            tl[4] =  473 << 16, tr[4] =  501 << 16;
+            tl[5] =  587 << 16, tr[5] =  681 << 16;
+            break;
+        case 2:
+        default:
+            tl[0] =  697 << 16, tr[0] =  783 << 16;
+            tl[1] =  957 << 16, tr[1] =  929 << 16;
+            tl[2] =  649 << 16, tr[2] =  531 << 16;
+            tl[3] = 1249 << 16, tr[3] = 1377 << 16;
+            tl[4] = 1573 << 16, tr[4] = 1671 << 16;
+            tl[5] = 1877 << 16, tr[5] = 1781 << 16;
+            break;
+        case 3:
+            tl[0] = 1097 << 16, tr[0] = 1087 << 16;
+            tl[1] = 1057 << 16, tr[1] = 1031 << 16;
+            tl[2] = 1049 << 16, tr[2] = 1039 << 16;
+            tl[3] = 1083 << 16, tr[3] = 1055 << 16;
+            tl[4] = 1075 << 16, tr[4] = 1099 << 16;
+            tl[5] = 1003 << 16, tr[5] = 1073 << 16;
+            break;
+        }
         
-        float fDec=1700.f;
-        ldec[0]=exp(-697.f/fDec),  rdec[0]=exp(-783.f/fDec);
-        ldec[1]=exp(-975.f/fDec),  rdec[1]=exp(-929.f/fDec);
-        ldec[2]=exp(-649.f/fDec),  rdec[2]=exp(-531.f/fDec);
-        ldec[3]=exp(-1249.f/fDec), rdec[3]=exp(-1377.f/fDec);
-        ldec[4]=exp(-1573.f/fDec), rdec[4]=exp(-1671.f/fDec);
-        ldec[5]=exp(-1877.f/fDec), rdec[5]=exp(-1781.f/fDec);
+        float fDec=1000 + 1400.f * diffusion;
+        for (int i = 0 ; i < 6; i++)
+            ldec[i]=exp(-float(tl[i] >> 16) / fDec), 
+            rdec[i]=exp(-float(tr[i] >> 16) / fDec);
     }
     float get_time() {
         return time;
@@ -295,6 +328,25 @@ public:
         this->time = time;
         // fb = pow(1.0f/4096.0f, (float)(1700/(time*sr)));
         fb = 1.0 - 0.3 / (time * sr / 44100.0);
+    }
+    float get_type() {
+        return type;
+    }
+    void set_type(int type) {
+        this->type = type;
+        update_times();
+    }
+    float get_diffusion() {
+        return diffusion;
+    }
+    void set_diffusion(float diffusion) {
+        this->diffusion = diffusion;
+        update_times();
+    }
+    void set_type_and_diffusion(int type, float diffusion) {
+        this->type = type;
+        this->diffusion = diffusion;
+        update_times();
     }
     float get_fb()
     {

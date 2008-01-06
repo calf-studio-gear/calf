@@ -116,7 +116,7 @@ public:
 class reverb_audio_module: public null_audio_module
 {
 public:    
-    enum { par_decay, par_hfdamp, par_amount, param_count };
+    enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *port_names[];
     dsp::reverb<float> reverb;
@@ -129,6 +129,7 @@ public:
     void params_changed() {
         //reverb.set_time(0.5*pow(8.0f, *params[par_decay]));
         //reverb.set_cutoff(2000*pow(10.0f, *params[par_hfdamp]));
+        reverb.set_type_and_diffusion(fastf2i_drm(*params[par_roomsize]), *params[par_diffusion]);
         reverb.set_time(*params[par_decay]);
         reverb.set_cutoff(*params[par_hfdamp]);
     }
