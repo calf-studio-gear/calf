@@ -8,8 +8,11 @@ ladspadir = $(with_ladspa_dir)
 
 bin_PROGRAMS = 
 
-noinst_PROGRAMS = calfbenchmark calfdssigui
+noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = calf.la libcalfstatic.la
+if USE_DSSI_GUI
+noinst_PROGRAMS += calfdssigui
+endif
 
 AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
@@ -33,19 +36,24 @@ endif
 
 if USE_LADSPA
 AM_CXXFLAGS += -DUSE_LADSPA=1
-bin_PROGRAMS += calfmakerdf
+noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
 endif
 if USE_DSSI
 AM_CXXFLAGS += -DUSE_DSSI=1
 endif
+if USE_DSSI_GUI
+AM_CXXFLAGS += -DUSE_DSSI_GUI=1
+endif
 
 calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD =  -lglib-2.0 libcalfgui.la
+calfbenchmark_LDADD =  -lglib-2.0
 
+if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp
 calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
+endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp 
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
@@ -53,8 +61,10 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
+if USE_GUI
 libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp
 libcalfgui_la_LDFLAGS = -static
+endif
 
 clean-local:
 	$(RM) -f calfjackhost *~
@@ -70,13 +80,15 @@ if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
 	install -d -m 755 $(DESTDIR)$(with_ladspa_rdf_dir)
 	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
-	$(DESTDIR)$(bindir)/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
+	$(top_builddir)/src/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 endif
 if USE_DSSI
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)/calf
 	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
+if USE_DSSI_GUI
 	install -c -m 755 $(top_builddir)/src/calfdssigui $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
+endif
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
@@ -94,7 +106,9 @@ if USE_LADSPA
 endif
 if USE_DSSI
 	$(RM) -f $(DESTDIR)$(with_dssi_dir)/calf.so
+if USE_DSSI_GUI
 	$(RM) -f $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
+endif
 	$(RMDIR) -f $(DESTDIR)$(with_dssi_dir)/calf
 endif
 
