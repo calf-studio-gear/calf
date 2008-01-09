@@ -192,7 +192,7 @@ public:
                 float out_hi_l = delay.get_interp_1616(500000 + 40 * xh) + 0.0001 * xh * delay.get_interp_1616(500000 - 40 * yh) - delay.get_interp_1616(800000 - 60 * xh);
                 float out_hi_r = delay.get_interp_1616(550000 - 48 * yh) - 0.0001 * yh * delay.get_interp_1616(700000 + 46 * xh) - delay.get_interp_1616(1000000 + 76 * yh);
 
-                float out_lo_l = 0.5f * in_mono + delay.get_interp_1616(400000 + 34 * xl) + delay.get_interp_1616(600000 - 18 * yl);
+                float out_lo_l = 0.5f * in_mono + delay.get_interp_1616(400000 + 34 * xl) + delay.get_interp_1616(650000 - 18 * yl);
                 float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(600000 - 50 * xl) - delay.get_interp_1616(900000 + 15 * yl);
                 
                 out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
