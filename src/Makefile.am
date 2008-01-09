@@ -14,7 +14,7 @@ if USE_DSSI_GUI
 noinst_PROGRAMS += calfdssigui
 endif
 
-AM_CXXFLAGS = -ffast-math -march=i686 -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
+AM_CXXFLAGS = -ffast-math -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
 if USE_JACK
 AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
@@ -29,7 +29,11 @@ if USE_PHAT
 AM_CXXFLAGS += -DUSE_PHAT=1 $(PHAT_DEPS_CFLAGS)
 calfjackhost_LDADD += $(PHAT_DEPS_LIBS)
 endif
+if USE_LASH
+calfjackhost_LDADD += $(LASH_DEPS_LIBS)
 endif
+endif
+
 if ENABLE_EXPERIMENTAL
 AM_CXXFLAGS += -DENABLE_EXPERIMENTAL=1
 endif
@@ -45,6 +49,12 @@ AM_CXXFLAGS += -DUSE_DSSI=1
 endif
 if USE_DSSI_GUI
 AM_CXXFLAGS += -DUSE_DSSI_GUI=1
+endif
+if USE_LV2
+AM_CXXFLAGS += -DUSE_LV2=1
+endif
+if USE_LASH
+AM_CXXFLAGS += -DUSE_LASH=1 $(LASH_DEPS_CFLAGS)
 endif
 
 calfbenchmark_SOURCES = benchmark.cpp

@@ -111,7 +111,7 @@ int parameter_properties::get_char_count() const
         return 6;
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
         char buf[256];
-        uint32_t len = 0;
+        size_t len = 0;
         sprintf(buf, "%0.0f dB", 6.0 * log(min) / log(2));
         len = strlen(buf);
         sprintf(buf, "%0.0f dB", 6.0 * log(max) / log(2));

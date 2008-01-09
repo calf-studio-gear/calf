@@ -55,6 +55,7 @@ AC_SUBST(JACK_DEPS_CFLAGS)
 AC_SUBST(JACK_DEPS_LIBS)
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
+PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.0, LASH_ENABLED="yes", LASH_ENABLED="no")
 
 PHAT_ENABLED="no"
 if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
@@ -106,6 +107,7 @@ AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_PHAT, test "$PHAT_ENABLED" = "yes")
+AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(ENABLE_EXPERIMENTAL, test "$set_enable_experimental" = "yes")
 AM_CONDITIONAL(OLD_JACK, test "$OLD_JACK" = "yes")
 
@@ -160,6 +162,7 @@ AC_MSG_RESULT([
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
     JACK host enabled:      $JACK_ENABLED
     LV2 enabled:            $LV2_ENABLED (unused for now)
+    LASH enabled:           $LASH_ENABLED (unused for now)
     Old-style JACK MIDI:    $OLD_JACK
     PHAT GUI enabled:       $PHAT_ENABLED
     

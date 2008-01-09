@@ -40,8 +40,10 @@ struct plugin_preset
     std::vector<float> values;
     std::string blob;
 
+    plugin_preset() : bank(0), program(0) {}
     std::string to_xml();    
     void activate(plugin_ctl_iface *plugin);
+    void get_from(plugin_ctl_iface *plugin);
 };
 
 struct preset_exception

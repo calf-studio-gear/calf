@@ -44,11 +44,7 @@ void store_preset_ok(GtkAction *action, plugin_gui *gui)
     sp.bank = 0;
     sp.program = 0;
     sp.plugin = gui->effect_name;
-    int count = gui->plugin->get_param_count();
-    for (int i = 0; i < count; i++) {
-        sp.param_names.push_back(gui->plugin->get_param_props(i)->short_name);
-        sp.values.push_back(gui->plugin->get_param_value(i));
-    }
+    sp.get_from(gui->plugin);
     preset_list tmp;
     try {
         tmp.load(tmp.get_preset_filename().c_str());

@@ -69,6 +69,15 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
         plugin->set_param_value(pos->second, values[i]);
     }
 }
+
+void plugin_preset::get_from(plugin_ctl_iface *plugin)
+{
+    int count = plugin->get_param_count();
+    for (int i = 0; i < count; i++) {
+        param_names.push_back(plugin->get_param_props(i)->short_name);
+        values.push_back(plugin->get_param_value(i));
+    }
+}
     
 string synth::preset_list::get_preset_filename()
 {
