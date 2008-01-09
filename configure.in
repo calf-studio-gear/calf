@@ -162,7 +162,7 @@ AC_MSG_RESULT([
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
     JACK host enabled:      $JACK_ENABLED
     LV2 enabled:            $LV2_ENABLED (unused for now)
-    LASH enabled:           $LASH_ENABLED (unused for now)
+    LASH enabled:           $LASH_ENABLED
     Old-style JACK MIDI:    $OLD_JACK
     PHAT GUI enabled:       $PHAT_ENABLED
     

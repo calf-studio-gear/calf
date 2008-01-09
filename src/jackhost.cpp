@@ -285,6 +285,8 @@ void host_session::update_lash()
         if (!event)
             break;
         
+        // printf("type = %d\n", lash_event_get_type(event));
+        
         switch(lash_event_get_type(event)) {        
             case LASH_Save_Data_Set:
             {
@@ -302,13 +304,40 @@ void host_session::update_lash()
                 send_lash(LASH_Save_Data_Set, "");
                 break;
             }
+            
+            case LASH_Restore_Data_Set:
+            {
+                // printf("!!!Restore data set!!!\n");
+                while(lash_config_t *cfg = lash_get_config(lash_client)) {
+                    const char *key = lash_config_get_key(cfg);
+                    // printf("key = %s\n", lash_config_get_key(cfg));
+                    string data = string((const char *)lash_config_get_value(cfg), lash_config_get_value_size(cfg));
+                    if (!strncmp(key, "plugin", 6))
+                    {
+                        unsigned int nplugin = atoi(key + 6);
+                        if (nplugin < plugins.size())
+                        {
+                            preset_list tmp;
+                            tmp.parse("<presets>"+data+"</presets>");
+                            if (tmp.presets.size())
+                            {
+                                tmp.presets[0].activate(plugins[nplugin]);
+                                guis[nplugin]->gui->refresh();
+                            }
+                        }
+                    }
+                    lash_config_destroy(cfg);
+                }
+                send_lash(LASH_Restore_Data_Set, "");
+                break;
+            }
                 
             case LASH_Quit:
                 gtk_main_quit();
                 break;
             
             default:
-                printf("Unhandled event %d (%s)\n", lash_event_get_type(event), lash_event_get_string(event));
+                g_warning("Unhandled LASH event %d (%s)", lash_event_get_type(event), lash_event_get_string(event));
                 break;
         }
     } while(1);
@@ -333,7 +362,7 @@ int main(int argc, char *argv[])
     sess.lash_args = lash_extract_args(&argc, &argv);
     sess.lash_client = lash_init(sess.lash_args, PACKAGE_NAME, LASH_Config_Data_Set, LASH_PROTOCOL(2, 0));
     if (!sess.lash_client) {
-        fprintf(stderr, "Warning: failed to create a LASH connection\n");
+        g_warning("Warning: failed to create a LASH connection");
     }
 #endif
     glade_init();

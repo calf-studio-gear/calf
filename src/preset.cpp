@@ -200,6 +200,18 @@ bool preset_list::load_defaults()
     return false;
 }
 
+void preset_list::parse(const std::string &data)
+{
+    state = START;
+    XML_Parser parser = XML_ParserCreate("UTF-8");
+    XML_SetUserData(parser, this);
+    XML_SetElementHandler(parser, xml_start_element_handler, xml_end_element_handler);
+    XML_Status status = XML_Parse(parser, data.c_str(), data.length(), 1);
+    if (status == XML_STATUS_ERROR)
+        throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", "string", errno);
+    XML_ParserFree(parser);
+}
+
 void preset_list::load(const char *filename)
 {
     state = START;

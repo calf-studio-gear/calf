@@ -84,6 +84,7 @@ struct preset_list
 
     static std::string get_preset_filename();
     bool load_defaults();
+    void parse(const std::string &data);
     void load(const char *filename);
     void save(const char *filename);
     void add(const plugin_preset &sp);
