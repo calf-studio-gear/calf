@@ -109,23 +109,28 @@ endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
 uninstall-hook:
+if USE_LV2
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl $(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
+	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true
+endif
 if USE_JACK
 	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
 endif
 	rm -f $(DESTDIR)$(pkglibdir)/presets.xml
 	rm -f $(DESTDIR)$(pkglibdir)/knob.png
-	rmdir $(DESTDIR)$(pkglibdir)    
+	rmdir $(DESTDIR)$(pkglibdir) || true
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(RM) -f $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
-	rmdir $(DESTDIR)$(with_ladspa_rdf_dir)
+	rmdir -p $(DESTDIR)$(with_ladspa_rdf_dir) || true
 endif
 if USE_DSSI
 	$(RM) -f $(DESTDIR)$(with_dssi_dir)/calf.so
 if USE_DSSI_GUI
 	$(RM) -f $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
 endif
-	$(RMDIR) -f $(DESTDIR)$(with_dssi_dir)/calf
+	rmdir -p $(DESTDIR)$(with_dssi_dir)/calf || true
 endif
 
 #install:
