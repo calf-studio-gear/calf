@@ -127,7 +127,7 @@ const char *rotary_speaker_audio_module::port_names[] = {"In L", "In R", "Out L"
 const char *rotary_speaker_speed_names[] = { "Off", "Chorale", "Tremolo", "HoldPedal", "ModWheel" };
 
 parameter_properties rotary_speaker_audio_module::param_props[] = {
-    { 4,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
+    { 2,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
 };
 
 #endif

@@ -1,5 +1,5 @@
-/* Calf DSP Library
- * Benchmark for selected parts of the library.
+/* Calf DSP Library utility application.
+ * DSSI GUI application.
  * Copyright (C) 2007 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or

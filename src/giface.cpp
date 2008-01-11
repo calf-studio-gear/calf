@@ -23,6 +23,7 @@
 #include <memory.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/lv2wrap.h>
 
 using namespace synth;
 using namespace std;
@@ -262,3 +263,4 @@ std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_proper
 }
 
 #endif
+

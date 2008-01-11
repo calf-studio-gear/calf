@@ -40,10 +40,10 @@ endif
 
 if USE_LADSPA
 AM_CXXFLAGS += -DUSE_LADSPA=1
+endif
 noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
-endif
 if USE_DSSI
 AM_CXXFLAGS += -DUSE_DSSI=1
 endif
@@ -99,6 +99,12 @@ if USE_DSSI
 if USE_DSSI_GUI
 	install -c -m 755 $(top_builddir)/src/calfdssigui $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
 endif
+endif
+if USE_LV2
+	install -d -m 755 $(DESTDIR)$(with_lv2_dir)/calf.lv2
+	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
+	$(top_builddir)/src/calfmakerdf -m ttl >$(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl
+	$(top_builddir)/src/calfmakerdf -m manifest >$(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share

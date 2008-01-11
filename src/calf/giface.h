@@ -157,6 +157,16 @@ struct ladspa_info
     const char *plugin_type;
 };
 
+struct giface_plugin_info
+{
+    ladspa_info *info;
+    int inputs, outputs, params;
+    bool rt_capable, midi_capable;
+    parameter_properties *param_props;
+};
+
+extern void get_all_plugins(std::vector<giface_plugin_info> &plugins);
+
 #if USE_LADSPA
 
 extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);

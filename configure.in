@@ -148,6 +148,16 @@ AC_ARG_WITH(dssi_dir,
 AC_MSG_RESULT($with_dssi_dir)
 AC_SUBST(with_dssi_dir)
 
+if test "$LV2_ENABLED" == "yes"; then
+  AC_MSG_CHECKING(where to install LV2 plugins)
+  AC_ARG_WITH(lv2_dir,
+    AC_HELP_STRING([--with-lv2-dir],[install LV2 calf.lv2 bundle to DIR (default=$prefix/lib/lv2/)]),
+    ,
+    [with_lv2_dir="$prefix/lib/lv2/"])
+  AC_MSG_RESULT($with_lv2_dir)
+  AC_SUBST(with_lv2_dir)
+fi
+
 # Checks for library functions.
 AC_CHECK_FUNCS([floor memset pow])
 
@@ -161,7 +171,7 @@ AC_MSG_RESULT([
     DSSI enabled:           $DSSI_FOUND
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
     JACK host enabled:      $JACK_ENABLED
-    LV2 enabled:            $LV2_ENABLED (unused for now)
+    LV2 enabled:            $LV2_ENABLED
     LASH enabled:           $LASH_ENABLED
     Old-style JACK MIDI:    $OLD_JACK
     PHAT GUI enabled:       $PHAT_ENABLED

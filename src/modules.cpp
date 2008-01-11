@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * Example audio modules - parameters and LADSPA wrapper instantiation
  *
- * Copyright (C) 2001-2007 Krzysztof Foltman
+ * Copyright (C) 2001-2008 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,24 +24,27 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
+#include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 
 using namespace synth;
 
-const char *copyright = "(C) 2001-2007 Krzysztof Foltman, license: LGPL";
-
-const char *amp_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
-
-parameter_properties amp_audio_module::param_props[] = {
-    { 1, 0, 4, 1.1, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "gain", "Gain" }
-};
-
-static synth::ladspa_info amp_info = { 0x847c, "Amp", "Calf Const Amp", "Krzysztof Foltman", copyright, "AmplifierPlugin" };
-
 #if USE_LADSPA
-static synth::ladspa_wrapper<amp_audio_module> amp(amp_info);
+#define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_info);
+#else
+#define LADSPA_WRAPPER(mod)
 #endif
+
+#if USE_LV2
+#define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_info);
+#else
+#define LV2_WRAPPER(mod)
+#endif
+
+#define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
+
+const char *copyright = "(C) 2001-2007 Krzysztof Foltman, license: LGPL";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -57,9 +60,7 @@ parameter_properties flanger_audio_module::param_props[] = {
 
 static synth::ladspa_info flanger_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", copyright, "FlangerPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<flanger_audio_module> flanger(flanger_info);
-#endif
+ALL_WRAPPERS(flanger)
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -77,9 +78,7 @@ parameter_properties reverb_audio_module::param_props[] = {
 
 static synth::ladspa_info reverb_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", copyright, "ReverbPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<reverb_audio_module> reverb(reverb_info);
-#endif
+ALL_WRAPPERS(reverb)
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -103,9 +102,7 @@ parameter_properties filter_audio_module::param_props[] = {
 
 static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<filter_audio_module> filter(filter_info);
-#endif
+ALL_WRAPPERS(filter)
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -135,47 +132,61 @@ parameter_properties vintage_delay_audio_module::param_props[] = {
 
 static synth::ladspa_info vintage_delay_info = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", copyright, "DelayPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<vintage_delay_audio_module> vintage_delay(vintage_delay_info);
-#endif
+ALL_WRAPPERS(vintage_delay)
 
 ////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_EXPERIMENTAL
 static synth::ladspa_info rotary_speaker_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", copyright, "SimulationPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<rotary_speaker_audio_module> rotary_speaker(rotary_speaker_info);
-#endif
+ALL_WRAPPERS(rotary_speaker)
 
 static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<organ_audio_module> organ(organ_info);
-#endif
+ALL_WRAPPERS(organ)
 
 #endif
 ////////////////////////////////////////////////////////////////////////////
 
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
-#if USE_LADSPA
-static synth::ladspa_wrapper<monosynth_audio_module> monosynth(monosynth_info);
-#endif
+ALL_WRAPPERS(monosynth)
 
 ////////////////////////////////////////////////////////////////////////////
 
 #if USE_LADSPA
 extern "C" {
 
+const LV2_Descriptor *lv2_descriptor(uint32_t index)
+{
+    switch (index) {
+        case 0: return &::lv2_filter.descriptor;
+        case 1: return &::lv2_flanger.descriptor;
+        case 2: return &::lv2_reverb.descriptor;
+        case 3: return &::lv2_vintage_delay.descriptor;
+        case 4: return &::lv2_monosynth.descriptor;
+#ifdef ENABLE_EXPERIMENTAL
+        case 5: return &::lv2_organ.descriptor;
+        case 6: return &::lv2_rotary_speaker.descriptor;
+#endif
+        default: return NULL;
+    }
+}
+
+};
+
+#endif
+#if USE_LADSPA
+extern "C" {
+
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
     switch (Index) {
-        case 0: return &::filter.descriptor;
-        case 1: return &::flanger.descriptor;
-        case 2: return &::reverb.descriptor;
-        case 3: return &::vintage_delay.descriptor;
+        case 0: return &::ladspa_filter.descriptor;
+        case 1: return &::ladspa_flanger.descriptor;
+        case 2: return &::ladspa_reverb.descriptor;
+        case 3: return &::ladspa_vintage_delay.descriptor;
 #ifdef ENABLE_EXPERIMENTAL
-        case 4: return &::rotary_speaker.descriptor;
+        case 4: return &::ladspa_rotary_speaker.descriptor;
 #endif
         default: return NULL;
     }
@@ -189,14 +200,14 @@ extern "C" {
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
     switch (Index) {
-        case 0: return &::filter.dssi_descriptor;
-        case 1: return &::flanger.dssi_descriptor;
-        case 2: return &::reverb.dssi_descriptor;
-        case 3: return &::monosynth.dssi_descriptor;
-        case 4: return &::vintage_delay.dssi_descriptor;
+        case 0: return &::ladspa_filter.dssi_descriptor;
+        case 1: return &::ladspa_flanger.dssi_descriptor;
+        case 2: return &::ladspa_reverb.dssi_descriptor;
+        case 3: return &::ladspa_monosynth.dssi_descriptor;
+        case 4: return &::ladspa_vintage_delay.dssi_descriptor;
 #ifdef ENABLE_EXPERIMENTAL
-        case 5: return &::organ.dssi_descriptor;
-        case 6: return &::rotary_speaker.dssi_descriptor;
+        case 5: return &::ladspa_organ.dssi_descriptor;
+        case 6: return &::ladspa_rotary_speaker.dssi_descriptor;
 #endif
         default: return NULL;
     }
@@ -209,12 +220,39 @@ std::string synth::get_builtin_modules_rdf()
 {
     std::string rdf;
     
-    rdf += ::flanger.generate_rdf();
-    rdf += ::reverb.generate_rdf();
-    rdf += ::filter.generate_rdf();
-    rdf += ::vintage_delay.generate_rdf();
-    rdf += ::monosynth.generate_rdf();
+    rdf += ::ladspa_flanger.generate_rdf();
+    rdf += ::ladspa_reverb.generate_rdf();
+    rdf += ::ladspa_filter.generate_rdf();
+    rdf += ::ladspa_vintage_delay.generate_rdf();
+    rdf += ::ladspa_monosynth.generate_rdf();
     
     return rdf;
 }
 #endif
+
+template<class Module>
+giface_plugin_info create_plugin_info(ladspa_info &info)
+{
+    giface_plugin_info pi;
+    pi.info = &info;
+    pi.inputs = Module::in_count;
+    pi.outputs = Module::out_count;
+    pi.params = Module::param_count;
+    pi.rt_capable = Module::rt_capable;
+    pi.midi_capable = Module::support_midi;
+    pi.param_props = Module::param_props;
+    return pi;
+}
+
+void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
+{
+    plugins.push_back(create_plugin_info<filter_audio_module>(filter_info));
+    plugins.push_back(create_plugin_info<flanger_audio_module>(flanger_info));
+    plugins.push_back(create_plugin_info<reverb_audio_module>(reverb_info));
+    plugins.push_back(create_plugin_info<monosynth_audio_module>(monosynth_info));
+    plugins.push_back(create_plugin_info<vintage_delay_audio_module>(vintage_delay_info));
+#ifdef ENABLE_EXPERIMENTAL
+    plugins.push_back(create_plugin_info<organ_audio_module>(organ_info));
+    plugins.push_back(create_plugin_info<rotary_speaker_audio_module>(rotary_speaker_info));
+#endif
+}
