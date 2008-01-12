@@ -85,7 +85,15 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << pp.short_name << "\" ;\n";
     ss << ind << "lv2:name \"" << pp.name << "\" ;\n";
-    if ((pp.flags & PF_TYPEMASK) > 0)
+    if ((pp.flags & PF_TYPEMASK) == PF_BOOL)
+        ss << ind << "lv2:portProperty lv2:toggled ;\n";
+    else if ((pp.flags & PF_TYPEMASK) == PF_ENUM)
+    {
+        ss << ind << "lv2:portProperty lv2:integer ;\n";
+        for (int i = (int)pp.min; i <= (int)pp.max; i++)
+            ss << ind << "lv2:scalePoint [ lv2:label \"" << pp.choices[i - (int)pp.min] << "\"; rdf:value " << i <<" ] ;\n";
+    }
+    else if ((pp.flags & PF_TYPEMASK) > 0)
         ss << ind << "lv2:portProperty lv2:integer ;\n";
     ss << showpoint;
     ss << ind << "lv2:default " << pp.def_value << " ;\n";
