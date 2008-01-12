@@ -114,11 +114,33 @@ void make_ttl()
     
     vector<synth::giface_plugin_info> plugins;
     synth::get_all_plugins(plugins);
+    
+    map<string, string> classes;
+    
+    const char *ptypes[] = {
+        "Flanger", "Reverb", "Generator", "Instrument", "Oscillator",
+        "Utility", "Converter", "Analyser", "Mixer", "Simulator",
+        "Delay", "Modulator", "Phaser", "Chorus", "Filter",
+        "Lowpass", "Highpass", "Bandpass", "Comb", "Allpass",
+        "Amplifier", "Distortion", "Waveshaper", "Dynamics", "Compressor",
+        "Expander", "Limiter", "Gate", NULL
+    };
+    
+    for(const char **p = ptypes; *p; p++) {
+        string name = string(*p) + "Plugin";
+        classes[name] = "lv2:" + name;
+    }
+        
     for (unsigned int i = 0; i < plugins.size(); i++) {
         synth::giface_plugin_info &pi = plugins[i];
         ttl += string("<http://calf.sourceforge.net/plugins/") 
             + string(pi.info->label)
             + "> a lv2:Plugin ;\n";
+        
+        if (classes.count(pi.info->plugin_type))
+            ttl += "    a " + classes[pi.info->plugin_type]+" ;\n";
+        
+            
         ttl += "    doap:name \""+string(pi.info->name)+"\" ;\n";
 #if USE_PHAT
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/gpl> ;\n";
