@@ -91,7 +91,7 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     {
         ss << ind << "lv2:portProperty lv2:integer ;\n";
         for (int i = (int)pp.min; i <= (int)pp.max; i++)
-            ss << ind << "lv2:scalePoint [ lv2:label \"" << pp.choices[i - (int)pp.min] << "\"; rdf:value " << i <<" ] ;\n";
+            ss << ind << "lv2:scalePoint [ rdfs:label \"" << pp.choices[i - (int)pp.min] << "\"; rdf:value " << i <<" ] ;\n";
     }
     else if ((pp.flags & PF_TYPEMASK) > 0)
         ss << ind << "lv2:portProperty lv2:integer ;\n";
