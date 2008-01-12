@@ -113,9 +113,9 @@ void make_ttl()
             + "> a lv2:Plugin ;\n";
         ttl += "    doap:name \""+string(pi.info->name)+"\" ;\n";
 #if USE_PHAT
-        ttl += "    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;\n";
+        ttl += "    doap:license <http://usefulinc.com/doap/licenses/gpl> ;\n";
 #else
-        ttl += "    doap:licence <http://usefulinc.com/doap/licenses/lgpl> ;\n";
+        ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
 #endif
         if (pi.rt_capable)
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
