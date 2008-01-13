@@ -20,6 +20,7 @@
  */
 #include <assert.h>
 #include <memory.h>
+#include <config.h>
 #include <complex>
 #if USE_JACK
 #include <jack/jack.h>
