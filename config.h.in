@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* "Experimental features are enabled" */
+#undef ENABLE_EXPERIMENTAL
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -57,6 +60,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Old JACK version (with extra nframes argument) is to be used */
+#undef OLD_JACK
+
 /* Name of package */
 #undef PACKAGE
 
@@ -77,6 +83,30 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* DSSI wrapper will be built */
+#undef USE_DSSI
+
+/* GTK+ GUI for DSSI will be built */
+#undef USE_DSSI_GUI
+
+/* JACK I/O will be used */
+#undef USE_JACK
+
+/* LADSPA wrapper will be built */
+#undef USE_LADSPA
+
+/* "LASH Audio Session Handler client functionality is enabled" */
+#undef USE_LASH
+
+/* LV2 wrapper will be built */
+#undef USE_LV2
+
+/* GTK+ GUI for LV2 plugins will be built */
+#undef USE_LV2_GUI
+
+/* PHAT widget library will be used */
+#undef USE_PHAT
 
 /* Version number of package */
 #undef VERSION

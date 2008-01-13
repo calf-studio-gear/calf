@@ -115,8 +115,36 @@ AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_PHAT, test "$PHAT_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
-AM_CONDITIONAL(ENABLE_EXPERIMENTAL, test "$set_enable_experimental" = "yes")
-AM_CONDITIONAL(OLD_JACK, test "$OLD_JACK" = "yes")
+if test "$LADSPA_FOUND" = "yes"; then
+  AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
+fi
+if test "$DSSI_FOUND" = "yes"; then
+  AC_DEFINE(USE_DSSI, 1, [DSSI wrapper will be built])
+fi
+if test "$DSSI_GUI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_DSSI_GUI, 1, [GTK+ GUI for DSSI  will be built])
+fi
+if test "$LV2_ENABLED" = "yes"; then
+  AC_DEFINE(USE_LV2, 1, [LV2 wrapper will be built])
+fi
+if test "$LV2_GUI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_LV2_GUI, 1, [GTK+ GUI for LV2 plugins will be built])
+fi
+if test "$JACK_ENABLED" = "yes"; then
+  AC_DEFINE(USE_JACK, 1, [JACK I/O will be used])
+fi
+if test "$PHAT_ENABLED" = "yes"; then
+  AC_DEFINE(USE_PHAT, 1, [PHAT widget library will be used])
+fi
+if test "$OLD_JACK" = "yes"; then
+  AC_DEFINE(OLD_JACK, 1, [Old JACK version (with extra nframes argument) is to be used])
+fi
+if test "$LASH_ENABLED" = "yes"; then
+  AC_DEFINE(USE_LASH, 1, "LASH Audio Session Handler client functionality is enabled")
+fi
+if test "$set_enable_experimental" = "yes"; then
+  AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

@@ -21,48 +21,23 @@ endif
 AM_CXXFLAGS = -ffast-math -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
 if USE_JACK
-AM_CXXFLAGS += -DUSE_JACK=1 $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
+AM_CXXFLAGS += $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfgui.la libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
-if OLD_JACK
-AM_CXXFLAGS += -DOLD_JACK=1
-endif
 if USE_PHAT
-AM_CXXFLAGS += -DUSE_PHAT=1 $(PHAT_DEPS_CFLAGS)
 calfjackhost_LDADD += $(PHAT_DEPS_LIBS)
 endif
 if USE_LASH
+AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)
 calfjackhost_LDADD += $(LASH_DEPS_LIBS)
 endif
 endif
 
-if ENABLE_EXPERIMENTAL
-AM_CXXFLAGS += -DENABLE_EXPERIMENTAL=1
-endif
-
-if USE_LADSPA
-AM_CXXFLAGS += -DUSE_LADSPA=1
-endif
 noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
-if USE_DSSI
-AM_CXXFLAGS += -DUSE_DSSI=1
-endif
-if USE_DSSI_GUI
-AM_CXXFLAGS += -DUSE_DSSI_GUI=1
-endif
-if USE_LV2
-AM_CXXFLAGS += -DUSE_LV2=1
-endif
-if USE_LV2_GUI
-AM_CXXFLAGS += -DUSE_LV2_GUI=1
-endif
-if USE_LASH
-AM_CXXFLAGS += -DUSE_LASH=1 $(LASH_DEPS_CFLAGS)
-endif
 
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD =  -lglib-2.0
