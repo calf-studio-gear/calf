@@ -153,7 +153,7 @@ ALL_WRAPPERS(monosynth)
 
 ////////////////////////////////////////////////////////////////////////////
 
-#if USE_LADSPA
+#if USE_LV2
 extern "C" {
 
 const LV2_Descriptor *lv2_descriptor(uint32_t index)

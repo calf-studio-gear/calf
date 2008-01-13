@@ -79,6 +79,12 @@ else
   DSSI_GUI_ENABLED="no"
 fi
 
+if test "$GUI_ENABLED" = "yes" -a "$LV2_ENABLED" = "yes"; then
+  LV2_GUI_ENABLED="yes"
+else
+  LV2_GUI_ENABLED="no"
+fi
+
 if test "$JACK_ENABLED" = "yes"; then
   PKG_CHECK_MODULES(PHAT_DEPS, phat >= 0.4.1, 
     [
@@ -106,6 +112,7 @@ AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
+AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_PHAT, test "$PHAT_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(ENABLE_EXPERIMENTAL, test "$set_enable_experimental" = "yes")
@@ -170,8 +177,9 @@ AC_MSG_RESULT([
     LADSPA enabled:         $LADSPA_FOUND
     DSSI enabled:           $DSSI_FOUND
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
-    JACK host enabled:      $JACK_ENABLED
     LV2 enabled:            $LV2_ENABLED
+    LV2 GUI enabled:        $LV2_GUI_ENABLED
+    JACK host enabled:      $JACK_ENABLED
     LASH enabled:           $LASH_ENABLED
     Old-style JACK MIDI:    $OLD_JACK
     PHAT GUI enabled:       $PHAT_ENABLED

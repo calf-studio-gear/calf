@@ -5,6 +5,7 @@ INCLUDES = -I$(top_srcdir) -I$(srcdir)
 SUBDIRS = calf
 
 ladspadir = $(with_ladspa_dir)
+lv2dir = $(with_lv2_dir)
 
 bin_PROGRAMS = 
 
@@ -12,6 +13,9 @@ noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = calf.la libcalfstatic.la
 if USE_DSSI_GUI
 noinst_PROGRAMS += calfdssigui
+endif
+if USE_LV2_GUI
+noinst_LTLIBRARIES += calflv2gui.la
 endif
 
 AM_CXXFLAGS = -ffast-math -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
@@ -53,6 +57,9 @@ endif
 if USE_LV2
 AM_CXXFLAGS += -DUSE_LV2=1
 endif
+if USE_LV2_GUI
+AM_CXXFLAGS += -DUSE_LV2_GUI=1
+endif
 if USE_LASH
 AM_CXXFLAGS += -DUSE_LASH=1 $(LASH_DEPS_CFLAGS)
 endif
@@ -63,10 +70,21 @@ calfbenchmark_LDADD =  -lglib-2.0
 if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp
 calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
+if USE_PHAT
+calfdssigui_LDADD += $(PHAT_DEPS_LIBS)
+endif
 endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp 
-calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"
+
+if USE_LV2_GUI
+calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" 
+if USE_PHAT
+calflv2gui_la_LIBADD = $(PHAT_DEPS_LIBS)
+endif
+endif
 
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat
@@ -103,6 +121,9 @@ endif
 if USE_LV2
 	install -d -m 755 $(DESTDIR)$(with_lv2_dir)/calf.lv2
 	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
+if USE_LV2_GUI
+	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
+endif
 	$(top_builddir)/src/calfmakerdf -m ttl >$(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl
 	$(top_builddir)/src/calfmakerdf -m manifest >$(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
 endif
@@ -110,6 +131,9 @@ endif
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
 uninstall-hook:
 if USE_LV2
+if USE_LV2_GUI
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
+endif
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl $(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
 	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true

@@ -110,7 +110,10 @@ void make_ttl()
     ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        "@prefix doap: <http://usefulinc.com/ns/doap#> .\n\n";
+        "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
+        "@prefix guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#> .\n"
+        "\n"
+    ;
     
     vector<synth::giface_plugin_info> plugins;
     synth::get_all_plugins(plugins);
@@ -131,6 +134,10 @@ void make_ttl()
         classes[name] = "lv2:" + name;
     }
         
+#if USE_LV2_GUI
+    ttl += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a guiext:GtkGUI ;\n    guiext:binary <calflv2gui.so> .\n\n";
+#endif
+    
     for (unsigned int i = 0; i < plugins.size(); i++) {
         synth::giface_plugin_info &pi = plugins[i];
         ttl += string("<http://calf.sourceforge.net/plugins/") 
@@ -142,6 +149,11 @@ void make_ttl()
         
             
         ttl += "    doap:name \""+string(pi.info->name)+"\" ;\n";
+
+#if USE_LV2_GUI
+        ttl += "    guiext:gui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
+#endif
+        
 #if USE_PHAT
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/gpl> ;\n";
 #else
@@ -196,7 +208,7 @@ int main(int argc, char *argv[])
         switch(c) {
             case 'h':
             case '?':
-                printf("LADSPA RDF generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|manifest]\n", argv[0]);
+                printf("LADSPA RDF / LV2 TTL generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|manifest]\n", argv[0]);
                 return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);

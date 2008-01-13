@@ -9,6 +9,8 @@ namespace synth {
 template<class Module>
 struct lv2_instance: public Module, public plugin_ctl_iface
 {
+    bool set_srate;
+    int srate_to_set;
     lv2_instance()
     {
         for (int i=0; i < Module::in_count; i++)
@@ -17,6 +19,8 @@ struct lv2_instance: public Module, public plugin_ctl_iface
             Module::outs[i] = NULL;
         for (int i=0; i < Module::param_count; i++)
             Module::params[i] = NULL;
+        set_srate = true;
+        srate_to_set = 44100;
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -86,9 +90,7 @@ struct lv2_wrapper
     }
 
     static void cb_activate(LV2_Handle Instance) {
-        instance *const mod = (instance *)Instance;
-        mod->set_sample_rate(mod->srate);
-        mod->activate();
+        // LV2 activate is practically useless because parameters aren't present
     }
     
     static void cb_deactivate(LADSPA_Handle Instance) {
@@ -100,7 +102,8 @@ struct lv2_wrapper
     {
         instance *mod = new instance();
         // XXXKF some people use fractional sample rates; we respect them ;-)
-        mod->srate = (uint32_t)sample_rate;
+        mod->srate_to_set = (uint32_t)sample_rate;
+        mod->set_srate = true;
         return mod;
     }
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
@@ -124,6 +127,11 @@ struct lv2_wrapper
 
     static void cb_run(LV2_Handle Instance, uint32_t SampleCount) {
         instance *const mod = (instance *)Instance;
+        if (mod->set_srate) {
+            mod->set_sample_rate(mod->srate_to_set);
+            mod->activate();
+            mod->set_srate = false;
+        }
         mod->params_changed();
         process_slice(mod, 0, SampleCount);
     }

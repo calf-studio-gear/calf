@@ -116,6 +116,7 @@ void hscale_param_control::set()
 {
     _GUARD_CHANGE_
     parameter_properties &props = get_props();
+    printf("param value %d = %f\n", param_no, gui->plugin->get_param_value(param_no));
     gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
     // hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
 }
@@ -423,6 +424,7 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
         }
+        params[i]->hook_params();
         params[i]->set();
     }
     return container;

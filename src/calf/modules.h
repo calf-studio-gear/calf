@@ -178,6 +178,7 @@ public:
     : inertia_cutoff(exponential_ramp(128), 20)
     , timer(128)
     {
+        order = 0;
     }
     
     void calculate_filter()
@@ -218,7 +219,7 @@ public:
         calculate_filter();
     }
     void activate() {
-        calculate_filter();
+        params_changed();
         for (int i=0; i < order; i++) {
             left[i].reset();
             right[i].reset();
@@ -230,7 +231,6 @@ public:
     }
     void set_sample_rate(uint32_t sr) {
         srate = sr;
-        params_changed();
     }
     inline int process_channel(dsp::biquad<float> *filter, float *in, float *out, uint32_t numsamples, int inmask) {
         if (inmask) {
@@ -279,6 +279,7 @@ public:
         return filter[order - 1].empty_d1() ? 0 : inmask;
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+//        printf("sr=%d cutoff=%f res=%f mode=%f\n", srate, *params[par_cutoff], *params[par_resonance], *params[par_mode]);
         uint32_t ostate = 0;
         numsamples += offset;
         while(offset < numsamples) {
