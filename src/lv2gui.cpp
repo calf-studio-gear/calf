@@ -142,7 +142,11 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     plugin_gui_window *window = new plugin_gui_window;
     window->conditions.insert("lv2gui");
     plugin_gui *gui = new plugin_gui(window);
-    *(GtkWidget **)(widget) = gui->create(proxy);
+    const char *xml = proxy->get_gui_xml();
+    if (xml)
+        *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
+    else
+        *(GtkWidget **)(widget) = gui->create(proxy);
     
     return (LV2UI_Handle)gui;
 }
