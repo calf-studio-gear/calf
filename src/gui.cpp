@@ -93,7 +93,7 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
 
-    widget = gtk_hscale_new_with_range (0, 1, 0.01);
+    widget = gtk_hscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
     gtk_widget_set_size_request (widget, 200, -1);
@@ -117,7 +117,6 @@ void hscale_param_control::set()
 {
     _GUARD_CHANGE_
     parameter_properties &props = get_props();
-    printf("param value %d = %f\n", param_no, gui->plugin->get_param_value(param_no));
     gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
     // hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
 }
@@ -153,7 +152,7 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
 
-    widget = gtk_vscale_new_with_range (0, 1, 0.01);
+    widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
     gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
     gtk_widget_set_size_request (widget, -1, 200);
