@@ -133,6 +133,7 @@ void make_ttl()
         string name = string(*p) + "Plugin";
         classes[name] = "lv2:" + name;
     }
+    classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
 #if USE_LV2_GUI
     ttl += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a guiext:GtkGUI ;\n    guiext:binary <calflv2gui.so> .\n\n";
