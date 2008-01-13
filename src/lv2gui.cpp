@@ -176,6 +176,11 @@ void activate_preset(GtkAction *action, activate_preset_params *params)
 {
 }
 
+// so is this function
+void store_preset(GtkWindow *toplevel, plugin_gui *gui)
+{
+}
+
 };
 
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)

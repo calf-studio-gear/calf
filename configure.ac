@@ -85,18 +85,18 @@ else
   LV2_GUI_ENABLED="no"
 fi
 
-if test "$JACK_ENABLED" = "yes"; then
+AC_ARG_ENABLE(phat, [  --disable-phat          to disable usage of PHAT widget set], [], [
   PKG_CHECK_MODULES(PHAT_DEPS, phat >= 0.4.1, 
-    [
-      CFLAGS="$CFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
-      CPPFLAGS="$CPPFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
-      AC_CHECK_HEADERS([phat/phatknob.h], 
-        PHAT_ENABLED="yes", 
-        PHAT_ENABLED="no (phat library is too old, SVN version required)")
-    ],
-    PHAT_ENABLED="no"
+  [
+    CFLAGS="$CFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
+    CPPFLAGS="$CPPFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
+    AC_CHECK_HEADERS([phat/phatknob.h], 
+      PHAT_ENABLED="yes", 
+      PHAT_ENABLED="no (phat library is too old, SVN version required)")
+  ],
+  PHAT_ENABLED="no"
   )
-fi
+])
 
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
 AC_ARG_ENABLE(experimental,
