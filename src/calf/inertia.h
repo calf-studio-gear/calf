@@ -199,6 +199,21 @@ public:
         return false;
     }
 };
+
+class gain_smoothing: public inertia<linear_ramp>
+{
+public:
+    gain_smoothing()
+    : inertia<linear_ramp>(linear_ramp(64))
+    {
+    }
+    void set_sample_rate(int sr)
+    {
+        ramp = linear_ramp(sr / 441);
+    }
+    // to change param, use set_inertia(value)
+    // to read param, use get()
+};
     
 }
 

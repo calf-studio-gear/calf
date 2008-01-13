@@ -23,8 +23,8 @@
 
 #include <assert.h>
 #include "biquad.h"
-#include "audio_fx.h"
 #include "inertia.h"
+#include "audio_fx.h"
 
 namespace synth {
 
@@ -122,6 +122,7 @@ public:
     static const char *port_names[];
     dsp::reverb<float> reverb;
     uint32_t srate;
+    gain_smoothing amount;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -133,6 +134,7 @@ public:
         reverb.set_type_and_diffusion(fastf2i_drm(*params[par_roomsize]), *params[par_diffusion]);
         reverb.set_time(*params[par_decay]);
         reverb.set_cutoff(*params[par_hfdamp]);
+        amount.set_inertia(*params[par_amount]);
     }
     void activate() {
         reverb.reset();
@@ -142,11 +144,12 @@ public:
     void set_sample_rate(uint32_t sr) {
         srate = sr;
         reverb.setup(sr);
+        amount.set_sample_rate(sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        float wet = *params[par_amount];
         numsamples += offset;
         for (uint32_t i = offset; i < numsamples; i++) {
+            float wet = amount.get();
             float l = ins[0][i], r = ins[1][i];
             float rl = l, rr = r;
             reverb.process(rl, rr);
@@ -315,7 +318,8 @@ public:
     static const char *port_names[];
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
-    float amt_left, amt_right, fb_left, fb_right;
+    gain_smoothing amt_left, amt_right, fb_left, fb_right;
+    
     dsp::biquad<float> biquad_left[2], biquad_right[2];
     
     uint32_t srate;
@@ -331,12 +335,18 @@ public:
         float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
         deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
         deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
-        amt_left = amt_right = *params[par_amount];
-        fb_left = fb_right = *params[par_feedback];
+        amt_left.set_inertia(*params[par_amount]); amt_right.set_inertia(*params[par_amount]);
+        float fb = *params[par_feedback];;
         mixmode = dsp::fastf2i_drm(*params[par_mixmode]);
         medium = dsp::fastf2i_drm(*params[par_medium]);
         if (mixmode == 0)
-            fb_right = pow(fb_left, *params[par_time_r] / *params[par_time_l]);
+        {
+            fb_left.set_inertia(fb);
+            fb_right.set_inertia(pow(fb, *params[par_time_r] / *params[par_time_l]));
+        } else {
+            fb_left.set_inertia(fb);
+            fb_right.set_inertia(fb);
+        }
         if (medium != old_medium)
             calc_filters();
     }
@@ -348,6 +358,8 @@ public:
     void set_sample_rate(uint32_t sr) {
         srate = sr;
         old_medium = -1;
+        amt_left.set_sample_rate(sr); amt_right.set_sample_rate(sr);
+        fb_left.set_sample_rate(sr); fb_right.set_sample_rate(sr);
         params_changed();
     }
     void calc_filters()
@@ -369,10 +381,10 @@ public:
             float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK], in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_left, out_right, del_left, del_right;
             dsp::sanitize(in_left), dsp::sanitize(in_right);
 
-            out_left = ins[0][i] + in_left * amt_left;
-            out_right = ins[1][i] + in_right * amt_right;
-            del_left = ins[0][i] + in_left * fb_left;
-            del_right = ins[1][i] + in_right * fb_right;
+            out_left = ins[0][i] + in_left * amt_left.get();
+            out_right = ins[1][i] + in_right * amt_right.get();
+            del_left = ins[0][i] + in_left * fb_left.get();
+            del_right = ins[1][i] + in_right * fb_right.get();
             
             outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
             bufptr = (bufptr + 1) & (MAX_DELAY - 1);
