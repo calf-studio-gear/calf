@@ -161,7 +161,7 @@ struct giface_plugin_info
 {
     ladspa_info *info;
     int inputs, outputs, params;
-    bool rt_capable, midi_capable;
+    bool rt_capable, midi_in_capable;
     parameter_properties *param_props;
 };
 

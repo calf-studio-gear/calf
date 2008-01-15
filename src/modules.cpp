@@ -240,7 +240,7 @@ giface_plugin_info create_plugin_info(ladspa_info &info)
     pi.outputs = Module::out_count;
     pi.params = Module::param_count;
     pi.rt_capable = Module::rt_capable;
-    pi.midi_capable = Module::support_midi;
+    pi.midi_in_capable = Module::support_midi;
     pi.param_props = Module::param_props;
     return pi;
 }

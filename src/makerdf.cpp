@@ -55,7 +55,7 @@ void make_rdf()
     printf("%s\n", rdf.c_str());
 }
 
-static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx)
+static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort")
 {
     stringstream ss;
     const char *ind = "        ";
@@ -64,7 +64,7 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     if (ports != "") ports += " , ";
     ss << "[\n";
     if (direction) ss << ind << "a lv2:" << direction << "Port ;\n";
-    ss << ind << "a lv2:AudioPort ;\n";
+    ss << ind << "a " << type << " ;\n";
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
     ss << ind << "lv2:name \"" << name << "\" ;\n";
@@ -111,6 +111,7 @@ void make_ttl()
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
+        "@prefix midiext: <http://ll-plugins.nongnu.org/lv2/ext/MidiPort> .\n"
         "@prefix guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#> .\n"
         "\n"
     ;
@@ -173,6 +174,8 @@ void make_ttl()
             add_port(ports, out_names[i], out_names[i], "Output", pn++);
         for (int i = 0; i < pi.params; i++)
             add_ctl_port(ports, pi.param_props[i], pn++);
+        if (pi.midi_in_capable)
+            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";
         ttl += ".\n\n";
