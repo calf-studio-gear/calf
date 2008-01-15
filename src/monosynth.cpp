@@ -523,7 +523,8 @@ void monosynth_audio_module::calculate_step()
             freq = target_freq;
             porta_time = -1;
         } else {
-            freq = start_freq * pow(target_freq / start_freq, point);
+            freq = start_freq + (target_freq - start_freq) * point;
+            // freq = start_freq * pow(target_freq / start_freq, point);
             porta_time += odcr;
         }
     }
