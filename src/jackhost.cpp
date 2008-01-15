@@ -269,12 +269,12 @@ void host_session::close()
     if (lash_source_id)
         g_source_remove(lash_source_id);
     client.deactivate();
+    client.close();
     for (unsigned int i = 0; i < plugin_names.size(); i++) {
         delete guis[i];
         plugins[i]->close();
         delete plugins[i];
     }
-    client.close();
 }
 
 #if USE_LASH
