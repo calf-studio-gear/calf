@@ -240,6 +240,7 @@ void monosynth_audio_module::activate() {
     pitchbend = 1.f;
     filter.reset();
     filter2.reset();
+    stack.clear();
 }
 
 waveform_family<11> monosynth_audio_module::waves[wave_count];

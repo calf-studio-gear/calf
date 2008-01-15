@@ -62,6 +62,7 @@ public:
     int queue_note_on, stop_count;
     int legato;
     synth::adsr envelope;
+    synth::keystack stack;
     
     static parameter_properties param_props[];
     static const char *get_gui_xml();
@@ -73,10 +74,20 @@ public:
         queue_note_on = note;
         last_key = note;
         queue_vel = vel / 127.f;
+        stack.push(note);
     }
     void note_off(int note, int vel)
     {
+        stack.pop(note);
         if (note == last_key) {
+            if (stack.count())
+            {
+                last_key = note = stack.nth(stack.count() - 1);
+                start_freq = freq;
+                target_freq = freq = 440 * pow(2.0, (note - 69) / 12.0);
+                set_frequency();
+                return;
+            }
             gate = false;
             envelope.note_off();
         }
