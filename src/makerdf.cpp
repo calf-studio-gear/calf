@@ -103,11 +103,11 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     ports += ss.str();
 }
 
-void make_ttl()
+void make_ttl(string path_prefix)
 {
-    string ttl;
+    string header;
     
-    ttl = 
+    header = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
@@ -137,10 +137,11 @@ void make_ttl()
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
 #if USE_LV2_GUI
-    ttl += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a guiext:GtkGUI ;\n    guiext:binary <calflv2gui.so> .\n\n";
+    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a guiext:GtkGUI ;\n    guiext:binary <calflv2gui.so> .\n\n";
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
+        string ttl = header;
         synth::giface_plugin_info &pi = plugins[i];
         ttl += string("<http://calf.sourceforge.net/plugins/") 
             + string(pi.info->label)
@@ -179,8 +180,11 @@ void make_ttl()
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";
         ttl += ".\n\n";
+        
+        FILE *f = fopen((path_prefix+string(pi.info->label)+".ttl").c_str(), "w");
+        fprintf(f, "%s\n", ttl.c_str());
+        fclose(f);
     }
-    printf("%s\n", ttl.c_str());
 }
 
 void make_manifest()
@@ -196,7 +200,7 @@ void make_manifest()
     for (unsigned int i = 0; i < plugins.size(); i++)
         ttl += string("<http://calf.sourceforge.net/plugins/") 
             + string(plugins[i].info->label)
-            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <calf.ttl> .\n";
+            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i].info->label) + ".ttl> .\n";
 
     printf("%s\n", ttl.c_str());
 }
@@ -204,9 +208,10 @@ void make_manifest()
 int main(int argc, char *argv[])
 {
     string mode = "rdf";
+    string path_prefix;
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "hvm:", long_options, &option_index);
+        int c = getopt_long(argc, argv, "hvm:p:", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -224,12 +229,15 @@ int main(int argc, char *argv[])
                     return 1;
                 }
                 break;
+            case 'p':
+                path_prefix = optarg;
+                break;
         }
     }
     if (mode == "rdf")
         make_rdf();
     if (mode == "ttl")
-        make_ttl();
+        make_ttl(path_prefix);
     if (mode == "manifest")
         make_manifest();
     return 0;
