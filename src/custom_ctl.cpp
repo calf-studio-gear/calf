@@ -21,6 +21,27 @@
 #include <cairo/cairo.h>
 #include <math.h>
 
+/*
+I don't really know how to do it, or if it can be done this way.
+struct calf_ui_type_module
+{
+    GTypeModule *module;
+    
+    calf_ui_type_module()
+    {
+        module = g_type_module_new();
+        g_type_module_set_name(module, "calf_custom_ctl");
+        g_type_module_use(module);
+    }
+    ~calf_ui_type_module()
+    {
+        g_type_module_unuse(module);
+    }
+};
+
+static calf_ui_type_module type_module;
+*/
+
 static gboolean
 calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -116,26 +137,37 @@ calf_line_graph_new()
 GType
 calf_line_graph_get_type (void)
 {
-  static GType type = 0;
-  if (!type) {
-    static const GTypeInfo type_info = {
-      sizeof(CalfLineGraphClass),
-      NULL, /* base_init */
-      NULL, /* base_finalize */
-      (GClassInitFunc)calf_line_graph_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof(CalfLineGraph),
-      0,    /* n_preallocs */
-      (GInstanceInitFunc)calf_line_graph_init
-    };
-    
-    type = g_type_register_static(GTK_TYPE_WIDGET,
-                                  "CalfLineGraph",
-                                  &type_info,
-                                  (GTypeFlags)0);
-  }
-  return type;
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfLineGraphClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_line_graph_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfLineGraph),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_line_graph_init
+        };
+
+        GTypeInfo *type_info_copy = new GTypeInfo(type_info);
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfLineGraph%d", i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static( GTK_TYPE_WIDGET,
+                                           name,
+                                           type_info_copy,
+                                           (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
 }
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
@@ -295,25 +327,35 @@ GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment)
 GType
 calf_knob_get_type (void)
 {
-  static GType type = 0;
-  if (!type) {
-    static const GTypeInfo type_info = {
-      sizeof(CalfKnobClass),
-      NULL, /* base_init */
-      NULL, /* base_finalize */
-      (GClassInitFunc)calf_knob_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof(CalfKnob),
-      0,    /* n_preallocs */
-      (GInstanceInitFunc)calf_knob_init
-    };
-    
-    type = g_type_register_static(GTK_TYPE_RANGE,
-                                  "CalfKnob",
-                                  &type_info,
-                                  (GTypeFlags)0);
-  }
-  return type;
+    static GType type = 0;
+    if (!type) {
+        
+        static const GTypeInfo type_info = {
+            sizeof(CalfKnobClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_knob_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfKnob),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_knob_init
+        };
+        
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfKnob%d", i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_RANGE,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
 }
 
