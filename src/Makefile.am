@@ -55,7 +55,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-sym
 
 if USE_LV2_GUI
 calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp
-calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" 
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GUI_DEPS_LIBS)
 if USE_PHAT
 calflv2gui_la_LIBADD = $(PHAT_DEPS_LIBS)
 endif
