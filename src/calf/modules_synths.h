@@ -86,6 +86,8 @@ public:
                 start_freq = freq;
                 target_freq = freq = 440 * pow(2.0, (note - 69) / 12.0);
                 set_frequency();
+                if (!(legato & 1))
+                    envelope.note_on();
                 return;
             }
             gate = false;
