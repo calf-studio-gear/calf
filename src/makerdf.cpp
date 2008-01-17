@@ -112,7 +112,7 @@ void make_ttl(string path_prefix)
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
         "@prefix midiext: <http://ll-plugins.nongnu.org/lv2/ext/MidiPort> .\n"
-        "@prefix guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#> .\n"
+        "@prefix uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#> .\n"
         "\n"
     ;
     
@@ -137,7 +137,7 @@ void make_ttl(string path_prefix)
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
 #if USE_LV2_GUI
-    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a guiext:GtkGUI ;\n    guiext:binary <calflv2gui.so> .\n\n";
+    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a uiext:GtkGUI ;\n    uiext:binary <calflv2gui.so> .\n\n";
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
@@ -154,7 +154,7 @@ void make_ttl(string path_prefix)
         ttl += "    doap:name \""+string(pi.info->name)+"\" ;\n";
 
 #if USE_LV2_GUI
-        ttl += "    guiext:gui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
+        ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
 #endif
         
 #if USE_PHAT
