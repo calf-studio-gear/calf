@@ -24,9 +24,6 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the <phat/phatknob.h> header file. */
-#undef HAVE_PHAT_PHATKNOB_H
-
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
@@ -104,9 +101,6 @@
 
 /* GTK+ GUI for LV2 plugins will be built */
 #undef USE_LV2_GUI
-
-/* PHAT widget library will be used */
-#undef USE_PHAT
 
 /* Version number of package */
 #undef VERSION

@@ -2,22 +2,20 @@
  * Universal GUI module
  * Copyright (C) 2007 Krzysztof Foltman
  *
- * Note: This module uses phat graphics library, so it's 
- * licensed under GPL license, not LGPL.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
-
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 #ifndef __CALF_GUI_H
 #define __CALF_GUI_H
@@ -27,9 +25,6 @@
 #include <set>
 #include <vector>
 #include <gtk/gtk.h>
-#if USE_PHAT
-#include <phat/phatknob.h>
-#endif
 #include "custom_ctl.h"
 
 namespace synth {
@@ -188,11 +183,7 @@ struct line_graph_param_control: public param_control
 
 struct knob_param_control: public param_control
 {
-#if USE_PHAT
-    PhatKnob *knob;
-#else
     CalfKnob *knob;
-#endif
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
@@ -233,10 +224,6 @@ public:
     void set_param_value(int param_no, float value, param_control *originator = NULL);
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);
-
-#if USE_PHAT
-    static void knob_value_changed(PhatKnob *widget, gpointer value);
-#endif
 };
 
 class plugin_gui_window

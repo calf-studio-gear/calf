@@ -26,9 +26,6 @@ noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp
 calfjackhost_LDADD = libcalfgui.la libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS)
-if USE_PHAT
-calfjackhost_LDADD += $(PHAT_DEPS_LIBS)
-endif
 if USE_LASH
 AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)
 calfjackhost_LDADD += $(LASH_DEPS_LIBS)
@@ -45,9 +42,6 @@ calfbenchmark_LDADD =  -lglib-2.0
 if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp
 calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
-if USE_PHAT
-calfdssigui_LDADD += $(PHAT_DEPS_LIBS)
-endif
 endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp 
@@ -56,9 +50,6 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-sym
 if USE_LV2_GUI
 calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GUI_DEPS_LIBS)
-if USE_PHAT
-calflv2gui_la_LIBADD = $(PHAT_DEPS_LIBS)
-endif
 endif
 
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp

@@ -2,22 +2,20 @@
  * GUI functions for a plugin.
  * Copyright (C) 2007 Krzysztof Foltman
  *
- * Note: This module uses phat graphics library, so it's 
- * licensed under GPL license, not LGPL.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
-
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
  
 #include <config.h>
@@ -251,22 +249,6 @@ void toggle_param_control::set()
 
 // knob
 
-#if USE_PHAT
-GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
-{
-    gui = _gui;
-    param_no = _param_no;
-    const parameter_properties &props = get_props();
-
-    float increment = props.get_increment();
-    widget = phat_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, increment);
-    gtk_widget_set_size_request(widget, 50, 50);
-    gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
-    return widget;
-}
-
-#else
-
 GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
@@ -282,16 +264,10 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
-#endif
-
 void knob_param_control::get()
 {
     const parameter_properties &props = get_props();
-#if USE_PHAT
-    float value = props.from_01(phat_knob_get_value(PHAT_KNOB(widget)));
-#else
     float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
-#endif
     gui->set_param_value(param_no, value, this);
     if (label)
         update_label();
@@ -301,11 +277,7 @@ void knob_param_control::set()
 {
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
-#if USE_PHAT
-    phat_knob_set_value(PHAT_KNOB(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-#else
     gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-#endif
     if (label)
         update_label();
 }

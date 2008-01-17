@@ -57,7 +57,6 @@ AC_SUBST(JACK_DEPS_LIBS)
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.0, LASH_ENABLED="yes", LASH_ENABLED="no")
 
-PHAT_ENABLED="no"
 if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
   PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
     GUI_ENABLED="yes",
@@ -85,19 +84,6 @@ else
   LV2_GUI_ENABLED="no"
 fi
 
-AC_ARG_ENABLE(phat, [  --disable-phat          to disable usage of PHAT widget set], [], [
-  PKG_CHECK_MODULES(PHAT_DEPS, phat >= 0.4.1, 
-  [
-    CFLAGS="$CFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
-    CPPFLAGS="$CPPFLAGS $GUI_DEPS_CFLAGS $JACK_DEPS_CFLAGS"
-    AC_CHECK_HEADERS([phat/phatknob.h], 
-      PHAT_ENABLED="yes", 
-      PHAT_ENABLED="no (phat library is too old, SVN version required)")
-  ],
-  PHAT_ENABLED="no"
-  )
-])
-
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
 AC_ARG_ENABLE(experimental,
   AC_HELP_STRING([--enable-experimental],[enable unfinished features - not recommended!]),
@@ -113,7 +99,6 @@ AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
-AM_CONDITIONAL(USE_PHAT, test "$PHAT_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 if test "$LADSPA_FOUND" = "yes"; then
   AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
@@ -132,9 +117,6 @@ if test "$LV2_GUI_ENABLED" = "yes"; then
 fi
 if test "$JACK_ENABLED" = "yes"; then
   AC_DEFINE(USE_JACK, 1, [JACK I/O will be used])
-fi
-if test "$PHAT_ENABLED" = "yes"; then
-  AC_DEFINE(USE_PHAT, 1, [PHAT widget library will be used])
 fi
 if test "$OLD_JACK" = "yes"; then
   AC_DEFINE(OLD_JACK, 1, [Old JACK version (with extra nframes argument) is to be used])
@@ -210,7 +192,6 @@ AC_MSG_RESULT([
     JACK host enabled:      $JACK_ENABLED
     LASH enabled:           $LASH_ENABLED
     Old-style JACK MIDI:    $OLD_JACK
-    PHAT GUI enabled:       $PHAT_ENABLED
     
     Installation prefix:    $prefix
 ])

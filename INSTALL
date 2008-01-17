@@ -3,6 +3,7 @@ Installation Instructions
 
 Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
 Software Foundation, Inc.
+Copyright (C) 2007-2008 Krzysztof Foltman
 
 This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
@@ -15,8 +16,12 @@ To compile and install Calf, you need:
 - POSIX-compliant operating system
 - G++ version 4.0 or higher (tested with 4.1.3)
 - GTK+2 headers and libraries (glib 2.10, gtk+ 2.12)
-- JACK header and libraries (tested with 0.107.5)
-- SVN version of phat toolkit - http://phat.berlios.de/
+
+Optional but recommended:
+- JACK header and libraries (tested with 0.109.0)
+- LADSPA header
+- DSSI header
+- LV2 core
 
 Basic Installation
 ==================
