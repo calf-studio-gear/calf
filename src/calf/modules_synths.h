@@ -30,6 +30,8 @@
 
 namespace synth {
 
+#define MONOSYNTH_WAVE_SIZE 12
+    
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
 class monosynth_audio_module: public null_audio_module
@@ -45,8 +47,8 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    static waveform_family<11> waves[wave_count];
-    waveform_oscillator<11> osc1, osc2;
+    static waveform_family<MONOSYNTH_WAVE_SIZE> waves[wave_count];
+    waveform_oscillator<MONOSYNTH_WAVE_SIZE> osc1, osc2;
     bool running, stopping, gate;
     int last_key;
     

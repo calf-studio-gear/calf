@@ -214,7 +214,7 @@ parameter_properties monosynth_audio_module::param_props[] = {
     { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "vel2amp", "Vel->Amp" },
 };
 
-float silence[2049];
+float silence[4097];
 
 const char *monosynth_audio_module::get_gui_xml()
 {
@@ -243,105 +243,110 @@ void monosynth_audio_module::activate() {
     stack.clear();
 }
 
-waveform_family<11> monosynth_audio_module::waves[wave_count];
+waveform_family<MONOSYNTH_WAVE_SIZE> monosynth_audio_module::waves[wave_count];
 
 void monosynth_audio_module::generate_waves()
 {
-    float data[2048];
-    bandlimiter<11> bl;
+    float data[1 << MONOSYNTH_WAVE_SIZE];
+    bandlimiter<MONOSYNTH_WAVE_SIZE> bl;
+    
+    enum { S = 1 << MONOSYNTH_WAVE_SIZE, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
+    float iQS = 1.0 / QS;
 
     // yes these waves don't have really perfect 1/x spectrum because of aliasing
     // (so what?)
-    for (int i = 0 ; i < 1024; i++)
-        data[i] = (float)(i / 1024.f),
-        data[i + 1024] = (float)(i / 1024.f - 1.0f);
+    for (int i = 0 ; i < HS; i++)
+        data[i] = (float)(i * 1.0 / HS),
+        data[i + HS] = (float)(i * 1.0 / HS - 1.0f);
     waves[wave_saw].make(bl, data);
 
-    for (int i = 0 ; i < 2048; i++)
-        data[i] = (float)(i < 1024 ? -1.f : 1.f);
+    for (int i = 0 ; i < S; i++)
+        data[i] = (float)(i < HS ? -1.f : 1.f);
     waves[wave_sqr].make(bl, data);
 
-    for (int i = 0 ; i < 2048; i++)
-        data[i] = (float)(i < 64 ? -1.f : 1.f);
+    for (int i = 0 ; i < S; i++)
+        data[i] = (float)(i < (64 * S / 2048)? -1.f : 1.f);
     waves[wave_pulse].make(bl, data);
 
     // XXXKF sure this is a waste of space, this will be fixed some day by better bandlimiter
-    for (int i = 0 ; i < 2048; i++)
-        data[i] = (float)sin(i * PI / 1024);
+    for (int i = 0 ; i < S; i++)
+        data[i] = (float)sin(i * PI / HS);
     waves[wave_sine].make(bl, data);
 
-    for (int i = 0 ; i < 512; i++) {
-        data[i] = i / 512.0,
-        data[i + 512] = 1 - i / 512.0,
-        data[i + 1024] = - i / 512.0,
-        data[i + 1536] = -1 + i / 512.0;
+    for (int i = 0 ; i < QS; i++) {
+        data[i] = i * iQS,
+        data[i + QS] = 1 - i * iQS,
+        data[i + HS] = - i * iQS,
+        data[i + QS3] = -1 + i * iQS;
     }
     waves[wave_triangle].make(bl, data);
     
-    for (int i = 0, j = 1; i < 2048; i++) {
-        data[i] = -1 + j / 1024.0;
+    for (int i = 0, j = 1; i < S; i++) {
+        data[i] = -1 + j * 1.0 / HS;
         if (i == j)
             j *= 2;
     }
     waves[wave_varistep].make(bl, data);
 
-    for (int i = 0; i < 2048; i++) {
-        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i / 2048.0) * (-1 + fmod (i * i / 262144.0, 2.0));
+    for (int i = 0; i < S; i++) {
+        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (-1 + fmod (i * i / 262144.0, 2.0));
     }
     waves[wave_skewsaw].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i / 2048.0) * (fmod (i * i / 262144.0, 2.0) < 1.0 ? -1.0 : +1.0);
+    for (int i = 0; i < S; i++) {
+        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (fmod (i * i / 262144.0, 2.0) < 1.0 ? -1.0 : +1.0);
     }
     waves[wave_skewsqr].make(bl, data);
 
-    for (int i = 0; i < 2048; i++) {
-        if (i < 1536) {
-            float p = i / 1536.0;
+    for (int i = 0; i < S; i++) {
+        if (i < QS3) {
+            float p = i * 1.0 / QS3;
             data[i] = sin(PI * p * p * p);
         } else {
-            float p = (i - 1536.0) / 512;
+            float p = (i - QS3 * 1.0) / QS;
             data[i] = -0.5 * sin(3 * PI * p * p);
         }
     }
     waves[wave_test1].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = exp(-i / 1024.0) * sin(i * PI / 1024) * cos(2 * PI * i / 1024);
+    for (int i = 0; i < S; i++) {
+        data[i] = exp(-i * 1.0 / HS) * sin(i * PI / HS) * cos(2 * PI * i / HS);
     }
-    normalize(data, 2048);
+    normalize(data, S);
     waves[wave_test2].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        //int ii = (i < 1024) ? i : 2048 - i;
-        int ii = 1024;
-        data[i] = (ii / 1024.0) * sin(i * 3 * PI / 1024 + 2 * PI * sin(PI / 4 + i * 4 * PI / 1024)) * sin(i * 5 * PI / 1024 + 2 * PI * sin(PI / 8 + i * 6 * PI / 1024));
+    for (int i = 0; i < S; i++) {
+        //int ii = (i < HS) ? i : S - i;
+        int ii = HS;
+        data[i] = (ii * 1.0 / HS) * sin(i * 3 * PI / HS + 2 * PI * sin(PI / 4 + i * 4 * PI / HS)) * sin(i * 5 * PI / HS + 2 * PI * sin(PI / 8 + i * 6 * PI / HS));
     }
     waves[wave_test3].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = sin(i * 2 * PI / 1024 + sin(i * 2 * PI / 1024 + 0.5 * PI * sin(i * 18 * PI / 1024)) * sin(i * 1 * PI / 1024 + 0.5 * PI * sin(i * 11 * PI / 1024)));
+    for (int i = 0; i < S; i++) {
+        data[i] = sin(i * 2 * PI / HS + sin(i * 2 * PI / HS + 0.5 * PI * sin(i * 18 * PI / HS)) * sin(i * 1 * PI / HS + 0.5 * PI * sin(i * 11 * PI / HS)));
     }
     waves[wave_test4].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = sin(i * 2 * PI / 1024 + 0.2 * PI * sin(i * 13 * PI / 1024) + 0.1 * PI * sin(i * 37 * PI / 1024)) * sin(i * PI / 1024 + 0.2 * PI * sin(i * 15 * PI / 1024));
+    for (int i = 0; i < S; i++) {
+        data[i] = sin(i * 2 * PI / HS + 0.2 * PI * sin(i * 13 * PI / HS) + 0.1 * PI * sin(i * 37 * PI / HS)) * sin(i * PI / HS + 0.2 * PI * sin(i * 15 * PI / HS));
     }
     waves[wave_test5].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        if (i < 1024)
-            data[i] = sin(i * 2 * PI / 1024);
+    for (int i = 0; i < S; i++) {
+        if (i < HS)
+            data[i] = sin(i * 2 * PI / HS);
         else
-        if (i < 1536)
-            data[i] = sin(i * 4 * PI / 1024);
+        if (i < 3 * S / 4)
+            data[i] = sin(i * 4 * PI / HS);
         else
-        if (i < 1792)
-            data[i] = sin(i * 8 * PI / 1024);
+        if (i < 7 * S / 8)
+            data[i] = sin(i * 8 * PI / HS);
         else
-            data[i] = sin(i * 8 * PI / 1024) * (2048 - i) / 256;
+            data[i] = sin(i * 8 * PI / HS) * (S - i) / (S / 8);
     }
     waves[wave_test6].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = (i ^ 0x1D0) / 1024.0 - 1;
+    for (int i = 0; i < S; i++) {
+        int j = i >> (MONOSYNTH_WAVE_SIZE - 11);
+        data[i] = (j ^ 0x1D0) * 1.0 / HS - 1;
     }
     waves[wave_test7].make(bl, data);
-    for (int i = 0; i < 2048; i++) {
-        data[i] = -1 + 0.66 * (3 & ((i >> 8) ^ (i >> 10) ^ (i >> 6)));
+    for (int i = 0; i < S; i++) {
+        int j = i >> (MONOSYNTH_WAVE_SIZE - 11);
+        data[i] = -1 + 0.66 * (3 & ((j >> 8) ^ (j >> 10) ^ (j >> 6)));
     }
     waves[wave_test8].make(bl, data);
 }
@@ -356,11 +361,12 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
     if (index == par_wave1 || index == par_wave2) {
         if (subindex)
             return false;
+        enum { S = 1 << MONOSYNTH_WAVE_SIZE };
         int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
         float *waveform = waves[wave].get_level(0);
         for (int i = 0; i < points; i++)
-            data[i] = 0.5 * (waveform[i * 2047 / points] + waveform[i * 2047 / points + 1]);
+            data[i] = waveform[i * S / points];
         return true;
     }
     return false;
