@@ -137,7 +137,7 @@ void make_ttl(string path_prefix)
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
 #if USE_LV2_GUI
-    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a uiext:GtkGUI ;\n    uiext:binary <calflv2gui.so> .\n\n";
+    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a uiext:GtkUI ;\n    uiext:binary <calflv2gui.so> .\n\n";
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
