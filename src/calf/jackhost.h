@@ -243,10 +243,10 @@ public:
     int process(jack_nframes_t nframes)
     {
         for (int i=0; i<Module::in_count; i++) {
-            module.ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, 0);
+            module.ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, nframes);
         }
         if (Module::support_midi)
-            midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, 0);
+            midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, nframes);
         if (changed) {
             module.params_changed();
             changed = false;
