@@ -174,11 +174,12 @@ public:
     uint32_t srate;
     static parameter_properties param_props[];
     int order;
-    inertia<exponential_ramp> inertia_cutoff;
+    inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
     once_per_n timer;
     
     filter_audio_module()
     : inertia_cutoff(exponential_ramp(128), 20)
+    , inertia_resonance(exponential_ramp(128), 20)
     , timer(128)
     {
         order = 0;
@@ -189,7 +190,7 @@ public:
         float freq = inertia_cutoff.get_last();
         // printf("freq=%g inr.cnt=%d timer.left=%d\n", freq, inertia_cutoff.count, timer.left);
         // XXXKF this is resonance of a single stage, obviously for three stages, resonant gain will be different
-        float q = *params[par_resonance];
+        float q = inertia_resonance.get_last();
         // XXXKF this is highly inefficient and should be replaced as soon as I have fast f2i in primitives.h
         int mode = (int)*params[par_mode];
         // printf("freq = %f q = %f mode = %d\n", freq, q, mode);
@@ -201,9 +202,11 @@ public:
             order = mode - 2;
         }
         // XXXKF this is highly inefficient and should be replaced as soon as I have fast f2i in primitives.h
-        int inertia = (int)*params[par_inertia];
-        if (inertia != inertia_cutoff.ramp.length())
+        int inertia = dsp::fastf2i_drm(*params[par_inertia]);
+        if (inertia != inertia_cutoff.ramp.length()) {
             inertia_cutoff.ramp.set_length(inertia);
+            inertia_resonance.ramp.set_length(inertia);
+        }
         
         right[0].copy_coeffs(left[0]);
         for (int i = 1; i < order; i++) {
@@ -214,11 +217,13 @@ public:
     void params_changed()
     {
         inertia_cutoff.set_inertia(*params[par_cutoff]);
+        inertia_resonance.set_inertia(*params[par_resonance]);
         calculate_filter();
     }
     void on_timer()
     {
         inertia_cutoff.step();
+        inertia_resonance.step();
         calculate_filter();
     }
     void activate() {
@@ -288,7 +293,7 @@ public:
         while(offset < numsamples) {
             uint32_t numnow = numsamples - offset;
             // if inertia's inactive, we can calculate the whole buffer at once
-            if (inertia_cutoff.active())
+            if (inertia_cutoff.active() || inertia_resonance.active())
                 numnow = timer.get(numnow);
             if (outputs_mask & 1) {
                 ostate |= process_channel(left, ins[0] + offset, outs[0] + offset, numnow, inputs_mask & 1);

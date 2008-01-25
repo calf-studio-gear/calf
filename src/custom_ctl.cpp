@@ -18,6 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 #include <calf/custom_ctl.h>
+#include <gdk/gdkkeysyms.h>
 #include <cairo/cairo.h>
 #include <math.h>
 
@@ -197,6 +198,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     }
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image, phase * 40, self->knob_type * 40, ox, oy, 40, 40, GDK_RGB_DITHER_NORMAL, 0, 0);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
+    if (gtk_widget_is_focus(widget))
+    {
+        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, widget->allocation.width, widget->allocation.height);
+    }
     
     return TRUE;
 }
@@ -208,6 +213,62 @@ calf_knob_size_request (GtkWidget *widget,
     g_assert(CALF_IS_KNOB(widget));
     
     CalfKnob *self = CALF_KNOB(widget);
+}
+
+static void
+calf_knob_incr (GtkWidget *widget, int dir_down)
+{
+    g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
+    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+    
+    float oldvalue = adj->value;
+
+    float halfrange = (adj->upper + adj->lower) / 2;
+    int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
+    int step;
+    int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
+    if (dir_down)
+        step = oldstep - 1;
+    else
+        step = oldstep + 1;
+    
+    // trying to reduce error cumulation here, by counting from lowest or from highest
+    float value = adj->lower + step * adj->step_increment;
+    if (step >= nsteps / 2)
+        value = adj->upper - (nsteps - step) * adj->step_increment;
+    gtk_range_set_value(GTK_RANGE(widget), value);
+    // printf("step %d:%d nsteps %d value %f:%f\n", oldstep, step, nsteps, oldvalue, value);
+}
+
+static gboolean
+calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
+{
+    g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
+    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+
+    switch(event->keyval)
+    {
+        case GDK_Home:
+            gtk_range_set_value(GTK_RANGE(widget), adj->lower);
+            return TRUE;
+
+        case GDK_End:
+            gtk_range_set_value(GTK_RANGE(widget), adj->upper);
+            return TRUE;
+
+        case GDK_Up:
+            calf_knob_incr(widget, 0);
+            return TRUE;
+
+        case GDK_Down:
+            calf_knob_incr(widget, 1);
+            return TRUE;
+            
+    }
+    
+    return FALSE;
 }
 
 static gboolean
@@ -250,28 +311,7 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 static gboolean
 calf_knob_scroll (GtkWidget *widget, GdkEventScroll *event)
 {
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-    
-    float oldvalue = adj->value;
-
-    float halfrange = (adj->upper + adj->lower) / 2;
-    int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
-    int step;
-    int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
-    if (event->direction)
-        step = oldstep - 1;
-    else
-        step = oldstep + 1;
-    
-    // trying to reduce error cumulation here, by counting from lowest or from highest
-    float value = adj->lower + step * adj->step_increment;
-    if (step >= nsteps / 2)
-        value = adj->upper - (nsteps - step) * adj->step_increment;
-    gtk_range_set_value(GTK_RANGE(widget), value);
-    // printf("step %d:%d nsteps %d value %f:%f\n", oldstep, step, nsteps, oldvalue, value);
-        
+    calf_knob_incr(widget, event->direction);
     return FALSE;
 }
 
@@ -285,6 +325,7 @@ calf_knob_class_init (CalfKnobClass *klass)
     widget_class->button_press_event = calf_knob_button_press;
     widget_class->button_release_event = calf_knob_button_release;
     widget_class->motion_notify_event = calf_knob_pointer_motion;
+    widget_class->key_press_event = calf_knob_key_press;
     widget_class->scroll_event = calf_knob_scroll;
     GError *error = NULL;
     klass->knob_image = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob.png", &error);

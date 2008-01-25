@@ -85,7 +85,7 @@ public:
     void set_mod_depth(float mod_depth) {
         this->mod_depth = mod_depth;
         // 128 because it's then multiplied by (hopefully) a value of 32768..-32767
-        this->mod_depth_samples = (int)(mod_depth * 128.0 * sample_rate);
+        this->mod_depth_samples = (int)(mod_depth * 32.0 * sample_rate);
     }
 };
 
@@ -121,7 +121,7 @@ public:
     }
     template<class OutIter, class InIter>
     void process(OutIter buf_out, InIter buf_in, int nsamples) {
-        int mds = min_delay_samples + mod_depth_samples * 256 + 2*65536;
+        int mds = min_delay_samples + mod_depth_samples * 1024 + 2*65536;
         int mdepth = mod_depth_samples;
         for (int i=0; i<nsamples; i++) {
             phase += dphase;
@@ -129,7 +129,7 @@ public:
             
             float in = *buf_in++;
             int lfo = phase.lerp_by_fract_int<int, 14, int>(sine.data[ipart], sine.data[ipart+1]);
-            int v = mds + (mdepth * lfo >> 8);
+            int v = mds + (mdepth * lfo >> 6);
             // if (!(i & 7)) printf("%d\n", v);
             int ifv = v >> 16;
             delay.put(in);
@@ -145,17 +145,21 @@ public:
 /**
  * Single-tap flanger (chorus plus feedback).
  */
-template<class T, int MaxDelay=256>
+template<class T, int MaxDelay=1024>
 class simple_flanger: public chorus_base
 {
 protected:
     simple_delay<MaxDelay,T> delay;
     float fb;
+    int last_delay_pos, last_actual_delay_pos;
+    int ramp_pos, ramp_delay_pos;
 public:
     simple_flanger()
     : fb(0) {}
     void reset() {
         delay.reset();
+        last_delay_pos = 0;
+        ramp_pos = 1024;
     }
     virtual void setup(int sample_rate) {
         this->sample_rate = sample_rate;
@@ -173,25 +177,64 @@ public:
     }
     template<class OutIter, class InIter>
     void process(OutIter buf_out, InIter buf_in, int nsamples) {
-        int mds = this->min_delay_samples + this->mod_depth_samples * 256 + 2 * 65536;
+        if (!nsamples)
+            return;
+        int mds = this->min_delay_samples + this->mod_depth_samples * 1024 + 2 * 65536;
         int mdepth = this->mod_depth_samples;
-        for (int i=0; i<nsamples; i++) {
-            this->phase += this->dphase;
-            unsigned int ipart = this->phase.ipart();
+        int delay_pos;
+        unsigned int ipart = this->phase.ipart();
+        int lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
+        delay_pos = mds + (mdepth * lfo >> 6);
+        
+        if (delay_pos != last_delay_pos || ramp_pos < 1024)
+        {
+            if (delay_pos != last_delay_pos) {
+                // we need to ramp from what the delay tap length actually was, 
+                // not from old (ramp_delay_pos) or desired (delay_pos) tap length
+                ramp_delay_pos = last_actual_delay_pos;
+                ramp_pos = 0;
+            }
             
-            float in = *buf_in++;
-            int lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
-            int v = mds + (mdepth * lfo >> 8);
-            // if (!(i & 7)) printf("%d\n", v);
-            int ifv = v >> 16;
-            T fd; // signal from delay's output
-            this->delay.get_interp(fd, ifv, (v & 0xFFFF)*(1.0/65536.0));
-            sanitize(fd);
-            T sdry = in * this->dry;
-            T swet = fd * this->wet;
-            *buf_out++ = sdry + swet;
-            this->delay.put(in+fb*fd);
+            int64_t dp;
+            for (int i=0; i<nsamples; i++) {
+                float in = *buf_in++;
+                T fd; // signal from delay's output
+                dp = (((int64_t)ramp_delay_pos) * (1024 - ramp_pos) + ((int64_t)delay_pos) * ramp_pos) >> 10;
+                ramp_pos++;
+                if (ramp_pos > 1024) ramp_pos = 1024;
+                this->delay.get_interp(fd, dp >> 16, (dp & 0xFFFF)*(1.0/65536.0));
+                sanitize(fd);
+                T sdry = in * this->dry;
+                T swet = fd * this->wet;
+                *buf_out++ = sdry + swet;
+                this->delay.put(in+fb*fd);
+
+                this->phase += this->dphase;
+                ipart = this->phase.ipart();
+                lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
+                delay_pos = mds + (mdepth * lfo >> 6);
+            }
+            last_actual_delay_pos = dp;
         }
+        else {
+            for (int i=0; i<nsamples; i++) {
+                float in = *buf_in++;
+                T fd; // signal from delay's output
+                this->delay.get_interp(fd, delay_pos >> 16, (delay_pos & 0xFFFF)*(1.0/65536.0));
+                sanitize(fd);
+                T sdry = in * this->dry;
+                T swet = fd * this->wet;
+                *buf_out++ = sdry + swet;
+                this->delay.put(in+fb*fd);
+
+                this->phase += this->dphase;
+                ipart = this->phase.ipart();
+                lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
+                delay_pos = mds + (mdepth * lfo >> 6);
+            }
+            last_actual_delay_pos = delay_pos;
+        }
+        last_delay_pos = delay_pos;
     }
 };
 
