@@ -108,6 +108,7 @@ public:
         osc1.set_freq(freq * (2 - detune) * pitchbend, srate);
         osc2.set_freq(freq * (detune)  * pitchbend * xpose, srate);
     }
+    void control_change(int controller, int value);
     void params_changed() {
         float sf = 0.001f;
         envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);

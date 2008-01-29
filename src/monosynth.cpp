@@ -633,3 +633,17 @@ void monosynth_audio_module::calculate_step()
             stopping = true;
     }
 }
+
+void monosynth_audio_module::control_change(int controller, int value)
+{
+    switch(controller)
+    {
+        case 120: // all sounds off
+        case 123: // all notes off
+            gate = false;
+            envelope.note_off();
+            stack.clear();
+            break;
+    }
+}
+

@@ -24,6 +24,7 @@
 #include "primitives.h"
 #include "delay.h"
 #include "fixed_point.h"
+#include "inertia.h"
 
 namespace dsp {
 #if 0
@@ -50,6 +51,7 @@ class chorus_base: public audio_effect
 protected:
     int sample_rate, min_delay_samples, mod_depth_samples;
     float rate, wet, dry, min_delay, mod_depth, odsr;
+    gain_smoothing gs_wet, gs_dry;
     fixed_point<unsigned int, 20> phase, dphase;
     sine_table<int, 4096, 65536> sine;
 public:
@@ -65,12 +67,14 @@ public:
     }
     void set_wet(float wet) {
         this->wet = wet;
+        gs_wet.set_inertia(wet);
     }
     float get_dry() {
         return dry;
     }
     void set_dry(float dry) {
         this->dry = dry;
+        gs_dry.set_inertia(wet);
     }
     float get_min_delay() {
         return min_delay;
@@ -135,8 +139,8 @@ public:
             delay.put(in);
             T fd; // signal from delay's output
             delay.get_interp(fd, ifv, (v & 0xFFFF)*(1.0/65536.0));
-            T sdry = in * dry;
-            T swet = fd * wet;
+            T sdry = in * gs_dry.get();
+            T swet = fd * gs_wet.get();
             *buf_out++ = sdry + swet;
         }
     }
@@ -195,7 +199,7 @@ public:
                 ramp_pos = 0;
             }
             
-            int64_t dp;
+            int64_t dp = 0;
             for (int i=0; i<nsamples; i++) {
                 float in = *buf_in++;
                 T fd; // signal from delay's output
@@ -222,8 +226,8 @@ public:
                 T fd; // signal from delay's output
                 this->delay.get_interp(fd, delay_pos >> 16, (delay_pos & 0xFFFF)*(1.0/65536.0));
                 sanitize(fd);
-                T sdry = in * this->dry;
-                T swet = fd * this->wet;
+                T sdry = in * this->gs_dry.get();
+                T swet = fd * this->gs_wet.get();
                 *buf_out++ = sdry + swet;
                 this->delay.put(in+fb*fd);
 

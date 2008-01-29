@@ -128,25 +128,6 @@ struct midi_event {
     float param3;
 };
 
-/// this is not a real class, just an empty example
-class audio_module_iface
-{
-public:
-    enum { in_count = 2, out_count = 2, param_count = 0, rt_capable = true };
-    static parameter_properties *param_props;
-    float **ins;
-    float **outs;
-    float **params;
-    void set_sample_rate(uint32_t sr);
-    void handle_event(uint8_t *data, int len) {}
-    // all or most params changed
-    void params_changed() {}
-    uint32_t process_audio(uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    static int get_in_channels();
-    static int get_out_channels();
-    static const char *get_xml_iface() { return NULL; }
-};
-
 struct ladspa_info
 {
     uint32_t unique_id;

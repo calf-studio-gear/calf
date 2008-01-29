@@ -119,6 +119,25 @@ void basic_synth::control_change(int ctl, int val)
             keystack_hold.clear();
         }
     }
+    if (ctl == 123 || ctl == 120) { // all notes off, all sounds off
+        vector<int> notes;
+        notes.reserve(128);
+        if (ctl == 120) // for "all sounds off", automatically release hold pedal
+            control_change(64, 0);
+        for (int i = 0; i < keystack.count(); i++)
+            notes.push_back(keystack.nth(i));
+        for (int i = 0; i < notes.size(); i++)
+            note_off(notes[i], 0);
+    }
+    if (ctl == 121) { 
+        control_change(1, 0);
+        control_change(7, 100);
+        control_change(10, 64);
+        control_change(11, 127);
+        // release hold..hold2
+        for (int i = 64; i <= 69; i++)
+            control_change(i, 0);
+    }
 }
 
 void basic_synth::render_to(float *output[], int nsamples)
