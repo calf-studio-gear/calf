@@ -39,7 +39,7 @@ class monosynth_audio_module: public null_audio_module
 public:
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_varistep, wave_skewsaw, wave_skewsqr, wave_test1, wave_test2, wave_test3, wave_test4, wave_test5, wave_test6, wave_test7, wave_test8, wave_count };
     enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
-    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_envtoamp, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2filter, par_vel2amp, param_count };
+    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_envtoamp, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2filter, par_vel2amp, par_master, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
     static const char *port_names[];
@@ -65,6 +65,7 @@ public:
     int legato;
     synth::adsr envelope;
     synth::keystack stack;
+    gain_smoothing master;
     
     static parameter_properties param_props[];
     static const char *get_gui_xml();
@@ -121,6 +122,7 @@ public:
         xpose = pow(2.0, *params[par_osc2xpose] / 12.0);
         xfade = *params[par_oscmix];
         legato = dsp::fastf2i_drm(*params[par_legato]);
+        master.set_inertia(*params[par_master]);
         set_frequency();
     }
     void activate();
@@ -163,12 +165,14 @@ public:
                 uint32_t ip = output_pos;
                 uint32_t len = std::min(step_size - output_pos, op_end - op);
                 if (is_stereo_filter())
-                    for(uint32_t i = 0 ; i < len; i++)
-                        outs[0][op + i] = buffer[ip + i],
-                        outs[1][op + i] = buffer2[ip + i];
+                    for(uint32_t i = 0 ; i < len; i++) {
+                        float vol = master.get();
+                        outs[0][op + i] = buffer[ip + i] * vol,
+                        outs[1][op + i] = buffer2[ip + i] * vol;
+                    }
                 else
                     for(uint32_t i = 0 ; i < len; i++)
-                        outs[0][op + i] = outs[1][op + i] = buffer[ip + i];
+                        outs[0][op + i] = outs[1][op + i] = buffer[ip + i] * master.get();
                 op += len;
                 output_pos += len;
                 if (output_pos == step_size)

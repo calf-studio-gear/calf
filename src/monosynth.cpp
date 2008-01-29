@@ -166,6 +166,11 @@ static const char *monosynth_gui_xml =
                             "<label param=\"legato\"  expand=\"0\"/>"
                             "<combo param=\"legato\" expand=\"0\" fill=\"0\"/>"
                         "</vbox>"
+                        "<vbox>"
+                            "<label param=\"master\" />"
+                            "<align><knob param=\"master\" /></align>"
+                            "<value param=\"master\" />"
+                        "</vbox>"
                     "</hbox>"
                     "<hbox>"
                         "<vbox>"
@@ -212,6 +217,8 @@ parameter_properties monosynth_audio_module::param_props[] = {
     
     { 0.5,        0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "vel2filter", "Vel->Filter" },
     { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "vel2amp", "Vel->Amp" },
+
+    { 0.5,         0,   1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
 };
 
 float silence[4097];

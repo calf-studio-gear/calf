@@ -119,7 +119,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 1,         0,  2, 3, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
     { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
 
-    { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Master" },
+    { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
 };
 
 ////////////////////////////////////////////////////////////////////////////
