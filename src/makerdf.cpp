@@ -180,7 +180,7 @@ void make_ttl(string path_prefix)
         for (int i = 0; i < pi.params; i++)
             add_ctl_port(ports, pi.param_props[i], pn++);
         if (pi.midi_in_capable) {
-            // add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
+            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
             add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort");
         }
         if (!ports.empty())

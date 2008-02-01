@@ -98,15 +98,12 @@ struct lv2_wrapper
             int i = port - ins - outs;
             mod->params[i] = (float *)DataLocation;
         }
-#if USE_OLD_LV2_MIDI
         else if (Module::support_midi && port == ins + outs + params) {
             mod->midi_data = (LV2_MIDI *)DataLocation;
         }
-#else
-        else if (Module::support_midi && port == ins + outs + params) {
+        else if (Module::support_midi && port == ins + outs + params + 1) {
             mod->event_data = (LV2_Event_Buffer *)DataLocation;
         }
-#endif
     }
 
     static void cb_activate(LV2_Handle Instance) {
@@ -166,7 +163,6 @@ struct lv2_wrapper
         }
         mod->params_changed();
         uint32_t offset = 0;
-#if USE_OLD_LV2_MIDI
         if (mod->midi_data)
         {
             struct MIDI_ITEM {
@@ -195,10 +191,9 @@ struct lv2_wrapper
                 data += 12 + item->size;
             }
         }
-#else
         if (mod->event_data)
         {
-            printf("Event data: count %d\n", mod->event_data->event_count);
+            // printf("Event data: count %d\n", mod->event_data->event_count);
             struct LV2_Midi_Event: public LV2_Event {
                 unsigned char data[1];
             };
@@ -206,7 +201,8 @@ struct lv2_wrapper
             for (uint32_t i = 0; i < mod->event_data->event_count; i++) {
                 LV2_Midi_Event *item = (LV2_Midi_Event *)data;
                 uint32_t ts = item->frames;
-                printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
+                // printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
+                fflush(stdout);
                 if (ts > offset)
                 {
                     process_slice(mod, offset, ts);
@@ -214,7 +210,7 @@ struct lv2_wrapper
                 }
                 if (item->type == mod->midi_event_type) 
                 {
-                    printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
+                    // printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
                     switch(item->data[0] >> 4)
                     {
                     case 8: mod->note_off(item->data[1], item->data[2]); break;
@@ -228,7 +224,6 @@ struct lv2_wrapper
                 data += ((sizeof(LV2_Event) + item->size + 7))&~7;
             }
         }
-#endif
         process_slice(mod, offset, SampleCount);
     }
     static void cb_cleanup(LV2_Handle Instance) {
