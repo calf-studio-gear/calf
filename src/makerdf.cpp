@@ -23,6 +23,9 @@
 #include <config.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
+#if USE_LV2
+#include <calf/lv2_event.h>
+#endif
 
 using namespace std;
 using namespace synth;
@@ -108,11 +111,14 @@ void make_ttl(string path_prefix)
     string header;
     
     header = 
+        "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
         "@prefix midiext: <http://ll-plugins.nongnu.org/lv2/ext/MidiPort> .\n"
         "@prefix uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#> .\n"
+        "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
+
         "\n"
     ;
     
@@ -157,13 +163,11 @@ void make_ttl(string path_prefix)
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
 #endif
         
-#if USE_PHAT
-        ttl += "    doap:license <http://usefulinc.com/doap/licenses/gpl> ;\n";
-#else
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
-#endif
         if (pi.rt_capable)
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
+        if (pi.midi_in_capable)
+            ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
         
         string ports = "";
         int pn = 0;
@@ -175,8 +179,10 @@ void make_ttl(string path_prefix)
             add_port(ports, out_names[i], out_names[i], "Output", pn++);
         for (int i = 0; i < pi.params; i++)
             add_ctl_port(ports, pi.param_props[i], pn++);
-        if (pi.midi_in_capable)
-            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
+        if (pi.midi_in_capable) {
+            // add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
+            add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort");
+        }
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";
         ttl += ".\n\n";

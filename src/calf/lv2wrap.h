@@ -4,6 +4,8 @@
 #include <lv2.h>
 #include <calf/giface.h>
 #include <calf/lv2-midiport.h>
+#include <calf/lv2_event.h>
+#include <calf/lv2_uri_map.h>
 
 namespace synth {
 
@@ -13,6 +15,9 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     bool set_srate;
     int srate_to_set;
     LV2_MIDI *midi_data;
+    LV2_Event_Buffer *event_data;
+    LV2_URI_Map_Feature *uri_map;
+    uint32_t midi_event_type;
     lv2_instance()
     {
         for (int i=0; i < Module::in_count; i++)
@@ -21,7 +26,10 @@ struct lv2_instance: public Module, public plugin_ctl_iface
             Module::outs[i] = NULL;
         for (int i=0; i < Module::param_count; i++)
             Module::params[i] = NULL;
+        uri_map = NULL;
         midi_data = NULL;
+        event_data = NULL;
+        midi_event_type = 0xFFFFFFFF;
         set_srate = true;
         srate_to_set = 44100;
     }
@@ -90,9 +98,15 @@ struct lv2_wrapper
             int i = port - ins - outs;
             mod->params[i] = (float *)DataLocation;
         }
+#if USE_OLD_LV2_MIDI
         else if (Module::support_midi && port == ins + outs + params) {
             mod->midi_data = (LV2_MIDI *)DataLocation;
         }
+#else
+        else if (Module::support_midi && port == ins + outs + params) {
+            mod->event_data = (LV2_Event_Buffer *)DataLocation;
+        }
+#endif
     }
 
     static void cb_activate(LV2_Handle Instance) {
@@ -110,6 +124,18 @@ struct lv2_wrapper
         // XXXKF some people use fractional sample rates; we respect them ;-)
         mod->srate_to_set = (uint32_t)sample_rate;
         mod->set_srate = true;
+        while(*features)
+        {
+            if (!strcmp((*features)->URI, LV2_URI_MAP_URI))
+            {
+                mod->uri_map = (LV2_URI_Map_Feature *)((*features)->data);
+                mod->midi_event_type = mod->uri_map->uri_to_id(
+                    mod->uri_map->callback_data, 
+                    "http://lv2plug.in/ns/ext/event",
+                    "http://lv2plug.in/ns/ext/midi#MidiEvent");
+            }
+            features++;
+        }
         return mod;
     }
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
@@ -140,6 +166,7 @@ struct lv2_wrapper
         }
         mod->params_changed();
         uint32_t offset = 0;
+#if USE_OLD_LV2_MIDI
         if (mod->midi_data)
         {
             struct MIDI_ITEM {
@@ -168,6 +195,40 @@ struct lv2_wrapper
                 data += 12 + item->size;
             }
         }
+#else
+        if (mod->event_data)
+        {
+            printf("Event data: count %d\n", mod->event_data->event_count);
+            struct LV2_Midi_Event: public LV2_Event {
+                unsigned char data[1];
+            };
+            unsigned char *data = (unsigned char *)(mod->event_data + 1);
+            for (uint32_t i = 0; i < mod->event_data->event_count; i++) {
+                LV2_Midi_Event *item = (LV2_Midi_Event *)data;
+                uint32_t ts = item->frames;
+                printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
+                if (ts > offset)
+                {
+                    process_slice(mod, offset, ts);
+                    offset = ts;
+                }
+                if (item->type == mod->midi_event_type) 
+                {
+                    printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
+                    switch(item->data[0] >> 4)
+                    {
+                    case 8: mod->note_off(item->data[1], item->data[2]); break;
+                    case 9: mod->note_on(item->data[1], item->data[2]); break;
+                    case 10: mod->program_change(item->data[1]); break;
+                    case 11: mod->control_change(item->data[1], item->data[2]); break;
+                    case 14: mod->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
+                    }
+                }
+                // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
+                data += ((sizeof(LV2_Event) + item->size + 7))&~7;
+            }
+        }
+#endif
         process_slice(mod, offset, SampleCount);
     }
     static void cb_cleanup(LV2_Handle Instance) {
