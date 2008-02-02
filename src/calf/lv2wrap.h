@@ -191,7 +191,7 @@ struct lv2_wrapper
                 data += 12 + item->size;
             }
         }
-        if (mod->event_data)
+        else if (mod->event_data)
         {
             // printf("Event data: count %d\n", mod->event_data->event_count);
             struct LV2_Midi_Event: public LV2_Event {
