@@ -58,7 +58,7 @@ void make_rdf()
     printf("%s\n", rdf.c_str());
 }
 
-static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort")
+static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort", bool optional = false)
 {
     stringstream ss;
     const char *ind = "        ";
@@ -71,6 +71,13 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
     ss << ind << "lv2:name \"" << name << "\" ;\n";
+    if (optional)
+        ss << ind << "lv2:portProperty lv2:connectionOptional ;\n";
+    if (!strcmp(type, "lv2ev:EventPort")) {
+        ss << ind << "lv2ev:supportsEvent lv2midi:midiEvent ;\n";
+        // XXXKF add a correct timestamp type here
+        ss << ind << "lv2ev:supportsTimestamp <lv2ev:TimeStamp> ;\n";
+    }
     ss << "    ]";
     ports += ss.str();
 }
@@ -118,6 +125,7 @@ void make_ttl(string path_prefix)
         "@prefix midiext: <http://ll-plugins.nongnu.org/lv2/ext/MidiPort> .\n"
         "@prefix uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
+        "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
 
         "\n"
     ;
@@ -180,8 +188,8 @@ void make_ttl(string path_prefix)
         for (int i = 0; i < pi.params; i++)
             add_ctl_port(ports, pi.param_props[i], pn++);
         if (pi.midi_in_capable) {
-            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>");
-            add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort");
+            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>", true);
+            add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
         }
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";

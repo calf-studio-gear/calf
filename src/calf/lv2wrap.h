@@ -17,6 +17,7 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     LV2_MIDI *midi_data;
     LV2_Event_Buffer *event_data;
     LV2_URI_Map_Feature *uri_map;
+    LV2_Event_Feature *event_feature;
     uint32_t midi_event_type;
     lv2_instance()
     {
@@ -131,6 +132,10 @@ struct lv2_wrapper
                     "http://lv2plug.in/ns/ext/event",
                     "http://lv2plug.in/ns/ext/midi#MidiEvent");
             }
+            else if (!strcmp((*features)->URI, LV2_EVENT_URI))
+            {
+                mod->event_feature = (LV2_Event_Feature *)((*features)->data);
+            }
             features++;
         }
         return mod;
@@ -163,6 +168,42 @@ struct lv2_wrapper
         }
         mod->params_changed();
         uint32_t offset = 0;
+        if (mod->event_data)
+        {
+            // printf("Event data: count %d\n", mod->event_data->event_count);
+            struct LV2_Midi_Event: public LV2_Event {
+                unsigned char data[1];
+            };
+            unsigned char *data = (unsigned char *)(mod->event_data + 1);
+            for (uint32_t i = 0; i < mod->event_data->event_count; i++) {
+                LV2_Midi_Event *item = (LV2_Midi_Event *)data;
+                uint32_t ts = item->frames;
+                // printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
+                if (ts > offset)
+                {
+                    process_slice(mod, offset, ts);
+                    offset = ts;
+                }
+                if (item->type == mod->midi_event_type) 
+                {
+                    // printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
+                    switch(item->data[0] >> 4)
+                    {
+                    case 8: mod->note_off(item->data[1], item->data[2]); break;
+                    case 9: mod->note_on(item->data[1], item->data[2]); break;
+                    case 10: mod->program_change(item->data[1]); break;
+                    case 11: mod->control_change(item->data[1], item->data[2]); break;
+                    case 14: mod->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
+                    }
+                }
+                else
+                if (item->type == 0 && mod->event_feature)
+                    mod->event_feature->lv2_event_drop(mod->event_feature->callback_data, item, 0);
+                // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
+                data += ((sizeof(LV2_Event) + item->size + 7))&~7;
+            }
+        }
+        else
         if (mod->midi_data)
         {
             struct MIDI_ITEM {
@@ -189,39 +230,6 @@ struct lv2_wrapper
                 }
                 // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
                 data += 12 + item->size;
-            }
-        }
-        else if (mod->event_data)
-        {
-            // printf("Event data: count %d\n", mod->event_data->event_count);
-            struct LV2_Midi_Event: public LV2_Event {
-                unsigned char data[1];
-            };
-            unsigned char *data = (unsigned char *)(mod->event_data + 1);
-            for (uint32_t i = 0; i < mod->event_data->event_count; i++) {
-                LV2_Midi_Event *item = (LV2_Midi_Event *)data;
-                uint32_t ts = item->frames;
-                // printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
-                fflush(stdout);
-                if (ts > offset)
-                {
-                    process_slice(mod, offset, ts);
-                    offset = ts;
-                }
-                if (item->type == mod->midi_event_type) 
-                {
-                    // printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
-                    switch(item->data[0] >> 4)
-                    {
-                    case 8: mod->note_off(item->data[1], item->data[2]); break;
-                    case 9: mod->note_on(item->data[1], item->data[2]); break;
-                    case 10: mod->program_change(item->data[1]); break;
-                    case 11: mod->control_change(item->data[1], item->data[2]); break;
-                    case 14: mod->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
-                    }
-                }
-                // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
-                data += ((sizeof(LV2_Event) + item->size + 7))&~7;
             }
         }
         process_slice(mod, offset, SampleCount);

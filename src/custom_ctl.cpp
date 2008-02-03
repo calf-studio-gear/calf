@@ -213,6 +213,8 @@ calf_knob_size_request (GtkWidget *widget,
     g_assert(CALF_IS_KNOB(widget));
     
     CalfKnob *self = CALF_KNOB(widget);
+    requisition->width = 40;
+    requisition->height = 40;
 }
 
 static void

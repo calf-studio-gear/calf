@@ -49,8 +49,7 @@
 static const uint32_t LV2_EVENT_PPQN = 3136573440U;
 
 
-
-/** An LV2 event.
+/** An LV2 event (header only).
  *
  * LV2 events are generic time-stamped containers for any type of event.
  * The type field defines the format of a given event's contents.
@@ -81,17 +80,17 @@ typedef struct {
 	/** The type of this event, as a number which represents some URI
 	 * defining an event type.  This value MUST be some value previously
 	 * returned from a call to the uri_to_id function defined in the LV2
-	 * URI map extension.
-	 * The type 0 is a special reserved value, meaning the event contains a
-	 * single pointer (of native machine size) to a dynamically allocated
-	 * LV2_Object.  This allows events to carry large non-POD payloads
-	 * (e.g. images, waveforms, large SYSEX dumps, etc.) without copying.
-	 * See the LV2 Object extension for details.
-	 * Plugins which do not support the LV2 Object extension MUST NOT store,
-	 * copy, or pass through to an output any event with type 0.
-	 * If the type is not 0, plugins may assume the event is POD and should
-	 * gracefully ignore or pass through (with a simple copy) any events
-	 * of a type the plugin does not recognize.
+	 * URI map extension (see lv2_uri_map.h).
+	 * There are special rules which must be followed depending on the type
+	 * of an event.  If the plugin recognizes an event type, the definition
+	 * of that event type will describe how to interpret the event, and
+	 * any required behaviour.  Otherwise (if the plugin does not understand
+	 * the event type), lv2_event_drop must be called if the event is 'dropped'
+	 * (see above).  Even if the plugin does not understand an event, it may
+	 * pass the event through to an output by simply copying (and NOT calling
+	 * lv2_event_drop).  These rules are designed to allow for generic event
+	 * handling plugins and large non-POD events, but with minimal hassle on
+	 * simple plugins that "don't care" about these more advanced features.
 	 */
 	uint16_t type;
 
@@ -106,7 +105,7 @@ typedef struct {
 
 
 
-/** A buffer of LV2 events.
+/** A buffer of LV2 events (header only).
  *
  * Like events (which this contains) an event buffer is a single chunk of POD:
  * the entire buffer (including contents) can be copied with a single memcpy.
@@ -178,6 +177,50 @@ typedef struct {
 	uint16_t pad;
 
 } LV2_Event_Buffer;
+
+
+/** Opaque pointer to host data. */
+typedef void* LV2_Event_Callback_Data;
+
+
+/** The data field of the LV2_Feature for this extension.
+ *
+ * To support this feature the host must pass an LV2_Feature struct to the
+ * plugin's instantiate method with URI "http://lv2plug.in/ns/ext/event"
+ * and data pointed to an instance of this struct.
+ */
+typedef struct {
+	
+	/** Opaque pointer to host data.
+	 *
+	 * The plugin MUST pass this to any call to functions in this struct.
+	 * Otherwise, it must not be interpreted in any way.
+	 */
+	LV2_Event_Callback_Data callback_data;
+	
+	/** Drop a reference to a non-POD event.
+	 *
+	 * If a plugin receives an event with type 0, it means the event is a
+	 * pointer to some object in memory and not a flat sequence of bytes
+	 * in the buffer.  If the plugin does not pass the event through to
+	 * an output or store it internally somehow, it MUST call this function
+	 * on the event (more information on using non-POD events below).
+	 *
+	 * @param event An event received at an input that will not be copied to
+	 *              an output or stored in any way.
+	 * @param context The calling context.  (Like event types) this is a mapped
+	 *                URI, see lv2_context.h. Simple plugin with just a run()
+	 *                method should pass 0 here (the ID of the 'standard' LV2
+	 *                run context).  The host guarantees that this function is
+	 *                realtime safe iff @a context is realtime safe.
+	 *
+	 * PLUGINS THAT VIOLATE THESE RULES MAY CAUSE CRASHES AND MEMORY LEAKS.
+	 */
+	uint32_t (*lv2_event_drop)(LV2_Event_Callback_Data callback_data,
+	                           LV2_Event*              event,
+	                           uint32_t                context);
+
+} LV2_Event_Feature;
 
 
 #endif // LV2_EVENT_H
