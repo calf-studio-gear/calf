@@ -121,6 +121,43 @@ typedef struct {
  * |FRAMES |SUBFRMS|TYP|LEN|DATA..DATA..PAD|FRAMES | ...
  */
 typedef struct {
+	
+	/** The contents of the event buffer.  This may or may not reside in the
+	 * same block of memory as this header, plugins must not assume either.
+	 * The host guarantees this points to at least capacity bytes of allocated
+	 * memory (though only size bytes of that are valid events).
+	 */
+	uint8_t* data;
+
+	/** The size of this event header in bytes (including everything).
+	 *
+	 * This is to allow for extending this header in the future without
+	 * breaking binary compatibility.  Whenever this header is copied,
+	 * it MUST be done using this field (and NOT the sizeof this struct).
+	 */
+	uint16_t header_size;
+
+	/** The type of the time stamps for events in this buffer.
+	 * As a special exception, '0' always means audio frames and subframes
+	 * (1/UINT32_MAX'th of a frame) in the sample rate passed to instantiate.
+	 * INPUTS: The host must set this field to the numeric ID of some URI
+	 *     defining the meaning of the frames/subframes fields of contained
+	 *     events (obtained by the LV2 URI Map uri_to_id function with the URI
+	 *     of this extension as the 'map' argument, see lv2_uri_map.h).
+	 *     The host must never pass a plugin a buffer which uses a stamp type
+	 *     the plugin does not 'understand'.  The value of this field must
+	 *     never change, except when connect_port is called on the input
+	 *     port, at which time the host MUST have set the stamp_type field to
+	 *     the value that will be used for all subsequent run calls.
+	 * OUTPUTS: The plugin may set this to any value that has been returned
+	 *     from uri_to_id with the URI of this extension for a 'map' argument.
+	 *     When connected to a buffer with connect_port, output ports MUST set
+	 *     this field to the type of time stamp they will be writing.  On any
+	 *     call to connect_port on an event input port, the plugin may change
+	 *     this field on any output port, it is the responsibility of the host
+	 *     to check if any of these values have changed and act accordingly.
+	 */
+	uint16_t stamp_type;
 
 	/** The number of events in this buffer.
 	 * INPUTS: The host must set this field to the number of events
@@ -149,32 +186,6 @@ typedef struct {
 	 *     Any initial value should be ignored by the plugin.
 	 */
 	uint32_t size;
-	
-	/** The type of the time stamps for events in this buffer.
-	 * As a special exception, '0' always means audio frames and subframes
-	 * (1/UINT32_MAX'th of a frame) in the sample rate passed to instantiate.
-	 * INPUTS: The host must set this field to the numeric ID of some URI
-	 *     which defines the meaning of the frames and subframes fields of
-	 *     contained events (obtained by the LV2 URI Map uri_to_id function
-	 *     with the URI of this extension as the 'map' argument).
-	 *     The host must never pass a plugin a buffer which uses a stamp type
-	 *     the plugin does not 'understand'.  The value of this field must
-	 *     never change, except when connect_port is called on the input
-	 *     port, at which time the host MUST have set the stamp_type field to
-	 *     the value that will be used for all run calls (until a reconnect).
-	 * OUTPUTS: The plugin may set this to any value that has been returned
-	 *     from uri_to_id with the URI of this extension for a 'map' argument.
-	 *     When connected to a buffer with connect_port, output ports MUST set
-	 *     this field to the type of time stamp they will be writing.  On any
-	 *     call to connect_port on an event input port, the plugin may change
-	 *     this field on any output port, it is the responsibility of the host
-	 *     to check if any of these values have changed.
-	 */
-	uint16_t stamp_type;
-
-	/** For possible future use.  Hosts and plugins that do not know of any
-	 * use for this value MUST always set it to 0. */
-	uint16_t pad;
 
 } LV2_Event_Buffer;
 

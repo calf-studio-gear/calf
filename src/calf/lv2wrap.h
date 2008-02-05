@@ -174,7 +174,7 @@ struct lv2_wrapper
             struct LV2_Midi_Event: public LV2_Event {
                 unsigned char data[1];
             };
-            unsigned char *data = (unsigned char *)(mod->event_data + 1);
+            unsigned char *data = (unsigned char *)(mod->event_data->data);
             for (uint32_t i = 0; i < mod->event_data->event_count; i++) {
                 LV2_Midi_Event *item = (LV2_Midi_Event *)data;
                 uint32_t ts = item->frames;
