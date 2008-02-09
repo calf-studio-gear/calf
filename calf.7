@@ -1,0 +1,85 @@
+.TH CALF 7 2008-02-09
+.SH NAME
+calf \- a audio plugin library
+.SH SYNOPSIS
+calfjackhost
+plugin
+.B  !
+.IR [ \ plugin
+.B !
+.IR ]
+.RI [ ... ]
+.br
+.SH DESCRIPTION
+ The Calf project aims at providing a set of high quality open source audio plugins for musicians, possibly in many different plugin formats, so that they can be used in as many hosts as possible and in standalone mode.
+Currently available plugins:
+
+    * Flanger with linear interpolation. In case "zipper noise" of basic flanger effects was driving you mad, use this one!
+    * Simple reverb with basic controls and relatively neutral sound. No dreaded metal barrel sound, at expense of higher CPU use and less time density.
+    * Multimode filter (selectable 12dB/24dB/36dB rolloff, lowpass or highpass) with inertia/smoothing for cutoff for more "analog" sound when tweaking.
+    * Vintage delay - in other words, a very simple simulation of tape echo, with a filter in a feedback loop.
+    * Simple monophonic synthesizer with 2 oscillators, multimode filter and an envelope.
+    * Optional: electric organ synthesizer and rotary speaker emulation, best used together (use "configure --enable-experimental" to enable them)
+The plugins are available in following formats:
+
+    * LADSPA (all effect plugins)
+    * DSSI (both synthesizers and effects), including DSSI GUI
+    * Standalone JACK client application with GTK+-based GUI (new: it is possible to run several plugins simultaneously in one JACK client, and connect them in chains using standard JACK facilities)
+    * LV2 (experimental, SVN only, some features may not work, host support for several features may vary)
+.SH OPTIONS
+.TP
+.B \ How to use Calf plugins:
+
+.TP
+.B \ * LADSPA plugins
+
+Calf is installed as calf.so library in your LADSPA directory (typically
+/usr/lib/ladspa). It means that typical LADSPA host should be able to find
+Calf's plugins.
+
+.TP
+.B \ * DSSI plugins
+
+The calf.so module is also installed in your DSSI plugin directory, which
+means your DSSI host (like jack-dssi-host or rosegarden) should find it and
+include its plugins in the plugin list. 
+
+.TP
+.B \ * JACK client application
+
+You can also use Calf plugins as one or more separate applications, connecting
+to other applications using JACK Audio Connection Kit (version 0.103 or newer
+is required). To run the client, type:
+
+        calfjackhost monosynth !
+
+(! means "connect", last "!" means "connect to output")
+
+Other examples:
+
+        calfjackhost monosynth ! vintagedelay ! flanger !
+
+(runs monosynth into vintagedelay and vintagedelay into flanger, then to
+output)
+
+        calfjackhost ! reverb !
+
+(takes signal from system:capture_1 and _2, puts it through reverb, and then
+sends to system:playback_1 and _2)
+
+.SH ENVIRONMENT
+.B LADSPA_PATH
+Path to LADSPA plugins.
+
+.SH BUGS
+LV2 support is in infant stage. Some knobs may still cause clicks/zipper noise. Plugin versions (especially LADSPA) have very poor usability comparing to standalone versions, 
+because of platform limitations. In case of other bugs, please send bug reports to <wdev@foltman.com>, they will be fixed in order of importance.
+
+.SH SEE ALSO
+calfjackhost(1)
+
+.SH AUTHOR
+Krzysztof Foltman. Man page by Hermann Meyer, edited by Krzysztof Foltman.
+
+.br
+http://calf.sourceforge.net/

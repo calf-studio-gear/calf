@@ -1,0 +1,71 @@
+.TH calfjackhost 1 2008-01-29
+.SH NAME
+calfjackhost \- JACK wrapper for Calf plugins
+.SH SYNOPSIS
+.B calfjackhost [\fIoptions\fR] \fIplugin\fR [\fB!\fR] ...
+.br
+.SH DESCRIPTION
+Calf JACK host application provides a way to use Calf plugins directly, without need for any external host application. It also offers best GUI functionality (using GTK+ 2 widget set), as there is no restrictive plugin standard getting in a way between GUI and audio processing code.
+
+.SH OPTIONS
+.TP
+\fB--client\fR \fIname\fR
+sets JACK client name (the name calfjackhost uses when registering in JACK)
+.TP
+\fB--input\fR \fIname\fR
+name prefix for audio inputs
+.TP
+\fB--output\fR \fIname\fR
+name prefix for audio outputs
+.TP
+\fB--midi\fR \fIname\fR
+name prefix for MIDI inputs
+.TP
+\fB--connect-midi\fR \fIclient:port\fR
+automatically connect all MIDI ports to \fIclient:port\fR
+.TP
+\fB--connect-midi\fR \fB!\fIn\fR
+automatically connect all MIDI ports to \fBsystem:midi_capture_\fIn\fR
+.TP
+\fB--preset\fR \fIname\fR
+when preceding a plugin name, starts a plugin with specified preset
+.PP
+An exclamation mark (!) in place of plugin name means automatic connection. If "!" is placed before the first plugin name, the first plugin has its inputs connected to \fBsystem:capture_1\fR
+and \fBsystem:capture_2\fR. If it's placed between plugin names, those plugins are connected together (first plugin's output is connected to second
+plugin's input). If it's placed after last plugin name, that plugin's audio outputs are connected to \fBsystem:playback_1\fR and \fBsystem:playback_2\fR
+(first output pair). 
+
+Plugin names (should be self-explanatory):
+ * flanger
+ * filter
+ * reverb
+ * vintagedelay
+ * monosynth
+ * organ (when enabled during compilation)
+ * rotaryspeaker (when enabled during compilation)
+
+.SH BUGS
+Please send bug reports to <wdev@foltman.com>.
+
+.SH EXAMPLES
+
+To start monosynth with automatic connection to first system audio output, and no automatic MIDI connection, use:
+
+        calfjackhost monosynth !
+
+(! means "connect", last "!" means "connect to output")
+
+Other examples:
+
+        calfjackhost monosynth ! vintagedelay ! flanger ! -M 2
+
+(runs monosynth into vintagedelay and vintagedelay into flanger, then to
+output; connects monosynth's MIDI input to JACK's system:midi_capture_2)
+
+        calfjackhost ! reverb !
+
+(takes signal from system:capture_1 and _2, puts it through reverb, and then
+sends to system:playback_1 and _2)
+
+.SH "SEE ALSO"
+calf(7)
