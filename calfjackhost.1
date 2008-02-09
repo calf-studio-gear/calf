@@ -29,6 +29,12 @@ automatically connect all MIDI ports to \fBsystem:midi_capture_\fIn\fR
 .TP
 \fB--preset\fR \fIname\fR
 when preceding a plugin name, starts a plugin with specified preset
+.TP
+\fB--version\fR
+prints a version string (calf some.version.number)
+.TP
+\fB--help\fR
+prints a help text
 .PP
 An exclamation mark (!) in place of plugin name means automatic connection. If "!" is placed before the first plugin name, the first plugin has its inputs connected to \fBsystem:capture_1\fR
 and \fBsystem:capture_2\fR. If it's placed between plugin names, those plugins are connected together (first plugin's output is connected to second
