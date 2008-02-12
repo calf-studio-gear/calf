@@ -155,7 +155,7 @@ calf_line_graph_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfLineGraph%d", i);
+            char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)calf_line_graph_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;
@@ -169,6 +169,147 @@ calf_line_graph_get_type (void)
         }
     }
     return type;
+}
+
+///////////////////////////////////////// vu meter ///////////////////////////////////////////////
+
+static gboolean
+calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_VUMETER(widget));
+    
+    CalfVUMeter *vu = CALF_VUMETER(widget);
+    int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
+    int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
+    
+    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+
+    GdkColor sc = { 0, 0, 0, 0 };
+    gdk_cairo_set_source_color(c, &sc);
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_fill(c);
+    cairo_set_line_width(c, 1);
+    
+    for (int x = ox; x <= ox + sx; x += 3)
+    {
+        float ts = (x - ox) * 1.0 / sx;
+        int is = vu->value > ts ? 2 : 1;
+        float r, g, b;
+        if (ts < 0.75)
+            r = ts / 0.75, g = 1, b = 0;
+        else
+            r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+        if (vu->value < ts || vu->value <= 0)
+            r *= 0.5, g *= 0.5, b *= 0.5;
+        GdkColor sc2 = { 0, 65535 * r, 65535 * g, 65535 * b };
+        gdk_cairo_set_source_color(c, &sc2);
+        cairo_move_to(c, x, oy);
+        cairo_line_to(c, x, oy + sy + 1);
+        cairo_move_to(c, x, oy + sy);
+        cairo_line_to(c, x, oy );
+        cairo_stroke(c);
+    }
+
+    cairo_destroy(c);
+    
+    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
+    // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
+    
+    return TRUE;
+}
+
+static void
+calf_vumeter_size_request (GtkWidget *widget,
+                           GtkRequisition *requisition)
+{
+    g_assert(CALF_IS_VUMETER(widget));
+    
+    requisition->width = 50;
+    requisition->height = 14;
+}
+
+static void
+calf_vumeter_size_allocate (GtkWidget *widget,
+                           GtkAllocation *allocation)
+{
+    g_assert(CALF_IS_VUMETER(widget));
+    
+    widget->allocation = *allocation;
+}
+
+static void
+calf_vumeter_class_init (CalfVUMeterClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_vumeter_expose;
+    widget_class->size_request = calf_vumeter_size_request;
+    widget_class->size_allocate = calf_vumeter_size_allocate;
+}
+
+static void
+calf_vumeter_init (CalfVUMeter *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
+    self->value = 0.5;
+}
+
+GtkWidget *
+calf_vumeter_new()
+{
+    return GTK_WIDGET( g_object_new (CALF_TYPE_VUMETER, NULL ));
+}
+
+GType
+calf_vumeter_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfVUMeterClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_vumeter_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfVUMeter),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_vumeter_init
+        };
+
+        GTypeInfo *type_info_copy = new GTypeInfo(type_info);
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)calf_vumeter_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static( GTK_TYPE_WIDGET,
+                                           name,
+                                           type_info_copy,
+                                           (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+extern void calf_vumeter_set_value(CalfVUMeter *meter, float value)
+{
+    if (value != meter->value)
+    {
+        meter->value = value;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern float calf_vumeter_get_value(CalfVUMeter *meter)
+{
+    return meter->value;
 }
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
@@ -386,7 +527,8 @@ calf_knob_get_type (void)
         };
         
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfKnob%d", i);
+            char *name = g_strdup_printf("CalfKnob%u%d", 
+                ((unsigned int)calf_knob_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;

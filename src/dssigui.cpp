@@ -26,6 +26,7 @@
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <calf/benchmark.h>
+#include <calf/main_win.h>
 
 using namespace std;
 using namespace dsp;
@@ -132,6 +133,18 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) {
         return Module::get_static_graph(index, subindex, params[index], data, points, context);
     }
+    virtual const char *get_name()
+    {
+        return Module::get_name();
+    }
+    virtual const char *get_id()
+    {
+        return Module::get_id();
+    }
+    virtual int get_input_count() { return Module::in_count; }
+    virtual int get_output_count() { return Module::out_count; }
+    virtual bool get_midi() { return Module::support_midi; }
+    virtual float get_level(int port) { return 0.f; }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
@@ -175,7 +188,8 @@ static bool osc_debug = false;
 struct dssi_osc_server: public osc_server, public osc_message_sink
 {
     plugin_proxy_base *plugin;
-    plugin_gui_window window;
+    main_window *main_win;
+    plugin_gui_window *window;
     string effect_name, title;
     osc_client cli;
     bool in_program, enable_dump;
@@ -183,6 +197,8 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
     
     dssi_osc_server()
     : plugin(NULL)
+    , main_win(new main_window)
+    , window(new plugin_gui_window(main_win))
     {
         sink = this;
     }
@@ -202,10 +218,10 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
         plugin = create_plugin_proxy(effect_name.c_str());
         plugin->client = &cli;
         plugin->send_osc = true;
-        window.conditions.insert("dssi");
-        window.create(plugin, title.c_str(), effect_name.c_str());
-        plugin->gui = window.gui;
-        gtk_signal_connect(GTK_OBJECT(window.toplevel), "destroy", G_CALLBACK(on_destroy), this);
+        ((main_window *)window->main)->conditions.insert("dssi");
+        window->create(plugin, title.c_str(), effect_name.c_str());
+        plugin->gui = window->gui;
+        gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);
         global_presets.get_for_plugin(presets, effect_name.c_str());
     }
     
@@ -236,7 +252,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
                 for (int i =0 ; i < count; i++)
                     plugin->set_param_value(i, plugin->get_param_props(i)->def_value);
                 plugin->send_osc = sosc;
-                window.gui->refresh();
+                window->gui->refresh();
                 // special handling for default preset
                 return;
             }
@@ -247,7 +263,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
             plugin->send_osc = false;
             presets[nr].activate(plugin);
             plugin->send_osc = sosc;
-            window.gui->refresh();
+            window->gui->refresh();
             
             // cli.send("/update", data);
             return;
@@ -259,18 +275,18 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
             debug_printf("CONTROL %d %f\n", idx, val);
             bool sosc = plugin->send_osc;
             plugin->send_osc = false;
-            window.gui->set_param_value(idx, val);
+            window->gui->set_param_value(idx, val);
             plugin->send_osc = sosc;
             return;
         }
         if (address == prefix + "/show")
         {
-            gtk_widget_show_all(GTK_WIDGET(window.toplevel));
+            gtk_widget_show_all(GTK_WIDGET(window->toplevel));
             return;
         }
         if (address == prefix + "/hide")
         {
-            gtk_widget_hide(GTK_WIDGET(window.toplevel));
+            gtk_widget_hide(GTK_WIDGET(window->toplevel));
             return;
         }
     }

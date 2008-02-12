@@ -69,7 +69,8 @@ struct param_control: public control_base
     /// called to transfer the value from parameter(s) to control
     virtual void set()=0;
     virtual void hook_params();
-    virtual ~param_control() {}
+    virtual void on_idle() {}
+    virtual ~param_control();
 };
 
 struct control_container: public control_base
@@ -172,13 +173,12 @@ struct combo_box_param_control: public param_control
 struct line_graph_param_control: public param_control
 {
     CalfLineGraph *graph;
-    int source_id;
 
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
+    virtual void on_idle();
     virtual ~line_graph_param_control();
-    static gboolean update(void *data);
 };
 
 struct knob_param_control: public param_control
@@ -222,8 +222,22 @@ public:
     void refresh(int param_no, param_control *originator = NULL);
     void xml_element_start(const char *element, const char *attributes[]);
     void set_param_value(int param_no, float value, param_control *originator = NULL);
+    void on_idle();
+    ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);
+};
+
+class main_window_iface
+{
+public:
+    virtual void add_plugin(plugin_ctl_iface *plugin)=0;
+    virtual void del_plugin(plugin_ctl_iface *plugin)=0;
+    
+    virtual void set_window(plugin_ctl_iface *plugin, plugin_gui_window *window)=0;
+    virtual void refresh_all_presets()=0;
+    virtual bool check_condition(const char *name)=0;
+    virtual ~main_window_iface() {}
 };
 
 class plugin_gui_window
@@ -233,14 +247,15 @@ public:
     GtkWindow *toplevel;
     GtkUIManager *ui_mgr;
     GtkActionGroup *std_actions, *preset_actions;
-    std::set<std::string> conditions;
-    static std::set<plugin_gui_window *> all_windows;
+    main_window_iface *main;
+    int source_id;
 
-    plugin_gui_window();
+    plugin_gui_window(main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp);
     void fill_gui_presets();
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
-    static void refresh_all_presets();
+    void close();
+    static gboolean on_idle(void *data);
     ~plugin_gui_window();
 };
 

@@ -182,6 +182,8 @@ public:
             
         return 3;
     }
+    static const char *get_name() { return "monosynth"; }
+    static const char *get_id() { return "monosynth"; }
 };
 
 };

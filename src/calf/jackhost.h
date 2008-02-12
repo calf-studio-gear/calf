@@ -1,10 +1,6 @@
 /* Calf DSP Library Utility Application - calfjackhost
  * API wrapper for JACK Audio Connection Kit
  *
- * Note: while this header file is licensed under LGPL license,
- * the application as a whole is GPLed because of partial dependency
- * on phat graphics library.
- *
  * Copyright (C) 2007 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
@@ -111,15 +107,12 @@ public:
     bool changed;
     port midi_port;
     std::string name;
-    virtual int get_input_count()=0;
-    virtual int get_output_count()=0;
     virtual port *get_inputs()=0;
     virtual port *get_outputs()=0;
     virtual port *get_midi_port() { return get_midi() ? &midi_port : NULL; }
     virtual float *get_params()=0;
     virtual void init_module()=0;
     virtual void cache_ports()=0;
-    virtual bool get_midi()=0;
     virtual int process(jack_nframes_t nframes)=0;
     
     jack_host_base() {
@@ -194,12 +187,38 @@ public:
     }
 };
 
+struct vumeter
+{
+    float level, falloff;
+    
+    vumeter()
+    {
+        falloff = 0.999f;
+    }
+    
+    inline void update(float *src, unsigned int len)
+    {
+        double tmp = level;
+        for (unsigned int i = 0; i < len; i++)
+            tmp = std::max(tmp * falloff, (double)fabs(src[i]));
+        level = tmp;
+        dsp::sanitize(level);
+    }
+    inline void update_zeros(unsigned int len)
+    {
+        level *= pow((double)falloff, (double)len);
+        dsp::sanitize(level);
+    }
+};
+
 template<class Module>
 class jack_host: public jack_host_base {
 public:
     Module module;
     port inputs[Module::in_count], outputs[Module::out_count];
+    vumeter input_vus[Module::in_count], output_vus[Module::out_count];
     float params[Module::param_count];
+    float midi_meter;
     
     jack_host()
     {
@@ -207,6 +226,7 @@ public:
             module.params[i] = &params[i];
             params[i] = Module::param_props[i].def_value;
         }
+        midi_meter = 0;
     }
     
     virtual void init_module() {
@@ -240,6 +260,38 @@ public:
             break;
         }
     }
+    void process_part(unsigned int time, unsigned int len)
+    {
+        if (!len)
+            return;
+        for (int i = 0; i < Module::in_count; i++)
+            input_vus[i].update(module.ins[i] + time, len);
+        unsigned int mask = module.process(time, len, -1, -1);
+        for (int i = 0; i < Module::out_count; i++)
+        {
+            if (!(mask & (1 << i))) {
+                dsp::zero(module.outs[i] + time, len);
+                output_vus[i].update_zeros(len);
+            } else
+                output_vus[i].update(module.outs[i] + time, len);
+        }
+        // decay linearly for 0.1s
+        float new_meter = midi_meter - len / (0.1 * client->sample_rate);
+        if (new_meter < 0)
+            new_meter = 0;
+        midi_meter = new_meter;
+    }
+    virtual float get_level(int port) { 
+        if (port < Module::in_count)
+            return input_vus[port].level;
+        port -= Module::in_count;
+        if (port < Module::out_count)
+            return output_vus[port].level;
+        port -= Module::out_count;
+        if (port == 0 && Module::support_midi)
+            return midi_meter;
+        return 0.f;
+    }
     int process(jack_nframes_t nframes)
     {
         for (int i=0; i<Module::in_count; i++) {
@@ -253,7 +305,6 @@ public:
         }
 
         unsigned int time = 0;
-        unsigned int mask = 0;
         if (Module::support_midi)
         {
             jack_midi_event_t event;
@@ -269,23 +320,16 @@ public:
 #else
                 jack_midi_event_get(&event, midi_port.data, i);
 #endif
-                mask = module.process(time, event.time - time, -1, -1);
-                for (int i = 0; i < Module::out_count; i++) {
-                    if (!(mask & (1 << i)))
-                        dsp::zero(module.outs[i] + time, event.time - time);
-                }
+                unsigned int len = event.time - time;
+                process_part(time, len);
                 
+                midi_meter = 1.f;
                 handle_event(event.buffer, event.size);
                 
                 time = event.time;
             }
         }
-        mask = module.process(time, nframes - time, -1, -1);
-        for (int i = 0; i < Module::out_count; i++) {
-            // zero unfilled outputs
-            if (!(mask & (1 << i)))
-                dsp::zero(module.outs[i] + time, nframes - time);
-        }
+        process_part(time, nframes - time);
         return 0;
     }
     
@@ -326,6 +370,14 @@ public:
     virtual line_graph_iface *get_line_graph_iface()
     {
         return &module;
+    }
+    virtual const char *get_name()
+    {
+        return Module::get_name();
+    }
+    virtual const char *get_id()
+    {
+        return Module::get_id();
     }
 };
 

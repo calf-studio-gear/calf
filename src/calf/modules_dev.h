@@ -73,7 +73,8 @@ public:
         render_to(o, nsamples);
         return 3;
     }
-    
+    static const char *get_name() { return "organ"; }    
+    static const char *get_id() { return "organ"; }    
 };
 
 class rotary_speaker_audio_module: public null_audio_module
@@ -238,6 +239,8 @@ public:
             return;
         }
     }
+    static const char *get_name() { return "rotary_speaker"; }
+    static const char *get_id() { return "rotaryspeaker"; }
 };
 
 };

@@ -23,6 +23,7 @@
 #include <config.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
+#include <calf/main_win.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <calf/benchmark.h>
@@ -84,24 +85,42 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             send = true;
         }
     }
-    virtual int get_param_count() {
+    virtual int get_param_count()
+    {
         return Module::param_count;
     }
-    virtual int get_param_port_offset() {
+    virtual int get_param_port_offset()
+    {
         return Module::in_count + Module::out_count;
     }
-    virtual const char *get_gui_xml() {
+    virtual const char *get_gui_xml()
+    {
         return Module::get_gui_xml();
     }
-    virtual line_graph_iface *get_line_graph_iface() {
+    virtual line_graph_iface *get_line_graph_iface()
+    {
         return this;
     }
-    virtual bool activate_preset(int bank, int program) { 
+    virtual bool activate_preset(int bank, int program)
+    {
         return false;
     }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) {
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) 
+    {
         return Module::get_static_graph(index, subindex, params[index], data, points, context);
     }
+    virtual const char *get_name()
+    {
+        return Module::get_name();
+    }
+    virtual const char *get_id()
+    {
+        return Module::get_id();
+    }
+    virtual int get_input_count() { return Module::in_count; }
+    virtual int get_output_count() { return Module::out_count; }
+    virtual bool get_midi() { return Module::support_midi; }
+    virtual float get_level(int port) { return 0.f; }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
@@ -140,8 +159,9 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     plugin_proxy_base *proxy = create_plugin_proxy(plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1);
     proxy->setup(write_function, controller);
     // dummy window
-    plugin_gui_window *window = new plugin_gui_window;
-    window->conditions.insert("lv2gui");
+    main_window *main = new main_window;
+    main->conditions.insert("lv2gui");    
+    plugin_gui_window *window = new plugin_gui_window(main);
     plugin_gui *gui = new plugin_gui(window);
     const char *xml = proxy->get_gui_xml();
     if (xml)

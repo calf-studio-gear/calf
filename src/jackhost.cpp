@@ -34,6 +34,7 @@
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
+#include <calf/main_win.h>
 
 using namespace synth;
 using namespace std;
@@ -68,6 +69,10 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
 void destroy(GtkWindow *window, gpointer data)
 {
     gtk_main_quit();
+}
+
+void gui_win_destroy(GtkWindow *window, gpointer data)
+{
 }
 
 static struct option long_options[] = {
@@ -121,7 +126,7 @@ struct host_session
     string autoconnect_midi;
     set<int> chains;
     vector<jack_host_base *> plugins;
-    vector<plugin_gui_window *> guis;
+    main_window *main_win;
     int lash_source_id;
     bool restoring_session;
     
@@ -131,6 +136,7 @@ struct host_session
     void close();
     static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
     void update_lash();
+    void activate_preset(int plugin, const std::string &preset);
 #if USE_LASH
     void send_lash(LASH_Event_Type type, const std::string &data) {
         lash_send_event(lash_client, lash_event_new_with_all(type, data.c_str()));
@@ -152,6 +158,7 @@ host_session::host_session()
     lash_args = NULL;
     lash_source_id = 0;
     restoring_session = false;
+    main_win = new main_window;
 }
 
 void host_session::open()
@@ -160,6 +167,9 @@ void host_session::open()
     if (!output_name.empty()) client.output_name = output_name;
     if (!midi_name.empty()) client.midi_name = midi_name;
     client.open(client_name.c_str());
+    main_win->prefix = client_name + " - ";
+    main_win->conditions.insert("jackhost");
+    main_win->conditions.insert("directlink");
     for (unsigned int i = 0; i < plugin_names.size(); i++) {
         // if (presets.count(i))
         //    printf("%s : %s\n", names[i].c_str(), presets[i].c_str());
@@ -172,33 +182,32 @@ void host_session::open()
 #endif
         }
         jh->open(&client);
-        gui_win = new plugin_gui_window;
-        gui_win->conditions.insert("jackhost");
-        gui_win->conditions.insert("directlink");
-        gui_win->create(jh, (string(client_name)+" - "+plugin_names[i]).c_str(), plugin_names[i].c_str());
-        gtk_signal_connect(GTK_OBJECT(gui_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
-        gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
-        guis.push_back(gui_win);
         plugins.push_back(jh);
         client.add(jh);
-        if (presets.count(i)) {
-            string cur_plugin = plugin_names[i];
-            string preset = presets[i];
-            preset_vector &pvec = global_presets.presets;
-            bool found = false;
-            for (unsigned int i = 0; i < pvec.size(); i++) {
-                if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
-                {
-                    pvec[i].activate(jh);
-                    gui_win->gui->refresh();
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                fprintf(stderr, "Warning: unknown preset %s %s\n", preset.c_str(), cur_plugin.c_str());
-            }
+        main_win->add_plugin(jh);
+        if (presets.count(i))
+            activate_preset(i, presets[i]);
+    }
+    main_win->create();
+    gtk_signal_connect(GTK_OBJECT(main_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
+}
+
+void host_session::activate_preset(int i, const std::string &preset)
+{
+    string cur_plugin = plugin_names[i];
+    preset_vector &pvec = global_presets.presets;
+    bool found = false;
+    for (unsigned int i = 0; i < pvec.size(); i++) {
+        if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
+        {
+            pvec[i].activate(plugins[i]);
+            gui_win->gui->refresh();
+            found = true;
+            break;
         }
+    }
+    if (!found) {
+        fprintf(stderr, "Warning: unknown preset %s %s\n", preset.c_str(), cur_plugin.c_str());
     }
 }
 
@@ -268,8 +277,9 @@ void host_session::close()
         g_source_remove(lash_source_id);
     client.deactivate();
     client.close();
+    main_win->on_closed();
+    main_win->close_guis();
     for (unsigned int i = 0; i < plugin_names.size(); i++) {
-        delete guis[i];
         plugins[i]->close();
         delete plugins[i];
     }
@@ -320,7 +330,7 @@ void host_session::update_lash()
                             if (tmp.presets.size())
                             {
                                 tmp.presets[0].activate(plugins[nplugin]);
-                                guis[nplugin]->gui->refresh();
+                                main_win->refresh_plugin(plugins[nplugin]);
                             }
                         }
                     }

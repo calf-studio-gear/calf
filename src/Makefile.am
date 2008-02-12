@@ -48,7 +48,7 @@ calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synt
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp
+calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GUI_DEPS_LIBS)
 endif
 
@@ -56,7 +56,7 @@ libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp preset
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp
+libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp main_win.cpp
 libcalfgui_la_LDFLAGS = -static
 endif
 

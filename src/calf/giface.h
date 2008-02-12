@@ -118,6 +118,12 @@ struct plugin_ctl_iface
     virtual line_graph_iface *get_line_graph_iface() = 0;
     virtual int get_param_port_offset() = 0;
     virtual bool activate_preset(int bank, int program) = 0;
+    virtual const char *get_name() = 0;
+    virtual const char *get_id() = 0;
+    virtual int get_input_count()=0;
+    virtual int get_output_count()=0;
+    virtual bool get_midi()=0;
+    virtual float get_level(int port)=0;
     virtual ~plugin_ctl_iface() {}
 };
 
@@ -194,6 +200,18 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual bool activate_preset(int bank, int program) { 
         return false;
     }
+    virtual const char *get_name()
+    {
+        return Module::get_name();
+    }
+    virtual const char *get_id()
+    {
+        return Module::get_id();
+    }
+    virtual int get_input_count() { return Module::in_count; }
+    virtual int get_output_count() { return Module::out_count; }
+    virtual bool get_midi() { return Module::support_midi; }
+    virtual float get_level(int port) { return 0.f; }
 };
 
 template<class Module>

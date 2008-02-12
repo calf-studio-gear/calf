@@ -64,6 +64,18 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     virtual bool activate_preset(int bank, int program) { 
         return false;
     }
+    virtual const char *get_name()
+    {
+        return Module::get_name();
+    }
+    virtual const char *get_id()
+    {
+        return Module::get_id();
+    }
+    virtual int get_input_count() { return Module::in_count; }
+    virtual int get_output_count() { return Module::out_count; }
+    virtual bool get_midi() { return Module::support_midi; }
+    virtual float get_level(int port) { return 0.f; }
 };
 
 template<class Module>

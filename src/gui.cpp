@@ -19,10 +19,12 @@
  */
  
 #include <config.h>
+#include <assert.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
+#include <calf/main_win.h>
 
 using namespace synth;
 using namespace std;
@@ -47,6 +49,14 @@ void param_control::hook_params()
 {
     if (param_no != -1)
         gui->add_param_ctl(param_no, this);
+}
+
+param_control::~param_control()
+{
+    if (label)
+        gtk_widget_destroy(label);
+    if (widget)
+        gtk_widget_destroy(widget);
 }
 
 // combo box
@@ -290,11 +300,10 @@ void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
 
 // line graph
 
-gboolean line_graph_param_control::update(void *data)
+void line_graph_param_control::on_idle()
 {
-    line_graph_param_control *self = (line_graph_param_control *)data;
-    self->set();
-    return TRUE;
+    if (get_int("refresh", 0))
+        set();
 }
 
 GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
@@ -309,10 +318,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     widget->requisition.height = get_int("height", 40);
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
-    
-    if (get_int("refresh", 0))
-        source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, update, this, NULL); // 30 fps should be enough for everybody
-    
+        
     return widget;
 }
 
@@ -330,8 +336,6 @@ void line_graph_param_control::set()
 
 line_graph_param_control::~line_graph_param_control()
 {
-    if (get_int("refresh", 0))
-        g_source_remove(source_id);
 }
 
 /******************************** GUI proper ********************************/
@@ -340,6 +344,11 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
 : window(_window)
 {
     
+}
+
+static void window_destroyed(GtkWidget *window, gpointer data)
+{
+    delete (plugin_gui_window *)data;
 }
 
 static void action_destroy_notify(gpointer data)
@@ -571,12 +580,12 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         if (!xam.count("cond") || xam["cond"].empty())
             g_error("Incorrect <if cond=\"[!]symbol\"> element");
         string cond = xam["cond"];
-        unsigned int exp_count = 1;
+        bool state = true;
         if (cond.substr(0, 1) == "!") {
-            exp_count = 0;
+            state = false;
             cond.erase(0, 1);
         }
-        if (window->conditions.count(cond) == exp_count)
+        if (window->main->check_condition(cond.c_str()) == state)
             return;
         ignore_stack = 1;
         return;
@@ -667,6 +676,15 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     return GTK_WIDGET(top_container->container);
 }
 
+void plugin_gui::on_idle()
+{
+    for (unsigned int i = 0; i < params.size(); i++)
+    {
+        if (params[i] != NULL)
+            params[i]->on_idle();
+    }    
+}
+
 void plugin_gui::refresh()
 {
     for (unsigned int i = 0; i < params.size(); i++)
@@ -693,6 +711,14 @@ void plugin_gui::set_param_value(int param_no, float value, param_control *origi
     refresh(param_no);
 }
 
+plugin_gui::~plugin_gui()
+{
+    for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); i++)
+    {
+        delete *i;
+    }
+}
+
 
 /******************************* Actions **************************************************/
  
@@ -701,14 +727,7 @@ static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
     store_preset(GTK_WINDOW(gui_win->toplevel), gui_win->gui);
 }
 
-static void exit_gui(GtkAction *action, plugin_gui_window *gui_win)
-{
-    gtk_widget_destroy(GTK_WIDGET(gui_win->toplevel));
-}
-
 static const GtkActionEntry actions[] = {
-    { "HostMenuAction", "", "_Host", NULL, "Application-wide actions", NULL },
-    { "exit", "", "E_xit", NULL, "Exit the application", (GCallback)exit_gui },
     { "PresetMenuAction", "", "_Preset", NULL, "Preset operations", NULL },
     { "store-preset", "", "_Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
 };
@@ -718,9 +737,6 @@ static const GtkActionEntry actions[] = {
 static const char *ui_xml = 
 "<ui>\n"
 "  <menubar>\n"
-"    <menu action=\"HostMenuAction\">\n"
-"      <menuitem action=\"exit\"/>\n"
-"    </menu>\n"
 "    <menu action=\"PresetMenuAction\">\n"
 "      <menuitem action=\"store-preset\"/>\n"
 "      <separator/>\n"
@@ -743,12 +759,14 @@ static const char *preset_post_xml =
 "</ui>\n"
 ;
 
-plugin_gui_window::plugin_gui_window()
+plugin_gui_window::plugin_gui_window(main_window_iface *_main)
 {
     toplevel = NULL;
     ui_mgr = NULL;
     std_actions = NULL;
     preset_actions = NULL;
+    main = _main;
+    assert(main);
 }
 
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp)
@@ -782,6 +800,13 @@ void plugin_gui_window::fill_gui_presets()
     gtk_ui_manager_insert_action_group(ui_mgr, preset_actions, 0);    
     GError *error = NULL;
     gtk_ui_manager_add_ui_from_string(ui_mgr, preset_xml.c_str(), -1, &error);
+}
+
+gboolean plugin_gui_window::on_idle(void *data)
+{
+    plugin_gui_window *self = (plugin_gui_window *)data;
+    self->gui->on_idle();
+    return TRUE;
 }
 
 void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const char *effect)
@@ -836,20 +861,25 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     //gtk_widget_set_size_request(GTK_WIDGET(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-    all_windows.insert(this);
+    gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (window_destroyed), (plugin_gui_window *)this);
+    main->set_window(gui->plugin, this);
+    source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
+}
+
+void plugin_gui_window::close()
+{
+    if (source_id)
+        g_source_remove(source_id);
+    source_id = 0;
+    gtk_widget_destroy(GTK_WIDGET(toplevel));
 }
 
 plugin_gui_window::~plugin_gui_window()
 {
-    all_windows.erase(this);
+    if (source_id)
+        g_source_remove(source_id);
+    main->set_window(gui->plugin, NULL);
     delete gui;
 }
 
-std::set<plugin_gui_window *> plugin_gui_window::all_windows;
-
-void plugin_gui_window::refresh_all_presets()
-{
-    for (std::set<plugin_gui_window *>::iterator i = all_windows.begin(); i != all_windows.end(); i++)
-        (*i)->fill_gui_presets();
-}
 

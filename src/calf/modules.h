@@ -68,6 +68,8 @@ public:
         }
         return inputs_mask;
     }
+    static const char *get_name() { return "amp"; }
+    static const char *get_id() { return "amp"; }
 };
 
 class flanger_audio_module: public null_audio_module
@@ -112,6 +114,8 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
+    static const char *get_name() { return "flanger"; }
+    static const char *get_id() { return "flanger"; }
 };
 
 class reverb_audio_module: public null_audio_module
@@ -159,6 +163,8 @@ public:
         reverb.extra_sanitize();
         return outputs_mask;
     }
+    static const char *get_name() { return "reverb"; }
+    static const char *get_id() { return "reverb"; }
 };
 
 class filter_audio_module: public null_audio_module
@@ -308,6 +314,8 @@ public:
         }
         return ostate;
     }
+    static const char *get_id() { return "filter"; }
+    static const char *get_name() { return "filter"; }
 };
 
 class vintage_delay_audio_module: public null_audio_module
@@ -418,6 +426,8 @@ public:
         }
         return ostate;
     }
+    static const char *get_name() { return "vintage_delay"; }
+    static const char *get_id() { return "vintagedelay"; }
 };
 
 extern std::string get_builtin_modules_rdf();

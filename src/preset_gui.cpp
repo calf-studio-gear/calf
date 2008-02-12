@@ -24,6 +24,7 @@
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
+#include <calf/main_win.h>
 
 using namespace synth;
 using namespace std;
@@ -58,7 +59,7 @@ void store_preset_ok(GtkAction *action, plugin_gui *gui)
     global_presets = tmp;
     global_presets.save(tmp.get_preset_filename().c_str());
     gtk_widget_destroy(store_preset_dlg);
-    plugin_gui_window::refresh_all_presets();
+    gui->window->main->refresh_all_presets();
 }
 
 void store_preset_cancel(GtkAction *action, plugin_gui *gui)
