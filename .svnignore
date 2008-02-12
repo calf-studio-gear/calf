@@ -8,3 +8,4 @@ stamp-h1
 libtool
 aclocal.m4
 Makefile.in
+config.status
