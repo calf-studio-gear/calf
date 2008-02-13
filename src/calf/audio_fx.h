@@ -52,9 +52,9 @@ protected:
     int sample_rate, min_delay_samples, mod_depth_samples;
     float rate, wet, dry, min_delay, mod_depth, odsr;
     gain_smoothing gs_wet, gs_dry;
-    fixed_point<unsigned int, 20> phase, dphase;
     sine_table<int, 4096, 65536> sine;
 public:
+    fixed_point<unsigned int, 20> phase, dphase;
     float get_rate() {
         return rate;
     }
@@ -90,6 +90,14 @@ public:
         this->mod_depth = mod_depth;
         // 128 because it's then multiplied by (hopefully) a value of 32768..-32767
         this->mod_depth_samples = (int)(mod_depth * 32.0 * sample_rate);
+    }
+    void reset_phase(float req_phase)
+    {
+        phase = req_phase * 4096.0;
+    }
+    void inc_phase(float req_phase)
+    {
+        phase += fixed_point<unsigned int, 20>(req_phase * 4096.0);
     }
 };
 

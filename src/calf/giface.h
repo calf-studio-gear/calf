@@ -73,6 +73,7 @@ enum parameter_flags
   PF_CTL_TOGGLE = 0x03000,
   PF_CTL_COMBO = 0x04000,
   PF_CTL_RADIO = 0x05000,
+  PF_CTL_BUTTON = 0x06000,
   
   PF_CTLOPTIONS = 0xFF0000,
   PF_CTLO_HORIZ = 0x010000,
@@ -87,6 +88,7 @@ enum parameter_flags
   PF_UNIT_CENTS = 0x06000000,
   PF_UNIT_SEMITONES = 0x07000000,
   PF_UNIT_BPM = 0x08000000,
+  PF_UNIT_DEG = 0x09000000,
 };
 
 struct parameter_properties

@@ -156,6 +156,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_CENTS: return string(buf) + " ct";
     case PF_UNIT_SEMITONES: return string(buf) + "#";
     case PF_UNIT_BPM: return string(buf) + " bpm";
+    case PF_UNIT_DEG: return string(buf) + " deg";
     }
 
     return string(buf);

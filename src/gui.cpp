@@ -257,6 +257,39 @@ void toggle_param_control::set()
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
 
+// button
+
+GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    
+    widget  = gtk_button_new_with_label (get_props().name);
+    gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
+    return widget;
+}
+
+void button_param_control::button_clicked(GtkButton *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    
+    jhp->get();
+}
+
+void button_param_control::get()
+{
+    const parameter_properties &props = get_props();
+    gui->set_param_value(param_no, props.max, this);
+}
+
+void button_param_control::set()
+{
+    _GUARD_CHANGE_
+    const parameter_properties &props = get_props();
+    if (gui->plugin->get_param_value(param_no) - props.min >= 0.5)
+        gtk_button_clicked (GTK_BUTTON (widget));
+}
+
 // knob
 
 GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
@@ -370,10 +403,19 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
     for (int i = 0; i < param_count; i++) {
         int trow = i;
         parameter_properties &props = *plugin->get_param_props(i);
-        GtkWidget *label = gtk_label_new (props.name);
-        gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-        gtk_table_attach (GTK_TABLE (container), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
         
+        GtkWidget *label = NULL;
+        bool use_label = true;
+        if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+            (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
+            use_label = false;
+        
+        if (use_label)
+        {
+            label = gtk_label_new (props.name);
+            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+            gtk_table_attach (GTK_TABLE (container), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
+        }
         
         GtkWidget *widget = NULL;
         
@@ -390,6 +432,13 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
             params[i] = new toggle_param_control();
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
+        }
+        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                 (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
+        {
+            params[i] = new button_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (container), widget, 0, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
         }
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
@@ -532,6 +581,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new combo_box_param_control;
     if (!strcmp(element, "toggle"))
         return new toggle_param_control;
+    if (!strcmp(element, "button"))
+        return new button_param_control;
     if (!strcmp(element, "label"))
         return new label_param_control;
     if (!strcmp(element, "value"))

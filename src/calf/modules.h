@@ -39,6 +39,7 @@ public:
     inline void control_change(int controller, int value) {}
     inline void pitch_bend(int value) {} // -8192 to 8191
     inline void params_changed() {}
+    inline void params_reset() {}
     inline void activate() {}
     inline void deactivate() {}
     inline void set_sample_rate(uint32_t sr) { }
@@ -75,7 +76,7 @@ public:
 class flanger_audio_module: public null_audio_module
 {
 public:
-    enum { par_delay, par_depth, par_rate, par_fb, par_amount, param_count };
+    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *port_names[];
     dsp::simple_flanger<float, 2048> left, right;
@@ -83,6 +84,8 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate;
+    bool clear_reset;
+    float last_r_phase;
     static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
         srate = sr;
@@ -102,10 +105,33 @@ public:
         left.set_min_delay(min_delay); right.set_min_delay(min_delay);
         left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
         left.set_fb(fb); right.set_fb(fb);
+        float r_phase = *params[par_stereo] * (1.f / 360.f);
+        clear_reset = false;
+        if (*params[par_reset] >= 0.5) {
+            clear_reset = true;
+            left.reset_phase(0.f);
+            right.reset_phase(r_phase);
+        } else {
+            if (fabs(r_phase - last_r_phase) > 0.0001f) {
+                right.phase = left.phase;
+                right.inc_phase(r_phase);
+                last_r_phase = r_phase;
+            }
+        }
+    }
+    void params_reset()
+    {
+        if (clear_reset) {
+            *params[par_reset] = 0.f;
+            clear_reset = false;
+        }
     }
     void activate() {
         left.reset();
         right.reset();
+        last_r_phase = *params[par_stereo] * (1.f / 360.f);
+        left.reset_phase(0.f);
+        right.reset_phase(last_r_phase);
     }
     void deactivate() {
     }

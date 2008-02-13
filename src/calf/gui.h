@@ -160,6 +160,16 @@ struct toggle_param_control: public param_control
     static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
 };
 
+struct button_param_control: public param_control
+{
+    GtkCheckButton *scale;
+
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void button_clicked(GtkButton *widget, gpointer value);
+};
+
 struct combo_box_param_control: public param_control
 {
     GtkComboBox *scale;

@@ -330,6 +330,7 @@ public:
             }
         }
         process_part(time, nframes - time);
+        module.params_reset();
         return 0;
     }
     
