@@ -88,6 +88,11 @@ template<class Module>
 struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 {
     float params[Module::param_count];
+    plugin_proxy()
+    {
+        for (unsigned int i = 0; i < Module::param_count; i++)
+            params[i] = get_param_props(i)->def_value;
+    }
     virtual parameter_properties *get_param_props(int param_no) {
         return Module::param_props + param_no;
     }
