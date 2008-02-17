@@ -238,9 +238,13 @@ public:
     static void xml_element_end(void *data, const char *element);
 };
 
+class main_window_owner_iface;
+    
 class main_window_iface
 {
 public:
+    virtual void set_owner(main_window_owner_iface *owner)=0;
+
     virtual void add_plugin(plugin_ctl_iface *plugin)=0;
     virtual void del_plugin(plugin_ctl_iface *plugin)=0;
     
@@ -248,6 +252,14 @@ public:
     virtual void refresh_all_presets()=0;
     virtual bool check_condition(const char *name)=0;
     virtual ~main_window_iface() {}
+};
+
+class main_window_owner_iface
+{
+public:
+    virtual void new_plugin(const char *name) = 0;
+    virtual void remove_plugin(plugin_ctl_iface *plugin) = 0;
+    virtual ~main_window_owner_iface() {}
 };
 
 class plugin_gui_window

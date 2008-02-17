@@ -46,20 +46,20 @@ const char *client_name = "calfhost";
 
 jack_host_base *synth::create_jack_host(const char *effect_name)
 {
-    if (!strcmp(effect_name, "reverb"))
+    if (!strcasecmp(effect_name, "reverb"))
         return new jack_host<reverb_audio_module>();
-    else if (!strcmp(effect_name, "flanger"))
+    else if (!strcasecmp(effect_name, "flanger"))
         return new jack_host<flanger_audio_module>();
-    else if (!strcmp(effect_name, "filter"))
+    else if (!strcasecmp(effect_name, "filter"))
         return new jack_host<filter_audio_module>();
-    else if (!strcmp(effect_name, "monosynth"))
+    else if (!strcasecmp(effect_name, "monosynth"))
         return new jack_host<monosynth_audio_module>();
-    else if (!strcmp(effect_name, "vintagedelay"))
+    else if (!strcasecmp(effect_name, "vintagedelay"))
         return new jack_host<vintage_delay_audio_module>();
 #ifdef ENABLE_EXPERIMENTAL
-    else if (!strcmp(effect_name, "organ"))
+    else if (!strcasecmp(effect_name, "organ"))
         return new jack_host<organ_audio_module>();
-    else if (!strcmp(effect_name, "rotaryspeaker"))
+    else if (!strcasecmp(effect_name, "rotaryspeaker"))
         return new jack_host<rotary_speaker_audio_module>();
 #endif
     else
@@ -98,6 +98,7 @@ void print_help(char *argv[])
 int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
 {
     jack_client *self = (jack_client *)p;
+    ptlock lock(self->mutex);
     for(unsigned int i = 0; i < self->plugins.size(); i++)
         self->plugins[i]->process(nframes);
     return 0;
@@ -106,12 +107,23 @@ int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
 int jack_client::do_jack_bufsize(jack_nframes_t numsamples, void *p)
 {
     jack_client *self = (jack_client *)p;
+    ptlock lock(self->mutex);
     for(unsigned int i = 0; i < self->plugins.size(); i++)
         self->plugins[i]->cache_ports();
     return 0;
 }
 
-struct host_session
+void jack_client::delete_plugins()
+{
+    ptlock lock(mutex);
+    for (unsigned int i = 0; i < plugins.size(); i++) {
+        // plugins[i]->close();
+        delete plugins[i];
+    }
+    plugins.clear();
+}
+
+struct host_session: public main_window_owner_iface
 {
     string client_name, input_name, output_name, midi_name;
     vector<string> plugin_names;
@@ -149,6 +161,8 @@ struct host_session
         lash_send_config(lash_client, cfg);
     }
 #endif
+    virtual void new_plugin(const char *name);    
+    virtual void remove_plugin(plugin_ctl_iface *plugin);
 };
 
 host_session::host_session()
@@ -159,6 +173,7 @@ host_session::host_session()
     lash_source_id = 0;
     restoring_session = false;
     main_win = new main_window;
+    main_win->set_owner(this);
 }
 
 void host_session::open()
@@ -182,6 +197,7 @@ void host_session::open()
 #endif
         }
         jh->open(&client);
+        
         plugins.push_back(jh);
         client.add(jh);
         main_win->add_plugin(jh);
@@ -192,9 +208,36 @@ void host_session::open()
     gtk_signal_connect(GTK_OBJECT(main_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
 }
 
+void host_session::new_plugin(const char *name)
+{
+    jack_host_base *jh = create_jack_host(name);
+    if (!jh)
+        return;
+    jh->open(&client);
+    
+    plugins.push_back(jh);
+    client.add(jh);
+    main_win->add_plugin(jh);
+}
+
+void host_session::remove_plugin(plugin_ctl_iface *plugin)
+{
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        if (plugins[i] == plugin)
+        {
+            client.del(i);
+            plugins.erase(plugins.begin() + i);
+            main_win->del_plugin(plugin);
+            delete plugin;
+            return;
+        }
+    }
+}
+
 void host_session::activate_preset(int i, const std::string &preset)
 {
-    string cur_plugin = plugin_names[i];
+    string cur_plugin = plugins[i]->get_id();
     preset_vector &pvec = global_presets.presets;
     bool found = false;
     for (unsigned int i = 0; i < pvec.size(); i++) {
@@ -275,14 +318,11 @@ void host_session::close()
 {
     if (lash_source_id)
         g_source_remove(lash_source_id);
-    client.deactivate();
-    client.close();
     main_win->on_closed();
     main_win->close_guis();
-    for (unsigned int i = 0; i < plugin_names.size(); i++) {
-        plugins[i]->close();
-        delete plugins[i];
-    }
+    client.delete_plugins();
+    client.deactivate();
+    client.close();
 }
 
 #if USE_LASH
@@ -301,7 +341,7 @@ void host_session::update_lash()
                 for (unsigned int i = 0; i < plugins.size(); i++) {
                     char ss[32];
                     plugin_preset preset;
-                    preset.plugin = plugin_names[i];
+                    preset.plugin = plugins[i]->get_id();
                     preset.get_from(plugins[i]);
                     sprintf(ss, "plugin%d", i);
                     string pstr = preset.to_xml();
@@ -426,10 +466,12 @@ int main(int argc, char *argv[])
             sess.plugin_names.push_back(argv[optind++]);
         }
     }
+    /*
     if (!sess.plugin_names.size()) {
         print_help(argv);
         return 0;
     }
+    */
     try {
         global_presets.load_defaults();
     }

@@ -24,17 +24,21 @@
 #if USE_JACK
 
 #include "gui.h"
+#include "utils.h"
+#include <pthread.h>
 
 namespace synth {
 
 class jack_host_base;
     
 class jack_client {
+protected:
+    std::vector<jack_host_base *> plugins;
+    ptmutex mutex;
 public:
     jack_client_t *client;
     int input_nr, output_nr, midi_nr;
     std::string input_name, output_name, midi_name;
-    std::vector<jack_host_base *> plugins;
     int sample_rate;
 
     jack_client()
@@ -49,7 +53,14 @@ public:
     
     void add(jack_host_base *plugin)
     {
+        ptlock lock(mutex);
         plugins.push_back(plugin);
+    }
+    
+    void del(int item)
+    {
+        ptlock lock(mutex);
+        plugins.erase(plugins.begin()+item);
     }
     
     void open(const char *client_name)
@@ -77,6 +88,8 @@ public:
     {
         jack_deactivate(client);        
     }
+    
+    void delete_plugins();
     
     void connect(const std::string &p1, const std::string &p2)
     {
@@ -174,16 +187,20 @@ public:
     void close() {
         port *inputs = get_inputs(), *outputs = get_outputs();
         int input_count = get_input_count(), output_count = get_output_count();
-        for (int i = 0; i < input_count; i++)
+        for (int i = 0; i < input_count; i++) {
+            jack_port_unregister(client->client, inputs[i].handle);
             inputs[i].data = NULL;
-        for (int i = 0; i < output_count; i++)
+        }
+        for (int i = 0; i < output_count; i++) {
+            jack_port_unregister(client->client, outputs[i].handle);
             outputs[i].data = NULL;
+        }
+        if (get_midi())
+            jack_port_unregister(client->client, midi_port.handle);
         client = NULL;
     }
 
     virtual ~jack_host_base() {
-        if (client)
-            close();
     }
 };
 
@@ -194,6 +211,7 @@ struct vumeter
     vumeter()
     {
         falloff = 0.999f;
+        level = 0;
     }
     
     inline void update(float *src, unsigned int len)
@@ -227,6 +245,12 @@ public:
             params[i] = Module::param_props[i].def_value;
         }
         midi_meter = 0;
+    }
+    
+    ~jack_host()
+    {
+        if (client)
+            close();
     }
     
     virtual void init_module() {

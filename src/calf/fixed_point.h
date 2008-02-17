@@ -57,7 +57,7 @@ public:
     }
     */
     explicit inline fixed_point(double v) {
-        value = (int)(v*(1<<FracBits));
+        value = (T)(v*(1<<FracBits));
     }
 
     inline void set(T value) {

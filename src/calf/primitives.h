@@ -405,8 +405,6 @@ inline int fastf2i_drm(float f)
 	return v;
 }
 
-
-
 };
 
 #endif

@@ -40,13 +40,23 @@ namespace synth {
             main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *name, *midi_in, *audio_in[2], *audio_out[2];
+            GtkWidget *name, *midi_in, *audio_in[2], *audio_out[2], *extra;
+        };
+        
+        struct add_plugin_params
+        {
+            main_window *main_win;
+            std::string name;
+            add_plugin_params(main_window *_main_win, const std::string &_name)
+            : main_win(_main_win), name(_name) {}
         };
         
     public:
         GtkWindow *toplevel;
         GtkWidget *all_vbox;
         GtkWidget *strips_table;
+        GtkUIManager *ui_mgr;
+        GtkActionGroup *std_actions, *plugin_actions;
         jack_client *client;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
         std::set<std::string> conditions;
@@ -54,14 +64,19 @@ namespace synth {
         std::string prefix;
         bool is_closed;
         int source_id;
+        main_window_owner_iface *owner;
 
     protected:
         plugin_strip *create_strip(plugin_ctl_iface *plugin);
         void update_strip(plugin_ctl_iface *plugin);
         static gboolean on_idle(void *data);
+        std::string make_plugin_list(GtkActionGroup *actions);
+        static void add_plugin_action(GtkWidget *src, gpointer data);
 
     public:
         main_window();
+        void set_owner(main_window_owner_iface *_owner) { owner = _owner; }
+        void new_plugin(const char *name) { owner->new_plugin(name); }
         void add_plugin(plugin_ctl_iface *plugin);
         void del_plugin(plugin_ctl_iface *plugin);
         void set_window(plugin_ctl_iface *iface, plugin_gui_window *window);
