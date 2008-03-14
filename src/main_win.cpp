@@ -113,14 +113,17 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     //    gtk_widget_destroy(to_destroy[i]);
     
     plugins.erase(plugin);
-    for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
-    {
-        GtkTableChild *c = (GtkTableChild *)p->data;
-        if (c->top_attach == 0) {
-            c->ypadding = 0;
-            gtk_widget_set_size_request(c->widget, -1, -1);
-        }
-    }
+    int rows = 0, cols = 0;
+    g_object_get(G_OBJECT(strips_table), "n-rows", &rows, "n-columns", &cols, NULL);
+    gtk_table_resize(GTK_TABLE(strips_table), rows - 3, cols);
+    /*
+    // a hack to remove unneeded vertical space from the window
+    // not perfect, as it undoes user's vertical resize
+    // only needed when window is resizable though
+    int width, height;
+    gtk_window_get_size(toplevel, &width, &height);
+    gtk_window_resize(toplevel, width, 1);
+    */
 }
 
 void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_win)
@@ -174,24 +177,26 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     strip->plugin = plugin;
     strip->gui_win = NULL;
     
+    GtkAttachOptions ao = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL);
+    
     int row = 0, cols = 0;
     g_object_get(G_OBJECT(strips_table), "n-rows", &row, "n-columns", &cols, NULL);
     gtk_table_resize(GTK_TABLE(strips_table), row + 3, cols);
 
     GtkWidget *sep = gtk_hseparator_new();
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), sep, 0, 4, row, row + 1);
+    gtk_table_attach(GTK_TABLE(strips_table), sep, 0, 5, row, row + 1, ao, GTK_SHRINK, 0, 0);
     gtk_widget_show(sep);
     row++;
     
     GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_name());
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 0, 1, row, row + 2);
+    gtk_table_attach(GTK_TABLE(strips_table), label, 0, 1, row, row + 2, ao, GTK_SHRINK, 0, 0);
     strip->name = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->name);
     
-    label = gtk_label_new(plugin->get_midi() ? "MIDI" : "");
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 1, 2, row, row + 2);
+    label = gtk_label_new(plugin->get_midi() ? "?" : "");
+    gtk_table_attach(GTK_TABLE(strips_table), label, 1, 2, row, row + 2, GTK_FILL, GTK_SHRINK, 0, 0);
     strip->midi_in = label;
     gtk_widget_show(strip->midi_in);
 
@@ -200,10 +205,10 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     
     if (plugin->get_input_count() == 2) {
         label = calf_vumeter_new();
-        gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 2, 3, row, row + 1);
+        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row, row + 1, ao, GTK_SHRINK, 0, 0);
         strip->audio_in[0] = label;
         label = calf_vumeter_new();
-        gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 2, 3, row + 1, row + 2);
+        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row + 1, row + 2, ao, GTK_SHRINK, 0, 0);
         strip->audio_in[1] = label;
         gtk_widget_show(strip->audio_in[0]);
         gtk_widget_show(strip->audio_in[1]);
@@ -211,16 +216,16 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
 
     if (plugin->get_output_count() == 2) {
         label = calf_vumeter_new();
-        gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 3, 4, row, row + 1);
+        gtk_table_attach(GTK_TABLE(strips_table), label, 3, 4, row, row + 1, ao, GTK_SHRINK, 0, 0);
         strip->audio_out[0] = label;
         label = calf_vumeter_new();
-        gtk_table_attach_defaults(GTK_TABLE(strips_table), label, 3, 4, row + 1, row + 2);
+        gtk_table_attach(GTK_TABLE(strips_table), label, 3, 4, row + 1, row + 2, ao, GTK_SHRINK, 0, 0);
         strip->audio_out[1] = label;
         gtk_widget_show(strip->audio_out[0]);
         gtk_widget_show(strip->audio_out[1]);
     }
-    GtkWidget *extra = gtk_button_new_with_label("X");
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), extra, 4, 5, row, row + 2);
+    GtkWidget *extra = gtk_button_new_with_label("Delete");
+    gtk_table_attach(GTK_TABLE(strips_table), extra, 4, 5, row, row + 2, GTK_SHRINK, GTK_SHRINK, 0, 0);
     strip->extra = extra;
     gtk_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
@@ -294,6 +299,7 @@ void main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     is_closed = false;
+    gtk_window_set_resizable(toplevel, false);
     
     all_vbox = gtk_vbox_new(0, FALSE);
 
@@ -315,10 +321,17 @@ void main_window::create()
     gtk_table_set_col_spacings(GTK_TABLE(strips_table), 10);
     gtk_table_set_row_spacings(GTK_TABLE(strips_table), 5);
     
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), gtk_label_new("Module"), 0, 1, 0, 1);
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), gtk_label_new("MIDI In"), 1, 2, 0, 1);
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), gtk_label_new("Audio In"), 2, 3, 0, 1);
-    gtk_table_attach_defaults(GTK_TABLE(strips_table), gtk_label_new("Audio Out"), 3, 4, 0, 1);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI In"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Audio In"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Audio Out"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+    for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
+    {
+        GtkTableChild *c = (GtkTableChild *)p->data;
+        if (c->top_attach == 0) {
+            gtk_misc_set_alignment(GTK_MISC(c->widget), 0.5, 0);
+        }
+    }
     for (std::vector<plugin_ctl_iface *>::iterator i = plugin_queue.begin(); i != plugin_queue.end(); i++)
     {
         plugins[*i] = create_strip(*i);
