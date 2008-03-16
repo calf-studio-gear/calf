@@ -193,7 +193,6 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     for (int x = ox; x <= ox + sx; x += 3)
     {
         float ts = (x - ox) * 1.0 / sx;
-        int is = vu->value > ts ? 2 : 1;
         float r, g, b;
         if (ts < 0.75)
             r = ts / 0.75, g = 1, b = 0;
@@ -201,7 +200,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
         if (vu->value < ts || vu->value <= 0)
             r *= 0.5, g *= 0.5, b *= 0.5;
-        GdkColor sc2 = { 0, 65535 * r, 65535 * g, 65535 * b };
+        GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
         gdk_cairo_set_source_color(c, &sc2);
         cairo_move_to(c, x, oy);
         cairo_line_to(c, x, oy + sy + 1);
@@ -341,7 +340,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
     if (gtk_widget_is_focus(widget))
     {
-        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, widget->allocation.width, widget->allocation.height);
+        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, 40, 40);
     }
     
     return TRUE;

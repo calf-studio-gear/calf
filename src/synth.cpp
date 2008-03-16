@@ -126,7 +126,7 @@ void basic_synth::control_change(int ctl, int val)
             control_change(64, 0);
         for (int i = 0; i < keystack.count(); i++)
             notes.push_back(keystack.nth(i));
-        for (int i = 0; i < notes.size(); i++)
+        for (int i = 0; i < (int)notes.size(); i++)
             note_off(notes[i], 0);
     }
     if (ctl == 121) { 

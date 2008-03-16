@@ -250,50 +250,6 @@ public:
     }
 };
 
-#if ENABLE_EXPERIMENTAL
-
-/**
- * This is crap, not really sounding like rotary speaker.
- * I needed it for tests, maybe I'll give it more time later.
- */
-template<class T>
-class rotary_speaker
-{
-    simple_delay<256,T> delay;
-    fixed_point<unsigned int, 20> phase, dphase;
-    T last;
-public:    
-    rotary_speaker() {
-        reset();
-    }
-    void reset() {
-        delay.reset();
-        dphase = 6.3/44100*4096;
-        phase = 0;
-        last = 0;
-    }
-    template<class InT>
-    void process(T *out, InT *in, int nsamples) {
-        for (int i=0; i<nsamples; i++) {
-            phase += dphase;
-
-            double sig = sin(double(phase)*2*M_PI/4096);
-            double v = 100+30*sig;
-            double fv = floor(v);
-            delay.Put(in[i]);
-            T fd, fd2, fd3; // signal from delay's output
-            int ifv = (int)fv;
-            delay.GetInterp(fd, ifv, v-fv);
-            delay.GetInterp(fd2, ifv+3, v-fv);
-            delay.GetInterp(fd3, ifv+4, v-fv);
-            out[i] = 0.25f * (in[i] + fd + (last - in[i])*(0.5+0.25*sig));
-            last = last * 0.9f + dsp_mono(fd2 * 0.25f + fd3 * 0.25f);
-        }
-    }
-};
-
-#endif
-
 /**
  * A classic allpass loop reverb with modulated allpass filter.
  * Just started implementing it, so there is no control over many

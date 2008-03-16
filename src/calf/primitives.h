@@ -234,45 +234,63 @@ inline stereo_sample<T> lerp(stereo_sample<T> &v1, stereo_sample<T> &v2, float m
 /**
  * decay-only envelope (linear or exponential); deactivates itself when it goes below a set point (epsilon)
  */
-template<typename T>
 class decay
 {
-    T value, zero;
+    double value, initial;
+    unsigned int age, mask;
     bool active;
 public:
     decay() {
         active = false;
-        dsp::zero(zero);
+        mask = 127;
+        initial = value = 0.0;
     }
     inline bool get_active() {
         return active;
     }
-    inline T get() {
-        return active ? value : zero;
+    inline double get() {
+        return active ? value : 0.0;
     }
-    inline void set(const T &v) {
-        value = v;
+    inline void set(double v) {
+        initial = value = v;
         active = true;
+        age = 0;
     }
-    inline void add(const T &v) {
+    inline void add(double v) {
         if (active)
             value += v;
         else
             value = v;
+        initial = value;
+        age = 0;
         active = true;
     }
-    template<typename U>inline void age_exp(U constant, U epsilon) {
+    static inline double calc_exp_constant(double times, double cycles)
+    {
+        if (cycles < 1.0)
+            cycles = 1.0;
+        return pow(times, 1.0 / cycles);
+    }
+    inline void age_exp(double constant, double epsilon) {
         if (active) {
-            value *= (1.0-constant);
+            if (!(age & mask))
+                value = initial * pow(constant, (double)(age + 1));
+            else
+                value *= constant;
             if (value < epsilon)
                 active = false;
+            age++;
         }
     }
-    template<typename U>inline void age_lin(U constant, U epsilon) {
+    inline void age_lin(double constant, double epsilon) {
         if (active) {
-            value -= constant;
+            if (!(age & mask))
+                value = initial - constant * (age + 1);
+            else
+                value -= constant;
             if (value < epsilon)
                 active = false;
+            age++;
         }
     }
 };

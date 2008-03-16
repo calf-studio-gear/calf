@@ -188,7 +188,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_show(sep);
     row++;
     
-    GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_name());
+    GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_label());
     gtk_table_attach(GTK_TABLE(strips_table), label, 0, 1, row, row + 2, ao, GTK_SHRINK, 0, 0);
     strip->name = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 

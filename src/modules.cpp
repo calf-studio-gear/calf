@@ -138,15 +138,18 @@ static synth::ladspa_info vintage_delay_info = { 0x8482, "VintageDelay", "Calf V
 ALL_WRAPPERS(vintage_delay)
 
 ////////////////////////////////////////////////////////////////////////////
-#ifdef ENABLE_EXPERIMENTAL
+
 static synth::ladspa_info rotary_speaker_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", copyright, "SimulationPlugin" };
 
 ALL_WRAPPERS(rotary_speaker)
+
+////////////////////////////////////////////////////////////////////////////
 
 static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
 
 ALL_WRAPPERS(organ)
 
+#ifdef ENABLE_EXPERIMENTAL
 #endif
 ////////////////////////////////////////////////////////////////////////////
 
@@ -167,9 +170,9 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
         case 2: return &::lv2_reverb.descriptor;
         case 3: return &::lv2_vintage_delay.descriptor;
         case 4: return &::lv2_monosynth.descriptor;
-#ifdef ENABLE_EXPERIMENTAL
         case 5: return &::lv2_organ.descriptor;
         case 6: return &::lv2_rotary_speaker.descriptor;
+#ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
     }
@@ -188,8 +191,8 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
         case 1: return &::ladspa_flanger.descriptor;
         case 2: return &::ladspa_reverb.descriptor;
         case 3: return &::ladspa_vintage_delay.descriptor;
-#ifdef ENABLE_EXPERIMENTAL
         case 4: return &::ladspa_rotary_speaker.descriptor;
+#ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
     }
@@ -208,9 +211,9 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
         case 2: return &::ladspa_reverb.dssi_descriptor;
         case 3: return &::ladspa_monosynth.dssi_descriptor;
         case 4: return &::ladspa_vintage_delay.dssi_descriptor;
-#ifdef ENABLE_EXPERIMENTAL
         case 5: return &::ladspa_organ.dssi_descriptor;
         case 6: return &::ladspa_rotary_speaker.dssi_descriptor;
+#ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
     }
@@ -254,8 +257,6 @@ void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
     plugins.push_back(create_plugin_info<reverb_audio_module>(reverb_info));
     plugins.push_back(create_plugin_info<monosynth_audio_module>(monosynth_info));
     plugins.push_back(create_plugin_info<vintage_delay_audio_module>(vintage_delay_info));
-#ifdef ENABLE_EXPERIMENTAL
     plugins.push_back(create_plugin_info<organ_audio_module>(organ_info));
     plugins.push_back(create_plugin_info<rotary_speaker_audio_module>(rotary_speaker_info));
-#endif
 }

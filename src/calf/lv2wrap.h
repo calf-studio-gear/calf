@@ -72,6 +72,10 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     {
         return Module::get_id();
     }
+    virtual const char *get_label()
+    {
+        return Module::get_label();
+    }
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }

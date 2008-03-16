@@ -117,6 +117,10 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     {
         return Module::get_id();
     }
+    virtual const char *get_label()
+    {
+        return Module::get_label();
+    }
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
@@ -135,11 +139,11 @@ plugin_proxy_base *create_plugin_proxy(const char *effect_name)
         return new plugin_proxy<monosynth_audio_module>();
     else if (!strcmp(effect_name, "VintageDelay"))
         return new plugin_proxy<vintage_delay_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
     else if (!strcmp(effect_name, "Organ"))
         return new plugin_proxy<organ_audio_module>();
     else if (!strcmp(effect_name, "RotarySpeaker"))
         return new plugin_proxy<rotary_speaker_audio_module>();
+#ifdef ENABLE_EXPERIMENTAL
 #endif
     else
         return NULL;

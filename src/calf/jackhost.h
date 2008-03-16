@@ -404,6 +404,10 @@ public:
     {
         return Module::get_id();
     }
+    virtual const char *get_label()
+    {
+        return Module::get_label();
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

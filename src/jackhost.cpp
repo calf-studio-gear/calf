@@ -56,11 +56,11 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
         return new jack_host<monosynth_audio_module>();
     else if (!strcasecmp(effect_name, "vintagedelay"))
         return new jack_host<vintage_delay_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
     else if (!strcasecmp(effect_name, "organ"))
         return new jack_host<organ_audio_module>();
     else if (!strcasecmp(effect_name, "rotaryspeaker"))
         return new jack_host<rotary_speaker_audio_module>();
+#ifdef ENABLE_EXPERIMENTAL
 #endif
     else
         return NULL;
@@ -466,12 +466,6 @@ int main(int argc, char *argv[])
             sess.plugin_names.push_back(argv[optind++]);
         }
     }
-    /*
-    if (!sess.plugin_names.size()) {
-        print_help(argv);
-        return 0;
-    }
-    */
     try {
         global_presets.load_defaults();
     }

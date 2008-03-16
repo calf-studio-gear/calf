@@ -20,8 +20,6 @@
  */
 #include <config.h>
 
-#if ENABLE_EXPERIMENTAL
-
 #include <assert.h>
 #include <memory.h>
 #include <complex>
@@ -45,12 +43,18 @@ const char *organ_audio_module::get_gui_xml()
                 "<align><toggle param=\"foldover\"/></align>"
             "</vbox>"
             "<vbox>"
-                "<label param=\"perc_mode\"/>"
-                "<combo param=\"perc_mode\"/>"
+                "<label param=\"perc_decay\"/>"
+                "<knob param=\"perc_decay\" expand=\"0\" fill=\"0\"/>"
+                "<value param=\"perc_decay\"/>"
             "</vbox>"
             "<vbox>"
-                "<label param=\"perc_hrm\"/>"
-                "<combo param=\"perc_hrm\"/>"
+                "<label param=\"perc_level\"/>"
+                "<knob param=\"perc_level\" expand=\"0\" fill=\"0\"/>"
+                "<value param=\"perc_level\"/>"
+            "</vbox>"        
+            "<vbox>"
+                "<label param=\"perc_harm\"/>"
+                "<combo param=\"perc_harm\"/>"
             "</vbox>"        
             "<vbox>"
                 "<label param=\"master\"/>"
@@ -101,7 +105,6 @@ const char *organ_audio_module::get_gui_xml()
 
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
-const char *organ_percussion_mode_names[] = { "Off", "Short", "Long" };
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 
 parameter_properties organ_audio_module::param_props[] = {
@@ -116,8 +119,9 @@ parameter_properties organ_audio_module::param_props[] = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h16", "1'" },
 
     { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
-    { 1,         0,  2, 3, PF_ENUM | PF_CTL_COMBO, organ_percussion_mode_names, "perc_mode", "Perc. mode" },
-    { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_hrm", "Perc. harmonic" },
+    { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
+    { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "Perc. level" },
+    { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_harm", "Perc. harmonic" },
 
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
 };
@@ -131,5 +135,3 @@ const char *rotary_speaker_speed_names[] = { "Off", "Chorale", "Tremolo", "HoldP
 parameter_properties rotary_speaker_audio_module::param_props[] = {
     { 2,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
 };
-
-#endif

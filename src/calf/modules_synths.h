@@ -27,6 +27,7 @@
 #include "inertia.h"
 #include "osc.h"
 #include "synth.h"
+#include "organ.h"
 
 namespace synth {
 
@@ -184,6 +185,55 @@ public:
     }
     static const char *get_name() { return "monosynth"; }
     static const char *get_id() { return "monosynth"; }
+    static const char *get_label() { return "Monosynth"; }
+};
+
+using namespace dsp;
+
+struct organ_audio_module: public null_audio_module, public drawbar_organ
+{
+public:
+    using drawbar_organ::note_on;
+    using drawbar_organ::note_off;
+    using drawbar_organ::control_change;
+    enum { par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, par_foldover,
+        par_percdecay, par_perclevel, par_percharm, par_master, param_count };
+    enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
+    static const char *port_names[];
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    organ_parameters par_values;
+    uint32_t srate;
+
+    organ_audio_module()
+    : drawbar_organ(&par_values)
+    {
+    }
+    static parameter_properties param_props[];
+    static const char *get_gui_xml();
+
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+    void params_changed() {
+        for (int i = 0; i < param_count; i++)
+            ((float *)&par_values)[i] = *params[i];
+        update_params();
+    }
+    void activate() {
+        setup(srate);
+    }
+    void deactivate() {
+    }
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        float *o[2] = { outs[0] + offset, outs[1] + offset };
+        render_to(o, nsamples);
+        return 3;
+    }
+    static const char *get_name() { return "organ"; }    
+    static const char *get_id() { return "organ"; }    
+    static const char *get_label() { return "Organ"; }    
 };
 
 };

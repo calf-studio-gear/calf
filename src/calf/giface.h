@@ -122,6 +122,7 @@ struct plugin_ctl_iface
     virtual bool activate_preset(int bank, int program) = 0;
     virtual const char *get_name() = 0;
     virtual const char *get_id() = 0;
+    virtual const char *get_label() = 0;
     virtual int get_input_count()=0;
     virtual int get_output_count()=0;
     virtual bool get_midi()=0;
@@ -209,6 +210,10 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual const char *get_id()
     {
         return Module::get_id();
+    }
+    virtual const char *get_label()
+    {
+        return Module::get_label();
     }
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }

@@ -30,12 +30,14 @@ namespace synth
 struct organ_parameters {
     float drawbars[9];
     float foldover;
-    float percussion_mode;
+    float percussion_time;
+    float percussion_level;
     float harmonic;
     float master;
+    
+    double perc_decay_const;
 
     inline bool get_foldover() { return foldover >= 0.5f; }
-    inline int get_percussion_mode() { return dsp::fastf2i_drm(percussion_mode); }
     inline int get_harmonic() { return dsp::fastf2i_drm(harmonic); }
 };
 
@@ -45,7 +47,7 @@ protected:
     dsp::sine_table<float, 4096, 1> sine_wave;
     dsp::fixed_point<int, 20> phase, dphase;
     int note;
-    dsp::decay<double> amp;
+    dsp::decay amp;
 
     inline float sine(dsp::fixed_point<int, 20> ph) {
         return ph.lerp_table_lookup_float(sine_wave.data);
@@ -163,16 +165,16 @@ public:
 
         if (!amp.get_active())
             return;
-        int mode = parameters->get_percussion_mode();
-        if (!mode)
+        if (parameters->percussion_level < small_value<float>())
             return;
         int harmonic = 2 * parameters->get_harmonic();
+        float level = parameters->percussion_level * (8 * 9);
         // XXXKF the decay needs work!
-        float age_const = mode == 1 ? 0.001f : 0.0003f;
+        double age_const = parameters->perc_decay_const;
         for (int i = 0; i < nsamples; i++) {
-            float osc = 0.5 * sine(harmonic * phase);
+            float osc = level * sine(harmonic * phase);
             buf[i] += osc * amp.get();
-            amp.age_exp(age_const, 0.0001f);
+            amp.age_exp(age_const, 1.0 / 32768.0);
             phase += dphase;
         }
     }
@@ -199,7 +201,7 @@ struct drawbar_organ: public synth::basic_synth {
         basic_synth::render_to(bufptr, nsamples);
         if (percussion.get_active())
             percussion.render_to(buf, nsamples);
-        float gain = parameters->master * 0.05;
+        float gain = parameters->master * (1.0 / (9 * 8));
         for (int i=0; i<nsamples; i++) {
             output[0][i] = gain*buf[i];
             output[1][i] = gain*buf[i];
@@ -214,6 +216,11 @@ struct drawbar_organ: public synth::basic_synth {
     virtual void setup(int sr) {
         basic_synth::setup(sr);
         percussion.setup(sr);
+        update_params();
+    }
+    void update_params()
+    {
+        parameters->perc_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_time * sample_rate);
     }
 };
 
