@@ -62,42 +62,60 @@ const char *organ_audio_module::get_gui_xml()
                 "<value param=\"master\"/>"
             "</vbox>"
         "</hbox>"
-        "<table rows=\"3\" cols=\"9\">"
+        "<table rows=\"5\" cols=\"9\">"
             "<label  attach-x=\"0\" attach-y=\"0\" param=\"h1\"/>"
             "<vscale attach-x=\"0\" attach-y=\"1\" param=\"h1\"/>"
             "<value  attach-x=\"0\" attach-y=\"2\" param=\"h1\"/>"
+            "<knob   attach-x=\"0\" attach-y=\"3\" param=\"f1\"/>"
+            "<value  attach-x=\"0\" attach-y=\"4\" param=\"f1\"/>"
     
             "<label  attach-x=\"1\" attach-y=\"0\" param=\"h3\"/>"
             "<vscale attach-x=\"1\" attach-y=\"1\" param=\"h3\"/>"
             "<value  attach-x=\"1\" attach-y=\"2\" param=\"h3\"/>"
+            "<knob   attach-x=\"1\" attach-y=\"3\" param=\"f2\"/>"
+            "<value  attach-x=\"1\" attach-y=\"4\" param=\"f2\"/>"
     
             "<label  attach-x=\"2\" attach-y=\"0\" param=\"h2\"/>"
             "<vscale attach-x=\"2\" attach-y=\"1\" param=\"h2\"/>"
             "<value  attach-x=\"2\" attach-y=\"2\" param=\"h2\"/>"
+            "<knob   attach-x=\"2\" attach-y=\"3\" param=\"f3\"/>"
+            "<value  attach-x=\"2\" attach-y=\"4\" param=\"f3\"/>"
     
             "<label  attach-x=\"3\" attach-y=\"0\" param=\"h4\"/>"
             "<vscale attach-x=\"3\" attach-y=\"1\" param=\"h4\"/>"
             "<value  attach-x=\"3\" attach-y=\"2\" param=\"h4\"/>"
+            "<knob   attach-x=\"3\" attach-y=\"3\" param=\"f4\"/>"
+            "<value  attach-x=\"3\" attach-y=\"4\" param=\"f4\"/>"
 
             "<label  attach-x=\"4\" attach-y=\"0\" param=\"h6\"/>"
             "<vscale attach-x=\"4\" attach-y=\"1\" param=\"h6\"/>"
             "<value  attach-x=\"4\" attach-y=\"2\" param=\"h6\"/>"
+            "<knob   attach-x=\"4\" attach-y=\"3\" param=\"f5\"/>"
+            "<value  attach-x=\"4\" attach-y=\"4\" param=\"f5\"/>"
     
             "<label  attach-x=\"5\" attach-y=\"0\" param=\"h8\"/>"
             "<vscale attach-x=\"5\" attach-y=\"1\" param=\"h8\"/>"
             "<value  attach-x=\"5\" attach-y=\"2\" param=\"h8\"/>"
+            "<knob   attach-x=\"5\" attach-y=\"3\" param=\"f6\"/>"
+            "<value  attach-x=\"5\" attach-y=\"4\" param=\"f6\"/>"
 
             "<label  attach-x=\"6\" attach-y=\"0\" param=\"h10\"/>"
             "<vscale attach-x=\"6\" attach-y=\"1\" param=\"h10\"/>"
             "<value  attach-x=\"6\" attach-y=\"2\" param=\"h10\"/>"
+            "<knob   attach-x=\"6\" attach-y=\"3\" param=\"f7\"/>"
+            "<value  attach-x=\"6\" attach-y=\"4\" param=\"f7\"/>"
 
             "<label  attach-x=\"7\" attach-y=\"0\" param=\"h12\"/>"
             "<vscale attach-x=\"7\" attach-y=\"1\" param=\"h12\"/>"
             "<value  attach-x=\"7\" attach-y=\"2\" param=\"h12\"/>"
+            "<knob   attach-x=\"7\" attach-y=\"3\" param=\"f8\"/>"
+            "<value  attach-x=\"7\" attach-y=\"4\" param=\"f8\"/>"
 
             "<label  attach-x=\"8\" attach-y=\"0\" param=\"h16\"/>"
             "<vscale attach-x=\"8\" attach-y=\"1\" param=\"h16\"/>"
             "<value  attach-x=\"8\" attach-y=\"2\" param=\"h16\"/>"
+            "<knob   attach-x=\"8\" attach-y=\"3\" param=\"f9\"/>"
+            "<value  attach-x=\"8\" attach-y=\"4\" param=\"f9\"/>"
         "</table>"
     "</vbox>"
     ;
@@ -118,6 +136,26 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h12", "1 1/3'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h16", "1'" },
 
+    { 1,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f1", "Freq 1" },
+    { 3,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f2", "Freq 2" },
+    { 2,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f3", "Freq 3" },
+    { 4,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f4", "Freq 4" },
+    { 6,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f5", "Freq 5" },
+    { 8,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f6", "Freq 6" },
+    { 10,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f7", "Freq 7" },
+    { 12,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f8", "Freq 8" },
+    { 16,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f9", "Freq 9" },
+
+    { 2,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w1", "Wave 1" },
+    { 2,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w2", "Wave 2" },
+    { 1,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w3", "Wave 3" },
+    { 1,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w4", "Wave 4" },
+    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w5", "Wave 5" },
+    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w6", "Wave 6" },
+    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w7", "Wave 7" },
+    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w8", "Wave 8" },
+    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w9", "Wave 9" },
+
     { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
     { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "Perc. level" },
@@ -135,3 +173,28 @@ const char *rotary_speaker_speed_names[] = { "Off", "Chorale", "Tremolo", "HoldP
 parameter_properties rotary_speaker_audio_module::param_props[] = {
     { 2,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
 };
+
+waveform_family<ORGAN_WAVE_BITS> organ_voice_base::waves[organ_voice_base::wave_count];
+
+organ_voice_base::organ_voice_base(organ_parameters *_parameters)
+: parameters(_parameters)
+{
+    note = -1;
+    static bool inited = false;
+    if (!inited)
+    {
+        float tmp[ORGAN_WAVE_SIZE];
+        bandlimiter<ORGAN_WAVE_BITS> bl;
+        inited = true;
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = sin(i * 2 * M_PI / ORGAN_WAVE_SIZE);
+        waves[wave_sine].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = (i < (ORGAN_WAVE_SIZE / 16)) ? 1 : 0;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_pulse].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = i < (ORGAN_WAVE_SIZE / 4) ? sin(i * 4 * 2 * M_PI / ORGAN_WAVE_SIZE) : 0;
+        waves[wave_stretchsine].make(bl, tmp);
+    }
+}

@@ -31,7 +31,7 @@
 
 namespace synth {
 
-#define MONOSYNTH_WAVE_SIZE 12
+#define MONOSYNTH_WAVE_BITS 12
     
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
@@ -48,8 +48,8 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    static waveform_family<MONOSYNTH_WAVE_SIZE> waves[wave_count];
-    waveform_oscillator<MONOSYNTH_WAVE_SIZE> osc1, osc2;
+    static waveform_family<MONOSYNTH_WAVE_BITS> waves[wave_count];
+    waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
     bool running, stopping, gate;
     int last_key;
     
@@ -196,7 +196,11 @@ public:
     using drawbar_organ::note_on;
     using drawbar_organ::note_off;
     using drawbar_organ::control_change;
-    enum { par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, par_foldover,
+    enum { 
+        par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, 
+        par_frequency1, par_frequency2, par_frequency3, par_frequency4, par_frequency5, par_frequency6, par_frequency7, par_frequency8, par_frequency9, 
+        par_waveform1, par_waveform2, par_waveform3, par_waveform4, par_waveform5, par_waveform6, par_waveform7, par_waveform8, par_waveform9, 
+        par_foldover,
         par_percdecay, par_perclevel, par_percharm, par_master, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];

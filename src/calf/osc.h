@@ -138,6 +138,19 @@ struct waveform_oscillator: public simple_oscillator
     }
 };
 
+static inline void normalize_waveform(float *table, unsigned int size)
+{
+    float thismax = 0;
+    for (unsigned int i = 0; i < size; i++)
+        thismax = std::max(thismax, fabs(table[i]));
+    if (thismax < 0.000001f)
+        return;
+    for (unsigned int i = 0; i < size; i++)
+        table[i] /= thismax;
+}
+
+
+
 };
 
 #endif

@@ -228,17 +228,6 @@ const char *monosynth_audio_module::get_gui_xml()
     return monosynth_gui_xml;
 }
 
-static void normalize(float *table, unsigned int size)
-{
-    float thismax = 0;
-    for (unsigned int i = 0; i < size; i++)
-        thismax = std::max(thismax, fabs(table[i]));
-    if (thismax < 0.000001f)
-        return;
-    for (unsigned int i = 0; i < size; i++)
-        table[i] /= thismax;
-}
-
 void monosynth_audio_module::activate() {
     running = false;
     output_pos = 0;
@@ -250,14 +239,14 @@ void monosynth_audio_module::activate() {
     stack.clear();
 }
 
-waveform_family<MONOSYNTH_WAVE_SIZE> monosynth_audio_module::waves[wave_count];
+waveform_family<MONOSYNTH_WAVE_BITS> monosynth_audio_module::waves[wave_count];
 
 void monosynth_audio_module::generate_waves()
 {
-    float data[1 << MONOSYNTH_WAVE_SIZE];
-    bandlimiter<MONOSYNTH_WAVE_SIZE> bl;
+    float data[1 << MONOSYNTH_WAVE_BITS];
+    bandlimiter<MONOSYNTH_WAVE_BITS> bl;
     
-    enum { S = 1 << MONOSYNTH_WAVE_SIZE, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
+    enum { S = 1 << MONOSYNTH_WAVE_BITS, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
     float iQS = 1.0 / QS;
 
     // yes these waves don't have really perfect 1/x spectrum because of aliasing
@@ -317,7 +306,7 @@ void monosynth_audio_module::generate_waves()
     for (int i = 0; i < S; i++) {
         data[i] = exp(-i * 1.0 / HS) * sin(i * PI / HS) * cos(2 * PI * i / HS);
     }
-    normalize(data, S);
+    normalize_waveform(data, S);
     waves[wave_test2].make(bl, data);
     for (int i = 0; i < S; i++) {
         //int ii = (i < HS) ? i : S - i;
@@ -347,12 +336,12 @@ void monosynth_audio_module::generate_waves()
     }
     waves[wave_test6].make(bl, data);
     for (int i = 0; i < S; i++) {
-        int j = i >> (MONOSYNTH_WAVE_SIZE - 11);
+        int j = i >> (MONOSYNTH_WAVE_BITS - 11);
         data[i] = (j ^ 0x1D0) * 1.0 / HS - 1;
     }
     waves[wave_test7].make(bl, data);
     for (int i = 0; i < S; i++) {
-        int j = i >> (MONOSYNTH_WAVE_SIZE - 11);
+        int j = i >> (MONOSYNTH_WAVE_BITS - 11);
         data[i] = -1 + 0.66 * (3 & ((j >> 8) ^ (j >> 10) ^ (j >> 6)));
     }
     waves[wave_test8].make(bl, data);
@@ -368,7 +357,7 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
     if (index == par_wave1 || index == par_wave2) {
         if (subindex)
             return false;
-        enum { S = 1 << MONOSYNTH_WAVE_SIZE };
+        enum { S = 1 << MONOSYNTH_WAVE_BITS };
         int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
         float *waveform = waves[wave].get_level(0);
