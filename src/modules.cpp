@@ -67,6 +67,25 @@ ALL_WRAPPERS(flanger)
 
 ////////////////////////////////////////////////////////////////////////////
 
+const char *phaser_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
+
+parameter_properties phaser_audio_module::param_props[] = {
+    { 1000,      20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "base_freq", "Center Freq" },
+    { 4000,       0, 10800,  0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "mod_depth", "Modulation depth" },
+    { 0.25,    0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "mod_rate", "Modulation rate" },
+    { 0.25,   -0.99, 0.99,  0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "feedback", "Feedback" },
+    { 6,          1, 12,   12, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "stages", "# Stages" },
+    { 180,        0, 360,  10, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "stereo", "Stereo phase" },
+    { 0,          0, 1,     2, PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
+    { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "amount", "Amount" },
+};
+
+static synth::ladspa_info phaser_info = { 0x847d, "phaser", "Calf Phaser", "Krzysztof Foltman", copyright, "PhaserPlugin" };
+
+ALL_WRAPPERS(phaser)
+
+////////////////////////////////////////////////////////////////////////////
+
 const char *reverb_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
 const char *reverb_room_sizes[] = { "Small", "Medium", "Large", "Tunnel-like" };
@@ -172,6 +191,7 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
         case 4: return &::lv2_monosynth.descriptor;
         case 5: return &::lv2_organ.descriptor;
         case 6: return &::lv2_rotary_speaker.descriptor;
+        case 7: return &::lv2_phaser.descriptor;
 #ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
@@ -192,6 +212,7 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
         case 2: return &::ladspa_reverb.descriptor;
         case 3: return &::ladspa_vintage_delay.descriptor;
         case 4: return &::ladspa_rotary_speaker.descriptor;
+        case 5: return &::ladspa_phaser.descriptor;
 #ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
@@ -213,6 +234,7 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
         case 4: return &::ladspa_vintage_delay.dssi_descriptor;
         case 5: return &::ladspa_organ.dssi_descriptor;
         case 6: return &::ladspa_rotary_speaker.dssi_descriptor;
+        case 7: return &::ladspa_phaser.dssi_descriptor;
 #ifdef ENABLE_EXPERIMENTAL
 #endif
         default: return NULL;
@@ -259,4 +281,5 @@ void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
     plugins.push_back(create_plugin_info<vintage_delay_audio_module>(vintage_delay_info));
     plugins.push_back(create_plugin_info<organ_audio_module>(organ_info));
     plugins.push_back(create_plugin_info<rotary_speaker_audio_module>(rotary_speaker_info));
+    plugins.push_back(create_plugin_info<phaser_audio_module>(phaser_info));
 }

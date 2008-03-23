@@ -49,7 +49,7 @@ struct organ_parameters {
 class organ_voice_base
 {
 protected:
-    enum { wave_sine, wave_pulse, wave_stretchsine, wave_count };
+    enum { wave_sine, wave_pulse, wave_sinepl1, wave_sinepl2, wave_sinepl3, wave_saw, wave_sqr, wave_ssaw, wave_ssqr, wave_count };
     static waveform_family<ORGAN_WAVE_BITS> waves[wave_count];
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     dsp::fixed_point<int, 20> phase, dphase;

@@ -37,6 +37,7 @@ public:
     T x1, y1;
     Coeff a0, a1, b1;
     
+    /// Set coefficients for a lowpass filter
     void set_lp(float fc, float sr)
     {
         //   x   x
@@ -47,6 +48,7 @@ public:
 		b1 = (x-1)*q;
     }
     
+    /// Set coefficients for an allpass filter
     void set_ap(float fc, float sr)
     {
         // x-1  x+1
@@ -57,6 +59,19 @@ public:
         a1 = 1;
     }
     
+    /// Set coefficients for an allpass filter, using omega instead of fc and sr
+    /// omega = (PI / 2) * fc / sr
+    void set_ap_w(float w)
+    {
+        // x-1  x+1
+        // x+1  x-1
+		Coeff x = tan (w);
+		Coeff q = 1/(1+x);
+		b1 = a0 = (x-1)*q;
+        a1 = 1;
+    }
+    
+    /// Set coefficients for a highpass filter
     void set_hp(float fc, float sr)
     {
         //   x   -x
@@ -68,6 +83,7 @@ public:
 		b1 = (x-1)*q;
     }
     
+    /// Process one sample
     inline T process(T in)
     {
         T out = in * a0 + x1 * a1 - y1 * b1;
@@ -76,6 +92,7 @@ public:
         return out;
     }
     
+    /// Process one sample, assuming it's a lowpass filter (optimized special case)
     inline T process_lp(T in)
     {
         T out = (in + x1) * a0 - y1 * b1;
@@ -84,6 +101,7 @@ public:
         return out;
     }
 
+    /// Process one sample, assuming it's a highpass filter (optimized special case)
     inline T process_hp(T in)
     {
         T out = (in - x1) * a0 - y1 * b1;
@@ -92,7 +110,17 @@ public:
         return out;
     }
     
+    /// Process one sample, assuming it's an allpass filter (optimized special case)
     inline T process_ap(T in)
+    {
+        T out = (in - y1) * a0 + x1;
+        x1 = in;
+        y1 = out;
+        return out;
+    }
+    
+    /// Process one sample using external state variables
+    inline T process_ap(T in, float &x1, float &y1)
     {
         T out = (in - y1) * a0 + x1;
         x1 = in;
@@ -110,6 +138,14 @@ public:
     {
         dsp::zero(x1);
         dsp::zero(y1);
+    }
+    
+    template<class U>
+    inline void copy_coeffs(const onepole<U> &src)
+    {
+        a0 = src.a0;
+        a1 = src.a1;
+        b1 = src.b1;
     }
 };
 

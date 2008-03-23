@@ -60,6 +60,8 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
         return new jack_host<organ_audio_module>();
     else if (!strcasecmp(effect_name, "rotaryspeaker"))
         return new jack_host<rotary_speaker_audio_module>();
+    else if (!strcasecmp(effect_name, "phaser"))
+        return new jack_host<phaser_audio_module>();
 #ifdef ENABLE_EXPERIMENTAL
 #endif
     else
@@ -191,10 +193,9 @@ void host_session::open()
         jack_host_base *jh = create_jack_host(plugin_names[i].c_str());
         if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
-            throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker\n");
 #else
-            throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth\n");
 #endif
+            throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker, phaser\n");
         }
         jh->open(&client);
         

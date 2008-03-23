@@ -65,6 +65,14 @@ struct bandlimiter
         fft.calculate(data, spectrum, false);
     }
     
+    void compute_waveform(float output[SIZE])
+    {
+        std::complex<float> data[SIZE];
+        fft.calculate(spectrum, data, true);
+        for (int i = 0; i < SIZE; i++)
+            output[i] = data[i].real();
+    }
+    
     /// remove DC offset of the spectrum (it usually does more harm than good!)
     void remove_dc()
     {

@@ -41,18 +41,12 @@ public:
     virtual ~audio_effect() {}
 };
 
-/**
- * Base class for chorus and flanger. Wouldn't be needed if it wasn't
- * for odd behaviour of GCC when deriving templates from template
- * base classes (not seeing fields from base classes!).
- */
-class chorus_base: public audio_effect
+class modulation_effect: public audio_effect
 {
 protected:
-    int sample_rate, min_delay_samples, mod_depth_samples;
-    float rate, wet, dry, min_delay, mod_depth, odsr;
+    int sample_rate;
+    float rate, wet, dry, odsr;
     gain_smoothing gs_wet, gs_dry;
-    sine_table<int, 4096, 65536> sine;
 public:
     fixed_point<unsigned int, 20> phase, dphase;
     float get_rate() {
@@ -74,8 +68,133 @@ public:
     }
     void set_dry(float dry) {
         this->dry = dry;
-        gs_dry.set_inertia(wet);
+        gs_dry.set_inertia(dry);
     }
+    void reset_phase(float req_phase)
+    {
+        phase = req_phase * 4096.0;
+    }
+    void inc_phase(float req_phase)
+    {
+        phase += fixed_point<unsigned int, 20>(req_phase * 4096.0);
+    }
+    void setup(int sample_rate)
+    {
+        this->sample_rate = sample_rate;
+        this->odsr = 1.0 / sample_rate;
+        phase = 0;
+        set_rate(get_rate());
+    }
+};
+
+/**
+ * A monophonic phaser. If you want stereo, combine two :)
+ * Also, gave up on using template args for signal type.
+ */
+template<int MaxStages>
+class simple_phaser: public modulation_effect
+{
+protected:
+    float base_frq, mod_depth, resonance, fb;
+    float state;
+    int cnt, stages;
+    dsp::onepole<float, float> stage1;
+    float x1[MaxStages], y1[MaxStages];
+public:
+    float get_base_frq() {
+        return base_frq;
+    }
+    void set_base_frq(float _base_frq) {
+        base_frq = _base_frq;
+    }
+    int get_stages() {
+        return stages;
+    }
+    void set_stages(int _stages) {
+        if (_stages > stages)
+        {
+            for (int i = stages; i < _stages; i++)
+            {
+                x1[i] = x1[stages-1];
+                y1[i] = y1[stages-1];
+            }
+        }
+        stages = _stages;
+    }
+    float get_mod_depth() {
+        return mod_depth;
+    }
+    void set_mod_depth(float _mod_depth) {
+        mod_depth = _mod_depth;
+    }
+    float get_fb() {
+        return fb;
+    }
+    void set_fb(float fb) {
+        this->fb = fb;
+    }
+    virtual void setup(int sample_rate) {
+        modulation_effect::setup(sample_rate);
+        reset();
+    }
+    void reset()
+    {
+        cnt = 0;
+        state = 0;
+        for (int i = 0; i < MaxStages; i++)
+            x1[i] = y1[i] = 0;
+        control_step();
+    }
+    inline void control_step()
+    {
+        cnt = 0;
+        int v = phase.get() + 0x40000000;
+        int sign = v >> 31;
+        v ^= sign;
+        // triangle wave, range from 0 to INT_MAX
+        double vf = (double)((v >> 16) * (1.0 / 16384.0) - 1);
+        
+        float freq = base_frq * pow(2.0, vf * mod_depth / 1200.0);
+        freq = dsp::clip<float>(freq, 10.0, 0.49 * sample_rate);
+        stage1.set_ap_w(freq * (M_PI / 2.0) * odsr);
+        phase += dphase * 16;
+    }
+    void process(float *buf_out, float *buf_in, int nsamples) {
+        for (int i=0; i<nsamples; i++) {
+            cnt++;
+            if (cnt == 16)
+                control_step();
+            float in = *buf_in++;
+            float fd = in + state * fb;
+            for (int j = 0; j < stages; j++)
+                fd = stage1.process_ap(fd, x1[j], y1[j]);
+            state = fd;
+            
+            float sdry = in * gs_dry.get();
+            float swet = fd * gs_wet.get();
+            *buf_out++ = sdry + swet;
+        }
+        for (int i = 0; i < stages; i++)
+        {
+            dsp::sanitize(x1[i]);
+            dsp::sanitize(y1[i]);
+        }
+    }
+};
+
+/**
+ * Base class for chorus and flanger. Wouldn't be needed if it wasn't
+ * for odd behaviour of GCC when deriving templates from template
+ * base classes (not seeing fields from base classes!).
+ */
+class chorus_base: public modulation_effect
+{
+protected:
+    int sample_rate, min_delay_samples, mod_depth_samples;
+    float min_delay, mod_depth;
+    sine_table<int, 4096, 65536> sine;
+public:
+    fixed_point<unsigned int, 20> phase, dphase;
     float get_min_delay() {
         return min_delay;
     }
@@ -90,14 +209,6 @@ public:
         this->mod_depth = mod_depth;
         // 128 because it's then multiplied by (hopefully) a value of 32768..-32767
         this->mod_depth_samples = (int)(mod_depth * 32.0 * sample_rate);
-    }
-    void reset_phase(float req_phase)
-    {
-        phase = req_phase * 4096.0;
-    }
-    void inc_phase(float req_phase)
-    {
-        phase += fixed_point<unsigned int, 20>(req_phase * 4096.0);
     }
 };
 
@@ -123,11 +234,8 @@ public:
         delay.reset();
     }
     virtual void setup(int sample_rate) {
-        this->sample_rate = sample_rate;
-        this->odsr = 1.0 / sample_rate;
+        modulation_effect::setup(sample_rate);
         delay.reset();
-        phase = 0;
-        set_rate(get_rate());
         set_min_delay(get_min_delay());
         set_mod_depth(get_mod_depth());
     }

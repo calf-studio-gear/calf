@@ -62,60 +62,69 @@ const char *organ_audio_module::get_gui_xml()
                 "<value param=\"master\"/>"
             "</vbox>"
         "</hbox>"
-        "<table rows=\"5\" cols=\"9\">"
+        "<table rows=\"6\" cols=\"9\">"
             "<label  attach-x=\"0\" attach-y=\"0\" param=\"h1\"/>"
             "<vscale attach-x=\"0\" attach-y=\"1\" param=\"h1\"/>"
             "<value  attach-x=\"0\" attach-y=\"2\" param=\"h1\"/>"
             "<knob   attach-x=\"0\" attach-y=\"3\" param=\"f1\"/>"
             "<value  attach-x=\"0\" attach-y=\"4\" param=\"f1\"/>"
+            "<combo  attach-x=\"0\" attach-y=\"5\" param=\"w1\"/>"
     
             "<label  attach-x=\"1\" attach-y=\"0\" param=\"h3\"/>"
             "<vscale attach-x=\"1\" attach-y=\"1\" param=\"h3\"/>"
             "<value  attach-x=\"1\" attach-y=\"2\" param=\"h3\"/>"
             "<knob   attach-x=\"1\" attach-y=\"3\" param=\"f2\"/>"
             "<value  attach-x=\"1\" attach-y=\"4\" param=\"f2\"/>"
+            "<combo  attach-x=\"1\" attach-y=\"5\" param=\"w2\"/>"
     
             "<label  attach-x=\"2\" attach-y=\"0\" param=\"h2\"/>"
             "<vscale attach-x=\"2\" attach-y=\"1\" param=\"h2\"/>"
             "<value  attach-x=\"2\" attach-y=\"2\" param=\"h2\"/>"
             "<knob   attach-x=\"2\" attach-y=\"3\" param=\"f3\"/>"
             "<value  attach-x=\"2\" attach-y=\"4\" param=\"f3\"/>"
+            "<combo  attach-x=\"2\" attach-y=\"5\" param=\"w3\"/>"
     
             "<label  attach-x=\"3\" attach-y=\"0\" param=\"h4\"/>"
             "<vscale attach-x=\"3\" attach-y=\"1\" param=\"h4\"/>"
             "<value  attach-x=\"3\" attach-y=\"2\" param=\"h4\"/>"
             "<knob   attach-x=\"3\" attach-y=\"3\" param=\"f4\"/>"
             "<value  attach-x=\"3\" attach-y=\"4\" param=\"f4\"/>"
+            "<combo  attach-x=\"3\" attach-y=\"5\" param=\"w4\"/>"
 
             "<label  attach-x=\"4\" attach-y=\"0\" param=\"h6\"/>"
             "<vscale attach-x=\"4\" attach-y=\"1\" param=\"h6\"/>"
             "<value  attach-x=\"4\" attach-y=\"2\" param=\"h6\"/>"
             "<knob   attach-x=\"4\" attach-y=\"3\" param=\"f5\"/>"
             "<value  attach-x=\"4\" attach-y=\"4\" param=\"f5\"/>"
+            "<combo  attach-x=\"4\" attach-y=\"5\" param=\"w5\"/>"
     
             "<label  attach-x=\"5\" attach-y=\"0\" param=\"h8\"/>"
             "<vscale attach-x=\"5\" attach-y=\"1\" param=\"h8\"/>"
             "<value  attach-x=\"5\" attach-y=\"2\" param=\"h8\"/>"
             "<knob   attach-x=\"5\" attach-y=\"3\" param=\"f6\"/>"
             "<value  attach-x=\"5\" attach-y=\"4\" param=\"f6\"/>"
+            "<combo  attach-x=\"5\" attach-y=\"5\" param=\"w6\"/>"
 
             "<label  attach-x=\"6\" attach-y=\"0\" param=\"h10\"/>"
             "<vscale attach-x=\"6\" attach-y=\"1\" param=\"h10\"/>"
             "<value  attach-x=\"6\" attach-y=\"2\" param=\"h10\"/>"
             "<knob   attach-x=\"6\" attach-y=\"3\" param=\"f7\"/>"
             "<value  attach-x=\"6\" attach-y=\"4\" param=\"f7\"/>"
+            "<combo  attach-x=\"6\" attach-y=\"5\" param=\"w7\"/>"
 
             "<label  attach-x=\"7\" attach-y=\"0\" param=\"h12\"/>"
             "<vscale attach-x=\"7\" attach-y=\"1\" param=\"h12\"/>"
             "<value  attach-x=\"7\" attach-y=\"2\" param=\"h12\"/>"
             "<knob   attach-x=\"7\" attach-y=\"3\" param=\"f8\"/>"
             "<value  attach-x=\"7\" attach-y=\"4\" param=\"f8\"/>"
+            "<combo  attach-x=\"7\" attach-y=\"5\" param=\"w8\"/>"
 
             "<label  attach-x=\"8\" attach-y=\"0\" param=\"h16\"/>"
             "<vscale attach-x=\"8\" attach-y=\"1\" param=\"h16\"/>"
             "<value  attach-x=\"8\" attach-y=\"2\" param=\"h16\"/>"
             "<knob   attach-x=\"8\" attach-y=\"3\" param=\"f9\"/>"
             "<value  attach-x=\"8\" attach-y=\"4\" param=\"f9\"/>"
+            "<combo  attach-x=\"8\" attach-y=\"5\" param=\"w9\"/>"
         "</table>"
     "</vbox>"
     ;
@@ -124,6 +133,8 @@ const char *organ_audio_module::get_gui_xml()
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
+
+const char *organ_wave_names[] = { "Sin", "Pls", "S+1", "S+2", "S+3", "Saw", "Sqr", "SSaw", "SSqr" };
 
 parameter_properties organ_audio_module::param_props[] = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h1", "16'" },
@@ -136,25 +147,25 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h12", "1 1/3'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "h16", "1'" },
 
-    { 1,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f1", "Freq 1" },
-    { 3,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f2", "Freq 2" },
-    { 2,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f3", "Freq 3" },
-    { 4,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f4", "Freq 4" },
-    { 6,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f5", "Freq 5" },
-    { 8,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f6", "Freq 6" },
-    { 10,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f7", "Freq 7" },
-    { 12,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f8", "Freq 8" },
-    { 16,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "f9", "Freq 9" },
+    { 1,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f1", "Freq 1" },
+    { 3,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f2", "Freq 2" },
+    { 2,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f3", "Freq 3" },
+    { 4,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f4", "Freq 4" },
+    { 6,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f5", "Freq 5" },
+    { 8,       1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f6", "Freq 6" },
+    { 10,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f7", "Freq 7" },
+    { 12,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f8", "Freq 8" },
+    { 16,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "f9", "Freq 9" },
 
-    { 2,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w1", "Wave 1" },
-    { 2,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w2", "Wave 2" },
-    { 1,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w3", "Wave 3" },
-    { 1,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w4", "Wave 4" },
-    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w5", "Wave 5" },
-    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w6", "Wave 6" },
-    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w7", "Wave 7" },
-    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w8", "Wave 8" },
-    { 0,       0,  8, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "w9", "Wave 9" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w1", "Wave 1" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w2", "Wave 2" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w3", "Wave 3" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w4", "Wave 4" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w5", "Wave 5" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w6", "Wave 6" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w7", "Wave 7" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w8", "Wave 8" },
+    { 0,       0,  8, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w9", "Wave 9" },
 
     { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
@@ -194,7 +205,43 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_pulse].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = i < (ORGAN_WAVE_SIZE / 2) ? sin(i * 2 * 2 * M_PI / ORGAN_WAVE_SIZE) : 0;
+        waves[wave_sinepl1].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = i < (ORGAN_WAVE_SIZE / 3) ? sin(i * 3 * 2 * M_PI / ORGAN_WAVE_SIZE) : 0;
+        waves[wave_sinepl2].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = i < (ORGAN_WAVE_SIZE / 4) ? sin(i * 4 * 2 * M_PI / ORGAN_WAVE_SIZE) : 0;
-        waves[wave_stretchsine].make(bl, tmp);
+        waves[wave_sinepl3].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = (i < (ORGAN_WAVE_SIZE / 2)) ? 1 : -1;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_sqr].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_saw].make(bl, tmp);
+        
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = (i < (ORGAN_WAVE_SIZE / 2)) ? 1 : -1;
+        bl.compute_spectrum(tmp);
+        for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
+            bl.spectrum[i] *= 1.0 / sqrt(i);
+            bl.spectrum[ORGAN_WAVE_SIZE - i] *= 1.0 / sqrt(i);
+        }
+        bl.compute_waveform(tmp);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_ssqr].make(bl, tmp);
+        
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
+            bl.spectrum[i] *= 1.0 / sqrt(i);
+            bl.spectrum[ORGAN_WAVE_SIZE - i] *= 1.0 / sqrt(i);
+        }
+        bl.compute_waveform(tmp);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_ssaw].make(bl, tmp);
     }
 }

@@ -146,6 +146,80 @@ public:
     static const char *get_label() { return "Flanger"; }
 };
 
+class phaser_audio_module: public null_audio_module
+{
+public:
+    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
+    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
+    static const char *port_names[];
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    bool clear_reset;
+    float last_r_phase;
+    dsp::simple_phaser<12> left, right;
+    static parameter_properties param_props[];
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+        left.setup(sr);
+        right.setup(sr);
+    }
+    void params_changed() {
+        float dry = 1.0;
+        float wet = *params[par_amount];
+        float rate = *params[par_rate]; // 0.01*pow(1000.0f,*params[par_rate]);
+        float base_frq = *params[par_freq];
+        float mod_depth = *params[par_depth];
+        float fb = *params[par_fb];
+        int stages = (int)*params[par_stages];
+        left.set_dry(dry); right.set_dry(dry);
+        left.set_wet(wet); right.set_wet(wet);
+        left.set_rate(rate); right.set_rate(rate);
+        left.set_base_frq(base_frq); right.set_base_frq(base_frq);
+        left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+        left.set_fb(fb); right.set_fb(fb);
+        left.set_stages(stages); right.set_stages(stages);
+        float r_phase = *params[par_stereo] * (1.f / 360.f);
+        clear_reset = false;
+        if (*params[par_reset] >= 0.5) {
+            clear_reset = true;
+            left.reset_phase(0.f);
+            right.reset_phase(r_phase);
+        } else {
+            if (fabs(r_phase - last_r_phase) > 0.0001f) {
+                right.phase = left.phase;
+                right.inc_phase(r_phase);
+                last_r_phase = r_phase;
+            }
+        }
+    }
+    void params_reset()
+    {
+        if (clear_reset) {
+            *params[par_reset] = 0.f;
+            clear_reset = false;
+        }
+    }
+    void activate() {
+        left.reset();
+        right.reset();
+        last_r_phase = *params[par_stereo] * (1.f / 360.f);
+        left.reset_phase(0.f);
+        right.reset_phase(last_r_phase);
+    }
+    void deactivate() {
+    }
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        left.process(outs[0] + offset, ins[0] + offset, nsamples);
+        right.process(outs[1] + offset, ins[1] + offset, nsamples);
+        return outputs_mask; // XXXKF allow some delay after input going blank
+    }
+    static const char *get_name() { return "phaser"; }
+    static const char *get_id() { return "phaser"; }
+    static const char *get_label() { return "Phaser"; }
+};
+
 class reverb_audio_module: public null_audio_module
 {
 public:    
