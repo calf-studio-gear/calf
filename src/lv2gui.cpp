@@ -81,7 +81,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
         params[param_no] = value;
         if (send) {
             send = false;
-            write_function(controller, param_no + Module::in_count + Module::out_count, sizeof(float), &params[param_no]);
+            write_function(controller, param_no + Module::in_count + Module::out_count, sizeof(float), 0, &params[param_no]);
             send = true;
         }
     }
@@ -156,7 +156,6 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     bundle_path,
                           LV2UI_Write_Function            write_function,
                           LV2UI_Controller                controller,
-                          LV2UI_Host_Data                 host_data,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
@@ -182,7 +181,7 @@ void gui_cleanup(LV2UI_Handle handle)
     delete gui;
 }
 
-void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, const void *buffer)
+void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
     plugin_gui *gui = (plugin_gui *)handle;
     float v = *(float *)buffer;

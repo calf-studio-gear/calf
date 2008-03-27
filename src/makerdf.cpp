@@ -122,8 +122,7 @@ void make_ttl(string path_prefix)
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
-        "@prefix midiext: <http://ll-plugins.nongnu.org/lv2/ext/MidiPort> .\n"
-        "@prefix uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#> .\n"
+        "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
 
@@ -151,7 +150,11 @@ void make_ttl(string path_prefix)
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
 #if USE_LV2_GUI
-    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n    a uiext:GtkUI ;\n    uiext:binary <calflv2gui.so> .\n\n";
+    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n"
+        "    a uiext:GtkUI ;\n"
+        "    uiext:binary <calflv2gui.so> ;\n"
+        "    uiext:requiredFeature uiext:makeResident .\n";
+        "    \n";
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
@@ -188,7 +191,6 @@ void make_ttl(string path_prefix)
         for (int i = 0; i < pi.params; i++)
             add_ctl_port(ports, pi.param_props[i], pn++);
         if (pi.midi_in_capable) {
-            add_port(ports, "midi_in", "MIDI", "Input", pn++, "<http://ll-plugins.nongnu.org/lv2/ext/MidiPort>", true);
             add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
         }
         if (!ports.empty())

@@ -116,9 +116,6 @@ struct lv2_wrapper
             mod->params[i] = (float *)DataLocation;
         }
         else if (Module::support_midi && port == ins + outs + params) {
-            mod->midi_data = (LV2_MIDI *)DataLocation;
-        }
-        else if (Module::support_midi && port == ins + outs + params + 1) {
             mod->event_data = (LV2_Event_Buffer *)DataLocation;
         }
     }
@@ -217,35 +214,6 @@ struct lv2_wrapper
                     mod->event_feature->lv2_event_drop(mod->event_feature->callback_data, item, 0);
                 // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
                 data += ((sizeof(LV2_Event) + item->size + 7))&~7;
-            }
-        }
-        else
-        if (mod->midi_data)
-        {
-            struct MIDI_ITEM {
-                double timestamp;
-                uint32_t size;
-                unsigned char data[1];
-            };
-            unsigned char *data = (unsigned char *)mod->midi_data->data;
-            for (uint32_t i = 0; i < mod->midi_data->event_count; i++) {
-                MIDI_ITEM *item = (MIDI_ITEM *)data;
-                uint32_t ts = (int)item->timestamp;
-                if (ts > offset)
-                {
-                    process_slice(mod, offset, ts);
-                    offset = ts;
-                }
-                switch(item->data[0] >> 4)
-                {
-                case 8: mod->note_off(item->data[1], item->data[2]); break;
-                case 9: mod->note_on(item->data[1], item->data[2]); break;
-                case 10: mod->program_change(item->data[1]); break;
-                case 11: mod->control_change(item->data[1], item->data[2]); break;
-                case 14: mod->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
-                }
-                // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
-                data += 12 + item->size;
             }
         }
         process_slice(mod, offset, SampleCount);
