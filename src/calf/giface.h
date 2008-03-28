@@ -164,6 +164,7 @@ extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_proper
 template<class Module>
 struct ladspa_instance: public Module, public plugin_ctl_iface
 {
+    bool activate_flag;
     ladspa_instance()
     {
         for (int i=0; i < Module::in_count; i++)
@@ -172,6 +173,7 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
             Module::outs[i] = NULL;
         for (int i=0; i < Module::param_count; i++)
             Module::params[i] = NULL;
+        activate_flag = true;
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -387,12 +389,7 @@ struct ladspa_wrapper
 
     static void cb_activate(LADSPA_Handle Instance) {
         instance *const mod = (instance *)Instance;
-        mod->set_sample_rate(mod->srate);
-        mod->activate();
-        /*
-        for (int i =0 ; i < Module::param_count; i++)
-            *mod->params[i] = Module::param_props[i].def_value;
-        */
+        mod->activate_flag = true;
     }
     
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
@@ -406,6 +403,12 @@ struct ladspa_wrapper
 
     static void cb_run(LADSPA_Handle Instance, unsigned long SampleCount) {
         instance *const mod = (instance *)Instance;
+        if (mod->activate_flag)
+        {
+            mod->set_sample_rate(mod->srate);
+            mod->activate();
+            mod->activate_flag = false;
+        }
         mod->params_changed();
         process_slice(mod, 0, SampleCount);
     }
@@ -425,6 +428,12 @@ struct ladspa_wrapper
     static void cb_run_synth(LADSPA_Handle Instance, unsigned long SampleCount, 
             snd_seq_event_t *Events, unsigned long EventCount) {
         instance *const mod = (instance *)Instance;
+        if (mod->activate_flag)
+        {
+            mod->set_sample_rate(mod->srate);
+            mod->activate();
+            mod->activate_flag = false;
+        }
         mod->params_changed();
         
         uint32_t offset = 0;
