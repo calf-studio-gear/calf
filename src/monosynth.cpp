@@ -360,7 +360,7 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
         enum { S = 1 << MONOSYNTH_WAVE_BITS };
         int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
-        float *waveform = waves[wave].get_level(0);
+        float *waveform = waves[wave].original;
         for (int i = 0; i < points; i++)
             data[i] = waveform[i * S / points];
         return true;

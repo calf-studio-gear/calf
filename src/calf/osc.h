@@ -107,9 +107,11 @@ struct waveform_family: public map<uint32_t, float *>
     using map<uint32_t, float *>::iterator;
     using map<uint32_t, float *>::end;
     using map<uint32_t, float *>::lower_bound;
+    float original[SIZE];
     
     void make(bandlimiter<SIZE_BITS> &bl, float input[SIZE])
     {
+        memcpy(original, input, sizeof(original));
         bl.compute_spectrum(input);
         bl.remove_dc();
         

@@ -153,7 +153,7 @@ void make_ttl(string path_prefix)
     header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
-        "    uiext:requiredFeature uiext:makeResident .\n";
+        "    uiext:requiredFeature uiext:makeResident .\n"
         "    \n";
 #endif
     
@@ -178,7 +178,8 @@ void make_ttl(string path_prefix)
         if (pi.rt_capable)
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
         if (pi.midi_in_capable)
-            ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
+            ttl += "    lv2:optionalFeature <" LV2_EVENT_URI "> ;\n";
+            // ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
         
         string ports = "";
         int pn = 0;

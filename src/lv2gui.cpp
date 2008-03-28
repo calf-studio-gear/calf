@@ -185,9 +185,10 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
 {
     plugin_gui *gui = (plugin_gui *)handle;
     float v = *(float *)buffer;
-    // printf("spv %d %f\n", port, v);
     port -= gui->plugin->get_param_port_offset();
     if (port >= (uint32_t)gui->plugin->get_param_count())
+        return;
+    if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
     gui->set_param_value(port, v);
 }
