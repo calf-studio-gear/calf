@@ -47,8 +47,8 @@ public:
     /// copy constructor from any other fixed_point value
     template<class U, int FracBits2> inline fixed_point(const fixed_point<U, FracBits2> &v) {
         if (FracBits == FracBits2) value = v.get();
-        else if (FracBits > FracBits2) value = v.get() << (FracBits - FracBits2);
-        else value = v.get() >> (FracBits - FracBits2);
+        else if (FracBits > FracBits2) value = v.get() << abs(FracBits - FracBits2);
+        else value = v.get() >> abs(FracBits - FracBits2);
     }
 
     /* this would be way too confusing, it wouldn't be obvious if it expects a whole fixed point or an integer part
@@ -57,7 +57,11 @@ public:
     }
     */
     explicit inline fixed_point(double v) {
-        value = (T)(v*(1<<FracBits));
+        value = (T)(v*one());
+    }
+    
+    inline T one() {
+        return (T)(1) << FracBits;
     }
 
     inline void set(T value) {
@@ -69,45 +73,43 @@ public:
     }
       
     inline operator double() const {
-        return value * (1.0/(1<<FracBits));
+        return value * (1.0/one());
     }
     
     inline fixed_point &operator=(double v) {
-        value = (int)(v*(1<<FracBits));
+        value = (T)(v*one());
         return *this;
     }
     
+    template<class U, int FracBits2> inline T rebase(const fixed_point<U, FracBits2> &v) {
+        if (FracBits == FracBits2) 
+            return v.get();
+        if (FracBits > FracBits2) 
+            return v.get() << abs(FracBits - FracBits2);
+        return v.get() >> abs(FracBits2 - FracBits);
+    }
+    
     template<class U, int FracBits2> inline fixed_point &operator=(const fixed_point<U, FracBits2> &v) {
-        if (FracBits == FracBits2) value = v.value;
-        else if (FracBits > FracBits2) value = v.value << (FracBits - FracBits2);
-        else value = v.value >> (FracBits - FracBits2);
+        value = rebase<U, FracBits2>(v);
         return *this;
     }
 
     template<class U, int FracBits2> inline fixed_point &operator+=(const fixed_point<U, FracBits2> &v) {
-        if (FracBits == FracBits2) value += v.value;
-        else if (FracBits > FracBits2) value += v.value << (FracBits - FracBits2);
-        else value += v.value >> (FracBits - FracBits2);
+        value += rebase<U, FracBits2>(v);
         return *this;
     }
 
     template<class U, int FracBits2> inline fixed_point &operator-=(const fixed_point<U, FracBits2> &v) {
-        if (FracBits == FracBits2) value -= v.value;
-        else if (FracBits > FracBits2) value -= v.value << (FracBits - FracBits2);
-        else value -= v.value >> (FracBits - FracBits2);
+        value -= rebase<U, FracBits2>(v);
         return *this;
     }
 
     template<class U, int FracBits2> inline fixed_point operator+(const fixed_point<U, FracBits2> &v) const {
-        if (FracBits == FracBits2) return value + v.value;
-        if (FracBits > FracBits2) return (value >> (FracBits - FracBits2)) + v.value;
-        return value + (v.value >> (FracBits2 - FracBits)) ;
+        return value + rebase<U, FracBits2>(v.get());
     }
 
     template<class U, int FracBits2> inline fixed_point operator-(const fixed_point<U, FracBits2> &v) const {
-        if (FracBits == FracBits2) return value - v.value;
-        if (FracBits > FracBits2) return (value >> (FracBits - FracBits2)) - v.value;
-        return value - (v.value >> (FracBits2 - FracBits)) ;
+        return value - rebase<U, FracBits2>(v.get());
     }
 
     /// multiply two fixed point values, using long long int to store the temporary multiplication result

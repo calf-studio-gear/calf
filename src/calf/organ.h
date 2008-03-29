@@ -31,16 +31,20 @@ struct organ_parameters {
     float drawbars[9];
     float harmonics[9];
     float waveforms[9];
+    float detune[9];
+    float phase[9];
     float foldover;
     float percussion_time;
     float percussion_level;
-    float harmonic;
+    float percussion_harmonic;
     float master;
     
     double perc_decay_const;
+    float multiplier[9];
+    int phaseshift[9];
 
     inline bool get_foldover() { return foldover >= 0.5f; }
-    inline int get_harmonic() { return dsp::fastf2i_drm(harmonic); }
+    inline int get_percussion_harmonic() { return dsp::fastf2i_drm(percussion_harmonic); }
 };
 
 #define ORGAN_WAVE_BITS 12
@@ -49,10 +53,10 @@ struct organ_parameters {
 class organ_voice_base
 {
 protected:
-    enum { wave_sine, wave_pulse, wave_sinepl1, wave_sinepl2, wave_sinepl3, wave_saw, wave_sqr, wave_ssaw, wave_ssqr, wave_count };
+    enum { wave_sine, wave_sinepl1, wave_sinepl2, wave_sinepl3, wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_count };
     static waveform_family<ORGAN_WAVE_BITS> waves[wave_count];
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
-    dsp::fixed_point<int, 20> phase, dphase;
+    dsp::fixed_point<int64_t, 52> phase, dphase;
     int note;
     dsp::decay amp;
     organ_parameters *parameters;
@@ -130,7 +134,7 @@ public:
             for (int h = 0; h < 9; h++)
             {
                 float *data;
-                dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->harmonics[h]);
+                dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h]);
                 int waveid = (int)parameters->waveforms[h];
                 if (waveid < 0 || waveid >= wave_count)
                     waveid = 0;
@@ -140,8 +144,8 @@ public:
                         break;
                     hm.set(hm.get() >> 1);
                 } while(1);
-                tphase = phase * hm;
-                tdphase = dphase * hm;
+                tphase.set(((phase * hm).get() & 0xFFFFFFFF) + parameters->phaseshift[h]);
+                tdphase.set((dphase * hm).get() & 0xFFFFFFFF);
                 float amp = parameters->drawbars[h];
                 for (int i=0; i<nsamples; i++) {
     //                float osc = 0.2*sine(phase)+0.1*sine(4*phase)+0.08*sine(12*phase)+0.08*sine(16*phase);
@@ -197,13 +201,13 @@ public:
             return;
         if (parameters->percussion_level < small_value<float>())
             return;
-        int harmonic = 2 * parameters->get_harmonic();
+        int percussion_harmonic = 2 * parameters->get_percussion_harmonic();
         float level = parameters->percussion_level * (8 * 9);
         // XXXKF the decay needs work!
         double age_const = parameters->perc_decay_const;
         float *data = waves[wave_sine].begin()->second;
         for (int i = 0; i < nsamples; i++) {
-            float osc = level * wave(data, harmonic * phase);
+            float osc = level * wave(data, percussion_harmonic * phase);
             buf[i] += osc * amp.get();
             amp.age_exp(age_const, 1.0 / 32768.0);
             phase += dphase;
@@ -252,6 +256,11 @@ struct drawbar_organ: public synth::basic_synth {
     void update_params()
     {
         parameters->perc_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_time * sample_rate);
+        for (int i = 0; i < 9; i++)
+        {
+            parameters->multiplier[i] = parameters->harmonics[i] * pow(2.0, parameters->detune[i] * (1.0 / 1200.0));
+            parameters->phaseshift[i] = int(parameters->phase[i] * 65536 / 360) << 16;
+        }
     }
 };
 

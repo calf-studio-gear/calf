@@ -200,9 +200,11 @@ void vscale_param_control::vscale_value_changed(GtkHScale *widget, gpointer valu
 GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
-    string text = "<no name>";
+    string text;
     if (param_no != -1)
         text = get_props().name;
+    else
+        text = attribs["text"];
     widget = gtk_label_new(text.c_str());
     return widget;
 }
