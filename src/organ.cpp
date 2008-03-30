@@ -33,6 +33,20 @@
 using namespace synth;
 using namespace std;
 
+#define DRAWBAR_UI(no) \
+            "<label  attach-x=\"" no "\" attach-y=\"0\" param=\"l" no "\"/>" \
+            "<vscale attach-x=\"" no "\" attach-y=\"1\" param=\"l" no "\"/>" \
+            "<value  attach-x=\"" no "\" attach-y=\"2\" param=\"l" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"3\" param=\"f" no "\"/>" \
+            "<value  attach-x=\"" no "\" attach-y=\"4\" param=\"f" no "\"/>" \
+            "<combo  attach-x=\"" no "\" attach-y=\"5\" param=\"w" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"6\" param=\"detune" no "\"/>" \
+            "<value  attach-x=\"" no "\" attach-y=\"7\" param=\"detune" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"8\" param=\"phase" no "\"/>" \
+            "<value  attach-x=\"" no "\" attach-y=\"9\" param=\"phase" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"10\" param=\"pan" no "\"/>" \
+            "<value  attach-x=\"" no "\" attach-y=\"11\" param=\"pan" no "\"/>"
+
 const char *organ_audio_module::get_gui_xml()
 {
     return 
@@ -62,111 +76,23 @@ const char *organ_audio_module::get_gui_xml()
                 "<value param=\"master\"/>"
             "</vbox>"
         "</hbox>"
-        "<table rows=\"10\" cols=\"9\">"
+        "<table rows=\"12\" cols=\"9\">"
             "<label  attach-x=\"0\" attach-y=\"1\" text=\"Level\"/>"
             "<label  attach-x=\"0\" attach-y=\"3\" text=\"Harmonic\"/>"
             "<label  attach-x=\"0\" attach-y=\"5\" text=\"Wave\"/>"
             "<label  attach-x=\"0\" attach-y=\"6\" text=\"Detune\"/>"
             "<label  attach-x=\"0\" attach-y=\"8\" text=\"Phase\"/>"
+            "<label  attach-x=\"0\" attach-y=\"10\" text=\"Pan\"/>"
 
-            "<label  attach-x=\"1\" attach-y=\"0\" param=\"l1\"/>"
-            "<vscale attach-x=\"1\" attach-y=\"1\" param=\"l1\"/>"
-            "<value  attach-x=\"1\" attach-y=\"2\" param=\"l1\"/>"
-            "<knob   attach-x=\"1\" attach-y=\"3\" param=\"f1\"/>"
-            "<value  attach-x=\"1\" attach-y=\"4\" param=\"f1\"/>"
-            "<combo  attach-x=\"1\" attach-y=\"5\" param=\"w1\"/>"
-            "<knob   attach-x=\"1\" attach-y=\"6\" param=\"detune1\"/>"
-            "<value  attach-x=\"1\" attach-y=\"7\" param=\"detune1\"/>"
-            "<knob   attach-x=\"1\" attach-y=\"8\" param=\"phase1\"/>"
-            "<value  attach-x=\"1\" attach-y=\"9\" param=\"phase1\"/>"
-    
-            "<label  attach-x=\"2\" attach-y=\"0\" param=\"l2\"/>"
-            "<vscale attach-x=\"2\" attach-y=\"1\" param=\"l2\"/>"
-            "<value  attach-x=\"2\" attach-y=\"2\" param=\"l2\"/>"
-            "<knob   attach-x=\"2\" attach-y=\"3\" param=\"f2\"/>"
-            "<value  attach-x=\"2\" attach-y=\"4\" param=\"f2\"/>"
-            "<combo  attach-x=\"2\" attach-y=\"5\" param=\"w2\"/>"
-            "<knob   attach-x=\"2\" attach-y=\"6\" param=\"detune2\"/>"
-            "<value  attach-x=\"2\" attach-y=\"7\" param=\"detune2\"/>"
-            "<knob   attach-x=\"2\" attach-y=\"8\" param=\"phase2\"/>"
-            "<value  attach-x=\"2\" attach-y=\"9\" param=\"phase2\"/>"
-    
-            "<label  attach-x=\"3\" attach-y=\"0\" param=\"l3\"/>"
-            "<vscale attach-x=\"3\" attach-y=\"1\" param=\"l3\"/>"
-            "<value  attach-x=\"3\" attach-y=\"2\" param=\"l3\"/>"
-            "<knob   attach-x=\"3\" attach-y=\"3\" param=\"f3\"/>"
-            "<value  attach-x=\"3\" attach-y=\"4\" param=\"f3\"/>"
-            "<combo  attach-x=\"3\" attach-y=\"5\" param=\"w3\"/>"
-            "<knob   attach-x=\"3\" attach-y=\"6\" param=\"detune3\"/>"
-            "<value  attach-x=\"3\" attach-y=\"7\" param=\"detune3\"/>"
-            "<knob   attach-x=\"3\" attach-y=\"8\" param=\"phase3\"/>"
-            "<value  attach-x=\"3\" attach-y=\"9\" param=\"phase3\"/>"
-    
-            "<label  attach-x=\"4\" attach-y=\"0\" param=\"l4\"/>"
-            "<vscale attach-x=\"4\" attach-y=\"1\" param=\"l4\"/>"
-            "<value  attach-x=\"4\" attach-y=\"2\" param=\"l4\"/>"
-            "<knob   attach-x=\"4\" attach-y=\"3\" param=\"f4\"/>"
-            "<value  attach-x=\"4\" attach-y=\"4\" param=\"f4\"/>"
-            "<combo  attach-x=\"4\" attach-y=\"5\" param=\"w4\"/>"
-            "<knob   attach-x=\"4\" attach-y=\"6\" param=\"detune4\"/>"
-            "<value  attach-x=\"4\" attach-y=\"7\" param=\"detune4\"/>"
-            "<knob   attach-x=\"4\" attach-y=\"8\" param=\"phase4\"/>"
-            "<value  attach-x=\"4\" attach-y=\"9\" param=\"phase4\"/>"
-
-            "<label  attach-x=\"5\" attach-y=\"0\" param=\"l5\"/>"
-            "<vscale attach-x=\"5\" attach-y=\"1\" param=\"l5\"/>"
-            "<value  attach-x=\"5\" attach-y=\"2\" param=\"l5\"/>"
-            "<knob   attach-x=\"5\" attach-y=\"3\" param=\"f5\"/>"
-            "<value  attach-x=\"5\" attach-y=\"4\" param=\"f5\"/>"
-            "<combo  attach-x=\"5\" attach-y=\"5\" param=\"w5\"/>"
-            "<knob   attach-x=\"5\" attach-y=\"6\" param=\"detune5\"/>"
-            "<value  attach-x=\"5\" attach-y=\"7\" param=\"detune5\"/>"
-            "<knob   attach-x=\"5\" attach-y=\"8\" param=\"phase5\"/>"
-            "<value  attach-x=\"5\" attach-y=\"9\" param=\"phase5\"/>"
-    
-            "<label  attach-x=\"6\" attach-y=\"0\" param=\"l6\"/>"
-            "<vscale attach-x=\"6\" attach-y=\"1\" param=\"l6\"/>"
-            "<value  attach-x=\"6\" attach-y=\"2\" param=\"l6\"/>"
-            "<knob   attach-x=\"6\" attach-y=\"3\" param=\"f6\"/>"
-            "<value  attach-x=\"6\" attach-y=\"4\" param=\"f6\"/>"
-            "<combo  attach-x=\"6\" attach-y=\"5\" param=\"w6\"/>"
-            "<knob   attach-x=\"6\" attach-y=\"6\" param=\"detune6\"/>"
-            "<value  attach-x=\"6\" attach-y=\"7\" param=\"detune6\"/>"
-            "<knob   attach-x=\"6\" attach-y=\"8\" param=\"phase6\"/>"
-            "<value  attach-x=\"6\" attach-y=\"9\" param=\"phase6\"/>"
-
-            "<label  attach-x=\"7\" attach-y=\"0\" param=\"l7\"/>"
-            "<vscale attach-x=\"7\" attach-y=\"1\" param=\"l7\"/>"
-            "<value  attach-x=\"7\" attach-y=\"2\" param=\"l7\"/>"
-            "<knob   attach-x=\"7\" attach-y=\"3\" param=\"f7\"/>"
-            "<value  attach-x=\"7\" attach-y=\"4\" param=\"f7\"/>"
-            "<combo  attach-x=\"7\" attach-y=\"5\" param=\"w7\"/>"
-            "<knob   attach-x=\"7\" attach-y=\"6\" param=\"detune7\"/>"
-            "<value  attach-x=\"7\" attach-y=\"7\" param=\"detune7\"/>"
-            "<knob   attach-x=\"7\" attach-y=\"8\" param=\"phase7\"/>"
-            "<value  attach-x=\"7\" attach-y=\"9\" param=\"phase7\"/>"
-
-            "<label  attach-x=\"8\" attach-y=\"0\" param=\"l8\"/>"
-            "<vscale attach-x=\"8\" attach-y=\"1\" param=\"l8\"/>"
-            "<value  attach-x=\"8\" attach-y=\"2\" param=\"l8\"/>"
-            "<knob   attach-x=\"8\" attach-y=\"3\" param=\"f8\"/>"
-            "<value  attach-x=\"8\" attach-y=\"4\" param=\"f8\"/>"
-            "<combo  attach-x=\"8\" attach-y=\"5\" param=\"w8\"/>"
-            "<knob   attach-x=\"8\" attach-y=\"6\" param=\"detune8\"/>"
-            "<value  attach-x=\"8\" attach-y=\"7\" param=\"detune8\"/>"
-            "<knob   attach-x=\"8\" attach-y=\"8\" param=\"phase8\"/>"
-            "<value  attach-x=\"8\" attach-y=\"9\" param=\"phase8\"/>"
-
-            "<label  attach-x=\"9\" attach-y=\"0\" param=\"l9\"/>"
-            "<vscale attach-x=\"9\" attach-y=\"1\" param=\"l9\"/>"
-            "<value  attach-x=\"9\" attach-y=\"2\" param=\"l9\"/>"
-            "<knob   attach-x=\"9\" attach-y=\"3\" param=\"f9\"/>"
-            "<value  attach-x=\"9\" attach-y=\"4\" param=\"f9\"/>"
-            "<combo  attach-x=\"9\" attach-y=\"5\" param=\"w9\"/>"
-            "<knob   attach-x=\"9\" attach-y=\"6\" param=\"detune9\"/>"
-            "<value  attach-x=\"9\" attach-y=\"7\" param=\"detune9\"/>"
-            "<knob   attach-x=\"9\" attach-y=\"8\" param=\"phase9\"/>"
-            "<value  attach-x=\"9\" attach-y=\"9\" param=\"phase9\"/>"
+            DRAWBAR_UI("1")
+            DRAWBAR_UI("2")
+            DRAWBAR_UI("3")
+            DRAWBAR_UI("4")
+            DRAWBAR_UI("5")
+            DRAWBAR_UI("6")
+            DRAWBAR_UI("7")
+            DRAWBAR_UI("8")
+            DRAWBAR_UI("9")
         "</table>"
     "</vbox>"
     ;
@@ -209,25 +135,35 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,       0,  9, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w8", "Wave 8" },
     { 0,       0,  9, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_wave_names, "w9", "Wave 9" },
 
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune1", "Detune 1" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune2", "Detune 2" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune3", "Detune 3" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune4", "Detune 4" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune5", "Detune 5" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune6", "Detune 6" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune7", "Detune 7" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune8", "Detune 8" },
-    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "detune9", "Detune 9" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune1", "Detune 1" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune2", "Detune 2" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune3", "Detune 3" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune4", "Detune 4" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune5", "Detune 5" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune6", "Detune 6" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune7", "Detune 7" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune8", "Detune 8" },
+    { 0,    -100,100, 401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune9", "Detune 9" },
 
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase1", "Phase 1" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase2", "Phase 2" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase3", "Phase 3" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase4", "Phase 4" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase5", "Phase 5" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase6", "Phase 6" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase7", "Phase 7" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase8", "Phase 8" },
-    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "phase9", "Phase 9" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase1", "Phase 1" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase2", "Phase 2" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase3", "Phase 3" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase4", "Phase 4" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase5", "Phase 5" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase6", "Phase 6" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase7", "Phase 7" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase8", "Phase 8" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "phase9", "Phase 9" },
+
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan1", "Pan 1" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan2", "Pan 2" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan3", "Pan 3" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan4", "Pan 4" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan5", "Pan 5" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan6", "Pan 6" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan7", "Pan 7" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan8", "Pan 8" },
+    { 0,      -1,  1, 201, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pan9", "Pan 9" },
 
     { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
