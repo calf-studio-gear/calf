@@ -33,7 +33,8 @@ using namespace synth;
 void basic_synth::kill_note(int note, int vel, bool just_one)
 {
     for (list<synth::voice *>::iterator it = active_voices.begin(); it != active_voices.end(); it++) {
-        if ((*it)->get_current_note() == note) {
+        // preserve sostenuto notes
+        if ((*it)->get_current_note() == note && !(sostenuto && (*it)->sostenuto)) {
             (*it)->note_off(vel);
             if (just_one)
                 return;
@@ -59,13 +60,11 @@ void basic_synth::note_on(int note, int vel)
         note_off(note, 0);
         return;
     }
-    bool perc = keystack_hold.empty() && keystack.empty();
+    bool perc = active_voices.empty();
     synth::voice *v = alloc_voice();
     v->setup(sample_rate);
-    if (hold)
-        keystack_hold.push(note);
-    else
-        keystack.push(note);
+    v->released = false;
+    v->sostenuto = false;
     gate.set(note);
     v->note_on(note, vel);
     active_voices.push_back(v);
@@ -74,31 +73,48 @@ void basic_synth::note_on(int note, int vel)
     }
 }
 
-void basic_synth::note_off(int note, int vel) {
+void basic_synth::note_off(int note, int vel)
+{
     gate.reset(note);
-    if (keystack.pop(note)) {
-        kill_note(note, vel, keystack_hold.has(note));
-    }        
+    if (!hold)
+        kill_note(note, vel, false);
 }
+
+#define for_all_voices(iter) for (std::list<synth::voice *>::iterator iter = active_voices.begin(); iter != active_voices.end(); iter++)
     
+void basic_synth::on_pedal_release()
+{
+    for_all_voices(i)
+    {
+        int note = (*i)->get_current_note();
+        if (note < 0 || note > 127)
+            continue;
+        bool still_held = gate[note];
+        // sostenuto pedal released
+        if ((*i)->sostenuto && !sostenuto)
+        {
+            // mark note as non-sostenuto
+            (*i)->sostenuto = false;
+            // if key still pressed or hold pedal used, hold the note (as non-sostenuto so it can be released later by releasing the key or pedal)
+            // if key has been released and hold pedal is not depressed, release the note
+            if (!still_held && !hold)
+                (*i)->note_off(127);
+        }
+        else if (!hold && !still_held && !(*i)->released)
+        {
+            (*i)->released = true;
+            (*i)->note_off(127);
+        }
+    }
+}
+
 void basic_synth::control_change(int ctl, int val)
 {
     if (ctl == 64) { // HOLD controller
         bool prev = hold;
         hold = (val >= 64);
         if (!hold && prev && !sostenuto) {
-            // HOLD was released - release all keys which were previously held
-            for (int i=0; i<keystack_hold.count(); i++) {
-                int note = keystack_hold.nth(i);
-                if (!gate.test(note)) {
-                    kill_note(note, 0, false);
-                    keystack_hold.pop(note);
-                    i--;
-                }
-            }
-            for (int i=0; i<keystack_hold.count(); i++)
-                keystack.push(keystack_hold.nth(i));
-            keystack_hold.clear();
+            on_pedal_release();
         }
     }
     if (ctl == 66) { // SOSTENUTO controller
@@ -106,28 +122,26 @@ void basic_synth::control_change(int ctl, int val)
         sostenuto = (val >= 64);
         if (sostenuto && !prev) {
             // SOSTENUTO was pressed - move all notes onto sustain stack
-            for (int i=0; i<keystack.count(); i++) {
-                keystack_hold.push(keystack.nth(i));
+            for_all_voices(i) {
+                (*i)->sostenuto = true;
             }
-            keystack.clear();
         }
         if (!sostenuto && prev) {
             // SOSTENUTO was released - release all keys which were previously held
-            for (int i=0; i<keystack_hold.count(); i++) {
-                kill_note(keystack_hold.nth(i), 0, false);
-            }
-            keystack_hold.clear();
+            on_pedal_release();
         }
     }
     if (ctl == 123 || ctl == 120) { // all notes off, all sounds off
         vector<int> notes;
         notes.reserve(128);
-        if (ctl == 120) // for "all sounds off", automatically release hold pedal
+        if (ctl == 120) { // for "all sounds off", automatically release hold and sostenuto pedal
+            control_change(66, 0);
             control_change(64, 0);
-        for (int i = 0; i < keystack.count(); i++)
-            notes.push_back(keystack.nth(i));
-        for (int i = 0; i < (int)notes.size(); i++)
-            note_off(notes[i], 0);
+        }
+        for_all_voices(i)
+        {
+            (*i)->note_off(127);
+        }
     }
     if (ctl == 121) { 
         control_change(1, 0);

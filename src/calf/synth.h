@@ -103,6 +103,9 @@ inline unsigned int midi_note_to_phase(int note, double cents, int sr) {
 class voice {
 public:
     int sample_rate;
+    bool released, sostenuto;
+
+    voice() : sample_rate(-1), released(false), sostenuto(false) {}
 
     /// reset voice to default state (used when a voice is to be reused)
     virtual void setup(int sr) { sample_rate = sr; }
@@ -130,7 +133,6 @@ public:
 /// @todo it would make sense to support all notes off controller too
 struct basic_synth {
 protected:
-    synth::keystack keystack, keystack_hold;
     int sample_rate;
     bool hold, sostenuto;
     std::list<synth::voice *> active_voices;
@@ -151,6 +153,7 @@ public:
     virtual void first_note_on(int note, int vel) {}
     virtual void control_change(int ctl, int val);
     virtual void note_off(int note, int vel);
+    virtual void on_pedal_release();
     virtual ~basic_synth();
 };
 
