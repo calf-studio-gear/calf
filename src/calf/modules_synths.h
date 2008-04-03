@@ -204,7 +204,10 @@ public:
         par_phase1, par_phase2, par_phase3, par_phase4, par_phase5, par_phase6, par_phase7, par_phase8, par_phase9, 
         par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
         par_foldover,
-        par_percdecay, par_perclevel, par_percharm, par_master, param_count };
+        par_percdecay, par_perclevel, par_percharm, par_master, 
+        par_f1cutoff, par_f1res, par_f1env1,
+        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release,
+        param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 

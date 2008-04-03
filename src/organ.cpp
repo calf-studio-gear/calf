@@ -94,6 +94,36 @@ const char *organ_audio_module::get_gui_xml()
             DRAWBAR_UI("8")
             DRAWBAR_UI("9")
         "</table>"
+        "<hbox>"
+            "<vbox>"
+            "  <label param=\"f1_cutoff\" />"
+            "  <align><knob param=\"f1_cutoff\" expand=\"0\" fill=\"0\"/></align><value param=\"f1_cutoff\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"f1_res\" />"
+            "  <align><knob param=\"f1_res\" expand=\"0\" fill=\"0\"/></align><value param=\"f1_res\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"f1_env1\" />"
+            "  <align><knob param=\"f1_env1\" expand=\"0\" fill=\"0\"/></align><value param=\"f1_env1\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"adsr_a\" />"
+            "  <align><knob param=\"adsr_a\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_a\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"adsr_d\" />"
+            "  <align><knob param=\"adsr_d\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_d\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"adsr_s\" />"
+            "  <align><knob param=\"adsr_s\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_s\"/>"
+            "</vbox>"
+            "<vbox>"
+            "  <label param=\"adsr_r\" />"
+            "  <align><knob param=\"adsr_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_r\"/>"
+            "</vbox>"
+        "</hbox>"
     "</vbox>"
     ;
 }
@@ -171,6 +201,15 @@ parameter_properties organ_audio_module::param_props[] = {
     { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_harm", "Perc. harmonic" },
 
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
+    
+    { 2000,   20, 20000, 100, PF_FLOAT | PF_SCALE_LOG | PF_UNIT_HZ | PF_CTL_KNOB, NULL, "f1_cutoff", "F1 Cutoff" },
+    { 2,        0.7,    8,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL, "f1_res", "F1 Res" },
+    { 8000,  -10800,10800,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "f1_env1", "F1 Env1" },
+
+    { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_a", "EG1 Attack" },
+    { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_d", "EG1 Decay" },
+    { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_s", "EG1 Sustain" },
+    { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_r", "EG1 Release" },
 };
 
 ////////////////////////////////////////////////////////////////////////////
