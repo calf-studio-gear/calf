@@ -27,6 +27,13 @@
 namespace synth 
 {
 
+struct organproc_parameters
+{
+    float cutoff;
+    float resonance;
+    float attack, decay, sustain, release;
+};
+    
 struct organ_parameters {
     float drawbars[9];
     float harmonics[9];
@@ -39,6 +46,8 @@ struct organ_parameters {
     float percussion_level;
     float percussion_harmonic;
     float master;
+    
+    organproc_parameters procs[2];
     
     double perc_decay_const;
     float multiplier[9];
@@ -59,25 +68,26 @@ protected:
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
     dsp::decay amp;
-    organ_parameters *parameters;
 
     organ_voice_base(organ_parameters *_parameters);
     
     inline float wave(float *data, dsp::fixed_point<int, 20> ph) {
         return ph.lerp_table_lookup_float(data);
     }
+public:
+    organ_parameters *parameters;
 };
 
 class organ_voice: public synth::voice, public organ_voice_base {
 protected:    
+    enum { Channels = 2, BlockSize = 32 };
+    float output_buffer[BlockSize][Channels];
     bool released;
-    int h4, h6, h8, h12, h16;
-    dsp::fixed_point<int, 3> h10;
     dsp::fixed_point<int64_t, 52> phase, dphase;
 
 public:
-    organ_voice(organ_parameters *_parameters)
-    : organ_voice_base(_parameters) {
+    organ_voice()
+    : organ_voice_base(NULL) {
     }
 
     void reset() {
@@ -90,85 +100,57 @@ public:
         dphase.set(synth::midi_note_to_phase(note, 0, sample_rate));
         amp.set(1.0f);
         released = false;
-        calc_foldover();
     }
 
     void note_off(int /* vel */) {
         released = true;
     }
 
-    void calc_foldover() {
-        h4 = 4, h6 = 6, h8 = 8, h10 = 10, h12 = 12, h16 = 16;
-        if (!parameters->get_foldover()) return;
-        const int foc = 120, foc2 = 120 + 12, foc3 = 120 + 24;
-        if (note + 24 >= foc) h4 = 2;
-        if (note + 24 >= foc2) h4 = 1;
-        if (note + 36 >= foc) h8 = 4;
-        if (note + 36 >= foc2) h8 = 2;
-        if (note + 40 >= foc) h10 = 5.0;
-        if (note + 40 >= foc2) h10 = 2.5;
-        if (note + 43 >= foc) h12 = 6;
-        if (note + 43 >= foc2) h12 = 3;
-        if (note + 48 >= foc) h16 = 8;
-        if (note + 48 >= foc2) h16 = 4;
-        if (note + 48 >= foc3) h16 = 2;
-//        printf("h= %d %d %d %f %d %d\n", h4, h6, h8, (float)h10, h12, h16);
-    }
-
-    void render_to(float *buf[2], int nsamples) {
+    void render_block() {
         if (note == -1)
             return;
 
-        if (!amp.get_active()) {
-            dsp::zero(buf[0], nsamples);
-            dsp::zero(buf[1], nsamples);
-        } else {
-            float tmp[2][256], *sigl, *sigr;
-            if (released)
+        dsp::zero(&output_buffer[0][0], 2 * BlockSize);
+        if (!amp.get_active())
+            return;
+        
+        dsp::fixed_point<int, 20> tphase, tdphase;
+        for (int h = 0; h < 9; h++)
+        {
+            float amp = parameters->drawbars[h];
+            if (amp < small_value<float>())
+                continue;
+            float *data;
+            dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h]);
+            int waveid = (int)parameters->waveforms[h];
+            if (waveid < 0 || waveid >= wave_count)
+                waveid = 0;
+            for (int i = 0; i < 4; i++)
             {
-                sigl = tmp[0];
-                sigr = tmp[1];
-                for (int i=0; i<nsamples; i++)
-                    tmp[0][i] = tmp[1][i] = 0;
+                data = waves[waveid].get_level((dphase * hm).get() >> i);
+                if (data)
+                    break;
             }
-            else {
-                sigl = buf[0];
-                sigr = buf[1];
+            if (!data)
+                continue;
+            tphase.set(((phase * hm).get() & 0xFFFFFFFF) + parameters->phaseshift[h]);
+            tdphase.set((dphase * hm).get() & 0xFFFFFFFF);
+            float ampl = amp * 0.5f * (-1 + parameters->pan[h]);
+            float ampr = amp * 0.5f * (1 + parameters->pan[h]);
+            for (int i=0; i < (int)BlockSize; i++) {
+                float wv = wave(data, tphase);
+                output_buffer[i][0] += wv * ampl;
+                output_buffer[i][1] += wv * ampr;
+                tphase += tdphase;
             }
-            dsp::fixed_point<int, 20> tphase, tdphase;
-            for (int h = 0; h < 9; h++)
-            {
-                float *data;
-                dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h]);
-                int waveid = (int)parameters->waveforms[h];
-                if (waveid < 0 || waveid >= wave_count)
-                    waveid = 0;
-                do {
-                    data = waves[waveid].get_level((dphase * hm).get());
-                    if (data)
-                        break;
-                    hm.set(hm.get() >> 1);
-                } while(1);
-                tphase.set(((phase * hm).get() & 0xFFFFFFFF) + parameters->phaseshift[h]);
-                tdphase.set((dphase * hm).get() & 0xFFFFFFFF);
-                float amp = parameters->drawbars[h];
-                float ampl = amp * 0.5f * (-1 + parameters->pan[h]);
-                float ampr = amp * 0.5f * (1 + parameters->pan[h]);
-                for (int i=0; i<nsamples; i++) {
-    //                float osc = 0.2*sine(phase)+0.1*sine(4*phase)+0.08*sine(12*phase)+0.08*sine(16*phase);
-                    sigl[i] += wave(data, tphase)*ampl;
-                    sigr[i] += wave(data, tphase)*ampr;
-                    tphase += tdphase;
-                }
-            }
-            phase += dphase * nsamples;
-            if (released)
-            {
-                for (int i=0; i<nsamples; i++) {
-                    buf[0][i] += tmp[0][i] * amp.get();
-                    buf[1][i] += tmp[1][i] * amp.get();
-                    amp.age_lin((1.0/44100.0)/0.03,0.0);
-                }
+        }
+        phase += dphase * BlockSize;
+        if (released)
+        {
+            for (int i=0; i < (int) BlockSize; i++) {
+                output_buffer[i][0] *= amp.get();
+                output_buffer[i][1] *= amp.get();
+                amp.age_lin((1.0/44100.0)/0.03,0.0);
             }
         }
     }
@@ -190,6 +172,7 @@ public:
     : organ_voice_base(_parameters)
     {
     }
+    
     void reset() {
         phase = 0;
         note = -1;
@@ -256,7 +239,9 @@ struct drawbar_organ: public synth::basic_synth {
         }
     }
     synth::voice *alloc_voice() {
-        return new organ_voice(parameters);
+        block_voice<organ_voice> *v = new block_voice<organ_voice>();
+        v->parameters = parameters;
+        return v;
     }
     virtual void first_note_on(int note, int vel) {
         percussion.note_on(note, vel);

@@ -125,6 +125,55 @@ public:
     virtual ~voice() {}
 };
 
+/// An "optimized" voice class using fixed-size processing units
+/// and fixed number of channels. The drawback is that voice
+/// control is not sample-accurate, and no modulation input
+/// is possible, but it should be good enough for most cases
+/// (like Calf Organ).
+template<class Base>
+class block_voice: public Base {
+public:
+    // derived from Base
+    // enum { Channels = 2 };
+    using Base::Channels;
+    // enum { BlockSize = 16 };
+    using Base::BlockSize;
+    // float output_buffer[BlockSize][Channels];
+    using Base::output_buffer;
+    // void render_block();
+    using Base::render_block;
+    unsigned int read_ptr;
+
+    block_voice()
+    {
+        read_ptr = BlockSize;
+    }
+    virtual void reset()
+    {
+        Base::reset();
+        read_ptr = BlockSize;
+    }
+    virtual void render_to(float *buf[], int nsamples)
+    {
+        int p = 0;
+        while(p < nsamples)
+        {
+            if (read_ptr == BlockSize) 
+            {
+                render_block();
+                read_ptr = 0;
+            }
+            int ncopy = std::min<int>(BlockSize - read_ptr, nsamples - p);
+            for (int i = 0; i < ncopy; i++)
+                for (int c = 0; c < Channels; c++)
+                    buf[c][p + i] += output_buffer[read_ptr + i][c];
+            p += ncopy;
+            read_ptr += ncopy;
+        }
+    }
+    
+};
+
 /// Base class for all kinds of polyphonic instruments, provides
 /// somewhat reasonable voice management, pedal support - and 
 /// little else. It's implemented as a base class with virtual
