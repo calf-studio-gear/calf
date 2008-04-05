@@ -58,6 +58,7 @@ void make_rdf()
     printf("%s\n", rdf.c_str());
 }
 
+#if USE_LV2
 static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort", bool optional = false)
 {
     stringstream ss;
@@ -221,6 +222,16 @@ void make_manifest()
 
     printf("%s\n", ttl.c_str());
 }
+#else
+void make_manifest()
+{
+    fprintf(stderr, "LV2 not supported.\n");
+}
+void make_ttl(string tmp)
+{
+    fprintf(stderr, "LV2 not supported.\n");
+}
+#endif
 
 int main(int argc, char *argv[])
 {
