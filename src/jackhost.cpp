@@ -170,8 +170,10 @@ struct host_session: public main_window_owner_iface
 host_session::host_session()
 {
     client_name = "calf";
+#if USE_LASH
     lash_client = NULL;
     lash_args = NULL;
+#endif
     lash_source_id = 0;
     restoring_session = false;
     main_win = new main_window;
