@@ -28,12 +28,13 @@ namespace synth
 {
 
 struct organ_parameters {
-    enum { FilterCount = 1, EnvCount = 1 };
+    enum { FilterCount = 2, EnvCount = 3 };
     struct organ_filter_parameters
     {
         float cutoff;
         float resonance;
         float envmod[organ_parameters::EnvCount];
+        float keyf;
     };
 
     struct organ_env_parameters
@@ -47,6 +48,7 @@ struct organ_parameters {
     float detune[9];
     float phase[9];
     float pan[9];
+    float routing[9];
     float foldover;
     float percussion_time;
     float percussion_level;
@@ -69,8 +71,9 @@ struct organ_parameters {
 
 class organ_voice_base
 {
+public:
+    enum { wave_sine, wave_sinepl1, wave_sinepl2, wave_sinepl3, wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_sinepl05, wave_sqr05, wave_halfsin, wave_clvg, wave_count };
 protected:
-    enum { wave_sine, wave_sinepl1, wave_sinepl2, wave_sinepl3, wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_count };
     static waveform_family<ORGAN_WAVE_BITS> waves[wave_count];
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
@@ -87,11 +90,14 @@ public:
 
 class organ_voice: public synth::voice, public organ_voice_base {
 protected:    
-    enum { Channels = 2, BlockSize = 32, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
-    float output_buffer[BlockSize][Channels];
+    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
+    union {
+        float output_buffer[BlockSize][Channels];
+        float aux_buffers[3][BlockSize][Channels];
+    };
     bool released;
     dsp::fixed_point<int64_t, 52> phase, dphase;
-    biquad<float> filterL, filterR;
+    biquad<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
     int age;
 
@@ -102,18 +108,21 @@ public:
 
     void reset() {
         phase = 0;
-        filterL.reset();
-        filterR.reset();
+        for (int i = 0; i < FilterCount; i++)
+        {
+            filterL[i].reset();
+            filterR[i].reset();
+        }
         age = 0;
     }
 
     void note_on(int note, int /*vel*/) {
         reset();
         this->note = note;
+        const float sf = 0.001f;
         for (int i = 0; i < EnvCount; i++)
         {
             organ_parameters::organ_env_parameters &p = parameters->envs[i];
-            float sf = 0.001f;
             envs[i].set(sf * p.attack, sf * p.decay, p.sustain, sf * p.release, sample_rate / BlockSize);
             envs[i].note_on();
         }
@@ -130,7 +139,8 @@ public:
         if (note == -1)
             return;
 
-        dsp::zero(&output_buffer[0][0], 2 * BlockSize);
+        dsp::zero(&output_buffer[0][0], Channels * BlockSize);
+        dsp::zero(&aux_buffers[1][0][0], 2 * Channels * BlockSize);
         if (!amp.get_active())
             return;
         
@@ -141,7 +151,7 @@ public:
             if (amp < small_value<float>())
                 continue;
             float *data;
-            dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h]);
+            dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h] * (1.0 / 2.0));
             int waveid = (int)parameters->waveforms[h];
             if (waveid < 0 || waveid >= wave_count)
                 waveid = 0;
@@ -153,26 +163,37 @@ public:
             }
             if (!data)
                 continue;
-            tphase.set(((phase * hm).get() & 0xFFFFFFFF) + parameters->phaseshift[h]);
-            tdphase.set((dphase * hm).get() & 0xFFFFFFFF);
+            tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
+            tdphase.set((uint32_t)(dphase * hm).get());
             float ampl = amp * 0.5f * (-1 + parameters->pan[h]);
             float ampr = amp * 0.5f * (1 + parameters->pan[h]);
+            float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
             for (int i=0; i < (int)BlockSize; i++) {
                 float wv = wave(data, tphase);
-                output_buffer[i][0] += wv * ampl;
-                output_buffer[i][1] += wv * ampr;
+                out[i][0] += wv * ampl;
+                out[i][1] += wv * ampr;
                 tphase += tdphase;
             }
         }
         phase += dphase * BlockSize;
-        float fc = parameters->filters[0].cutoff * pow(2.0, parameters->filters[0].envmod[0] * envs[0].value * (1.f / 1200.f));
-        filterL.set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[0].resonance, sample_rate);
-        filterR.copy_coeffs(filterL);
-        envs[0].advance();
+        for (int i = 0; i < FilterCount; i++)
+        {
+            float mod = parameters->filters[i].envmod[0] * envs[0].value;
+            mod += parameters->filters[i].keyf * 100 * (note - 60);
+            for (int j = 1; j < EnvCount; j++)
+            {
+                mod += parameters->filters[i].envmod[j] * envs[j].value;
+            }
+            float fc = parameters->filters[i].cutoff * pow(2.0f, mod * (1.f / 1200.f));
+            filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
+            filterR[i].copy_coeffs(filterL[i]);
+        }
+        for (int i = 0; i < EnvCount; i++)
+            envs[i].advance();
         age++;
         for (int i=0; i < (int) BlockSize; i++) {
-            output_buffer[i][0] = filterL.process_d1(output_buffer[i][0]);
-            output_buffer[i][1] = filterR.process_d1(output_buffer[i][1]);
+            output_buffer[i][0] += filterL[0].process_d1(aux_buffers[1][i][0]) + filterL[1].process_d1(aux_buffers[2][i][0]);
+            output_buffer[i][1] += filterR[0].process_d1(aux_buffers[1][i][1]) + filterR[1].process_d1(aux_buffers[2][i][1]);
         }
         if (released)
         {

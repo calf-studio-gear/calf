@@ -113,6 +113,12 @@ struct hbox_container: public box_container
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
 };
 
+struct notebook_container: public control_container
+{
+    virtual void add(GtkWidget *w, control_base *base);
+    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+};
+
 struct label_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);

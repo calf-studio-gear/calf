@@ -569,6 +569,21 @@ GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_att
     return vbox;
 }
 
+/******************************** GtkNotebook container ********************************/
+
+
+GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkWidget *nb = gtk_notebook_new();
+    container = GTK_CONTAINER(nb);
+    return nb;
+}
+
+void notebook_container::add(GtkWidget *w, control_base *base)
+{
+    gtk_notebook_append_page(GTK_NOTEBOOK(container), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
+}
+
 /******************************** GUI proper ********************************/
 
 param_control *plugin_gui::create_control_from_xml(const char *element, const char *attributes[])
@@ -606,6 +621,8 @@ control_container *plugin_gui::create_container_from_xml(const char *element, co
         return new alignment_container;
     if (!strcmp(element, "frame"))
         return new frame_container;
+    if (!strcmp(element, "notebook"))
+        return new notebook_container;
     return NULL;
 }
 
