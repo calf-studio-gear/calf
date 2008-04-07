@@ -246,7 +246,7 @@ const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 
-const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg" };
+const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg", "Bell" };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
 
@@ -360,14 +360,6 @@ parameter_properties organ_audio_module::param_props[] = {
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *rotary_speaker_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
-
-const char *rotary_speaker_speed_names[] = { "Off", "Chorale", "Tremolo", "HoldPedal", "ModWheel" };
-
-parameter_properties rotary_speaker_audio_module::param_props[] = {
-    { 2,         0,  4, 1.01, PF_ENUM | PF_CTL_COMBO, rotary_speaker_speed_names, "vib_speed", "Speed Mode" },
-};
-
 waveform_family<ORGAN_WAVE_BITS> organ_voice_base::waves[organ_voice_base::wave_count];
 
 
@@ -444,5 +436,12 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * 3 * M_PI / ORGAN_WAVE_SIZE);
         waves[wave_clvg].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.3 * sin(6*ph) + 0.3 * sin(11*ph) + 0.3 * cos(17*ph) - 0.3 * cos(19*ph);
+            tmp[i] = sin(5*ph + fm) + cos(7*ph - fm);
+        }
+        waves[wave_bell].make(bl, tmp);
     }
 }
