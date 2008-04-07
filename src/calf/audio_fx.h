@@ -95,12 +95,22 @@ template<int MaxStages>
 class simple_phaser: public modulation_effect
 {
 protected:
-    float base_frq, mod_depth, resonance, fb;
+    float base_frq, mod_depth, fb;
     float state;
     int cnt, stages;
     dsp::onepole<float, float> stage1;
     float x1[MaxStages], y1[MaxStages];
 public:
+    simple_phaser()
+    {
+        set_base_frq(1000);
+        set_mod_depth(1000);
+        set_fb(0);
+        state = 0;
+        cnt = 0;
+        stages = 0;
+        set_stages(6);
+    }
     float get_base_frq() {
         return base_frq;
     }
@@ -141,6 +151,7 @@ public:
     {
         cnt = 0;
         state = 0;
+        phase.set(0);
         for (int i = 0; i < MaxStages; i++)
             x1[i] = y1[i] = 0;
         control_step();
