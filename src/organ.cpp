@@ -246,7 +246,7 @@ const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 
-const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg", "Bell" };
+const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg", "Bell", "Bell2", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9" };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
 
@@ -442,6 +442,79 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
             float fm = 0.3 * sin(6*ph) + 0.3 * sin(11*ph) + 0.3 * cos(17*ph) - 0.3 * cos(19*ph);
             tmp[i] = sin(5*ph + fm) + cos(7*ph - fm);
         }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_bell].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.3 * sin(3*ph) + 0.3 * sin(11*ph) + 0.3 * cos(17*ph) - 0.3 * cos(19*ph)  + 0.3 * cos(25*ph)  - 0.3 * cos(31*ph) + 0.3 * cos(37*ph);
+            tmp[i] = sin(3*ph + fm) + cos(7*ph - fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_bell2].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.5 * sin(3*ph) + 0.3 * sin(5*ph) + 0.3 * cos(6*ph) - 0.3 * cos(9*ph);
+            tmp[i] = sin(4*ph + fm) + cos(ph - fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w1].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            tmp[i] = sin(ph) * sin(2 * ph) * sin(4 * ph) * sin(8 * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w2].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            tmp[i] = sin(ph) * sin(3 * ph) * sin(5 * ph) * sin(7 * ph) * sin(8 * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w3].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            tmp[i] = sin(ph + 2 * sin(ph + 2 * sin(ph)));
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w4].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            tmp[i] = ph * sin(ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w5].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            tmp[i] = ph * sin(ph) + (2 * M_PI - ph) * sin(2 * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w6].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 1.0 / ORGAN_WAVE_SIZE;
+            tmp[i] = exp(-ph * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w7].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 1.0 / ORGAN_WAVE_SIZE;
+            tmp[i] = exp(-ph * sin(2 * M_PI * ph));
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w8].make(bl, tmp);
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 1.0 / ORGAN_WAVE_SIZE;
+            tmp[i] = sin(2 * M_PI * ph * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        waves[wave_w9].make(bl, tmp);
     }
 }
