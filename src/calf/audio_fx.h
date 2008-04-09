@@ -168,12 +168,18 @@ public:
         float freq = base_frq * pow(2.0, vf * mod_depth / 1200.0);
         freq = dsp::clip<float>(freq, 10.0, 0.49 * sample_rate);
         stage1.set_ap_w(freq * (M_PI / 2.0) * odsr);
-        phase += dphase * 16;
+        phase += dphase * 32;
+        for (int i = 0; i < stages; i++)
+        {
+            dsp::sanitize(x1[i]);
+            dsp::sanitize(y1[i]);
+        }
+        dsp::sanitize(state);
     }
     void process(float *buf_out, float *buf_in, int nsamples) {
         for (int i=0; i<nsamples; i++) {
             cnt++;
-            if (cnt == 16)
+            if (cnt == 32)
                 control_step();
             float in = *buf_in++;
             float fd = in + state * fb;
@@ -184,11 +190,6 @@ public:
             float sdry = in * gs_dry.get();
             float swet = fd * gs_wet.get();
             *buf_out++ = sdry + swet;
-        }
-        for (int i = 0; i < stages; i++)
-        {
-            dsp::sanitize(x1[i]);
-            dsp::sanitize(y1[i]);
         }
     }
 };
