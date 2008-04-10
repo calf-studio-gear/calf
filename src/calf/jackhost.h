@@ -34,7 +34,7 @@ class jack_host_base;
 class jack_client {
 protected:
     std::vector<jack_host_base *> plugins;
-    ptmutex mutex;
+    calf_utils::ptmutex mutex;
 public:
     jack_client_t *client;
     int input_nr, output_nr, midi_nr;
@@ -53,13 +53,13 @@ public:
     
     void add(jack_host_base *plugin)
     {
-        ptlock lock(mutex);
+        calf_utils::ptlock lock(mutex);
         plugins.push_back(plugin);
     }
     
     void del(int item)
     {
-        ptlock lock(mutex);
+        calf_utils::ptlock lock(mutex);
         plugins.erase(plugins.begin()+item);
     }
     

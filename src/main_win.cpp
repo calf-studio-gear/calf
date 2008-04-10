@@ -347,7 +347,8 @@ void main_window::create()
 
 void main_window::refresh_plugin(plugin_ctl_iface *plugin)
 {
-    plugins[plugin]->gui_win->gui->refresh();
+    if (plugins[plugin]->gui_win)
+        plugins[plugin]->gui_win->gui->refresh();
 }
 
 void main_window::close_guis()

@@ -35,9 +35,11 @@
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
+#include <calf/utils.h>
 
 using namespace synth;
 using namespace std;
+using namespace calf_utils;
 
 // I don't need anyone to tell me this is stupid. I already know that :)
 plugin_gui_window *gui_win;
@@ -146,6 +148,8 @@ struct host_session: public main_window_owner_iface
     
     host_session();
     void open();
+    void add_plugin(string name, string preset);
+    void create_plugins_from_list();
     void connect();
     void close();
     static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
@@ -180,6 +184,31 @@ host_session::host_session()
     main_win->set_owner(this);
 }
 
+void host_session::add_plugin(string name, string preset)
+{
+    jack_host_base *jh = create_jack_host(name.c_str());
+    if (!jh) {
+#ifdef ENABLE_EXPERIMENTAL
+#else
+#endif
+        throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker, phaser\n");
+    }
+    jh->open(&client);
+    
+    plugins.push_back(jh);
+    client.add(jh);
+    main_win->add_plugin(jh);
+    if (!preset.empty())
+        activate_preset(plugins.size() - 1, preset);
+}
+
+void host_session::create_plugins_from_list()
+{
+    for (unsigned int i = 0; i < plugin_names.size(); i++) {
+        add_plugin(plugin_names[i], presets.count(i) ? presets[i] : string());
+    }
+}
+
 void host_session::open()
 {
     if (!input_name.empty()) client.input_name = input_name;
@@ -189,24 +218,8 @@ void host_session::open()
     main_win->prefix = client_name + " - ";
     main_win->conditions.insert("jackhost");
     main_win->conditions.insert("directlink");
-    for (unsigned int i = 0; i < plugin_names.size(); i++) {
-        // if (presets.count(i))
-        //    printf("%s : %s\n", names[i].c_str(), presets[i].c_str());
-        jack_host_base *jh = create_jack_host(plugin_names[i].c_str());
-        if (!jh) {
-#ifdef ENABLE_EXPERIMENTAL
-#else
-#endif
-            throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker, phaser\n");
-        }
-        jh->open(&client);
-        
-        plugins.push_back(jh);
-        client.add(jh);
-        main_win->add_plugin(jh);
-        if (presets.count(i))
-            activate_preset(i, presets[i]);
-    }
+    if (!restoring_session)
+        create_plugins_from_list();
     main_win->create();
     gtk_signal_connect(GTK_OBJECT(main_win->toplevel), "destroy", G_CALLBACK(destroy), NULL);
 }
@@ -329,6 +342,16 @@ void host_session::close()
 }
 
 #if USE_LASH
+
+static string stripfmt(string x)
+{
+    if (x.length() < 2)
+        return x;
+    if (x.substr(x.length() - 2) != "%d")
+        return x;
+    return x.substr(0, x.length() - 2);
+}
+
 void host_session::update_lash()
 {
     do {
@@ -341,13 +364,36 @@ void host_session::update_lash()
         switch(lash_event_get_type(event)) {        
             case LASH_Save_Data_Set:
             {
+                lash_config_t *cfg = lash_config_new_with_key("global");
+                dictionary tmp;
+                string pstr;
+                string i_name = stripfmt(client.input_name);
+                string o_name = stripfmt(client.output_name);
+                string m_name = stripfmt(client.midi_name);
+                tmp["input_prefix"] = i_name;
+                tmp["output_prefix"] = stripfmt(client.output_name);
+                tmp["midi_prefix"] = stripfmt(client.midi_name);
+                pstr = encodeMap(tmp);
+                lash_config_set_value(cfg, pstr.c_str(), pstr.length());
+                lash_send_config(lash_client, cfg);
+                
                 for (unsigned int i = 0; i < plugins.size(); i++) {
+                    jack_host_base *p = plugins[i];
                     char ss[32];
                     plugin_preset preset;
-                    preset.plugin = plugins[i]->get_id();
-                    preset.get_from(plugins[i]);
-                    sprintf(ss, "plugin%d", i);
-                    string pstr = preset.to_xml();
+                    preset.plugin = p->get_id();
+                    preset.get_from(p);
+                    sprintf(ss, "Plugin%d", i);
+                    pstr = preset.to_xml();
+                    tmp.clear();
+                    if (p->get_input_count())
+                        tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
+                    if (p->get_output_count())
+                        tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
+                    if (p->get_midi_port())
+                        tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
+                    tmp["preset"] = pstr;
+                    pstr = encodeMap(tmp);
                     lash_config_t *cfg = lash_config_new_with_key(ss);
                     lash_config_set_value(cfg, pstr.c_str(), pstr.length());
                     lash_send_config(lash_client, cfg);
@@ -363,18 +409,31 @@ void host_session::update_lash()
                     const char *key = lash_config_get_key(cfg);
                     // printf("key = %s\n", lash_config_get_key(cfg));
                     string data = string((const char *)lash_config_get_value(cfg), lash_config_get_value_size(cfg));
-                    if (!strncmp(key, "plugin", 6))
+                    if (!strcmp(key, "global"))
+                    {
+                        dictionary dict;
+                        decodeMap(dict, data);
+                        if (dict.count("input_prefix")) client.input_name = dict["input_prefix"]+"%d";
+                        if (dict.count("output_prefix")) client.output_name = dict["output_prefix"]+"%d";
+                        if (dict.count("midi_prefix")) client.midi_name = dict["midi_prefix"]+"%d";
+                    }
+                    if (!strncmp(key, "Plugin", 6))
                     {
                         unsigned int nplugin = atoi(key + 6);
-                        if (nplugin < plugins.size())
+                        dictionary dict;
+                        decodeMap(dict, data);
+                        data = dict["preset"];
+                        if (dict.count("input_name")) client.input_nr = atoi(dict["input_name"].c_str());
+                        if (dict.count("output_name")) client.output_nr = atoi(dict["output_name"].c_str());
+                        if (dict.count("midi_name")) client.midi_nr = atoi(dict["midi_name"].c_str());
+                        preset_list tmp;
+                        tmp.parse("<presets>"+data+"</presets>");
+                        if (tmp.presets.size())
                         {
-                            preset_list tmp;
-                            tmp.parse("<presets>"+data+"</presets>");
-                            if (tmp.presets.size())
-                            {
-                                tmp.presets[0].activate(plugins[nplugin]);
-                                main_win->refresh_plugin(plugins[nplugin]);
-                            }
+                            printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());
+                            add_plugin(tmp.presets[0].plugin, "");
+                            tmp.presets[0].activate(plugins[nplugin]);
+                            main_win->refresh_plugin(plugins[nplugin]);
                         }
                     }
                     lash_config_destroy(cfg);

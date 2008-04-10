@@ -22,6 +22,10 @@
 #define __CALF_UTILS_H
 
 #include <pthread.h>
+#include <map>
+
+namespace calf_utils
+{
 
 class ptmutex
 {
@@ -82,6 +86,13 @@ public:
         if (locked)
             mutex.unlock();
     }
+};
+
+typedef std::map<std::string, std::string> dictionary;
+
+extern std::string encodeMap(const dictionary &data);
+extern void decodeMap(dictionary &data, const std::string &src);
+
 };
 
 #endif
