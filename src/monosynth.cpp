@@ -239,15 +239,20 @@ void monosynth_audio_module::activate() {
     stack.clear();
 }
 
-waveform_family<MONOSYNTH_WAVE_BITS> monosynth_audio_module::waves[wave_count];
+waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;
 
 void monosynth_audio_module::generate_waves()
 {
     float data[1 << MONOSYNTH_WAVE_BITS];
     bandlimiter<MONOSYNTH_WAVE_BITS> bl;
     
+    if (waves)
+        return;
+    
+    waves = new waveform_family<MONOSYNTH_WAVE_BITS>[wave_count];
     enum { S = 1 << MONOSYNTH_WAVE_BITS, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
     float iQS = 1.0 / QS;
+    
 
     // yes these waves don't have really perfect 1/x spectrum because of aliasing
     // (so what?)

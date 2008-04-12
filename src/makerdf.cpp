@@ -37,6 +37,7 @@ static struct option long_options[] = {
     {0,0,0,0},
 };
 
+#if USE_LADSPA
 void make_rdf()
 {
     string rdf;
@@ -57,6 +58,7 @@ void make_rdf()
     
     printf("%s\n", rdf.c_str());
 }
+#endif
 
 #if USE_LV2
 static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort", bool optional = false)
@@ -262,11 +264,23 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-    if (mode == "rdf")
+    if (false)
+    {
+    }
+#if USE_LADSPA
+    else if (mode == "rdf")
         make_rdf();
-    if (mode == "ttl")
+#endif
+#if USE_LV2
+    else if (mode == "ttl")
         make_ttl(path_prefix);
-    if (mode == "manifest")
+    else if (mode == "manifest")
         make_manifest();
+#endif
+    else
+    {
+        fprintf(stderr, "calfmakerdf: Mode %s unsupported in this version\n", optarg);
+        return 1;
+    }
     return 0;
 }

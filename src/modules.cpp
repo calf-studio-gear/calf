@@ -261,9 +261,13 @@ std::string synth::get_builtin_modules_rdf()
     rdf += ::ladspa_filter.generate_rdf();
     rdf += ::ladspa_vintage_delay.generate_rdf();
     rdf += ::ladspa_monosynth.generate_rdf();
+    rdf += ::ladspa_organ.generate_rdf();
+    rdf += ::ladspa_rotary_speaker.generate_rdf();
+    rdf += ::ladspa_phaser.generate_rdf();
     
     return rdf;
 }
+
 #endif
 
 template<class Module>

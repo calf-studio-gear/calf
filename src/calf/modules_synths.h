@@ -48,7 +48,7 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    static waveform_family<MONOSYNTH_WAVE_BITS> waves[wave_count];
+    static waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
     bool running, stopping, gate;
     int last_key;
