@@ -124,7 +124,7 @@ struct lv2_wrapper
         // LV2 activate is practically useless because parameters aren't present
     }
     
-    static void cb_deactivate(LADSPA_Handle Instance) {
+    static void cb_deactivate(LV2_Handle Instance) {
         instance *const mod = (instance *)Instance;
         mod->deactivate();
     }
