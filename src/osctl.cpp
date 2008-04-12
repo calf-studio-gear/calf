@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <stdlib.h>
 #include <sstream>
 
 using namespace osctl;

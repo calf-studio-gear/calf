@@ -54,8 +54,9 @@ const char *organ_audio_module::get_gui_xml()
     "<vbox border=\"10\">"
         "<hbox>"
             "<vbox>"
-                "<label param=\"foldover\"/>"
-                "<align><toggle param=\"foldover\"/></align>"
+                "<label param=\"foldnote\"/>"
+                "<align><knob param=\"foldnote\"/></align>"
+                "<value param=\"foldnote\"/>"
             "</vbox>"
             "<vbox>"
                 "<label param=\"perc_decay\"/>"
@@ -321,7 +322,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,       0,  2, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_routing_names, "routing8", "Routing 8" },
     { 0,       0,  2, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_routing_names, "routing9", "Routing 9" },
 
-    { 1,         0,  1, 2, PF_BOOL | PF_CTL_TOGGLE, NULL, "foldover", "Foldover" },
+    { 96,      0,  127, 128, PF_INT | PF_CTL_KNOB | PF_UNIT_NOTE, NULL, "foldnote", "Foldover" },
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
     { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "Perc. level" },
     { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_harm", "Perc. harmonic" },
@@ -517,4 +518,92 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_w9].make(bl, tmp);
     }
+}
+
+void organ_voice::render_block() {
+    if (note == -1)
+        return;
+
+    dsp::zero(&output_buffer[0][0], Channels * BlockSize);
+    dsp::zero(&aux_buffers[1][0][0], 2 * Channels * BlockSize);
+    if (!amp.get_active())
+        return;
+    
+    dsp::fixed_point<int, 20> tphase, tdphase;
+    unsigned int foldvalue = parameters->foldvalue;
+    for (int h = 0; h < 9; h++)
+    {
+        float amp = parameters->drawbars[h];
+        if (amp < small_value<float>())
+            continue;
+        float *data;
+        dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h] * (1.0 / 2.0));
+        int waveid = (int)parameters->waveforms[h];
+        if (waveid < 0 || waveid >= wave_count)
+            waveid = 0;
+
+        unsigned int rate = (dphase * hm).get();
+        unsigned int foldback = 0;
+        while (rate > foldvalue)
+        {
+            rate >>= 1;
+            foldback++;
+        }
+        hm.set(hm.get() >> foldback);
+        data = waves[waveid].get_level(rate);
+        if (!data)
+            continue;
+        tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
+        tdphase.set((uint32_t)(dphase * hm).get());
+        float ampl = amp * 0.5f * (1 - parameters->pan[h]);
+        float ampr = amp * 0.5f * (1 + parameters->pan[h]);
+        float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
+        for (int i=0; i < (int)BlockSize; i++) {
+            float wv = wave(data, tphase);
+            out[i][0] += wv * ampl;
+            out[i][1] += wv * ampr;
+            tphase += tdphase;
+        }
+    }
+    expression.set_inertia(parameters->cutoff);
+    phase += dphase * BlockSize;
+    for (int i = 0; i < FilterCount; i++)
+    {
+        float mod = parameters->filters[i].envmod[0] * envs[0].value;
+        mod += parameters->filters[i].keyf * 100 * (note - 60);
+        for (int j = 1; j < EnvCount; j++)
+        {
+            mod += parameters->filters[i].envmod[j] * envs[j].value;
+        }
+        if (i) mod += expression.get() * 1200 * 4;
+        float fc = parameters->filters[i].cutoff * pow(2.0f, mod * (1.f / 1200.f));
+        filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
+        filterR[i].copy_coeffs(filterL[i]);
+    }
+    for (int i = 0; i < EnvCount; i++)
+        envs[i].advance();
+    for (int i=0; i < (int) BlockSize; i++) {
+        output_buffer[i][0] += filterL[0].process_d1(aux_buffers[1][i][0]) + filterL[1].process_d1(aux_buffers[2][i][0]);
+        output_buffer[i][1] += filterR[0].process_d1(aux_buffers[1][i][1]) + filterR[1].process_d1(aux_buffers[2][i][1]);
+    }
+    if (released)
+    {
+        for (int i=0; i < (int) BlockSize; i++) {
+            output_buffer[i][0] *= amp.get();
+            output_buffer[i][1] *= amp.get();
+            amp.age_lin((1.0/44100.0)/0.03,0.0);
+        }
+    }
+}
+
+void drawbar_organ::update_params()
+{
+    parameters->perc_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_time * sample_rate);
+    for (int i = 0; i < 9; i++)
+    {
+        parameters->multiplier[i] = parameters->harmonics[i] * pow(2.0, parameters->detune[i] * (1.0 / 1200.0));
+        parameters->phaseshift[i] = int(parameters->phase[i] * 65536 / 360) << 16;
+    }
+    double dphase = synth::midi_note_to_phase((int)parameters->foldover, 0, sample_rate);
+    parameters->foldvalue = (int)(dphase);
 }

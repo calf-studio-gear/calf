@@ -61,8 +61,9 @@ struct organ_parameters {
     double perc_decay_const;
     float multiplier[9];
     int phaseshift[9];
+    float cutoff;
+    unsigned int foldvalue;
 
-    inline bool get_foldover() { return foldover >= 0.5f; }
     inline int get_percussion_harmonic() { return dsp::fastf2i_drm(percussion_harmonic); }
 };
 
@@ -104,11 +105,12 @@ protected:
     dsp::fixed_point<int64_t, 52> phase, dphase;
     biquad<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
-    int age;
+    inertia<linear_ramp> expression;
 
 public:
     organ_voice()
-    : organ_voice_base(NULL) {
+    : organ_voice_base(NULL),
+    expression(linear_ramp(16)) {
     }
 
     void reset() {
@@ -118,7 +120,6 @@ public:
             filterL[i].reset();
             filterR[i].reset();
         }
-        age = 0;
     }
 
     void note_on(int note, int /*vel*/) {
@@ -140,75 +141,8 @@ public:
         released = true;
     }
 
-    void render_block() {
-        if (note == -1)
-            return;
-
-        dsp::zero(&output_buffer[0][0], Channels * BlockSize);
-        dsp::zero(&aux_buffers[1][0][0], 2 * Channels * BlockSize);
-        if (!amp.get_active())
-            return;
-        
-        dsp::fixed_point<int, 20> tphase, tdphase;
-        for (int h = 0; h < 9; h++)
-        {
-            float amp = parameters->drawbars[h];
-            if (amp < small_value<float>())
-                continue;
-            float *data;
-            dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h] * (1.0 / 2.0));
-            int waveid = (int)parameters->waveforms[h];
-            if (waveid < 0 || waveid >= wave_count)
-                waveid = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                data = waves[waveid].get_level((dphase * hm).get() >> i);
-                if (data)
-                    break;
-            }
-            if (!data)
-                continue;
-            tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
-            tdphase.set((uint32_t)(dphase * hm).get());
-            float ampl = amp * 0.5f * (-1 + parameters->pan[h]);
-            float ampr = amp * 0.5f * (1 + parameters->pan[h]);
-            float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
-            for (int i=0; i < (int)BlockSize; i++) {
-                float wv = wave(data, tphase);
-                out[i][0] += wv * ampl;
-                out[i][1] += wv * ampr;
-                tphase += tdphase;
-            }
-        }
-        phase += dphase * BlockSize;
-        for (int i = 0; i < FilterCount; i++)
-        {
-            float mod = parameters->filters[i].envmod[0] * envs[0].value;
-            mod += parameters->filters[i].keyf * 100 * (note - 60);
-            for (int j = 1; j < EnvCount; j++)
-            {
-                mod += parameters->filters[i].envmod[j] * envs[j].value;
-            }
-            float fc = parameters->filters[i].cutoff * pow(2.0f, mod * (1.f / 1200.f));
-            filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
-            filterR[i].copy_coeffs(filterL[i]);
-        }
-        for (int i = 0; i < EnvCount; i++)
-            envs[i].advance();
-        age++;
-        for (int i=0; i < (int) BlockSize; i++) {
-            output_buffer[i][0] += filterL[0].process_d1(aux_buffers[1][i][0]) + filterL[1].process_d1(aux_buffers[2][i][0]);
-            output_buffer[i][1] += filterR[0].process_d1(aux_buffers[1][i][1]) + filterR[1].process_d1(aux_buffers[2][i][1]);
-        }
-        if (released)
-        {
-            for (int i=0; i < (int) BlockSize; i++) {
-                output_buffer[i][0] *= amp.get();
-                output_buffer[i][1] *= amp.get();
-                amp.age_lin((1.0/44100.0)/0.03,0.0);
-            }
-        }
-    }
+    void render_block();
+    
     virtual int get_current_note() {
         return note;
     }
@@ -304,16 +238,17 @@ struct drawbar_organ: public synth::basic_synth {
     virtual void setup(int sr) {
         basic_synth::setup(sr);
         percussion.setup(sr);
+        parameters->cutoff = 0;
         update_params();
     }
-    void update_params()
+    void update_params();
+    void control_change(int controller, int value)
     {
-        parameters->perc_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_time * sample_rate);
-        for (int i = 0; i < 9; i++)
+        if (controller == 11)
         {
-            parameters->multiplier[i] = parameters->harmonics[i] * pow(2.0, parameters->detune[i] * (1.0 / 1200.0));
-            parameters->phaseshift[i] = int(parameters->phase[i] * 65536 / 360) << 16;
+            parameters->cutoff = value / 64.0 - 1;
         }
+        synth::basic_synth::control_change(controller, value);
     }
 };
 

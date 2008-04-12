@@ -28,6 +28,22 @@
 using namespace synth;
 using namespace std;
 
+static std::string i2s(int value)
+{
+    char buf[32];
+    sprintf(buf, "%d", value);
+    
+    return string(buf);
+}
+
+static string f2s(double value)
+{
+    // XXXKF might not work with some locale settings
+    char buf[64];
+    sprintf(buf, "%g", value);
+    return buf;
+}
+
 float parameter_properties::from_01(float value01) const
 {
     float value = dsp::clip(value01, 0.f, 1.f);
@@ -157,25 +173,17 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_SEMITONES: return string(buf) + "#";
     case PF_UNIT_BPM: return string(buf) + " bpm";
     case PF_UNIT_DEG: return string(buf) + " deg";
+    case PF_UNIT_NOTE: 
+        {
+            static const char *notes = "C C#D D#E F F#G G#A A#B ";
+            int note = (int)value;
+            if (note < 0 || note > 127)
+                return "---";
+            return string(notes + 2 * (note % 12), 2) + i2s(note / 12 - 2);
+        }
     }
 
     return string(buf);
-}
-
-static std::string i2s(int value)
-{
-    char buf[32];
-    sprintf(buf, "%d", value);
-    
-    return string(buf);
-}
-
-static string f2s(double value)
-{
-    // XXXKF might not work with some locale settings
-    char buf[64];
-    sprintf(buf, "%g", value);
-    return buf;
 }
 
 std::string synth::xml_escape(const std::string &src)

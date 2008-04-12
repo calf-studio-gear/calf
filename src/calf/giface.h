@@ -89,6 +89,7 @@ enum parameter_flags
   PF_UNIT_SEMITONES = 0x07000000,
   PF_UNIT_BPM = 0x08000000,
   PF_UNIT_DEG = 0x09000000,
+  PF_UNIT_NOTE = 0x0A000000,
 };
 
 struct parameter_properties

@@ -26,6 +26,8 @@
 #include <map>
 #include <sstream>
 #include <ostream>
+#include <string.h>
+#include "utils.h"
 
 namespace synth {
 

@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <string.h>
 #include <glib.h>
 #include <errno.h>
 #include <netinet/in.h>
