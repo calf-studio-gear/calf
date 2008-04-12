@@ -33,6 +33,7 @@ using namespace dsp;
 using namespace synth;
 
 #include <calf/osctl.h>
+#include <calf/osctlnet.h>
 using namespace osctl;
 
 #define debug_printf(...)

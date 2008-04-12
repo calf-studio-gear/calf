@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 #include <string.h>
-#include <glib.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -170,42 +169,6 @@ struct osc_message_sink
 struct osc_message_dump: public osc_message_sink
 {
     virtual void receive_osc_message(std::string address, std::string type_tag, const std::vector<osc_data> &args);
-};
-
-struct osc_socket
-{
-    GIOChannel *ioch;
-    int socket, srcid;
-    std::string prefix;
-
-    osc_socket() : ioch(NULL), socket(-1), srcid(0) {}
-    void bind(const char *hostaddr = "0.0.0.0", int port = 0);
-    std::string get_uri() const;
-    virtual void on_bind() {}
-    virtual ~osc_socket();
-};
-
-struct osc_server: public osc_socket
-{
-    static osc_message_dump dump;
-    osc_message_sink *sink;
-    
-    osc_server() : sink(&dump) {}
-    
-    virtual void on_bind();
-    
-    static gboolean on_data(GIOChannel *channel, GIOCondition cond, void *obj);
-    void parse_message(const char *buffer, int len);    
-};
-
-struct osc_client: public osc_socket
-{
-    sockaddr_in addr;
-    
-    void set_addr(const char *hostaddr, int port);
-    void set_url(const char *url);
-    bool send(const std::string &address, const std::vector<osc_data> &args);
-    bool send(const std::string &address);
 };
 
 };

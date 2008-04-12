@@ -56,7 +56,7 @@ libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp main_win.cpp
+libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp main_win.cpp
 libcalfgui_la_LDFLAGS = -static
 endif
 
