@@ -153,6 +153,10 @@ const char *organ_audio_module::get_gui_xml()
                                     "<label param=\"adsr_r\" />"
                                     "<align><knob param=\"adsr_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_r\"/>"
                                 "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_v\" />"
+                                    "<align><knob param=\"adsr_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_v\"/>"
+                                "</vbox>"
                             "</hbox>"
                         "</vbox>"
                     "</frame>"
@@ -209,6 +213,10 @@ const char *organ_audio_module::get_gui_xml()
                                     "<label param=\"adsr2_r\" />"
                                     "<align><knob param=\"adsr2_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr2_r\"/>"
                                 "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr2_v\" />"
+                                    "<align><knob param=\"adsr2_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr2_v\"/>"
+                                "</vbox>"
                             "</hbox>"
                         "</vbox>"
                     "</frame>"
@@ -232,6 +240,10 @@ const char *organ_audio_module::get_gui_xml()
                                 "<vbox>"
                                     "<label param=\"adsr3_r\" />"
                                     "<align><knob param=\"adsr3_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr3_r\"/>"
+                                "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr3_v\" />"
+                                    "<align><knob param=\"adsr3_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr3_v\"/>"
                                 "</vbox>"
                             "</hbox>"
                         "</vbox>"
@@ -347,16 +359,19 @@ parameter_properties organ_audio_module::param_props[] = {
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_d", "EG1 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_s", "EG1 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_r", "EG1 Release" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_v", "EG1 VelMod" },
 
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_a", "EG2 Attack" },
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_d", "EG2 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr2_s", "EG2 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_r", "EG2 Release" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr2_v", "EG2 VelMod" },
 
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_a", "EG3 Attack" },
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_d", "EG3 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr3_s", "EG3 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_r", "EG3 Release" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr3_v", "EG3 VelMod" },
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -567,13 +582,16 @@ void organ_voice::render_block() {
     }
     expression.set_inertia(parameters->cutoff);
     phase += dphase * BlockSize;
+    float eval[EnvCount];
+    for (int i = 0; i < EnvCount; i++)
+        eval[i] = envs[i].value * (1 + parameters->envs[i].velscale * (velmod - 1));
     for (int i = 0; i < FilterCount; i++)
     {
-        float mod = parameters->filters[i].envmod[0] * envs[0].value;
+        float mod = parameters->filters[i].envmod[0] * eval[0];
         mod += parameters->filters[i].keyf * 100 * (note - 60);
         for (int j = 1; j < EnvCount; j++)
         {
-            mod += parameters->filters[i].envmod[j] * envs[j].value;
+            mod += parameters->filters[i].envmod[j] * eval[j];
         }
         if (i) mod += expression.get() * 1200 * 4;
         float fc = parameters->filters[i].cutoff * pow(2.0f, mod * (1.f / 1200.f));

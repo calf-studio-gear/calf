@@ -39,7 +39,7 @@ struct organ_parameters {
 
     struct organ_env_parameters
     {
-        float attack, decay, sustain, release;
+        float attack, decay, sustain, release, velscale;
     };
         
     float drawbars[9];
@@ -106,6 +106,7 @@ protected:
     biquad<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
     inertia<linear_ramp> expression;
+    float velmod;
 
 public:
     organ_voice()
@@ -122,7 +123,7 @@ public:
         }
     }
 
-    void note_on(int note, int /*vel*/) {
+    void note_on(int note, int vel) {
         reset();
         this->note = note;
         const float sf = 0.001f;
@@ -133,6 +134,7 @@ public:
             envs[i].note_on();
         }
         dphase.set(synth::midi_note_to_phase(note, 0, sample_rate));
+        velmod = vel * 1.0 / 127.0;
         amp.set(1.0f);
         released = false;
     }
