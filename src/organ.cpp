@@ -504,7 +504,7 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
-            tmp[i] = sin(ph) * sin(3 * ph) * sin(5 * ph) * sin(7 * ph) * sin(8 * ph);
+            tmp[i] = sin(ph) * sin(3 * ph) * sin(5 * ph) * sin(7 * ph) * sin(9 * ph);
         }
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_w3].make(bl, tmp);
