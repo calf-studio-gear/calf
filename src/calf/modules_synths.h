@@ -208,9 +208,9 @@ public:
         par_percdecay, par_perclevel, par_percharm, par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
         par_f2cutoff, par_f2res, par_f2env1, par_f2env2, par_f2env3, par_f2keyf,
-        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl,
-        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl,
-        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl,
+        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl, par_eg1ampctl, 
+        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl, par_eg2ampctl, 
+        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];

@@ -222,6 +222,13 @@ const char *organ_audio_module::get_gui_xml()
                     "</frame>"
                 "</hbox>"
                 "<hbox>"
+                    "<frame label=\"Amplifier\">"
+                        "<vbox>"
+                            "<hbox><label param=\"eg1_amp_ctl\"/><combo param=\"eg1_amp_ctl\"/></hbox>"
+                            "<hbox><label param=\"eg2_amp_ctl\"/><combo param=\"eg2_amp_ctl\"/></hbox>"
+                            "<hbox><label param=\"eg3_amp_ctl\"/><combo param=\"eg3_amp_ctl\"/></hbox>"
+                        "</vbox>"
+                    "</frame>"
                     "<frame label=\"EG 3\">"
                         "<vbox>"
                             "<hbox>"
@@ -262,6 +269,8 @@ const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg", "Bell", "Bell2", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9" };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
+
+const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  };
 
 parameter_properties organ_audio_module::param_props[] = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
@@ -360,18 +369,27 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_s", "EG1 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr_r", "EG1 Release" },
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr_v", "EG1 VelMod" },
+    { 0,  0, organ_voice_base::ampctl_count - 1,
+                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "eg1_amp_ctl", "EG1 To Amp"},
 
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_a", "EG2 Attack" },
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_d", "EG2 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr2_s", "EG2 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr2_r", "EG2 Release" },
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr2_v", "EG2 VelMod" },
+    { 0,  0, organ_voice_base::ampctl_count - 1,
+                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "eg2_amp_ctl", "EG2 To Amp"},
 
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_a", "EG3 Attack" },
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_d", "EG3 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr3_s", "EG3 Sustain" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_r", "EG3 Release" },
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr3_v", "EG3 VelMod" },
+    { 0,  0, organ_voice_base::ampctl_count - 1,
+                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "eg3_amp_ctl", "EG3 To Amp"},
+
+//    { 0,  0, organ_voice_base::ampctl_count - 1,
+//                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "vel_amp_ctl", "Vel To Amp"},
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -584,7 +602,7 @@ void organ_voice::render_block() {
     phase += dphase * BlockSize;
     float eval[EnvCount];
     for (int i = 0; i < EnvCount; i++)
-        eval[i] = envs[i].value * (1 + parameters->envs[i].velscale * (velmod - 1));
+        eval[i] = envs[i].value * (1.f + parameters->envs[i].velscale * (velocity - 1.f));
     for (int i = 0; i < FilterCount; i++)
     {
         float mod = parameters->filters[i].envmod[0] * eval[0];
@@ -598,11 +616,32 @@ void organ_voice::render_block() {
         filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
         filterR[i].copy_coeffs(filterL[i]);
     }
+    float amp_pre[ampctl_count - 1], amp_post[ampctl_count - 1];
+    for (int i = 0; i < ampctl_count; i++)
+    {
+        amp_pre[i] = 1.f;
+        amp_post[i] = 1.f;
+    }
     for (int i = 0; i < EnvCount; i++)
+    {
+        float pre = envs[i].value;
         envs[i].advance();
+        int mode = fastf2i_drm(parameters->envs[i].ampctl);
+        if (mode == ampctl_none)
+            continue;
+        float post = envs[i].value;
+        amp_pre[mode - 1] *= pre;
+        amp_post[mode - 1] *= post;
+    }
+    // calculate delta from pre and post
+    for (int i = 0; i < ampctl_count; i++)
+        amp_post[i] = (amp_post[i] - amp_pre[i]) * (1.0 / BlockSize);
+    float a0 = amp_pre[0], a1 = amp_pre[1], a2 = amp_pre[2], a3 = amp_pre[3];
+    float d0 = amp_post[0], d1 = amp_post[1], d2 = amp_post[2], d3 = amp_post[3];
     for (int i=0; i < (int) BlockSize; i++) {
-        output_buffer[i][0] += filterL[0].process_d1(aux_buffers[1][i][0]) + filterL[1].process_d1(aux_buffers[2][i][0]);
-        output_buffer[i][1] += filterR[0].process_d1(aux_buffers[1][i][1]) + filterR[1].process_d1(aux_buffers[2][i][1]);
+        output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + a2 * filterL[1].process_d1(aux_buffers[2][i][0]));
+        output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
+        a0 += d0, a1 += d1, a2 += d2, a3 += d3;
     }
     if (released)
     {
