@@ -622,17 +622,22 @@ void organ_voice::render_block() {
         amp_pre[i] = 1.f;
         amp_post[i] = 1.f;
     }
+    bool any_running = false;
     for (int i = 0; i < EnvCount; i++)
     {
         float pre = envs[i].value;
         envs[i].advance();
         int mode = fastf2i_drm(parameters->envs[i].ampctl);
+        if (!envs[i].stopped())
+            any_running = true;
         if (mode == ampctl_none)
             continue;
         float post = envs[i].value;
         amp_pre[mode - 1] *= pre;
         amp_post[mode - 1] *= post;
     }
+    if (!any_running)
+        released = true;
     // calculate delta from pre and post
     for (int i = 0; i < ampctl_count; i++)
         amp_post[i] = (amp_post[i] - amp_pre[i]) * (1.0 / BlockSize);

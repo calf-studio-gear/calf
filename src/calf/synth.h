@@ -244,9 +244,13 @@ public:
         else
             thisrelease = thiss / release_time;
     }
-    inline bool released()
+    inline bool released() const
     {
         return state == LOCKDECAY || state == RELEASE || state == STOP;
+    }
+    inline bool stopped() const
+    {
+        return state == STOP;
     }
     inline void note_on()
     {

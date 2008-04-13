@@ -148,7 +148,8 @@ public:
     }
 
     void note_off(int /* vel */) {
-        released = true;
+        for (int i = 0; i < EnvCount; i++)
+            envs[i].note_off();
     }
 
     void render_block();
