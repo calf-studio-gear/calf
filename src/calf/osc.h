@@ -117,8 +117,9 @@ struct waveform_family: public map<uint32_t, float *>
         
         uint32_t multiple = 1, base = 1 << (32 - SIZE_BITS);
         while(multiple < SIZE / 2) {
-            float *wf = new float[SIZE];
+            float *wf = new float[SIZE+1];
             bl.make_waveform(wf, (int)((1 << SIZE_BITS) / (1.5 * multiple)));
+            wf[SIZE] = wf[0];
             (*this)[base * multiple] = wf;
             multiple = multiple << 1;
         }
