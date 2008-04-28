@@ -100,8 +100,8 @@ const char *organ_audio_module::get_gui_xml()
                     DRAWBAR_UI("9")
                 "</table>"
             "</vbox>"
-            "<vbox page=\"Sound processor\">"
-                "<hbox>"
+            "<hbox page=\"Sound processor\">"
+                "<vbox>"
                     "<frame label=\"Filter 1\">"
                         "<vbox>"
                             "<hbox>"
@@ -134,34 +134,6 @@ const char *organ_audio_module::get_gui_xml()
                             "</hbox>"
                         "</vbox>"
                     "</frame>"
-                    "<frame label=\"EG 1\">"
-                        "<vbox>"
-                            "<hbox>"
-                                "<vbox>"
-                                    "<label param=\"adsr_a\" />"
-                                    "<align><knob param=\"adsr_a\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_a\"/>"
-                                "</vbox>"
-                                "<vbox>"
-                                    "<label param=\"adsr_d\" />"
-                                    "<align><knob param=\"adsr_d\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_d\"/>"
-                                "</vbox>"
-                                "<vbox>"
-                                    "<label param=\"adsr_s\" />"
-                                    "<align><knob param=\"adsr_s\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_s\"/>"
-                                "</vbox>"
-                                "<vbox>"
-                                    "<label param=\"adsr_r\" />"
-                                    "<align><knob param=\"adsr_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_r\"/>"
-                                "</vbox>"
-                                "<vbox>"
-                                    "<label param=\"adsr_v\" />"
-                                    "<align><knob param=\"adsr_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_v\"/>"
-                                "</vbox>"
-                            "</hbox>"
-                        "</vbox>"
-                    "</frame>"
-                "</hbox>"
-                "<hbox>"
                     "<frame label=\"Filter 2\">"
                         "<vbox>"
                             "<hbox>"
@@ -194,6 +166,41 @@ const char *organ_audio_module::get_gui_xml()
                             "</hbox>"
                         "</vbox>"
                     "</frame>"
+                    "<frame label=\"Amplifier\">"
+                        "<vbox>"
+                            "<hbox><label param=\"eg1_amp_ctl\"/><combo param=\"eg1_amp_ctl\"/></hbox>"
+                            "<hbox><label param=\"eg2_amp_ctl\"/><combo param=\"eg2_amp_ctl\"/></hbox>"
+                            "<hbox><label param=\"eg3_amp_ctl\"/><combo param=\"eg3_amp_ctl\"/></hbox>"
+                        "</vbox>"
+                    "</frame>"
+                "</vbox>"
+                "<vbox>"
+                    "<frame label=\"EG 1\">"
+                        "<vbox>"
+                            "<hbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_a\" />"
+                                    "<align><knob param=\"adsr_a\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_a\"/>"
+                                "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_d\" />"
+                                    "<align><knob param=\"adsr_d\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_d\"/>"
+                                "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_s\" />"
+                                    "<align><knob param=\"adsr_s\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_s\"/>"
+                                "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_r\" />"
+                                    "<align><knob param=\"adsr_r\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_r\"/>"
+                                "</vbox>"
+                                "<vbox>"
+                                    "<label param=\"adsr_v\" />"
+                                    "<align><knob param=\"adsr_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr_v\"/>"
+                                "</vbox>"
+                            "</hbox>"
+                        "</vbox>"
+                    "</frame>"
                     "<frame label=\"EG 2\">"
                         "<vbox>"
                             "<hbox>"
@@ -218,15 +225,6 @@ const char *organ_audio_module::get_gui_xml()
                                     "<align><knob param=\"adsr2_v\" expand=\"0\" fill=\"0\"/></align><value param=\"adsr2_v\"/>"
                                 "</vbox>"
                             "</hbox>"
-                        "</vbox>"
-                    "</frame>"
-                "</hbox>"
-                "<hbox>"
-                    "<frame label=\"Amplifier\">"
-                        "<vbox>"
-                            "<hbox><label param=\"eg1_amp_ctl\"/><combo param=\"eg1_amp_ctl\"/></hbox>"
-                            "<hbox><label param=\"eg2_amp_ctl\"/><combo param=\"eg2_amp_ctl\"/></hbox>"
-                            "<hbox><label param=\"eg3_amp_ctl\"/><combo param=\"eg3_amp_ctl\"/></hbox>"
                         "</vbox>"
                     "</frame>"
                     "<frame label=\"EG 3\">"
@@ -255,8 +253,28 @@ const char *organ_audio_module::get_gui_xml()
                             "</hbox>"
                         "</vbox>"
                     "</frame>"
-                "</hbox>"
-            "</vbox>"
+                "</vbox>"
+                "<frame label=\"LFO\">"
+                    "<vbox>"
+                        "<vbox>"
+                            "<label param=\"vib_rate\" />"
+                            "<align><knob param=\"vib_rate\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_rate\"/>"
+                        "</vbox>"
+                        "<vbox>"
+                            "<label param=\"vib_amt\" />"
+                            "<align><knob param=\"vib_amt\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_amt\"/>"
+                        "</vbox>"
+                        "<vbox>"
+                            "<label param=\"vib_wet\" />"
+                            "<align><knob param=\"vib_wet\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_wet\"/>"
+                        "</vbox>"
+                        "<vbox>"
+                            "<label param=\"vib_phase\" />"
+                            "<align><knob param=\"vib_phase\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_phase\"/>"
+                        "</vbox>"
+                    "</vbox>"
+                "</frame>"
+            "</hbox>"
         "</notebook>"
     "</vbox>"
     ;
@@ -266,7 +284,16 @@ const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
 const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
 
-const char *organ_wave_names[] = { "Sin", "S0", "S00", "S000", "SSaw", "SSqr", "SPls", "Saw", "Sqr", "Pls", "S(", "Sq(", "S+", "Clvg", "Bell", "Bell2", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9" };
+const char *organ_wave_names[] = { 
+    "Sin", 
+    "S0", "S00", "S000", 
+    "SSaw", "SSqr", "SPls", 
+    "Saw", "Sqr", "Pls", 
+    "S(", "Sq(", "S+", "Clvg", 
+    "Bell", "Bell2", 
+    "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
+    "DSaw", "DSqr", "DPls",
+};
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
 
@@ -388,6 +415,10 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,  0, organ_voice_base::ampctl_count - 1,
                               0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "eg3_amp_ctl", "EG3 To Amp"},
 
+    { 6.6,     0.01,   80,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "vib_rate", "Vib Rate" },
+    { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_amt", "Vib Mod Amt" },
+    { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_wet", "Vib Wet" },
+    { 180,        0,  360,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "vib_phase", "Vib Stereo" },
 //    { 0,  0, organ_voice_base::ampctl_count - 1,
 //                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "vel_amp_ctl", "Vel To Amp"},
 };
@@ -403,6 +434,19 @@ static void smoothen(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SIZE
     for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
         bl.spectrum[i] *= 1.0 / sqrt(i);
         bl.spectrum[ORGAN_WAVE_SIZE - i] *= 1.0 / sqrt(i);
+    }
+    bl.compute_waveform(tmp);
+    normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+}
+
+static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SIZE])
+{
+    bl.compute_spectrum(tmp);
+    for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
+        float phase = sin(i*i);
+        complex<float> shift = complex<float>(cos(phase), sin(phase));
+        bl.spectrum[i] *= shift;
+        bl.spectrum[ORGAN_WAVE_SIZE - i] *= conj(shift);
     }
     bl.compute_waveform(tmp);
     normalize_waveform(tmp, ORGAN_WAVE_SIZE);
@@ -550,6 +594,24 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         }
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_w9].make(bl, tmp);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        phaseshift(bl, tmp);
+        waves[wave_dsaw].make(bl, tmp);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = (i < (ORGAN_WAVE_SIZE / 2)) ? 1 : -1;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        phaseshift(bl, tmp);
+        waves[wave_dsqr].make(bl, tmp);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = (i < (ORGAN_WAVE_SIZE / 16)) ? 1 : 0;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        phaseshift(bl, tmp);
+        waves[wave_dpls].make(bl, tmp);
     }
 }
 
@@ -564,6 +626,7 @@ void organ_voice::render_block() {
     
     dsp::fixed_point<int, 20> tphase, tdphase;
     unsigned int foldvalue = parameters->foldvalue;
+    int muln = 0;
     for (int h = 0; h < 9; h++)
     {
         float amp = parameters->drawbars[h];
@@ -575,7 +638,7 @@ void organ_voice::render_block() {
         if (waveid < 0 || waveid >= wave_count)
             waveid = 0;
 
-        unsigned int rate = (dphase * hm).get();
+        uint32_t rate = (dphase * hm).get();
         unsigned int foldback = 0;
         while (rate > foldvalue)
         {
@@ -587,7 +650,7 @@ void organ_voice::render_block() {
         if (!data)
             continue;
         tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
-        tdphase.set((uint32_t)(dphase * hm).get());
+        tdphase.set((uint32_t)rate);
         float ampl = amp * 0.5f * (1 - parameters->pan[h]);
         float ampr = amp * 0.5f * (1 + parameters->pan[h]);
         float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
@@ -597,15 +660,20 @@ void organ_voice::render_block() {
             out[i][1] += wv * ampr;
             tphase += tdphase;
         }
+        if (h == 3 || h == 6)
+            muln++;
     }
     expression.set_inertia(parameters->cutoff);
     phase += dphase * BlockSize;
-    float eval[EnvCount];
+    float escl[EnvCount], eval[EnvCount];
     for (int i = 0; i < EnvCount; i++)
-        eval[i] = envs[i].value * (1.f + parameters->envs[i].velscale * (velocity - 1.f));
+        escl[i] = (1.f + parameters->envs[i].velscale * (velocity - 1.f));
+    
+    for (int i = 0; i < EnvCount; i++)
+        eval[i] = envs[i].value * escl[i];
     for (int i = 0; i < FilterCount; i++)
     {
-        float mod = parameters->filters[i].envmod[0] * eval[0];
+        float mod = parameters->filters[i].envmod[0] * eval[0] ;
         mod += parameters->filters[i].keyf * 100 * (note - 60);
         for (int j = 1; j < EnvCount; j++)
         {
@@ -625,14 +693,14 @@ void organ_voice::render_block() {
     bool any_running = false;
     for (int i = 0; i < EnvCount; i++)
     {
-        float pre = envs[i].value;
+        float pre = eval[i];
         envs[i].advance();
         int mode = fastf2i_drm(parameters->envs[i].ampctl);
         if (!envs[i].stopped())
             any_running = true;
         if (mode == ampctl_none)
             continue;
-        float post = envs[i].value;
+        float post = envs[i].value * escl[i];
         amp_pre[mode - 1] *= pre;
         amp_post[mode - 1] *= post;
     }
@@ -648,9 +716,39 @@ void organ_voice::render_block() {
         output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
         a0 += d0, a1 += d1, a2 += d2, a3 += d3;
     }
+
+    float lfo1 = lfo_phase < 0.5 ? 2 * lfo_phase : 2 - 2 * lfo_phase;
+    float lfo_phase2 = lfo_phase + parameters->lfo_phase * (1.0 / 360.0);
+    if (lfo_phase2 >= 1.0)
+        lfo_phase2 -= 1.0;
+    float lfo2 = lfo_phase2 < 0.5 ? 2 * lfo_phase2 : 2 - 2 * lfo_phase2;
+    lfo_phase += parameters->lfo_rate * BlockSize / sample_rate;
+    if (lfo_phase >= 1.0)
+        lfo_phase -= 1.0;
+    vibrato[0].set_ap(3000 + 7000 * parameters->lfo_amt * lfo1 * lfo1, sample_rate);
+    vibrato[1].set_ap(3000 + 7000 * parameters->lfo_amt * lfo2 * lfo2, sample_rate);
+    
+    float vib_wet = parameters->lfo_wet;
+    for (int c = 0; c < 2; c++)
+    {
+        for (int i = 0; i < (int) BlockSize; i++)
+        {
+            float v = output_buffer[i][c];
+            float v0 = v;
+            for (int t = 0; t < VibratoSize; t++)
+                v = vibrato[c].process_ap(v, vibrato_x1[t][c], vibrato_y1[t][c]);
+            
+            output_buffer[i][c] += (v - v0) * vib_wet;
+        }
+        for (int t = 0; t < VibratoSize; t++)
+        {
+            sanitize(vibrato_x1[t][c]);
+            sanitize(vibrato_y1[t][c]);
+        }
+    }
     if (released)
     {
-        for (int i=0; i < (int) BlockSize; i++) {
+        for (int i = 0; i < (int) BlockSize; i++) {
             output_buffer[i][0] *= amp.get();
             output_buffer[i][1] *= amp.get();
             amp.age_lin((1.0/44100.0)/0.03,0.0);

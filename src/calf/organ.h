@@ -57,6 +57,10 @@ struct organ_parameters {
     
     organ_filter_parameters filters[organ_parameters::FilterCount];
     organ_env_parameters envs[organ_parameters::EnvCount];
+    float lfo_rate;
+    float lfo_amt;
+    float lfo_wet;
+    float lfo_phase;
     
     double perc_decay_const;
     float multiplier[9];
@@ -78,6 +82,7 @@ public:
         wave_sinepl1, wave_sinepl2, wave_sinepl3,
         wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_sinepl05, wave_sqr05, wave_halfsin, wave_clvg, wave_bell, wave_bell2,
         wave_w1, wave_w2, wave_w3, wave_w4, wave_w5, wave_w6, wave_w7, wave_w8, wave_w9,
+        wave_dsaw, wave_dsqr, wave_dpls,
         wave_count };
     enum {
         ampctl_none,
@@ -104,7 +109,7 @@ public:
 
 class organ_voice: public synth::voice, public organ_voice_base {
 protected:    
-    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
+    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount, VibratoSize = 6 };
     union {
         float output_buffer[BlockSize][Channels];
         float aux_buffers[3][BlockSize][Channels];
@@ -112,9 +117,11 @@ protected:
     bool released;
     dsp::fixed_point<int64_t, 52> phase, dphase;
     biquad<float> filterL[2], filterR[2];
+    onepole<float> vibrato[2];
+    float vibrato_x1[VibratoSize][2], vibrato_y1[VibratoSize][2];
     adsr envs[EnvCount];
     inertia<linear_ramp> expression;
-    float velocity;
+    float velocity, lfo_phase;
 
 public:
     organ_voice()
@@ -129,10 +136,13 @@ public:
             filterL[i].reset();
             filterR[i].reset();
         }
+        for (int i = 0; i < VibratoSize; i++)
+            vibrato_x1[i][0] = vibrato_y1[i][0] = vibrato_x1[i][1] = vibrato_y1[i][1] = 0.f;
     }
 
     void note_on(int note, int vel) {
         reset();
+        this->lfo_phase = 0.f;
         this->note = note;
         const float sf = 0.001f;
         for (int i = 0; i < EnvCount; i++)

@@ -211,6 +211,7 @@ public:
         par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl, par_eg1ampctl, 
         par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl, par_eg2ampctl, 
         par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
+        par_lforate, par_lfoamt, par_lfowet, par_lfophase,
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
