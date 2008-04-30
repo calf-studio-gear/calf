@@ -767,6 +767,10 @@ void organ_voice::render_block() {
         output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
         a0 += d0, a1 += d1, a2 += d2, a3 += d3;
     }
+    filterL[0].sanitize_d1();
+    filterR[0].sanitize_d1();
+    filterL[1].sanitize_d1();
+    filterR[1].sanitize_d1();
     if (vibrato_mode == lfomode_voice)
         vibrato.process(parameters, output_buffer, BlockSize, sample_rate);
 
