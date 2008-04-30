@@ -154,7 +154,7 @@ void basic_synth::control_change(int ctl, int val)
     }
 }
 
-void basic_synth::render_to(float *output[], int nsamples)
+void basic_synth::render_to(float (*output)[2], int nsamples)
 {
     // render voices, eliminate ones that aren't sounding anymore
     for (list<synth::voice *>::iterator i = active_voices.begin(); i != active_voices.end();) {

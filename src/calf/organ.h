@@ -61,6 +61,7 @@ struct organ_parameters {
     float lfo_amt;
     float lfo_wet;
     float lfo_phase;
+    float lfo_mode;
     
     double perc_decay_const;
     float multiplier[9];
@@ -92,6 +93,15 @@ public:
         ampctl_all,
         ampctl_count
     };
+    enum { 
+        lfomode_off = 0,
+        lfomode_direct,
+        lfomode_filter1,
+        lfomode_filter2,
+        lfomode_voice,
+        lfomode_global,
+        lfomode_count
+    };
 protected:
     static waveform_family<ORGAN_WAVE_BITS> waves[wave_count];
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
@@ -107,9 +117,21 @@ public:
     organ_parameters *parameters;
 };
 
+class organ_vibrato
+{
+protected:
+    enum { VibratoSize = 6 };
+    float vibrato_x1[VibratoSize][2], vibrato_y1[VibratoSize][2];
+    float lfo_phase;
+    onepole<float> vibrato[2];
+public:
+    void reset();
+    void process(organ_parameters *parameters, float (*data)[2], unsigned int len, float sample_rate);
+};
+
 class organ_voice: public synth::voice, public organ_voice_base {
 protected:    
-    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount, VibratoSize = 6 };
+    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
     union {
         float output_buffer[BlockSize][Channels];
         float aux_buffers[3][BlockSize][Channels];
@@ -117,11 +139,10 @@ protected:
     bool released;
     dsp::fixed_point<int64_t, 52> phase, dphase;
     biquad<float> filterL[2], filterR[2];
-    onepole<float> vibrato[2];
-    float vibrato_x1[VibratoSize][2], vibrato_y1[VibratoSize][2];
     adsr envs[EnvCount];
     inertia<linear_ramp> expression;
-    float velocity, lfo_phase;
+    organ_vibrato vibrato;
+    float velocity;
 
 public:
     organ_voice()
@@ -130,19 +151,17 @@ public:
     }
 
     void reset() {
+        vibrato.reset();
         phase = 0;
         for (int i = 0; i < FilterCount; i++)
         {
             filterL[i].reset();
             filterR[i].reset();
         }
-        for (int i = 0; i < VibratoSize; i++)
-            vibrato_x1[i][0] = vibrato_y1[i][0] = vibrato_x1[i][1] = vibrato_y1[i][1] = 0.f;
     }
 
     void note_on(int note, int vel) {
         reset();
-        this->lfo_phase = 0.f;
         this->note = note;
         const float sf = 0.001f;
         for (int i = 0; i < EnvCount; i++)
@@ -196,7 +215,7 @@ public:
     }
 
     // this doesn't really have a voice interface
-    void render_to(float *buf[2], int nsamples) {
+    void render_to(float (*buf)[2], int nsamples) {
         if (note == -1)
             return;
 
@@ -212,8 +231,8 @@ public:
         for (int i = 0; i < nsamples; i++) {
             float osc = level * wave(data, percussion_harmonic * phase);
             osc *= level * amp.get();
-            buf[0][i] += osc;
-            buf[1][i] += osc;
+            buf[i][0] += osc;
+            buf[i][1] += osc;
             amp.age_exp(age_const, 1.0 / 32768.0);
             phase += dphase;
         }
@@ -229,23 +248,44 @@ public:
 struct drawbar_organ: public synth::basic_synth {
     organ_parameters *parameters;
     percussion_voice percussion;
+    organ_vibrato global_vibrato;
     
-    drawbar_organ(organ_parameters *_parameters)
+    enum { 
+        par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, 
+        par_frequency1, par_frequency2, par_frequency3, par_frequency4, par_frequency5, par_frequency6, par_frequency7, par_frequency8, par_frequency9, 
+        par_waveform1, par_waveform2, par_waveform3, par_waveform4, par_waveform5, par_waveform6, par_waveform7, par_waveform8, par_waveform9, 
+        par_detune1, par_detune2, par_detune3, par_detune4, par_detune5, par_detune6, par_detune7, par_detune8, par_detune9, 
+        par_phase1, par_phase2, par_phase3, par_phase4, par_phase5, par_phase6, par_phase7, par_phase8, par_phase9, 
+        par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
+        par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
+        par_foldover,
+        par_percdecay, par_perclevel, par_percharm, par_master, 
+        par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
+        par_f2cutoff, par_f2res, par_f2env1, par_f2env2, par_f2env3, par_f2keyf,
+        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl, par_eg1ampctl, 
+        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl, par_eg2ampctl, 
+        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
+        par_lforate, par_lfoamt, par_lfowet, par_lfophase, par_lfomode,
+        param_count
+    };
+
+     drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
     }
-    void render_to(float *output[], int nsamples)
+    void render_separate(float *output[], int nsamples)
     {
-        float buf[2][4096], *bufptr[] = { buf[0], buf[1] };
-        dsp::zero(buf[0], nsamples);
-        dsp::zero(buf[1], nsamples);
-        basic_synth::render_to(bufptr, nsamples);
+        float buf[4096][2];
+        dsp::zero(&buf[0][0], 2 * nsamples);
+        basic_synth::render_to(buf, nsamples);
+        if (fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
+            global_vibrato.process(parameters, buf, nsamples, sample_rate);
         if (percussion.get_active())
-            percussion.render_to(bufptr, nsamples);
+            percussion.render_to(buf, nsamples);
         float gain = parameters->master * (1.0 / (9 * 8));
         for (int i=0; i<nsamples; i++) {
-            output[0][i] = gain*buf[0][i];
-            output[1][i] = gain*buf[1][i];
+            output[0][i] = gain*buf[i][0];
+            output[1][i] = gain*buf[i][1];
         }
     }
     synth::voice *alloc_voice() {

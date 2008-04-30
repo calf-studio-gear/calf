@@ -256,21 +256,25 @@ const char *organ_audio_module::get_gui_xml()
                 "</vbox>"
                 "<frame label=\"LFO\">"
                     "<vbox>"
-                        "<vbox>"
+                        "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_rate\" />"
                             "<align><knob param=\"vib_rate\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_rate\"/>"
                         "</vbox>"
-                        "<vbox>"
+                        "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_amt\" />"
                             "<align><knob param=\"vib_amt\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_amt\"/>"
                         "</vbox>"
-                        "<vbox>"
+                        "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_wet\" />"
                             "<align><knob param=\"vib_wet\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_wet\"/>"
                         "</vbox>"
-                        "<vbox>"
+                        "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_phase\" />"
                             "<align><knob param=\"vib_phase\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_phase\"/>"
+                        "</vbox>"
+                        "<vbox expand=\"0\" fill=\"0\">"
+                            "<label param=\"vib_mode\" />"
+                            "<combo param=\"vib_mode\" expand=\"0\" fill=\"0\"/>"
                         "</vbox>"
                     "</vbox>"
                 "</frame>"
@@ -298,6 +302,8 @@ const char *organ_wave_names[] = {
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
 
 const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  };
+
+const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
 parameter_properties organ_audio_module::param_props[] = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
@@ -419,6 +425,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_amt", "Vib Mod Amt" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_wet", "Vib Wet" },
     { 180,        0,  360,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "vib_phase", "Vib Stereo" },
+    { organ_voice_base::lfomode_global,        0,  organ_voice_base::lfomode_count - 1,    0, PF_ENUM | PF_CTL_COMBO, organ_vibrato_mode_names, "vib_mode", "Vib Mode" },
 //    { 0,  0, organ_voice_base::ampctl_count - 1,
 //                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "vel_amp_ctl", "Vel To Amp"},
 };
@@ -443,7 +450,8 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
 {
     bl.compute_spectrum(tmp);
     for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
-        float phase = sin(i*i);
+        float frac = i * 2.0 / ORGAN_WAVE_SIZE;
+        float phase = 2 * M_PI * frac * frac;
         complex<float> shift = complex<float>(cos(phase), sin(phase));
         bl.spectrum[i] *= shift;
         bl.spectrum[ORGAN_WAVE_SIZE - i] *= conj(shift);
@@ -615,6 +623,46 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
     }
 }
 
+void organ_vibrato::reset()
+{
+    for (int i = 0; i < VibratoSize; i++)
+        vibrato_x1[i][0] = vibrato_y1[i][0] = vibrato_x1[i][1] = vibrato_y1[i][1] = 0.f;
+    lfo_phase = 0.f;
+}
+
+void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsigned int len, float sample_rate)
+{
+    float lfo1 = lfo_phase < 0.5 ? 2 * lfo_phase : 2 - 2 * lfo_phase;
+    float lfo_phase2 = lfo_phase + parameters->lfo_phase * (1.0 / 360.0);
+    if (lfo_phase2 >= 1.0)
+        lfo_phase2 -= 1.0;
+    float lfo2 = lfo_phase2 < 0.5 ? 2 * lfo_phase2 : 2 - 2 * lfo_phase2;
+    lfo_phase += parameters->lfo_rate * len / sample_rate;
+    if (lfo_phase >= 1.0)
+        lfo_phase -= 1.0;
+    vibrato[0].set_ap(3000 + 7000 * parameters->lfo_amt * lfo1 * lfo1, sample_rate);
+    vibrato[1].set_ap(3000 + 7000 * parameters->lfo_amt * lfo2 * lfo2, sample_rate);
+    
+    float vib_wet = parameters->lfo_wet;
+    for (int c = 0; c < 2; c++)
+    {
+        for (unsigned int i = 0; i < len; i++)
+        {
+            float v = data[i][c];
+            float v0 = v;
+            for (int t = 0; t < VibratoSize; t++)
+                v = vibrato[c].process_ap(v, vibrato_x1[t][c], vibrato_y1[t][c]);
+            
+            data[i][c] += (v - v0) * vib_wet;
+        }
+        for (int t = 0; t < VibratoSize; t++)
+        {
+            sanitize(vibrato_x1[t][c]);
+            sanitize(vibrato_y1[t][c]);
+        }
+    }
+}
+
 void organ_voice::render_block() {
     if (note == -1)
         return;
@@ -626,6 +674,7 @@ void organ_voice::render_block() {
     
     dsp::fixed_point<int, 20> tphase, tdphase;
     unsigned int foldvalue = parameters->foldvalue;
+    int vibrato_mode = fastf2i_drm(parameters->lfo_mode);
     int muln = 0;
     for (int h = 0; h < 9; h++)
     {
@@ -704,6 +753,8 @@ void organ_voice::render_block() {
         amp_pre[mode - 1] *= pre;
         amp_post[mode - 1] *= post;
     }
+    if (vibrato_mode >= lfomode_direct && vibrato_mode <= lfomode_filter2)
+        vibrato.process(parameters, aux_buffers[vibrato_mode - lfomode_direct], BlockSize, sample_rate);
     if (!any_running)
         released = true;
     // calculate delta from pre and post
@@ -716,36 +767,9 @@ void organ_voice::render_block() {
         output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
         a0 += d0, a1 += d1, a2 += d2, a3 += d3;
     }
+    if (vibrato_mode == lfomode_voice)
+        vibrato.process(parameters, output_buffer, BlockSize, sample_rate);
 
-    float lfo1 = lfo_phase < 0.5 ? 2 * lfo_phase : 2 - 2 * lfo_phase;
-    float lfo_phase2 = lfo_phase + parameters->lfo_phase * (1.0 / 360.0);
-    if (lfo_phase2 >= 1.0)
-        lfo_phase2 -= 1.0;
-    float lfo2 = lfo_phase2 < 0.5 ? 2 * lfo_phase2 : 2 - 2 * lfo_phase2;
-    lfo_phase += parameters->lfo_rate * BlockSize / sample_rate;
-    if (lfo_phase >= 1.0)
-        lfo_phase -= 1.0;
-    vibrato[0].set_ap(3000 + 7000 * parameters->lfo_amt * lfo1 * lfo1, sample_rate);
-    vibrato[1].set_ap(3000 + 7000 * parameters->lfo_amt * lfo2 * lfo2, sample_rate);
-    
-    float vib_wet = parameters->lfo_wet;
-    for (int c = 0; c < 2; c++)
-    {
-        for (int i = 0; i < (int) BlockSize; i++)
-        {
-            float v = output_buffer[i][c];
-            float v0 = v;
-            for (int t = 0; t < VibratoSize; t++)
-                v = vibrato[c].process_ap(v, vibrato_x1[t][c], vibrato_y1[t][c]);
-            
-            output_buffer[i][c] += (v - v0) * vib_wet;
-        }
-        for (int t = 0; t < VibratoSize; t++)
-        {
-            sanitize(vibrato_x1[t][c]);
-            sanitize(vibrato_y1[t][c]);
-        }
-    }
     if (released)
     {
         for (int i = 0; i < (int) BlockSize; i++) {

@@ -118,7 +118,7 @@ public:
     /// check if voice can be removed from active voice list
     virtual bool get_active()=0;
     /// render voice data to buffer
-    virtual void render_to(float *buf[], int nsamples)=0;
+    virtual void render_to(float (*buf)[2], int nsamples)=0;
     /// return the note used by this voice
     virtual int get_current_note()=0;
     /// empty virtual destructor
@@ -153,7 +153,7 @@ public:
         Base::reset();
         read_ptr = BlockSize;
     }
-    virtual void render_to(float *buf[], int nsamples)
+    virtual void render_to(float (*buf)[2], int nsamples)
     {
         int p = 0;
         while(p < nsamples)
@@ -166,7 +166,7 @@ public:
             int ncopy = std::min<int>(BlockSize - read_ptr, nsamples - p);
             for (int i = 0; i < ncopy; i++)
                 for (int c = 0; c < Channels; c++)
-                    buf[c][p + i] += output_buffer[read_ptr + i][c];
+                    buf[p + i][c] += output_buffer[read_ptr + i][c];
             p += ncopy;
             read_ptr += ncopy;
         }
@@ -197,7 +197,7 @@ public:
     }
     virtual synth::voice *give_voice();
     virtual synth::voice *alloc_voice()=0;
-    virtual void render_to(float *output[], int nsamples);
+    virtual void render_to(float (*output)[2], int nsamples);
     virtual void note_on(int note, int vel);
     virtual void first_note_on(int note, int vel) {}
     virtual void control_change(int ctl, int val);
