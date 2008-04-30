@@ -376,9 +376,7 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
         step = oldstep + 1;
     
     // trying to reduce error cumulation here, by counting from lowest or from highest
-    float value = adj->lower + step * adj->step_increment;
-    if (step >= nsteps / 2)
-        value = adj->upper - (nsteps - step) * adj->step_increment;
+    float value = adj->lower + step * (adj->upper - adj->lower) / nsteps;
     gtk_range_set_value(GTK_RANGE(widget), value);
     // printf("step %d:%d nsteps %d value %f:%f\n", oldstep, step, nsteps, oldvalue, value);
 }

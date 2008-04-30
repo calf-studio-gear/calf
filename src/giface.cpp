@@ -44,9 +44,9 @@ static string f2s(double value)
     return buf;
 }
 
-float parameter_properties::from_01(float value01) const
+float parameter_properties::from_01(double value01) const
 {
-    float value = dsp::clip(value01, 0.f, 1.f);
+    double value = dsp::clip(value01, 0., 1.);
     switch(flags & PF_SCALEMASK)
     {
     case PF_SCALE_DEFAULT:
@@ -59,14 +59,14 @@ float parameter_properties::from_01(float value01) const
         value = min + (max - min) * value01 * value01;
         break;
     case PF_SCALE_LOG:
-        value = min * pow(max / min, value01);
+        value = min * pow(double(max / min), value01);
         break;
     case PF_SCALE_GAIN:
         if (value01 < 0.00001)
             value = min;
         else {
             float rmin = std::max(1.0f / 1024.0f, min);
-            value = rmin * pow(max / rmin, value01);
+            value = rmin * pow(double(max / rmin), value01);
         }
         break;
     }
@@ -85,7 +85,7 @@ float parameter_properties::from_01(float value01) const
     return value;
 }
 
-float parameter_properties::to_01(float value) const
+double parameter_properties::to_01(float value) const
 {
     switch(flags & PF_SCALEMASK)
     {
@@ -93,18 +93,18 @@ float parameter_properties::to_01(float value) const
     case PF_SCALE_LINEAR:
     case PF_SCALE_PERC:
     default:
-        return (value - min) / (max - min);
+        return double(value - min) / (max - min);
     case PF_SCALE_QUAD:
-        return sqrt((value - min) / (max - min));
+        return sqrt(double(value - min) / (max - min));
     case PF_SCALE_LOG:
         value /= min;
-        return log(value) / log(max / min);
+        return log((double)value) / log((double)max / min);
     case PF_SCALE_GAIN:
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return 0;
-        float rmin = std::max(1.0f / 1024.0f, min);
+        double rmin = std::max(1.0f / 1024.0f, min);
         value /= rmin;
-        return log(value) / log(max / rmin);
+        return log((double)value) / log(max / rmin);
     }
 }
 

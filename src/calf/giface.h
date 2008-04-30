@@ -98,8 +98,8 @@ struct parameter_properties
     uint32_t flags;
     const char **choices;
     const char *short_name, *name;
-    float from_01(float value01) const;
-    float to_01(float value) const;
+    float from_01(double value01) const;
+    double to_01(float value) const;
     std::string to_string(float value) const;
     int get_char_count() const;
     float get_increment() const;
