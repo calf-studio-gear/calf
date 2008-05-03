@@ -199,10 +199,11 @@ public:
     virtual synth::voice *alloc_voice()=0;
     virtual void render_to(float (*output)[2], int nsamples);
     virtual void note_on(int note, int vel);
-    virtual void first_note_on(int note, int vel) {}
+    virtual void percussion_note_on(int note, int vel) {}
     virtual void control_change(int ctl, int val);
     virtual void note_off(int note, int vel);
     virtual void on_pedal_release();
+    virtual bool check_percussion() { return active_voices.empty(); }
     virtual ~basic_synth();
 };
 

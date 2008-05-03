@@ -69,8 +69,12 @@ const char *organ_audio_module::get_gui_xml()
                 "<value param=\"perc_level\"/>"
             "</vbox>"        
             "<vbox>"
-                "<label param=\"perc_harm\"/>"
-                "<combo param=\"perc_harm\"/>"
+                "<label param=\"perc_timbre\"/>"
+                "<combo param=\"perc_timbre\"/>"
+            "</vbox>"        
+            "<vbox>"
+                "<label param=\"perc_trigger\"/>"
+                "<combo param=\"perc_trigger\"/>"
             "</vbox>"        
             "<vbox>"
                 "<label param=\"master\"/>"
@@ -286,7 +290,11 @@ const char *organ_audio_module::get_gui_xml()
 
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
-const char *organ_percussion_harmonic_names[] = { "2nd", "3rd" };
+const char *organ_percussion_timbre_names[] = { 
+    "16' Sine", "8' Sine", "5 1/3' Sine", 
+    "4' Bell", "2' Bell", 
+    "16' Sqr", "8' Sqr", "4' Sqr" };
+const char *organ_percussion_trigger_names[] = { "First note", "Each note", "Each, no retrig" };
 
 const char *organ_wave_names[] = { 
     "Sin", 
@@ -379,7 +387,8 @@ parameter_properties organ_audio_module::param_props[] = {
     { 96,      0,  127, 128, PF_INT | PF_CTL_KNOB | PF_UNIT_NOTE, NULL, "foldnote", "Foldover" },
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "Perc. decay" },
     { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "Perc. level" },
-    { 3,         2,  3, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_harmonic_names, "perc_harm", "Perc. harmonic" },
+    { 2,         0,  7, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_timbre_names, "perc_timbre", "Perc. timbre" },
+    { 0,         0,  organ_voice_base::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "Perc. trigger" },
 
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
     
@@ -525,11 +534,11 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
-            float fm = 0.3 * sin(6*ph) + 0.3 * sin(11*ph) + 0.3 * cos(17*ph) - 0.3 * cos(19*ph);
-            tmp[i] = sin(5*ph + fm) + cos(7*ph - fm);
+            float fm = 0.3 * sin(6*ph) + 0.2 * sin(11*ph) + 0.2 * cos(17*ph) - 0.2 * cos(19*ph);
+            tmp[i] = sin(5*ph + fm) + 0.7 * cos(7*ph - fm);
         }
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
-        waves[wave_bell].make(bl, tmp);
+        waves[wave_bell].make(bl, tmp, true);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -537,7 +546,7 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
             tmp[i] = sin(3*ph + fm) + cos(7*ph - fm);
         }
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
-        waves[wave_bell2].make(bl, tmp);
+        waves[wave_bell2].make(bl, tmp, true);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;

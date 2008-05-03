@@ -60,7 +60,7 @@ void basic_synth::note_on(int note, int vel)
         note_off(note, 0);
         return;
     }
-    bool perc = active_voices.empty();
+    bool perc = check_percussion();
     synth::voice *v = alloc_voice();
     v->setup(sample_rate);
     v->released = false;
@@ -69,7 +69,7 @@ void basic_synth::note_on(int note, int vel)
     v->note_on(note, vel);
     active_voices.push_back(v);
     if (perc) {
-        first_note_on(note, vel);
+        percussion_note_on(note, vel);
     }
 }
 

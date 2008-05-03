@@ -81,15 +81,30 @@ struct bandlimiter
     
     /// very basic bandlimiting (brickwall filter)
     /// might need to be improved much in future!
-    void make_waveform(float output[SIZE], int cutoff)
+    void make_waveform(float output[SIZE], int cutoff, bool foldover = false)
     {
         std::complex<float> new_spec[SIZE], iffted[SIZE];
         for (int i = 0; i < cutoff; i++)
             new_spec[i] = spectrum[i], 
             new_spec[SIZE - 1 - i] = spectrum[SIZE - 1 - i];
-        for (int i = cutoff; i < SIZE / 2; i++)
-            new_spec[i] = 0.f,
-            new_spec[SIZE - 1 - i] = 0.f;
+        if (foldover)
+        {
+            std::complex<float> half(0.5);
+            cutoff /= 2;
+            for (int i = SIZE / 2; i >= cutoff; i--)
+            {
+                new_spec[i / 2] += new_spec[i] * half;
+                new_spec[SIZE - 1 - i / 2] += new_spec[SIZE - 1 - i] * half;
+                new_spec[i] = 0.f,
+                new_spec[SIZE - 1 - i] = 0.f;
+            }
+        }
+        else
+        {
+            for (int i = cutoff; i < SIZE / 2; i++)
+                new_spec[i] = 0.f,
+                new_spec[SIZE - 1 - i] = 0.f;
+        }
         fft.calculate(new_spec, iffted, true);
         for (int i = 0; i < SIZE; i++)
             output[i] = iffted[i].real();
@@ -109,7 +124,7 @@ struct waveform_family: public map<uint32_t, float *>
     using map<uint32_t, float *>::lower_bound;
     float original[SIZE];
     
-    void make(bandlimiter<SIZE_BITS> &bl, float input[SIZE])
+    void make(bandlimiter<SIZE_BITS> &bl, float input[SIZE], bool foldover = false)
     {
         memcpy(original, input, sizeof(original));
         bl.compute_spectrum(input);
@@ -118,7 +133,7 @@ struct waveform_family: public map<uint32_t, float *>
         uint32_t multiple = 1, base = 1 << (32 - SIZE_BITS);
         while(multiple < SIZE / 2) {
             float *wf = new float[SIZE+1];
-            bl.make_waveform(wf, (int)((1 << SIZE_BITS) / (1.5 * multiple)));
+            bl.make_waveform(wf, (int)((1 << SIZE_BITS) / (1.5 * multiple)), foldover);
             wf[SIZE] = wf[0];
             (*this)[base * multiple] = wf;
             multiple = multiple << 1;
