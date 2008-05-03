@@ -279,7 +279,10 @@ struct drawbar_organ: public synth::basic_synth {
         dsp::zero(&buf[0][0], 2 * nsamples);
         basic_synth::render_to(buf, nsamples);
         if (fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
-            global_vibrato.process(parameters, buf, nsamples, sample_rate);
+        {
+            for (int i = 0; i < nsamples; i += 64)
+                global_vibrato.process(parameters, buf + i, min(64, nsamples - i), sample_rate);
+        }
         if (percussion.get_active())
             percussion.render_to(buf, nsamples);
         float gain = parameters->master * (1.0 / (9 * 8));
