@@ -55,7 +55,7 @@ AC_SUBST(JACK_DEPS_CFLAGS)
 AC_SUBST(JACK_DEPS_LIBS)
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
-PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.0, LASH_ENABLED="yes", LASH_ENABLED="no")
+PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
 
 if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
   PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
