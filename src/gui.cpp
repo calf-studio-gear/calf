@@ -799,6 +799,7 @@ static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
 
 static const GtkActionEntry actions[] = {
     { "PresetMenuAction", "", "_Preset", NULL, "Preset operations", NULL },
+    { "CommandMenuAction", "", "_Command", NULL, "Plugin-related commands", NULL },
     { "store-preset", "", "_Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
 };
 
@@ -812,6 +813,7 @@ static const char *ui_xml =
 "      <separator/>\n"
 "      <placeholder name=\"presets\"/>\n"
 "    </menu>\n"
+"    <placeholder name=\"commands\"/>\n"
 "  </menubar>\n"
 "</ui>\n"
 ;
@@ -829,12 +831,26 @@ static const char *preset_post_xml =
 "</ui>\n"
 ;
 
+static const char *command_pre_xml = 
+"<ui>\n"
+"  <menubar>\n"
+"    <placeholder name=\"commands\">\n"
+"      <menu action=\"CommandMenuAction\">\n";
+
+static const char *command_post_xml = 
+"      </menu>\n"
+"    </placeholder>\n"
+"  </menubar>\n"
+"</ui>\n"
+;
+
 plugin_gui_window::plugin_gui_window(main_window_iface *_main)
 {
     toplevel = NULL;
     ui_mgr = NULL;
     std_actions = NULL;
     preset_actions = NULL;
+    command_actions = NULL;
     main = _main;
     assert(main);
 }
@@ -856,6 +872,25 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp)
     }
     preset_xml += preset_post_xml;
     return preset_xml;
+}
+
+string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
+{
+    string command_xml = command_pre_xml;
+    plugin_command_info *ci = gui->plugin->get_commands();
+    if (!ci)
+        return "";
+    for(int i = 0; ci->name; i++, ci++)
+    {
+        stringstream ss;
+        ss << "          <menuitem name=\"" << ci->name << "\" action=\"" << ci->label << "\"/>\n";
+        
+        GtkActionEntry ae = { ci->label, NULL, ci->name, NULL, ci->description, (GCallback)activate_command };
+        gtk_action_group_add_actions_full(command_actions, &ae, 1, (gpointer)new activate_command_params(gui, i), action_destroy_notify);
+        command_xml += ss.str();
+    }
+    command_xml += command_post_xml;
+    return command_xml;
 }
 
 void plugin_gui_window::fill_gui_presets()
@@ -898,6 +933,9 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     GError *error = NULL;
     gtk_ui_manager_insert_action_group(ui_mgr, std_actions, 0);
     gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
+    
+    command_actions = gtk_action_group_new("commands");
+
     fill_gui_presets();
     
     gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
@@ -913,6 +951,11 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
         container = gui->create_from_xml(_jh, xml);
     else
         container = gui->create(_jh);
+
+    string command_xml = make_gui_command_list(command_actions);
+    gtk_ui_manager_insert_action_group(ui_mgr, command_actions, 0);
+    gtk_ui_manager_add_ui_from_string(ui_mgr, command_xml.c_str(), -1, &error);    
+    
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
@@ -933,6 +976,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
     gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (window_destroyed), (plugin_gui_window *)this);
     main->set_window(gui->plugin, this);
+
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
 }
 
@@ -950,6 +994,13 @@ plugin_gui_window::~plugin_gui_window()
         g_source_remove(source_id);
     main->set_window(gui->plugin, NULL);
     delete gui;
+}
+
+void synth::activate_command(GtkAction *action, activate_command_params *params)
+{
+    plugin_gui *gui = params->gui;
+    gui->plugin->execute(params->function_idx);
+    gui->refresh();
 }
 
 

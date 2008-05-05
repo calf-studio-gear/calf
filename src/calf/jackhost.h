@@ -408,6 +408,12 @@ public:
     {
         return Module::get_label();
     }
+    virtual plugin_command_info *get_commands() {
+        return Module::get_commands();
+    }
+    virtual void execute(int cmd_no) {
+        module.execute(cmd_no);
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

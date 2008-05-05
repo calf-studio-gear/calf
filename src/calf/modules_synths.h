@@ -203,6 +203,7 @@ public:
     float *params[param_count];
     organ_parameters par_values;
     uint32_t srate;
+    bool panic_flag;
 
     organ_audio_module()
     : drawbar_organ(&par_values)
@@ -221,17 +222,26 @@ public:
     }
     void activate() {
         setup(srate);
+        panic_flag = false;
     }
     void deactivate() {
     }
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         float *o[2] = { outs[0] + offset, outs[1] + offset };
+        if (panic_flag)
+        {
+            control_change(120, 0); // stop all sounds
+            control_change(121, 0); // reset all controllers
+            panic_flag = false;
+        }
         render_separate(o, nsamples);
         return 3;
     }
+    void execute(int cmd_no);
     static const char *get_name() { return "organ"; }    
     static const char *get_id() { return "organ"; }    
     static const char *get_label() { return "Organ"; }    
+    static plugin_command_info *get_commands();
 };
 
 };

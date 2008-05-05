@@ -155,6 +155,25 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
     virtual float get_level(int port) { return 0.f; }
+    virtual plugin_command_info *get_commands() {
+        return Module::get_commands();
+    }
+    virtual void execute(int command_no) { 
+        if (send_osc) {
+            vector<osc_data> data;
+            stringstream ss;
+            ss << command_no;
+            
+            data.push_back(osc_data("ExecCommand"));
+            data.push_back(osc_data(ss.str()));
+            client->send("/configure", data);
+            data.clear();
+
+            data.push_back(osc_data("ExecCommand"));
+            data.push_back(osc_data(""));
+            client->send("/configure", data);
+        }
+    }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)

@@ -25,11 +25,14 @@
 #include "biquad.h"
 #include "inertia.h"
 #include "audio_fx.h"
+#include "giface.h"
 
 namespace synth {
 
 using namespace dsp;
 
+class null_audio_module;
+    
 class null_audio_module: public line_graph_iface
 {
 public:
@@ -46,6 +49,8 @@ public:
     inline bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
     inline static const char *get_gui_xml() { return NULL; }
     inline static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
+    inline static plugin_command_info *get_commands() { return NULL; }
+    inline void execute(int cmd_no) {}
 };
 
 class amp_audio_module: public null_audio_module
@@ -538,7 +543,7 @@ public:
 class rotary_speaker_audio_module: public null_audio_module
 {
 public:
-    enum { par_speed, param_count };
+    enum { par_speed, par_spacing, par_shift, param_count };
     enum { in_count = 2, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 
@@ -635,6 +640,8 @@ public:
         long long int yl0 = (int)(10000*16384*sin(phase_l * 2 * PI));
         long long int xh0 = (int)(10000*16384*cos(phase_h * 2 * PI));
         long long int yh0 = (int)(10000*16384*sin(phase_h * 2 * PI));
+//        int shift = 500000, pdelta = 150000;
+        int shift = (int)(300000 * (*params[par_shift])), pdelta = (int)(300000 * (*params[par_spacing]));
         // printf("xl=%d yl=%d dx=%d dy=%d\n", (int)(xl0>>14), (int)(yl0 >> 14), cos_l, sin_l);
         for (unsigned int i = 0; i < nsamples; i++) {
             float in_l = ins[0][i + offset], in_r = ins[1][i + offset];
@@ -648,11 +655,11 @@ public:
             // printf("xl=%d yl=%d xl'=%f yl'=%f\n", xl, yl, 16384*cos((phase_l + dphase_l * i) * 2 * PI), 16384*sin((phase_l + dphase_l * i) * 2 * PI));
             update_euler(xh0, yh0, cos_h, sin_h);
             
-            float out_hi_l = delay.get_interp_1616(500000 + 40 * xh) + 0.0001 * xh * delay.get_interp_1616(650000 - 40 * yh) - delay.get_interp_1616(800000 - 60 * xh);
-            float out_hi_r = delay.get_interp_1616(550000 - 48 * yh) - 0.0001 * yh * delay.get_interp_1616(700000 + 46 * xh) + delay.get_interp_1616(1000000 + 76 * yh);
+            float out_hi_l = 0.5f * in_mono - delay.get_interp_1616(shift + 20 * xh) + 0.0001 * xh * delay.get_interp_1616(shift + pdelta - 20 * yh) - delay.get_interp_1616(shift + pdelta + pdelta - 20 * xh);
+            float out_hi_r = 0.5f * in_mono + delay.get_interp_1616(shift - 20 * yh) - 0.0001 * yh * delay.get_interp_1616(shift + pdelta + 20 * xh) + delay.get_interp_1616(shift + pdelta + pdelta + 20 * yh);
 
-            float out_lo_l = 0.5f * in_mono - delay.get_interp_1616(400000 + 34 * xl) + delay.get_interp_1616(650000 - 18 * yl);
-            float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(600000 - 50 * xl) - delay.get_interp_1616(900000 + 15 * yl);
+            float out_lo_l = 0.5f * in_mono - delay.get_interp_1616(shift + 20 * xl) + delay.get_interp_1616(shift + pdelta - 20 * yl);
+            float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(shift - 20 * xl) - delay.get_interp_1616(shift + pdelta + 20 * yl);
             
             out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
             out_hi_r = crossover2r.process_d2(out_hi_r); // sanitize(out_hi_r);

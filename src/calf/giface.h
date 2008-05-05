@@ -92,6 +92,15 @@ enum parameter_flags
   PF_UNIT_NOTE = 0x0A000000,
 };
 
+class null_audio_module;
+
+struct plugin_command_info
+{
+    const char *label;
+    const char *name;
+    const char *description;
+};
+
 struct parameter_properties
 {
     float def_value, min, max, step;
@@ -111,6 +120,8 @@ struct line_graph_iface
     virtual ~line_graph_iface() {}
 };
 
+struct plugin_command_info;
+
 struct plugin_ctl_iface
 {
     virtual parameter_properties *get_param_props(int param_no) = 0;
@@ -129,6 +140,8 @@ struct plugin_ctl_iface
     virtual bool get_midi()=0;
     virtual float get_level(int port)=0;
     virtual ~plugin_ctl_iface() {}
+    virtual plugin_command_info *get_commands() { return NULL; }
+    virtual void execute(int cmd_no)=0;
 };
 
 struct midi_event {
@@ -222,6 +235,9 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
     virtual float get_level(int port) { return 0.f; }
+    virtual void execute(int cmd_no) {
+        Module::execute(cmd_no);
+    }
 };
 
 template<class Module>
@@ -454,9 +470,14 @@ struct ladspa_wrapper
 		       const char *Key,
 		       const char *Value)
     {
-        // XXXKF some day...
-        // Module *const mod = (Module *)Instance;
-        // return mod->configure(Key, Value);
+        instance *const mod = (instance *)Instance;
+        if (!strcmp(Key, "ExecCommand"))
+        {
+            if (*Value)
+            {
+                mod->execute(atoi(Value));
+            }
+        }
         return NULL;
     }
     

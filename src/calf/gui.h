@@ -274,12 +274,13 @@ public:
     plugin_gui *gui;
     GtkWindow *toplevel;
     GtkUIManager *ui_mgr;
-    GtkActionGroup *std_actions, *preset_actions;
+    GtkActionGroup *std_actions, *preset_actions, *command_actions;
     main_window_iface *main;
     int source_id;
 
     plugin_gui_window(main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp);
+    std::string make_gui_command_list(GtkActionGroup *grp);
     void fill_gui_presets();
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
     void close();
@@ -292,6 +293,22 @@ inline parameter_properties &param_control::get_props()
 { 
     return  *gui->plugin->get_param_props(param_no);
 }
+
+class null_audio_module;
+
+struct activate_command_params
+{
+    typedef void (*CommandFunc)(null_audio_module *);
+    plugin_gui *gui;
+    int function_idx;
+    
+    activate_command_params(plugin_gui *_gui, int _idx)
+    : gui(_gui), function_idx(_idx)
+    {
+    }
+};
+
+void activate_command(GtkAction *action, activate_command_params *params);
 
 };
 

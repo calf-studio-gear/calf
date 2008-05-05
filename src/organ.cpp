@@ -804,3 +804,22 @@ void drawbar_organ::update_params()
     double dphase = synth::midi_note_to_phase((int)parameters->foldover, 0, sample_rate);
     parameters->foldvalue = (int)(dphase);
 }
+
+void organ_audio_module::execute(int cmd_no)
+{
+    switch(cmd_no)
+    {
+        case 0:
+            panic_flag = true;
+            break;
+    }
+}
+
+plugin_command_info *organ_audio_module::get_commands()
+{
+    static plugin_command_info cmds[] = {
+        { "cmd_panic", "Panic!", "Stop all sounds and reset all controllers" },
+        { NULL }
+    };
+    return cmds;
+}
