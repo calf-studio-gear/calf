@@ -743,7 +743,7 @@ void organ_voice::render_block() {
         filterR[i].copy_coeffs(filterL[i]);
     }
     float amp_pre[ampctl_count - 1], amp_post[ampctl_count - 1];
-    for (int i = 0; i < ampctl_count; i++)
+    for (int i = 0; i < ampctl_count - 1; i++)
     {
         amp_pre[i] = 1.f;
         amp_post[i] = 1.f;
