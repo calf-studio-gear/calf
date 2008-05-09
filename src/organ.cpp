@@ -767,7 +767,7 @@ void organ_voice::render_block() {
     if (!any_running)
         released = true;
     // calculate delta from pre and post
-    for (int i = 0; i < ampctl_count; i++)
+    for (int i = 0; i < ampctl_count - 1; i++)
         amp_post[i] = (amp_post[i] - amp_pre[i]) * (1.0 / BlockSize);
     float a0 = amp_pre[0], a1 = amp_pre[1], a2 = amp_pre[2], a3 = amp_pre[3];
     float d0 = amp_post[0], d1 = amp_post[1], d2 = amp_post[2], d3 = amp_post[3];
