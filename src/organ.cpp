@@ -136,6 +136,12 @@ const char *organ_audio_module::get_gui_xml()
                                     "<align><knob param=\"f1_env3\" expand=\"0\" fill=\"0\"/></align><value param=\"f1_env3\"/>"
                                 "</vbox>"
                             "</hbox>"
+                            "<align>"
+                                "<hbox>"
+                                    "<toggle expand=\"0\" fill=\"0\" param=\"filter_chain\" />"
+                                    "<label param=\"filter_chain\" />"
+                                "</hbox>"
+                            "</align>"
                         "</vbox>"
                     "</frame>"
                     "<frame label=\"Filter 2\">"
@@ -390,6 +396,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 2,         0,  7, 1, PF_ENUM | PF_CTL_COMBO, organ_percussion_timbre_names, "perc_timbre", "Perc. timbre" },
     { 0,         0,  organ_voice_base::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "Perc. trigger" },
 
+    { 0,         0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "filter_chain", "Filter 1 To 2" },
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "master", "Volume" },
     
     { 2000,   20, 20000, 100, PF_FLOAT | PF_SCALE_LOG | PF_UNIT_HZ | PF_CTL_KNOB, NULL, "f1_cutoff", "F1 Cutoff" },
@@ -771,10 +778,21 @@ void organ_voice::render_block() {
         amp_post[i] = (amp_post[i] - amp_pre[i]) * (1.0 / BlockSize);
     float a0 = amp_pre[0], a1 = amp_pre[1], a2 = amp_pre[2], a3 = amp_pre[3];
     float d0 = amp_post[0], d1 = amp_post[1], d2 = amp_post[2], d3 = amp_post[3];
-    for (int i=0; i < (int) BlockSize; i++) {
-        output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + a2 * filterL[1].process_d1(aux_buffers[2][i][0]));
-        output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
-        a0 += d0, a1 += d1, a2 += d2, a3 += d3;
+    if (parameters->filter_chain >= 0.5f)
+    {
+        for (int i=0; i < (int) BlockSize; i++) {
+            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a2 * filterL[1].process_d1(a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + aux_buffers[2][i][0]));
+            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a2 * filterR[1].process_d1(a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + aux_buffers[2][i][1]));
+            a0 += d0, a1 += d1, a2 += d2, a3 += d3;
+        }
+    }
+    else
+    {
+        for (int i=0; i < (int) BlockSize; i++) {
+            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + a2 * filterL[1].process_d1(aux_buffers[2][i][0]));
+            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
+            a0 += d0, a1 += d1, a2 += d2, a3 += d3;
+        }
     }
     filterL[0].sanitize_d1();
     filterR[0].sanitize_d1();

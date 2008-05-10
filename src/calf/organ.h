@@ -54,6 +54,7 @@ struct organ_parameters {
     float percussion_level;
     float percussion_timbre;
     float percussion_trigger;
+    float filter_chain;
     float master;
     
     organ_filter_parameters filters[organ_parameters::FilterCount];
@@ -296,6 +297,7 @@ struct drawbar_organ: public synth::basic_synth {
         par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
         par_foldover,
         par_percdecay, par_perclevel, par_perctimbre, par_perctrigger,
+        par_filterchain,
         par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
         par_f2cutoff, par_f2res, par_f2env1, par_f2env2, par_f2env3, par_f2keyf,
