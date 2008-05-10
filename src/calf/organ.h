@@ -123,6 +123,9 @@ protected:
     }
 public:
     organ_parameters *parameters;
+    static inline waveform_family<ORGAN_WAVE_BITS> &get_wave(int wave) {
+        return waves[wave];
+    }
 };
 
 class organ_vibrato

@@ -238,6 +238,7 @@ public:
         return 3;
     }
     void execute(int cmd_no);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     static const char *get_name() { return "organ"; }    
     static const char *get_id() { return "organ"; }    
     static const char *get_label() { return "Organ"; }    

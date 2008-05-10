@@ -53,6 +53,7 @@ const char *organ_audio_module::get_gui_xml()
     return 
     "<vbox border=\"10\">"
         "<hbox>"
+            "<line-graph param=\"master\" refresh=\"1\"/>"
             "<vbox>"
                 "<label param=\"foldnote\"/>"
                 "<align><knob param=\"foldnote\"/></align>"
@@ -294,6 +295,33 @@ const char *organ_audio_module::get_gui_xml()
     ;
 }
 
+bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+{
+    if (index == par_master) {
+        if (subindex)
+            return false;
+        enum { S = 1 << ORGAN_WAVE_BITS };
+        float *waveforms[9];
+        for (int i = 0; i < 9; i++)
+        {
+            int wave = dsp::clip((int)(parameters->waveforms[i]), 0, (int)organ_voice_base::wave_count - 1);
+            waveforms[i] = organ_voice_base::get_wave(wave).original;
+        }
+        for (int i = 0; i < points; i++)
+        {
+            float sum = 0.f;
+            for (int j = 0; j < 9; j++)
+            {
+                float shift = parameters->phase[j] * S / 360.0;
+                sum += parameters->drawbars[j] * waveforms[j][int(parameters->harmonics[j] * i * S / points + shift) & (S - 1)];
+            }
+            data[i] = sum * 2 / (9 * 8);
+        }
+        return true;
+    }
+    return false;
+}
+
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
 const char *organ_percussion_timbre_names[] = { 
@@ -467,7 +495,7 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
     bl.compute_spectrum(tmp);
     for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
         float frac = i * 2.0 / ORGAN_WAVE_SIZE;
-        float phase = 2 * M_PI * frac * frac;
+        float phase = M_PI / sqrt(frac) ;
         complex<float> shift = complex<float>(cos(phase), sin(phase));
         bl.spectrum[i] *= shift;
         bl.spectrum[ORGAN_WAVE_SIZE - i] *= conj(shift);
