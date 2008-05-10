@@ -162,7 +162,7 @@ public:
         for (int i=0; i<in_count; i++) {
             sprintf(buf, client->input_name.c_str(), client->input_nr++);
             inputs[i].name = buf;
-            inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+            inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
             inputs[i].data = NULL;
             if (!inputs[i].handle)
                 throw audio_exception("Could not create JACK input port");
@@ -170,7 +170,7 @@ public:
         for (int i=0; i<out_count; i++) {
             sprintf(buf, client->output_name.c_str(), client->output_nr++);
             outputs[i].name = buf;
-            outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+            outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
             outputs[i].data = NULL;
             if (!outputs[i].handle)
                 throw audio_exception("Could not create JACK output port");
@@ -178,7 +178,7 @@ public:
         if (get_midi()) {
             sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
             midi_port.name = buf;
-            midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+            midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
             if (!midi_port.handle)
                 throw audio_exception("Could not create JACK MIDI port");
         }
