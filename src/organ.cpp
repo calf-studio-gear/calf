@@ -542,29 +542,36 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = (i < (ORGAN_WAVE_SIZE / 2)) ? 1 : -1;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         smoothen(bl, tmp);
         waves[wave_ssqr].make(bl, tmp);
         
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         smoothen(bl, tmp);
         waves[wave_ssaw].make(bl, tmp);
 
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = (i < (ORGAN_WAVE_SIZE / 16)) ? 1 : 0;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         smoothen(bl, tmp);
         waves[wave_spls].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = i < (ORGAN_WAVE_SIZE / 1.5) ? sin(i * 1.5 * 2 * M_PI / ORGAN_WAVE_SIZE) : 0;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_sinepl05].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = i < (ORGAN_WAVE_SIZE / 1.5) ? (i < ORGAN_WAVE_SIZE / 3 ? -1 : +1) : 0;
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_sqr05].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * M_PI / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_halfsin].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * 3 * M_PI / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         waves[wave_clvg].make(bl, tmp);
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
