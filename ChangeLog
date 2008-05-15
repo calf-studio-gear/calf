@@ -1,3 +1,12 @@
+Version 0.0.12
++ RotarySpeaker: temporarily broken
++ Organ: reworked to add a complete subtractive synth section and lots of
+  other very nice features
++ Added crappy incomplete implementation of LV2 (including GUI and events,
+  until they get changed again ;) )
++ Lots of small "polishing" kind of fixes in many places (like proper
+  rounding of values in the GUIs, another set of hold/sostenuto fixes etc)
+
 Version 0.0.11
 
 + Fixed x86-64 bugs
