@@ -266,5 +266,13 @@ void preset_list::get_for_plugin(preset_vector &vec, const char *plugin)
 
 void preset_list::add(const plugin_preset &sp)
 {
+    for (unsigned int i = 0; i < presets.size(); i++)
+    {
+        if (presets[i].plugin == sp.plugin && presets[i].name == sp.name)
+        {
+            presets[i] = sp;
+            return;
+        }
+    }
     presets.push_back(sp);
 }

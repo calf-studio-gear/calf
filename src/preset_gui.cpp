@@ -39,34 +39,6 @@ void store_preset_dlg_destroy(GtkWindow *window, gpointer data)
     store_preset_dlg = NULL;
 }
 
-void store_preset_ok(GtkAction *action, plugin_gui *gui)
-{
-    plugin_preset sp;
-    sp.name = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(store_preset_xml, "preset_name")));
-    sp.bank = 0;
-    sp.program = 0;
-    sp.plugin = gui->effect_name;
-    sp.get_from(gui->plugin);
-    preset_list tmp;
-    try {
-        tmp.load(tmp.get_preset_filename().c_str());
-    }
-    catch(...)
-    {
-        tmp = global_presets;
-    }
-    tmp.add(sp);
-    global_presets = tmp;
-    global_presets.save(tmp.get_preset_filename().c_str());
-    gtk_widget_destroy(store_preset_dlg);
-    gui->window->main->refresh_all_presets();
-}
-
-void store_preset_cancel(GtkAction *action, plugin_gui *gui)
-{
-    gtk_widget_destroy(store_preset_dlg);
-}
-
 void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
 {
     if (store_preset_dlg)
@@ -77,9 +49,60 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
     store_preset_xml = glade_xml_new(PKGLIBDIR "/calf.glade", NULL, NULL);
     store_preset_dlg = glade_xml_get_widget(store_preset_xml, "store_preset");
     gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(store_preset_dlg_destroy), NULL);
-    gtk_signal_connect(GTK_OBJECT(glade_xml_get_widget(store_preset_xml, "ok_button")), "clicked", G_CALLBACK(store_preset_ok), gui);
-    gtk_signal_connect(GTK_OBJECT(glade_xml_get_widget(store_preset_xml, "cancel_button")), "clicked", G_CALLBACK(store_preset_cancel), gui);
-    gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
+    GtkWidget *preset_name_combo = glade_xml_get_widget(store_preset_xml, "preset_name");    
+    GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
+    gtk_combo_box_set_model(GTK_COMBO_BOX(preset_name_combo), model);
+    gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(preset_name_combo), 0);
+    for(preset_vector::const_iterator i = global_presets.presets.begin(); i != global_presets.presets.end(); i++)
+    {
+        if (i->plugin != gui->effect_name)
+            continue;
+        gtk_combo_box_append_text(GTK_COMBO_BOX(preset_name_combo), i->name.c_str());
+    }
+    int response = gtk_dialog_run(GTK_DIALOG(store_preset_dlg));
+
+    plugin_preset sp;
+    sp.name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(preset_name_combo));
+    sp.bank = 0;
+    sp.program = 0;
+    sp.plugin = gui->effect_name;
+
+    gtk_widget_destroy(store_preset_dlg);
+    if (response == GTK_RESPONSE_OK)
+    {
+        sp.get_from(gui->plugin);
+        preset_list tmp;
+        try {
+            tmp.load(tmp.get_preset_filename().c_str());
+        }
+        catch(...)
+        {
+            tmp = global_presets;
+        }
+        bool found = false;
+        for(preset_vector::const_iterator i = tmp.presets.begin(); i != tmp.presets.end(); i++)
+        {
+            if (i->plugin == gui->effect_name && i->name == sp.name)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+        {
+            GtkWidget *dialog = gtk_message_dialog_new(gui->window->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, 
+                "Preset '%s' already exists. Overwrite?", sp.name.c_str());
+            int response = gtk_dialog_run(GTK_DIALOG(dialog));
+            gtk_widget_destroy(dialog);
+            if (response != GTK_RESPONSE_OK)
+                return;
+        }
+        tmp.add(sp);
+        global_presets = tmp;
+        global_presets.save(tmp.get_preset_filename().c_str());
+        gui->window->main->refresh_all_presets();
+    }
+    //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }
 
 void synth::activate_preset(GtkAction *action, activate_preset_params *params)
