@@ -79,7 +79,7 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
-    virtual float get_level(int port) { return 0.f; }
+    virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
     }

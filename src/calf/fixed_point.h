@@ -159,28 +159,28 @@ public:
     }
 
     /// return integer part
-    inline T ipart() {
+    inline T ipart() const {
         return value >> FracBits;
     }
 
     /// return integer part as unsigned int
-    inline unsigned int uipart() {
+    inline unsigned int uipart() const {
         return ((unsigned)value) >> FracBits;
     }
 
     /// return integer part as unsigned int
-    inline unsigned int ui64part() {
+    inline unsigned int ui64part() const {
         return ((uint64_t)value) >> FracBits;
     }
 
     /// return fractional part as 0..(2^FracBits-1)
-    inline T fpart() {
+    inline T fpart() const {
         return value & ((1 << FracBits)-1);
     }
 
     /// return fractional part as 0..(2^Bits-1)
     template<int Bits>
-    inline T fpart() {
+    inline T fpart() const {
         int fbits = value & ((1 << FracBits)-1);
         if (Bits == FracBits) return fbits;
         int shift = abs(Bits-FracBits);
@@ -188,7 +188,7 @@ public:
     }
 
     /// return fractional part as 0..1
-    inline double fpart_as_double() {
+    inline double fpart_as_double() const {
         return (value & ((1 << FracBits)-1)) * (1.0 / (1 << FracBits));
     }
 
@@ -196,7 +196,7 @@ public:
     /// note that it uses integer arithmetic only, and isn't suitable for floating point or fixed point U!
     /// @param UseBits can be used when there's a risk of exceeding range of U because max(fpart)*max(v1 or v2) > range of U
     template<class U, int UseBits, class MulType> 
-    inline U lerp_by_fract_int(U v1, U v2) {
+    inline U lerp_by_fract_int(U v1, U v2) const {
         int fp = fpart<UseBits>();
         assert ( fp >=0 && fp <= (1<<UseBits));
         // printf("diff = 
@@ -204,7 +204,7 @@ public:
     }
 
     template<class U, int UseBits> 
-    inline U lerp_table_lookup_int(U data[(1<<IntBits)+1]) {
+    inline U lerp_table_lookup_int(U data[(1<<IntBits)+1]) const {
         unsigned int pos = uipart();
         return lerp_by_fract_int<U, UseBits>(data[pos], data[pos+1]);
     }
@@ -218,20 +218,26 @@ public:
     }
 
     template<class U> 
-    inline U lerp_table_lookup_float(U data[(1<<IntBits)+1]) {
+    inline U lerp_table_lookup_float(U data[(1<<IntBits)+1]) const {
         unsigned int pos = uipart();
         return data[pos] + (data[pos+1]-data[pos]) * fpart_as_double();
     }
 
+    template<class U> 
+    inline U lerp_table_lookup_float_mask(U data[(1<<IntBits)+1], unsigned int mask) const {
+        unsigned int pos = ui64part() & mask;
+        // printf("full = %lld pos = %d + %f\n", value, pos, fpart_as_double());
+        return data[pos] + (data[pos+1]-data[pos]) * fpart_as_double();
+    }
+
     template<class U, int UseBits, class MulType> 
-    inline U lerp_ptr_lookup_int(U *data) {
+    inline U lerp_ptr_lookup_int(U *data) const {
         unsigned int pos = ui64part();
-        assert(data);
         return lerp_by_fract_int<U, UseBits, MulType>(data[pos], data[pos+1]);
     }
 
     template<class U> 
-    inline U lerp_ptr_lookup_float(U *data) {
+    inline U lerp_ptr_lookup_float(U *data) const {
         unsigned int pos = ui64part();
         return data[pos] + (data[pos+1]-data[pos]) * fpart_as_double();
     }

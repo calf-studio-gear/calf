@@ -305,7 +305,7 @@ public:
             new_meter = 0;
         midi_meter = new_meter;
     }
-    virtual float get_level(int port) { 
+    virtual float get_level(unsigned int port) { 
         if (port < Module::in_count)
             return input_vus[port].level;
         port -= Module::in_count;

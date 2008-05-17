@@ -76,6 +76,8 @@ struct organ_parameters {
 
 #define ORGAN_WAVE_BITS 12
 #define ORGAN_WAVE_SIZE 4096
+#define ORGAN_BIG_WAVE_BITS 17
+#define ORGAN_BIG_WAVE_SIZE 131072
 
 class organ_voice_base
 {
@@ -86,7 +88,16 @@ public:
         wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_sinepl05, wave_sqr05, wave_halfsin, wave_clvg, wave_bell, wave_bell2,
         wave_w1, wave_w2, wave_w3, wave_w4, wave_w5, wave_w6, wave_w7, wave_w8, wave_w9,
         wave_dsaw, wave_dsqr, wave_dpls,
-        wave_count };
+        wave_count_small,
+        wave_strings = wave_count_small,
+        wave_strings2,
+        wave_sinepad,
+        wave_bellpad,
+        wave_space,
+        wave_choir,
+        wave_count,
+        wave_count_big = wave_count - wave_count_small
+    };
     enum {
         ampctl_none,
         ampctl_direct,
@@ -110,8 +121,11 @@ public:
         perctrig_eachplus,
         perctrig_count
     };
+    typedef float big_wave_data[ORGAN_BIG_WAVE_SIZE + 1];
 protected:
-    static waveform_family<ORGAN_WAVE_BITS> waves[wave_count];
+    static waveform_family<ORGAN_WAVE_BITS> waves[wave_count_small];
+    static big_wave_data big_waves[wave_count_big];
+
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
     dsp::decay amp;
@@ -121,10 +135,17 @@ protected:
     inline float wave(float *data, dsp::fixed_point<int, 20> ph) {
         return ph.lerp_table_lookup_float(data);
     }
+    inline float big_wave(float *data, dsp::fixed_point<int64_t, 20> &ph) {
+        // wrap to fit within the wave
+        return ph.lerp_table_lookup_float_mask(data, ORGAN_BIG_WAVE_SIZE - 1);
+    }
 public:
     organ_parameters *parameters;
     static inline waveform_family<ORGAN_WAVE_BITS> &get_wave(int wave) {
         return waves[wave];
+    }
+    static inline big_wave_data &get_big_wave(int wave) {
+        return big_waves[wave];
     }
 };
 

@@ -300,20 +300,31 @@ bool organ_audio_module::get_graph(int index, int subindex, float *data, int poi
     if (index == par_master) {
         if (subindex)
             return false;
-        enum { S = 1 << ORGAN_WAVE_BITS };
         float *waveforms[9];
+        int S[9], S2[9];
+        enum { small_waves = organ_voice_base::wave_count_small};
         for (int i = 0; i < 9; i++)
         {
             int wave = dsp::clip((int)(parameters->waveforms[i]), 0, (int)organ_voice_base::wave_count - 1);
-            waveforms[i] = organ_voice_base::get_wave(wave).original;
+            if (wave >= small_waves)
+            {
+                waveforms[i] = organ_voice_base::get_big_wave(wave - small_waves);
+                S[i] = ORGAN_BIG_WAVE_SIZE;
+                S2[i] = ORGAN_WAVE_SIZE / 64;
+            }
+            else
+            {
+                waveforms[i] = organ_voice_base::get_wave(wave).original;
+                S[i] = S2[i] = ORGAN_WAVE_SIZE;
+            }
         }
         for (int i = 0; i < points; i++)
         {
             float sum = 0.f;
             for (int j = 0; j < 9; j++)
             {
-                float shift = parameters->phase[j] * S / 360.0;
-                sum += parameters->drawbars[j] * waveforms[j][int(parameters->harmonics[j] * i * S / points + shift) & (S - 1)];
+                float shift = parameters->phase[j] * S[j] / 360.0;
+                sum += parameters->drawbars[j] * waveforms[j][int(parameters->harmonics[j] * i * S2[j] / points + shift) & (S[j] - 1)];
             }
             data[i] = sum * 2 / (9 * 8);
         }
@@ -339,6 +350,7 @@ const char *organ_wave_names[] = {
     "Bell", "Bell2", 
     "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
     "DSaw", "DSqr", "DPls",
+    "P:SynStr","P:WideStr","P:Sine","P:Bell","P:Space","P:Voice"
 };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
@@ -476,8 +488,8 @@ parameter_properties organ_audio_module::param_props[] = {
 
 ////////////////////////////////////////////////////////////////////////////
 
-waveform_family<ORGAN_WAVE_BITS> organ_voice_base::waves[organ_voice_base::wave_count];
-
+waveform_family<ORGAN_WAVE_BITS> organ_voice_base::waves[organ_voice_base::wave_count_small];
+organ_voice_base::big_wave_data organ_voice_base::big_waves[organ_voice_base::wave_count_big];
 
 static void smoothen(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SIZE])
 {
@@ -504,6 +516,69 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
     normalize_waveform(tmp, ORGAN_WAVE_SIZE);
 }
 
+static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_data result, int bwscale = 20, float bell_factor = 0)
+{
+    complex<float> orig_spectrum[ORGAN_WAVE_SIZE / 2];
+    for (int i = 0; i < ORGAN_WAVE_SIZE / 2; i++) 
+    {
+        orig_spectrum[i] = blSrc.spectrum[i];
+//        printf("@%d = %f\n", i, abs(orig_spectrum[i]));
+    }
+    
+    int periods = 64 * ORGAN_BIG_WAVE_SIZE / ORGAN_WAVE_SIZE;
+    for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE; i++) {
+        blDest.spectrum[i] = 0;
+    }
+    for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
+        float amp = abs(blSrc.spectrum[i]);
+        int bw = 1 + 20 * i;
+        float sum = 1;
+        int delta = 1;
+        if (bw > 20) delta = bw / 20;
+        for (int j = delta; j <= bw; j+=delta)
+        {
+            float p = j * 1.0 / bw;
+            sum += exp(-p*p);
+        }
+        if (sum < 0.0001)
+            continue;
+        amp /= sum;
+        int orig = i * periods + bell_factor * cos(i);
+        if (orig > 0 && orig < ORGAN_BIG_WAVE_SIZE / 2)
+            blDest.spectrum[orig] += amp;
+        for (int j = delta; j <= bw; j += delta)
+        {
+            float p = j * 1.0 / bw;
+            float val = amp * exp(-p * p);
+            int pos = orig + j * bwscale / 20;
+            if (pos < 1 || pos >= ORGAN_BIG_WAVE_SIZE / 2)
+                continue;
+            int pos2 = 2 * orig - pos;
+            if (pos2 < 1 || pos2 >= ORGAN_BIG_WAVE_SIZE / 2)
+                continue;
+            blDest.spectrum[pos] += val;
+            if (j)
+                blDest.spectrum[pos2] += val;
+        }
+    }
+    for (int i = 1; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
+        float phase = M_PI * 2 * (rand() & 127) / 128;
+        complex<float> shift = complex<float>(cos(phase), sin(phase));
+        blDest.spectrum[i] *= shift;        
+//      printf("@%d = %f\n", i, abs(blDest.spectrum[i]));
+        
+        blDest.spectrum[ORGAN_BIG_WAVE_SIZE - i] = conj(blDest.spectrum[i]);
+    }
+    
+    blDest.compute_waveform(result);
+    normalize_waveform(result, ORGAN_BIG_WAVE_SIZE);
+    result[ORGAN_BIG_WAVE_SIZE] = result[0];
+    #if 0
+    for (int i =0 ; i<ORGAN_BIG_WAVE_SIZE + 1; i++)
+        printf("%f\n", result[i]);
+    #endif
+}
+
 
 organ_voice_base::organ_voice_base(organ_parameters *_parameters)
 : parameters(_parameters)
@@ -514,6 +589,7 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
     {
         float tmp[ORGAN_WAVE_SIZE];
         bandlimiter<ORGAN_WAVE_BITS> bl;
+        bandlimiter<ORGAN_BIG_WAVE_BITS> blBig;
         inited = true;
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * 2 * M_PI / ORGAN_WAVE_SIZE);
@@ -671,6 +747,67 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         phaseshift(bl, tmp);
         waves[wave_dpls].make(bl, tmp);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_strings - wave_count_small], 20);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_strings2 - wave_count_small], 40);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+            tmp[i] = sin(i * 2 * M_PI / ORGAN_WAVE_SIZE);
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_sinepad - wave_count_small], 20);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.3 * sin(6*ph) + 0.2 * sin(11*ph) + 0.2 * cos(17*ph) - 0.2 * cos(19*ph);
+            tmp[i] = sin(5*ph + fm) + 0.7 * cos(7*ph - fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_bellpad - wave_count_small], 30, 30);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.3 * sin(3*ph) + 0.2 * sin(4*ph) + 0.2 * cos(5*ph) - 0.2 * cos(6*ph);
+            tmp[i] = sin(2*ph + fm) + 0.7 * cos(3*ph - fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_space - wave_count_small], 30, 30);
+
+#if 0
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.3 * sin(3*ph) + 0.3 * sin(4*ph) + 0.3 * sin(5*ph);
+            tmp[i] = sin(ph + fm) + 0.5 * cos(2*ph - fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_choir - wave_count_small], 50, 10);
+#endif
+        
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = 0.5 * sin(ph) + 0.5 * sin(2*ph) + 0.5 * sin(3*ph);
+            tmp[i] = sin(ph + fm) + 0.5 * cos(7*ph - 2 * fm) + 0.25 * cos(13*ph - 4 * fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_choir - wave_count_small], 50, 10);
+
     }
 }
 
@@ -726,7 +863,6 @@ void organ_voice::render_block() {
     dsp::fixed_point<int, 20> tphase, tdphase;
     unsigned int foldvalue = parameters->foldvalue;
     int vibrato_mode = fastf2i_drm(parameters->lfo_mode);
-    int muln = 0;
     for (int h = 0; h < 9; h++)
     {
         float amp = parameters->drawbars[h];
@@ -739,29 +875,51 @@ void organ_voice::render_block() {
             waveid = 0;
 
         uint32_t rate = (dphase * hm).get();
-        unsigned int foldback = 0;
-        while (rate > foldvalue)
+        if (waveid >= wave_count_small)
         {
-            rate >>= 1;
-            foldback++;
+            float *data = big_waves[waveid - wave_count_small];
+            if (!data)
+                continue;
+            hm.set(hm.get() >> 6);
+            dsp::fixed_point<int64_t, 20> tphase, tdphase;
+            tphase.set(((phase * hm).get()) + parameters->phaseshift[h]);
+            tdphase.set(rate >> 6);
+            float ampl = amp * 0.5f * (1 - parameters->pan[h]);
+            float ampr = amp * 0.5f * (1 + parameters->pan[h]);
+            float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
+            
+            for (int i=0; i < (int)BlockSize; i++) {
+                float wv = big_wave(data, tphase);
+                out[i][0] += wv * ampl;
+                out[i][1] += wv * ampr;
+                tphase += tdphase;
+            }
         }
-        hm.set(hm.get() >> foldback);
-        data = waves[waveid].get_level(rate);
-        if (!data)
-            continue;
-        tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
-        tdphase.set((uint32_t)rate);
-        float ampl = amp * 0.5f * (1 - parameters->pan[h]);
-        float ampr = amp * 0.5f * (1 + parameters->pan[h]);
-        float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
-        for (int i=0; i < (int)BlockSize; i++) {
-            float wv = wave(data, tphase);
-            out[i][0] += wv * ampl;
-            out[i][1] += wv * ampr;
-            tphase += tdphase;
+        else
+        {
+            unsigned int foldback = 0;
+            while (rate > foldvalue)
+            {
+                rate >>= 1;
+                foldback++;
+            }
+            hm.set(hm.get() >> foldback);
+            data = waves[waveid].get_level(rate);
+            if (!data)
+                continue;
+            tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);
+            tdphase.set((uint32_t)rate);
+            float ampl = amp * 0.5f * (1 - parameters->pan[h]);
+            float ampr = amp * 0.5f * (1 + parameters->pan[h]);
+            float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
+            
+            for (int i=0; i < (int)BlockSize; i++) {
+                float wv = wave(data, tphase);
+                out[i][0] += wv * ampl;
+                out[i][1] += wv * ampr;
+                tphase += tdphase;
+            }
         }
-        if (h == 3 || h == 6)
-            muln++;
     }
     expression.set_inertia(parameters->cutoff);
     phase += dphase * BlockSize;

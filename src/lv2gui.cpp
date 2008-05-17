@@ -124,7 +124,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual bool get_midi() { return Module::support_midi; }
-    virtual float get_level(int port) { return 0.f; }
+    virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
     virtual plugin_command_info *get_commands() {
         return Module::get_commands();
