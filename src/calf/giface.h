@@ -261,50 +261,55 @@ struct ladspa_wrapper
         init_descriptor(i);
     }
 
-    void init_descriptor(ladspa_info &i)
+    void init_descriptor(ladspa_info &inf)
     {
         int ins = Module::in_count;
         int outs = Module::out_count;
         int params = Module::param_count;
-        descriptor.UniqueID = i.unique_id;
-        descriptor.Label = i.label;
-        descriptor.Name = i.name;
-        descriptor.Maker = i.maker;
-        descriptor.Copyright = i.copyright;
+        descriptor.UniqueID = inf.unique_id;
+        descriptor.Label = inf.label;
+        descriptor.Name = inf.name;
+        descriptor.Maker = inf.maker;
+        descriptor.Copyright = inf.copyright;
         descriptor.Properties = Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0;
         descriptor.PortCount = ins + outs + params;
         descriptor.PortNames = new char *[descriptor.PortCount];
         descriptor.PortDescriptors = new LADSPA_PortDescriptor[descriptor.PortCount];
         descriptor.PortRangeHints = new LADSPA_PortRangeHint[descriptor.PortCount];
-        for (int i = 0; i < ins + outs + params; i++)
+        int i;
+        for (i = 0; i < ins + outs; i++)
         {
             LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
             ((int *)descriptor.PortDescriptors)[i] = i < ins ? LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO
                                                   : i < ins + outs ? LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO
                                                                    : LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
-            if (i < ins + outs) {
-                prh.HintDescriptor = 0;
-                ((const char **)descriptor.PortNames)[i] = Module::port_names[i];
-            } else {            
-                prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
-                parameter_properties &pp = Module::param_props[i - ins - outs];
-                ((const char **)descriptor.PortNames)[i] = pp.name;
-                prh.LowerBound = pp.min;
-                prh.UpperBound = pp.max;
-                switch(pp.flags & PF_TYPEMASK) {
-                    case PF_BOOL: 
-                        prh.HintDescriptor |= LADSPA_HINT_TOGGLED;
-                        break;
-                    case PF_INT: 
-                    case PF_ENUM: 
-                        prh.HintDescriptor |= LADSPA_HINT_INTEGER;
-                        break;
-                }
-                switch(pp.flags & PF_SCALEMASK) {
-                    case PF_SCALE_LOG:
-                        prh.HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
-                        break;
-                }
+            prh.HintDescriptor = 0;
+            ((const char **)descriptor.PortNames)[i] = Module::port_names[i];
+        }
+        for (; i < ins + outs + params; i++)
+        {
+            LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
+            ((int *)descriptor.PortDescriptors)[i] = i < ins ? LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO
+                                                  : i < ins + outs ? LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO
+                                                                   : LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
+            prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
+            parameter_properties &pp = Module::param_props[i - ins - outs];
+            ((const char **)descriptor.PortNames)[i] = pp.name;
+            prh.LowerBound = pp.min;
+            prh.UpperBound = pp.max;
+            switch(pp.flags & PF_TYPEMASK) {
+                case PF_BOOL: 
+                    prh.HintDescriptor |= LADSPA_HINT_TOGGLED;
+                    break;
+                case PF_INT: 
+                case PF_ENUM: 
+                    prh.HintDescriptor |= LADSPA_HINT_INTEGER;
+                    break;
+            }
+            switch(pp.flags & PF_SCALEMASK) {
+                case PF_SCALE_LOG:
+                    prh.HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
+                    break;
             }
         }
         descriptor.ImplementationData = this;

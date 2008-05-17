@@ -648,7 +648,9 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
     if (!strcmp(element, "if"))
     {
         if (!xam.count("cond") || xam["cond"].empty())
+        {
             g_error("Incorrect <if cond=\"[!]symbol\"> element");
+        }
         string cond = xam["cond"];
         bool state = true;
         if (cond.substr(0, 1) == "!") {
@@ -705,7 +707,9 @@ void plugin_gui::xml_element_end(void *data, const char *element)
         return;
     }
     if (!strcmp(element, "if"))
+    {
         return;
+    }
     if (gui->current_control)
     {
         (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);

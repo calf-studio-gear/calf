@@ -61,7 +61,7 @@ public:
     float *outs[2];
     float *params[1];
     uint32_t srate;
-    static const char *port_names[];
+    static const char *port_names[in_count + out_count];
     static parameter_properties param_props[];
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!inputs_mask)
@@ -84,7 +84,7 @@ class flanger_audio_module: public null_audio_module
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    static const char *port_names[];
+    static const char *port_names[in_count + out_count];
     dsp::simple_flanger<float, 2048> left, right;
     float *ins[in_count]; 
     float *outs[out_count];
@@ -156,7 +156,7 @@ class phaser_audio_module: public null_audio_module
 public:
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    static const char *port_names[];
+    static const char *port_names[in_count + out_count];
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -230,7 +230,7 @@ class reverb_audio_module: public null_audio_module
 public:    
     enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    static const char *port_names[];
+    static const char *port_names[in_count + out_count];
     dsp::reverb<float> reverb;
     uint32_t srate;
     gain_smoothing amount;
@@ -437,7 +437,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static const char *port_names[];
+    static const char *port_names[in_count + out_count];
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
