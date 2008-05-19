@@ -88,6 +88,22 @@ public:
     }
 };
 
+template<class T>
+class scope_assign
+{
+    T &data, old_value;
+public:
+    scope_assign(T &_data, T new_value)
+    : data(_data), old_value(_data)
+    {
+        data = new_value;
+    }
+    ~scope_assign()
+    {
+        data = old_value;
+    }
+};
+
 typedef std::map<std::string, std::string> dictionary;
 
 extern std::string encodeMap(const dictionary &data);

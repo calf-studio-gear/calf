@@ -29,10 +29,12 @@
 #include <calf/benchmark.h>
 #include <calf/lv2_ui.h>
 #include <calf/preset_gui.h>
+#include <calf/utils.h>
 
 using namespace std;
 using namespace dsp;
 using namespace synth;
+using namespace calf_utils;
 
 struct plugin_proxy_base: public plugin_ctl_iface
 {
@@ -80,9 +82,8 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             return;
         params[param_no] = value;
         if (send) {
-            send = false;
+            scope_assign<bool> _a_(send, false);
             write_function(controller, param_no + Module::in_count + Module::out_count, sizeof(float), 0, &params[param_no]);
-            send = true;
         }
     }
     virtual int get_param_count()
@@ -164,6 +165,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const LV2_Feature* const*       features)
 {
     plugin_proxy_base *proxy = create_plugin_proxy(plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1);
+    scope_assign<bool> _a_(proxy->send, false);
     proxy->setup(write_function, controller);
     // dummy window
     main_window *main = new main_window;
@@ -194,7 +196,12 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
         return;
     if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
-    gui->set_param_value(port, v);
+    plugin_proxy_base *proxy = dynamic_cast<plugin_proxy_base *>(gui->plugin);
+    assert(proxy);
+    {
+        scope_assign<bool> _a_(proxy->send, false);
+        gui->set_param_value(port, v);
+    }
 }
 
 const void *gui_extension(const char *uri)

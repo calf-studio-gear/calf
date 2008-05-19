@@ -744,7 +744,9 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     XML_SetElementHandler(parser, xml_element_start, xml_element_end);
     XML_Status status = XML_Parse(parser, xml, strlen(xml), 1);
     if (status == XML_STATUS_ERROR)
+    {
         g_error("Parse error: %s in XML", XML_ErrorString(XML_GetErrorCode(parser)));
+    }
     
     XML_ParserFree(parser);
     return GTK_WIDGET(top_container->container);

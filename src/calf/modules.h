@@ -543,21 +543,21 @@ public:
 class rotary_speaker_audio_module: public null_audio_module
 {
 public:
-    enum { par_speed, par_spacing, par_shift, param_count };
+    enum { par_speed, par_spacing, par_shift, par_moddepth, param_count };
     enum { in_count = 2, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    double phase_l, dphase_l, phase_h, dphase_h;
-    int cos_l, sin_l, cos_h, sin_h;
-    dsp::simple_delay<4096, float> delay;
+    unsigned int phase_l, dphase_l, phase_h, dphase_h;
+    dsp::simple_delay<1024, float> delay;
     dsp::biquad<float> crossover1l, crossover1r, crossover2l, crossover2r;
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
     int vibrato_mode;
     static parameter_properties param_props[];
     float mwhl_value, hold_value, aspeed_l, aspeed_h, dspeed;
+    unsigned int dphase2_l, dphase2_h;
 
     rotary_speaker_audio_module()
     {
@@ -607,19 +607,17 @@ public:
     {
         float speed_h = aspeed_h >= 0 ? (48 + (400-48) * aspeed_h) : (48 * (1 + aspeed_h));
         float speed_l = aspeed_l >= 0 ? 40 + (342-40) * aspeed_l : (40 * (1 + aspeed_l));
-        dphase_h = speed_h / (60 * srate);
-        dphase_l = speed_l / (60 * srate);
-        cos_h = (int)(16384*16384*cos(dphase_h * 2 * PI));
-        sin_h = (int)(16384*16384*sin(dphase_h * 2 * PI));
-        cos_l = (int)(16384*16384*cos(dphase_l * 2 * PI));
-        sin_l = (int)(16384*16384*sin(dphase_l * 2 * PI));
+        double fdphase_h = speed_h / (60 * srate);
+        double fdphase_l = speed_l / (60 * srate);
+        dphase_h = (unsigned int)(fdphase_h * (1 << 30)) << 2;
+        dphase_l = (unsigned int)(fdphase_l * (1 << 30)) << 2;
     }
-    static inline void update_euler(long long int &x, long long int &y, int dx, int dy)
+    /// map a ramp [int] to a sinusoid-like function [0, 65536]
+    static inline int pseudo_sine_scl(int counter)
     {
-        long long int nx = (x * dx - y * dy) >> 28;
-        long long int ny = (x * dy + y * dx) >> 28;
-        x = nx;
-        y = ny;
+        // premature optimization is a root of all evil; it can be done with integers only - but later :)
+        double v = counter * (1.0 / (65536.0 * 32768.0));
+        return 32768 + 32768 * (v - v*v*v) * (1.0 / 0.3849);
     }
     inline bool update_speed(float &aspeed, float delta_decc, float delta_acc)
     {
@@ -636,30 +634,21 @@ public:
     }
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
     {
-        long long int xl0 = (int)(10000*16384*cos(phase_l * 2 * PI));
-        long long int yl0 = (int)(10000*16384*sin(phase_l * 2 * PI));
-        long long int xh0 = (int)(10000*16384*cos(phase_h * 2 * PI));
-        long long int yh0 = (int)(10000*16384*sin(phase_h * 2 * PI));
-//        int shift = 500000, pdelta = 150000;
         int shift = (int)(300000 * (*params[par_shift])), pdelta = (int)(300000 * (*params[par_spacing]));
-        // printf("xl=%d yl=%d dx=%d dy=%d\n", (int)(xl0>>14), (int)(yl0 >> 14), cos_l, sin_l);
+        int md = (int)(100 * (*params[par_moddepth]));
         for (unsigned int i = 0; i < nsamples; i++) {
             float in_l = ins[0][i + offset], in_r = ins[1][i + offset];
             float in_mono = 0.5f * (in_l + in_r);
             
-            // int xl = (int)(10000 * cos(phase_l)), yl = (int)(10000 * sin(phase_l));
-            //int xh = (int)(10000 * cos(phase_h)), yh = (int)(10000 * sin(phase_h));
-            int xl = xl0 >> 14, yl = yl0 >> 14;
-            int xh = xh0 >> 14, yh = yh0 >> 14;
-            update_euler(xl0, yl0, cos_l, sin_l);
-            // printf("xl=%d yl=%d xl'=%f yl'=%f\n", xl, yl, 16384*cos((phase_l + dphase_l * i) * 2 * PI), 16384*sin((phase_l + dphase_l * i) * 2 * PI));
-            update_euler(xh0, yh0, cos_h, sin_h);
+            int xl = pseudo_sine_scl(phase_l), yl = pseudo_sine_scl(phase_l + 0x40000000);
+            int xh = pseudo_sine_scl(phase_h), yh = pseudo_sine_scl(phase_h + 0x40000000);
+            // printf("%d %d %d\n", shift, pdelta, shift + pdelta + 20 * xl);
             
-            float out_hi_l = 0.5f * in_mono - delay.get_interp_1616(shift + 20 * xh) + 0.0001 * xh * delay.get_interp_1616(shift + pdelta - 20 * yh) - delay.get_interp_1616(shift + pdelta + pdelta - 20 * xh);
-            float out_hi_r = 0.5f * in_mono + delay.get_interp_1616(shift - 20 * yh) - 0.0001 * yh * delay.get_interp_1616(shift + pdelta + 20 * xh) + delay.get_interp_1616(shift + pdelta + pdelta + 20 * yh);
+            float out_hi_l = 0.5f * in_mono - delay.get_interp_1616(shift + md * xh) + 0.0001 * xh * delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) - delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
+            float out_hi_r = 0.5f * in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - 0.0001 * yh * delay.get_interp_1616(shift + pdelta + md * xh) + delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
 
-            float out_lo_l = 0.5f * in_mono - delay.get_interp_1616(shift + 20 * xl) + delay.get_interp_1616(shift + pdelta - 20 * yl);
-            float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(shift - 20 * xl) - delay.get_interp_1616(shift + pdelta + 20 * yl);
+            float out_lo_l = 0.5f * in_mono - delay.get_interp_1616(shift + md * xl) + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
+            float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(shift + md * 65536 - md * xl) - delay.get_interp_1616(shift + pdelta + md * yl);
             
             out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
             out_hi_r = crossover2r.process_d2(out_hi_r); // sanitize(out_hi_r);
@@ -675,13 +664,13 @@ public:
             outs[0][i + offset] = out_l * 0.5f;
             outs[1][i + offset] = out_r * 0.5f;
             delay.put(in_mono);
+            phase_l += dphase_l;
+            phase_h += dphase_h;
         }
         crossover1l.sanitize_d2();
         crossover1r.sanitize_d2();
         crossover2l.sanitize_d2();
         crossover2r.sanitize_d2();
-        phase_l = fmod(phase_l + nsamples * dphase_l, 1.0);
-        phase_h = fmod(phase_h + nsamples * dphase_h, 1.0);
         float delta = nsamples * 1.0 / srate;
         bool u1 = update_speed(aspeed_l, delta * 0.2, delta * 0.14);
         bool u2 = update_speed(aspeed_h, delta, delta * 0.5);

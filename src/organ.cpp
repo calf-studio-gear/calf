@@ -53,7 +53,9 @@ const char *organ_audio_module::get_gui_xml()
     return 
     "<vbox border=\"10\">"
         "<hbox>"
-            "<line-graph param=\"master\" refresh=\"1\"/>"
+            "<if cond=\"directlink\">"
+                "<line-graph param=\"master\" refresh=\"1\"/>"
+            "</if>"
             "<vbox>"
                 "<label param=\"foldnote\"/>"
                 "<align><knob param=\"foldnote\"/></align>"
@@ -350,7 +352,7 @@ const char *organ_wave_names[] = {
     "Bell", "Bell2", 
     "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
     "DSaw", "DSqr", "DPls",
-    "P:SynStr","P:WideStr","P:Sine","P:Bell","P:Space","P:Voice"
+    "P:SynStr","P:WideStr","P:Sine","P:Bell","P:Space","P:Voice","P:Hiss","P:Chant",
 };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };
@@ -526,7 +528,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     }
     
     int periods = 64 * ORGAN_BIG_WAVE_SIZE / ORGAN_WAVE_SIZE;
-    for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE; i++) {
+    for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         blDest.spectrum[i] = 0;
     }
     for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
@@ -538,7 +540,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         for (int j = delta; j <= bw; j+=delta)
         {
             float p = j * 1.0 / bw;
-            sum += exp(-p*p);
+            sum += 2 * exp(-p*p);
         }
         if (sum < 0.0001)
             continue;
@@ -786,18 +788,6 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_space - wave_count_small], 30, 30);
 
-#if 0
-        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
-        {
-            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
-            float fm = 0.3 * sin(3*ph) + 0.3 * sin(4*ph) + 0.3 * sin(5*ph);
-            tmp[i] = sin(ph + fm) + 0.5 * cos(2*ph - fm);
-        }
-        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
-        bl.compute_spectrum(tmp);
-        padsynth(bl, blBig, big_waves[wave_choir - wave_count_small], 50, 10);
-#endif
-        
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -808,6 +798,25 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_choir - wave_count_small], 50, 10);
 
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = sin(ph) ;
+            tmp[i] = sin(ph + fm) + 0.25 * cos(11*ph - 2 * fm) + 0.125 * cos(23*ph - 2 * fm) + 0.0625 * cos(49*ph - 2 * fm);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_choir2 - wave_count_small], 50, 10);
+
+        for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
+        {
+            float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
+            float fm = sin(ph) ;
+            tmp[i] = sin(ph + 4 * fm) + 0.5 * sin(2 * ph + 4 * ph);
+        }
+        normalize_waveform(tmp, ORGAN_WAVE_SIZE);
+        bl.compute_spectrum(tmp);
+        padsynth(bl, blBig, big_waves[wave_choir3 - wave_count_small], 50, 10);
     }
 }
 

@@ -95,6 +95,8 @@ public:
         wave_bellpad,
         wave_space,
         wave_choir,
+        wave_choir2,
+        wave_choir3,
         wave_count,
         wave_count_big = wave_count - wave_count_small
     };
