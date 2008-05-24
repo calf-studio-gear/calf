@@ -518,7 +518,7 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
     normalize_waveform(tmp, ORGAN_WAVE_SIZE);
 }
 
-static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_family &result, int bwscale = 20, float bell_factor = 0)
+static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_family &result, int bwscale = 20, float bell_factor = 0, bool foldover = false)
 {
     complex<float> orig_spectrum[ORGAN_WAVE_SIZE / 2];
     for (int i = 0; i < ORGAN_WAVE_SIZE / 2; i++) 
@@ -544,6 +544,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         }
         if (sum < 0.0001)
             continue;
+        amp *= (ORGAN_BIG_WAVE_SIZE / ORGAN_WAVE_SIZE);
         amp /= sum;
         int orig = i * periods + bell_factor * cos(i);
         if (orig > 0 && orig < ORGAN_BIG_WAVE_SIZE / 2)
@@ -565,15 +566,19 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     }
     for (int i = 1; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         float phase = M_PI * 2 * (rand() & 127) / 128;
-        complex<float> shift = complex<float>(100 * cos(phase), 100 * sin(phase));
+        complex<float> shift = complex<float>(cos(phase), sin(phase));
         blDest.spectrum[i] *= shift;        
 //      printf("@%d = %f\n", i, abs(blDest.spectrum[i]));
         
         blDest.spectrum[ORGAN_BIG_WAVE_SIZE - i] = conj(blDest.spectrum[i]);
     }
+    float tmp[ORGAN_BIG_WAVE_SIZE];
+    blDest.compute_waveform(tmp);
+    normalize_waveform(tmp, ORGAN_BIG_WAVE_SIZE);
+    blDest.compute_spectrum(tmp);
     
     // limit is 1/2 of the number of harmonics of the original wave
-    result.make_from_spectrum(blDest, false, ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT));
+    result.make_from_spectrum(blDest, foldover, ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT));
     memcpy(result.original, result.begin()->second, sizeof(result.original));
     #if 0
     blDest.compute_waveform(result);
@@ -779,7 +784,7 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         }
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
-        padsynth(bl, blBig, big_waves[wave_bellpad - wave_count_small], 30, 30);
+        padsynth(bl, blBig, big_waves[wave_bellpad - wave_count_small], 30, 30, true);
 
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
