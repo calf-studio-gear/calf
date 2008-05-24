@@ -78,6 +78,8 @@ struct organ_parameters {
 #define ORGAN_WAVE_SIZE 4096
 #define ORGAN_BIG_WAVE_BITS 17
 #define ORGAN_BIG_WAVE_SIZE 131072
+/// 2^ORGAN_BIG_WAVE_SHIFT = how many (quasi)periods per sample
+#define ORGAN_BIG_WAVE_SHIFT 5
 
 class organ_voice_base
 {
@@ -123,10 +125,11 @@ public:
         perctrig_eachplus,
         perctrig_count
     };
-    typedef float big_wave_data[ORGAN_BIG_WAVE_SIZE + 1];
+    typedef waveform_family<ORGAN_WAVE_BITS> small_wave_family;
+    typedef waveform_family<ORGAN_BIG_WAVE_BITS> big_wave_family;
 protected:
-    static waveform_family<ORGAN_WAVE_BITS> waves[wave_count_small];
-    static big_wave_data big_waves[wave_count_big];
+    static small_wave_family waves[wave_count_small];
+    static big_wave_family big_waves[wave_count_big];
 
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
@@ -143,10 +146,10 @@ protected:
     }
 public:
     organ_parameters *parameters;
-    static inline waveform_family<ORGAN_WAVE_BITS> &get_wave(int wave) {
+    static inline small_wave_family &get_wave(int wave) {
         return waves[wave];
     }
-    static inline big_wave_data &get_big_wave(int wave) {
+    static inline big_wave_family &get_big_wave(int wave) {
         return big_waves[wave];
     }
 };

@@ -310,7 +310,7 @@ bool organ_audio_module::get_graph(int index, int subindex, float *data, int poi
             int wave = dsp::clip((int)(parameters->waveforms[i]), 0, (int)organ_voice_base::wave_count - 1);
             if (wave >= small_waves)
             {
-                waveforms[i] = organ_voice_base::get_big_wave(wave - small_waves);
+                waveforms[i] = organ_voice_base::get_big_wave(wave - small_waves).original;
                 S[i] = ORGAN_BIG_WAVE_SIZE;
                 S2[i] = ORGAN_WAVE_SIZE / 64;
             }
@@ -490,8 +490,8 @@ parameter_properties organ_audio_module::param_props[] = {
 
 ////////////////////////////////////////////////////////////////////////////
 
-waveform_family<ORGAN_WAVE_BITS> organ_voice_base::waves[organ_voice_base::wave_count_small];
-organ_voice_base::big_wave_data organ_voice_base::big_waves[organ_voice_base::wave_count_big];
+organ_voice_base::small_wave_family organ_voice_base::waves[organ_voice_base::wave_count_small];
+organ_voice_base::big_wave_family organ_voice_base::big_waves[organ_voice_base::wave_count_big];
 
 static void smoothen(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SIZE])
 {
@@ -518,7 +518,7 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
     normalize_waveform(tmp, ORGAN_WAVE_SIZE);
 }
 
-static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_data result, int bwscale = 20, float bell_factor = 0)
+static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_family &result, int bwscale = 20, float bell_factor = 0)
 {
     complex<float> orig_spectrum[ORGAN_WAVE_SIZE / 2];
     for (int i = 0; i < ORGAN_WAVE_SIZE / 2; i++) 
@@ -527,7 +527,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
 //        printf("@%d = %f\n", i, abs(orig_spectrum[i]));
     }
     
-    int periods = 64 * ORGAN_BIG_WAVE_SIZE / ORGAN_WAVE_SIZE;
+    int periods = (1 << ORGAN_BIG_WAVE_SHIFT) * ORGAN_BIG_WAVE_SIZE / ORGAN_WAVE_SIZE;
     for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         blDest.spectrum[i] = 0;
     }
@@ -552,7 +552,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         {
             float p = j * 1.0 / bw;
             float val = amp * exp(-p * p);
-            int pos = orig + j * bwscale / 20;
+            int pos = orig + j * bwscale / 40;
             if (pos < 1 || pos >= ORGAN_BIG_WAVE_SIZE / 2)
                 continue;
             int pos2 = 2 * orig - pos;
@@ -565,17 +565,20 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     }
     for (int i = 1; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         float phase = M_PI * 2 * (rand() & 127) / 128;
-        complex<float> shift = complex<float>(cos(phase), sin(phase));
+        complex<float> shift = complex<float>(100 * cos(phase), 100 * sin(phase));
         blDest.spectrum[i] *= shift;        
 //      printf("@%d = %f\n", i, abs(blDest.spectrum[i]));
         
         blDest.spectrum[ORGAN_BIG_WAVE_SIZE - i] = conj(blDest.spectrum[i]);
     }
     
+    // limit is 1/2 of the number of harmonics of the original wave
+    result.make_from_spectrum(blDest, false, ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT));
+    memcpy(result.original, result.begin()->second, sizeof(result.original));
+    #if 0
     blDest.compute_waveform(result);
     normalize_waveform(result, ORGAN_BIG_WAVE_SIZE);
     result[ORGAN_BIG_WAVE_SIZE] = result[0];
-    #if 0
     for (int i =0 ; i<ORGAN_BIG_WAVE_SIZE + 1; i++)
         printf("%f\n", result[i]);
     #endif
@@ -886,13 +889,13 @@ void organ_voice::render_block() {
         uint32_t rate = (dphase * hm).get();
         if (waveid >= wave_count_small)
         {
-            float *data = big_waves[waveid - wave_count_small];
+            float *data = big_waves[waveid - wave_count_small].get_level(rate >> (ORGAN_BIG_WAVE_BITS - ORGAN_WAVE_BITS + ORGAN_BIG_WAVE_SHIFT));
             if (!data)
                 continue;
-            hm.set(hm.get() >> 6);
+            hm.set(hm.get() >> ORGAN_BIG_WAVE_SHIFT);
             dsp::fixed_point<int64_t, 20> tphase, tdphase;
             tphase.set(((phase * hm).get()) + parameters->phaseshift[h]);
-            tdphase.set(rate >> 6);
+            tdphase.set(rate >> ORGAN_BIG_WAVE_SHIFT);
             float ampl = amp * 0.5f * (1 - parameters->pan[h]);
             float ampr = amp * 0.5f * (1 + parameters->pan[h]);
             float (*out)[Channels] = aux_buffers[dsp::fastf2i_drm(parameters->routing[h])];
