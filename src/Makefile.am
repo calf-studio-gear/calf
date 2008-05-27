@@ -102,7 +102,7 @@ if USE_LV2_GUI
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
 endif
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl $(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/{Filter,Flanger,Reverb,Monosynth,VintageDelay,Organ,RotarySpeaker,Phaser,manifest}.ttl
 	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true
 endif
 if USE_JACK

@@ -80,7 +80,7 @@ parameter_properties phaser_audio_module::param_props[] = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "amount", "Amount" },
 };
 
-static synth::ladspa_info phaser_info = { 0x847d, "phaser", "Calf Phaser", "Krzysztof Foltman", copyright, "PhaserPlugin" };
+static synth::ladspa_info phaser_info = { 0x847d, "Phaser", "Calf Phaser", "Krzysztof Foltman", copyright, "PhaserPlugin" };
 
 ALL_WRAPPERS(phaser)
 

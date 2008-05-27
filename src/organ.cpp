@@ -565,7 +565,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         }
     }
     for (int i = 1; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
-        float phase = M_PI * 2 * (rand() & 127) / 128;
+        float phase = M_PI * 2 * (rand() & 255) / 256;
         complex<float> shift = complex<float>(cos(phase), sin(phase));
         blDest.spectrum[i] *= shift;        
 //      printf("@%d = %f\n", i, abs(blDest.spectrum[i]));
