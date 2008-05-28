@@ -1,9 +1,13 @@
 Version 0.0.12
-+ RotarySpeaker: temporarily broken
-+ Organ: reworked to add a complete subtractive synth section and lots of
-  other very nice features
-+ Added crappy incomplete implementation of LV2 (including GUI and events,
-  until they get changed again ;) )
++ RotarySpeaker: work in progress; enabled by default just in case it's
+  useful for anyone
++ Organ: reworked to add a complete subtractive synth section, a selection
+  of waveform (settable on a per-drawbar basis), individual settings of
+  phase, detune, panning, routing for each drawbar, as well as improved(?)
+  percussive section and vibrato/phaser section. It is usable (and sounds
+  good!), but some parameters, waveform set etc. may change in future. May
+  take up to 100 MB of RAM due to pre-calculated bandlimited waveforms.
++ Added half-complete implementation of LV2 (including GUI and events).
 + Lots of small "polishing" kind of fixes in many places (like proper
   rounding of values in the GUIs, another set of hold/sostenuto fixes etc)
 
