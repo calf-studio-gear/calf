@@ -59,18 +59,20 @@ struct bandlimiter
     
     void compute_spectrum(float input[SIZE])
     {
-        std::complex<float> data[SIZE];
+        std::complex<float> *data = new complex<float>[SIZE];
         for (int i = 0; i < SIZE; i++)
             data[i] = input[i];
         fft.calculate(data, spectrum, false);
+        delete []data;
     }
     
     void compute_waveform(float output[SIZE])
     {
-        std::complex<float> data[SIZE];
+        std::complex<float> *data = new complex<float>[SIZE];
         fft.calculate(spectrum, data, true);
         for (int i = 0; i < SIZE; i++)
             output[i] = data[i].real();
+        delete []data;
     }
     
     /// remove DC offset of the spectrum (it usually does more harm than good!)
@@ -83,7 +85,9 @@ struct bandlimiter
     /// might need to be improved much in future!
     void make_waveform(float output[SIZE], int cutoff, bool foldover = false)
     {
-        std::complex<float> new_spec[SIZE], iffted[SIZE];
+        vector<std::complex<float> > new_spec, iffted;
+        new_spec.resize(SIZE);
+        iffted.resize(SIZE);
         for (int i = 0; i < cutoff; i++)
             new_spec[i] = spectrum[i], 
             new_spec[SIZE - 1 - i] = spectrum[SIZE - 1 - i];
@@ -105,7 +109,7 @@ struct bandlimiter
                 new_spec[i] = 0.f,
                 new_spec[SIZE - 1 - i] = 0.f;
         }
-        fft.calculate(new_spec, iffted, true);
+        fft.calculate(new_spec.data(), iffted.data(), true);
         for (int i = 0; i < SIZE; i++)
             output[i] = iffted[i].real();
     }

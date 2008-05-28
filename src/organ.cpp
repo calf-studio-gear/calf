@@ -300,6 +300,7 @@ const char *organ_audio_module::get_gui_xml()
 bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
     if (index == par_master) {
+        organ_voice_base::precalculate_waves();
         if (subindex)
             return false;
         float *waveforms[9];
@@ -520,7 +521,9 @@ static void phaseshift(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SI
 
 static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_WAVE_BITS> &blDest, organ_voice_base::big_wave_family &result, int bwscale = 20, float bell_factor = 0, bool foldover = false)
 {
-    complex<float> orig_spectrum[ORGAN_WAVE_SIZE / 2];
+    // kept in a vector to avoid putting large arrays on stack
+    vector<complex<float> >orig_spectrum;
+    orig_spectrum.resize(ORGAN_WAVE_SIZE / 2);
     for (int i = 0; i < ORGAN_WAVE_SIZE / 2; i++) 
     {
         orig_spectrum[i] = blSrc.spectrum[i];
@@ -572,10 +575,12 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         
         blDest.spectrum[ORGAN_BIG_WAVE_SIZE - i] = conj(blDest.spectrum[i]);
     }
-    float tmp[ORGAN_BIG_WAVE_SIZE];
-    blDest.compute_waveform(tmp);
-    normalize_waveform(tmp, ORGAN_BIG_WAVE_SIZE);
-    blDest.compute_spectrum(tmp);
+    // same as above - put large array on heap to avoid stack overflow in ingen
+    vector<float> tmp;
+    tmp.resize(ORGAN_BIG_WAVE_SIZE);
+    blDest.compute_waveform(tmp.data());
+    normalize_waveform(tmp.data(), ORGAN_BIG_WAVE_SIZE);
+    blDest.compute_spectrum(tmp.data());
     
     // limit is 1/2 of the number of harmonics of the original wave
     result.make_from_spectrum(blDest, foldover, ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT));
@@ -589,18 +594,14 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     #endif
 }
 
-
-organ_voice_base::organ_voice_base(organ_parameters *_parameters)
-: parameters(_parameters)
+void organ_voice_base::precalculate_waves()
 {
-    note = -1;
     static bool inited = false;
     if (!inited)
     {
         float tmp[ORGAN_WAVE_SIZE];
-        bandlimiter<ORGAN_WAVE_BITS> bl;
-        bandlimiter<ORGAN_BIG_WAVE_BITS> blBig;
-        inited = true;
+        static bandlimiter<ORGAN_WAVE_BITS> bl;
+        static bandlimiter<ORGAN_BIG_WAVE_BITS> blBig;
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * 2 * M_PI / ORGAN_WAVE_SIZE);
         waves[wave_sine].make(bl, tmp);
@@ -825,7 +826,15 @@ organ_voice_base::organ_voice_base(organ_parameters *_parameters)
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_choir3 - wave_count_small], 50, 10);
+        
+        inited = true;
     }
+}
+
+organ_voice_base::organ_voice_base(organ_parameters *_parameters)
+: parameters(_parameters)
+{
+    note = -1;
 }
 
 void organ_vibrato::reset()

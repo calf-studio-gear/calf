@@ -152,6 +152,7 @@ public:
     static inline big_wave_family &get_big_wave(int wave) {
         return big_waves[wave];
     }
+    static void precalculate_waves();
 };
 
 class organ_vibrato
@@ -340,6 +341,7 @@ struct drawbar_organ: public synth::basic_synth {
      drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
+        organ_voice_base::precalculate_waves();
     }
     void render_separate(float *output[], int nsamples)
     {

@@ -45,11 +45,19 @@ calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
 endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp
+if USE_DEBUG
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat 
+else
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"
+endif
 
 if USE_LV2_GUI
 calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
+if USE_DEBUG
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) 
+else
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GUI_DEPS_LIBS)
+endif
 endif
 
 libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp

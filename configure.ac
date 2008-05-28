@@ -47,8 +47,6 @@ if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
 
-CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
-
 AC_SUBST(GUI_DEPS_CFLAGS)
 AC_SUBST(GUI_DEPS_LIBS)
 AC_SUBST(JACK_DEPS_CFLAGS)
@@ -89,8 +87,20 @@ AC_ARG_ENABLE(experimental,
   AC_HELP_STRING([--enable-experimental],[enable unfinished features - not recommended!]),
   [set_enable_experimental="$enableval"],
   [set_enable_experimental="no"])
-
 AC_MSG_RESULT($set_enable_experimental)
+
+AC_MSG_CHECKING([whether to enable debugging mode])
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug],[enable debug mode - slow!]),
+  [set_enable_debug="$enableval"],
+  [set_enable_debug="no"])
+AC_MSG_RESULT($set_enable_debug)
+
+if test "$set_enable_debug" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -O0 -g -Wall"
+else
+  CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
+fi
 
 AM_CONDITIONAL(USE_DSSI, test "$DSSI_FOUND" = "yes")
 AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
@@ -100,6 +110,7 @@ AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
+AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
 if test "$LADSPA_FOUND" = "yes"; then
   AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
 fi
@@ -184,6 +195,7 @@ AC_CONFIG_FILES([Makefile
 AC_MSG_RESULT([
     Calf configured
 
+    Debug mode:             $set_enable_debug
     LADSPA enabled:         $LADSPA_FOUND
     DSSI enabled:           $DSSI_FOUND
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
