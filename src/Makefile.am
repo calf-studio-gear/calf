@@ -32,16 +32,17 @@ calfjackhost_LDADD += $(LASH_DEPS_LIBS)
 endif
 endif
 
+AM_CXXFLAGS += $(GLIB_DEPS_CFLAGS)
 noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
 
 calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD =  -lglib-2.0
+calfbenchmark_LDADD = $(GLIB_DEPS_LIBS)
 
 if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp
-calfdssigui_LDADD =  -lglib-2.0 libcalfstatic.la libcalfgui.la $(GUI_DEPS_LIBS)
+calfdssigui_LDADD = libcalfstatic.la libcalfgui.la $(GLIB_DEPS_LIBS) $(GUI_DEPS_LIBS)
 endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp

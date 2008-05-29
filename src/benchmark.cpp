@@ -382,7 +382,7 @@ int main(int argc, char *argv[])
     }
     
 #ifdef TEST_OSC
-    if (!strcmp(unit, "osc"))
+    if (unit && !strcmp(unit, "osc"))
         osctl_test();
 #endif
     
@@ -395,7 +395,7 @@ int main(int argc, char *argv[])
     if (!unit || !strcmp(unit, "effects"))
         effect_test();
 
-    if (!strcmp(unit, "reverbir"))
+    if (unit && !strcmp(unit, "reverbir"))
         reverbir_calc();
 
     return 0;

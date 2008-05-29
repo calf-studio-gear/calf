@@ -35,6 +35,8 @@ AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found])
 
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
 
+PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
+
 if test "$have_jack_header" = "yes"; then
   PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
     AC_CHECK_LIB([jack], [jack_port_new], JACK_FOUND="yes", JACK_FOUND="no"),
@@ -47,6 +49,8 @@ if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
 
+AC_SUBST(GLIB_DEPS_CFLAGS)
+AC_SUBST(GLIB_DEPS_LIBS)
 AC_SUBST(GUI_DEPS_CFLAGS)
 AC_SUBST(GUI_DEPS_LIBS)
 AC_SUBST(JACK_DEPS_CFLAGS)
