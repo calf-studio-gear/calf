@@ -155,7 +155,7 @@ calf_line_graph_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)calf_line_graph_class_init) >> 16, i);
+            char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)(intptr_t)calf_line_graph_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;
@@ -281,7 +281,7 @@ calf_vumeter_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)calf_vumeter_class_init) >> 16, i);
+            char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)(intptr_t)calf_vumeter_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;
@@ -525,7 +525,7 @@ calf_knob_get_type (void)
         
         for (int i = 0; ; i++) {
             char *name = g_strdup_printf("CalfKnob%u%d", 
-                ((unsigned int)calf_knob_class_init) >> 16, i);
+                ((unsigned int)(intptr_t)calf_knob_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;
