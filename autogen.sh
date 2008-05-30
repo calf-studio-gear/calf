@@ -4,4 +4,6 @@ libtoolize --force --automake --copy
 autoheader --force
 autoconf --force
 automake --force-missing --copy
-./configure --enable-experimental $@
+if test "$NOCONFIGURE" != 1; then
+  ./configure --enable-experimental $@
+fi
