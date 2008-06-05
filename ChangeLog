@@ -1,3 +1,11 @@
+Version 0.0.14?
++ OSC: totally new OSC wrapper, to allow for realtime-safe parsing
+
+Version 0.0.13
++ Fixed several problems related to 64-bit environments and OpenSUSE (thanks
+oc2pus!)
++ Added NOCONFIGURE environment variable support to autogen.sh
+
 Version 0.0.12
 + RotarySpeaker: work in progress; enabled by default just in case it's
   useful for anyone

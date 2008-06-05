@@ -38,11 +38,13 @@ calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
 
 calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD = $(GLIB_DEPS_LIBS)
+calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) 
 
 if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp
 calfdssigui_LDADD = libcalfstatic.la libcalfgui.la $(GLIB_DEPS_LIBS) $(GUI_DEPS_LIBS)
+calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
+calfbenchmark_LDADD += libcalfgui.la
 endif
 
 calf_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp

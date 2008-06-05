@@ -33,6 +33,7 @@ using namespace dsp;
 
 #ifdef TEST_OSC
 #include <calf/osctl.h>
+#include <calf/osctlnet.h>
 using namespace osctl;
 #endif
 
@@ -328,35 +329,67 @@ void reverbir_calc()
 }
 
 #ifdef TEST_OSC
+
+struct my_sink: public osc_message_sink<osc_strstream>
+{
+    GMainLoop *loop;
+    osc_message_dump<osc_strstream, ostream> dump;
+    my_sink() : dump(cout) {}
+    virtual void receive_osc_message(std::string address, std::string type_tag, osc_strstream &buffer)
+    {
+        dump.receive_osc_message(address, type_tag, buffer);
+        assert(address == "/blah");
+        assert(type_tag == "bsii");
+
+        string_buffer blob;
+        string str;
+        uint32_t val1, val2;
+        buffer >> blob >> str >> val1 >> val2;
+        assert(blob.data == "123");
+        assert(str == "test");
+        assert(val1 == 1);
+        assert(val2 == 2);
+        g_main_loop_quit(loop);
+    }
+    
+};
+
 void osctl_test()
 {
     string sdata = string("\000\000\000\003123\000test\000\000\000\000\000\000\000\001\000\000\000\002", 24);
-    osc_stream is(sdata);
-    vector<osc_data> data;
-    is.read("bsii", data);
-    assert(is.pos == sdata.length());
-    assert(data.size() == 4);
-    assert(data[0].type == osc_blob);
-    assert(data[1].type == osc_string);
-    assert(data[2].type == osc_i32);
-    assert(data[3].type == osc_i32);
-    assert(data[0].strval == "123");
-    assert(data[1].strval == "test");
-    assert(data[2].i32val == 1);
-    assert(data[3].i32val == 2);
-    osc_stream os("");
-    os.write(data);
-    assert(os.buffer == sdata);
+    string_buffer sb(sdata);
+    osc_strstream is(sb);
+    osc_inline_typed_strstream os;
+    
+    string_buffer blob;
+    string str;
+    uint32_t val1, val2;
+    is >> blob >> str >> val1 >> val2;
+    assert(blob.data == "123");
+    assert(str == "test");
+    assert(val1 == 1);
+    assert(val2 == 2);
+    
+    os << blob << str << val1 << val2;
+    assert(os.buf_data.data == sdata);
+    assert(os.buf_types.data == "bsii");
+    
+    GMainLoop *main_loop = g_main_loop_new(NULL, FALSE);
+    my_sink sink;
+    sink.loop = main_loop;
     osc_server srv;
+    srv.sink = &sink;
     srv.bind("0.0.0.0", 4541);
     
     osc_client cli;
     cli.bind("0.0.0.0", 0);
     cli.set_addr("0.0.0.0", 4541);
-    if (!cli.send("/blah", data))
+    if (!cli.send("/blah", os))
+    {
         g_error("Could not send the OSC message");
+    }
     
-    g_main_loop_run(g_main_loop_new(NULL, FALSE));
+    g_main_loop_run(main_loop);
 }
 #endif
 

@@ -27,13 +27,12 @@
 #include <calf/modules_dev.h>
 #include <calf/benchmark.h>
 #include <calf/main_win.h>
+#include <calf/osctl.h>
+#include <calf/osctlnet.h>
 
 using namespace std;
 using namespace dsp;
 using namespace synth;
-
-#include <calf/osctl.h>
-#include <calf/osctlnet.h>
 using namespace osctl;
 
 #define debug_printf(...)
@@ -108,10 +107,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
         params[param_no] = value;
         if (send_osc)
         {
-            vector<osc_data> data;
-            data.push_back(osc_data(param_no + get_param_port_offset()));
-            data.push_back(osc_data(value));
-            client->send("/control", data);
+            osc_inline_typed_strstream str;
+            str << (uint32_t)(param_no + get_param_port_offset()) << value;
+            client->send("/control", str);
         }
     }
     virtual int get_param_count() {
@@ -128,10 +126,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     }
     virtual bool activate_preset(int bank, int program) { 
         if (send_osc) {
-            vector<osc_data> data;
-            data.push_back(osc_data(bank));
-            data.push_back(osc_data(program));
-            client->send("/program", data);
+            osc_inline_typed_strstream str;
+            str << (uint32_t)(bank) << (uint32_t)(program);
+            client->send("/program", str);
             return false;
         }
         return false;
@@ -160,18 +157,16 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     }
     virtual void execute(int command_no) { 
         if (send_osc) {
-            vector<osc_data> data;
             stringstream ss;
             ss << command_no;
             
-            data.push_back(osc_data("ExecCommand"));
-            data.push_back(osc_data(ss.str()));
-            client->send("/configure", data);
-            data.clear();
-
-            data.push_back(osc_data("ExecCommand"));
-            data.push_back(osc_data(""));
-            client->send("/configure", data);
+            osc_inline_typed_strstream str;
+            str << "ExecCommand" << ss.str();
+            client->send("/configure", str);
+            
+            str.clear();
+            str << "ExecCommand" << "";
+            client->send("/configure", str);
         }
     }
 };
@@ -214,7 +209,7 @@ GMainLoop *mainloop;
 
 static bool osc_debug = false;
 
-struct dssi_osc_server: public osc_server, public osc_message_sink
+struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
 {
     plugin_proxy_base *plugin;
     main_window *main_win;
@@ -254,13 +249,15 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
         global_presets.get_for_plugin(presets, effect_name.c_str());
     }
     
-    void receive_osc_message(std::string address, std::string type_tag, const std::vector<osc_data> &args)
+    virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
     {
         if (osc_debug)
-            dump.receive_osc_message(address, type_tag, args);
-        if (address == prefix + "/update" && args.size() && args[0].type == osc_string)
+            dump.receive_osc_message(address, args, buffer);
+        if (address == prefix + "/update" && args == "s")
         {
-            debug_printf("UPDATE: %s\n", args[0].strval.c_str());
+            string str;
+            buffer >> str;
+            debug_printf("UPDATE: %s\n", str.c_str());
             return;
         }
         if (address == prefix + "/quit")
@@ -269,9 +266,13 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
             g_main_loop_quit(mainloop);
             return;
         }
-        if (address == prefix + "/program"&& args.size() >= 2 && args[0].type == osc_i32 && args[1].type == osc_i32)
+        if (address == prefix + "/program"&& args == "ii")
         {
-            unsigned int nr = args[0].i32val * 128 + args[1].i32val;
+            uint32_t bank, program;
+            
+            buffer >> bank >> program;
+            
+            unsigned int nr = bank * 128 + program;
             debug_printf("PROGRAM %d\n", nr);
             if (nr == 0)
             {
@@ -297,10 +298,14 @@ struct dssi_osc_server: public osc_server, public osc_message_sink
             // cli.send("/update", data);
             return;
         }
-        if (address == prefix + "/control" && args.size() >= 2 && args[0].type == osc_i32 && args[1].type == osc_f32)
+        if (address == prefix + "/control" && args == "if")
         {
-            int idx = args[0].i32val - plugin->get_param_port_offset();
-            float val = args[1].f32val;
+            uint32_t port;
+            float val;
+            
+            buffer >> port >> val;
+            
+            int idx = port - plugin->get_param_port_offset();
             debug_printf("CONTROL %d %f\n", idx, val);
             bool sosc = plugin->send_osc;
             plugin->send_osc = false;
@@ -377,8 +382,9 @@ int main(int argc, char *argv[])
     
     debug_printf("URI = %s\n", srv.get_uri().c_str());
     
-    vector<osc_data> data;
-    data.push_back(osc_data(srv.get_uri(), osc_string));
+    string data_buf, type_buf;
+    osc_inline_typed_strstream data;
+    data << srv.get_uri();
     if (!srv.cli.send("/update", data))
     {
         g_error("Could not send the initial update message via OSC to %s", argv[optind]);

@@ -8,6 +8,7 @@
 using namespace osctl;
 using namespace std;
 
+#if 0
 std::string osc_data::to_string() const
 {
     std::stringstream ss;
@@ -31,6 +32,7 @@ std::string osc_data::to_string() const
     }
     return ss.str();
 }
+#endif
 
 const char *osctl::osc_type_name(osc_type type)
 {
@@ -57,6 +59,7 @@ const char *osctl::osc_type_name(osc_type type)
     }
 }
 
+#if 0
 void osc_stream::read(osc_type type, osc_data &od)
 {
     od.type = type;
@@ -174,3 +177,4 @@ void osc_message_dump::receive_osc_message(std::string address, std::string type
     }
 }
 
+#endif

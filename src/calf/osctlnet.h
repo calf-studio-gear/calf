@@ -42,10 +42,10 @@ struct osc_socket
 
 struct osc_server: public osc_socket
 {
-    static osc_message_dump dump;
-    osc_message_sink *sink;
+    osc_message_dump<osc_strstream, std::ostream> dump;
+    osc_message_sink<osc_strstream> *sink;
     
-    osc_server() : sink(&dump) {}
+    osc_server() : dump(std::cout), sink(&dump) {}
     
     virtual void on_bind();
     
@@ -59,7 +59,7 @@ struct osc_client: public osc_socket
     
     void set_addr(const char *hostaddr, int port);
     void set_url(const char *url);
-    bool send(const std::string &address, const std::vector<osc_data> &args);
+    bool send(const std::string &address, osctl::osc_typed_strstream &stream);
     bool send(const std::string &address);
 };
 

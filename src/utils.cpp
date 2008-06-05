@@ -29,28 +29,28 @@ using namespace osctl;
 
 string calf_utils::encodeMap(const dictionary &data)
 {
-    osc_stream str;
-    str.write((int32_t)data.size());
+    osctl::string_buffer sb;
+    osc_stream<osctl::string_buffer> str(sb);
+    str << (uint32_t)data.size();
     for(dictionary::const_iterator i = data.begin(); i != data.end(); i++)
     {
-        str.write(osc_data(i->first));
-        str.write(osc_data(i->second));
+        str << i->first << i->second;
     }
-    return str.buffer;
+    return sb.data;
 }
 
 void calf_utils::decodeMap(dictionary &data, const string &src)
 {
-    osc_stream str(src);
-    osc_data tmp, tmp2;
-    int32_t count = 0;
-    str.read(osc_i32, tmp);
-    count = tmp.i32val;
+    osctl::string_buffer sb(src);
+    osc_stream<osctl::string_buffer> str(sb);
+    uint32_t count = 0;
+    str >> count;
+    string tmp, tmp2;
     data.clear();
-    for (int i = 0; i < count; i++)
+    for (uint32_t i = 0; i < count; i++)
     {
-        str.read(osc_string, tmp);
-        str.read(osc_string, tmp2);
-        data[tmp.strval] = tmp2.strval;
+        str >> tmp;
+        str >> tmp2;
+        data[tmp] = tmp2;
     }
 }

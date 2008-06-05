@@ -11,15 +11,16 @@ using namespace std;
 
 void osc_server::parse_message(const char *buffer, int len)
 {
-    vector<osc_data> data;
-    osc_stream str(string(buffer, len));
-    str.read("ss", data);
-    if (!data[0].strval.empty() && data[0].strval[0] == '/'
-      &&!data[1].strval.empty() && data[1].strval[0] == ',')
+    osctl::string_buffer buf(string(buffer, len));
+    osc_strstream str(buf);
+    string address, type_tag;
+    str >> address;
+    str >> type_tag;
+    // cout << "Address " << address << " type tag " << type_tag << endl << flush;
+    if (!address.empty() && address[0] == '/'
+      &&!type_tag.empty() && type_tag[0] == ',')
     {
-        vector<osc_data> data2;
-        str.read(data[1].strval.substr(1).c_str(), data2);
-        sink->receive_osc_message(data[0].strval, data[1].strval, data2);
+        sink->receive_osc_message(address, type_tag.substr(1), str);
     }
 }
 
@@ -122,33 +123,23 @@ void osc_client::set_url(const char *url)
     addr.sin_addr = *(struct in_addr *)he->h_addr;
 }
 
-bool osc_client::send(const std::string &address, const std::vector<osc_data> &args)
+bool osc_client::send(const std::string &address, osctl::osc_typed_strstream &stream)
 {
-    vector<osc_data> data;
-    std::string type_tag = ",";
-    osc_stream str;
-    str.write(prefix + address);
-    for (unsigned int i = 0; i < args.size(); i++)
-        type_tag += char(args[i].type);
-    str.write(type_tag);
-    
-    for (unsigned int i = 0; i < args.size(); i++)
-        str.write(args[i]);    
+    std::string type_tag = "," + stream.type_buffer->data;
+    osc_inline_strstream hdr;
+    hdr << prefix + address << "," + stream.type_buffer->data;
+    string str = hdr.data + stream.buffer.data;
     
     // printf("sending %s\n", str.buffer.c_str());
 
-    return ::sendto(socket, str.buffer.data(), str.buffer.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)str.buffer.length();
+    return ::sendto(socket, str.data(), str.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)str.length();
 }
 
 bool osc_client::send(const std::string &address)
 {
-    vector<osc_data> data;
-    std::string type_tag = ",";
-    osc_stream str;
-    str.write(prefix + address);
-    str.write(type_tag);
-    return ::sendto(socket, str.buffer.data(), str.buffer.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)str.buffer.length();
+    osc_inline_strstream hdr;
+    hdr << prefix + address << ",";
+    
+    return ::sendto(socket, hdr.data.data(), hdr.data.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)hdr.data.length();
 }
-
-osc_message_dump osc_server::dump;
 

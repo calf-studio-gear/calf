@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <iostream>
 
 namespace osctl
 {
@@ -54,71 +55,384 @@ enum osc_type
 
 extern const char *osc_type_name(osc_type type);
 
-// perhaps a little inefficient, but this is OSC anyway, so efficiency
-// goes out of the window right from start :)
-struct osc_data
-{
-    osc_type type;
-    union {
-        int32_t i32val;
-        uint64_t tsval;
-        float f32val;
-        double f64val;
-    };
-    std::string strval;
-    osc_data()
-    {
-        type = osc_nil;
-    }
-    osc_data(std::string _sval, osc_type _type = osc_string)
-    : type(_type)
-    , strval(_sval)
-    {
-    }
-    osc_data(int ival)
-    : type(osc_i32)
-    , i32val(ival)
-    {
-    }
-    osc_data(float fval)
-    : type(osc_f32)
-    , f32val(fval)
-    {
-    }
-    std::string to_string() const;
-    ~osc_data()
-    {
-    }
-};
-
 struct osc_exception: public std::exception
 {
     virtual const char *what() const throw() { return "OSC parsing error"; }
 };
+
+struct osc_read_exception: public std::exception
+{
+    virtual const char *what() const throw() { return "OSC buffer underflow"; }
+};
+
+struct osc_write_exception: public std::exception
+{
+    virtual const char *what() const throw() { return "OSC buffer overflow"; }
+};
+
+struct null_buffer
+{
+    static bool read(uint8_t *dest, uint32_t bytes)
+    {
+        return false;
+    }
+    static bool write(uint8_t *dest, uint32_t bytes)
+    {
+        return true;
+    }
+    static void clear()
+    {
+    }
+};
+
+struct raw_buffer
+{
+    uint8_t *ptr;
+    uint32_t pos, count, size;
     
+    raw_buffer()
+    {
+        ptr = NULL;
+        pos = count = size = 0;
+    }
+    raw_buffer(uint8_t *_ptr, uint32_t _count, uint32_t _size)
+    {
+        set(_ptr, _count, _size);
+    }
+    inline void set(uint8_t *_ptr, uint32_t _count, uint32_t _size)
+    {
+        ptr = _ptr;
+        pos = 0;
+        count = _count;
+        size = _size;
+    }
+    bool read(uint8_t *dest, uint32_t bytes)
+    {
+        if (pos + bytes > count)
+            return false;
+        memcpy(dest, ptr + pos, bytes);
+        pos += bytes;
+        return true;
+    }
+    bool write(const uint8_t *src, uint32_t bytes)
+    {
+        if (count + bytes > size)
+            return false;
+        memcpy(ptr + count, src, bytes);
+        count += bytes;
+        return true;
+    }
+    int read_left()
+    {
+        return count - pos;
+    }
+    int write_left()
+    {
+        return size - count;
+    }
+    inline int write_misalignment()
+    {
+        return 4 - (count & 3);
+    }
+    void clear()
+    {
+        pos = 0;
+        count = 0;
+    }
+    int tell()
+    {
+        return pos;
+    }
+    void seek(int _pos)
+    {
+        pos = _pos;
+    }
+};
+
+struct string_buffer
+{
+    std::string data;
+    uint32_t pos, size;
+    
+    string_buffer()
+    {
+        pos = 0;
+        size = 1048576;
+    }
+    string_buffer(std::string _data, int _size = 1048576)
+    {
+        data = _data;
+        pos = 0;
+        size = _size;
+    }
+    bool read(uint8_t *dest, uint32_t bytes)
+    {
+        if (pos + bytes > data.length())
+            return false;
+        memcpy(dest, &data[pos], bytes);
+        pos += bytes;
+        return true;
+    }
+    bool write(const uint8_t *src, uint32_t bytes)
+    {
+        if (data.length() + bytes > size)
+            return false;
+        uint32_t wpos = data.length();
+        data.resize(wpos + bytes);
+        memcpy(&data[wpos], src, bytes);
+        return true;
+    }
+    inline int read_left()
+    {
+        return data.length() - pos;
+    }
+    inline int write_left()
+    {
+        return size - data.length();
+    }
+    inline int write_misalignment()
+    {
+        return 4 - (data.length() & 3);
+    }
+    void clear()
+    {
+        data.clear();
+        pos = 0;
+    }
+    int tell()
+    {
+        return pos;
+    }
+    void seek(int _pos)
+    {
+        pos = _pos;
+    }
+};
+
+template<class Buffer, class TypeBuffer = null_buffer, bool Throw = true>
 struct osc_stream
 {
-    std::string buffer;
-    unsigned int pos;
+    Buffer &buffer;
+    TypeBuffer *type_buffer;
+    bool error;
     
-    osc_stream() : pos(0) {}
-    osc_stream(const std::string &_buffer, unsigned int _pos = 0)
-    : buffer(_buffer), pos(_pos) {}
-    
-    inline void copy_from(void *dest, int bytes)
+    osc_stream(Buffer &_buffer) : buffer(_buffer), type_buffer(NULL), error(false) {}
+    osc_stream(Buffer &_buffer, TypeBuffer &_type_buffer) : buffer(_buffer), type_buffer(&_type_buffer), error(false) {}
+    inline void pad()
     {
-        if (pos + bytes > buffer.length())
-            throw osc_exception();
-        memcpy(dest, &buffer[pos], bytes);
-        pos += bytes;
+        uint32_t zero = 0;
+        write(&zero, buffer.write_misalignment());
     }
-    
-    void read(osc_type type, osc_data &od);
-    void write(const osc_data &od);
-    
-    void read(const char *tags, std::vector<osc_data> &data);
-    void write(const std::vector<osc_data> &data);
+    inline void read(void *dest, uint32_t bytes)
+    {
+        if (!buffer.read((uint8_t *)dest, bytes))
+        {
+            if (Throw)
+                throw osc_read_exception();
+            else
+            {
+                error = true;
+                memset(dest, 0, bytes);
+            }
+        }
+    }
+    inline void write(const void *src, uint32_t bytes)
+    {
+        if (!buffer.write((const uint8_t *)src, bytes))
+        {
+            if (Throw)
+                throw osc_write_exception();
+            else
+                error = true;
+        }
+    }
+    inline void clear()
+    {
+        buffer.clear();
+        if (type_buffer)
+            type_buffer->clear();
+    }
+    inline void write_type(char ch)
+    {
+        if (type_buffer)
+            type_buffer->write((uint8_t *)&ch, 1);
+    }
 };
+
+typedef osc_stream<string_buffer> osc_strstream;
+typedef osc_stream<string_buffer, string_buffer> osc_typed_strstream;
+
+struct osc_inline_strstream: public string_buffer, public osc_strstream
+{
+    osc_inline_strstream()
+    : string_buffer(), osc_strstream(static_cast<string_buffer &>(*this))
+    {
+    }
+};
+
+struct osc_str_typed_buffer_pair
+{
+    string_buffer buf_data, buf_types;
+};
+
+struct osc_inline_typed_strstream: public osc_str_typed_buffer_pair, public osc_typed_strstream
+{
+    osc_inline_typed_strstream()
+    : osc_str_typed_buffer_pair(), osc_typed_strstream(buf_data, buf_types)
+    {
+    }
+};
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator <<(osc_stream<Buffer, TypeBuffer> &s, uint32_t val)
+{
+    val = htonl(val);
+    s.write(&val, 4);
+    s.write_type(osc_i32);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, uint32_t &val)
+{
+    s.read(&val, 4);
+    val = htonl(val);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, int32_t &val)
+{
+    s.read(&val, 4);
+    val = htonl(val);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator <<(osc_stream<Buffer, TypeBuffer> &s, float val)
+{
+    union { float v; uint32_t i; } val2;
+    val2.v = val;
+    val2.i = htonl(val2.i);
+    s.write(&val2.i, 4);
+    s.write_type(osc_f32);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, float &val)
+{
+    union { float v; uint32_t i; } val2;
+    s.read(&val2.i, 4);
+    val2.i = htonl(val2.i);
+    val = val2.v;
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator <<(osc_stream<Buffer, TypeBuffer> &s, const std::string &str)
+{
+    s.write(&str[0], str.length());
+    s.pad();
+    s.write_type(osc_string);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, std::string &str)
+{
+    // inefficient...
+    char five[5];
+    five[4] = '\0';
+    str.resize(0);
+    while(1)
+    {
+        s.read(five, 4);
+        if (five[0] == '\0')
+            break;
+        str += five;
+        if (!five[1] || !five[2] || !five[3])
+            break;
+    }
+    return s;
+}
+
+template<class Buffer, class TypeBuffer, class DestBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+read_buffer_from_osc_stream(osc_stream<Buffer, TypeBuffer> &s, DestBuffer &buf)
+{
+    uint32_t nlen = 0;
+    s.read(&nlen, 4);
+    uint32_t len = htonl(nlen);
+    // write length in network order
+    for (uint32_t i = 0; i < len; i += 1024)
+    {
+        uint8_t tmp[1024];
+        uint32_t part = std::min((uint32_t)1024, len - i);
+        s.read(tmp, part);
+        buf.write(tmp, part);
+    }
+    // pad
+    s.read(&nlen, 4 - (len & 3));
+    return s;
+}
+
+template<class Buffer, class TypeBuffer, class SrcBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+write_buffer_to_osc_stream(osc_stream<Buffer, TypeBuffer> &s, SrcBuffer &buf)
+{
+    uint32_t len = buf.read_left();
+    uint32_t nlen = ntohl(len);
+    s.write(&nlen, 4);
+    // write length in network order
+    for (uint32_t i = 0; i < len; i += 1024)
+    {
+        uint8_t tmp[1024];
+        uint32_t part = std::min((uint32_t)1024, len - i);
+        buf.read(tmp, part);
+        s.write(tmp, part);
+    }
+    s.pad();
+    s.write_type(osc_blob);
+    return s;
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, raw_buffer &str)
+{
+    return read_buffer_from_osc_stream(s, str);
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator >>(osc_stream<Buffer, TypeBuffer> &s, string_buffer &str)
+{
+    return read_buffer_from_osc_stream(s, str);
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator <<(osc_stream<Buffer, TypeBuffer> &s, raw_buffer &str)
+{
+    return write_buffer_to_osc_stream(s, str);
+}
+
+template<class Buffer, class TypeBuffer>
+inline osc_stream<Buffer, TypeBuffer> &
+operator <<(osc_stream<Buffer, TypeBuffer> &s, string_buffer &str)
+{
+    return write_buffer_to_osc_stream(s, str);
+}
+
+// XXXKF: I don't support reading binary blobs yet
 
 struct osc_net_bad_address: public std::exception
 {
@@ -160,15 +474,68 @@ struct osc_net_dns_exception: public std::exception
     virtual ~osc_net_dns_exception() throw () {}
 };
     
+template<class OscStream>
 struct osc_message_sink
 {
-    virtual void receive_osc_message(std::string address, std::string type_tag, const std::vector<osc_data> &args)=0;
+    virtual void receive_osc_message(std::string address, std::string type_tag, OscStream &buffer)=0;
     virtual ~osc_message_sink() {}
 };
 
-struct osc_message_dump: public osc_message_sink
+template<class OscStream, class DumpStream>
+struct osc_message_dump: public osc_message_sink<OscStream>
 {
-    virtual void receive_osc_message(std::string address, std::string type_tag, const std::vector<osc_data> &args);
+    DumpStream &stream;
+    osc_message_dump(DumpStream &_stream) : stream(_stream) {}
+        
+    virtual void receive_osc_message(std::string address, std::string type_tag, OscStream &buffer)
+    {
+        int pos = buffer.buffer.tell();
+        stream << "address: " << address << ", type tag: " << type_tag << std::endl;
+        for (unsigned int i = 0; i < type_tag.size(); i++)
+        {
+            stream << "Argument " << i << " is ";
+            switch(type_tag[i])
+            {
+                case 'i': 
+                {
+                    uint32_t val;
+                    buffer >> val;
+                    stream << val;
+                    break;
+                }
+                case 'f': 
+                {
+                    float val;
+                    buffer >> val;
+                    stream << val;
+                    break;
+                }
+                case 's': 
+                {
+                    std::string val;
+                    buffer >> val;
+                    stream << val;
+                    break;
+                }
+                case 'b': 
+                {
+                    osctl::string_buffer val;
+                    buffer >> val;
+                    stream << "blob (" << val.data.length() << " bytes)";
+                    break;
+                }
+                default:
+                {
+                    stream << "unknown - cannot parse more arguments" << std::endl;
+                    i = type_tag.size();
+                    break;
+                }
+            }
+            stream << std::endl;
+        }
+        stream << std::flush;
+        buffer.buffer.seek(pos);
+    }
 };
 
 };
