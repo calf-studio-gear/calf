@@ -81,6 +81,17 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
         // XXXKF add a correct timestamp type here
         ss << ind << "lv2ev:supportsTimestamp <lv2ev:TimeStamp> ;\n";
     }
+    if (!strcmp(symbol, "in_l")) 
+        ss << ind << "pg:membership [ pg:group <#stereoIn>; pg:role pg:leftChannel ] ;" << endl;
+    else
+    if (!strcmp(symbol, "in_r")) 
+        ss << ind << "pg:membership [ pg:group <#stereoIn>; pg:role pg:rightChannel ] ;" << endl;
+    else
+    if (!strcmp(symbol, "out_l")) 
+        ss << ind << "pg:membership [ pg:group <#stereoOut>; pg:role pg:leftChannel ] ;" << endl;
+    else
+    if (!strcmp(symbol, "out_r")) 
+        ss << ind << "pg:membership [ pg:group <#stereoOut>; pg:role pg:rightChannel ] ;" << endl;
     ss << "    ]";
     ports += ss.str();
 }
@@ -128,6 +139,7 @@ void make_ttl(string path_prefix)
         "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
+        "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#>.\n"
 
         "\n"
     ;
