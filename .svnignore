@@ -1,6 +1,7 @@
 config.h
 config.log
 config.guess
+config.sub
 configure
 calf-*.tar.gz
 autom4te.cache
@@ -9,3 +10,4 @@ libtool
 aclocal.m4
 Makefile.in
 config.status
+ltmain.sh
