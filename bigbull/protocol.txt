@@ -1,0 +1,13 @@
+There's just this much here. Proves again that it's just hand waving and little substance.
+
+protocol:
+asynchronous,
+commands will have sequence numbers
+a command that is completed returns ok command with serial no back, exception returns error command with serial no (duh)
+
+commands:
+
+allocate_ids(count) -> id_segment(first_id) 
+get_uris(uri) -> uri_list([uri, uri, uri...])
+get_info(uri) -> uri_info(cmd_id, hash)         hash = { 'requiredFeatures': {}, 'optionalFeatures' : {}, ports: [ { 'index' : 0, 'label' : 'blah', 'properties' : {}, } ]
+instantiate(cmd_id, id, uri) ->  ok(cmd_id) | error(cmd_id, message) 
