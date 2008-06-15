@@ -41,7 +41,7 @@ def parseTTL(uri, content, model):
         (r"-?[0-9]+\.[0-9]+", lambda x : ("number", float(x))),
         (r"-?[0-9]+", lambda x : ("number", int(x))),
         ("[a-zA-Z0-9_]+", lambda x : ("symbol", x)),
-        (r"[\[\];.,]", lambda x : (x, x)),
+        (r"[()\[\];.,]", lambda x : (x, x)),
         ("\s+", ""),
     ])
     spo_stack = []
@@ -86,10 +86,15 @@ def parseTTL(uri, content, model):
             spo[0] = uri + "$anon$" + str(anoncnt)
             item = 1
             anoncnt += 1
-        elif x[0] == ']':
+        elif x[0] == ']' or x[0] == ')':
             spo = spo_stack[-1]
             spo_stack = spo_stack[:-1]
             item = 3
+        elif x[0] == '(':
+            spo_stack.append(spo)
+            spo[0] = uri + "$anon$" + str(anoncnt)
+            item = 2
+            anoncnt += 1
         else:
             print uri + ": Unexpected: " + repr(x)
 

@@ -96,6 +96,19 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     ports += ss.str();
 }
 
+static const char *units[] = { 
+    "ue:db", 
+    "ue:coef",
+    "ue:hz",
+    "ue:s",
+    "ue:ms",
+    "ue2:cent", // - ask SWH (or maybe ue2: and write the extension by myself)
+    "ue2:semitone12TET", // - ask SWH
+    "ue:bpm",
+    "ue2:degree", // - ask SWH
+    "ue2:midiNote" // - ask SWH
+};
+
 static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
 {
     stringstream ss;
@@ -123,6 +136,10 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     ss << ind << "lv2:default " << pp.def_value << " ;\n";
     ss << ind << "lv2:minimum " << pp.min << " ;\n";
     ss << ind << "lv2:maximum " << pp.max << " ;\n";
+    uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
+    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)))
+        ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
+    
     ss << "    ]";
     ports += ss.str();
 }
@@ -139,7 +156,9 @@ void make_ttl(string path_prefix)
         "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
-        "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#>.\n"
+        "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
+        "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
+        "@prefix ue2: <http://lv2plug.in/ns/dev/moreunits#> .\n"
 
         "\n"
     ;
