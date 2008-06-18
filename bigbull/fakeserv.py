@@ -15,7 +15,7 @@ class DumpRDFModel:
 class SimpleRDFModel:
     def __init__(self):
         self.bySubject = {}
-        self.byPredicate = {rdfs+"subClassOf":{}, rdfs+"subPropertyOf":{}}
+        self.byPredicate = {}
     def getByType(self, classname):
         classes = self.bySubject["$classes"]
         if classname in classes:
@@ -25,26 +25,11 @@ class SimpleRDFModel:
         if propname in self.byPredicate:
             return self.byPredicate[propname]
         return []
-    def getByTypeWithSubclasses(self, classname):
-        classes = set(self.getByType(classname))
-        if classname in self.subclassesTrans:
-            for sc in self.subclassesTrans[classname]:
-                classes |= set(self.getByType(sc))
-        return classes
-    def getPropertyTrans(self, subject, props, optional = False, single = False):
+    def getProperty(self, subject, props, optional = False, single = False):
         if type(props) is list:
             prop = props[0]
         else:
             prop = props
-        # special case for rdf:value and literals
-        if prop == rdf + "value":
-            if type(subject) is not dict:
-                if single:
-                    return subject
-                else:
-                    return [subject]
-            else:
-                raise Exception, "multiple rdf:value triplets, which is correct but not supported yet"
         if type(subject) is str:
             subject = self.bySubject[subject]
         elif type(subject) is dict:
@@ -58,20 +43,16 @@ class SimpleRDFModel:
         if prop in subject:
             for o in subject[prop]:
                 anyprops.add(o)
-        for subprop in self.getSubpropsTrans(prop):
-            if subprop in subject:
-                for o in subject[subprop]:
-                    anyprops.add(o)
         if type(props) is list:
             if len(props) > 1:
                 result = set()
                 for v in anyprops:
                     if single:
-                        value = self.getPropertyTrans(v, props[1:], optional = optional, single = True)
+                        value = self.getProperty(v, props[1:], optional = optional, single = True)
                         if value != None:
                             return value
                     else:
-                        result |= set(self.getPropertyTrans(v, props[1:], optional = optional, single = False))
+                        result |= set(self.getProperty(v, props[1:], optional = optional, single = False))
                 if single:
                     return None
                 else:
@@ -107,66 +88,6 @@ class SimpleRDFModel:
             for p in po:
                 for o in po[p]:
                     self.addTriple(s, p, o)
-        self.reindex()
-    def reindex(self):
-        added = True
-        self.subclasses = {}
-        self.subclassesTrans = {}
-        self.subprops = {}
-        self.subpropsTrans = {}
-        subjects = self.byPredicate[rdfs + "subClassOf"]
-        for s in subjects.keys():
-            for o in subjects[s]:
-                if o not in self.subclasses:
-                    self.subclasses[o] = set()
-                self.subclasses[o].add(s)
-        # does not understand triples like S rdfs:subPropertyOf rdfs:subPropertyOf . (new ways to express subpropertiness) - so what?
-        subjects = self.byPredicate[rdfs + "subPropertyOf"]
-        for s in subjects.keys():
-            for o in subjects[s]:
-                if o not in self.subprops:
-                    self.subprops[o] = set()
-                self.subprops[o].add(s)
-        for classname in self.getByType(rdfs + "Class"):
-            self.getSubclassesTrans(classname)
-        for propname in self.getByType(rdfs + "Property"):
-            self.getPropertiesTrans(propname)
-    def printClasses(self):
-        for classname in self.subclassesTrans.keys():
-            if len(self.subclassesTrans[classname]) > 0:
-                print "%s -> %s" % (classname, self.subclassesTrans[classname])
-                
-    def getAllSubclasses(self, classname):
-        return set([classname]) | self.getSubclassesTrans(classname)
-        
-    def getSubclassesTrans(self, classname):
-        if classname in self.subclassesTrans:
-            if self.subclassesTrans[classname] == None:
-                print "Warning: circular reference at " + classname
-            return self.subclassesTrans[classname]
-        self.subclassesTrans[classname] = None
-        sct = set()
-        if classname in self.subclasses:
-            for cn in self.subclasses[classname]:
-                sct.add(cn)
-                sct |= self.getSubclassesTrans(cn)
-        self.subclassesTrans[classname] = sct
-        return sct
-        
-    def getSubpropsTrans(self, propname):
-        if propname in self.subpropsTrans:
-            if self.subpropsTrans[propname] == None:
-                print "Warning: circular reference at " + propname
-            return self.subpropsTrans[propname]
-        self.subpropsTrans[propname] = None
-        spt = set()
-        if propname in self.subprops:
-            for cn in self.subprops[propname]:
-                spt.add(cn)
-                spt |= self.getSubpropsTrans(cn)
-        self.subpropsTrans[propname] = spt
-        return spt
-        
     def dump(self):
         for s in self.bySubject.keys():
             for p in self.bySubject[s].keys():
@@ -272,9 +193,8 @@ class FakeServer(object):
                 if os.path.exists(fn):
                     parseTTL(fn, file(fn).read(), self.manifests)
         # Read all specifications from all manifests
-        self.manifests.reindex()
         if (self.lv2 + "Specification" in self.manifests.bySubject["$classes"]):
-            specs = self.manifests.getByTypeWithSubclasses(self.lv2 + "Specification")
+            specs = self.manifests.getByType(self.lv2 + "Specification")
             filenames = set()
             for spec in specs:
                 subj = self.manifests.bySubject[spec]
@@ -283,10 +203,9 @@ class FakeServer(object):
                         filenames.add(fn)
             for fn in filenames:
                 parseTTL(fn, file(fn).read(), self.manifests)
-                self.manifests.reindex()
         #fn = "/usr/lib/lv2/lv2core.lv2/lv2.ttl"
         #parseTTL(fn, file(fn).read(), self.manifests)
-        self.plugins = self.manifests.getByTypeWithSubclasses(self.lv2 + "Plugin")
+        self.plugins = self.manifests.getByType(self.lv2 + "Plugin")
         
     def get_uris(self, base_uri):
         if base_uri == 'http://lv2plug.in/ns/lv2core#':
@@ -301,7 +220,6 @@ class FakeServer(object):
             for doc in seeAlso:
                 # print "Loading " + doc
                 parseTTL(doc, file(doc).read(), world)
-            world.reindex()
             self.plugin_info[uri] = world                
         info = self.plugin_info[uri]
         dest = {}
@@ -310,27 +228,38 @@ class FakeServer(object):
         dest['classes'] = set(info.bySubject[uri]["a"])
         ports = []
         porttypes = {
-            "isAudio" : info.getAllSubclasses(self.lv2 + "AudioPort"),
-            "isControl" : info.getAllSubclasses(self.lv2 + "ControlPort"),
-            "isEvent" : info.getAllSubclasses(self.lv2evt + "EventPort"),
-            "isInput" : info.getAllSubclasses(self.lv2 + "InputPort"),
-            "isOutput" : info.getAllSubclasses(self.lv2 + "OutputPort"),            
+            "isAudio" : self.lv2 + "AudioPort",
+            "isControl" : self.lv2 + "ControlPort",
+            "isEvent" : self.lv2evt + "EventPort",
+            "isInput" : self.lv2 + "InputPort",
+            "isOutput" : self.lv2 + "OutputPort",
         }
         
         for port in info.bySubject[uri][self.lv2 + "port"]:
             psubj = info.bySubject[port]
             pdata = {}
-            pdata['index'] = info.getPropertyTrans(psubj, self.lv2 + "index")[0]
-            pdata['symbol'] = info.getPropertyTrans(psubj, self.lv2 + "symbol")[0]
-            pdata['name'] = info.getPropertyTrans(psubj, self.lv2 + "name")[0]
-            classes = set(info.getPropertyTrans(psubj, "a"))
+            pdata['index'] = info.getProperty(psubj, self.lv2 + "index")[0]
+            pdata['symbol'] = info.getProperty(psubj, self.lv2 + "symbol")[0]
+            pdata['name'] = info.getProperty(psubj, self.lv2 + "name")[0]
+            classes = set(info.getProperty(psubj, "a"))
             pdata['classes'] = classes
             for pt in porttypes.keys():
-                pdata[pt] = len(classes & porttypes[pt])
-            pdata['scalePoints'] = info.getPropertyTrans(psubj, self.lv2 + "scalePoint")
-            pdata['default'] = info.getPropertyTrans(psubj, [self.lv2 + "default", rdf + "value"], optional = True, single = True)
-            pdata['minimum'] = info.getPropertyTrans(psubj, [self.lv2 + "minimum", rdf + "value"], optional = True, single = True)
-            pdata['maximum'] = info.getPropertyTrans(psubj, [self.lv2 + "maximum", rdf + "value"], optional = True, single = True)
+                pdata[pt] = porttypes[pt] in classes
+            sp = info.getProperty(psubj, self.lv2 + "scalePoint")
+            if sp and len(sp):
+                splist = []
+                for pt in sp:
+                    name = info.getProperty(pt, rdfs + "label", optional = True, single = True)
+                    if name != None:
+                        value = info.getProperty(pt, rdf + "value", optional = True, single = True)
+                        if value != None:
+                            splist.append((name, value))
+                pdata['scalePoints'] = splist
+            else:
+                pdata['scalePoints'] = []
+            pdata['default'] = info.getProperty(psubj, [self.lv2 + "default"], optional = True, single = True)
+            pdata['minimum'] = info.getProperty(psubj, [self.lv2 + "minimum"], optional = True, single = True)
+            pdata['maximum'] = info.getProperty(psubj, [self.lv2 + "maximum"], optional = True, single = True)
             ports.append(pdata)
         dest['ports'] = ports
         return dest
