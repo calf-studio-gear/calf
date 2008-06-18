@@ -4,6 +4,8 @@ import sys
 import glob
 import yappy.parser
 
+lv2 = "http://lv2plug.in/ns/lv2core#"
+lv2evt = "http://lv2plug.in/ns/ext/event#"
 rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 rdfs = "http://www.w3.org/2000/01/rdf-schema#"
 rdf_type = rdf + "type"
@@ -176,8 +178,6 @@ def parseTTL(uri, content, model):
 
 class FakeServer(object):
     def __init__(self):
-        self.lv2 = "http://lv2plug.in/ns/lv2core#"
-        self.lv2evt = "http://lv2plug.in/ns/ext/event#"
         self.initManifests()
         #parseTTL("http://lv2plug.in/ns/lv2core#", file("/usr/lib/lv2/lv2core.lv2/lv2.ttl").read(), m)
         
@@ -193,8 +193,8 @@ class FakeServer(object):
                 if os.path.exists(fn):
                     parseTTL(fn, file(fn).read(), self.manifests)
         # Read all specifications from all manifests
-        if (self.lv2 + "Specification" in self.manifests.bySubject["$classes"]):
-            specs = self.manifests.getByType(self.lv2 + "Specification")
+        if (lv2 + "Specification" in self.manifests.bySubject["$classes"]):
+            specs = self.manifests.getByType(lv2 + "Specification")
             filenames = set()
             for spec in specs:
                 subj = self.manifests.bySubject[spec]
@@ -205,14 +205,14 @@ class FakeServer(object):
                 parseTTL(fn, file(fn).read(), self.manifests)
         #fn = "/usr/lib/lv2/lv2core.lv2/lv2.ttl"
         #parseTTL(fn, file(fn).read(), self.manifests)
-        self.plugins = self.manifests.getByType(self.lv2 + "Plugin")
+        self.plugins = self.manifests.getByType(lv2 + "Plugin")
         
     def get_uris(self, base_uri):
         if base_uri == 'http://lv2plug.in/ns/lv2core#':
             return self.plugins
         raise StringException("Invalid base URI")
         
-    def get_info(self, uri):
+    def get_plugin_info(self, uri):
         if uri not in self.plugin_info:
             world = SimpleRDFModel()
             world.copyFrom(self.manifests)
@@ -223,29 +223,32 @@ class FakeServer(object):
             self.plugin_info[uri] = world                
         info = self.plugin_info[uri]
         dest = {}
+        dest['uri'] = uri
         dest['name'] = info.bySubject[uri]['http://usefulinc.com/ns/doap#name'][0]
         dest['license'] = info.bySubject[uri]['http://usefulinc.com/ns/doap#license'][0]
-        dest['classes'] = set(info.bySubject[uri]["a"])
+        dest['classes'] = info.bySubject[uri]["a"]
+        dest['requiredFeatures'] = info.getProperty(uri, lv2 + "requiredFeature", optional = True)
+        dest['optionalFeatures'] = info.getProperty(uri, lv2 + "optionalFeature", optional = True)
         ports = []
         porttypes = {
-            "isAudio" : self.lv2 + "AudioPort",
-            "isControl" : self.lv2 + "ControlPort",
-            "isEvent" : self.lv2evt + "EventPort",
-            "isInput" : self.lv2 + "InputPort",
-            "isOutput" : self.lv2 + "OutputPort",
+            "isAudio" : lv2 + "AudioPort",
+            "isControl" : lv2 + "ControlPort",
+            "isEvent" : lv2evt + "EventPort",
+            "isInput" : lv2 + "InputPort",
+            "isOutput" : lv2 + "OutputPort",
         }
         
-        for port in info.bySubject[uri][self.lv2 + "port"]:
+        for port in info.bySubject[uri][lv2 + "port"]:
             psubj = info.bySubject[port]
             pdata = {}
-            pdata['index'] = info.getProperty(psubj, self.lv2 + "index")[0]
-            pdata['symbol'] = info.getProperty(psubj, self.lv2 + "symbol")[0]
-            pdata['name'] = info.getProperty(psubj, self.lv2 + "name")[0]
+            pdata['index'] = int(info.getProperty(psubj, lv2 + "index")[0])
+            pdata['symbol'] = info.getProperty(psubj, lv2 + "symbol")[0]
+            pdata['name'] = info.getProperty(psubj, lv2 + "name")[0]
             classes = set(info.getProperty(psubj, "a"))
             pdata['classes'] = classes
             for pt in porttypes.keys():
                 pdata[pt] = porttypes[pt] in classes
-            sp = info.getProperty(psubj, self.lv2 + "scalePoint")
+            sp = info.getProperty(psubj, lv2 + "scalePoint")
             if sp and len(sp):
                 splist = []
                 for pt in sp:
@@ -257,10 +260,11 @@ class FakeServer(object):
                 pdata['scalePoints'] = splist
             else:
                 pdata['scalePoints'] = []
-            pdata['default'] = info.getProperty(psubj, [self.lv2 + "default"], optional = True, single = True)
-            pdata['minimum'] = info.getProperty(psubj, [self.lv2 + "minimum"], optional = True, single = True)
-            pdata['maximum'] = info.getProperty(psubj, [self.lv2 + "maximum"], optional = True, single = True)
+            pdata['default'] = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
+            pdata['minimum'] = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
+            pdata['maximum'] = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
             ports.append(pdata)
+        ports.sort(lambda x, y: cmp(x['index'], y['index']))
         dest['ports'] = ports
         return dest
 
