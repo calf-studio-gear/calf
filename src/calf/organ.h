@@ -274,7 +274,11 @@ public:
         // XXXKF the decay needs work!
         double age_const = parameters->perc_decay_const;
         int timbre = parameters->get_percussion_timbre();
+        if (timbre < 0 || timbre >= (int)(sizeof(wave_ids) / sizeof(wave_ids[0])))
+            return;
         float *data = waves[wave_ids[timbre]].get_level(dphase.get());
+        if (!data)
+            return;
         if (timbre < 3)
         {
             for (int i = 0; i < nsamples; i++) {
