@@ -1,28 +1,16 @@
 import os
 import sys
 import fakeserv
+import lv2
 import client
 
 fakeserv.start()
 
-plugins = {}
+db = lv2.LV2DB()
+plugins = db.getPluginList()
 
-class URIListReceiver:
-    def receiveData(self, data):
-        #print "URI list received: " + repr(data.result)
-        for uri in data.result:
-            cmd = client.CommandExec('get_plugin_info', uri)
-            cmd.run()
-            res = cmd.result
-            plugins[res["name"]] = res
-
-cmd = client.CommandExec('get_uris', 'http://lv2plug.in/ns/lv2core#')
-cmd.onOK(URIListReceiver())
-cmd.run()
-
-for p in plugins.keys():
-    pl = plugins[p]
-    plugin = client.LV2Plugin(pl)
+for uri in plugins:
+    plugin = db.getPluginInfo(uri)
     print "Plugin: %s" % plugin.name
     print "License: %s" % plugin.license
     print "Classes: %s" % plugin.classes
@@ -35,7 +23,7 @@ for p in plugins.keys():
         for type in types:
             if port.__dict__["is" + type]:
                 extra.append(type)
-        for sp in ["default", "minimum", "maximum"]:
+        for sp in ["defaultValue", "minimum", "maximum"]:
             if port.__dict__[sp] != None:
                 extra.append("%s=%s" % (sp, port.__dict__[sp]))
         print "%4s %-20s %-40s %s" % (port.index, port.symbol, port.name, ", ".join(extra))

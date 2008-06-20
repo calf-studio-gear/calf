@@ -95,9 +95,10 @@ class SimpleRDFModel:
             for p in self.bySubject[s].keys():
                 print "%s %s %s" % (s, p, self.bySubject[s][p])
 
-def parseTTL(uri, content, model):
+def parseTTL(uri, content, model, debug):
     # Missing stuff: translated literals, blank nodes
-    print "Parsing: %s" % uri
+    if debug:
+        print "Parsing: %s" % uri
     prefixes = {}
     lexer = yappy.parser.Lexer([
         (r"(?m)^\s*#[^\n]*", ""),
@@ -176,18 +177,102 @@ def parseTTL(uri, content, model):
         else:
             print uri + ": Unexpected: " + repr(x)
 
-class FakeServer(object):
+class LV2Port(object):
     def __init__(self):
         pass
 
-def start():
-    global instance
-    instance = FakeServer()
+class LV2Plugin(object):
+    def __init__(self):
+        pass
+        
+class LV2DB:
+    def __init__(self, debug = False):
+        self.debug = debug
+        self.initManifests()
+        
+    def initManifests(self):
+        lv2path = ["/usr/lib/lv2", "/usr/local/lib/lv2"]
+        self.manifests = SimpleRDFModel()
+        self.paths = {}
+        self.plugin_info = dict()
+        # Scan manifests
+        for dir in lv2path:
+            for bundle in glob.iglob(dir + "/*.lv2"):
+                fn = bundle+"/manifest.ttl"
+                if os.path.exists(fn):
+                    parseTTL(fn, file(fn).read(), self.manifests, self.debug)
+        # Read all specifications from all manifests
+        if (lv2 + "Specification" in self.manifests.bySubject["$classes"]):
+            specs = self.manifests.getByType(lv2 + "Specification")
+            filenames = set()
+            for spec in specs:
+                subj = self.manifests.bySubject[spec]
+                if rdfs+"seeAlso" in subj:
+                    for fn in subj[rdfs+"seeAlso"]:
+                        filenames.add(fn)
+            for fn in filenames:
+                parseTTL(fn, file(fn).read(), self.manifests, self.debug)
+        #fn = "/usr/lib/lv2/lv2core.lv2/lv2.ttl"
+        #parseTTL(fn, file(fn).read(), self.manifests)
+        self.plugins = self.manifests.getByType(lv2 + "Plugin")
+        
+    def getPluginList(self):
+        return self.plugins
+        
+    def getPluginInfo(self, uri):
+        if uri not in self.plugin_info:
+            world = SimpleRDFModel()
+            world.copyFrom(self.manifests)
+            seeAlso = self.manifests.bySubject[uri]["http://www.w3.org/2000/01/rdf-schema#seeAlso"]
+            for doc in seeAlso:
+                # print "Loading " + doc
+                parseTTL(doc, file(doc).read(), world, self.debug)
+            self.plugin_info[uri] = world                
+        info = self.plugin_info[uri]
+        dest = LV2Plugin()
+        dest.uri = uri
+        dest.name = info.bySubject[uri]['http://usefulinc.com/ns/doap#name'][0]
+        dest.license = info.bySubject[uri]['http://usefulinc.com/ns/doap#license'][0]
+        dest.classes = info.bySubject[uri]["a"]
+        dest.requiredFeatures = info.getProperty(uri, lv2 + "requiredFeature", optional = True)
+        dest.optionalFeatures = info.getProperty(uri, lv2 + "optionalFeature", optional = True)
+        ports = []
+        porttypes = {
+            "isAudio" : lv2 + "AudioPort",
+            "isControl" : lv2 + "ControlPort",
+            "isEvent" : lv2evt + "EventPort",
+            "isInput" : lv2 + "InputPort",
+            "isOutput" : lv2 + "OutputPort",
+        }
+        
+        for port in info.bySubject[uri][lv2 + "port"]:
+            psubj = info.bySubject[port]
+            pdata = LV2Port()
+            pdata.uri = port
+            pdata.index = int(info.getProperty(psubj, lv2 + "index")[0])
+            pdata.symbol = info.getProperty(psubj, lv2 + "symbol")[0]
+            pdata.name = info.getProperty(psubj, lv2 + "name")[0]
+            classes = set(info.getProperty(psubj, "a"))
+            pdata.classes = classes
+            for pt in porttypes.keys():
+                pdata.__dict__[pt] = porttypes[pt] in classes
+            sp = info.getProperty(psubj, lv2 + "scalePoint")
+            if sp and len(sp):
+                splist = []
+                for pt in sp:
+                    name = info.getProperty(pt, rdfs + "label", optional = True, single = True)
+                    if name != None:
+                        value = info.getProperty(pt, rdf + "value", optional = True, single = True)
+                        if value != None:
+                            splist.append((name, value))
+                pdata.scalePoints = splist
+            else:
+                pdata.scalePoints = []
+            pdata.defaultValue = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
+            pdata.minimum = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
+            pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
+            ports.append(pdata)
+        ports.sort(lambda x, y: cmp(x.index, y.index))
+        dest.ports = ports
+        return dest
 
-def queue(cmdObject):
-    global instance
-    #try:
-    cmdObject.calledOnOK(type(instance).__dict__[cmdObject.type](instance, *cmdObject.args))
-    #except:
-    #    cmdObject.calledOnError(repr(sys.exc_info()))
-    
