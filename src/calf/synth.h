@@ -202,6 +202,8 @@ public:
     virtual void percussion_note_on(int note, int vel) {}
     virtual void control_change(int ctl, int val);
     virtual void note_off(int note, int vel);
+    /// amt = -8192 to 8191
+    virtual void pitch_bend(int amt) {}
     virtual void on_pedal_release();
     virtual bool check_percussion() { return active_voices.empty(); }
     virtual ~basic_synth();

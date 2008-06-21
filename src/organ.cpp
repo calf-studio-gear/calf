@@ -877,6 +877,11 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
     }
 }
 
+void organ_voice::update_pitch()
+{
+    dphase.set(synth::midi_note_to_phase(note, 0, sample_rate) * parameters->pitch_bend);
+}
+
 void organ_voice::render_block() {
     if (note == -1)
         return;
@@ -1040,6 +1045,17 @@ void drawbar_organ::update_params()
     }
     double dphase = synth::midi_note_to_phase((int)parameters->foldover, 0, sample_rate);
     parameters->foldvalue = (int)(dphase);
+}
+
+void drawbar_organ::pitch_bend(int amt)
+{
+    parameters->pitch_bend = pow(2.0, amt * 2 / (12.0 * 8192));
+    for (list<voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    {
+        organ_voice *v = dynamic_cast<organ_voice *>(*i);
+        v->update_pitch();
+    }
+    percussion.update_pitch();
 }
 
 void organ_audio_module::execute(int cmd_no)

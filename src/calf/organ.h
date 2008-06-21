@@ -70,6 +70,9 @@ struct organ_parameters {
     int phaseshift[9];
     float cutoff;
     unsigned int foldvalue;
+    float pitch_bend;
+    
+    organ_parameters() : pitch_bend(1.0f) {}
 
     inline int get_percussion_timbre() { return dsp::fastf2i_drm(percussion_timbre); }
 };
@@ -208,7 +211,7 @@ public:
             envs[i].set(sf * p.attack, sf * p.decay, p.sustain, sf * p.release, sample_rate / BlockSize);
             envs[i].note_on();
         }
-        dphase.set(synth::midi_note_to_phase(note, 0, sample_rate));
+        update_pitch();
         velocity = vel * 1.0 / 127.0;
         amp.set(1.0f);
         released = false;
@@ -227,6 +230,7 @@ public:
     virtual bool get_active() {
         return (note != -1) && amp.get_active();
     }
+    void update_pitch();
 };
 
 /// Not a true voice, just something with similar-ish interface.
@@ -254,10 +258,15 @@ public:
             filter.reset_d1();
         }
         this->note = note;
+        amp.set(1.0f);
+        update_pitch();
+    }
+    
+    void update_pitch()
+    {
         int timbre = parameters->get_percussion_timbre();
         static const int harm_muls[8] = { 1, 2, 3, 4, 8, 1, 2, 4 };
-        dphase.set(synth::midi_note_to_phase(note, 0, sample_rate) * harm_muls[timbre]);
-        amp.set(1.0f);
+        dphase.set(synth::midi_note_to_phase(note, 0, sample_rate) * harm_muls[timbre] * parameters->pitch_bend);
     }
 
     // this doesn't really have a voice interface
@@ -388,6 +397,7 @@ struct drawbar_organ: public synth::basic_synth {
         }
         synth::basic_synth::control_change(controller, value);
     }
+    void pitch_bend(int amt);
     virtual bool check_percussion() { 
         switch(dsp::fastf2i_drm(parameters->percussion_trigger))
         {        

@@ -220,6 +220,10 @@ public:
             ((float *)&par_values)[i] = *params[i];
         update_params();
     }
+    inline void pitch_bend(int amt)
+    {
+        drawbar_organ::pitch_bend(amt);
+    }
     void activate() {
         setup(srate);
         panic_flag = false;
