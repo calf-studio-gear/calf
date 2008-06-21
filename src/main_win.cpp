@@ -42,7 +42,7 @@ static const char *ui_xml =
 "</ui>\n"
 ;
 
-static void exit_action(main_window *main)
+static void exit_action(GtkWidget *widget, main_window *main)
 {
     gtk_widget_destroy(GTK_WIDGET(main->toplevel));
 }
