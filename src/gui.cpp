@@ -984,6 +984,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     main->set_window(gui->plugin, this);
 
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
+    gtk_ui_manager_ensure_update(ui_mgr);
 }
 
 void plugin_gui_window::close()
