@@ -240,6 +240,11 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     void create_window()
     {
         plugin = create_plugin_proxy(effect_name.c_str());
+        if (!plugin)
+        {
+            fprintf(stderr, "Unknown plugin: %s\n", effect_name.c_str());
+            exit(1);
+        }
         plugin->client = &cli;
         plugin->send_osc = true;
         ((main_window *)window->main)->conditions.insert("dssi");
