@@ -33,7 +33,7 @@
 using namespace synth;
 using namespace std;
 
-synth::preset_list synth::global_presets;
+synth::preset_list synth::builtin_presets, synth::user_presets;
 
 std::string plugin_preset::to_xml()
 {
@@ -181,18 +181,24 @@ void preset_list::xml_end_element_handler(void *user_data, const char *name)
     throw preset_exception("Invalid XML element close: %s", name, 0);
 }
 
-bool preset_list::load_defaults()
+bool preset_list::load_defaults(bool builtin)
 {
     try {
         struct stat st;
-        if (!stat(preset_list::get_preset_filename().c_str(), &st)) {
-            load(preset_list::get_preset_filename().c_str());
-            if (!presets.empty())
-                return true;
+        if (!builtin)
+        {
+            if (!stat(preset_list::get_preset_filename().c_str(), &st)) {
+                load(preset_list::get_preset_filename().c_str());
+                if (!presets.empty())
+                    return true;
+            }
         }
-        if (presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st)) {
-            load(PKGLIBDIR "/presets.xml");
-            return true;
+        else
+        {
+            if (presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st)) {
+                load(PKGLIBDIR "/presets.xml");
+                return true;
+            }
         }
     }
     catch(preset_exception &ex)

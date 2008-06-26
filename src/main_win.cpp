@@ -138,12 +138,15 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->name), gui_win != NULL);
 }
 
-void main_window::refresh_all_presets()
+void main_window::refresh_all_presets(bool builtin_too)
 {
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
     {
-        if (i->second && i->second->gui_win)
-            i->second->gui_win->fill_gui_presets();
+        if (i->second && i->second->gui_win) {
+            i->second->gui_win->fill_gui_presets(false);
+            if (builtin_too)
+                i->second->gui_win->fill_gui_presets(true);
+        }
     }
 }
 

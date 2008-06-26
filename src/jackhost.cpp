@@ -154,7 +154,7 @@ struct host_session: public main_window_owner_iface
     void close();
     static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
     void update_lash();
-    void activate_preset(int plugin, const std::string &preset);
+    bool activate_preset(int plugin, const std::string &preset, bool builtin);
 #if USE_LASH
     void send_lash(LASH_Event_Type type, const std::string &data) {
         lash_send_event(lash_client, lash_event_new_with_all(type, data.c_str()));
@@ -198,8 +198,15 @@ void host_session::add_plugin(string name, string preset)
     plugins.push_back(jh);
     client.add(jh);
     main_win->add_plugin(jh);
-    if (!preset.empty())
-        activate_preset(plugins.size() - 1, preset);
+    if (!preset.empty()) {
+        if (!activate_preset(plugins.size() - 1, preset, false))
+        {
+            if (!activate_preset(plugins.size() - 1, preset, true))
+            {
+                fprintf(stderr, "Unknown preset: %s\n", preset.c_str());
+            }
+        }
+    }
 }
 
 void host_session::create_plugins_from_list()
@@ -251,23 +258,19 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
     }
 }
 
-void host_session::activate_preset(int i, const std::string &preset)
+bool host_session::activate_preset(int i, const std::string &preset, bool builtin)
 {
     string cur_plugin = plugins[i]->get_id();
-    preset_vector &pvec = global_presets.presets;
-    bool found = false;
+    preset_vector &pvec = (builtin ? builtin_presets : user_presets).presets;
     for (unsigned int i = 0; i < pvec.size(); i++) {
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
         {
             pvec[i].activate(plugins[i]);
             gui_win->gui->refresh();
-            found = true;
-            break;
+            return true;
         }
     }
-    if (!found) {
-        fprintf(stderr, "Warning: unknown preset %s %s\n", preset.c_str(), cur_plugin.c_str());
-    }
+    return false;
 }
 
 void host_session::connect()
@@ -529,10 +532,12 @@ int main(int argc, char *argv[])
         }
     }
     try {
-        global_presets.load_defaults();
+        builtin_presets.load_defaults(true);
+        user_presets.load_defaults(false);
     }
     catch(synth::preset_exception &e)
     {
+        // XXXKF this exception is already handled by load_defaults, so this is redundant
         fprintf(stderr, "Error while loading presets: %s\n", e.what());
         exit(1);
     }

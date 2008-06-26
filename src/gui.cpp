@@ -805,6 +805,8 @@ static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
 
 static const GtkActionEntry actions[] = {
     { "PresetMenuAction", "", "_Preset", NULL, "Preset operations", NULL },
+    { "BuiltinPresetMenuAction", "", "_Built-in", NULL, "Built-in (factory) presets", NULL },
+    { "UserPresetMenuAction", "", "_User", NULL, "User (your) presets", NULL },
     { "CommandMenuAction", "", "_Command", NULL, "Plugin-related commands", NULL },
     { "store-preset", "", "_Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
 };
@@ -817,21 +819,34 @@ static const char *ui_xml =
 "    <menu action=\"PresetMenuAction\">\n"
 "      <menuitem action=\"store-preset\"/>\n"
 "      <separator/>\n"
-"      <placeholder name=\"presets\"/>\n"
+"      <menu action=\"BuiltinPresetMenuAction\">\n"
+"        <placeholder name=\"builtin_presets\"/>\n"
+"      </menu>\n"
+"      <menu action=\"UserPresetMenuAction\">\n"
+"        <placeholder name=\"user_presets\"/>\n"
+"      </menu>\n"
 "    </menu>\n"
 "    <placeholder name=\"commands\"/>\n"
 "  </menubar>\n"
 "</ui>\n"
 ;
 
-static const char *preset_pre_xml = 
+static const char *general_preset_pre_xml = 
 "<ui>\n"
 "  <menubar>\n"
-"    <menu action=\"PresetMenuAction\">\n"
-"      <placeholder name=\"presets\">\n";
+"    <menu action=\"PresetMenuAction\">\n";
+
+static const char *builtin_preset_pre_xml = 
+"      <menu action=\"BuiltinPresetMenuAction\">\n"
+"        <placeholder name=\"builtin_presets\">\n";
+
+static const char *user_preset_pre_xml = 
+"      <menu action=\"UserPresetMenuAction\">\n"
+"        <placeholder name=\"user_presets\">\n";
 
 static const char *preset_post_xml = 
-"      </placeholder>\n"
+"        </placeholder>\n"
+"      </menu>\n"
 "    </menu>\n"
 "  </menubar>\n"
 "</ui>\n"
@@ -855,26 +870,28 @@ plugin_gui_window::plugin_gui_window(main_window_iface *_main)
     toplevel = NULL;
     ui_mgr = NULL;
     std_actions = NULL;
-    preset_actions = NULL;
+    builtin_preset_actions = NULL;
+    user_preset_actions = NULL;
     command_actions = NULL;
     main = _main;
     assert(main);
 }
 
-string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp)
+string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin)
 {
-    string preset_xml = preset_pre_xml;
-    preset_vector &pvec = global_presets.presets;
+    string preset_xml = string(general_preset_pre_xml) + (builtin ? builtin_preset_pre_xml : user_preset_pre_xml);
+    preset_vector &pvec = (builtin ? builtin_presets : user_presets).presets;
+    GtkActionGroup *preset_actions = builtin ? builtin_preset_actions : user_preset_actions;
     for (unsigned int i = 0; i < pvec.size(); i++)
     {
-        if (global_presets.presets[i].plugin != gui->effect_name)
+        if (pvec[i].plugin != gui->effect_name)
             continue;
         stringstream ss;
-        ss << "preset" << i;
+        ss << (builtin ? "builtin_preset" : "user_preset") << i;
         preset_xml += "          <menuitem name=\""+pvec[i].name+"\" action=\""+ss.str()+"\"/>\n";
         
         GtkActionEntry ae = { ss.str().c_str(), NULL, pvec[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
-        gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i), action_destroy_notify);
+        gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i, builtin), action_destroy_notify);
     }
     preset_xml += preset_post_xml;
     return preset_xml;
@@ -899,15 +916,19 @@ string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
     return command_xml;
 }
 
-void plugin_gui_window::fill_gui_presets()
+void plugin_gui_window::fill_gui_presets(bool builtin)
 {
+    GtkActionGroup *&preset_actions = builtin ? builtin_preset_actions : user_preset_actions;
     if(preset_actions) {
         gtk_ui_manager_remove_action_group(ui_mgr, preset_actions);
         preset_actions = NULL;
     }
     
-    preset_actions = gtk_action_group_new("presets");
-    string preset_xml = make_gui_preset_list(preset_actions);
+    if (builtin)
+        builtin_preset_actions = gtk_action_group_new("builtin_presets");
+    else
+        user_preset_actions = gtk_action_group_new("user_presets");
+    string preset_xml = make_gui_preset_list(preset_actions, builtin);
     gtk_ui_manager_insert_action_group(ui_mgr, preset_actions, 0);    
     GError *error = NULL;
     gtk_ui_manager_add_ui_from_string(ui_mgr, preset_xml.c_str(), -1, &error);
@@ -942,7 +963,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     
     command_actions = gtk_action_group_new("commands");
 
-    fill_gui_presets();
+    fill_gui_presets(true);
+    fill_gui_presets(false);
     
     gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
 

@@ -80,7 +80,7 @@ namespace synth {
         void add_plugin(plugin_ctl_iface *plugin);
         void del_plugin(plugin_ctl_iface *plugin);
         void set_window(plugin_ctl_iface *iface, plugin_gui_window *window);
-        void refresh_all_presets();
+        void refresh_all_presets(bool builtin_too);
         void refresh_plugin(plugin_ctl_iface *plugin);
         void on_closed();
         void close_guis();

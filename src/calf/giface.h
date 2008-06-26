@@ -334,7 +334,8 @@ struct ladspa_wrapper
         preset_descs = new std::vector<DSSI_Program_Descriptor>;
 
         preset_list plist;
-        plist.load_defaults();
+        plist.load_defaults(false);
+        plist.load_defaults(true);
         // XXXKF this assumes that plugin name in preset is case-insensitive equal to plugin label
         // if I forget about this, I'll be in a deep trouble
         dssi_default_program.Bank = 0;

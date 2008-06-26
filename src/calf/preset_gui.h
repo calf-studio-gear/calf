@@ -29,9 +29,10 @@ struct activate_preset_params
 {
     plugin_gui *gui;
     int preset;
+    bool builtin;
     
-    activate_preset_params(plugin_gui *_gui, int _preset)
-    : gui(_gui), preset(_preset)
+    activate_preset_params(plugin_gui *_gui, int _preset, bool _builtin)
+    : gui(_gui), preset(_preset), builtin(_builtin)
     {
     }
 };

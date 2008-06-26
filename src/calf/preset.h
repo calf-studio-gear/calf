@@ -85,7 +85,7 @@ struct preset_list
     std::map<std::string, int> last_preset_ids;
 
     static std::string get_preset_filename();
-    bool load_defaults();
+    bool load_defaults(bool builtin);
     void parse(const std::string &data);
     void load(const char *filename);
     void save(const char *filename);
@@ -97,7 +97,7 @@ protected:
     static void xml_end_element_handler(void *user_data, const char *name);
 };
 
-extern preset_list global_presets;
+extern preset_list builtin_presets, user_presets;
 
 };
 

@@ -251,7 +251,8 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         window->create(plugin, title.c_str(), effect_name.c_str());
         plugin->gui = window->gui;
         gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);
-        global_presets.get_for_plugin(presets, effect_name.c_str());
+        builtin_presets.get_for_plugin(presets, effect_name.c_str());
+        user_presets.get_for_plugin(presets, effect_name.c_str());
     }
     
     virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
@@ -362,7 +363,8 @@ int main(int argc, char *argv[])
     }
 
     try {
-        global_presets.load_defaults();
+        builtin_presets.load_defaults(true);
+        user_presets.load_defaults(false);
     }
     catch(synth::preset_exception &e)
     {

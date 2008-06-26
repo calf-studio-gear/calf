@@ -53,7 +53,7 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
     gtk_combo_box_set_model(GTK_COMBO_BOX(preset_name_combo), model);
     gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(preset_name_combo), 0);
-    for(preset_vector::const_iterator i = global_presets.presets.begin(); i != global_presets.presets.end(); i++)
+    for(preset_vector::const_iterator i = user_presets.presets.begin(); i != user_presets.presets.end(); i++)
     {
         if (i->plugin != gui->effect_name)
             continue;
@@ -77,7 +77,7 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
         }
         catch(...)
         {
-            tmp = global_presets;
+            tmp = user_presets;
         }
         bool found = false;
         for(preset_vector::const_iterator i = tmp.presets.begin(); i != tmp.presets.end(); i++)
@@ -98,9 +98,9 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
                 return;
         }
         tmp.add(sp);
-        global_presets = tmp;
-        global_presets.save(tmp.get_preset_filename().c_str());
-        gui->window->main->refresh_all_presets();
+        user_presets = tmp;
+        user_presets.save(tmp.get_preset_filename().c_str());
+        gui->window->main->refresh_all_presets(false);
     }
     //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }
@@ -108,7 +108,7 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
 void synth::activate_preset(GtkAction *action, activate_preset_params *params)
 {
     plugin_gui *gui = params->gui;
-    plugin_preset &p = global_presets.presets[params->preset];
+    plugin_preset &p = (params->builtin ? builtin_presets : user_presets).presets[params->preset];
     if (p.plugin != gui->effect_name)
         return;
     if (!gui->plugin->activate_preset(p.bank, p.program))
