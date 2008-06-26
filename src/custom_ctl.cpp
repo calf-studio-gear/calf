@@ -336,6 +336,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         if (pt > 0)
             phase = 33;
     }
+    // the source code for the knob generator is on the old PC, so this hack is temporarily needed
+    // (avoid totally blank knob frames which say nothing about value polarity)
+    if (self->knob_type == 1) {
+        if (phase == 31 || phase == 30)
+            phase = 29;
+        if (phase == 33 || phase == 34)
+            phase = 35;
+    }
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image, phase * 40, self->knob_type * 40, ox, oy, 40, 40, GDK_RGB_DITHER_NORMAL, 0, 0);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
     if (gtk_widget_is_focus(widget))
