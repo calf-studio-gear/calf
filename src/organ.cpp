@@ -534,7 +534,9 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         blDest.spectrum[i] = 0;
     }
-    for (int i = 1; i <= ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT); i++) {
+    for (int i = 1; i <= (ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT)); i++) {
+        //float esc = 0.25 * (1 + 0.5 * log(i));
+        float esc = 0.5;
         float amp = abs(blSrc.spectrum[i]);
         int bw = 1 + 20 * i;
         float sum = 1;
@@ -543,7 +545,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         for (int j = delta; j <= bw; j+=delta)
         {
             float p = j * 1.0 / bw;
-            sum += 2 * exp(-p*p);
+            sum += 2 * exp(-p * p * esc);
         }
         if (sum < 0.0001)
             continue;
@@ -555,7 +557,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         for (int j = delta; j <= bw; j += delta)
         {
             float p = j * 1.0 / bw;
-            float val = amp * exp(-p * p);
+            float val = amp * exp(-p * p * esc);
             int pos = orig + j * bwscale / 40;
             if (pos < 1 || pos >= ORGAN_BIG_WAVE_SIZE / 2)
                 continue;
@@ -763,7 +765,7 @@ void organ_voice_base::precalculate_waves()
             tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
-        padsynth(bl, blBig, big_waves[wave_strings - wave_count_small], 20);
+        padsynth(bl, blBig, big_waves[wave_strings - wave_count_small], 15);
 
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
