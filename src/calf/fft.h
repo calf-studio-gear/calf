@@ -39,6 +39,7 @@ public:
     fft()
     {
         int N=1<<O;
+        assert(N >= 4);
         for (int i=0; i<N; i++)
         {
             int v=0;
@@ -46,7 +47,16 @@ public:
                 if (i&(1<<j))
                     v+=(N>>(j+1));
             scramble[i]=v;
-            sines[i]=complex(cos(2*PI*i/N),sin(2*PI*i/N));
+        }
+        int N90 = N >> 2;
+        T divN = 2 * PI / N;
+        // use symmetry
+        for (int i=0; i<N90; i++)
+        {
+            T angle = divN * i;
+            T c = cos(angle), s = sin(angle);
+            sines[i + 3 * N90] = -(sines[i + N90] = complex(-s, c));
+            sines[i + 2 * N90] = -(sines[i] = complex(c, s));
         }
     }
     void calculate(complex *input, complex *output, bool inverse)

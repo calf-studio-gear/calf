@@ -534,7 +534,7 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         blDest.spectrum[i] = 0;
     }
-    for (int i = 1; i <= ORGAN_WAVE_SIZE / 2; i++) {
+    for (int i = 1; i <= ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT); i++) {
         float amp = abs(blSrc.spectrum[i]);
         int bw = 1 + 20 * i;
         float sum = 1;

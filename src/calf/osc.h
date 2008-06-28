@@ -53,12 +53,17 @@ template<int SIZE_BITS>
 struct bandlimiter
 {
     enum { SIZE = 1 << SIZE_BITS };
-    static dsp::fft<float, SIZE_BITS> fft;
+    static dsp::fft<float, SIZE_BITS> &get_fft()
+    {
+        static dsp::fft<float, SIZE_BITS> fft;
+        return fft;
+    }
     
     std::complex<float> spectrum[SIZE];
     
     void compute_spectrum(float input[SIZE])
     {
+        dsp::fft<float, SIZE_BITS> &fft = get_fft();
         std::complex<float> *data = new complex<float>[SIZE];
         for (int i = 0; i < SIZE; i++)
             data[i] = input[i];
@@ -68,6 +73,7 @@ struct bandlimiter
     
     void compute_waveform(float output[SIZE])
     {
+        dsp::fft<float, SIZE_BITS> &fft = get_fft();
         std::complex<float> *data = new complex<float>[SIZE];
         fft.calculate(spectrum, data, true);
         for (int i = 0; i < SIZE; i++)
@@ -85,6 +91,7 @@ struct bandlimiter
     /// might need to be improved much in future!
     void make_waveform(float output[SIZE], int cutoff, bool foldover = false)
     {
+        dsp::fft<float, SIZE_BITS> &fft = get_fft();
         vector<std::complex<float> > new_spec, iffted;
         new_spec.resize(SIZE);
         iffted.resize(SIZE);
@@ -114,9 +121,6 @@ struct bandlimiter
             output[i] = iffted[i].real();
     }
 };
-
-template<int SIZE_BITS>
-dsp::fft<float, SIZE_BITS> bandlimiter<SIZE_BITS>::fft;
 
 /// Set of bandlimited wavetables
 template<int SIZE_BITS>
