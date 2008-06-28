@@ -84,7 +84,7 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
     {"effect", 0, 0, 'e'},
-    {"preset", 0, 0, 'p'},
+    {"preset", 1, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {"connect-midi", 1, 0, 'M'},
@@ -258,15 +258,16 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
     }
 }
 
-bool host_session::activate_preset(int i, const std::string &preset, bool builtin)
+bool host_session::activate_preset(int plugin_no, const std::string &preset, bool builtin)
 {
-    string cur_plugin = plugins[i]->get_id();
+    string cur_plugin = plugins[plugin_no]->get_id();
     preset_vector &pvec = (builtin ? builtin_presets : user_presets).presets;
     for (unsigned int i = 0; i < pvec.size(); i++) {
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
         {
-            pvec[i].activate(plugins[i]);
-            gui_win->gui->refresh();
+            pvec[i].activate(plugins[plugin_no]);
+            if (gui_win && gui_win->gui)
+                gui_win->gui->refresh();
             return true;
         }
     }
