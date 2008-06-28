@@ -229,6 +229,7 @@ const char *monosynth_audio_module::get_gui_xml()
 }
 
 void monosynth_audio_module::activate() {
+    monosynth_audio_module::generate_waves();
     running = false;
     output_pos = 0;
     queue_note_on = -1;
@@ -352,13 +353,9 @@ void monosynth_audio_module::generate_waves()
     waves[wave_test8].make(bl, data);
 }
 
-void __attribute__((constructor)) generate_monosynth_waves() 
-{
-    monosynth_audio_module::generate_waves();
-}
-
 bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context)
 {
+    monosynth_audio_module::generate_waves();
     if (index == par_wave1 || index == par_wave2) {
         if (subindex)
             return false;
@@ -375,6 +372,7 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
 
 bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
+    monosynth_audio_module::generate_waves();
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
     if (index == par_filtertype) {
         if (!running)
