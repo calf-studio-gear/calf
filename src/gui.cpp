@@ -889,8 +889,9 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
         stringstream ss;
         ss << (builtin ? "builtin_preset" : "user_preset") << i;
         preset_xml += "          <menuitem name=\""+pvec[i].name+"\" action=\""+ss.str()+"\"/>\n";
-        
-        GtkActionEntry ae = { ss.str().c_str(), NULL, pvec[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
+
+        string sv = ss.str();
+        GtkActionEntry ae = { sv.c_str(), NULL, pvec[i].name.c_str(), NULL, NULL, (GCallback)activate_preset };
         gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i, builtin), action_destroy_notify);
     }
     preset_xml += preset_post_xml;

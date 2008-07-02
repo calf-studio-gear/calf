@@ -136,17 +136,7 @@ struct waveform_family: public map<uint32_t, float *>
     {
         memcpy(original, input, sizeof(original));
         bl.compute_spectrum(input);
-        bl.remove_dc();
         make_from_spectrum(bl, foldover);
-        
-        uint32_t multiple = 1, base = 1 << (32 - SIZE_BITS);
-        while(multiple < limit) {
-            float *wf = new float[SIZE+1];
-            bl.make_waveform(wf, (int)((1 << SIZE_BITS) / (1.5 * multiple)), foldover);
-            wf[SIZE] = wf[0];
-            (*this)[base * multiple] = wf;
-            multiple = multiple << 1;
-        }
     }
     
     void make_from_spectrum(bandlimiter<SIZE_BITS> &bl, bool foldover = false, uint32_t limit = SIZE / 2)
@@ -170,6 +160,12 @@ struct waveform_family: public map<uint32_t, float *>
             return NULL;
         // printf("Level = %08x\n", i->first);
         return i->second;
+    }
+    ~waveform_family()
+    {
+        for (iterator i = begin(); i != end(); i++)
+            delete i->second;
+        clear();
     }
 };
 

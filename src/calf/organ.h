@@ -387,6 +387,7 @@ struct drawbar_organ: public synth::basic_synth {
         percussion.setup(sr);
         parameters->cutoff = 0;
         update_params();
+        global_vibrato.reset();
     }
     void update_params();
     void control_change(int controller, int value)
