@@ -382,11 +382,12 @@ struct drawbar_organ: public synth::basic_synth {
     virtual void percussion_note_on(int note, int vel) {
         percussion.note_on(note, vel);
     }
+    virtual void params_changed() = 0;
     virtual void setup(int sr) {
         basic_synth::setup(sr);
         percussion.setup(sr);
         parameters->cutoff = 0;
-        update_params();
+        params_changed();
         global_vibrato.reset();
     }
     void update_params();

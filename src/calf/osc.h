@@ -164,7 +164,7 @@ struct waveform_family: public map<uint32_t, float *>
     ~waveform_family()
     {
         for (iterator i = begin(); i != end(); i++)
-            delete i->second;
+            delete []i->second;
         clear();
     }
 };
