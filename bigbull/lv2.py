@@ -140,6 +140,8 @@ def parseTTL(uri, content, model, debug):
             prnot = x[1].split(":")
             if item != 0 and spo[0] == "@prefix":
                 spo[item] = x[1]
+            elif prnot[0] == "_":
+                spo[item] = uri + "#" + prnot[1]
             else:
                 spo[item] = prefixes[prnot[0]] + prnot[1]
             item += 1
