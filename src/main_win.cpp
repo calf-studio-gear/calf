@@ -143,9 +143,9 @@ void main_window::refresh_all_presets(bool builtin_too)
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
     {
         if (i->second && i->second->gui_win) {
-            i->second->gui_win->fill_gui_presets(false);
-            if (builtin_too)
-                i->second->gui_win->fill_gui_presets(true);
+            char ch = '0';
+            i->second->gui_win->fill_gui_presets(true, ch);
+            i->second->gui_win->fill_gui_presets(false, ch);
         }
     }
 }

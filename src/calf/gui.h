@@ -279,9 +279,9 @@ public:
     int source_id;
 
     plugin_gui_window(main_window_iface *_main);
-    std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin);
+    std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch);
     std::string make_gui_command_list(GtkActionGroup *grp);
-    void fill_gui_presets(bool builtin);
+    void fill_gui_presets(bool builtin, char &ch);
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
     void close();
     static gboolean on_idle(void *data);
