@@ -1986,4 +1986,79 @@
   <param name="vib_phase" value="180" />
   <param name="vib_mode" value="4" />
 </preset>
+<preset bank="0" program="0" plugin="monosynth" name="Velo Bee">
+  <param name="o1_wave" value="1" />
+  <param name="o2_wave" value="0" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="3" />
+  <param name="o12_mix" value="0" />
+  <param name="filter" value="4" />
+  <param name="cutoff" value="58.7474" />
+  <param name="res" value="8" />
+  <param name="filter_sep" value="1392" />
+  <param name="env2cutoff" value="9512" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="21.5437" />
+  <param name="adsr_d" value="278.636" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="73.1175" />
+  <param name="key_follow" value="0.74" />
+  <param name="legato" value="2" />
+  <param name="portamento" value="76.1355" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0.6" />
+  <param name="master" value="0.5" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Buzzy Bass">
+  <param name="o1_wave" value="14" />
+  <param name="o2_wave" value="14" />
+  <param name="o12_detune" value="6" />
+  <param name="o2_xpose" value="12" />
+  <param name="phase_mode" value="1" />
+  <param name="o12_mix" value="0.525" />
+  <param name="filter" value="0" />
+  <param name="cutoff" value="91.461" />
+  <param name="res" value="1.41878" />
+  <param name="filter_sep" value="0" />
+  <param name="env2cutoff" value="10800" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="0.39" />
+  <param name="adsr_a" value="17.6725" />
+  <param name="adsr_d" value="407.463" />
+  <param name="adsr_s" value="0.06" />
+  <param name="adsr_r" value="50" />
+  <param name="key_follow" value="0.52" />
+  <param name="legato" value="2" />
+  <param name="portamento" value="19.3821" />
+  <param name="vel2filter" value="0.42" />
+  <param name="vel2amp" value="0.46" />
+  <param name="master" value="0.5" />
+</preset>
+<preset bank="0" program="0" plugin="monosynth" name="Munch Bass">
+  <param name="o1_wave" value="5" />
+  <param name="o2_wave" value="2" />
+  <param name="o12_detune" value="5" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="1" />
+  <param name="o12_mix" value="0.5" />
+  <param name="filter" value="3" />
+  <param name="cutoff" value="65.8727" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="-777.368" />
+  <param name="env2cutoff" value="9325.2" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="147.529" />
+  <param name="adsr_s" value="0" />
+  <param name="adsr_r" value="91.6363" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.225724" />
+  <param name="vel2amp" value="1" />
+  <param name="master" value="0.5" />
+</preset>
 </presets>
