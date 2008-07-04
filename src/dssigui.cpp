@@ -252,8 +252,8 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         plugin->gui = window->gui;
         gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);
         vector<plugin_preset> tmp_presets;
-        builtin_presets.get_for_plugin(presets, effect_name.c_str());
-        user_presets.get_for_plugin(tmp_presets, effect_name.c_str());
+        get_builtin_presets().get_for_plugin(presets, effect_name.c_str());
+        get_user_presets().get_for_plugin(tmp_presets, effect_name.c_str());
         presets.insert(presets.end(), tmp_presets.begin(), tmp_presets.end());
     }
     
@@ -365,8 +365,8 @@ int main(int argc, char *argv[])
     }
 
     try {
-        builtin_presets.load_defaults(true);
-        user_presets.load_defaults(false);
+        get_builtin_presets().load_defaults(true);
+        get_user_presets().load_defaults(false);
     }
     catch(synth::preset_exception &e)
     {

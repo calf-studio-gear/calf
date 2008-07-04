@@ -131,8 +131,8 @@ public:
     typedef waveform_family<ORGAN_WAVE_BITS> small_wave_family;
     typedef waveform_family<ORGAN_BIG_WAVE_BITS> big_wave_family;
 protected:
-    static small_wave_family waves[wave_count_small];
-    static big_wave_family big_waves[wave_count_big];
+    static small_wave_family (*waves)[wave_count_small];
+    static big_wave_family (*big_waves)[wave_count_big];
 
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
@@ -150,10 +150,10 @@ protected:
 public:
     organ_parameters *parameters;
     static inline small_wave_family &get_wave(int wave) {
-        return waves[wave];
+        return (*waves)[wave];
     }
     static inline big_wave_family &get_big_wave(int wave) {
-        return big_waves[wave];
+        return (*big_waves)[wave];
     }
     static void precalculate_waves();
 };
@@ -285,7 +285,7 @@ public:
         int timbre = parameters->get_percussion_timbre();
         if (timbre < 0 || timbre >= (int)(sizeof(wave_ids) / sizeof(wave_ids[0])))
             return;
-        float *data = waves[wave_ids[timbre]].get_level(dphase.get());
+        float *data = (*waves)[wave_ids[timbre]].get_level(dphase.get());
         if (!data)
             return;
         if (timbre < 3)

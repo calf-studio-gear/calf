@@ -250,7 +250,9 @@ void monosynth_audio_module::generate_waves()
     if (waves)
         return;
     
-    waves = new waveform_family<MONOSYNTH_WAVE_BITS>[wave_count];
+    static waveform_family<MONOSYNTH_WAVE_BITS> waves_data[wave_count];
+    waves = waves_data;
+    
     enum { S = 1 << MONOSYNTH_WAVE_BITS, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
     float iQS = 1.0 / QS;
     

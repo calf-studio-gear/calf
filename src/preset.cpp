@@ -33,7 +33,17 @@
 using namespace synth;
 using namespace std;
 
-synth::preset_list synth::builtin_presets, synth::user_presets;
+extern synth::preset_list &synth::get_builtin_presets()
+{
+    static synth::preset_list plist;
+    return plist;
+}
+
+extern synth::preset_list &synth::get_user_presets()
+{
+    static synth::preset_list plist;
+    return plist;
+}
 
 std::string plugin_preset::to_xml()
 {
@@ -215,8 +225,11 @@ void preset_list::parse(const std::string &data)
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, xml_start_element_handler, xml_end_element_handler);
     XML_Status status = XML_Parse(parser, data.c_str(), data.length(), 1);
-    if (status == XML_STATUS_ERROR)
-        throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", "string", errno);
+    if (status == XML_STATUS_ERROR) {
+        string err = string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ";
+        XML_ParserFree(parser);
+        throw preset_exception(err, "string", errno);
+    }
     XML_ParserFree(parser);
 }
 
@@ -241,9 +254,13 @@ void preset_list::load(const char *filename)
             throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", filename, errno);
     } while(1);
     XML_Status status = XML_Parse(parser, buf, 0, 1);
-    if (status == XML_STATUS_ERROR)
-        throw preset_exception(string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ", filename, errno);
     close(fd);
+    if (status == XML_STATUS_ERROR)
+    {
+        string err = string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ";
+        XML_ParserFree(parser);
+        throw preset_exception(err, filename, errno);
+    }
     XML_ParserFree(parser);
 }
 

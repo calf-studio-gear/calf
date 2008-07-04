@@ -97,7 +97,8 @@ protected:
     static void xml_end_element_handler(void *user_data, const char *name);
 };
 
-extern preset_list builtin_presets, user_presets;
+extern preset_list &get_builtin_presets();
+extern preset_list &get_user_presets();
 
 };
 

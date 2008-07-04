@@ -491,8 +491,8 @@ parameter_properties organ_audio_module::param_props[] = {
 
 ////////////////////////////////////////////////////////////////////////////
 
-organ_voice_base::small_wave_family organ_voice_base::waves[organ_voice_base::wave_count_small];
-organ_voice_base::big_wave_family organ_voice_base::big_waves[organ_voice_base::wave_count_big];
+organ_voice_base::small_wave_family (*organ_voice_base::waves)[organ_voice_base::wave_count_small];
+organ_voice_base::big_wave_family (*organ_voice_base::big_waves)[organ_voice_base::wave_count_big];
 
 static void smoothen(bandlimiter<ORGAN_WAVE_BITS> &bl, float tmp[ORGAN_WAVE_SIZE])
 {
@@ -601,6 +601,11 @@ void organ_voice_base::precalculate_waves()
     static bool inited = false;
     if (!inited)
     {
+        static organ_voice_base::small_wave_family waves[organ_voice_base::wave_count_small];
+        static organ_voice_base::big_wave_family big_waves[organ_voice_base::wave_count_big];
+        organ_voice_base::waves = &waves;
+        organ_voice_base::big_waves = &big_waves;
+        
         float tmp[ORGAN_WAVE_SIZE];
         static bandlimiter<ORGAN_WAVE_BITS> bl;
         static bandlimiter<ORGAN_BIG_WAVE_BITS> blBig;
@@ -910,7 +915,7 @@ void organ_voice::render_block() {
         uint32_t rate = (dphase * hm).get();
         if (waveid >= wave_count_small)
         {
-            float *data = big_waves[waveid - wave_count_small].get_level(rate >> (ORGAN_BIG_WAVE_BITS - ORGAN_WAVE_BITS + ORGAN_BIG_WAVE_SHIFT));
+            float *data = (*big_waves)[waveid - wave_count_small].get_level(rate >> (ORGAN_BIG_WAVE_BITS - ORGAN_WAVE_BITS + ORGAN_BIG_WAVE_SHIFT));
             if (!data)
                 continue;
             hm.set(hm.get() >> ORGAN_BIG_WAVE_SHIFT);
@@ -937,7 +942,7 @@ void organ_voice::render_block() {
                 foldback++;
             }
             hm.set(hm.get() >> foldback);
-            data = waves[waveid].get_level(rate);
+            data = (*waves)[waveid].get_level(rate);
             if (!data)
                 continue;
             tphase.set((uint32_t)((phase * hm).get()) + parameters->phaseshift[h]);

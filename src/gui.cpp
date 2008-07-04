@@ -880,7 +880,7 @@ plugin_gui_window::plugin_gui_window(main_window_iface *_main)
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin)
 {
     string preset_xml = string(general_preset_pre_xml) + (builtin ? builtin_preset_pre_xml : user_preset_pre_xml);
-    preset_vector &pvec = (builtin ? builtin_presets : user_presets).presets;
+    preset_vector &pvec = (builtin ? get_builtin_presets() : get_user_presets()).presets;
     GtkActionGroup *preset_actions = builtin ? builtin_preset_actions : user_preset_actions;
     for (unsigned int i = 0; i < pvec.size(); i++)
     {

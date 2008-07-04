@@ -260,6 +260,19 @@ struct ladspa_wrapper
     {
         init_descriptor(i);
     }
+    
+    ~ladspa_wrapper()
+    {
+        delete []descriptor.PortNames;
+        delete []descriptor.PortDescriptors;
+        delete []descriptor.PortRangeHints;
+#if USE_DSSI
+        presets->clear();
+        preset_descs->clear();
+        delete presets;
+        delete preset_descs;
+#endif
+    }
 
     void init_descriptor(ladspa_info &inf)
     {
