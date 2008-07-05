@@ -2061,4 +2061,29 @@
   <param name="vel2amp" value="1" />
   <param name="master" value="0.5" />
 </preset>
+<preset bank="0" program="0" plugin="monosynth" name="Bubbles">
+  <param name="o1_wave" value="11" />
+  <param name="o2_wave" value="11" />
+  <param name="o12_detune" value="2" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="1" />
+  <param name="o12_mix" value="0.525" />
+  <param name="filter" value="5" />
+  <param name="cutoff" value="16000" />
+  <param name="res" value="8" />
+  <param name="filter_sep" value="2400" />
+  <param name="env2cutoff" value="-3888" />
+  <param name="env2res" value="0" />
+  <param name="env2amp" value="0.51" />
+  <param name="adsr_a" value="47.5774" />
+  <param name="adsr_d" value="190.54" />
+  <param name="adsr_s" value="0.45" />
+  <param name="adsr_r" value="287.215" />
+  <param name="key_follow" value="0.98" />
+  <param name="legato" value="2" />
+  <param name="portamento" value="19.3821" />
+  <param name="vel2filter" value="0.42" />
+  <param name="vel2amp" value="0.46" />
+  <param name="master" value="0.5" />
+</preset>
 </presets>
