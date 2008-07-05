@@ -37,6 +37,9 @@ for variant in range(0, 3):
         nleds = 31
         midled = (nleds - 1) / 2
         midphase = (phases - 1) / 2
+        thresholdP = midled + 1 + ((phase - midphase - 1) * (nleds - midled - 2) / (phases - midphase - 2))
+        thresholdN = midled - 1 - ((midphase - 1 - phase) * (nleds - midled - 2) / (midphase - 1))
+        
         spacing = pi / nleds
         for led in range(0, nleds):
             adelta = (eangle - sangle - spacing) / (nleds - 1)
@@ -46,13 +49,17 @@ for variant in range(0, 3):
             pvalue = phase * 1.0 / (phases - 1)
             if variant == 0: lit = (pvalue == 1.0) or pvalue > lvalue
             if variant == 1: 
-                if pvalue < 0.5:
-                    lit = (lvalue > pvalue or pvalue == 0.0) and lvalue <= 0.5
-                else:
-                    lit = (lvalue < pvalue or pvalue == 1.0) and lvalue >= 0.5
                 if led == midled:
                     lit = (phase == midphase)
                     hilite = True
+                elif led > midled and phase > midphase:
+                    # led = [midled + 1, nleds - 1]
+                    # phase = [midphase + 1, phases - 1]
+                    lit = led <= thresholdP
+                elif led < midled and phase < midphase:
+                    lit = led >= thresholdN
+                else:
+                    lit = False
             if variant == 2: lit = pvalue == 0 or pvalue < lvalue
             if not lit:
                 ctx.set_source_rgb(0, 0, 0)
