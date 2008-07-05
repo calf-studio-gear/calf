@@ -548,6 +548,12 @@ void monosynth_audio_module::calculate_step()
     resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r;
     float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
     float newfgain = 0.f;
+    if (filter_type != last_filter_type)
+    {
+        filter.y2 = filter.y1 = filter.x2 = filter.x1 = filter.y1;
+        filter2.y2 = filter2.y1 = filter2.x2 = filter2.x1 = filter2.y1;
+        last_filter_type = filter_type;
+    }
     switch(filter_type)
     {
     case flt_lp12:
