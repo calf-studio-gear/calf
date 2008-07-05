@@ -329,6 +329,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     oy += (widget->allocation.height - 40) / 2;
     
     int phase = (int)((adj->value - adj->lower) * 64 / (adj->upper - adj->lower));
+    // skip middle phase except for true middle value
     if (self->knob_type == 1 && phase == 32) {
         double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;
         if (pt < 0)
@@ -336,13 +337,16 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         if (pt > 0)
             phase = 33;
     }
-    // the source code for the knob generator is on the old PC, so this hack is temporarily needed
-    // (avoid totally blank knob frames which say nothing about value polarity)
-    if (self->knob_type == 1) {
-        if (phase == 31 || phase == 30)
-            phase = 29;
-        if (phase == 33 || phase == 34)
-            phase = 35;
+    // endless knob: skip 90deg highlights unless the value is really a multiple of 90deg
+    if (self->knob_type == 3 && !(phase % 16)) {
+        if (phase == 64)
+            phase = 0;
+        double nom = adj->lower + phase * (adj->upper - adj->lower) / 64.0;
+        double diff = (adj->value - nom) / (adj->upper - adj->lower);
+        if (diff > 0.0001)
+            phase = (phase + 1) % 64;
+        if (diff < -0.0001)
+            phase = (phase + 63) % 64;
     }
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image, phase * 40, self->knob_type * 40, ox, oy, 40, 40, GDK_RGB_DITHER_NORMAL, 0, 0);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
@@ -382,6 +386,10 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
         step = oldstep - 1;
     else
         step = oldstep + 1;
+    if (self->knob_type == 3 && step >= nsteps)
+        step %= nsteps;
+    if (self->knob_type == 3 && step < 0)
+        step = nsteps - (nsteps - step) % nsteps;
     
     // trying to reduce error cumulation here, by counting from lowest or from highest
     float value = adj->lower + step * double(adj->upper - adj->lower) / nsteps;
@@ -445,6 +453,14 @@ calf_knob_button_release (GtkWidget *widget, GdkEventButton *event)
     return FALSE;
 }
 
+static inline float endless(float value)
+{
+    if (value >= 0)
+        return fmod(value, 1.f);
+    else
+        return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
+}
+
 static gboolean
 calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
@@ -452,7 +468,16 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     CalfKnob *self = CALF_KNOB(widget);
 
     if (GTK_WIDGET_HAS_GRAB(widget)) 
-        gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / 100);
+    {
+        if (self->knob_type == 3)
+        {
+            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / 100));
+        }
+        else
+        {
+            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / 100);
+        }
+    }
     return FALSE;
 }
 

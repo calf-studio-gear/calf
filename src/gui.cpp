@@ -445,6 +445,8 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
             params[i] = new knob_param_control();
+            if ((props.flags & PF_UNITMASK) == PF_UNIT_DEG)
+                params[i]->attribs["type"] = "3";
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
             gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 0, 0);

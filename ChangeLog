@@ -1,5 +1,13 @@
 Version 0.0.14?
-+ OSC: totally new OSC wrapper, to allow for realtime-safe parsing
++ OSC: totally new OSC wrapper, to allow for realtime-safe parsing (doesn't
+  matter as far as functionality goes, will probably be rewritten again
+  anyway)
++ Everything: memory management fixes (should improve stability and
+  compatibility)
++ Organ: improved memory usage
++ GUI: improved bipolar knobs, added endless knobs
++ Presets: separate 'built-in' and 'user' presets (so that built-in presets
+  can be upgraded without affecting user's own presets)
 
 Version 0.0.13
 + Fixed several problems related to 64-bit environments and OpenSUSE (thanks

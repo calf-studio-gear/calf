@@ -17,58 +17,86 @@ arrow = WIDTH / 10
 phases = 65
 
 # Setup Cairo
-surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, phases * WIDTH, HEIGHT * 3)
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, phases * WIDTH, HEIGHT * 4)
 ctx = cairo.Context(surface)
 ctx.set_source_rgba(0.75, 0.75, 0.75, 0)
-ctx.rectangle(0, 0, phases * WIDTH, 3 * HEIGHT)
+ctx.rectangle(0, 0, phases * WIDTH, 4 * HEIGHT)
 ctx.fill()
 
-for variant in range(0, 3):
+for variant in range(0, 4):
     x = WIDTH / 2
     y = HEIGHT * (variant + 0.5)
     for phase in range(0, phases):
         # Draw out the triangle using absolute coordinates
         value = phase * 1.0 / (phases - 1)
-        sangle = (180-45)*pi/180
-        eangle = (360+45)*pi/180
+        if variant != 3:
+            sangle = (180 - 45)*pi/180
+            eangle = (360 + 45)*pi/180
+            nleds = 31
+        else:
+            sangle = (270)*pi/180
+            eangle = (270 + 360)*pi/180
+            nleds = 32
         vangle = sangle + value * (eangle - sangle)
         c, s = cos(vangle), sin(vangle)
 
-        nleds = 31
         midled = (nleds - 1) / 2
         midphase = (phases - 1) / 2
-        thresholdP = midled + 1 + ((phase - midphase - 1) * (nleds - midled - 2) / (phases - midphase - 2))
-        thresholdN = midled - 1 - ((midphase - 1 - phase) * (nleds - midled - 2) / (midphase - 1))
+        thresholdP = midled + 1 + ((phase - midphase - 1) * 1.0 * (nleds - midled - 2) / (phases - midphase - 2))
+        thresholdN = midled - 1 - ((midphase - 1 - phase) * 1.0 * (nleds - midled - 2) / (midphase - 1))
         
         spacing = pi / nleds
         for led in range(0, nleds):
-            adelta = (eangle - sangle - spacing) / (nleds - 1)
+            if variant == 3:
+                adelta = (eangle - sangle) / (nleds)
+            else:
+                adelta = (eangle - sangle - spacing) / (nleds - 1)
             lit = False
+            glowlit = False
+            glowval = 0.5
             hilite = False
             lvalue = led * 1.0 / (nleds - 1)
             pvalue = phase * 1.0 / (phases - 1)
+            if variant == 3: 
+                # XXXKF works only for phases = 2 * leds
+                exled = phase / 2.0
+                lit = led == exled or (phase == phases - 1 and led == 0)
+                glowlit = led == (exled + 0.5) or led == (exled - 0.5)
+                glowval = 0.8
+                hilite = (phase % ((phases - 1) / 4)) == 0
             if variant == 0: lit = (pvalue == 1.0) or pvalue > lvalue
             if variant == 1: 
                 if led == midled:
                     lit = (phase == midphase)
+                    #glowlit = (phase < midphase and thresholdN >= midled - 1) or (phase > midphase and thresholdP <= midled + 1)
+                    glowlit = False
                     hilite = True
                 elif led > midled and phase > midphase:
                     # led = [midled + 1, nleds - 1]
                     # phase = [midphase + 1, phases - 1]
                     lit = led <= thresholdP
+                    glowlit = led <= thresholdP + 1
+                    glowval = 0.4
                 elif led < midled and phase < midphase:
                     lit = led >= thresholdN
+                    glowlit = led >= thresholdN - 1
+                    glowval = 0.4
                 else:
                     lit = False
             if variant == 2: lit = pvalue == 0 or pvalue < lvalue
             if not lit:
-                ctx.set_source_rgb(0, 0, 0)
+                if not glowlit:
+                    ctx.set_source_rgb(0, 0, 0)
+                else:
+                    ctx.set_source_rgb(1 * glowval, 0.5 * glowval, 0)
             else:
                 if hilite:
                     ctx.set_source_rgb(1, 1, 0)
                 else:
                     ctx.set_source_rgb(1, 0.5, 0)
             ctx.set_line_width(3)
+            if hilite:
+                ctx.set_line_width(4)
             ctx.arc(x, y, radius, sangle + adelta * led, sangle + adelta * led + spacing)
             ctx.stroke()
 

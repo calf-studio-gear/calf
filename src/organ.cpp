@@ -40,11 +40,11 @@ using namespace std;
             "<knob   attach-x=\"" no "\" attach-y=\"3\" param=\"f" no "\"/>" \
             "<value  attach-x=\"" no "\" attach-y=\"4\" param=\"f" no "\"/>" \
             "<combo  attach-x=\"" no "\" attach-y=\"5\" param=\"w" no "\"/>" \
-            "<knob   attach-x=\"" no "\" attach-y=\"6\" param=\"detune" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"6\" param=\"detune" no "\" type=\"1\"/>" \
             "<value  attach-x=\"" no "\" attach-y=\"7\" param=\"detune" no "\"/>" \
-            "<knob   attach-x=\"" no "\" attach-y=\"8\" param=\"phase" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"8\" param=\"phase" no "\" type=\"3\"/>" \
             "<value  attach-x=\"" no "\" attach-y=\"9\" param=\"phase" no "\"/>" \
-            "<knob   attach-x=\"" no "\" attach-y=\"10\" param=\"pan" no "\"/>" \
+            "<knob   attach-x=\"" no "\" attach-y=\"10\" param=\"pan" no "\" type=\"1\"/>" \
             "<value  attach-x=\"" no "\" attach-y=\"11\" param=\"pan" no "\"/>" \
             "<combo  attach-x=\"" no "\" attach-y=\"12\" param=\"routing" no "\"/>" 
 
@@ -283,7 +283,7 @@ const char *organ_audio_module::get_gui_xml()
                         "</vbox>"
                         "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_phase\" />"
-                            "<align><knob param=\"vib_phase\" expand=\"0\" fill=\"0\"/></align><value param=\"vib_phase\"/>"
+                            "<align><knob param=\"vib_phase\" expand=\"0\" fill=\"0\" type=\"3\"/></align><value param=\"vib_phase\"/>"
                         "</vbox>"
                         "<vbox expand=\"0\" fill=\"0\">"
                             "<label param=\"vib_mode\" />"
