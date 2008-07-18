@@ -274,7 +274,7 @@ void monosynth_audio_module::generate_waves()
 
     // XXXKF sure this is a waste of space, this will be fixed some day by better bandlimiter
     for (int i = 0 ; i < S; i++)
-        data[i] = (float)sin(i * PI / HS);
+        data[i] = (float)sin(i * M_PI / HS);
     waves[wave_sine].make(bl, data);
 
     for (int i = 0 ; i < QS; i++) {
@@ -304,43 +304,43 @@ void monosynth_audio_module::generate_waves()
     for (int i = 0; i < S; i++) {
         if (i < QS3) {
             float p = i * 1.0 / QS3;
-            data[i] = sin(PI * p * p * p);
+            data[i] = sin(M_PI * p * p * p);
         } else {
             float p = (i - QS3 * 1.0) / QS;
-            data[i] = -0.5 * sin(3 * PI * p * p);
+            data[i] = -0.5 * sin(3 * M_PI * p * p);
         }
     }
     waves[wave_test1].make(bl, data);
     for (int i = 0; i < S; i++) {
-        data[i] = exp(-i * 1.0 / HS) * sin(i * PI / HS) * cos(2 * PI * i / HS);
+        data[i] = exp(-i * 1.0 / HS) * sin(i * M_PI / HS) * cos(2 * M_PI * i / HS);
     }
     normalize_waveform(data, S);
     waves[wave_test2].make(bl, data);
     for (int i = 0; i < S; i++) {
         //int ii = (i < HS) ? i : S - i;
         int ii = HS;
-        data[i] = (ii * 1.0 / HS) * sin(i * 3 * PI / HS + 2 * PI * sin(PI / 4 + i * 4 * PI / HS)) * sin(i * 5 * PI / HS + 2 * PI * sin(PI / 8 + i * 6 * PI / HS));
+        data[i] = (ii * 1.0 / HS) * sin(i * 3 * M_PI / HS + 2 * M_PI * sin(M_PI / 4 + i * 4 * M_PI / HS)) * sin(i * 5 * M_PI / HS + 2 * M_PI * sin(M_PI / 8 + i * 6 * M_PI / HS));
     }
     waves[wave_test3].make(bl, data);
     for (int i = 0; i < S; i++) {
-        data[i] = sin(i * 2 * PI / HS + sin(i * 2 * PI / HS + 0.5 * PI * sin(i * 18 * PI / HS)) * sin(i * 1 * PI / HS + 0.5 * PI * sin(i * 11 * PI / HS)));
+        data[i] = sin(i * 2 * M_PI / HS + sin(i * 2 * M_PI / HS + 0.5 * M_PI * sin(i * 18 * M_PI / HS)) * sin(i * 1 * M_PI / HS + 0.5 * M_PI * sin(i * 11 * M_PI / HS)));
     }
     waves[wave_test4].make(bl, data);
     for (int i = 0; i < S; i++) {
-        data[i] = sin(i * 2 * PI / HS + 0.2 * PI * sin(i * 13 * PI / HS) + 0.1 * PI * sin(i * 37 * PI / HS)) * sin(i * PI / HS + 0.2 * PI * sin(i * 15 * PI / HS));
+        data[i] = sin(i * 2 * M_PI / HS + 0.2 * M_PI * sin(i * 13 * M_PI / HS) + 0.1 * M_PI * sin(i * 37 * M_PI / HS)) * sin(i * M_PI / HS + 0.2 * M_PI * sin(i * 15 * M_PI / HS));
     }
     waves[wave_test5].make(bl, data);
     for (int i = 0; i < S; i++) {
         if (i < HS)
-            data[i] = sin(i * 2 * PI / HS);
+            data[i] = sin(i * 2 * M_PI / HS);
         else
         if (i < 3 * S / 4)
-            data[i] = sin(i * 4 * PI / HS);
+            data[i] = sin(i * 4 * M_PI / HS);
         else
         if (i < 7 * S / 8)
-            data[i] = sin(i * 8 * PI / HS);
+            data[i] = sin(i * 8 * M_PI / HS);
         else
-            data[i] = sin(i * 8 * PI / HS) * (S - i) / (S / 8);
+            data[i] = sin(i * 8 * M_PI / HS) * (S - i) / (S / 8);
     }
     waves[wave_test6].make(bl, data);
     for (int i = 0; i < S; i++) {
@@ -384,7 +384,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         for (int i = 0; i < points; i++)
         {
             typedef complex<double> cfloat;
-            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * PI / srate;
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * M_PI / srate;
             cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
             biquad<float> &f = subindex ? filter2 : filter;

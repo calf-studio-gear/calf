@@ -168,7 +168,6 @@ gui_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
 static gboolean
 extra_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
 {
-    GtkButton *tb = GTK_BUTTON(button);
     strip->main_win->owner->remove_plugin(strip->plugin);
     return TRUE;
 }

@@ -29,21 +29,34 @@ namespace dsp {
 
 using namespace std;
 
+/// Set a float to zero
 inline void zero(float &v) {
     v = 0;
 };
 
+/// Set a double to zero
 inline void zero(double &v) {
     v = 0;
 };
 
+/// Set 64-bit unsigned integer value to zero
+inline void zero(uint64_t &v) { v = 0; };
+/// Set 32-bit unsigned integer value to zero
 inline void zero(uint32_t &v) { v = 0; };
+/// Set 16-bit unsigned integer value to zero
 inline void zero(uint16_t &v) { v = 0; };
+/// Set 8-bit unsigned integer value to zero
 inline void zero(uint8_t &v) { v = 0; };
+/// Set 64-bit signed integer value to zero
+inline void zero(int64_t &v) { v = 0; };
+/// Set 32-bit signed integer value to zero
 inline void zero(int32_t &v) { v = 0; };
+/// Set 16-bit signed integer value to zero
 inline void zero(int16_t &v) { v = 0; };
+/// Set 8-bit signed integer value to zero
 inline void zero(int8_t &v) { v = 0; };
 
+/// Set array (buffer or anything similar) to vector of zeroes
 template<class T>
 void zero(T *data, unsigned int size) {
     T value;
@@ -52,8 +65,6 @@ void zero(T *data, unsigned int size) {
         *data++ = value;
 }
 
-const double PI = 4.0 * atan(1.0);
-    
 template<class T = float>struct stereo_sample {
     T left;
     T right;
@@ -137,21 +148,25 @@ template<class T = float>struct stereo_sample {
     }
 };
 
+/// Multiply constant by stereo_value
 template<class T>
 inline stereo_sample<T> operator*(const T &value, const stereo_sample<T> &value2) {
     return stereo_sample<T>(value2.left*value, value2.right*value);
 }
 
+/// Add constant to stereo_value
 template<class T>
 inline stereo_sample<T> operator+(const T &value, const stereo_sample<T> &value2) {
     return stereo_sample<T>(value2.left+value, value2.right+value);
 }
 
+/// Subtract stereo_value from constant (yields stereo_value of course)
 template<class T>
 inline stereo_sample<T> operator-(const T &value, const stereo_sample<T> &value2) {
     return stereo_sample<T>(value-value2.left, value-value2.right);
 }
 
+/// Shift value right by 'bits' bits (multiply by 2^-bits)
 template<typename T>
 inline stereo_sample<T> shr(stereo_sample<T> v, int bits = 1) {
     v.left = shr(v.left, bits);
@@ -159,37 +174,44 @@ inline stereo_sample<T> shr(stereo_sample<T> v, int bits = 1) {
     return v;
 }
 
+/// Set a stereo_sample<T> value to zero
 template<typename T> 
 inline void zero(stereo_sample<T> &v) {
     dsp::zero(v.left);
     dsp::zero(v.right);
 }
 
+/// 'Small value' for integer and other types
 template<typename T>
 inline T small_value() {
     return 0;
 }
 
+/// 'Small value' for floats (2^-24) - used for primitive underrun prevention. The value is pretty much arbitrary (allowing for 24-bit signals normalized to 1.0).
 template<>
 inline float small_value<float>() {
     return (1.0/16777216.0); // allows for 2^-24, should be enough for 24-bit DACs at least :)
 }
 
+/// 'Small value' for doubles (2^-24) - used for primitive underrun prevention. The value is pretty much arbitrary.
 template<>
 inline double small_value<double>() {
     return (1.0/16777216.0);
 }
 
+/// Convert a single value to single value = do nothing :) (but it's a generic with specialisation for stereo_sample)
 template<typename T> 
 inline float mono(T v) {
     return v;
 }
 
+/// Convert a stereo_sample to single value by averaging two channels
 template<typename T> 
 inline T mono(stereo_sample<T> v) {
     return shr(v.left+v.right);
 }
 
+/// Clip a value to [min, max]
 template<typename T> 
 inline T clip(T value, T min, T max) {
     if (value < min) return min;
@@ -197,35 +219,41 @@ inline T clip(T value, T min, T max) {
     return value;
 }
 
+/// Clip a double to [-1.0, +1.0]
 inline double clip11(double value) {
     double a = fabs(value);
     if (a<=1) return value;
     return (a<0) ? -1.0 : 1.0;
 }
 
+/// Clip a float to [-1.0f, +1.0f]
 inline float clip11(float value) {
     float a = fabsf(value);
     if (a<=1) return value;
     return (a<0) ? -1.0f : 1.0f;
 }
 
+/// Clip a double to [0.0, +1.0]
 inline double clip01(double value) {
     double a = fabs(value-0.5);
     if (a<=0.5) return value;
     return (a<0) ? -0.0 : 1.0;
 }
 
+/// Clip a float to [0.0f, +1.0f]
 inline float clip01(float value) {
     float a = fabsf(value-0.5f);
     if (a<=0.5f) return value;
     return (a<0) ? -0.0f : 1.0f;
 }
 
+// Linear interpolation (mix-way between v1 and v2).
 template<typename T, typename U>
 inline T lerp(T v1, T v2, U mix) {
     return v1+(v2-v1)*mix;
 }
 
+// Linear interpolation for stereo values (mix-way between v1 and v2).
 template<typename T>
 inline stereo_sample<T> lerp(stereo_sample<T> &v1, stereo_sample<T> &v2, float mix) {
     return stereo_sample<T>(v1.left+(v2.left-v1.left)*mix, v1.right+(v2.right-v1.right)*mix);
@@ -421,6 +449,12 @@ inline int fastf2i_drm(float f)
 	volatile int v;
 	__asm ( "flds %1; fistpl %0" : "=m"(v) : "m"(f));
 	return v;
+}
+
+/// Convert MIDI note to frequency in Hz.
+inline float note_to_hz(double note)
+{
+    return 440 * pow(2.0, (note - 69) / 12.0);
 }
 
 };

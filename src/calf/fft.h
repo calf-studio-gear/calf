@@ -49,7 +49,7 @@ public:
             scramble[i]=v;
         }
         int N90 = N >> 2;
-        T divN = 2 * PI / N;
+        T divN = 2 * M_PI / N;
         // use symmetry
         for (int i=0; i<N90; i++)
         {

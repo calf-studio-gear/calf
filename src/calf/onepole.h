@@ -42,10 +42,10 @@ public:
     {
         //   x   x
         //  x+1 x-1
-		Coeff x = tan (PI * fc / (2 * sr));
+        Coeff x = tan (M_PI * fc / (2 * sr));
         Coeff q = 1/(1+x);
-		a0 = a1 = x*q;
-		b1 = (x-1)*q;
+	a0 = a1 = x*q;
+	b1 = (x-1)*q;
     }
     
     /// Set coefficients for an allpass filter
@@ -53,9 +53,9 @@ public:
     {
         // x-1  x+1
         // x+1  x-1
-		Coeff x = tan (PI * fc / (2 * sr));
-		Coeff q = 1/(1+x);
-		b1 = a0 = (x-1)*q;
+	Coeff x = tan (M_PI * fc / (2 * sr));
+	Coeff q = 1/(1+x);
+	b1 = a0 = (x-1)*q;
         a1 = 1;
     }
     
@@ -65,9 +65,9 @@ public:
     {
         // x-1  x+1
         // x+1  x-1
-		Coeff x = tan (w);
-		Coeff q = 1/(1+x);
-		b1 = a0 = (x-1)*q;
+	Coeff x = tan (w);
+	Coeff q = 1/(1+x);
+	b1 = a0 = (x-1)*q;
         a1 = 1;
     }
     
@@ -76,11 +76,11 @@ public:
     {
         //   x   -x
         //  x+1  x-1
-		Coeff x = tan (PI * fc / (2 * sr));
-		Coeff q = 1/(1+x);
-		a0 = q;
+	Coeff x = tan (M_PI * fc / (2 * sr));
+	Coeff q = 1/(1+x);
+	a0 = q;
         a1 = -a0;
-		b1 = (x-1)*q;
+	b1 = (x-1)*q;
     }
     
     /// Process one sample

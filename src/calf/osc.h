@@ -28,15 +28,22 @@
 namespace synth
 {
 
-/// Very simple, non-bandlimited saw oscillator. Should not be used for anything
-/// else than testing/prototyping.
+/** Very simple, non-bandlimited saw oscillator. Should not be used for anything
+ *  else than testing/prototyping. Unless get() function is replaced with something
+ * with "proper" oscillator code, as the frequency setting function is fine.
+ */
 struct simple_oscillator
 {
-    uint32_t phase, phasedelta;
+    /// Phase (from 0 to 0xFFFFFFFF)
+    uint32_t phase;
+    /// Per-sample phase delta (phase increment), equal to 2^32*freq/sr.
+    uint32_t phasedelta;
+    /// Reset oscillator phase to zero.
     void reset()
     {
         phase = 0;
     }
+    /// Set phase delta based on oscillator frequency and sample rate.
     void set_freq(float freq, float sr)
     {
         phasedelta = (int)(freq * 65536.0 * 256.0 * 16.0 / sr) << 4;
@@ -49,6 +56,11 @@ struct simple_oscillator
     }
 };
 
+/**
+ * FFT-based bandlimiting helper class. Allows conversion between time and frequency domains and generating brickwall filtered
+ * versions of a waveform given a pre-computed spectrum.
+ * Waveform size must be a power of two, and template argument SIZE_BITS is log2 of waveform size.
+ */
 template<int SIZE_BITS>
 struct bandlimiter
 {
@@ -61,6 +73,7 @@ struct bandlimiter
     
     std::complex<float> spectrum[SIZE];
     
+    /// Import time domain waveform and calculate spectrum from it
     void compute_spectrum(float input[SIZE])
     {
         dsp::fft<float, SIZE_BITS> &fft = get_fft();
@@ -71,6 +84,7 @@ struct bandlimiter
         delete []data;
     }
     
+    /// Generate the waveform from the contained spectrum.
     void compute_waveform(float output[SIZE])
     {
         dsp::fft<float, SIZE_BITS> &fft = get_fft();
@@ -87,7 +101,7 @@ struct bandlimiter
         spectrum[0] = 0.f;
     }
     
-    /// very basic bandlimiting (brickwall filter)
+    /// Very basic bandlimiting (brickwall filter)
     /// might need to be improved much in future!
     void make_waveform(float output[SIZE], int cutoff, bool foldover = false)
     {
@@ -95,9 +109,15 @@ struct bandlimiter
         vector<std::complex<float> > new_spec, iffted;
         new_spec.resize(SIZE);
         iffted.resize(SIZE);
-        for (int i = 0; i < cutoff; i++)
+        // Copy original harmonics up to cutoff point
+        new_spec[0] = spectrum[0];
+        for (int i = 1; i < cutoff; i++)
             new_spec[i] = spectrum[i], 
-            new_spec[SIZE - 1 - i] = spectrum[SIZE - 1 - i];
+            new_spec[SIZE - i] = spectrum[SIZE - i];
+        // Fill the rest with zeros, optionally folding over harmonics over the
+        // cutoff point into the lower octaves while halving the amplitude.
+        // (I think it is almost nice for bell type waveforms when the original
+        // waveform has few widely spread harmonics)
         if (foldover)
         {
             std::complex<float> half(0.5);
@@ -116,6 +136,7 @@ struct bandlimiter
                 new_spec[i] = 0.f,
                 new_spec[SIZE - 1 - i] = 0.f;
         }
+        // convert back to time domain (IFFT) and extract only real part
         fft.calculate(new_spec.data(), iffted.data(), true);
         for (int i = 0; i < SIZE; i++)
             output[i] = iffted[i].real();
@@ -132,6 +153,8 @@ struct waveform_family: public map<uint32_t, float *>
     using map<uint32_t, float *>::lower_bound;
     float original[SIZE];
     
+    /// Fill the family using specified bandlimiter and original waveform. Optionally apply foldover. 
+    /// Does not produce harmonics over specified limit (limit = (SIZE / 2) / min_number_of_harmonics)
     void make(bandlimiter<SIZE_BITS> &bl, float input[SIZE], bool foldover = false, uint32_t limit = SIZE / 2)
     {
         memcpy(original, input, sizeof(original));
@@ -139,6 +162,8 @@ struct waveform_family: public map<uint32_t, float *>
         make_from_spectrum(bl, foldover);
     }
     
+    /// Fill the family using specified bandlimiter and spectrum contained within. Optionally apply foldover. 
+    /// Does not produce harmonics over specified limit (limit = (SIZE / 2) / min_number_of_harmonics)
     void make_from_spectrum(bandlimiter<SIZE_BITS> &bl, bool foldover = false, uint32_t limit = SIZE / 2)
     {
         bl.remove_dc();
@@ -153,6 +178,7 @@ struct waveform_family: public map<uint32_t, float *>
         }
     }
     
+    /// Retrieve waveform pointer suitable for specified phase_delta
     inline float *get_level(uint32_t phase_delta)
     {
         iterator i = upper_bound(phase_delta);
@@ -161,6 +187,7 @@ struct waveform_family: public map<uint32_t, float *>
         // printf("Level = %08x\n", i->first);
         return i->second;
     }
+    /// Destructor, deletes the waveforms and removes them from the map.
     ~waveform_family()
     {
         for (iterator i = begin(); i != end(); i++)
@@ -169,6 +196,12 @@ struct waveform_family: public map<uint32_t, float *>
     }
 };
 
+/**
+ * Simple table-based lerping oscillator. Uses waveform of size 2^SIZE_BITS.
+ * Combine with waveform_family if bandlimited waveforms are needed. Because
+ * of linear interpolation, it's usually a good idea to use large tables
+ * (2048-4096 points), otherwise aliasing may be produced.
+ */
 template<int SIZE_BITS>
 struct waveform_oscillator: public simple_oscillator
 {
@@ -183,6 +216,7 @@ struct waveform_oscillator: public simple_oscillator
     }
 };
 
+/// Simple stupid inline function to normalize a waveform (by removing DC offset and ensuring max absolute value of 1).
 static inline void normalize_waveform(float *table, unsigned int size)
 {
     float dc = 0;
@@ -196,8 +230,9 @@ static inline void normalize_waveform(float *table, unsigned int size)
         thismax = std::max(thismax, fabs(table[i]));
     if (thismax < 0.000001f)
         return;
+    double divv = 1.0 / thismax;
     for (unsigned int i = 0; i < size; i++)
-        table[i] /= thismax;
+        table[i] *= divv;
 }
 
 

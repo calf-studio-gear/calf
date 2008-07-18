@@ -62,7 +62,7 @@ public:
      */
     inline void set_lp_rbj(float fc, float q, float sr, float gain = 1.0)
     {
-        float omega=(float)(2*PI*fc/sr);
+        float omega=(float)(2*M_PI*fc/sr);
         float sn=sin(omega);
         float cs=cos(omega);
         float alpha=(float)(sn/(2*q));
@@ -81,7 +81,7 @@ public:
     // from how it looks, it perhaps uses bilinear transform - but who knows :)
     inline void set_lp_zoelzer(float fc, float q, float odsr, float gain=1.0)
     {
-        Coeff omega=(Coeff)(PI*fc*odsr);
+        Coeff omega=(Coeff)(M_PI*fc*odsr);
         Coeff omega2=omega*omega;
         Coeff K=omega*(1+omega2*omega2*Coeff(1.0/1.45));
         Coeff KK=K*K;
@@ -96,7 +96,7 @@ public:
 
     void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(float)(2*PI*fc/esr);
+        Coeff omega=(float)(2*M_PI*fc/esr);
 		Coeff sn=sin(omega);
 		Coeff cs=cos(omega);
         Coeff alpha=(float)(sn/(2*q));
@@ -113,7 +113,7 @@ public:
     // this replaces sin/cos with polynomial approximation
     void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(float)(2*PI*fc/esr);
+        Coeff omega=(float)(2*M_PI*fc/esr);
 		Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
 		Coeff cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
         Coeff alpha=(float)(sn/(2*q));
@@ -130,7 +130,7 @@ public:
     // rbj's bandpass
     void set_bp_rbj(double fc, double q, double esr, double gain=1.0)
     {
-        float omega=(float)(2*PI*fc/esr);
+        float omega=(float)(2*M_PI*fc/esr);
         float sn=sin(omega);
         float cs=cos(omega);
         float alpha=(float)(sn/(2*q));
@@ -147,7 +147,7 @@ public:
     // rbj's bandreject
     void set_br_rbj(double fc, double q, double esr, double gain=1.0)
     {
-        float omega=(float)(2*PI*fc/esr);
+        float omega=(float)(2*M_PI*fc/esr);
         float sn=sin(omega);
         float cs=cos(omega);
         float alpha=(float)(sn/(2*q));
@@ -161,28 +161,28 @@ public:
         b2 =  (Coeff)((1 - alpha)*inv);
     }
     // this is mine (and, I guess, it sucks/doesn't work)
-	void set_allpass(float freq, float pole_r, float sr)
-	{
-		float a=prewarp(freq, sr);
-		float q=pole_r;
-		set_bilinear(a*a+q*q, -2.0f*a, 1, a*a+q*q, 2.0f*a, 1);
-	}
-    // prewarping for bilinear transform, maps given digital frequency to analog counterpart for analog filter design
-	float prewarp(float freq, float sr)
-	{
-		if (freq>sr*0.49) freq=(float)(sr*0.49);
-		return (float)(tan(3.1415926*freq/sr));
-	}
-    // set digital filter parameters based on given analog filter parameters
-	void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)
-	{
-		float q=(float)(1.0/(ab0+ab1+ab2));
-		a0 = (aa0+aa1+aa2)*q;
-		a1 = 2*(aa0-aa2)*q;
-		a2 = (aa0-aa1+aa2)*q;
-		b1 = 2*(ab0-ab2)*q;
-		b2 = (ab0-ab1+ab2)*q;
-	}
+    void set_allpass(float freq, float pole_r, float sr)
+    {
+            float a=prewarp(freq, sr);
+            float q=pole_r;
+            set_bilinear(a*a+q*q, -2.0f*a, 1, a*a+q*q, 2.0f*a, 1);
+    }
+    /// prewarping for bilinear transform, maps given digital frequency to analog counterpart for analog filter design
+    float prewarp(float freq, float sr)
+    {
+            if (freq>sr*0.49) freq=(float)(sr*0.49);
+            return (float)(tan(M_PI*freq/sr));
+    }
+    /// set digital filter parameters based on given analog filter parameters
+    void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)
+    {
+            float q=(float)(1.0/(ab0+ab1+ab2));
+            a0 = (aa0+aa1+aa2)*q;
+            a1 = 2*(aa0-aa2)*q;
+            a2 = (aa0-aa1+aa2)*q;
+            b1 = 2*(ab0-ab2)*q;
+            b2 = (ab0-ab1+ab2)*q;
+    }
     
     template<class U>
     inline void copy_coeffs(const biquad<U> &src)
