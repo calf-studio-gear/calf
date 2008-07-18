@@ -364,7 +364,7 @@ calf_knob_size_request (GtkWidget *widget,
 {
     g_assert(CALF_IS_KNOB(widget));
     
-    CalfKnob *self = CALF_KNOB(widget);
+    // width/height is hardwired at 40px now
     requisition->width = 40;
     requisition->height = 40;
 }
@@ -376,9 +376,6 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
     
-    float oldvalue = adj->value;
-
-    float halfrange = (adj->upper + adj->lower) / 2;
     int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
     int step;
     int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
@@ -401,7 +398,6 @@ static gboolean
 calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
 {
     g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
 
     switch(event->keyval)
