@@ -102,14 +102,14 @@ static const char *units[] = {
     "ue:hz",
     "ue:s",
     "ue:ms",
-    "ue2:cent", // - ask SWH (or maybe ue2: and write the extension by myself)
-    "ue2:semitone12TET", // - ask SWH
+    "ue:cent", // - ask SWH (or maybe ue2: and write the extension by myself)
+    "ue:semitone12TET", // - ask SWH
     "ue:bpm",
-    "ue2:degree", // - ask SWH
-    "ue2:midiNote" // - ask SWH
+    "ue:degree",
+    "ue:midiNote" // question to SWH: the extension says midiNode, but that must be a typo
 };
 
-static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
+static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, giface_plugin_info *gpi, int param)
 {
     stringstream ss;
     const char *ind = "        ";
@@ -122,6 +122,18 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << pp.short_name << "\" ;\n";
     ss << ind << "lv2:name \"" << pp.name << "\" ;\n";
+    if ((pp.flags & PF_CTLMASK) == PF_CTL_BUTTON)
+        ss << ind << "lv2:portProperty epp:trigger ;\n";
+    if (!(pp.flags & PF_PROP_NOBOUNDS))
+        ss << ind << "lv2:portProperty epp:hasStrictBounds ;\n";
+    if (pp.flags & PF_PROP_EXPENSIVE)
+        ss << ind << "lv2:portProperty epp:expensive ;\n";
+    if ((*gpi->is_noisy)(param))
+        ss << ind << "lv2:portProperty epp:causesArtifacts ;\n";
+    if (!(*gpi->is_cv)(param))
+        ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
+    if (pp.flags & PF_PROP_OUTPUT_GAIN)
+        ss << ind << "lv2:portProperty epp:outputGain ;\n";
     if ((pp.flags & PF_TYPEMASK) == PF_BOOL)
         ss << ind << "lv2:portProperty lv2:toggled ;\n";
     else if ((pp.flags & PF_TYPEMASK) == PF_ENUM)
@@ -139,6 +151,11 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx)
     uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
     if (unit > 0 && unit < (sizeof(units) / sizeof(char *)))
         ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
+    
+    // for now I assume that the only tempo passed is the tempo the plugin should operate with
+    // this may change as more complex plugins are added
+    if (unit == PF_UNIT_BPM)
+        ss << ind << "lv2:portProperty epp:reportsBpm ;\n";
     
     ss << "    ]";
     ports += ss.str();
@@ -158,7 +175,7 @@ void make_ttl(string path_prefix)
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
         "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
-        "@prefix ue2: <http://lv2plug.in/ns/dev/moreunits#> .\n"
+        "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
 
         "\n"
     ;
@@ -192,11 +209,12 @@ void make_ttl(string path_prefix)
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
-        string ttl = header;
         synth::giface_plugin_info &pi = plugins[i];
-        ttl += string("<http://calf.sourceforge.net/plugins/") 
-            + string(pi.info->label)
-            + "> a lv2:Plugin ;\n";
+        string uri = string("<http://calf.sourceforge.net/plugins/")  + string(pi.info->label) + ">";
+        string ttl;
+        ttl = "@prefix : " + uri + " .\n" + header;
+        
+        ttl += uri + " a lv2:Plugin ;\n";
         
         if (classes.count(pi.info->plugin_type))
             ttl += "    a " + classes[pi.info->plugin_type]+" ;\n";
@@ -209,6 +227,8 @@ void make_ttl(string path_prefix)
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
+        // XXXKF not really optional for now, to be honest
+        ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
         if (pi.rt_capable)
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
         if (pi.midi_in_capable)
@@ -224,7 +244,7 @@ void make_ttl(string path_prefix)
         for (int i = 0; i < pi.outputs; i++)
             add_port(ports, out_names[i], out_names[i], "Output", pn++);
         for (int i = 0; i < pi.params; i++)
-            add_ctl_port(ports, pi.param_props[i], pn++);
+            add_ctl_port(ports, pi.param_props[i], pn++, &pi, i);
         if (pi.midi_in_capable) {
             add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
         }

@@ -50,6 +50,10 @@ public:
     inline static const char *get_gui_xml() { return NULL; }
     inline static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
     inline static plugin_command_info *get_commands() { return NULL; }
+    /// does parameter number represent a CV port? (yes by default, except for synths)
+    static bool is_cv(int param_no) { return true; }
+    /// does parameter change cause an audible click?
+    static bool is_noisy(int param_no) { return false; }
     inline void execute(int cmd_no) {}
 };
 
@@ -299,6 +303,8 @@ public:
         order = 0;
     }
     
+    /// do not export mode and inertia as CVs, as those are settings and not parameters
+    inline static bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
     void calculate_filter()
     {
         float freq = inertia_cutoff.get_last();

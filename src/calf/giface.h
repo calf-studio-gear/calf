@@ -58,26 +58,30 @@ enum parameter_flags
   PF_ENUM = 0x0003,
   PF_ENUM_MULTI = 0x0004, 
   
-  PF_SCALEMASK = 0x0FF0,
-  PF_SCALE_DEFAULT = 0x0000, ///< no scale given
-  PF_SCALE_LINEAR = 0x0010, ///< linear scale
-  PF_SCALE_LOG = 0x0020, ///< log scale
-  PF_SCALE_GAIN = 0x0030, ///< gain = -96dB..0 or -inf dB
-  PF_SCALE_PERC = 0x0040, ///< percent
-  PF_SCALE_QUAD = 0x0050, ///< quadratic scale (decent for some gain/amplitude values)
+  PF_SCALEMASK = 0xF0,
+  PF_SCALE_DEFAULT = 0x00, ///< no scale given
+  PF_SCALE_LINEAR = 0x10, ///< linear scale
+  PF_SCALE_LOG = 0x20, ///< log scale
+  PF_SCALE_GAIN = 0x30, ///< gain = -96dB..0 or -inf dB
+  PF_SCALE_PERC = 0x40, ///< percent
+  PF_SCALE_QUAD = 0x50, ///< quadratic scale (decent for some gain/amplitude values)
 
-  PF_CTLMASK = 0x0F000,
-  PF_CTL_DEFAULT = 0x00000,
-  PF_CTL_KNOB = 0x01000,
-  PF_CTL_FADER = 0x02000,
-  PF_CTL_TOGGLE = 0x03000,
-  PF_CTL_COMBO = 0x04000,
-  PF_CTL_RADIO = 0x05000,
-  PF_CTL_BUTTON = 0x06000,
+  PF_CTLMASK =     0x0F00,
+  PF_CTL_DEFAULT = 0x0000,
+  PF_CTL_KNOB =    0x0100,
+  PF_CTL_FADER =   0x0200,
+  PF_CTL_TOGGLE =  0x0300,
+  PF_CTL_COMBO =   0x0400,
+  PF_CTL_RADIO =   0x0500,
+  PF_CTL_BUTTON =  0x0600,
   
-  PF_CTLOPTIONS = 0xFF0000,
-  PF_CTLO_HORIZ = 0x010000,
-  PF_CTLO_VERT = 0x020000,
+  PF_CTLOPTIONS     = 0x00F000,
+  PF_CTLO_HORIZ     = 0x001000,
+  PF_CTLO_VERT      = 0x002000,
+
+  PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
+  PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation
+  PF_PROP_OUTPUT_GAIN=0x050000, ///< epp:outputGain + skip epp:hasStrictBounds
   
   PF_UNITMASK = 0xFF000000,
   PF_UNIT_DB = 0x01000000,
@@ -167,6 +171,8 @@ struct giface_plugin_info
     int inputs, outputs, params;
     bool rt_capable, midi_in_capable;
     parameter_properties *param_props;
+    bool (*is_cv)(int param_no);
+    bool (*is_noisy)(int param_no);
 };
 
 extern void get_all_plugins(std::vector<giface_plugin_info> &plugins);

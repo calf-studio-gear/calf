@@ -160,11 +160,15 @@ public:
     /// Retrieve waveform graph (which does not need information about synth state)
     static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context);
     /// @retval true if the filter 1 is to be used for the left channel and filter 2 for the right channel
-    /// @retval false if filters are to be connected in series and sent (mono) to both channels
+    /// @retval false if filters are to be connected in series and sent (mono) to both channels    
     inline bool is_stereo_filter() const
     {
         return filter_type == flt_2lp12 || filter_type == flt_2bp6;
     }
+    /// No CV inputs for now
+    static bool is_cv(int param_no) { return false; }
+    /// Practically all the stuff here is noisy
+    static bool is_noisy(int param_no) { return true; }
     /// Calculate control signals and produce step_size samples of output.
     void calculate_step();
     /// Main processing function
@@ -259,6 +263,10 @@ public:
         render_separate(o, nsamples);
         return 3;
     }
+    /// No CV inputs for now
+    static bool is_cv(int param_no) { return false; }
+    /// Practically all the stuff here is noisy
+    static bool is_noisy(int param_no) { return true; }
     void execute(int cmd_no);
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     static const char *get_name() { return "organ"; }    
