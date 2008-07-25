@@ -895,7 +895,8 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
 
         string sv = ss.str();
         string prefix = ch == ' ' ? string() : string("_")+ch+" ";
-        GtkActionEntry ae = { sv.c_str(), NULL, (prefix + pvec[i].name).c_str(), NULL, NULL, (GCallback)activate_preset };
+        string name = prefix + pvec[i].name;
+        GtkActionEntry ae = { sv.c_str(), NULL, name.c_str(), NULL, NULL, (GCallback)activate_preset };
         gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i, builtin), action_destroy_notify);
     }
     preset_xml += preset_post_xml;
