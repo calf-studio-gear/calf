@@ -52,8 +52,13 @@ struct organ_parameters {
     float foldover;
     float percussion_time;
     float percussion_level;
-    float percussion_timbre;
+    float percussion_wave;
+    float percussion_harmonic;
+    float percussion_fm_wave;
+    float percussion_fm_harmonic;
+    float percussion_fm_depth;
     float percussion_trigger;
+    float percussion_vel2amp;
     float filter_chain;
     float master;
     
@@ -74,7 +79,8 @@ struct organ_parameters {
     
     organ_parameters() : pitch_bend(1.0f) {}
 
-    inline int get_percussion_timbre() { return dsp::fastf2i_drm(percussion_timbre); }
+    inline int get_percussion_wave() { return dsp::fastf2i_drm(percussion_wave); }
+    inline int get_percussion_fm_wave() { return dsp::fastf2i_drm(percussion_fm_wave); }
 };
 
 #define ORGAN_WAVE_BITS 12
@@ -237,7 +243,7 @@ public:
 class percussion_voice: public organ_voice_base {
 public:
     int sample_rate;
-    dsp::fixed_point<int64_t, 20> phase, dphase;
+    dsp::fixed_point<int64_t, 20> phase, modphase, dphase, moddphase;
     dsp::biquad<float> filter;
 
     percussion_voice(organ_parameters *_parameters)
@@ -247,73 +253,32 @@ public:
     
     void reset() {
         phase = 0;
+        modphase = 0;
         note = -1;
     }
 
-    void note_on(int note, int /*vel*/) {
+    void note_on(int note, int vel) {
         // do not reset phase if voice is still running (to prevent clicks, even at cost of slight loss of "percussiveness")
         if (!amp.get_active())
         {
             phase = 0;
+            modphase = 0;
             filter.reset_d1();
         }
         this->note = note;
-        amp.set(1.0f);
+        amp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
         update_pitch();
     }
     
     void update_pitch()
     {
-        int timbre = parameters->get_percussion_timbre();
-        static const int harm_muls[8] = { 1, 2, 3, 4, 8, 1, 2, 4 };
-        dphase.set(synth::midi_note_to_phase(note, 0, sample_rate) * harm_muls[timbre] * parameters->pitch_bend);
+        float phase = synth::midi_note_to_phase(note, 0, sample_rate);
+        dphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
+        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
     }
 
     // this doesn't really have a voice interface
-    void render_to(float (*buf)[2], int nsamples) {
-        if (note == -1)
-            return;
-
-        if (!amp.get_active())
-            return;
-        if (parameters->percussion_level < small_value<float>())
-            return;
-        static const organ_waveform wave_ids[] = { wave_sine, wave_sine, wave_sine, wave_bell, wave_bell, wave_sqr, wave_sqr, wave_sqr };
-        float level = parameters->percussion_level * 9;
-        // XXXKF the decay needs work!
-        double age_const = parameters->perc_decay_const;
-        int timbre = parameters->get_percussion_timbre();
-        if (timbre < 0 || timbre >= (int)(sizeof(wave_ids) / sizeof(wave_ids[0])))
-            return;
-        float *data = (*waves)[wave_ids[timbre]].get_level(dphase.get());
-        if (!data)
-            return;
-        if (timbre < 3)
-        {
-            for (int i = 0; i < nsamples; i++) {
-                float osc = level * wave(data, phase);
-                osc *= level * amp.get();
-                buf[i][0] += osc;
-                buf[i][1] += osc;
-                amp.age_exp(age_const, 1.0 / 32768.0);
-                phase += dphase;
-            }
-        }
-        else
-        {
-            float av = amp.get();
-            filter.set_lp_rbj(400 + 5000 * (av * 0.2 + av * av * 0.8), 0.707, sample_rate);
-            for (int i = 0; i < nsamples; i++) {
-                float osc = filter.process_d1(level * wave(data, phase));
-                osc *= level * amp.get();
-                buf[i][0] += osc;
-                buf[i][1] += osc;
-                amp.age_exp(age_const, 1.0 / 32768.0);
-                phase += dphase;
-            }
-            filter.sanitize_d1();
-        }
-    }
+    void render_to(float (*buf)[2], int nsamples);
     bool get_active() {
         return (note != -1) && amp.get_active();
     }
@@ -339,7 +304,7 @@ struct drawbar_organ: public synth::basic_synth {
         par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
         par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
         par_foldover,
-        par_percdecay, par_perclevel, par_perctimbre, par_perctrigger,
+        par_percdecay, par_perclevel, par_percwave, par_percharm, par_percfmwave, par_percfmharm, par_percfmdepth, par_perctrigger, par_percvel2amp,
         par_filterchain,
         par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
