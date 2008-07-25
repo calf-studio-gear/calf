@@ -281,12 +281,12 @@ public:
     {
         dsp::zero(x1);
         dsp::zero(y1);
+        dsp::zero(x2);
+        dsp::zero(y2);
     }
     inline void reset_d2()
     {
         dsp::zero(w1);
-        dsp::zero(x2);
-        dsp::zero(y2);
         dsp::zero(w2);
     }
 };
