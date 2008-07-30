@@ -55,7 +55,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-sym
 endif
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = gui.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
+calflv2gui_la_SOURCES = gui.cpp ctl_curve.cpp ctl_keyboard.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) 
 else
@@ -67,7 +67,7 @@ libcalfstatic_la_SOURCES = modules.cpp giface.cpp monosynth.cpp organ.cpp osctl.
 libcalfstatic_la_LDFLAGS = -static -lexpat
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp main_win.cpp
+libcalfgui_la_SOURCES = gui.cpp ctl_curve.cpp ctl_keyboard.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp main_win.cpp
 libcalfgui_la_LDFLAGS = -static
 endif
 
