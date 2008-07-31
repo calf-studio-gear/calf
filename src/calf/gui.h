@@ -27,6 +27,9 @@
 #include <gtk/gtk.h>
 #include "custom_ctl.h"
 
+struct CalfKeyboard;
+struct CalfCurve;
+
 namespace synth {
 
 class plugin_gui;
@@ -119,6 +122,12 @@ struct notebook_container: public control_container
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
 };
 
+struct scrolled_container: public control_container
+{
+    virtual void add(GtkWidget *w, control_base *base);
+    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+};
+
 struct label_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -205,6 +214,24 @@ struct knob_param_control: public param_control
     virtual void get();
     virtual void set();
     static void knob_value_changed(GtkWidget *widget, gpointer value);
+};
+
+struct keyboard_param_control: public param_control
+{
+    CalfKeyboard *kb;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
+};
+
+struct curve_param_control: public param_control
+{
+    CalfCurve *curve;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
 };
 
 class plugin_gui_window;

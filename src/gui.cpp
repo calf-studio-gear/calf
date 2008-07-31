@@ -20,6 +20,8 @@
  
 #include <config.h>
 #include <assert.h>
+#include <calf/ctl_curve.h>
+#include <calf/ctl_keyboard.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
@@ -333,6 +335,35 @@ void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
     jhp->get();
 }
 
+// keyboard
+
+GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    // const parameter_properties &props = get_props();
+    
+    widget = calf_keyboard_new();
+    kb = CALF_KEYBOARD(widget);
+    kb->nkeys = get_int("octaves", 4) * 7 + 1;
+    kb->sink = new CalfKeyboard::EventTester;
+    return widget;
+}
+
+// curve
+
+GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    
+    widget = calf_curve_new();
+    curve = CALF_CURVE(widget);
+    curve->sink = new CalfCurve::EventTester;
+    // gtk_curve_set_curve_type(curve, GTK_CURVE_TYPE_LINEAR);
+    return widget;
+}
+
 // line graph
 
 void line_graph_param_control::on_idle()
@@ -573,7 +604,6 @@ GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_att
 
 /******************************** GtkNotebook container ********************************/
 
-
 GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
     GtkWidget *nb = gtk_notebook_new();
@@ -584,6 +614,27 @@ GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml
 void notebook_container::add(GtkWidget *w, control_base *base)
 {
     gtk_notebook_append_page(GTK_NOTEBOOK(container), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
+}
+
+/******************************** GtkNotebook container ********************************/
+
+GtkWidget *scrolled_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+{
+    GtkAdjustment *horiz = NULL, *vert = NULL;
+    int width = get_int("width", 0), height = get_int("height", 0);
+    if (width)
+        horiz = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("x", 0), 0, width, get_int("step-x", 1), get_int("page-x", width / 10), 100));
+    if (height)
+        vert = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("y", 0), 0, width, get_int("step-y", 1), get_int("page-y", height / 10), 10));
+    GtkWidget *sw = gtk_scrolled_window_new(horiz, vert);
+    gtk_widget_set_size_request(sw, get_int("req-x", -1), get_int("req-y", -1));
+    container = GTK_CONTAINER(sw);
+    return sw;
+}
+
+void scrolled_container::add(GtkWidget *w, control_base *base)
+{
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(container), w);
 }
 
 /******************************** GUI proper ********************************/
@@ -608,6 +659,10 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new value_param_control;
     if (!strcmp(element, "line-graph"))
         return new line_graph_param_control;
+    if (!strcmp(element, "keyboard"))
+        return new keyboard_param_control;
+    if (!strcmp(element, "curve"))
+        return new curve_param_control;
     return NULL;
 }
 
@@ -625,6 +680,8 @@ control_container *plugin_gui::create_container_from_xml(const char *element, co
         return new frame_container;
     if (!strcmp(element, "notebook"))
         return new notebook_container;
+    if (!strcmp(element, "scrolled"))
+        return new scrolled_container;
     return NULL;
 }
 
