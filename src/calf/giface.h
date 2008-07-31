@@ -145,6 +145,7 @@ struct plugin_ctl_iface
     virtual float get_level(unsigned int port)=0;
     virtual ~plugin_ctl_iface() {}
     virtual plugin_command_info *get_commands() { return NULL; }
+    virtual char *configure(const char *key, const char *value) { return NULL; }
     virtual void execute(int cmd_no)=0;
 };
 
@@ -236,6 +237,18 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual const char *get_label()
     {
         return Module::get_label();
+    }
+    virtual char *configure(const char *key, const char *value)
+    {
+        if (!strcmp(key, "ExecCommand"))
+        {
+            if (*value)
+            {
+                execute(atoi(value));
+            }
+            return NULL;
+        }
+        return Module::configure(key, value);
     }
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
@@ -498,14 +511,7 @@ struct ladspa_wrapper
 		       const char *Value)
     {
         instance *const mod = (instance *)Instance;
-        if (!strcmp(Key, "ExecCommand"))
-        {
-            if (*Value)
-            {
-                mod->execute(atoi(Value));
-            }
-        }
-        return NULL;
+        return mod->configure(Key, Value);
     }
     
     static void process_dssi_event(Module *module, snd_seq_event_t &event)

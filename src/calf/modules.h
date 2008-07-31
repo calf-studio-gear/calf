@@ -55,6 +55,7 @@ public:
     /// does parameter change cause an audible click?
     static bool is_noisy(int param_no) { return false; }
     inline void execute(int cmd_no) {}
+    inline char *configure(const char *key, const char *value) { return NULL; }
 };
 
 class amp_audio_module: public null_audio_module
