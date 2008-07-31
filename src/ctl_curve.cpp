@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <math.h>
 
+static gpointer parent_class = NULL;
+
 GtkWidget *
 calf_curve_new()
 {
@@ -83,7 +85,8 @@ calf_curve_realize(GtkWidget *widget)
     GdkWindowAttr attributes;
     attributes.event_mask = GDK_EXPOSURE_MASK | GDK_BUTTON1_MOTION_MASK | 
         GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | 
-        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK;
+        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | 
+        GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK;
     attributes.x = widget->allocation.x;
     attributes.y = widget->allocation.y;
     attributes.width = widget->allocation.width;
@@ -119,27 +122,34 @@ calf_curve_size_allocate (GtkWidget *widget,
         gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
 }
 
-static gboolean
-calf_curve_button_press (GtkWidget *widget, GdkEventButton *event)
+static int 
+find_nearest(CalfCurve *self, int ex, int ey, int &insert_pt)
 {
-    g_assert(CALF_IS_CURVE(widget));
-    CalfCurve *self = CALF_CURVE(widget);
     float dist = 5;
-    int found_pt = -1, insert_pt = -1;
-    int i;
-    for (i = 0; i < (int)self->points->size(); i++)
+    int found_pt = -1;
+    for (int i = 0; i < (int)self->points->size(); i++)
     {
         float x = (*self->points)[i].first, y = (*self->points)[i].second;
         self->log2phys(x, y);
-        float thisdist = std::max(fabs(event->x - x), fabs(event->y - y));
+        float thisdist = std::max(fabs(ex - x), fabs(ey - y));
         if (thisdist < dist)
         {
             dist = thisdist;
             found_pt = i;
         }
-        if (event->x > x)
+        if (ex > x)
             insert_pt = i + 1;
     }
+    return found_pt;
+}
+
+static gboolean
+calf_curve_button_press (GtkWidget *widget, GdkEventButton *event)
+{
+    g_assert(CALF_IS_CURVE(widget));
+    CalfCurve *self = CALF_CURVE(widget);
+    int found_pt, insert_pt = -1;
+    found_pt = find_nearest(self, event->x, event->y, insert_pt);
     if (found_pt == -1 && insert_pt != -1)
     {
         float x = event->x, y = event->y;
@@ -161,6 +171,7 @@ calf_curve_button_press (GtkWidget *widget, GdkEventButton *event)
     gtk_widget_queue_draw(widget);
     if (self->sink)
         self->sink->curve_changed(*self->points);
+    gdk_window_set_cursor(widget->window, self->hand_cursor);
     return TRUE;
 }
 
@@ -176,6 +187,7 @@ calf_curve_button_release (GtkWidget *widget, GdkEventButton *event)
     if (self->sink)
         self->sink->curve_changed(*self->points);
     gtk_widget_queue_draw(widget);
+    gdk_window_set_cursor(widget->window, self->pencil_cursor);
     return FALSE;
 }
 
@@ -183,6 +195,8 @@ static gboolean
 calf_curve_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
     g_assert(CALF_IS_CURVE(widget));
+    if (event->is_hint)
+        gdk_event_request_motions(event);
     CalfCurve *self = CALF_CURVE(widget);
     if (self->cur_pt != -1)
     {
@@ -194,12 +208,34 @@ calf_curve_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
             self->sink->curve_changed(*self->points);
         gtk_widget_queue_draw(widget);        
     }
+    else
+    {
+        int insert_pt = -1;
+        if (find_nearest(self, event->x, event->y, insert_pt) == -1)
+            gdk_window_set_cursor(widget->window, self->pencil_cursor);
+        else
+            gdk_window_set_cursor(widget->window, self->hand_cursor);
+    }
     return FALSE;
+}
+
+static void
+calf_curve_finalize (GObject *obj)
+{
+    g_assert(CALF_IS_CURVE(obj));
+    CalfCurve *self = CALF_CURVE(obj);
+    
+    delete self->points;
+    self->points = NULL;
+    
+    G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
 static void
 calf_curve_class_init (CalfCurveClass *klass)
 {
+    parent_class = g_type_class_peek_parent (klass);
+    
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->realize = calf_curve_realize;
     widget_class->expose_event = calf_curve_expose;
@@ -210,17 +246,18 @@ calf_curve_class_init (CalfCurveClass *klass)
     widget_class->motion_notify_event = calf_curve_pointer_motion;
     // widget_class->key_press_event = calf_curve_key_press;
     // widget_class->scroll_event = calf_curve_scroll;
+    
+    G_OBJECT_CLASS(klass)->finalize = calf_curve_finalize;
 }
 
 static void
 calf_curve_init (CalfCurve *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->points = new CalfCurve::point_vector;
     // XXXKF: destructor
-    self->points->push_back(CalfCurve::point(0.f, 0.f));
-    self->points->push_back(CalfCurve::point(0.5f, 0.25f));
+    self->points->push_back(CalfCurve::point(0.f, 1.f));
     self->points->push_back(CalfCurve::point(1.f, 1.f));
     self->x0 = 0.f;
     self->x1 = 1.f;
@@ -228,6 +265,52 @@ calf_curve_init (CalfCurve *self)
     self->y1 = 0.f;
     self->cur_pt = -1;
     self->hide_current = false;
+    self->pencil_cursor = gdk_cursor_new(GDK_PENCIL);
+    self->hand_cursor = gdk_cursor_new(GDK_FLEUR);
+}
+
+void CalfCurve::log2phys(float &x, float &y) {
+    x = (x - x0) / (x1 - x0) * (parent.allocation.width - 2) + 1;
+    y = (y - y0) / (y1 - y0) * (parent.allocation.height - 2) + 1;
+}
+
+void CalfCurve::phys2log(float &x, float &y) {
+    x = x0 + (x - 1) * (x1 - x0) / (parent.allocation.width - 2);
+    y = y0 + (y - 1) * (y1 - y0) / (parent.allocation.height - 2);
+}
+
+void CalfCurve::clip(int pt, float &x, float &y, bool &hide)
+{
+    float ymin = std::min(y0, y1), ymax = std::max(y0, y1);
+    float yamp = ymax - ymin;
+    hide = false;
+    if (pt != 0 && pt != (int)(points->size() - 1))
+    {
+        if (y < ymin - yamp || y > ymax + yamp)
+            hide = true;
+    }
+    if (x < x0) x = x0;
+    if (y < ymin) y = ymin;
+    if (x > x1) x = x1;
+    if (y > ymax) y = ymax;
+    if (pt == 0) x = 0;
+    if (pt == (int)(points->size() - 1))
+        x = (*points)[pt].first;
+    if (pt > 0 && x < (*points)[pt - 1].first)
+        x = (*points)[pt - 1].first;
+    if (pt < (int)(points->size() - 1) && x > (*points)[pt + 1].first)
+        x = (*points)[pt + 1].first;
+}
+
+void calf_curve_set_points(GtkWidget *widget, const CalfCurve::point_vector &src)
+{
+    g_assert(CALF_IS_CURVE(widget));
+    CalfCurve *self = CALF_CURVE(widget);
+    if (self->points->size() != src.size())
+        self->cur_pt = -1;
+    *self->points = src;
+    
+    gtk_widget_queue_draw(widget);
 }
 
 GType

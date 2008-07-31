@@ -24,6 +24,10 @@
 #include <stdint.h>
 #include <malloc.h>
 
+static const int semitones_b[] = { 1, 3, -1, 6, 8, 10, -1 };
+static const int semitones_w[] = { 0, 2, 4, 5, 7, 9, 11 };
+
+
 GtkWidget *
 calf_keyboard_new()
 {
@@ -48,22 +52,39 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
     
     for (int i = 0; i < self->nkeys; i++)
     {
-        cairo_rectangle(c, 0.5 + 12 * i, 0.5, 12, sy);
+        CalfKeyboard::KeyInfo ki = { 0.5 + 12 * i, 0.5, 12, sy, 12 * (i / 7) + semitones_w[i % 7], false };
+        cairo_new_path(c);
         gdk_cairo_set_source_color(c, &scWhiteKey);
-        cairo_fill_preserve(c);
-        gdk_cairo_set_source_color(c, &scOutline);
-        cairo_stroke(c);
+        if (!self->sink->pre_draw(c, ki))
+        {
+            cairo_rectangle(c, ki.x, ki.y, ki.width, ki.height);
+            cairo_fill_preserve(c);
+            gdk_cairo_set_source_color(c, &scOutline);
+            if (!self->sink->pre_draw_outline(c, ki))
+                cairo_stroke(c);
+            else
+                cairo_new_path(c);
+            self->sink->post_draw(c, ki);
+        }
     }
 
     for (int i = 0; i < self->nkeys - 1; i++)
     {
         if ((1 << (i % 7)) & 59)
         {
-            cairo_rectangle(c, 8 + 12 * i, 0, 8, sy * 3 / 5);
+            CalfKeyboard::KeyInfo ki = { 8.5 + 12 * i, 0.5, 8, sy * 3 / 5, 12 * (i / 7) + semitones_b[i % 7], true };
+            cairo_new_path(c);
+            cairo_rectangle(c, ki.x, ki.y, ki.width, ki.height);
             gdk_cairo_set_source_color(c, &scBlackKey);
-            cairo_fill(c);
+            if (!self->sink->pre_draw(c, ki))
+            {
+                cairo_fill(c);
+                self->sink->post_draw(c, ki);
+            }
         }
     }
+    
+    self->sink->post_all(c);
     
     cairo_destroy(c);
 
@@ -128,7 +149,7 @@ calf_keyboard_key_press (GtkWidget *widget, GdkEventKey *event)
     return FALSE;
 }
 
-static int
+int
 calf_keyboard_pos_to_note (CalfKeyboard *kb, int x, int y, int *vel = NULL)
 {
     // first try black keys
@@ -137,15 +158,13 @@ calf_keyboard_pos_to_note (CalfKeyboard *kb, int x, int y, int *vel = NULL)
         int blackkey = (x - 8) / 12;
         if (blackkey < kb->nkeys && (59 & (1 << (blackkey % 7))))
         {
-            static const int semitones[] = { 1, 3, -1, 6, 8, 10, -1 };
-            return semitones[blackkey % 7] + 12 * (blackkey / 7);
+            return semitones_b[blackkey % 7] + 12 * (blackkey / 7);
         }
     }
     // if not a black key, then which white one?
-    static const int semitones[] = { 0, 2, 4, 5, 7, 9, 11 };
     int whitekey = x / 12;
     // semitones within octave + 12 semitones per octave
-    return semitones[whitekey % 7] + 12 * (whitekey / 7);
+    return semitones_w[whitekey % 7] + 12 * (whitekey / 7);
 }
 
 static gboolean
@@ -153,7 +172,7 @@ calf_keyboard_button_press (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_KEYBOARD(widget));
     CalfKeyboard *self = CALF_KEYBOARD(widget);
-    if (!self->sink)
+    if (!self->interactive)
         return FALSE;
     gtk_widget_grab_focus(widget);
     int vel = 127;
@@ -168,7 +187,7 @@ calf_keyboard_button_release (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_KEYBOARD(widget));
     CalfKeyboard *self = CALF_KEYBOARD(widget);
-    if (!self->sink)
+    if (!self->interactive)
         return FALSE;
     if (self->last_key != -1)
         self->sink->note_off(self->last_key);
@@ -180,7 +199,7 @@ calf_keyboard_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
     g_assert(CALF_IS_KEYBOARD(widget));
     CalfKeyboard *self = CALF_KEYBOARD(widget);
-    if (!self->sink)
+    if (!self->interactive)
         return FALSE;
     int vel = 127;
     int key = calf_keyboard_pos_to_note(self, event->x, event->y, &vel);
@@ -213,11 +232,12 @@ calf_keyboard_class_init (CalfKeyboardClass *klass)
 static void
 calf_keyboard_init (CalfKeyboard *self)
 {
+    static CalfKeyboard::EventAdapter default_sink;
     GtkWidget *widget = GTK_WIDGET(self);
     g_assert(CALF_IS_KEYBOARD(widget));
     GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
     self->nkeys = 7 * 3 + 1;
-    self->sink = NULL;
+    self->sink = &default_sink;
     self->last_key = -1;
 }
 

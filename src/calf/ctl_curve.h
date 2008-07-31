@@ -48,7 +48,7 @@ struct CalfCurve
         virtual void curve_changed(const point_vector &data) {}
     };
 
-    struct EventTester: public EventSink
+    struct EventTester: public EventAdapter
     {
         virtual void curve_changed(const point_vector &data) {
             for(size_t i = 0; i < data.size(); i++)
@@ -62,37 +62,11 @@ struct CalfCurve
     int cur_pt;
     bool hide_current;
     EventSink *sink;
-    
-    void log2phys(float &x, float &y) {
-        x = (x - x0) / (x1 - x0) * (parent.allocation.width - 2) + 1;
-        y = (y - y0) / (y1 - y0) * (parent.allocation.height - 2) + 1;
-    }
-    void phys2log(float &x, float &y) {
-        x = x0 + (x - 1) * (x1 - x0) / (parent.allocation.width - 2);
-        y = y0 + (y - 1) * (y1 - y0) / (parent.allocation.height - 2);
-    }
-    void clip(int pt, float &x, float &y, bool &hide)
-    {
-        float ymin = std::min(y0, y1), ymax = std::max(y0, y1);
-        float yamp = ymax - ymin;
-        hide = false;
-        if (pt != 0 && pt != (int)(points->size() - 1))
-        {
-            if (y < ymin - yamp || y > ymax + yamp)
-                hide = true;
-        }
-        if (x < x0) x = x0;
-        if (y < ymin) y = ymin;
-        if (x > x1) x = x1;
-        if (y > ymax) y = ymax;
-        if (pt == 0) x = 0;
-        if (pt == (int)(points->size() - 1))
-            x = (*points)[pt].first;
-        if (pt > 0 && x < (*points)[pt - 1].first)
-            x = (*points)[pt - 1].first;
-        if (pt < (int)(points->size() - 1) && x > (*points)[pt + 1].first)
-            x = (*points)[pt + 1].first;
-    }
+    GdkCursor *hand_cursor, *pencil_cursor;
+
+    void log2phys(float &x, float &y);
+    void phys2log(float &x, float &y);
+    void clip(int pt, float &x, float &y, bool &hide);
 };
 
 struct CalfCurveClass
@@ -101,8 +75,8 @@ struct CalfCurveClass
 };
 
 extern GtkWidget *calf_curve_new();
-
 extern GType calf_curve_get_type();
+extern void calf_curve_set_points(GtkWidget *widget, const CalfCurve::point_vector &src);
 
 G_END_DECLS
 

@@ -35,20 +35,49 @@ G_BEGIN_DECLS
 
 struct CalfKeyboard
 {
+    struct KeyInfo
+    {
+        double x, y, width, height;
+        int note;
+        bool black;
+    };
+    
     struct EventSink
     {
+        virtual void set_instance(CalfKeyboard *kb)=0;
+        virtual bool pre_draw(cairo_t *c, KeyInfo &ki)=0;
+        virtual bool pre_draw_outline(cairo_t *c, KeyInfo &ki)=0;
+        virtual void post_draw(cairo_t *c, KeyInfo &ki)=0;
+        virtual void post_all(cairo_t *c)=0;
         virtual void note_on(int note, int vel) = 0;
         virtual void note_off(int note) = 0;
     };
 
     struct EventAdapter: public EventSink
     {
+        CalfKeyboard *kb;
+        virtual void set_instance(CalfKeyboard *_kb) { kb = _kb; }
+        virtual bool pre_draw(cairo_t *c, KeyInfo &ki) { return false; }
+        virtual bool pre_draw_outline(cairo_t *c, KeyInfo &ki) { return false; }
+        virtual void post_draw(cairo_t *c, KeyInfo &ki) {}
+        virtual void post_all(cairo_t *c) {}
         virtual void note_on(int note, int vel) {}
         virtual void note_off(int note) {}
     };
 
-    struct EventTester: public EventSink
+    struct EventTester: public EventAdapter
     {
+        virtual bool pre_draw(cairo_t *c, KeyInfo &ki) { if (ki.note == 60) cairo_set_source_rgb(c, 1.0, 1.0, 0.5); return false; }
+        virtual void post_draw(cairo_t *c, KeyInfo &ki) { 
+            if (ki.note % 12 != 0 && ki.note % 12 != 3 && ki.note % 12 != 7)
+                return;
+            cairo_rectangle(c, ki.x + ki.width / 2 - 2, ki.y + ki.height - 8, 4, 4);
+            if (ki.black)
+                cairo_set_source_rgb(c, 1.0, 1.0, 1.0);
+            else
+                cairo_set_source_rgb(c, 0.0, 0.0, 0.0);
+            cairo_fill(c); 
+        }
         virtual void note_on(int note, int vel) { g_message("note on %d %d", note, vel); }
         virtual void note_off(int note) { g_message("note off %d", note); }
     };
@@ -57,6 +86,7 @@ struct CalfKeyboard
     int nkeys;
     EventSink *sink;
     int last_key;
+    bool interactive;
 };
 
 struct CalfKeyboardClass
