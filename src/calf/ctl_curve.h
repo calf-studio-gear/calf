@@ -47,19 +47,22 @@ struct CalfCurve
     struct EventSink
     {
         /// Called when a point has been edited, added or removed
-        virtual void curve_changed(const point_vector &data) = 0;
+        virtual void curve_changed(CalfCurve *src, const point_vector &data) = 0;
+        /// Called to clip/snap/otherwise adjust candidate point coordinates
+        virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide) = 0;
     };
 
     /// Null implementation of EventSink
     struct EventAdapter: public EventSink
     {
-        virtual void curve_changed(const point_vector &data) {}
+        virtual void curve_changed(CalfCurve *src, const point_vector &data) {}
+        virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide) {}
     };
 
     /// Debug implementation of EventSink
     struct EventTester: public EventAdapter
     {
-        virtual void curve_changed(const point_vector &data) {
+        virtual void curve_changed(CalfCurve *src, const point_vector &data) {
             for(size_t i = 0; i < data.size(); i++)
                 g_message("Point %d: (%f, %f)", (int)i, data[i].first, data[i].second);
         }
@@ -81,6 +84,10 @@ struct CalfCurve
     GdkCursor *hand_cursor;
     /// Cached pencil (add point) cursor
     GdkCursor *pencil_cursor;
+    /// Cached arrow (do not add point) cursor
+    GdkCursor *arrow_cursor;
+    /// Maximum number of points
+    unsigned int point_limit;
 
     /// Convert logical (mapping) to physical (screen) coordinates
     void log2phys(float &x, float &y);
@@ -100,7 +107,7 @@ struct CalfCurveClass
 };
 
 /// Create a CalfCurve
-extern GtkWidget *calf_curve_new();
+extern GtkWidget *calf_curve_new(unsigned int point_limit = -1);
 
 /// Return a GObject type for class CalfCurve
 extern GType calf_curve_get_type();

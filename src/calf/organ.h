@@ -24,6 +24,8 @@
 
 #include "synth.h"
 
+#define ORGAN_KEYTRACK_POINTS 4
+
 namespace synth 
 {
 
@@ -54,14 +56,15 @@ struct organ_parameters {
     float percussion_level;
     float percussion_wave;
     float percussion_harmonic;
+    float percussion_fm_time;
+    float percussion_fm_depth;
     float percussion_fm_wave;
     float percussion_fm_harmonic;
-    float percussion_fm_depth;
     float percussion_trigger;
     float percussion_vel2amp;
     float filter_chain;
     float master;
-    
+
     organ_filter_parameters filters[organ_parameters::FilterCount];
     organ_env_parameters envs[organ_parameters::EnvCount];
     float lfo_rate;
@@ -70,12 +73,15 @@ struct organ_parameters {
     float lfo_phase;
     float lfo_mode;
     
-    double perc_decay_const;
+    double perc_decay_const, perc_fm_decay_const;
     float multiplier[9];
     int phaseshift[9];
     float cutoff;
     unsigned int foldvalue;
     float pitch_bend;
+
+    float percussion_keytrack[ORGAN_KEYTRACK_POINTS][2];
+    
     
     organ_parameters() : pitch_bend(1.0f) {}
 
@@ -244,7 +250,8 @@ class percussion_voice: public organ_voice_base {
 public:
     int sample_rate;
     dsp::fixed_point<int64_t, 20> phase, modphase, dphase, moddphase;
-    dsp::biquad<float> filter;
+    dsp::decay fm_amp;
+    float fm_keytrack;
 
     percussion_voice(organ_parameters *_parameters)
     : organ_voice_base(_parameters)
@@ -254,27 +261,18 @@ public:
     void reset() {
         phase = 0;
         modphase = 0;
+        dphase = 0;
+        moddphase = 0;
         note = -1;
     }
 
-    void note_on(int note, int vel) {
-        // do not reset phase if voice is still running (to prevent clicks, even at cost of slight loss of "percussiveness")
-        if (!amp.get_active())
-        {
-            phase = 0;
-            modphase = 0;
-            filter.reset_d1();
-        }
-        this->note = note;
-        amp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
-        update_pitch();
-    }
+    void note_on(int note, int vel);
     
     void update_pitch()
     {
         float phase = synth::midi_note_to_phase(note, 0, sample_rate);
-        dphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
-        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
+        dphase.set(phase * parameters->percussion_harmonic * 0.5 * parameters->pitch_bend);
+        moddphase.set(phase * parameters->percussion_fm_harmonic * 0.5 * parameters->pitch_bend);
     }
 
     // this doesn't really have a voice interface
@@ -304,7 +302,9 @@ struct drawbar_organ: public synth::basic_synth {
         par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
         par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
         par_foldover,
-        par_percdecay, par_perclevel, par_percwave, par_percharm, par_percfmwave, par_percfmharm, par_percfmdepth, par_perctrigger, par_percvel2amp,
+        par_percdecay, par_perclevel, par_percwave, par_percharm,
+        par_percfmdecay, par_percfmdepth, par_percfmwave, par_percfmharm, 
+        par_perctrigger, par_percvel2amp,
         par_filterchain,
         par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,

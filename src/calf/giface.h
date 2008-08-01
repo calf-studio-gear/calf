@@ -108,45 +108,96 @@ struct plugin_command_info
 struct parameter_properties
 {
     float def_value, min, max, step;
+    /// OR of parameter_flags
     uint32_t flags;
+    /// for PF_ENUM: array of text values (from min to max step 1)
     const char **choices;
-    const char *short_name, *name;
+    /// parameter label (for use in LV2 label field etc.)
+    const char *short_name;
+    /// parameter human-readable name
+    const char *name;
+    /// convert from [0, 1] range to [min, max] (applying scaling)
     float from_01(double value01) const;
+    /// convert from [min, max] to [0, 1] range (applying reverse scaling)
     double to_01(float value) const;
+    /// stringify (in sensible way)
     std::string to_string(float value) const;
+    /// get required width (for reserving GUI space)
     int get_char_count() const;
+    /// get increment step based on step value (if specified) and other factors
     float get_increment() const;
 };
 
+/// 'provides live line graph values' interface
 struct line_graph_iface
 {
+    /// Obtain subindex'th graph of parameter index
+    /// @param index parameter/graph number (usually tied to particular plugin control port)
+    /// @param subindex graph number (there may be multiple overlaid graphs for one parameter, eg. for monosynth 2x12dB filters)
+    /// @param data buffer for normalized output values
+    /// @param points number of points to fill
+    /// @param context cairo context to adjust (for multicolour graphs etc.)
+    /// @retval true graph data was returned; subindex+1 graph may or may not be available
+    /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) = 0;
+    /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
+};
+
+/// 'may receive configure variables' interface
+struct send_configure_iface
+{
+    /// Called to set configure variable
+    /// @param key variable name
+    /// @param value variable content
+    virtual void send_configure(const char *key, const char *value) = 0;
 };
 
 struct plugin_command_info;
 
+/// Interface for host-GUI-plugin interaction (should be really split in two, but ... meh)
 struct plugin_ctl_iface
 {
+    /// @return description structure for given parameter
     virtual parameter_properties *get_param_props(int param_no) = 0;
-    virtual float get_param_value(int param_no) = 0;
-    virtual void set_param_value(int param_no, float value) = 0;
+    /// @return total number of parameters
     virtual int get_param_count() = 0;
+    /// @return value of given parameter
+    virtual float get_param_value(int param_no) = 0;
+    /// Set value of given parameter
+    virtual void set_param_value(int param_no, float value) = 0;
+    /// Return custom XML
     virtual const char *get_gui_xml() = 0;
+    /// @return line_graph_iface if any
     virtual line_graph_iface *get_line_graph_iface() = 0;
+    /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
     virtual int get_param_port_offset() = 0;
+    /// Load preset with given number
     virtual bool activate_preset(int bank, int program) = 0;
+    /// @return plugin long name
     virtual const char *get_name() = 0;
+    /// @return plugin LV2 label
     virtual const char *get_id() = 0;
+    /// @return plugin human-readable label
     virtual const char *get_label() = 0;
+    /// @return number of audio inputs
     virtual int get_input_count()=0;
+    /// @return number of audio outputs
     virtual int get_output_count()=0;
+    /// @return true if plugin has MIDI input
     virtual bool get_midi()=0;
+    /// @return volume level for port'th port (if supported by the implementation, currently only jack_host<Module> implements that by measuring signal level on plugin ports)
     virtual float get_level(unsigned int port)=0;
-    virtual ~plugin_ctl_iface() {}
+    /// @return NULL-terminated list of menu commands
     virtual plugin_command_info *get_commands() { return NULL; }
-    virtual char *configure(const char *key, const char *value) { return NULL; }
+    /// Execute menu command with given number
     virtual void execute(int cmd_no)=0;
+    /// Set a configure variable on a plugin
+    virtual char *configure(const char *key, const char *value) { return NULL; }
+    /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
+    virtual void send_configures(send_configure_iface *) {}
+    /// Do-nothing destructor to silence compiler warning
+    virtual ~plugin_ctl_iface() {}
 };
 
 struct midi_event {

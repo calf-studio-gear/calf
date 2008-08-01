@@ -414,6 +414,9 @@ public:
     virtual void execute(int cmd_no) {
         module.execute(cmd_no);
     }
+    virtual char *configure(const char *key, const char *value) { 
+        return module.configure(key, value);
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

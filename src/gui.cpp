@@ -28,6 +28,8 @@
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
 
+#include <iostream>
+
 using namespace synth;
 using namespace std;
 
@@ -352,14 +354,37 @@ GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
 
 // curve
 
+struct curve_param_control_callback: public CalfCurve::EventAdapter
+{
+    curve_param_control *ctl;
+    
+    curve_param_control_callback(curve_param_control *_ctl)
+    : ctl(_ctl) {}
+    
+    virtual void curve_changed(CalfCurve *src, const CalfCurve::point_vector &data) {
+        stringstream ss;
+        ss << data.size() << endl;
+        for (size_t i = 0; i < data.size(); i++)
+            ss << data[i].first << " " << data[i].second << endl;
+        ctl->gui->send_configure(ctl->attribs["key"].c_str(), ss.str().c_str());
+    }
+    virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide)
+    {
+        // int gridpt = floor(x * 71 * 2);
+        // clip to the middle of the nearest white key
+        x = (floor(x * 71) + 0.5)/ 71.0;
+    }
+};
+
 GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
+    require_attribute("key");
     
-    widget = calf_curve_new();
+    widget = calf_curve_new(get_int("maxpoints", -1));
     curve = CALF_CURVE(widget);
-    curve->sink = new CalfCurve::EventTester;
+    curve->sink = new curve_param_control_callback(this);
     // gtk_curve_set_curve_type(curve, GTK_CURVE_TYPE_LINEAR);
     return widget;
 }
@@ -809,6 +834,11 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     
     XML_ParserFree(parser);
     return GTK_WIDGET(top_container->container);
+}
+
+void plugin_gui::send_configure(const char *key, const char *value)
+{
+    plugin->configure(key, value);
 }
 
 void plugin_gui::on_idle()

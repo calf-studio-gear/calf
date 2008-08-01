@@ -29,6 +29,7 @@
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <iostream>
 
 using namespace synth;
 using namespace std;
@@ -274,52 +275,68 @@ const char *organ_audio_module::get_gui_xml()
                 "</frame>"
             "</hbox>"
             "<vbox page=\"Advanced\">"
-                "<align scale-x=\"0.8\" scale-y=\"0.3\">"
+                "<align scale-x=\"1.0\" scale-y=\"0.3\">"
                     "<frame label=\"Percussive section\">"
-                        "<hbox>"
-                            "<vbox>"
-                                "<label param=\"perc_decay\"/>"
-                                "<knob param=\"perc_decay\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_decay\"/>"
-                            "</vbox>"
-                            "<vbox>"
-                                "<label param=\"perc_level\"/>"
-                                "<knob param=\"perc_level\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_level\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_vel2amp\"/>"
-                                "<knob param=\"perc_vel2amp\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_vel2amp\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_waveform\"/>"
-                                "<combo param=\"perc_waveform\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_harmonic\"/>"
-                                "<knob param=\"perc_harmonic\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_harmonic\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_fm_waveform\"/>"
-                                "<combo param=\"perc_fm_waveform\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_fm_harmonic\"/>"
-                                "<knob param=\"perc_fm_harmonic\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_fm_harmonic\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_fm_depth\"/>"
-                                "<knob param=\"perc_fm_depth\" expand=\"0\" fill=\"0\"/>"
-                                "<value param=\"perc_fm_depth\"/>"
-                            "</vbox>"        
-                            "<vbox>"
-                                "<label param=\"perc_trigger\"/>"
-                                "<combo param=\"perc_trigger\"/>"
-                            "</vbox>"        
-                        "</hbox>"
+                        "<vbox>"
+                            "<align scale-x=\"0.0\" scale-y=\"1.0\"><vbox><keyboard octaves=\"10\"/><curve key=\"map_curve\" maxpoints=\"4\"/></vbox></align>"
+                            "<hbox>"
+                                "<table rows=\"2\" cols=\"4\">"
+                                    "<vbox attach-x=\"0\" attach-y=\"0\">"
+                                        "<label param=\"perc_waveform\"/>"
+                                        "<combo param=\"perc_waveform\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"1\" attach-y=\"0\">"
+                                        "<label param=\"perc_harmonic\"/>"
+                                        "<knob param=\"perc_harmonic\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_harmonic\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"2\" attach-y=\"0\">"
+                                        "<label param=\"perc_level\"/>"
+                                        "<knob param=\"perc_level\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_level\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"3\" attach-y=\"0\">"
+                                        "<label param=\"perc_decay\"/>"
+                                        "<knob param=\"perc_decay\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_decay\"/>"
+                                    "</vbox>"
+                                    "<vbox attach-x=\"0\" attach-y=\"1\">"
+                                        "<label param=\"perc_fm_waveform\"/>"
+                                        "<combo param=\"perc_fm_waveform\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"1\" attach-y=\"1\">"
+                                        "<label param=\"perc_fm_harmonic\"/>"
+                                        "<knob param=\"perc_fm_harmonic\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_fm_harmonic\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"2\" attach-y=\"1\">"
+                                        "<label param=\"perc_fm_depth\"/>"
+                                        "<knob param=\"perc_fm_depth\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_fm_depth\"/>"
+                                    "</vbox>"        
+                                    "<vbox attach-x=\"3\" attach-y=\"1\">"
+                                        "<label param=\"perc_fm_decay\"/>"
+                                        "<knob param=\"perc_fm_decay\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_fm_decay\"/>"
+                                    "</vbox>"
+                                "</table>"
+                                "<vbox>"
+                                    "<hbox>"
+                                        "<vbox>"
+                                            "<label param=\"perc_trigger\"/>"
+                                            "<combo param=\"perc_trigger\"/>"
+                                        "</vbox>"        
+                                    "</hbox>"
+                                    "<hbox>"
+                                        "<vbox>"
+                                            "<label param=\"perc_vel2amp\"/>"
+                                            "<knob param=\"perc_vel2amp\" expand=\"0\" fill=\"0\"/>"
+                                            "<value param=\"perc_vel2amp\"/>"
+                                        "</vbox>"        
+                                    "</hbox>"
+                                "</vbox>"
+                            "</hbox>"
+                        "</vbox>"
                     "</frame>"
                 "</align>"
                 "<align scale-x=\"0.8\" scale-y=\"0.3\">"
@@ -472,13 +489,17 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,       0,  2, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, organ_routing_names, "routing9", "Routing 9" },
 
     { 96,      0,  127, 128, PF_INT | PF_CTL_KNOB | PF_UNIT_NOTE, NULL, "foldnote", "Foldover" },
-    { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "P: Decay time" },
+    
+    { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_decay", "P: Carrier Decay" },
     { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "P: Level" },
-    { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_waveform", "P: Waveform" },
-    { 16,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_harmonic", "P: Harmonic" },
-    { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_fm_waveform", "P: FM Waveform" },
-    { 16,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_fm_harmonic", "P: FM Freq" },
-    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_fm_depth", "P: FM Depth" },
+    { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_waveform", "P: Carrier Wave" },
+    { 2,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_harmonic", "P: Carrier Frq" },
+    
+    { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_fm_decay", "P: Modulator Decay" },
+    { 0,          0,    4,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_fm_depth", "P: FM Depth" },
+    { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_fm_waveform", "P: Modulator Wave" },
+    { 2,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_fm_harmonic", "P: Modulator Frq" },
+    
     { 0,         0,  organ_voice_base::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "P: Trigger" },
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_vel2amp", "P: Vel->Amp" },
 
@@ -1088,6 +1109,7 @@ void organ_voice::render_block() {
 void drawbar_organ::update_params()
 {
     parameters->perc_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_time * sample_rate);
+    parameters->perc_fm_decay_const = dsp::decay::calc_exp_constant(1.0 / 1024.0, 0.001 * parameters->percussion_fm_time * sample_rate);
     for (int i = 0; i < 9; i++)
     {
         parameters->multiplier[i] = parameters->harmonics[i] * pow(2.0, parameters->detune[i] * (1.0 / 1200.0));
@@ -1118,7 +1140,35 @@ void organ_audio_module::execute(int cmd_no)
     }
 }
 
-void percussion_voice::render_to(float (*buf)[2], int nsamples) {
+void percussion_voice::note_on(int note, int vel)
+{
+    // do not reset phase if voice is still running (to prevent clicks, even at cost of slight loss of "percussiveness")
+    if (!amp.get_active())
+    {
+        phase = 0;
+        modphase = 0;
+    }
+    this->note = note;
+    amp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
+    update_pitch();
+    float (*kt)[2] = parameters->percussion_keytrack;
+    // assume last point (will be put there by padding)
+    fm_keytrack = kt[ORGAN_KEYTRACK_POINTS - 1][1];
+    // yes binary search would be nice if we had more than those crappy 4 points
+    for (int i = 0; i < ORGAN_KEYTRACK_POINTS - 1; i++)
+    {
+        float &lower = kt[i][0], upper = kt[i + 1][0];
+        if (note >= lower && note < upper)
+        {
+            fm_keytrack = kt[i][1] + (note - lower) * (kt[i + 1][1] - kt[i][1]) / (upper - lower);
+            break;
+        }
+    }
+    fm_amp.set(fm_keytrack * (1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0));
+}
+
+void percussion_voice::render_to(float (*buf)[2], int nsamples)
+{
     if (note == -1)
         return;
 
@@ -1130,6 +1180,7 @@ void percussion_voice::render_to(float (*buf)[2], int nsamples) {
     static float zeros[ORGAN_WAVE_SIZE];
     // XXXKF the decay needs work!
     double age_const = parameters->perc_decay_const;
+    double fm_age_const = parameters->perc_fm_decay_const;
     int timbre = parameters->get_percussion_wave();
     if (timbre < 0 || timbre >= wave_count_small)
         return;
@@ -1146,18 +1197,49 @@ void percussion_voice::render_to(float (*buf)[2], int nsamples) {
     }
     for (int i = 0; i < nsamples; i++) {
         float fm = wave(fmdata, modphase);
-        fm *= ORGAN_WAVE_SIZE * parameters->percussion_fm_depth * amp.get();
+        fm *= ORGAN_WAVE_SIZE * parameters->percussion_fm_depth * fm_amp.get();
         modphase += moddphase;
+        fm_amp.age_exp(fm_age_const, 1.0 / 32768.0);
         
-        float osc = level * wave(data, phase);
+        float osc = level * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm));
         osc *= level * amp.get();
         buf[i][0] += osc;
         buf[i][1] += osc;
         amp.age_exp(age_const, 1.0 / 32768.0);
         phase += dphase;
-        phase += dsp::fixed_point<int64_t, 20>(fm);
     }
 }
+
+char *organ_audio_module::configure(const char *key, const char *value)
+{
+    if (!strcmp(key, "map_curve"))
+    {
+        stringstream ss(value);
+        int points;
+        ss >> points;
+        int i;
+        float x = 0, y = 0;
+        for (i = 0; i < points; i++)
+        {
+            static const int whites[] = { 0, 2, 4, 5, 7, 9, 11 };
+            ss >> x >> y;
+            int wkey = (int)(x * 71);
+            x = whites[wkey % 7] + 12 * (wkey / 7);
+            parameters->percussion_keytrack[i][0] = x;
+            parameters->percussion_keytrack[i][1] = y;
+            // cout << "(" << x << ", " << y << ")" << endl;
+        }
+        // pad with constant Y
+        for (; i < ORGAN_KEYTRACK_POINTS; i++) {
+            parameters->percussion_keytrack[i][0] = x;
+            parameters->percussion_keytrack[i][1] = y;
+        }
+        return NULL;
+    }
+    cout << "Set configure value " << key << " to " << value;
+    return NULL;
+}
+    
 plugin_command_info *organ_audio_module::get_commands()
 {
     static plugin_command_info cmds[] = {

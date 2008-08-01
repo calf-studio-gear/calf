@@ -273,6 +273,7 @@ public:
     static const char *get_id() { return "organ"; }    
     static const char *get_label() { return "Organ"; }    
     static plugin_command_info *get_commands();
+    virtual char *configure(const char *key, const char *value);
 };
 
 };

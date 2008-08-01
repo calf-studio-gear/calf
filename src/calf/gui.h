@@ -71,6 +71,8 @@ struct param_control: public control_base
     virtual void get()=0;
     /// called to transfer the value from parameter(s) to control
     virtual void set()=0;
+    /// called on DSSI configure()
+    virtual void configure(const char *key, const char *value) {}
     virtual void hook_params();
     virtual void on_idle() {}
     virtual ~param_control();
@@ -236,7 +238,7 @@ struct curve_param_control: public param_control
 
 class plugin_gui_window;
 
-class plugin_gui
+class plugin_gui: public send_configure_iface
 {
 protected:
     int param_count;
@@ -265,6 +267,7 @@ public:
     void refresh(int param_no, param_control *originator = NULL);
     void xml_element_start(const char *element, const char *attributes[]);
     void set_param_value(int param_no, float value, param_control *originator = NULL);
+    void send_configure(const char *key, const char *value);
     void on_idle();
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
