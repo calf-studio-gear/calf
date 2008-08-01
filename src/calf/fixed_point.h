@@ -81,7 +81,7 @@ public:
         return *this;
     }
     
-    template<class U, int FracBits2> inline T rebase(const fixed_point<U, FracBits2> &v) {
+    template<class U, int FracBits2> static inline T rebase(const fixed_point<U, FracBits2> &v) {
         if (FracBits == FracBits2) 
             return v.get();
         if (FracBits > FracBits2) 
@@ -105,11 +105,15 @@ public:
     }
 
     template<class U, int FracBits2> inline fixed_point operator+(const fixed_point<U, FracBits2> &v) const {
-        return value + rebase<U, FracBits2>(v.get());
+        fixed_point fpv;
+        fpv.set(value + rebase<U, FracBits2>(v));
+        return fpv;
     }
 
     template<class U, int FracBits2> inline fixed_point operator-(const fixed_point<U, FracBits2> &v) const {
-        return value - rebase<U, FracBits2>(v.get());
+        fixed_point fpv;
+        fpv.set(value - rebase<U, FracBits2>(v));
+        return fpv;
     }
 
     /// multiply two fixed point values, using long long int to store the temporary multiplication result
