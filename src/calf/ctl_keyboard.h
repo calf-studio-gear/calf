@@ -33,26 +33,42 @@ G_BEGIN_DECLS
 #define CALF_KEYBOARD_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_KEYBOARD, CalfKeyboardClass))
 #define CALF_IS_KEYBOARD_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_KEYBOARD))
 
+/// Instance-specific data for CalfKeyboard
 struct CalfKeyboard
 {
+    /// Structure with information needed for drawing a single key
     struct KeyInfo
     {
-        double x, y, width, height;
-        int note;
-        bool black;
+        double x; ///< X coordinate of the top-left point of the key
+        double y; ///< Y coordinate of the top-left point of the key
+        double width; ///< key width
+        double height; ///< key height
+        int note; ///< MIDI note number
+        bool black; ///< true if it's a black key, false if it's a white key
     };
     
+    /// Set of user-defined callbacks for customizing display and operation of CalfKeyboard
     struct EventSink
     {
+        /// (will be) called on attachment of sink to CalfKeyboard object
         virtual void set_instance(CalfKeyboard *kb)=0;
+        /// called before drawing key interior
+        /// @retval true do not draw the key
         virtual bool pre_draw(cairo_t *c, KeyInfo &ki)=0;
+        /// @retval true do not draw the outline
+        /// called before drawing key outline of white keys
         virtual bool pre_draw_outline(cairo_t *c, KeyInfo &ki)=0;
+        /// called after key is drawn using standard method (but not if drawing is skipped)
         virtual void post_draw(cairo_t *c, KeyInfo &ki)=0;
+        /// called after key is drawn
         virtual void post_all(cairo_t *c)=0;
+        /// key was pressed
         virtual void note_on(int note, int vel) = 0;
+        /// key was released
         virtual void note_off(int note) = 0;
     };
 
+    /// Null implementation of CalfKeyboard::EventSink
     struct EventAdapter: public EventSink
     {
         CalfKeyboard *kb;
@@ -65,6 +81,7 @@ struct CalfKeyboard
         virtual void note_off(int note) {}
     };
 
+    /// Debug/example implementation of CalfKeyboard::EventSink
     struct EventTester: public EventAdapter
     {
         virtual bool pre_draw(cairo_t *c, KeyInfo &ki) { if (ki.note == 60) cairo_set_source_rgb(c, 1.0, 1.0, 0.5); return false; }
@@ -82,20 +99,28 @@ struct CalfKeyboard
         virtual void note_off(int note) { g_message("note off %d", note); }
     };
 
+    /// Parent instance members
     GtkWidget parent;
+    /// Range (number of white keys = number of octaves * 7 + 1)
     int nkeys;
     EventSink *sink;
+    /// The note currently pressed via mouse selection
     int last_key;
+    /// If true, the keyboard accepts mouse clicks and keys
     bool interactive;
 };
 
+/// Class-specific data for CalfKeyboard
 struct CalfKeyboardClass
 {
+    /// Parent class members
     GtkWidgetClass parent_class;
 };
 
+/// Create new keyboard object;
 extern GtkWidget *calf_keyboard_new();
 
+/// Return a GType for CalfKeyboard
 extern GType calf_keyboard_get_type();
 
 G_END_DECLS

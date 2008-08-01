@@ -33,21 +33,30 @@ G_BEGIN_DECLS
 #define CALF_CURVE_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_CURVE, CalfCurveClass))
 #define CALF_IS_CURVE_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_CURVE))
 
+/// Mapping curve editor control. May be used for editing multisegment lines (key mapping,
+/// velocity mapping etc). This version isn't suitable for envelope editing because both
+/// ends (start and end) have fixed X coordinates and it doesn't resize.
 struct CalfCurve
 {
+    /// A point with floating point X and Y coordinates
     typedef std::pair<float, float> point;
+    /// A collection of points
     typedef std::vector<point> point_vector;
     
+    /// User callbacks for handling curve events
     struct EventSink
     {
+        /// Called when a point has been edited, added or removed
         virtual void curve_changed(const point_vector &data) = 0;
     };
 
+    /// Null implementation of EventSink
     struct EventAdapter: public EventSink
     {
         virtual void curve_changed(const point_vector &data) {}
     };
 
+    /// Debug implementation of EventSink
     struct EventTester: public EventAdapter
     {
         virtual void curve_changed(const point_vector &data) {
@@ -56,16 +65,32 @@ struct CalfCurve
         }
     };
 
+    /// Base class instance members
     GtkWidget parent;
+    /// Array of points
     point_vector *points;
+    /// Coordinate ranges (in logical coordinates for top left and bottom right)
     float x0, y0, x1, y1;
+    /// Currently selected point (when dragging/adding), or -1 if none is selected
     int cur_pt;
+    /// If currently selected point is a candidate for deletion (ie. outside of graph+margin range)
     bool hide_current;
+    /// Interface for notification
     EventSink *sink;
-    GdkCursor *hand_cursor, *pencil_cursor;
+    /// Cached hand (drag) cursor
+    GdkCursor *hand_cursor;
+    /// Cached pencil (add point) cursor
+    GdkCursor *pencil_cursor;
 
+    /// Convert logical (mapping) to physical (screen) coordinates
     void log2phys(float &x, float &y);
+    /// Convert physical (screen) to logical (mapping) coordinates
     void phys2log(float &x, float &y);
+    /// Clip function
+    /// @param pt point being clipped
+    /// @param x horizontal logical coordinate
+    /// @param y vertical logical coordinate
+    /// @param hide true if point is outside "valid" range and about to be deleted
     void clip(int pt, float &x, float &y, bool &hide);
 };
 
@@ -74,8 +99,13 @@ struct CalfCurveClass
     GtkWidgetClass parent_class;
 };
 
+/// Create a CalfCurve
 extern GtkWidget *calf_curve_new();
+
+/// Return a GObject type for class CalfCurve
 extern GType calf_curve_get_type();
+
+/// Set points and update the widget
 extern void calf_curve_set_points(GtkWidget *widget, const CalfCurve::point_vector &src);
 
 G_END_DECLS
