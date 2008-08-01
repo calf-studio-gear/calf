@@ -120,21 +120,25 @@ struct bandlimiter
         // waveform has few widely spread harmonics)
         if (foldover)
         {
-            std::complex<float> half(0.5);
+            std::complex<float> fatt(0.5);
             cutoff /= 2;
+            if (cutoff < 2)
+                cutoff = 2;
             for (int i = SIZE / 2; i >= cutoff; i--)
             {
-                new_spec[i / 2] += new_spec[i] * half;
-                new_spec[SIZE - 1 - i / 2] += new_spec[SIZE - 1 - i] * half;
+                new_spec[i / 2] += new_spec[i] * fatt;
+                new_spec[SIZE - i / 2] += new_spec[SIZE - i] * fatt;
                 new_spec[i] = 0.f,
-                new_spec[SIZE - 1 - i] = 0.f;
+                new_spec[SIZE - i] = 0.f;
             }
         }
         else
         {
+            if (cutoff < 1)
+                cutoff = 1;
             for (int i = cutoff; i < SIZE / 2; i++)
                 new_spec[i] = 0.f,
-                new_spec[SIZE - 1 - i] = 0.f;
+                new_spec[SIZE - i] = 0.f;
         }
         // convert back to time domain (IFFT) and extract only real part
         fft.calculate(new_spec.data(), iffted.data(), true);
