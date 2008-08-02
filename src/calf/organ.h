@@ -44,6 +44,9 @@ struct organ_parameters {
         float attack, decay, sustain, release, velscale, ampctl;
     };
         
+    //////////////////////////////////////////////////////////////////////////
+    // these parameters are binary-copied from control ports (order is important!)
+    
     float drawbars[9];
     float harmonics[9];
     float waveforms[9];
@@ -73,6 +76,12 @@ struct organ_parameters {
     float lfo_phase;
     float lfo_mode;
     
+    float global_transpose;
+    float global_detune;
+    
+    //////////////////////////////////////////////////////////////////////////
+    // these parameters are calculated
+    
     double perc_decay_const, perc_fm_decay_const;
     float multiplier[9];
     int phaseshift[9];
@@ -81,7 +90,6 @@ struct organ_parameters {
     float pitch_bend;
 
     float percussion_keytrack[ORGAN_KEYTRACK_POINTS][2];
-    
     
     organ_parameters() : pitch_bend(1.0f) {}
 
@@ -271,8 +279,8 @@ public:
     void update_pitch()
     {
         float phase = synth::midi_note_to_phase(note, 0, sample_rate);
-        dphase.set(phase * parameters->percussion_harmonic * 0.5 * parameters->pitch_bend);
-        moddphase.set(phase * parameters->percussion_fm_harmonic * 0.5 * parameters->pitch_bend);
+        dphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
+        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
     }
 
     // this doesn't really have a voice interface
@@ -313,6 +321,7 @@ struct drawbar_organ: public synth::basic_synth {
         par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl, par_eg2ampctl, 
         par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
         par_lforate, par_lfoamt, par_lfowet, par_lfophase, par_lfomode,
+        par_transpose, par_detune,
         param_count
     };
 

@@ -341,11 +341,23 @@ const char *organ_audio_module::get_gui_xml()
                 "</align>"
                 "<align scale-x=\"0.8\" scale-y=\"0.3\">"
                     "<frame label=\"Additional settings\">"
-                        "<vbox>"
-                            "<label param=\"foldnote\"/>"
-                            "<align><knob param=\"foldnote\"/></align>"
-                            "<value param=\"foldnote\"/>"
-                        "</vbox>"
+                        "<hbox>"
+                            "<vbox>"
+                                "<label param=\"transpose\"/>"
+                                "<align><knob param=\"transpose\"/></align>"
+                                "<value param=\"transpose\"/>"
+                            "</vbox>"
+                            "<vbox>"
+                                "<label param=\"detune\"/>"
+                                "<align><knob param=\"detune\"/></align>"
+                                "<value param=\"detune\"/>"
+                            "</vbox>"
+                            "<vbox>"
+                                "<label param=\"foldnote\"/>"
+                                "<align><knob param=\"foldnote\"/></align>"
+                                "<value param=\"foldnote\"/>"
+                            "</vbox>"
+                        "</hbox>"
                     "</frame>"
                 "</align>"
                 "<vbox>"
@@ -551,6 +563,9 @@ parameter_properties organ_audio_module::param_props[] = {
     { organ_voice_base::lfomode_global,        0,  organ_voice_base::lfomode_count - 1,    0, PF_ENUM | PF_CTL_COMBO, organ_vibrato_mode_names, "vib_mode", "Vib Mode" },
 //    { 0,  0, organ_voice_base::ampctl_count - 1,
 //                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "vel_amp_ctl", "Vel To Amp"},
+
+    { -12,        -24, 24,   49, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
+    { 0,       -100,  100,  201, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -950,7 +965,7 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
 
 void organ_voice::update_pitch()
 {
-    dphase.set(synth::midi_note_to_phase(note, 0, sample_rate) * parameters->pitch_bend);
+    dphase.set(synth::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * parameters->pitch_bend);
 }
 
 void organ_voice::render_block() {
@@ -961,7 +976,8 @@ void organ_voice::render_block() {
     dsp::zero(&aux_buffers[1][0][0], 2 * Channels * BlockSize);
     if (!amp.get_active())
         return;
-    
+
+    update_pitch();
     dsp::fixed_point<int, 20> tphase, tdphase;
     unsigned int foldvalue = parameters->foldvalue;
     int vibrato_mode = fastf2i_drm(parameters->lfo_mode);
@@ -971,7 +987,7 @@ void organ_voice::render_block() {
         if (amp < small_value<float>())
             continue;
         float *data;
-        dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h] * (1.0 / 2.0));
+        dsp::fixed_point<int, 24> hm = dsp::fixed_point<int, 24>(parameters->multiplier[h]);
         int waveid = (int)parameters->waveforms[h];
         if (waveid < 0 || waveid >= wave_count)
             waveid = 0;
