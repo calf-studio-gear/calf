@@ -65,7 +65,10 @@ std::string plugin_preset::to_xml()
 
 void plugin_preset::activate(plugin_ctl_iface *plugin)
 {
-    map<string, int> names;
+    // First, clear everything to default values (in case some parameters or variables are missing)
+    plugin->clear_preset();
+
+    map<string, int> names;    
     int count = plugin->get_param_count();
     // this is deliberately done in two separate loops - if you wonder why, just think for a while :)
     for (int i = 0; i < count; i++)

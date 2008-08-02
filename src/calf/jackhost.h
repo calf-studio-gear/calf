@@ -420,6 +420,11 @@ public:
     virtual void send_configures(send_configure_iface *sci) {
         module.send_configures(sci);
     }
+    virtual void clear_preset() {
+        for (int i=0; i < Module::param_count; i++)
+            *module.params[i] = Module::param_props[i].def_value;
+        module.clear_configure_vars();
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

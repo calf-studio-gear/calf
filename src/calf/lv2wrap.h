@@ -86,6 +86,11 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
     }
+    virtual void clear_preset() {
+        for (int i=0; i < Module::param_count; i++)
+            *Module::params[i] = Module::param_props[i].def_value;
+        Module::clear_configure_vars();
+    }
 };
 
 template<class Module>

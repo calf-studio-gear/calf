@@ -196,6 +196,8 @@ struct plugin_ctl_iface
     virtual char *configure(const char *key, const char *value) { return NULL; }
     /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
     virtual void send_configures(send_configure_iface *)=0;
+    /// Restore all state (parameters and configure vars) to default values
+    virtual void clear_preset()=0;
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -308,8 +310,13 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
     }
-    void send_configures(send_configure_iface *sci) { 
+    virtual void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
+    }
+    virtual void clear_preset() {
+        for (int i=0; i < Module::param_count; i++)
+            *Module::params[i] = Module::param_props[i].def_value;
+        Module::clear_configure_vars();
     }
 };
 

@@ -174,6 +174,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
+    void clear_preset() {
+        fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in DSSI GUIs\n");
+    }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
