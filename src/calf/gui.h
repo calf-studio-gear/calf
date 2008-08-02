@@ -227,13 +227,14 @@ struct keyboard_param_control: public param_control
     virtual void set() {}
 };
 
-struct curve_param_control: public param_control
+struct curve_param_control: public param_control, public send_configure_iface
 {
     CalfCurve *curve;
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set() {}
+    virtual void send_configure(const char *key, const char *value);
 };
 
 class plugin_gui_window;

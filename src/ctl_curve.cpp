@@ -194,7 +194,7 @@ calf_curve_button_release (GtkWidget *widget, GdkEventButton *event)
     if (self->sink)
         self->sink->curve_changed(self, *self->points);
     gtk_widget_queue_draw(widget);
-    gdk_window_set_cursor(widget->window, self->pencil_cursor);
+    gdk_window_set_cursor(widget->window, self->points->size() >= self->point_limit ? self->arrow_cursor : self->pencil_cursor);
     return FALSE;
 }
 

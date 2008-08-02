@@ -348,7 +348,7 @@ GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
     widget = calf_keyboard_new();
     kb = CALF_KEYBOARD(widget);
     kb->nkeys = get_int("octaves", 4) * 7 + 1;
-    kb->sink = new CalfKeyboard::EventTester;
+    kb->sink = new CalfKeyboard::EventAdapter;
     return widget;
 }
 
@@ -387,6 +387,29 @@ GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
     curve->sink = new curve_param_control_callback(this);
     // gtk_curve_set_curve_type(curve, GTK_CURVE_TYPE_LINEAR);
     return widget;
+}
+
+void curve_param_control::send_configure(const char *key, const char *value)
+{
+    cout << "send conf " << key << endl;
+    if (attribs["key"] == key)
+    {
+        stringstream ss(value);
+        CalfCurve::point_vector pts;
+        if (*value)
+        {
+            unsigned int npoints = 0;
+            ss >> npoints;
+            unsigned int i;
+            float x = 0, y = 0;
+            for (i = 0; i < npoints && i < curve->point_limit; i++)
+            {
+                ss >> x >> y;
+                pts.push_back(CalfCurve::point(x, y));
+            }
+            calf_curve_set_points(widget, pts);
+        }
+    }
 }
 
 // line graph
@@ -856,6 +879,11 @@ void plugin_gui::refresh()
     {
         if (params[i] != NULL)
             params[i]->set();
+        send_configure_iface *sci = dynamic_cast<send_configure_iface *>(params[i]);
+        if (sci)
+        {
+            plugin->send_configures(sci);
+        }
     }
 }
 

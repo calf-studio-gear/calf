@@ -195,7 +195,7 @@ struct plugin_ctl_iface
     /// Set a configure variable on a plugin
     virtual char *configure(const char *key, const char *value) { return NULL; }
     /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
-    virtual void send_configures(send_configure_iface *) {}
+    virtual void send_configures(send_configure_iface *)=0;
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -307,6 +307,9 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
+    }
+    void send_configures(send_configure_iface *sci) { 
+        Module::send_configures(sci);
     }
 };
 

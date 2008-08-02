@@ -55,7 +55,10 @@ std::string plugin_preset::to_xml()
         else
             ss << "  <param value=\"" << values[i] << "\" />\n";
     }
-    // XXXKF I'm not writing blob here, because I don't use blobs yet anyway
+    for (map<string, string>::iterator i = variables.begin(); i != variables.end(); i++)
+    {
+        ss << "  <var name=\"" << xml_escape(i->first) << "\">" << xml_escape(i->second) << "</var>\n";
+    }
     ss << "</preset>\n";
     return ss.str();
 }
@@ -80,6 +83,11 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
         }
         plugin->set_param_value(pos->second, values[i]);
     }
+    for (map<string, string>::iterator i = variables.begin(); i != variables.end(); i++)
+    {
+        printf("configure %s: %s\n", i->first.c_str(), i->second.c_str());
+        plugin->configure(i->first.c_str(), i->second.c_str());
+    }
 }
 
 void plugin_preset::get_from(plugin_ctl_iface *plugin)
@@ -89,6 +97,17 @@ void plugin_preset::get_from(plugin_ctl_iface *plugin)
         param_names.push_back(plugin->get_param_props(i)->short_name);
         values.push_back(plugin->get_param_value(i));
     }
+    struct store_obj: public send_configure_iface
+    {
+        map<string, string> *data;
+        void send_configure(const char *key, const char *value)
+        {
+            (*data)[key] = value;
+        }
+    } tmp;
+    variables.clear();
+    tmp.data = &variables;
+    plugin->send_configures(&tmp);
 }
     
 string synth::preset_list::get_preset_filename()
@@ -116,9 +135,9 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
             parser_preset.bank = parser_preset.program = 0;
             parser_preset.name = "";
             parser_preset.plugin = "";
-            parser_preset.blob = "";
             parser_preset.param_names.clear();
             parser_preset.values.clear();
+            parser_preset.variables.clear();
             for(; *attrs; attrs += 2) {
                 if (!strcmp(attrs[0], "name")) self.parser_preset.name = attrs[1];
                 else
@@ -151,8 +170,23 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
             state = VALUE;
             return;
         }
+        if (!strcmp(name, "var")) {
+            self.current_key = "";
+            for(; *attrs; attrs += 2) {
+                if (!strcmp(attrs[0], "name")) self.current_key = attrs[1];
+            }
+            if (self.current_key.empty())
+                throw preset_exception("No name specified for preset variable", "", 0);
+            self.parser_preset.variables[self.current_key].clear();
+            state = VAR;
+            return;
+        }
         break;
     case VALUE:
+        // no nested elements allowed inside <param>
+        break;
+    case VAR:
+        // no nested elements allowed inside <var>
         break;
     }
     // g_warning("Invalid XML element: %s", name);
@@ -187,8 +221,25 @@ void preset_list::xml_end_element_handler(void *user_data, const char *name)
             return;
         }
         break;
+    case VAR:
+        if (!strcmp(name, "var")) {
+            state = PRESET;
+            return;
+        }
+        break;
     }
     throw preset_exception("Invalid XML element close: %s", name, 0);
+}
+
+void preset_list::xml_character_data_handler(void *user_data, const XML_Char *data, int len)
+{
+    preset_list &self = *(preset_list *)user_data;
+    parser_state &state = self.state;
+    if (state == VAR)
+    {
+        self.parser_preset.variables[self.current_key] += string(data, len);
+        return;
+    }
 }
 
 bool preset_list::load_defaults(bool builtin)
@@ -224,6 +275,7 @@ void preset_list::parse(const std::string &data)
     XML_Parser parser = XML_ParserCreate("UTF-8");
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, xml_start_element_handler, xml_end_element_handler);
+    XML_SetCharacterDataHandler(parser, xml_character_data_handler);
     XML_Status status = XML_Parse(parser, data.c_str(), data.length(), 1);
     if (status == XML_STATUS_ERROR) {
         string err = string("Parse error: ") + XML_ErrorString(XML_GetErrorCode(parser))+ " in ";
@@ -242,6 +294,7 @@ void preset_list::load(const char *filename)
     if (fd < 0) 
         throw preset_exception("Could not load the presets from ", filename, errno);
     XML_SetElementHandler(parser, xml_start_element_handler, xml_end_element_handler);
+    XML_SetCharacterDataHandler(parser, xml_character_data_handler);
     char buf[4096];
     do
     {

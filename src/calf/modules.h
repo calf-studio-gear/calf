@@ -56,6 +56,7 @@ public:
     static bool is_noisy(int param_no) { return false; }
     inline void execute(int cmd_no) {}
     inline char *configure(const char *key, const char *value) { return NULL; }
+    inline void send_configures(send_configure_iface *sci) {}
 };
 
 class amp_audio_module: public null_audio_module

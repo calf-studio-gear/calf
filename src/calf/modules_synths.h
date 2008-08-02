@@ -226,6 +226,8 @@ public:
     organ_parameters par_values;
     uint32_t srate;
     bool panic_flag;
+    /// Value for configure variable map_curve
+    std::string var_map_curve;
 
     organ_audio_module()
     : drawbar_organ(&par_values)
@@ -274,6 +276,7 @@ public:
     static const char *get_label() { return "Organ"; }    
     static plugin_command_info *get_commands();
     virtual char *configure(const char *key, const char *value);
+    virtual void send_configures(send_configure_iface *);
 };
 
 };

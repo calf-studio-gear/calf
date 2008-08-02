@@ -130,6 +130,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     virtual plugin_command_info *get_commands() {
         return Module::get_commands();
     }
+    void send_configures(send_configure_iface *sci) { 
+        fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
+    }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)

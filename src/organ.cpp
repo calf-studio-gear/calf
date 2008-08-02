@@ -1230,20 +1230,24 @@ char *organ_audio_module::configure(const char *key, const char *value)
 {
     if (!strcmp(key, "map_curve"))
     {
+        var_map_curve = value;
         stringstream ss(value);
-        int points;
-        ss >> points;
-        int i;
-        float x = 0, y = 0;
-        for (i = 0; i < points; i++)
+        int i = 0;
+        float x = 0, y = 1;
+        if (*value)
         {
-            static const int whites[] = { 0, 2, 4, 5, 7, 9, 11 };
-            ss >> x >> y;
-            int wkey = (int)(x * 71);
-            x = whites[wkey % 7] + 12 * (wkey / 7);
-            parameters->percussion_keytrack[i][0] = x;
-            parameters->percussion_keytrack[i][1] = y;
-            // cout << "(" << x << ", " << y << ")" << endl;
+            int points;
+            ss >> points;
+            for (i = 0; i < points; i++)
+            {
+                static const int whites[] = { 0, 2, 4, 5, 7, 9, 11 };
+                ss >> x >> y;
+                int wkey = (int)(x * 71);
+                x = whites[wkey % 7] + 12 * (wkey / 7);
+                parameters->percussion_keytrack[i][0] = x;
+                parameters->percussion_keytrack[i][1] = y;
+                // cout << "(" << x << ", " << y << ")" << endl;
+            }
         }
         // pad with constant Y
         for (; i < ORGAN_KEYTRACK_POINTS; i++) {
@@ -1254,6 +1258,11 @@ char *organ_audio_module::configure(const char *key, const char *value)
     }
     cout << "Set configure value " << key << " to " << value;
     return NULL;
+}
+
+void organ_audio_module::send_configures(send_configure_iface *sci)
+{
+    sci->send_configure("map_curve", var_map_curve.c_str());
 }
     
 plugin_command_info *organ_audio_module::get_commands()

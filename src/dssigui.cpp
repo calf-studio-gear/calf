@@ -75,6 +75,7 @@ struct plugin_proxy_base: public plugin_ctl_iface
     osc_client *client;
     bool send_osc;
     plugin_gui *gui;
+    map<string, string> cfg_vars;
     
     plugin_proxy_base()
     {
@@ -168,6 +169,10 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             str << "ExecCommand" << "";
             client->send("/configure", str);
         }
+    }
+    void send_configures(send_configure_iface *sci) { 
+        for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
+            sci->send_configure(i->first.c_str(), i->second.c_str());
     }
 };
 
@@ -272,6 +277,15 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         {
             debug_printf("QUIT\n");
             g_main_loop_quit(mainloop);
+            return;
+        }
+        if (address == prefix + "/configure"&& args == "ss")
+        {
+            string key, value;
+            buffer >> key >> value;
+            plugin->cfg_vars[key] = value;
+            // XXXKF perhaps this should be queued !
+            window->gui->refresh();
             return;
         }
         if (address == prefix + "/program"&& args == "ii")

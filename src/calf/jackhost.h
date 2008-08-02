@@ -417,6 +417,9 @@ public:
     virtual char *configure(const char *key, const char *value) { 
         return module.configure(key, value);
     }
+    virtual void send_configures(send_configure_iface *sci) {
+        module.send_configures(sci);
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name);

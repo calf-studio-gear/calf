@@ -83,6 +83,9 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
     }
+    void send_configures(send_configure_iface *sci) { 
+        Module::send_configures(sci);
+    }
 };
 
 template<class Module>

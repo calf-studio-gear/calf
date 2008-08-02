@@ -40,7 +40,7 @@ struct plugin_preset
     std::string plugin;
     std::vector<std::string> param_names;
     std::vector<float> values;
-    std::string blob;
+    std::map<std::string, std::string> variables;
 
     plugin_preset() : bank(0), program(0) {}
     std::string to_xml();    
@@ -78,11 +78,13 @@ struct preset_list
         LIST,
         PRESET,
         VALUE,
+        VAR,
     } state;
 
     preset_vector presets;
     plugin_preset parser_preset;
     std::map<std::string, int> last_preset_ids;
+    std::string current_key;
 
     static std::string get_preset_filename();
     bool load_defaults(bool builtin);
@@ -95,6 +97,7 @@ struct preset_list
 protected:
     static void xml_start_element_handler(void *user_data, const char *name, const char *attrs[]);
     static void xml_end_element_handler(void *user_data, const char *name);
+    static void xml_character_data_handler(void *user_data, const char *data, int len);
 };
 
 extern preset_list &get_builtin_presets();
