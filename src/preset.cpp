@@ -110,10 +110,17 @@ void plugin_preset::get_from(plugin_ctl_iface *plugin)
     plugin->send_configures(&tmp);
 }
     
-string synth::preset_list::get_preset_filename()
+string synth::preset_list::get_preset_filename(bool builtin)
 {
-    const char *home = getenv("HOME");
-    return string(home)+"/.calfpresets";
+    if (builtin)
+    {
+        return PKGLIBDIR "/presets.xml";
+    }
+    else
+    {
+        const char *home = getenv("HOME");
+        return string(home)+"/.calfpresets";
+    }
 }
 
 void preset_list::xml_start_element_handler(void *user_data, const char *name, const char *attrs[])
@@ -246,20 +253,11 @@ bool preset_list::load_defaults(bool builtin)
 {
     try {
         struct stat st;
-        if (!builtin)
-        {
-            if (!stat(preset_list::get_preset_filename().c_str(), &st)) {
-                load(preset_list::get_preset_filename().c_str());
-                if (!presets.empty())
-                    return true;
-            }
-        }
-        else
-        {
-            if (presets.empty() && !stat(PKGLIBDIR "/presets.xml", &st)) {
-                load(PKGLIBDIR "/presets.xml");
+        string name = preset_list::get_preset_filename(builtin);
+        if (!stat(name.c_str(), &st)) {
+            load(name.c_str());
+            if (!presets.empty())
                 return true;
-            }
         }
     }
     catch(preset_exception &ex)
