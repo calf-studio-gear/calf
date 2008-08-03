@@ -280,7 +280,7 @@ const char *organ_audio_module::get_gui_xml()
                         "<vbox>"
                             "<align scale-x=\"0.0\" scale-y=\"1.0\"><vbox><keyboard octaves=\"10\"/><curve key=\"map_curve\" maxpoints=\"4\"/></vbox></align>"
                             "<hbox>"
-                                "<table rows=\"2\" cols=\"4\">"
+                                "<table rows=\"2\" cols=\"5\">"
                                     "<vbox attach-x=\"0\" attach-y=\"0\">"
                                         "<label param=\"perc_waveform\"/>"
                                         "<combo param=\"perc_waveform\"/>"
@@ -300,6 +300,11 @@ const char *organ_audio_module::get_gui_xml()
                                         "<knob param=\"perc_decay\" expand=\"0\" fill=\"0\"/>"
                                         "<value param=\"perc_decay\"/>"
                                     "</vbox>"
+                                    "<vbox attach-x=\"4\" attach-y=\"0\">"
+                                        "<label param=\"perc_vel2amp\"/>"
+                                        "<knob param=\"perc_vel2amp\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_vel2amp\"/>"
+                                    "</vbox>"        
                                     "<vbox attach-x=\"0\" attach-y=\"1\">"
                                         "<label param=\"perc_fm_waveform\"/>"
                                         "<combo param=\"perc_fm_waveform\"/>"
@@ -319,19 +324,17 @@ const char *organ_audio_module::get_gui_xml()
                                         "<knob param=\"perc_fm_decay\" expand=\"0\" fill=\"0\"/>"
                                         "<value param=\"perc_fm_decay\"/>"
                                     "</vbox>"
+                                    "<vbox attach-x=\"4\" attach-y=\"1\">"
+                                        "<label param=\"perc_vel2fm\"/>"
+                                        "<knob param=\"perc_vel2fm\" expand=\"0\" fill=\"0\"/>"
+                                        "<value param=\"perc_vel2fm\"/>"
+                                    "</vbox>"        
                                 "</table>"
                                 "<vbox>"
                                     "<hbox>"
                                         "<vbox>"
                                             "<label param=\"perc_trigger\"/>"
                                             "<combo param=\"perc_trigger\"/>"
-                                        "</vbox>"        
-                                    "</hbox>"
-                                    "<hbox>"
-                                        "<vbox>"
-                                            "<label param=\"perc_vel2amp\"/>"
-                                            "<knob param=\"perc_vel2amp\" expand=\"0\" fill=\"0\"/>"
-                                            "<value param=\"perc_vel2amp\"/>"
                                         "</vbox>"        
                                     "</hbox>"
                                 "</vbox>"
@@ -506,14 +509,15 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0.25,      0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB, NULL, "perc_level", "P: Level" },
     { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_waveform", "P: Carrier Wave" },
     { 2,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_harmonic", "P: Carrier Frq" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_vel2amp", "P: Vel->Amp" },
     
     { 200,         10,  3000, 100, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "perc_fm_decay", "P: Modulator Decay" },
-    { 0,          0,    4,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_fm_depth", "P: FM Depth" },
+    { 1,          0,    4,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_fm_depth", "P: FM Depth" },
     { 2,         0,  organ_voice_base::wave_count_small - 1, 1, PF_ENUM | PF_CTL_COMBO, organ_wave_names, "perc_fm_waveform", "P: Modulator Wave" },
     { 2,      1, 32, 32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "perc_fm_harmonic", "P: Modulator Frq" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_vel2fm", "P: Vel->FM" },
     
     { 0,         0,  organ_voice_base::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "P: Trigger" },
-    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_vel2amp", "P: Vel->Amp" },
 
     { 0,         0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "filter_chain", "Filter 1 To 2" },
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
@@ -1180,7 +1184,7 @@ void percussion_voice::note_on(int note, int vel)
             break;
         }
     }
-    fm_amp.set(fm_keytrack * (1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0));
+    fm_amp.set(fm_keytrack * (1.0f + (vel - 127) * parameters->percussion_vel2fm / 127.0));
 }
 
 void percussion_voice::render_to(float (*buf)[2], int nsamples)

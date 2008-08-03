@@ -59,12 +59,13 @@ struct organ_parameters {
     float percussion_level;
     float percussion_wave;
     float percussion_harmonic;
+    float percussion_vel2amp;
     float percussion_fm_time;
     float percussion_fm_depth;
     float percussion_fm_wave;
     float percussion_fm_harmonic;
+    float percussion_vel2fm;
     float percussion_trigger;
-    float percussion_vel2amp;
     float filter_chain;
     float master;
 
@@ -310,9 +311,9 @@ struct drawbar_organ: public synth::basic_synth {
         par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
         par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
         par_foldover,
-        par_percdecay, par_perclevel, par_percwave, par_percharm,
-        par_percfmdecay, par_percfmdepth, par_percfmwave, par_percfmharm, 
-        par_perctrigger, par_percvel2amp,
+        par_percdecay, par_perclevel, par_percwave, par_percharm, par_percvel2amp,
+        par_percfmdecay, par_percfmdepth, par_percfmwave, par_percfmharm, par_percvel2fm,
+        par_perctrigger, 
         par_filterchain,
         par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
