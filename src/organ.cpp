@@ -331,6 +331,11 @@ const char *organ_audio_module::get_gui_xml()
                                     "</vbox>"        
                                 "</table>"
                                 "<vbox>"
+                                    "<vbox>"
+                                        "<label param=\"perc_stereo\"/>"
+                                        "<knob param=\"perc_stereo\" expand=\"0\" fill=\"0\" type=\"3\"/>"
+                                        "<value param=\"perc_stereo\"/>"
+                                    "</vbox>"
                                     "<hbox>"
                                         "<vbox>"
                                             "<label param=\"perc_trigger\"/>"
@@ -518,6 +523,7 @@ parameter_properties organ_audio_module::param_props[] = {
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "perc_vel2fm", "P: Vel->FM" },
     
     { 0,         0,  organ_voice_base::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "P: Trigger" },
+    { 0,       0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "perc_stereo", "P: Stereo Phase" },
 
     { 0,         0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "filter_chain", "Filter 1 To 2" },
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
@@ -1215,16 +1221,16 @@ void percussion_voice::render_to(float (*buf)[2], int nsamples)
         amp.set(0.0);
         return;
     }
+    float s = parameters->percussion_stereo * ORGAN_WAVE_SIZE * (0.5 / 360.0);
     for (int i = 0; i < nsamples; i++) {
         float fm = wave(fmdata, modphase);
         fm *= ORGAN_WAVE_SIZE * parameters->percussion_fm_depth * fm_amp.get();
         modphase += moddphase;
         fm_amp.age_exp(fm_age_const, 1.0 / 32768.0);
         
-        float osc = level * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm));
-        osc *= level * amp.get();
-        buf[i][0] += osc;
-        buf[i][1] += osc;
+        float lamp = level * amp.get();
+        buf[i][0] += lamp * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm - s));
+        buf[i][1] += lamp * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm + s));
         amp.age_exp(age_const, 1.0 / 32768.0);
         phase += dphase;
     }
