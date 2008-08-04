@@ -148,10 +148,13 @@ public:
         perctrig_first = 0,
         perctrig_each,
         perctrig_eachplus,
+        perctrig_polyphonic,
         perctrig_count
     };
     typedef waveform_family<ORGAN_WAVE_BITS> small_wave_family;
     typedef waveform_family<ORGAN_BIG_WAVE_BITS> big_wave_family;
+public:
+    organ_parameters *parameters;
 protected:
     static small_wave_family (*waves)[wave_count_small];
     static big_wave_family (*big_waves)[wave_count_big];
@@ -159,8 +162,16 @@ protected:
     // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
     dsp::decay amp;
+    /// percussion FM carrier amplitude envelope
+    dsp::decay pamp;
+    /// percussion FM modulator amplitude envelope
+    dsp::decay fm_amp;
+    dsp::fixed_point<int64_t, 20> pphase, dpphase;
+    dsp::fixed_point<int64_t, 20> modphase, moddphase;
+    float fm_keytrack;
+    int &sample_rate_ref;
 
-    organ_voice_base(organ_parameters *_parameters);
+    organ_voice_base(organ_parameters *_parameters, int &_sample_rate_ref);
     
     inline float wave(float *data, dsp::fixed_point<int, 20> ph) {
         return ph.lerp_table_lookup_float(data);
@@ -170,7 +181,6 @@ protected:
         return ph.lerp_table_lookup_float_mask(data, ORGAN_BIG_WAVE_SIZE - 1);
     }
 public:
-    organ_parameters *parameters;
     static inline small_wave_family &get_wave(int wave) {
         return (*waves)[wave];
     }
@@ -178,6 +188,23 @@ public:
         return (*big_waves)[wave];
     }
     static void precalculate_waves();
+    void update_pitch()
+    {
+        float phase = synth::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
+        dpphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
+        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
+    }
+    // this doesn't really have a voice interface
+    void render_percussion_to(float (*buf)[2], int nsamples);
+    void perc_note_on(int note, int vel);
+    void perc_reset()
+    {
+        pphase = 0;
+        modphase = 0;
+        dpphase = 0;
+        moddphase = 0;
+        note = -1;
+    }
 };
 
 class organ_vibrato
@@ -209,7 +236,7 @@ protected:
 
 public:
     organ_voice()
-    : organ_voice_base(NULL),
+    : organ_voice_base(NULL, sample_rate),
     expression(linear_ramp(16)) {
     }
 
@@ -237,6 +264,7 @@ public:
         velocity = vel * 1.0 / 127.0;
         amp.set(1.0f);
         released = false;
+        perc_note_on(note, vel);
     }
 
     void note_off(int /* vel */) {
@@ -250,48 +278,30 @@ public:
         return note;
     }
     virtual bool get_active() {
-        return (note != -1) && amp.get_active();
+        return (note != -1) && (amp.get_active() || (use_percussion() && pamp.get_active()));
     }
     void update_pitch();
+    inline bool use_percussion()
+    {
+        return dsp::fastf2i_drm(parameters->percussion_trigger) == perctrig_polyphonic;
+    }
 };
 
 /// Not a true voice, just something with similar-ish interface.
 class percussion_voice: public organ_voice_base {
 public:
     int sample_rate;
-    dsp::fixed_point<int64_t, 20> phase, modphase, dphase, moddphase;
-    dsp::decay fm_amp;
-    float fm_keytrack;
 
     percussion_voice(organ_parameters *_parameters)
-    : organ_voice_base(_parameters)
+    : organ_voice_base(_parameters, sample_rate)
     {
     }
     
-    void reset() {
-        phase = 0;
-        modphase = 0;
-        dphase = 0;
-        moddphase = 0;
-        note = -1;
-    }
-
-    void note_on(int note, int vel);
-    
-    void update_pitch()
-    {
-        float phase = synth::midi_note_to_phase(note, 0, sample_rate);
-        dphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
-        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
-    }
-
-    // this doesn't really have a voice interface
-    void render_to(float (*buf)[2], int nsamples);
     bool get_active() {
-        return (note != -1) && amp.get_active();
+        return (note != -1) && pamp.get_active();
     }
     bool get_noticable() {
-        return (note != -1) && (amp.get() > 0.2);
+        return (note != -1) && (pamp.get() > 0.2 * parameters->percussion_level);
     }
     void setup(int sr) {
         sample_rate = sr;
@@ -343,7 +353,7 @@ struct drawbar_organ: public synth::basic_synth {
                 global_vibrato.process(parameters, buf + i, min(64, nsamples - i), sample_rate);
         }
         if (percussion.get_active())
-            percussion.render_to(buf, nsamples);
+            percussion.render_percussion_to(buf, nsamples);
         float gain = parameters->master * (1.0 / (9 * 8));
         for (int i=0; i<nsamples; i++) {
             output[0][i] = gain*buf[i][0];
@@ -356,7 +366,7 @@ struct drawbar_organ: public synth::basic_synth {
         return v;
     }
     virtual void percussion_note_on(int note, int vel) {
-        percussion.note_on(note, vel);
+        percussion.perc_note_on(note, vel);
     }
     virtual void params_changed() = 0;
     virtual void setup(int sr) {
@@ -386,6 +396,8 @@ struct drawbar_organ: public synth::basic_synth {
                 return true;
             case organ_voice_base::perctrig_eachplus:
                 return !percussion.get_noticable();
+            case organ_voice_base::perctrig_polyphonic:
+                return false;
         }
     }
 };

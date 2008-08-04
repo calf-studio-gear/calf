@@ -417,7 +417,7 @@ bool organ_audio_module::get_graph(int index, int subindex, float *data, int poi
 
 const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
 
-const char *organ_percussion_trigger_names[] = { "First note", "Each note", "Each, no retrig" };
+const char *organ_percussion_trigger_names[] = { "First note", "Each note", "Each, no retrig", "Polyphonic" };
 
 const char *organ_wave_names[] = { 
     "Sin", 
@@ -927,10 +927,54 @@ void organ_voice_base::precalculate_waves()
     }
 }
 
-organ_voice_base::organ_voice_base(organ_parameters *_parameters)
+organ_voice_base::organ_voice_base(organ_parameters *_parameters, int &_sample_rate_ref)
 : parameters(_parameters)
+, sample_rate_ref(_sample_rate_ref)
 {
     note = -1;
+}
+
+void organ_voice_base::render_percussion_to(float (*buf)[2], int nsamples)
+{
+    if (note == -1)
+        return;
+
+    if (!pamp.get_active())
+        return;
+    if (parameters->percussion_level < small_value<float>())
+        return;
+    float level = parameters->percussion_level * 9;
+    static float zeros[ORGAN_WAVE_SIZE];
+    // XXXKF the decay needs work!
+    double age_const = parameters->perc_decay_const;
+    double fm_age_const = parameters->perc_fm_decay_const;
+    int timbre = parameters->get_percussion_wave();
+    if (timbre < 0 || timbre >= wave_count_small)
+        return;
+    int timbre2 = parameters->get_percussion_fm_wave();
+    if (timbre2 < 0 || timbre2 >= wave_count_small)
+        timbre2 = wave_sine;
+    float *fmdata = (*waves)[timbre2].get_level(moddphase.get());
+    if (!fmdata)
+        fmdata = zeros;
+    float *data = (*waves)[timbre].get_level(dpphase.get());
+    if (!data) {
+        pamp.set(0.0);
+        return;
+    }
+    float s = parameters->percussion_stereo * ORGAN_WAVE_SIZE * (0.5 / 360.0);
+    for (int i = 0; i < nsamples; i++) {
+        float fm = wave(fmdata, modphase);
+        fm *= ORGAN_WAVE_SIZE * parameters->percussion_fm_depth * fm_amp.get();
+        modphase += moddphase;
+        fm_amp.age_exp(fm_age_const, 1.0 / 32768.0);
+        
+        float lamp = level * pamp.get();
+        buf[i][0] += lamp * wave(data, pphase + dsp::fixed_point<int64_t, 52>(fm - s));
+        buf[i][1] += lamp * wave(data, pphase + dsp::fixed_point<int64_t, 52>(fm + s));
+        pamp.age_exp(age_const, 1.0 / 32768.0);
+        pphase += dpphase;
+    }
 }
 
 void organ_vibrato::reset()
@@ -975,6 +1019,7 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
 
 void organ_voice::update_pitch()
 {
+    organ_voice_base::update_pitch();
     dphase.set(synth::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * parameters->pitch_bend);
 }
 
@@ -985,7 +1030,11 @@ void organ_voice::render_block() {
     dsp::zero(&output_buffer[0][0], Channels * BlockSize);
     dsp::zero(&aux_buffers[1][0][0], 2 * Channels * BlockSize);
     if (!amp.get_active())
+    {
+        if (use_percussion())
+            render_percussion_to(output_buffer, BlockSize);
         return;
+    }
 
     update_pitch();
     dsp::fixed_point<int, 20> tphase, tdphase;
@@ -1130,6 +1179,9 @@ void organ_voice::render_block() {
             amp.age_lin((1.0/44100.0)/0.03,0.0);
         }
     }
+    
+    if (use_percussion())
+        render_percussion_to(output_buffer, BlockSize);
 }
 
 void drawbar_organ::update_params()
@@ -1166,16 +1218,15 @@ void organ_audio_module::execute(int cmd_no)
     }
 }
 
-void percussion_voice::note_on(int note, int vel)
+void organ_voice_base::perc_note_on(int note, int vel)
 {
     // do not reset phase if voice is still running (to prevent clicks, even at cost of slight loss of "percussiveness")
-    if (!amp.get_active())
+    if (!pamp.get_active())
     {
-        phase = 0;
-        modphase = 0;
+        perc_reset();
     }
     this->note = note;
-    amp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
+    pamp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
     update_pitch();
     float (*kt)[2] = parameters->percussion_keytrack;
     // assume last point (will be put there by padding)
@@ -1191,49 +1242,6 @@ void percussion_voice::note_on(int note, int vel)
         }
     }
     fm_amp.set(fm_keytrack * (1.0f + (vel - 127) * parameters->percussion_vel2fm / 127.0));
-}
-
-void percussion_voice::render_to(float (*buf)[2], int nsamples)
-{
-    if (note == -1)
-        return;
-
-    if (!amp.get_active())
-        return;
-    if (parameters->percussion_level < small_value<float>())
-        return;
-    float level = parameters->percussion_level * 9;
-    static float zeros[ORGAN_WAVE_SIZE];
-    // XXXKF the decay needs work!
-    double age_const = parameters->perc_decay_const;
-    double fm_age_const = parameters->perc_fm_decay_const;
-    int timbre = parameters->get_percussion_wave();
-    if (timbre < 0 || timbre >= wave_count_small)
-        return;
-    int timbre2 = parameters->get_percussion_fm_wave();
-    if (timbre2 < 0 || timbre2 >= wave_count_small)
-        timbre2 = wave_sine;
-    float *fmdata = (*waves)[timbre2].get_level(moddphase.get());
-    if (!fmdata)
-        fmdata = zeros;
-    float *data = (*waves)[timbre].get_level(dphase.get());
-    if (!data) {
-        amp.set(0.0);
-        return;
-    }
-    float s = parameters->percussion_stereo * ORGAN_WAVE_SIZE * (0.5 / 360.0);
-    for (int i = 0; i < nsamples; i++) {
-        float fm = wave(fmdata, modphase);
-        fm *= ORGAN_WAVE_SIZE * parameters->percussion_fm_depth * fm_amp.get();
-        modphase += moddphase;
-        fm_amp.age_exp(fm_age_const, 1.0 / 32768.0);
-        
-        float lamp = level * amp.get();
-        buf[i][0] += lamp * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm - s));
-        buf[i][1] += lamp * wave(data, phase + dsp::fixed_point<int64_t, 20>(fm + s));
-        amp.age_exp(age_const, 1.0 / 32768.0);
-        phase += dphase;
-    }
 }
 
 char *organ_audio_module::configure(const char *key, const char *value)
