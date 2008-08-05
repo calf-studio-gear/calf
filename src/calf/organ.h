@@ -170,8 +170,11 @@ protected:
     dsp::fixed_point<int64_t, 20> modphase, moddphase;
     float fm_keytrack;
     int &sample_rate_ref;
+    bool &released_ref;
+    /// pamp per-sample (linear) step during release stage (calculated on release so that it will take 30ms for it to go from "current value at release point" to 0)
+    float rel_age_const;
 
-    organ_voice_base(organ_parameters *_parameters, int &_sample_rate_ref);
+    organ_voice_base(organ_parameters *_parameters, int &_sample_rate_ref, bool &_released_ref);
     
     inline float wave(float *data, dsp::fixed_point<int, 20> ph) {
         return ph.lerp_table_lookup_float(data);
@@ -197,6 +200,7 @@ public:
     // this doesn't really have a voice interface
     void render_percussion_to(float (*buf)[2], int nsamples);
     void perc_note_on(int note, int vel);
+    void perc_note_off(int note, int vel);
     void perc_reset()
     {
         pphase = 0;
@@ -226,7 +230,6 @@ protected:
         float output_buffer[BlockSize][Channels];
         float aux_buffers[3][BlockSize][Channels];
     };
-    bool released;
     dsp::fixed_point<int64_t, 52> phase, dphase;
     biquad<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
@@ -236,7 +239,7 @@ protected:
 
 public:
     organ_voice()
-    : organ_voice_base(NULL, sample_rate),
+    : organ_voice_base(NULL, sample_rate, released),
     expression(linear_ramp(16)) {
     }
 
@@ -268,6 +271,10 @@ public:
     }
 
     void note_off(int /* vel */) {
+        // reset age to 0 (because decay will turn from exponential to linear, necessary because of error cumulation prevention)
+        released = true;
+        pamp.reinit();
+        rel_age_const = pamp.get() * ((1.0/44100.0)/0.03);
         for (int i = 0; i < EnvCount; i++)
             envs[i].note_off();
     }
@@ -291,9 +298,11 @@ public:
 class percussion_voice: public organ_voice_base {
 public:
     int sample_rate;
+    bool released;
 
     percussion_voice(organ_parameters *_parameters)
-    : organ_voice_base(_parameters, sample_rate)
+    : organ_voice_base(_parameters, sample_rate, released)
+    , released(false)
     {
     }
     

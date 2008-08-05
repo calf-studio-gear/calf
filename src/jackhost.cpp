@@ -340,8 +340,8 @@ void host_session::close()
         g_source_remove(lash_source_id);
     main_win->on_closed();
     main_win->close_guis();
-    client.delete_plugins();
     client.deactivate();
+    client.delete_plugins();
     client.close();
 }
 

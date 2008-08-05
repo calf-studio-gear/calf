@@ -284,6 +284,12 @@ public:
         active = true;
         age = 0;
     }
+    /// reinitialise envelope (must be called if shape changes from linear to exponential or vice versa in the middle of envelope)
+    inline void reinit()
+    {
+        initial = value;
+        age = 1;
+    }
     inline void add(double v) {
         if (active)
             value += v;
@@ -302,7 +308,7 @@ public:
     inline void age_exp(double constant, double epsilon) {
         if (active) {
             if (!(age & mask))
-                value = initial * pow(constant, (double)(age + 1));
+                value = initial * pow(constant, (double)age);
             else
                 value *= constant;
             if (value < epsilon)
@@ -313,7 +319,7 @@ public:
     inline void age_lin(double constant, double epsilon) {
         if (active) {
             if (!(age & mask))
-                value = initial - constant * (age + 1);
+                value = initial - constant * age;
             else
                 value -= constant;
             if (value < epsilon)
