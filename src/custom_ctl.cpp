@@ -457,6 +457,23 @@ static inline float endless(float value)
         return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
 }
 
+static inline float deadzone(float value, float incr)
+{
+    float dzw = 3 / 32.0;
+    if (value >= 0.501)
+        value += dzw;
+    if (value < 0.499)
+        value -= dzw;
+    
+    value += incr;
+    
+    if (value >= (0.5 - dzw) && value <= (0.5 + dzw))
+        return 0.5;
+    if (value < 0.5)
+        return value + dzw;
+    return value - dzw;
+}
+
 static gboolean
 calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
@@ -468,6 +485,11 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         if (self->knob_type == 3)
         {
             gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / 100));
+        }
+        else
+        if (self->knob_type == 1)
+        {
+            gtk_range_set_value(GTK_RANGE(widget), deadzone(self->start_value, -(event->y - self->start_y) / 100));
         }
         else
         {
