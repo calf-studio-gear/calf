@@ -274,7 +274,6 @@ public:
 
     void note_off(int /* vel */) {
         // reset age to 0 (because decay will turn from exponential to linear, necessary because of error cumulation prevention)
-        released = true;
         perc_released = true;
         if (pamp.get_active())
         {
