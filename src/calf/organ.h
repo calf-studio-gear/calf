@@ -236,10 +236,11 @@ protected:
     inertia<linear_ramp> expression;
     organ_vibrato vibrato;
     float velocity;
+    bool perc_released;
 
 public:
     organ_voice()
-    : organ_voice_base(NULL, sample_rate, released),
+    : organ_voice_base(NULL, sample_rate, perc_released),
     expression(linear_ramp(16)) {
     }
 
@@ -254,6 +255,7 @@ public:
     }
 
     void note_on(int note, int vel) {
+        perc_released = false;
         reset();
         this->note = note;
         const float sf = 0.001f;
@@ -273,7 +275,11 @@ public:
     void note_off(int /* vel */) {
         // reset age to 0 (because decay will turn from exponential to linear, necessary because of error cumulation prevention)
         released = true;
-        pamp.reinit();
+        perc_released = true;
+        if (pamp.get_active())
+        {
+            pamp.reinit();
+        }
         rel_age_const = pamp.get() * ((1.0/44100.0)/0.03);
         for (int i = 0; i < EnvCount; i++)
             envs[i].note_off();

@@ -960,7 +960,7 @@ void organ_voice_base::render_percussion_to(float (*buf)[2], int nsamples)
         fmdata = zeros;
     float *data = (*waves)[timbre].get_level(dpphase.get());
     if (!data) {
-        pamp.set(0.0);
+        pamp.deactivate();
         return;
     }
     float s = parameters->percussion_stereo * ORGAN_WAVE_SIZE * (0.5 / 360.0);

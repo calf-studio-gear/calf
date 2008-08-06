@@ -327,6 +327,10 @@ public:
             age++;
         }
     }
+    inline void deactivate() {
+        active = false;
+        value = 0;
+    }
 };
 
 class scheduler;
