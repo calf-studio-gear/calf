@@ -573,21 +573,34 @@ public:
 class rotary_speaker_audio_module: public null_audio_module
 {
 public:
-    enum { par_speed, par_spacing, par_shift, par_moddepth, param_count };
+    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, param_count };
     enum { in_count = 2, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    unsigned int phase_l, dphase_l, phase_h, dphase_h;
+    /// Current phases and phase deltas for bass and treble rotors
+    uint32_t phase_l, dphase_l, phase_h, dphase_h;
     dsp::simple_delay<1024, float> delay;
     dsp::biquad<float> crossover1l, crossover1r, crossover2l, crossover2r;
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
     int vibrato_mode;
     static parameter_properties param_props[];
-    float mwhl_value, hold_value, aspeed_l, aspeed_h, dspeed;
-    unsigned int dphase2_l, dphase2_h;
+    /// Current CC1 (Modulation) value, normalized to [0, 1]
+    float mwhl_value;
+    /// Current CC64 (Hold) value, normalized to [0, 1]
+    float hold_value;
+    /// Current rotation speed for bass rotor - automatic mode
+    float aspeed_l;
+    /// Current rotation speed for treble rotor - automatic mode
+    float aspeed_h;
+    /// Desired speed (0=slow, 1=fast) - automatic mode
+    float dspeed;
+    /// Current rotation speed for bass rotor - manual mode
+    float maspeed_l;
+    /// Current rotation speed for treble rotor - manual mode
+    float maspeed_h;
 
     rotary_speaker_audio_module()
     {
@@ -614,6 +627,7 @@ public:
     }
     void activate() {
         phase_h = phase_l = 0.f;
+        maspeed_h = maspeed_l = 0.f;
         setup();
     }
     void deactivate() {
@@ -621,6 +635,9 @@ public:
     void set_vibrato()
     {
         vibrato_mode = fastf2i_drm(*params[par_speed]);
+        // manual vibrato - do not recalculate speeds as they're not used anyway
+        if (vibrato_mode == 5) 
+            return;
         if (!vibrato_mode)
             dspeed = -1;
         else {
@@ -633,14 +650,27 @@ public:
         }
         update_speed();
     }
+    /// Convert RPM speed to delta-phase
+    inline uint32_t rpm2dphase(float rpm)
+    {
+        return (uint32_t)((rpm / (60.0 * srate)) * (1 << 30)) << 2;
+    }
+    /// Set delta-phase variables based on current calculated (and interpolated) RPM speed
     void update_speed()
     {
         float speed_h = aspeed_h >= 0 ? (48 + (400-48) * aspeed_h) : (48 * (1 + aspeed_h));
         float speed_l = aspeed_l >= 0 ? 40 + (342-40) * aspeed_l : (40 * (1 + aspeed_l));
-        double fdphase_h = speed_h / (60 * srate);
-        double fdphase_l = speed_l / (60 * srate);
-        dphase_h = (unsigned int)(fdphase_h * (1 << 30)) << 2;
-        dphase_l = (unsigned int)(fdphase_l * (1 << 30)) << 2;
+        dphase_h = rpm2dphase(speed_h);
+        dphase_l = rpm2dphase(speed_l);
+    }
+    void update_speed_manual(float delta)
+    {
+        float ts = *params[par_treblespeed];
+        float bs = *params[par_bassspeed];
+        incr_towards(maspeed_h, ts, delta * 200, delta * 200);
+        incr_towards(maspeed_l, bs, delta * 200, delta * 200);
+        dphase_h = rpm2dphase(maspeed_h);
+        dphase_l = rpm2dphase(maspeed_l);
     }
     /// map a ramp [int] to a sinusoid-like function [0, 65536]
     static inline int pseudo_sine_scl(int counter)
@@ -649,15 +679,16 @@ public:
         double v = counter * (1.0 / (65536.0 * 32768.0));
         return 32768 + 32768 * (v - v*v*v) * (1.0 / 0.3849);
     }
-    inline bool update_speed(float &aspeed, float delta_decc, float delta_acc)
+    /// Increase or decrease aspeed towards raspeed, with required negative and positive rate
+    inline bool incr_towards(float &aspeed, float raspeed, float delta_decc, float delta_acc)
     {
-        if (aspeed < dspeed) {
-            aspeed = min(dspeed, aspeed + delta_acc);
+        if (aspeed < raspeed) {
+            aspeed = min(raspeed, aspeed + delta_acc);
             return true;
         }
-        else if (aspeed > dspeed) 
+        else if (aspeed > raspeed) 
         {
-            aspeed = max(dspeed, aspeed - delta_decc);
+            aspeed = max(raspeed, aspeed - delta_decc);
             return true;
         }        
         return false;
@@ -702,10 +733,15 @@ public:
         crossover2l.sanitize_d2();
         crossover2r.sanitize_d2();
         float delta = nsamples * 1.0 / srate;
-        bool u1 = update_speed(aspeed_l, delta * 0.2, delta * 0.14);
-        bool u2 = update_speed(aspeed_h, delta, delta * 0.5);
-        if (u1 || u2)
-            set_vibrato();
+        if (vibrato_mode == 5)
+            update_speed_manual(delta);
+        else
+        {
+            bool u1 = incr_towards(aspeed_l, dspeed, delta * 0.2, delta * 0.14);
+            bool u2 = incr_towards(aspeed_h, dspeed, delta, delta * 0.5);
+            if (u1 || u2)
+                set_vibrato();
+        }
         return outputs_mask;
     }
     virtual void control_change(int ctl, int val)

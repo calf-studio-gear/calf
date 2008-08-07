@@ -106,7 +106,8 @@ static const char *units[] = {
     "ue:semitone12TET", // - ask SWH
     "ue:bpm",
     "ue:degree",
-    "ue:midiNote" // question to SWH: the extension says midiNode, but that must be a typo
+    "ue:midiNote", // question to SWH: the extension says midiNode, but that must be a typo
+    NULL // rotations per minute
 };
 
 static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, giface_plugin_info *gpi, int param)
@@ -149,7 +150,7 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
     ss << ind << "lv2:minimum " << pp.min << " ;\n";
     ss << ind << "lv2:maximum " << pp.max << " ;\n";
     uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
-    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)))
+    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
         ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
