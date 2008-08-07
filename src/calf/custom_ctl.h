@@ -80,7 +80,7 @@ struct CalfKnob
 {
     GtkRange parent;
     int knob_type;
-    double start_x, start_y, start_value;
+    double start_x, start_y, start_value, last_y;
 };
 
 struct CalfKnobClass

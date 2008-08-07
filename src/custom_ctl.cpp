@@ -398,6 +398,7 @@ static gboolean
 calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
 {
     g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
 
     switch(event->keyval)
@@ -418,6 +419,27 @@ calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
             calf_knob_incr(widget, 1);
             return TRUE;
             
+        case GDK_Shift_L:
+        case GDK_Shift_R:
+            self->start_value = gtk_range_get_value(GTK_RANGE(widget));
+            self->start_y = self->last_y;
+            return TRUE;
+    }
+    
+    return FALSE;
+}
+
+static gboolean
+calf_knob_key_release (GtkWidget *widget, GdkEventKey *event)
+{
+    g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
+
+    if(event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R)
+    {
+        self->start_value = gtk_range_get_value(GTK_RANGE(widget));
+        self->start_y = self->last_y;
+        return TRUE;
     }
     
     return FALSE;
@@ -457,9 +479,9 @@ static inline float endless(float value)
         return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
 }
 
-static inline float deadzone(float value, float incr)
+static inline float deadzone(float value, float incr, float scale)
 {
-    float dzw = 3 / 32.0;
+    float dzw = 10 / scale;
     if (value >= 0.501)
         value += dzw;
     if (value < 0.499)
@@ -480,22 +502,25 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
 
+    float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
+    
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
         if (self->knob_type == 3)
         {
-            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / 100));
+            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / scale));
         }
         else
         if (self->knob_type == 1)
         {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(self->start_value, -(event->y - self->start_y) / 100));
+            gtk_range_set_value(GTK_RANGE(widget), deadzone(self->start_value, -(event->y - self->start_y) / scale, scale));
         }
         else
         {
-            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / 100);
+            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / scale);
         }
     }
+    self->last_y = event->y;
     return FALSE;
 }
 
@@ -517,6 +542,7 @@ calf_knob_class_init (CalfKnobClass *klass)
     widget_class->button_release_event = calf_knob_button_release;
     widget_class->motion_notify_event = calf_knob_pointer_motion;
     widget_class->key_press_event = calf_knob_key_press;
+    widget_class->key_release_event = calf_knob_key_release;
     widget_class->scroll_event = calf_knob_scroll;
     GError *error = NULL;
     klass->knob_image = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob.png", &error);
