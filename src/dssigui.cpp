@@ -170,6 +170,13 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             client->send("/configure", str);
         }
     }
+    char *configure(const char *key, const char *value) { 
+        cfg_vars[key] = value;
+        osc_inline_typed_strstream str;
+        str << key << value;
+        client->send("/configure", str);
+        return NULL;
+    }
     void send_configures(send_configure_iface *sci) { 
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
