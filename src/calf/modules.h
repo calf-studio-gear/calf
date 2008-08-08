@@ -75,8 +75,8 @@ public:
     inline char *configure(const char *key, const char *value) { return NULL; }
     /// Send all understood configure vars
     inline void send_configures(send_configure_iface *sci) {}
-    /// Reset all configure vars to initial values
-    inline void clear_configure_vars() {}
+    /// Get all configure vars that are supposed to be set to initialize a preset
+    static inline const char **get_default_configure_vars() { return NULL; }
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
 };

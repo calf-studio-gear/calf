@@ -232,8 +232,6 @@ public:
     organ_audio_module()
     : drawbar_organ(&par_values)
     {
-        // that might be a bit early, but shouldn't matter in this particular case
-        clear_configure_vars();
     }
     static parameter_properties param_props[];
     static const char *get_gui_xml();
@@ -279,7 +277,7 @@ public:
     static plugin_command_info *get_commands();
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
-    void clear_configure_vars() { configure("map_curve", "2\n0 1\n1 1\n"); }
+    static const char **get_default_configure_vars();
 };
 
 };

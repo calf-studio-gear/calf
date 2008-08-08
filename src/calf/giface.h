@@ -317,7 +317,12 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual void clear_preset() {
         for (int i=0; i < Module::param_count; i++)
             *Module::params[i] = Module::param_props[i].def_value;
-        Module::clear_configure_vars();
+        const char **p = Module::get_default_configure_vars();
+        if (p)
+        {
+            for(; p[0]; p += 2)
+                configure(p[0], p[1]);
+        }
     }
 };
 

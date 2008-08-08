@@ -1283,7 +1283,13 @@ void organ_audio_module::send_configures(send_configure_iface *sci)
 {
     sci->send_configure("map_curve", var_map_curve.c_str());
 }
-    
+
+const char **organ_audio_module::get_default_configure_vars()
+{
+    static const char *data[] = { "map_curve", "2\n0 1\n1 1\n", NULL };
+    return data;
+}
+
 plugin_command_info *organ_audio_module::get_commands()
 {
     static plugin_command_info cmds[] = {

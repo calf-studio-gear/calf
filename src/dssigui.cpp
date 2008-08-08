@@ -182,7 +182,12 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
     void clear_preset() {
-        fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in DSSI GUIs\n");
+        const char **p = Module::get_default_configure_vars();
+        if (p)
+        {
+            for(; p[0]; p += 2)
+                configure(p[0], p[1]);
+        }
     }
 };
 
