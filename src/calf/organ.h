@@ -237,6 +237,8 @@ protected:
     organ_vibrato vibrato;
     float velocity;
     bool perc_released;
+    /// The envelopes have ended and the voice is in final fadeout stage
+    bool finishing;
 
 public:
     organ_voice()
@@ -255,7 +257,9 @@ public:
     }
 
     void note_on(int note, int vel) {
+        finishing = false;
         perc_released = false;
+        released = false;
         reset();
         this->note = note;
         const float sf = 0.001f;
@@ -268,7 +272,6 @@ public:
         update_pitch();
         velocity = vel * 1.0 / 127.0;
         amp.set(1.0f);
-        released = false;
         perc_note_on(note, vel);
     }
 
