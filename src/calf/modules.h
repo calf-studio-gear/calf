@@ -573,7 +573,7 @@ public:
 class rotary_speaker_audio_module: public null_audio_module
 {
 public:
-    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, param_count };
+    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, param_count };
     enum { in_count = 2, out_count = 2, support_midi = true, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 
@@ -697,6 +697,7 @@ public:
     {
         int shift = (int)(300000 * (*params[par_shift])), pdelta = (int)(300000 * (*params[par_spacing]));
         int md = (int)(100 * (*params[par_moddepth]));
+        float mix = 0.5 * (1.0 - *params[par_micdistance]);
         for (unsigned int i = 0; i < nsamples; i++) {
             float in_l = ins[0][i + offset], in_r = ins[1][i + offset];
             float in_mono = 0.5f * (in_l + in_r);
@@ -705,11 +706,11 @@ public:
             int xh = pseudo_sine_scl(phase_h), yh = pseudo_sine_scl(phase_h + 0x40000000);
             // printf("%d %d %d\n", shift, pdelta, shift + pdelta + 20 * xl);
             
-            float out_hi_l = 0.5f * in_mono - delay.get_interp_1616(shift + md * xh) + 0.0001 * xh * delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) - delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
-            float out_hi_r = 0.5f * in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - 0.0001 * yh * delay.get_interp_1616(shift + pdelta + md * xh) + delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
+            float out_hi_l = in_mono - delay.get_interp_1616(shift + md * xh) + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) - delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
+            float out_hi_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - delay.get_interp_1616(shift + pdelta + md * xh) + delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
 
-            float out_lo_l = 0.5f * in_mono - delay.get_interp_1616(shift + md * xl) + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
-            float out_lo_r = 0.5f * in_mono + delay.get_interp_1616(shift + md * 65536 - md * xl) - delay.get_interp_1616(shift + pdelta + md * yl);
+            float out_lo_l = in_mono - delay.get_interp_1616(shift + md * xl) + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
+            float out_lo_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * xl) - delay.get_interp_1616(shift + pdelta + md * yl);
             
             out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
             out_hi_r = crossover2r.process_d2(out_hi_r); // sanitize(out_hi_r);
@@ -719,11 +720,11 @@ public:
             float out_l = out_hi_l + out_lo_l;
             float out_r = out_hi_r + out_lo_r;
             
-            in_mono += 0.06f * (out_l + out_r);
-            sanitize(in_mono);
+            float mic_l = out_l + mix * (out_r - out_l);
+            float mic_r = out_r + mix * (out_l - out_r);
             
-            outs[0][i + offset] = out_l * 0.5f;
-            outs[1][i + offset] = out_r * 0.5f;
+            outs[0][i + offset] = mic_l * 0.5f;
+            outs[1][i + offset] = mic_r * 0.5f;
             delay.put(in_mono);
             phase_l += dphase_l;
             phase_h += dphase_h;

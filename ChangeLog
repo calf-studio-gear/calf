@@ -1,8 +1,9 @@
-Version 0.0.15 (unreleased) 
+Version 0.0.15
 
 + Organ: new percussive section, using 2-operator FM synthesis for
   monophonic or polyphonic percussive attack; added global transpose and
-  detune
+  detune; rearrangement of controls between sections
++ Rotary Speaker: another attempt at making it useful (thanks FishB8)
 + JACK host: eliminate deadlock on exit
 + GUI: bipolar knobs now have a "dead zone" (magnet) in the middle point
 + GUI: dragging a knob with SHIFT held allows for fine adjustments
