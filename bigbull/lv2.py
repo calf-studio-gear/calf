@@ -135,7 +135,10 @@ def parseTTL(uri, content, model, debug):
                 elif x[0] == ';': item = 1
                 elif x[0] == ',': item = 2
             else:
-                raise Exception, uri+": Unexpected " + x[0]
+                # Kludge for swh's plugins
+                if x[0] != '.' and x[0] != ',':
+                    raise Exception, uri+": Unexpected " + x[0]
+                item = 0
         elif x[0] == "prnot" and item < 3:
             prnot = x[1].split(":")
             if item != 0 and spo[0] == "@prefix":

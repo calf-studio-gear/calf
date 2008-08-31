@@ -8,6 +8,7 @@ import client
 import cairo
 import goocanvas
 import random
+import calfpytools
 
 def add_option(menu, option, handler, data = None):
     item = gtk.MenuItem(option)
