@@ -30,7 +30,12 @@ TRIPLEQUOTE \"\"\"
 [.,;\[\]\(\)] { LEXER_DATA->add(yytext, yytext); } 
 [ \t\n] ;
 
-. { printf("Unexpected characters: '%s'\n", yytext); yyerror("Syntax error"); }
+. { 
+    std::stringstream ss;
+    ss << "Unexpected characters: '" << yytext << "'" << std::endl;
+    PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+    yyerror("Syntax error");
+}
 
 <C_LONGSTRING>{TRIPLEQUOTE} { LEXER_DATA->add("string", LEXER_DATA->strctx); BEGIN(INITIAL); }
 <C_LONGSTRING>[^"]+ LEXER_DATA->strctx += yytext;
