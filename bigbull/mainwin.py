@@ -30,15 +30,25 @@ class Colors:
     audioPort = 0x000080FF
     controlPort = 0x008000FF
     eventPort = 0x800000FF
+    activePort = 0x808080FF
+
+class VisibleWire():
+    def __init__(self, src, dest, wire):
+        """src is source box, dst is destination box, wire is a goocanvas.Path"""
+        self.src = src
+        self.dest = dest
+        self.wire = wire
 
 class ModuleBox():
     def __init__(self, parent, plugin, graph):
         self.width = 200
         self.graph = graph
         self.group = None
+        self.connect_candidate = None
         self.parent = parent
         self.plugin = plugin
         self.group = goocanvas.Group(parent = self.parent)
+        self.wires = []
         self.create_items()
         
     def create_items(self):
@@ -52,7 +62,6 @@ class ModuleBox():
         spacing = 6
         portBoxes = {}
         portTitles = {}
-        portData = {}
         self.title = goocanvas.Text(parent = self.group, font = fontName, text = "<b>" + self.plugin.name + "</b>", width = 100, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text)
         y = self.title.get_requested_height(ctx, width) + spacing
         for port in self.plugin.ports:
@@ -83,7 +92,9 @@ class ModuleBox():
             y += height + spacing
             portBoxes[port.uri] = box
             portTitles[port.uri] = title
-            portData[port.uri] = port
+            box.orig_color = color
+            box.module = self
+            box.port = port
             box.uri = port.uri
             box.connect_object("button-press-event", self.port_button_press, port.uri)
             title.connect_object("button-press-event", self.port_button_press, port.uri)
@@ -91,41 +102,84 @@ class ModuleBox():
         self.rect.lower(self.title)
         self.portBoxes = portBoxes
         self.portTitles = portTitles
-        self.portData = portData
         self.group.ensure_updated()
         self.wire = None
         
     def delete_items(self):
         self.group.remove()
         
+    def port_endpoint(self, pb):
+        bounds = pb.get_bounds()
+        port = pb.port
+        if port.isOutput:
+            x = bounds.x2
+        elif port.isInput:
+            x = bounds.x1
+        y = (bounds.y1 + bounds.y2) / 2
+        return (x, y)
+        
     def port_button_press(self, port_uri, box, event):
         if event.button == 1:
             pb = self.portBoxes[port_uri]
-            bounds = pb.get_bounds()
-            if self.portData[port_uri].isOutput:
-                x = bounds.x2
-            elif self.portData[port_uri].isInput:
-                x = bounds.x1
-            y = (bounds.y1 + bounds.y2) / 2
+            pb.props.fill_color_rgba = Colors.activePort
+            (x, y) = self.port_endpoint(pb)
             self.drag_wire = goocanvas.Path(parent = self.parent, stroke_color_rgba = Colors.frame)
             self.drag_wire.raise_(None)
             self.graph.dragging = (self, port_uri, self.drag_wire, x, y)
-            self.update_wire(self.graph.dragging, x, y)
+            self.set_connect_candidate(None)
+            self.update_drag_wire(self.graph.dragging, x, y)
             print "Port URI is " + port_uri
             return True
             
     def dragging(self, tuple, x2, y2):
         boundsGrp = self.group.get_bounds()
-        self.update_wire(tuple, x2 + boundsGrp.x1, y2 + boundsGrp.y1)
+        self.update_drag_wire(tuple, x2 + boundsGrp.x1, y2 + boundsGrp.y1)
         
     def dragged(self, tuple, x2, y2):
-        # self.update_wire(tuple, x2, y2)
-        tuple[2].remove()
+        # self.update_drag_wire(tuple, x2, y2)
+        pb = self.portBoxes[tuple[1]]
         self.graph.dragging = None
+        pb.props.fill_color_rgba = pb.orig_color
+        if self.connect_candidate != None:
+            print "Connect: " + tuple[1] + " with " + self.connect_candidate.uri
+            wire = VisibleWire(pb, self.connect_candidate, tuple[2])
+            self.wires.append(wire)
+            self.update_wire(wire)
+            self.connect_candidate.module.wires.append(VisibleWire(pb, self.connect_candidate, tuple[2]))
+            self.set_connect_candidate(None)
+        else:
+            tuple[2].remove()
         
-    def update_wire(self, tuple, x2, y2):
-        (x, y, dx, dy) = (tuple[3], tuple[4], x2 - tuple[3], y2 - tuple[4])
+    def set_connect_candidate(self, box):
+        if self.connect_candidate != box:
+            if self.connect_candidate != None:
+                self.connect_candidate.props.fill_color_rgba = self.connect_candidate.orig_color
+            self.connect_candidate = box
+        if box != None:
+            box.props.fill_color_rgba = Colors.activePort
+        
+    def update_drag_wire(self, tuple, x2, y2):
+        (uri, x, y, dx, dy) = (tuple[1], tuple[3], tuple[4], x2 - tuple[3], y2 - tuple[4])
         tuple[2].props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x, y, x+dx/2, y, x+dx/2, y+dy, x+dx, y+dy)
+        items = self.graph.get_items_at(x+dx, y+dy)
+        found = False
+        for i in items:
+            if 'uri' in i.__dict__:
+                if i.module != self and i.port.connectableTo(self.plugin.portDict[uri]):
+                    found = True
+                    self.set_connect_candidate(i)
+        if not found and self.connect_candidate != None:
+            self.set_connect_candidate(None)
+            
+    def update_wires(self):
+        for wire in self.wires:
+            self.update_wire(wire)
+            
+    def update_wire(self, wire):
+        (x1, y1) = self.port_endpoint(wire.src)
+        (x2, y2) = self.port_endpoint(wire.dest)
+        xm = (x1 + x2) / 2
+        wire.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
 
 class ConnectionGraphEditor:
     def __init__(self, app):
@@ -150,6 +204,11 @@ class ConnectionGraphEditor:
         self.canvas.get_root_item().connect("button-press-event", self.canvas_button_press)
         self.canvas.get_root_item().connect("motion-notify-event", self.canvas_motion_notify)
         self.canvas.get_root_item().connect("button-release-event", self.canvas_button_release)
+        
+    def get_items_at(self, x, y):
+        cr = self.canvas.create_cairo_context()
+        items = self.canvas.get_root_item().get_items_at(x, y, cr, True, True)
+        return items
         
     def add_plugin(self, params):
         (plugin, x, y) = params
@@ -202,7 +261,8 @@ class ConnectionGraphEditor:
     def box_motion_notify(self, group, widget, event):
         if self.moving == group:
             self.moving.translate(event.x - self.motion_x, event.y - self.motion_y)
-            
+            group.module.update_wires()
+                        
 class App:
     def __init__(self):
         fakeserv.start()

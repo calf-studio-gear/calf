@@ -173,6 +173,14 @@ def parseTTL(uri, content, model, debug):
 class LV2Port(object):
     def __init__(self):
         pass
+    def connectableTo(self, port):
+        if not ((self.isInput and port.isOutput) or (self.isOutput and port.isInput)):
+            return False
+        if self.isAudio != port.isAudio or self.isControl != port.isControl or self.isEvent != port.isEvent:
+            return False
+        if not self.isAudio and not self.isControl and not self.isEvent:
+            return False
+        return True
 
 class LV2Plugin(object):
     def __init__(self):
@@ -230,6 +238,7 @@ class LV2DB:
         dest.requiredFeatures = info.getProperty(uri, lv2 + "requiredFeature", optional = True)
         dest.optionalFeatures = info.getProperty(uri, lv2 + "optionalFeature", optional = True)
         ports = []
+        portDict = {}
         porttypes = {
             "isAudio" : lv2 + "AudioPort",
             "isControl" : lv2 + "ControlPort",
@@ -265,7 +274,9 @@ class LV2DB:
             pdata.minimum = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
             pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
             ports.append(pdata)
+            portDict[pdata.uri] = pdata
         ports.sort(lambda x, y: cmp(x.index, y.index))
         dest.ports = ports
+        dest.portDict = portDict
         return dest
 
