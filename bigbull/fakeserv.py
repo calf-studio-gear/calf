@@ -2,7 +2,6 @@ import re
 import os
 import sys
 import glob
-import yappy.parser
 
 lv2 = "http://lv2plug.in/ns/lv2core#"
 lv2evt = "http://lv2plug.in/ns/ext/event#"
@@ -94,87 +93,6 @@ class SimpleRDFModel:
         for s in self.bySubject.keys():
             for p in self.bySubject[s].keys():
                 print "%s %s %s" % (s, p, self.bySubject[s][p])
-
-def parseTTL(uri, content, model):
-    # Missing stuff: translated literals, blank nodes
-    print "Parsing: %s" % uri
-    prefixes = {}
-    lexer = yappy.parser.Lexer([
-        (r"(?m)^\s*#[^\n]*", ""),
-        ('"""(\n|\r|.)*?"""', lambda x : ("string", x[3:-3])),
-        (r'"([^"\\]|\\.)+"', lambda x : ("string", x[1:-1])),
-        (r"<>", lambda x : ("URI", uri)),
-        (r"<[^>]*>", lambda x : ("URI", x[1:-1])),
-        ("[-a-zA-Z0-9_]*:[-a-zA-Z0-9_]*", lambda x : ("prnot", x)),
-        ("@prefix", lambda x : ("prefix", x)),
-        (r"-?[0-9]+\.[0-9]+", lambda x : ("number", float(x))),
-        (r"-?[0-9]+", lambda x : ("number", int(x))),
-        ("[a-zA-Z0-9_]+", lambda x : ("symbol", x)),
-        (r"[()\[\];.,]", lambda x : (x, x)),
-        ("\s+", ""),
-    ])
-    spo_stack = []
-    spo = ["", "", ""]
-    item = 0
-    anoncnt = 1
-    for x in lexer.scan(content):
-        if x[0] == '':
-            continue
-        if x[0] == 'prefix':
-            spo[0] = "@prefix"
-            item = 1
-            continue
-        elif (x[0] == '.' and spo_stack == []) or x[0] == ';' or x[0] == ',':
-            if item == 3:
-                if spo[0] == "@prefix":
-                    prefixes[spo[1][:-1]] = spo[2]
-                else:
-                    model.addTriple(spo[0], spo[1], spo[2])
-                if x[0] == '.': item = 0
-                elif x[0] == ';': item = 1
-                elif x[0] == ',': item = 2
-            else:
-                raise Exception, uri+": Unexpected " + x[0]
-        elif x[0] == "prnot" and item < 3:
-            prnot = x[1].split(":")
-            if item != 0 and spo[0] == "@prefix":
-                spo[item] = x[1]
-            else:
-                spo[item] = prefixes[prnot[0]] + prnot[1]
-            item += 1
-        elif (x[0] == 'URI' or x[0] == "string" or x[0] == "number" or (x[0] == "symbol" and x[1] == "a" and item == 1)) and (item < 3):
-            if x[0] == "URI" and x[1].find(":") == -1 and x[1][0] != "/":
-                # This is quite silly
-                x = ("URI", os.path.dirname(uri) + "/" + x[1])
-            spo[item] = x[1]
-            item += 1
-        elif x[0] == '[':
-            if item != 2:
-                raise Exception, "Incorrect use of ["
-            uri2 = uri + "$anon$" + str(anoncnt)
-            spo[2] = uri2
-            spo_stack.append(spo)
-            spo = [uri2, "", ""]
-            item = 1
-            anoncnt += 1
-        elif x[0] == ']' or x[0] == ')':
-            if item == 3:
-                model.addTriple(spo[0], spo[1], spo[2])
-                item = 0
-            spo = spo_stack[-1]
-            spo_stack = spo_stack[:-1]
-            item = 3
-        elif x[0] == '(':
-            if item != 2:
-                raise Exception, "Incorrect use of ("
-            uri2 = uri + "$anon$" + str(anoncnt)
-            spo[2] = uri2
-            spo_stack.append(spo)
-            spo = [uri2, "", ""]
-            item = 2
-            anoncnt += 1
-        else:
-            print uri + ": Unexpected: " + repr(x)
 
 class FakeServer(object):
     def __init__(self):

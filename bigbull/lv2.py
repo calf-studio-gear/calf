@@ -2,7 +2,7 @@ import re
 import os
 import sys
 import glob
-import yappy.parser
+import calfpytools
 
 lv2 = "http://lv2plug.in/ns/lv2core#"
 lv2evt = "http://lv2plug.in/ns/ext/event#"
@@ -100,25 +100,11 @@ def parseTTL(uri, content, model, debug):
     if debug:
         print "Parsing: %s" % uri
     prefixes = {}
-    lexer = yappy.parser.Lexer([
-        (r"(?m)^\s*#[^\n]*", ""),
-        ('"""(\n|\r|.)*?"""', lambda x : ("string", x[3:-3])),
-        (r'"([^"\\]|\\.)+"', lambda x : ("string", x[1:-1])),
-        (r"<>", lambda x : ("URI", uri)),
-        (r"<[^>]*>", lambda x : ("URI", x[1:-1])),
-        ("[-a-zA-Z0-9_]*:[-a-zA-Z0-9_]*", lambda x : ("prnot", x)),
-        ("@prefix", lambda x : ("prefix", x)),
-        (r"-?[0-9]+\.[0-9]+", lambda x : ("number", float(x))),
-        (r"-?[0-9]+", lambda x : ("number", int(x))),
-        ("[a-zA-Z0-9_]+", lambda x : ("symbol", x)),
-        (r"[()\[\];.,]", lambda x : (x, x)),
-        ("\s+", ""),
-    ])
     spo_stack = []
     spo = ["", "", ""]
     item = 0
     anoncnt = 1
-    for x in lexer.scan(content):
+    for x in calfpytools.scan_ttl_string(content):
         if x[0] == '':
             continue
         if x[0] == 'prefix':
@@ -135,10 +121,10 @@ def parseTTL(uri, content, model, debug):
                 elif x[0] == ';': item = 1
                 elif x[0] == ',': item = 2
             else:
-                # Kludge for swh's plugins
-                if x[0] != '.' and x[0] != ',':
+                if x[0] == '.':
+                    item = 0
+                elif item != 0:
                     raise Exception, uri+": Unexpected " + x[0]
-                item = 0
         elif x[0] == "prnot" and item < 3:
             prnot = x[1].split(":")
             if item != 0 and spo[0] == "@prefix":
@@ -149,7 +135,9 @@ def parseTTL(uri, content, model, debug):
                 spo[item] = prefixes[prnot[0]] + prnot[1]
             item += 1
         elif (x[0] == 'URI' or x[0] == "string" or x[0] == "number" or (x[0] == "symbol" and x[1] == "a" and item == 1)) and (item < 3):
-            if x[0] == "URI" and x[1].find(":") == -1 and x[1][0] != "/":
+            if x[0] == "URI" and x[1] == "":
+                x = ("URI", uri)
+            elif x[0] == "URI" and x[1].find(":") == -1 and x[1] != "" and x[1][0] != "/":
                 # This is quite silly
                 x = ("URI", os.path.dirname(uri) + "/" + x[1])
             spo[item] = x[1]
@@ -230,7 +218,7 @@ class LV2DB:
             world.copyFrom(self.manifests)
             seeAlso = self.manifests.bySubject[uri]["http://www.w3.org/2000/01/rdf-schema#seeAlso"]
             for doc in seeAlso:
-                # print "Loading " + doc
+                # print "Loading " + doc + " for plugin " + uri
                 parseTTL(doc, file(doc).read(), world, self.debug)
             self.plugin_info[uri] = world                
         info = self.plugin_info[uri]

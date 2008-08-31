@@ -1,12 +1,22 @@
 #include "Python.h"
+#include "ttl.h"
+#include "ttldata.h"
+#include <map>
+#include <iostream>
+#include <fstream>
 #include <jack/jack.h>
 
 //////////////////////////////////////////////////// PyJackClient
+
+struct PyJackPort;
+
+typedef std::map<jack_port_t *, PyJackPort *> PortHandleMap;
 
 struct PyJackClient
 {
     PyObject_HEAD
     jack_client_t *client;
+    PortHandleMap *port_handle_map;
 };
 
 static PyTypeObject jackclient_type = {
@@ -40,8 +50,20 @@ static PyObject *jackclient_open(PyJackClient *self, PyObject *args)
         return NULL;
     
     self->client = jack_client_open(name, (jack_options_t)options, &status);
+    self->port_handle_map = new PortHandleMap;
     
     return Py_BuildValue("i", status);
+}
+
+static int jackclient_dealloc(PyJackPort *self)
+{
+    if (self->client)
+    {
+        PyObject_CallMethod((PyObject *)self, strdup("close"), NULL);
+        assert(!self->client);
+    }
+    
+    return 0;
 }
 
 #define CHECK_CLIENT if (!self->client) { PyErr_SetString(PyExc_ValueError, "Client not opened"); return NULL; }
@@ -59,12 +81,19 @@ static PyObject *jackclient_get_name(PyJackClient *self, PyObject *args)
 
 static PyObject *create_jack_port(PyJackClient *client, jack_port_t *port)
 {
+    PortHandleMap::iterator it = client->port_handle_map->find(port);
+    if (it != client->port_handle_map->end())
+    {
+        Py_INCREF(it->second);
+        return Py_BuildValue("O", it->second);
+    }
     if (port)
     {
         PyObject *cobj = PyCObject_FromVoidPtr(port, NULL);
         PyObject *args = Py_BuildValue("OO", client, cobj);
         PyObject *newobj = _PyObject_New(&jackport_type);
         jackport_type.tp_init(newobj, args, NULL);
+        (*client->port_handle_map)[port] = (PyJackPort *)newobj;
         Py_DECREF(args);
         return newobj; 
     }
@@ -97,6 +126,16 @@ static PyObject *jackclient_get_port(PyJackClient *self, PyObject *args)
     return create_jack_port(self, port);
 }
 
+static PyObject *jackclient_get_cobj(PyJackClient *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_cobj"))
+        return NULL;
+    
+    CHECK_CLIENT
+    
+    return PyCObject_FromVoidPtr((void *)self->client, NULL);
+}
+
 static PyObject *jackclient_close(PyJackClient *self, PyObject *args)
 {
     if (!PyArg_ParseTuple(args, ":close"))
@@ -117,6 +156,7 @@ static PyMethodDef jackclient_methods[] = {
     {"get_name", (PyCFunction)jackclient_get_name, METH_VARARGS, "Retrieve client name"},
     {"get_port", (PyCFunction)jackclient_get_port, METH_VARARGS, "Create port object from name of existing JACK port"},
     {"register_port", (PyCFunction)jackclient_register_port, METH_VARARGS, "Register a new port and return an object that represents it"},
+    {"get_cobj", (PyCFunction)jackclient_get_cobj, METH_VARARGS, "Retrieve jack_client_t pointer for the client"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -138,6 +178,17 @@ static int jackport_init(PyJackPort *self, PyObject *args, PyObject *kwds)
 
     self->client = client;
     self->port = (jack_port_t *)PyCObject_AsVoidPtr(cobj);
+    
+    return 0;
+}
+
+static int jackport_dealloc(PyJackPort *self)
+{
+    // if not unregistered, decref (unregister decrefs automatically)
+    if (self->client) {
+        self->client->port_handle_map->erase(self->port);
+        Py_DECREF(self->client);
+    }
     
     return 0;
 }
@@ -186,6 +237,17 @@ static PyObject *jackport_get_name(PyJackPort *self, PyObject *args)
     return Py_BuildValue("s", jack_port_short_name(self->port));
 }
 
+static PyObject *jackport_get_cobj(PyJackPort *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_cobj"))
+        return NULL;
+    
+    CHECK_PORT_CLIENT
+    CHECK_PORT
+    
+    return PyCObject_FromVoidPtr((void *)self->port, NULL);
+}
+
 static PyObject *jackport_get_aliases(PyJackPort *self, PyObject *args)
 {
     if (!PyArg_ParseTuple(args, ":get_aliases"))
@@ -203,6 +265,26 @@ static PyObject *jackport_get_aliases(PyJackPort *self, PyObject *args)
     if (count == 1)
         return Py_BuildValue("[s]", aliases[0]);
     return Py_BuildValue("[ss]", aliases[0], aliases[1]);
+}
+
+static PyObject *jackport_get_connections(PyJackPort *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_aliases"))
+        return NULL;
+
+    CHECK_PORT_CLIENT
+    CHECK_PORT
+    
+    const char **conns = jack_port_get_all_connections(self->client->client, self->port);
+    
+    PyObject *res = PyList_New(0);
+    if (conns)
+    {
+        for (const char **p = conns; *p; p++)
+            PyList_Append(res, PyString_FromString(*p));
+    }
+    
+    return res;
 }
 
 static PyObject *jackport_set_name(PyJackPort *self, PyObject *args)
@@ -227,11 +309,13 @@ static PyObject *jackport_unregister(PyJackPort *self, PyObject *args)
     
     PyJackClient *client = self->client;
     
+    client->port_handle_map->erase(self->port);
     jack_port_unregister(self->client->client, self->port);
     self->port = NULL;
     self->client = NULL;
     
     Py_DECREF(client);
+    client = NULL;
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -243,22 +327,45 @@ static PyMethodDef jackport_methods[] = {
     {"get_full_name", (PyCFunction)jackport_get_full_name, METH_VARARGS, "Retrieve full port name (including client name)"},
     {"get_name", (PyCFunction)jackport_get_name, METH_VARARGS, "Retrieve short port name (without client name)"},
     {"set_name", (PyCFunction)jackport_set_name, METH_VARARGS, "Set short port name"},
-    {"get_aliases", (PyCFunction)jackport_get_aliases, METH_VARARGS, "Retrieve two port aliases"},
+    {"get_aliases", (PyCFunction)jackport_get_aliases, METH_VARARGS, "Retrieve a list of port aliases"},
+    {"get_connections", (PyCFunction)jackport_get_connections, METH_VARARGS, "Retrieve a list of ports the port is connected to"},
+    {"get_cobj", (PyCFunction)jackport_get_cobj, METH_VARARGS, "Retrieve jack_port_t pointer for the port"},
     {NULL, NULL, 0, NULL}
 };
 
 
 //////////////////////////////////////////////////// calfpytools
 
-/*
-static PyObject *calfpytools_test(PyObject *self, PyObject *args)
+static PyObject *calfpytools_scan_ttl_file(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("i", 42);
+    char *ttl_name = NULL;
+    if (!PyArg_ParseTuple(args, "s:scan_ttl_file", &ttl_name))
+        return NULL;
+    
+    std::filebuf fb;
+    fb.open(ttl_name, std::ios::in);
+    std::istream istr(&fb);
+    TTLLexer lexer(&istr);
+    lexer.yylex();
+    return lexer.grab();
 }
-*/
+
+static PyObject *calfpytools_scan_ttl_string(PyObject *self, PyObject *args)
+{
+    char *data = NULL;
+    if (!PyArg_ParseTuple(args, "s:scan_ttl_string", &data))
+        return NULL;
+    
+    std::string data_str = data;
+    std::stringstream str(data_str);
+    TTLLexer lexer(&str);
+    lexer.yylex();
+    return lexer.grab();
+}
 
 static PyMethodDef module_methods[] = {
-//    {"test", calfpytools_test, METH_VARARGS, "Do nothing, return 42"},
+    {"scan_ttl_file", calfpytools_scan_ttl_file, METH_VARARGS, "Scan a TTL file, return a list of token tuples"},
+    {"scan_ttl_string", calfpytools_scan_ttl_string, METH_VARARGS, "Scan a TTL string, return a list of token tuples"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -268,6 +375,7 @@ PyMODINIT_FUNC initcalfpytools()
     jackclient_type.tp_flags = Py_TPFLAGS_DEFAULT;
     jackclient_type.tp_doc = "JACK client object";
     jackclient_type.tp_methods = jackclient_methods;
+    jackclient_type.tp_dealloc = (destructor)jackclient_dealloc;
     if (PyType_Ready(&jackclient_type) < 0)
         return;
 
@@ -276,6 +384,7 @@ PyMODINIT_FUNC initcalfpytools()
     jackport_type.tp_doc = "JACK port object (created by client)";
     jackport_type.tp_methods = jackport_methods;
     jackport_type.tp_init = (initproc)jackport_init;
+    jackport_type.tp_dealloc = (destructor)jackport_dealloc;
     if (PyType_Ready(&jackport_type) < 0)
         return;
     
