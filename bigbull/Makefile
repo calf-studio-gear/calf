@@ -1,7 +1,7 @@
-all: calfpytools.cpp ttl.cpp Makefile setup.py ttldata.h
+all: calfpytools.cpp ttl.cpp ttl.h Makefile setup.py ttldata.h
 	python setup.py build
 
-ttl.cpp: ttl.l Makefile ttldata.h
+ttl.h ttl.cpp: ttl.l Makefile ttldata.h
 	flex --batch --nodefault --c++ -o ttl.cpp --header-file=ttl.h ttl.l
 
 install:

@@ -1,4 +1,4 @@
-#include "Python.h"
+#include <Python.h>
 #include "ttl.h"
 #include "ttldata.h"
 #include <map>
@@ -342,9 +342,7 @@ static PyObject *calfpytools_scan_ttl_file(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s:scan_ttl_file", &ttl_name))
         return NULL;
     
-    std::filebuf fb;
-    fb.open(ttl_name, std::ios::in);
-    std::istream istr(&fb);
+    std::ifstream istr(ttl_name, std::ifstream::in);
     TTLLexer lexer(&istr);
     lexer.yylex();
     return lexer.grab();
@@ -388,8 +386,9 @@ PyMODINIT_FUNC initcalfpytools()
     if (PyType_Ready(&jackport_type) < 0)
         return;
     
-        PyObject *mod = Py_InitModule3("calfpytools", module_methods, "Python utilities for Calf");
+    PyObject *mod = Py_InitModule3("calfpytools", module_methods, "Python utilities for Calf");
     Py_INCREF(&jackclient_type);
+    Py_INCREF(&jackport_type);
     PyModule_AddObject(mod, "JackClient", (PyObject *)&jackclient_type);
     PyModule_AddObject(mod, "JackPort", (PyObject *)&jackport_type);    
 }
