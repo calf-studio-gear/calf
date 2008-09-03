@@ -136,6 +136,51 @@ static PyObject *jackclient_get_cobj(PyJackClient *self, PyObject *args)
     return PyCObject_FromVoidPtr((void *)self->client, NULL);
 }
 
+static PyObject *jackclient_connect(PyJackClient *self, PyObject *args)
+{
+    char *from_port = NULL, *to_port = NULL;
+    if (!PyArg_ParseTuple(args, "ss:connect", &from_port, &to_port))
+        return NULL;
+    
+    CHECK_CLIENT
+    
+    int result = jack_connect(self->client, from_port, to_port);
+    
+    switch(result)
+    {
+        case 0:
+            Py_INCREF(Py_True);
+            return Py_True;
+        case EEXIST:
+            Py_INCREF(Py_False);
+            return Py_False;
+        default:
+            PyErr_SetString(PyExc_RuntimeError, "Connection error");
+            return NULL;
+    }
+}
+
+static PyObject *jackclient_disconnect(PyJackClient *self, PyObject *args)
+{
+    char *from_port = NULL, *to_port = NULL;
+    if (!PyArg_ParseTuple(args, "ss:disconnect", &from_port, &to_port))
+        return NULL;
+    
+    CHECK_CLIENT
+    
+    int result = jack_disconnect(self->client, from_port, to_port);
+    
+    switch(result)
+    {
+        case 0:
+            Py_INCREF(Py_None);
+            return Py_None;
+        default:
+            PyErr_SetString(PyExc_RuntimeError, "Disconnection error");
+            return NULL;
+    }
+}
+
 static PyObject *jackclient_close(PyJackClient *self, PyObject *args)
 {
     if (!PyArg_ParseTuple(args, ":close"))
@@ -157,6 +202,8 @@ static PyMethodDef jackclient_methods[] = {
     {"get_port", (PyCFunction)jackclient_get_port, METH_VARARGS, "Create port object from name of existing JACK port"},
     {"register_port", (PyCFunction)jackclient_register_port, METH_VARARGS, "Register a new port and return an object that represents it"},
     {"get_cobj", (PyCFunction)jackclient_get_cobj, METH_VARARGS, "Retrieve jack_client_t pointer for the client"},
+    {"connect", (PyCFunction)jackclient_connect, METH_VARARGS, "Connect two ports with given names"},
+    {"disconnect", (PyCFunction)jackclient_disconnect, METH_VARARGS, "Disconnect two ports with given names"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -205,6 +252,17 @@ static PyObject *jackport_get_full_name(PyJackPort *self, PyObject *args)
     CHECK_PORT
     
     return Py_BuildValue("s", jack_port_name(self->port));
+}
+
+static PyObject *jackport_get_flags(PyJackPort *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_flags"))
+        return NULL;
+    
+    CHECK_PORT_CLIENT
+    CHECK_PORT
+    
+    return PyInt_FromLong(jack_port_flags(self->port));
 }
 
 static PyObject *jackport_is_valid(PyJackPort *self, PyObject *args)
@@ -260,11 +318,10 @@ static PyObject *jackport_get_aliases(PyJackPort *self, PyObject *args)
     char *const aliases[2] = { buf1, buf2 };
     int count = jack_port_get_aliases(self->port, aliases);
     
-    if (count == 0)
-        return Py_BuildValue("[]");
-    if (count == 1)
-        return Py_BuildValue("[s]", aliases[0]);
-    return Py_BuildValue("[ss]", aliases[0], aliases[1]);
+    PyObject *alist = PyList_New(0);
+    for (int i = 0; i < count; i++)
+        PyList_Append(alist, PyString_FromString(aliases[i]));
+    return alist;
 }
 
 static PyObject *jackport_get_connections(PyJackPort *self, PyObject *args)
@@ -326,6 +383,7 @@ static PyMethodDef jackport_methods[] = {
     {"is_mine", (PyCFunction)jackport_is_mine, METH_VARARGS, "Checks if the port object is valid (registered)"},
     {"get_full_name", (PyCFunction)jackport_get_full_name, METH_VARARGS, "Retrieve full port name (including client name)"},
     {"get_name", (PyCFunction)jackport_get_name, METH_VARARGS, "Retrieve short port name (without client name)"},
+    {"get_flags", (PyCFunction)jackport_get_flags, METH_VARARGS, "Retrieve port flags (defined in module, ie. calfpytools.JackPortIsInput)"},
     {"set_name", (PyCFunction)jackport_set_name, METH_VARARGS, "Set short port name"},
     {"get_aliases", (PyCFunction)jackport_get_aliases, METH_VARARGS, "Retrieve a list of port aliases"},
     {"get_connections", (PyCFunction)jackport_get_connections, METH_VARARGS, "Retrieve a list of ports the port is connected to"},
@@ -390,5 +448,13 @@ PyMODINIT_FUNC initcalfpytools()
     Py_INCREF(&jackclient_type);
     Py_INCREF(&jackport_type);
     PyModule_AddObject(mod, "JackClient", (PyObject *)&jackclient_type);
-    PyModule_AddObject(mod, "JackPort", (PyObject *)&jackport_type);    
+    PyModule_AddObject(mod, "JackPort", (PyObject *)&jackport_type);
+    
+    PyModule_AddObject(mod, "JackPortIsInput", PyInt_FromLong(JackPortIsInput));
+    PyModule_AddObject(mod, "JackPortIsOutput", PyInt_FromLong(JackPortIsOutput));
+    PyModule_AddObject(mod, "JackPortIsPhysical", PyInt_FromLong(JackPortIsPhysical));
+    PyModule_AddObject(mod, "JackPortCanMonitor", PyInt_FromLong(JackPortCanMonitor));
+    PyModule_AddObject(mod, "JackPortIsTerminal", PyInt_FromLong(JackPortIsTerminal));
+    PyModule_AddObject(mod, "JACK_DEFAULT_AUDIO_TYPE", PyString_FromString(JACK_DEFAULT_AUDIO_TYPE));
+    PyModule_AddObject(mod, "JACK_DEFAULT_MIDI_TYPE", PyString_FromString(JACK_DEFAULT_MIDI_TYPE));
 }
