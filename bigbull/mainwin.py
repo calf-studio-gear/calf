@@ -201,7 +201,6 @@ class ConnectionGraphEditor:
         self.canvas.props.background_color_rgb = 0
         #self.canvas.props.integer_layout = True
         self.canvas.update()
-        self.canvas.get_root_item().connect("button-press-event", self.canvas_button_press)
         self.canvas.get_root_item().connect("motion-notify-event", self.canvas_motion_notify)
         self.canvas.get_root_item().connect("button-release-event", self.canvas_button_release)
         
@@ -224,15 +223,6 @@ class ConnectionGraphEditor:
     def delete_plugin(self, data):
         data.delete_items()
 
-    def canvas_button_press(self, widget, item, event):
-        if event.button == 3:
-            menu = gtk.Menu()
-            for uri in self.app.lv2db.getPluginList():
-                plugin = self.app.lv2db.getPluginInfo(uri)
-                add_option(menu, plugin.name, self.add_plugin, (plugin, event.x, event.y))
-            menu.show_all()
-            menu.popup(None, None, None, event.button, event.time)
-        
     def canvas_motion_notify(self, group, widget, event):
         if self.dragging != None:
             self.dragging[0].dragging(self.dragging, event.x, event.y)
@@ -269,6 +259,23 @@ class App:
         self.lv2db = lv2.LV2DB()
         self.cgraph = ConnectionGraphEditor(self)
         
+    def canvas_popup_menu_handler(self, widget):
+        self.canvas_popup_menu(0, 0, 0)
+        return True
+        
+    def canvas_button_press_handler(self, widget, event):
+        if event.button == 3:
+            self.canvas_popup_menu(event.x, event.y, event.time)
+            return True
+        
+    def canvas_popup_menu(self, x, y, time):
+        menu = gtk.Menu()
+        for uri in self.lv2db.getPluginList():
+            plugin = self.lv2db.getPluginInfo(uri)
+            add_option(menu, plugin.name, self.cgraph.add_plugin, (plugin, x, y))
+        menu.show_all()
+        menu.popup(None, None, None, 3, time)
+        
     def create(self):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.connect("delete_event", self.delete_event)
@@ -281,6 +288,8 @@ class App:
         self.main_vbox.add(self.scroll)
         self.window.add(self.main_vbox)
         self.window.show_all()
+        self.main_vbox.connect("popup-menu", self.canvas_popup_menu_handler)
+        self.cgraph.canvas.connect("button-press-event", self.canvas_button_press_handler)
         
     def create_main_menu(self):
         self.menu_bar = gtk.MenuBar()
