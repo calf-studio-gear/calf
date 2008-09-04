@@ -92,14 +92,17 @@ class ModuleBox():
             y += height + spacing
             portBoxes[port.uri] = box
             portTitles[port.uri] = title
+            box.type = "port"
             box.orig_color = color
-            box.module = self
+            box.object = box.module = self
             box.port = port
             box.uri = port.uri
             box.connect_object("button-press-event", self.port_button_press, port.uri)
             title.connect_object("button-press-event", self.port_button_press, port.uri)
         self.rect = goocanvas.Rect(parent = self.group, width = 100, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
         self.rect.lower(self.title)
+        self.rect.type = "module"
+        self.rect.object = self.rect.module = self
         self.portBoxes = portBoxes
         self.portTitles = portTitles
         self.group.ensure_updated()
@@ -209,6 +212,16 @@ class ConnectionGraphEditor:
         items = self.canvas.get_root_item().get_items_at(x, y, cr, True, True)
         return items
         
+    def get_data_items_at(self, x, y):
+        items = self.get_items_at(x, y)
+        if items == None:
+            return []
+        data_items = []
+        for i in items:
+            if hasattr(i, 'type'):
+                data_items.append((i.type, i.object, i))
+        return data_items
+        
     def add_plugin(self, params):
         (plugin, x, y) = params
         mbox = ModuleBox(self.canvas.get_root_item(), plugin, self)
@@ -237,12 +250,6 @@ class ConnectionGraphEditor:
             self.motion_x = event.x
             self.motion_y = event.y
             return True
-        elif event.button == 3:
-            menu = gtk.Menu()
-            add_option(menu, "Delete", self.delete_plugin, group.module)
-            menu.show_all()
-            menu.popup(None, None, None, event.button, event.time)
-            return True
     
     def box_button_release(self, group, widget, event):
         if event.button == 1:
@@ -270,9 +277,18 @@ class App:
         
     def canvas_popup_menu(self, x, y, time):
         menu = gtk.Menu()
-        for uri in self.lv2db.getPluginList():
-            plugin = self.lv2db.getPluginInfo(uri)
-            add_option(menu, plugin.name, self.cgraph.add_plugin, (plugin, x, y))
+        items = self.cgraph.get_data_items_at(x, y)
+        types = set([di[0] for di in items])
+        if 'port' in types:
+            pass
+            #add_option(menu, "-Port-", self.cgraph.delete_plugin, (None, x, y))
+        elif 'module' in types:
+            for mod in [di for di in items if di[0] == "module"]:
+                add_option(menu, "Delete "+mod[1].plugin.name, self.cgraph.delete_plugin, mod[1])            
+        else:
+            for uri in self.lv2db.getPluginList():
+                plugin = self.lv2db.getPluginInfo(uri)
+                add_option(menu, plugin.name, self.cgraph.add_plugin, (plugin, x, y))
         menu.show_all()
         menu.popup(None, None, None, 3, time)
         
