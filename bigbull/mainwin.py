@@ -31,6 +31,16 @@ class Colors:
     controlPort = 0x008000FF
     eventPort = 0x800000FF
     activePort = 0x808080FF
+    @classmethod
+    def fromPort(self, port):
+        color = Colors.defPort
+        if port.isAudio:
+            color = Colors.audioPort
+        if port.isControl:
+            color = Colors.controlPort
+        if port.isEvent:
+            color = Colors.eventPort
+        return color
 
 class VisibleWire():
     def __init__(self, src, dest, wire):
@@ -40,8 +50,12 @@ class VisibleWire():
         self.wire = wire
 
 class ModuleBox():
+    width = 100
+    margin = 2
+    spacing = 6
+    fontName = "DejaVu Sans Mono Book 10"
+
     def __init__(self, parent, plugin, graph):
-        self.width = 200
         self.graph = graph
         self.group = None
         self.connect_candidate = None
@@ -52,54 +66,21 @@ class ModuleBox():
         self.create_items()
         
     def create_items(self):
-        fontName = "DejaVu Sans Mono Book 10"
         self.group.module = self
         while self.group.get_n_children() > 0:
             self.group.remove_child(0)
         ctx = self.group.get_canvas().create_cairo_context()
-        width = 100
-        margin = 2
-        spacing = 6
         portBoxes = {}
         portTitles = {}
-        self.title = goocanvas.Text(parent = self.group, font = fontName, text = "<b>" + self.plugin.name + "</b>", width = 100, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text)
-        y = self.title.get_requested_height(ctx, width) + spacing
+        self.title = goocanvas.Text(parent = self.group, font = self.fontName, text = "<b>" + self.plugin.name + "</b>", width = self.width, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text)
+        y = self.title.get_requested_height(ctx, self.width) + self.spacing
         for port in self.plugin.ports:
-            al = "center"
-            if port.isInput: 
-                al = "left"
-            elif port.isOutput:
-                al = "right"
-            title = goocanvas.Text(parent = self.group, text = port.name, font = fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text)
-            height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
-            title.ensure_updated()
-            bnds = title.get_bounds()
-            bw = bnds.x2 - bnds.x1 + 2 * margin
-            color = Colors.defPort
-            if port.isAudio:
-                color = Colors.audioPort
-            if port.isControl:
-                color = Colors.controlPort
-            if port.isEvent:
-                color = Colors.eventPort
-            if port.isInput:
-                box = goocanvas.Rect(parent = self.group, x = 0, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
-            elif port.isOutput:
-                box = goocanvas.Rect(parent = self.group, x = bnds.x2 - margin, y = y - 1, width = width - bnds.x2 + margin, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
-            else:
+            if lv2.epi + "notAutomatic" in port.properties:
                 continue
-            box.lower(title)
-            y += height + spacing
+            (box, title, y) = self.create_port(ctx, port, y)
             portBoxes[port.uri] = box
             portTitles[port.uri] = title
-            box.type = "port"
-            box.orig_color = color
-            box.object = box.module = self
-            box.port = port
-            box.uri = port.uri
-            box.connect_object("button-press-event", self.port_button_press, port.uri)
-            title.connect_object("button-press-event", self.port_button_press, port.uri)
-        self.rect = goocanvas.Rect(parent = self.group, width = 100, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
+        self.rect = goocanvas.Rect(parent = self.group, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
         self.rect.lower(self.title)
         self.rect.type = "module"
         self.rect.object = self.rect.module = self
@@ -107,6 +88,36 @@ class ModuleBox():
         self.portTitles = portTitles
         self.group.ensure_updated()
         self.wire = None
+        
+    def create_port(self, ctx, port, y):
+        (width, margin, spacing) = (self.width, self.margin, self.spacing)
+        al = "center"
+        if port.isInput: 
+            al = "left"
+        elif port.isOutput:
+            al = "right"
+        else:
+            return
+        title = goocanvas.Text(parent = self.group, text = port.name, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text)
+        height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
+        title.ensure_updated()
+        bnds = title.get_bounds()
+        bw = bnds.x2 - bnds.x1 + 2 * margin
+        color = Colors.fromPort(port)
+        if port.isInput:
+            box = goocanvas.Rect(parent = self.group, x = 0, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+        elif port.isOutput:
+            box = goocanvas.Rect(parent = self.group, x = bnds.x2 - margin, y = y - 1, width = width - bnds.x2 + margin, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+        box.lower(title)
+        y += height + spacing
+        box.type = "port"
+        box.orig_color = color
+        box.object = box.module = self
+        box.port = port
+        box.uri = port.uri
+        box.connect_object("button-press-event", self.port_button_press, port.uri)
+        title.connect_object("button-press-event", self.port_button_press, port.uri)
+        return (box, title, y)
         
     def delete_items(self):
         self.group.remove()

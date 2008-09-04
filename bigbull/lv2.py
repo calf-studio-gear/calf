@@ -8,6 +8,7 @@ lv2 = "http://lv2plug.in/ns/lv2core#"
 lv2evt = "http://lv2plug.in/ns/ext/event#"
 rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 rdfs = "http://www.w3.org/2000/01/rdf-schema#"
+epi = "http://lv2plug.in/ns/dev/extportinfo#"
 rdf_type = rdf + "type"
 
 class DumpRDFModel:
@@ -273,6 +274,7 @@ class LV2DB:
             pdata.defaultValue = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
             pdata.minimum = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
             pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
+            pdata.properties = set(info.getProperty(psubj, [lv2 + "portProperty"], optional = True))
             ports.append(pdata)
             portDict[pdata.uri] = pdata
         ports.sort(lambda x, y: cmp(x.index, y.index))
