@@ -31,23 +31,80 @@ class Colors:
     controlPort = 0x008000FF
     eventPort = 0x800000FF
     activePort = 0x808080FF
-    @classmethod
-    def fromPort(self, port):
+
+class LV2GraphParser():
+    def get_port_color(self, portData):
         color = Colors.defPort
-        if port.isAudio:
+        if portData.isAudio:
             color = Colors.audioPort
-        if port.isControl:
+        if portData.isControl:
             color = Colors.controlPort
-        if port.isEvent:
+        if portData.isEvent:
             color = Colors.eventPort
         return color
-
+    def is_port_input(self, portData):
+        return portData.isInput
+    def get_port_name(self, portData):
+        return portData.name
+    def get_port_id(self, portData):
+        return portData.uri
+    def get_module_name(self, moduleData):
+        return moduleData.name
+    def get_module_port_list(self, moduleData):
+        return [(port.uri, port) for port in moduleData.ports if lv2.epi + "notAutomatic" not in port.properties]
+    def can_connect(self, first, second):
+        return first.connectableTo(second)
+            
 class VisibleWire():
     def __init__(self, src, dest, wire):
-        """src is source box, dst is destination box, wire is a goocanvas.Path"""
+        """src is source ModulePort, dst is destination ModulePort, wire is a goocanvas.Path"""
         self.src = src
         self.dest = dest
         self.wire = wire
+
+class ModulePort():
+    fontName = "DejaVu Sans Mono Book 10"
+    type = "port"
+    def __init__(self, module, portData):
+        self.module = module
+        self.portData = portData
+        self.isInput = self.get_parser().is_port_input(portData)
+        self.box = self.title = None
+            
+    def get_parser(self):
+        return self.module.get_parser()
+        
+    def get_id(self):
+        return self.get_parser().get_port_id(self.portData)
+
+    def render(self, ctx, parent, y):
+        module = self.module
+        (width, margin, spacing) = (module.width, module.margin, module.spacing)
+        if self.isInput: 
+            al = "left"
+        else:
+            al = "right"
+        portName = self.get_parser().get_port_name(self.portData)
+        title = goocanvas.Text(parent = parent, text = portName, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text)
+        height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
+        title.ensure_updated()
+        bnds = title.get_bounds()
+        bw = bnds.x2 - bnds.x1 + 2 * margin
+        color = self.get_parser().get_port_color(self.portData)
+        if self.isInput:
+            box = goocanvas.Rect(parent = parent, x = 0, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+        else:
+            box = goocanvas.Rect(parent = parent, x = bnds.x2 - margin, y = y - 1, width = width - bnds.x2 + margin, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+        box.lower(title)
+        y += height + spacing
+        box.type = "port"
+        self.orig_color = color
+        box.object = box.module = self
+        box.portData = self.portData
+        title.portData = self.portData
+        self.box = box
+        self.title = title
+        return y
 
 class ModuleBox():
     width = 100
@@ -55,94 +112,70 @@ class ModuleBox():
     spacing = 6
     fontName = "DejaVu Sans Mono Book 10"
 
-    def __init__(self, parent, plugin, graph):
+    def __init__(self, parser, parent, moduleData, graph):
+        self.parser = parser
         self.graph = graph
         self.group = None
         self.connect_candidate = None
         self.parent = parent
-        self.plugin = plugin
+        self.moduleData = moduleData
         self.group = goocanvas.Group(parent = self.parent)
         self.wires = []
         self.create_items()
         
+    def get_parser(self):
+        return self.parser
+
     def create_items(self):
         self.group.module = self
         while self.group.get_n_children() > 0:
             self.group.remove_child(0)
         ctx = self.group.get_canvas().create_cairo_context()
-        portBoxes = {}
-        portTitles = {}
-        self.title = goocanvas.Text(parent = self.group, font = self.fontName, text = "<b>" + self.plugin.name + "</b>", width = self.width, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text)
+        self.portDict = {}
+        moduleName = self.get_parser().get_module_name(self.moduleData)
+        self.title = goocanvas.Text(parent = self.group, font = self.fontName, text = "<b>" + moduleName + "</b>", width = self.width, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text)
         y = self.title.get_requested_height(ctx, self.width) + self.spacing
-        for port in self.plugin.ports:
-            if lv2.epi + "notAutomatic" in port.properties:
-                continue
-            (box, title, y) = self.create_port(ctx, port, y)
-            portBoxes[port.uri] = box
-            portTitles[port.uri] = title
+        for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
+            y = self.create_port(ctx, id, portData, y)
         self.rect = goocanvas.Rect(parent = self.group, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
         self.rect.lower(self.title)
         self.rect.type = "module"
         self.rect.object = self.rect.module = self
-        self.portBoxes = portBoxes
-        self.portTitles = portTitles
         self.group.ensure_updated()
         self.wire = None
         
-    def create_port(self, ctx, port, y):
-        (width, margin, spacing) = (self.width, self.margin, self.spacing)
-        al = "center"
-        if port.isInput: 
-            al = "left"
-        elif port.isOutput:
-            al = "right"
-        else:
-            return
-        title = goocanvas.Text(parent = self.group, text = port.name, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text)
-        height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
-        title.ensure_updated()
-        bnds = title.get_bounds()
-        bw = bnds.x2 - bnds.x1 + 2 * margin
-        color = Colors.fromPort(port)
-        if port.isInput:
-            box = goocanvas.Rect(parent = self.group, x = 0, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
-        elif port.isOutput:
-            box = goocanvas.Rect(parent = self.group, x = bnds.x2 - margin, y = y - 1, width = width - bnds.x2 + margin, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
-        box.lower(title)
-        y += height + spacing
-        box.type = "port"
-        box.orig_color = color
-        box.object = box.module = self
-        box.port = port
-        box.uri = port.uri
-        box.connect_object("button-press-event", self.port_button_press, port.uri)
-        title.connect_object("button-press-event", self.port_button_press, port.uri)
-        return (box, title, y)
+    def create_port(self, ctx, portId, portData, y):
+        mport = ModulePort(self, portData)
+        y = mport.render(ctx, self.group, y)
+        self.portDict[portId] = mport
+        mport.box.connect_object("button-press-event", self.port_button_press, mport)
+        mport.title.connect_object("button-press-event", self.port_button_press, mport)        
+        return y
         
     def delete_items(self):
         self.group.remove()
         
-    def port_endpoint(self, pb):
-        bounds = pb.get_bounds()
-        port = pb.port
-        if port.isOutput:
-            x = bounds.x2
-        elif port.isInput:
+    def port_endpoint(self, port):
+        bounds = port.box.get_bounds()
+        port = port.portData
+        if self.get_parser().is_port_input(port):
             x = bounds.x1
+        else:
+            x = bounds.x2
         y = (bounds.y1 + bounds.y2) / 2
         return (x, y)
         
-    def port_button_press(self, port_uri, box, event):
+    def port_button_press(self, mport, box, event):
         if event.button == 1:
-            pb = self.portBoxes[port_uri]
-            pb.props.fill_color_rgba = Colors.activePort
-            (x, y) = self.port_endpoint(pb)
+            port_id = mport.get_id()
+            mport.box.props.fill_color_rgba = Colors.activePort
+            (x, y) = self.port_endpoint(mport)
             self.drag_wire = goocanvas.Path(parent = self.parent, stroke_color_rgba = Colors.frame)
             self.drag_wire.raise_(None)
-            self.graph.dragging = (self, port_uri, self.drag_wire, x, y)
+            self.graph.dragging = (self, port_id, self.drag_wire, x, y)
             self.set_connect_candidate(None)
             self.update_drag_wire(self.graph.dragging, x, y)
-            print "Port URI is " + port_uri
+            print "Port URI is " + port_id
             return True
             
     def dragging(self, tuple, x2, y2):
@@ -151,37 +184,41 @@ class ModuleBox():
         
     def dragged(self, tuple, x2, y2):
         # self.update_drag_wire(tuple, x2, y2)
-        pb = self.portBoxes[tuple[1]]
+        port = self.portDict[tuple[1]]
         self.graph.dragging = None
-        pb.props.fill_color_rgba = pb.orig_color
+        port.box.props.fill_color_rgba = port.orig_color
         if self.connect_candidate != None:
-            print "Connect: " + tuple[1] + " with " + self.connect_candidate.uri
-            wire = VisibleWire(pb, self.connect_candidate, tuple[2])
+            print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
+            if port.isInput:
+                (src, dest) = (port, self.connect_candidate)
+            else:
+                (dest, src) = (port, self.connect_candidate)
+            wire = VisibleWire(src, dest, tuple[2])
             self.wires.append(wire)
             self.update_wire(wire)
-            self.connect_candidate.module.wires.append(VisibleWire(pb, self.connect_candidate, tuple[2]))
+            self.connect_candidate.module.wires.append(VisibleWire(src, dest, tuple[2]))
             self.set_connect_candidate(None)
         else:
             tuple[2].remove()
         
-    def set_connect_candidate(self, box):
-        if self.connect_candidate != box:
+    def set_connect_candidate(self, item):
+        if self.connect_candidate != item:
             if self.connect_candidate != None:
-                self.connect_candidate.props.fill_color_rgba = self.connect_candidate.orig_color
-            self.connect_candidate = box
-        if box != None:
-            box.props.fill_color_rgba = Colors.activePort
+                self.connect_candidate.box.props.fill_color_rgba = self.connect_candidate.orig_color
+            self.connect_candidate = item
+        if item != None:
+            item.box.props.fill_color_rgba = Colors.activePort
         
     def update_drag_wire(self, tuple, x2, y2):
         (uri, x, y, dx, dy) = (tuple[1], tuple[3], tuple[4], x2 - tuple[3], y2 - tuple[4])
         tuple[2].props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x, y, x+dx/2, y, x+dx/2, y+dy, x+dx, y+dy)
-        items = self.graph.get_items_at(x+dx, y+dy)
+        items = self.graph.get_data_items_at(x+dx, y+dy)
         found = False
-        for i in items:
-            if 'uri' in i.__dict__:
-                if i.module != self and i.port.connectableTo(self.plugin.portDict[uri]):
+        for type, obj, item in items:
+            if type == 'port':
+                if item.module != self and self.get_parser().can_connect(self.portDict[uri].portData, obj.portData):
                     found = True
-                    self.set_connect_candidate(i)
+                    self.set_connect_candidate(obj)
         if not found and self.connect_candidate != None:
             self.set_connect_candidate(None)
             
@@ -196,8 +233,9 @@ class ModuleBox():
         wire.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
 
 class ConnectionGraphEditor:
-    def __init__(self, app):
+    def __init__(self, app, parser):
         self.app = app
+        self.parser = parser
         self.moving = None
         self.dragging = None
         pass
@@ -235,7 +273,7 @@ class ConnectionGraphEditor:
         
     def add_plugin(self, params):
         (plugin, x, y) = params
-        mbox = ModuleBox(self.canvas.get_root_item(), plugin, self)
+        mbox = ModuleBox(self.parser, self.canvas.get_root_item(), plugin, self)
         bounds = self.canvas.get_bounds()
         if x == None:
             (x, y) = (int(random.uniform(bounds[0], bounds[2] - 100)), int(random.uniform(bounds[1], bounds[3] - 50)))
@@ -257,6 +295,7 @@ class ConnectionGraphEditor:
 
     def box_button_press(self, group, widget, event):
         if event.button == 1:
+            group.raise_(None)
             self.moving = group
             self.motion_x = event.x
             self.motion_y = event.y
@@ -275,7 +314,8 @@ class App:
     def __init__(self):
         fakeserv.start()
         self.lv2db = lv2.LV2DB()
-        self.cgraph = ConnectionGraphEditor(self)
+        self.parser = LV2GraphParser()
+        self.cgraph = ConnectionGraphEditor(self, self.parser)
         
     def canvas_popup_menu_handler(self, widget):
         self.canvas_popup_menu(0, 0, 0)
