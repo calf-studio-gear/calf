@@ -20,6 +20,12 @@ assert port.is_valid()
 
 # This doesn't work: assert client.get_port("calf:port2") == port (because JACK C API doesn't reuse the jack_port_t structs)
 
+print client.get_ports()
+print "Audio capture ports: %s" % (", ".join(client.get_ports("system:capture_.*", calfpytools.JACK_DEFAULT_AUDIO_TYPE)))
+print "Audio playback ports: %s" % (", ".join(client.get_ports("system:playback_.*", calfpytools.JACK_DEFAULT_AUDIO_TYPE)))
+print "MIDI capture ports: %s" % (", ".join(client.get_ports("system:capture_.*", calfpytools.JACK_DEFAULT_MIDI_TYPE)))
+print "MIDI playback ports: %s" % (", ".join(client.get_ports("system:playback_.*", calfpytools.JACK_DEFAULT_MIDI_TYPE)))
+
 port2 = client.get_port("system:playback_1")
 assert port2.get_name() == "playback_1"
 print port2.get_full_name()

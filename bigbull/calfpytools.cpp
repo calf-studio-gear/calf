@@ -136,6 +136,30 @@ static PyObject *jackclient_get_cobj(PyJackClient *self, PyObject *args)
     return PyCObject_FromVoidPtr((void *)self->client, NULL);
 }
 
+static PyObject *jackclient_get_ports(PyJackClient *self, PyObject *args)
+{
+    const char *name = NULL, type = NULL;
+    unsigned long flags = 0;
+    if (!PyArg_ParseTuple(args, "|ssi:get_ports", &name, &type, &flags))
+        return NULL;
+    
+    CHECK_CLIENT
+    
+    const char **p = jack_get_ports(self->client, name, type, flags);
+    PyObject *res = PyList_New(0);
+    if (!p)
+        return res;
+    
+    for (const char **q = p; *q; q++)
+    {
+        PyList_Append(res, PyString_FromString(*q));
+        // free(q);
+    }
+    free(p);
+    
+    return res;
+}
+
 static PyObject *jackclient_connect(PyJackClient *self, PyObject *args)
 {
     char *from_port = NULL, *to_port = NULL;
@@ -200,6 +224,7 @@ static PyMethodDef jackclient_methods[] = {
     {"close", (PyCFunction)jackclient_close, METH_VARARGS, "Close a client"},
     {"get_name", (PyCFunction)jackclient_get_name, METH_VARARGS, "Retrieve client name"},
     {"get_port", (PyCFunction)jackclient_get_port, METH_VARARGS, "Create port object from name of existing JACK port"},
+    {"get_ports", (PyCFunction)jackclient_get_ports, METH_VARARGS, "Get a list of port names based on specified name, type and flag filters"},
     {"register_port", (PyCFunction)jackclient_register_port, METH_VARARGS, "Register a new port and return an object that represents it"},
     {"get_cobj", (PyCFunction)jackclient_get_cobj, METH_VARARGS, "Retrieve jack_client_t pointer for the client"},
     {"connect", (PyCFunction)jackclient_connect, METH_VARARGS, "Connect two ports with given names"},
