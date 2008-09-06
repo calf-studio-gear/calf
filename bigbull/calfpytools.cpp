@@ -138,7 +138,7 @@ static PyObject *jackclient_get_cobj(PyJackClient *self, PyObject *args)
 
 static PyObject *jackclient_get_ports(PyJackClient *self, PyObject *args)
 {
-    const char *name = NULL, type = NULL;
+    const char *name = NULL, *type = NULL;
     unsigned long flags = 0;
     if (!PyArg_ParseTuple(args, "|ssi:get_ports", &name, &type, &flags))
         return NULL;
