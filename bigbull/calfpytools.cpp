@@ -320,6 +320,17 @@ static PyObject *jackport_get_name(PyJackPort *self, PyObject *args)
     return Py_BuildValue("s", jack_port_short_name(self->port));
 }
 
+static PyObject *jackport_get_type(PyJackPort *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_type"))
+        return NULL;
+    
+    CHECK_PORT_CLIENT
+    CHECK_PORT
+    
+    return Py_BuildValue("s", jack_port_type(self->port));
+}
+
 static PyObject *jackport_get_cobj(PyJackPort *self, PyObject *args)
 {
     if (!PyArg_ParseTuple(args, ":get_cobj"))
@@ -408,6 +419,7 @@ static PyMethodDef jackport_methods[] = {
     {"is_mine", (PyCFunction)jackport_is_mine, METH_VARARGS, "Checks if the port object is valid (registered)"},
     {"get_full_name", (PyCFunction)jackport_get_full_name, METH_VARARGS, "Retrieve full port name (including client name)"},
     {"get_name", (PyCFunction)jackport_get_name, METH_VARARGS, "Retrieve short port name (without client name)"},
+    {"get_type", (PyCFunction)jackport_get_type, METH_VARARGS, "Retrieve port type name"},
     {"get_flags", (PyCFunction)jackport_get_flags, METH_VARARGS, "Retrieve port flags (defined in module, ie. calfpytools.JackPortIsInput)"},
     {"set_name", (PyCFunction)jackport_set_name, METH_VARARGS, "Set short port name"},
     {"get_aliases", (PyCFunction)jackport_get_aliases, METH_VARARGS, "Retrieve a list of port aliases"},
