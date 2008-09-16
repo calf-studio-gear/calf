@@ -193,10 +193,12 @@ parameter_properties synth::small_filter_audio_module::param_props[] = {
 static synth::ladspa_info small_lp_filter_info = { 0x8490, "LP12", "12dB/oct LP Filter", "Krzysztof Foltman", copyright, "LowpassPlugin" };
 static synth::ladspa_info small_hp_filter_info = { 0x8491, "HP12", "12dB/oct HP Filter", "Krzysztof Foltman", copyright, "HighpassPlugin" };
 static synth::ladspa_info small_bp_filter_info = { 0x8492, "BP6", "6dB/oct BP Filter", "Krzysztof Foltman", copyright, "BandpassPlugin" };
+static synth::ladspa_info small_br_filter_info = { 0x8493, "Notch6", "6dB/oct Notch Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
 
 ALL_WRAPPERS(small_lp_filter)
 ALL_WRAPPERS(small_hp_filter)
 ALL_WRAPPERS(small_bp_filter)
+ALL_WRAPPERS(small_br_filter)
 
 #endif
 
@@ -205,22 +207,10 @@ extern "C" {
 
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
-    switch (index) {
-        case 0: return &::lv2_filter.descriptor;
-        case 1: return &::lv2_flanger.descriptor;
-        case 2: return &::lv2_reverb.descriptor;
-        case 3: return &::lv2_vintage_delay.descriptor;
-        case 4: return &::lv2_monosynth.descriptor;
-        case 5: return &::lv2_organ.descriptor;
-        case 6: return &::lv2_rotary_speaker.descriptor;
-        case 7: return &::lv2_phaser.descriptor;
-#ifdef ENABLE_EXPERIMENTAL
-        case 8: return &::lv2_small_lp_filter.descriptor;
-        case 9: return &::lv2_small_bp_filter.descriptor;
-        case 10: return &::lv2_small_hp_filter.descriptor;
-#endif
-        default: return NULL;
-    }
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
+    #include <calf/modulelist.h>
+    #undef PER_MODULE_ITEM
+    return NULL;
 }
 
 };
@@ -231,20 +221,10 @@ extern "C" {
 
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
-    switch (Index) {
-        case 0: return &::ladspa_filter.descriptor;
-        case 1: return &::ladspa_flanger.descriptor;
-        case 2: return &::ladspa_reverb.descriptor;
-        case 3: return &::ladspa_vintage_delay.descriptor;
-        case 4: return &::ladspa_rotary_speaker.descriptor;
-        case 5: return &::ladspa_phaser.descriptor;
-#ifdef ENABLE_EXPERIMENTAL
-        case 6: return &::ladspa_small_lp_filter.descriptor;
-        case 7: return &::ladspa_small_hp_filter.descriptor;
-        case 8: return &::ladspa_small_bp_filter.descriptor;
-#endif
-        default: return NULL;
-    }
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
+    #include <calf/modulelist.h>
+    #undef PER_MODULE_ITEM
+    return NULL;
 }
 
 };
@@ -254,22 +234,10 @@ extern "C" {
 
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
-    switch (Index) {
-        case 0: return &::ladspa_filter.dssi_descriptor;
-        case 1: return &::ladspa_flanger.dssi_descriptor;
-        case 2: return &::ladspa_reverb.dssi_descriptor;
-        case 3: return &::ladspa_monosynth.dssi_descriptor;
-        case 4: return &::ladspa_vintage_delay.dssi_descriptor;
-        case 5: return &::ladspa_organ.dssi_descriptor;
-        case 6: return &::ladspa_rotary_speaker.dssi_descriptor;
-        case 7: return &::ladspa_phaser.dssi_descriptor;
-#ifdef ENABLE_EXPERIMENTAL
-        case 8: return &::ladspa_small_lp_filter.dssi_descriptor;
-        case 9: return &::ladspa_small_hp_filter.dssi_descriptor;
-        case 10: return &::ladspa_small_bp_filter.dssi_descriptor;
-#endif
-        default: return NULL;
-    }
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &::ladspa_##name.dssi_descriptor;
+    #include <calf/modulelist.h>
+    #undef PER_MODULE_ITEM
+    return NULL;
 }
 
 };
@@ -279,19 +247,9 @@ std::string synth::get_builtin_modules_rdf()
 {
     std::string rdf;
     
-    rdf += ::ladspa_flanger.generate_rdf();
-    rdf += ::ladspa_reverb.generate_rdf();
-    rdf += ::ladspa_filter.generate_rdf();
-    rdf += ::ladspa_vintage_delay.generate_rdf();
-    rdf += ::ladspa_monosynth.generate_rdf();
-    rdf += ::ladspa_organ.generate_rdf();
-    rdf += ::ladspa_rotary_speaker.generate_rdf();
-    rdf += ::ladspa_phaser.generate_rdf();
-#ifdef ENABLE_EXPERIMENTAL
-    rdf += ::ladspa_small_lp_filter.generate_rdf();
-    rdf += ::ladspa_small_hp_filter.generate_rdf();
-    rdf += ::ladspa_small_bp_filter.generate_rdf();
-#endif
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += ::ladspa_##name.generate_rdf();
+    #include <calf/modulelist.h>
+    #undef PER_MODULE_ITEM
     
     return rdf;
 }
@@ -314,19 +272,10 @@ giface_plugin_info create_plugin_info(ladspa_info &info)
     return pi;
 }
 
+
 void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
 {
-    plugins.push_back(create_plugin_info<filter_audio_module>(filter_info));
-    plugins.push_back(create_plugin_info<flanger_audio_module>(flanger_info));
-    plugins.push_back(create_plugin_info<reverb_audio_module>(reverb_info));
-    plugins.push_back(create_plugin_info<monosynth_audio_module>(monosynth_info));
-    plugins.push_back(create_plugin_info<vintage_delay_audio_module>(vintage_delay_info));
-    plugins.push_back(create_plugin_info<organ_audio_module>(organ_info));
-    plugins.push_back(create_plugin_info<rotary_speaker_audio_module>(rotary_speaker_info));
-    plugins.push_back(create_plugin_info<phaser_audio_module>(phaser_info));
-#ifdef ENABLE_EXPERIMENTAL
-    plugins.push_back(create_plugin_info<small_lp_filter_audio_module>(small_lp_filter_info));
-    plugins.push_back(create_plugin_info<small_hp_filter_audio_module>(small_hp_filter_info));
-    plugins.push_back(create_plugin_info<small_bp_filter_audio_module>(small_bp_filter_info));
-#endif
+    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(create_plugin_info<name##_audio_module>(name##_info));
+    #include <calf/modulelist.h>
+    #undef PER_MODULE_ITEM
 }

@@ -105,6 +105,21 @@ public:
     static const char *get_label() { return "6dB/oct RBJ Bandpass"; }
 };
 
+class small_br_filter_audio_module: public small_filter_audio_module
+{
+public:
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        filter.set_br_rbj(*params[par_cutoff], *params[par_resonance], srate);
+        for (uint32_t i = offset; i < offset + numsamples; i++)
+            outs[0][i] = filter.process_d1(ins[0][i]);
+        filter.sanitize_d1();
+        return !filter.empty_d1();
+    }
+    static const char *get_id() { return "notch6"; }
+    static const char *get_name() { return "notch6"; }
+    static const char *get_label() { return "6dB/oct RBJ Notch Filter"; }
+};
+
 };
 
 #endif
