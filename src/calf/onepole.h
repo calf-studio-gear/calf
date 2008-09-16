@@ -128,6 +128,10 @@ public:
         return out;
     }
     
+    inline bool empty() {
+        return y1 == 0;
+    }
+    
     inline void sanitize() 
     {
         dsp::sanitize(x1);

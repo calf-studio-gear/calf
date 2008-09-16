@@ -120,6 +120,79 @@ public:
     static const char *get_label() { return "6dB/oct RBJ Notch Filter"; }
 };
 
+class small_onepole_filter_audio_module: public null_audio_module
+{
+public:    
+    enum { par_cutoff, param_count };
+    enum { in_count = 1, out_count = 1, rt_capable = true, support_midi = false };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    static const char *port_names[];
+    dsp::onepole<float> filter;
+    uint32_t srate;
+    static parameter_properties param_props[];
+    
+    /// do not export mode and inertia as CVs, as those are settings and not parameters
+    void params_changed()
+    {
+    }
+    void activate() {
+        params_changed();
+        filter.reset();
+    }
+    void deactivate() {
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+};
+
+class small_onepole_lp_filter_audio_module: public small_onepole_filter_audio_module
+{
+public:
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        filter.set_lp(*params[par_cutoff], srate);
+        for (uint32_t i = offset; i < offset + numsamples; i++)
+            outs[0][i] = filter.process_lp(ins[0][i]);
+        filter.sanitize();
+        return !filter.empty();
+    }
+    static const char *get_id() { return "lowpass6"; }
+    static const char *get_name() { return "lowpass6"; }
+    static const char *get_label() { return "6dB/oct Lowpass"; }
+};
+
+class small_onepole_hp_filter_audio_module: public small_onepole_filter_audio_module
+{
+public:
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        filter.set_hp(*params[par_cutoff], srate);
+        for (uint32_t i = offset; i < offset + numsamples; i++)
+            outs[0][i] = filter.process_hp(ins[0][i]);
+        filter.sanitize();
+        return !filter.empty();
+    }
+    static const char *get_id() { return "highpass6"; }
+    static const char *get_name() { return "highpass6"; }
+    static const char *get_label() { return "6dB/oct Lowpass"; }
+};
+
+class small_onepole_ap_filter_audio_module: public small_onepole_filter_audio_module
+{
+public:
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        filter.set_ap(*params[par_cutoff], srate);
+        for (uint32_t i = offset; i < offset + numsamples; i++)
+            outs[0][i] = filter.process_ap(ins[0][i]);
+        filter.sanitize();
+        return !filter.empty();
+    }
+    static const char *get_id() { return "allpass6"; }
+    static const char *get_name() { return "allpass6"; }
+    static const char *get_label() { return "6dB/oct Lowpass"; }
+};
+
 };
 
 #endif

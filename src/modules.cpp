@@ -200,6 +200,22 @@ ALL_WRAPPERS(small_hp_filter)
 ALL_WRAPPERS(small_bp_filter)
 ALL_WRAPPERS(small_br_filter)
 
+////////////////////////////////////////////////////////////////////////////
+
+const char *synth::small_onepole_filter_audio_module::port_names[] = {"In", "Out"};
+
+parameter_properties synth::small_onepole_filter_audio_module::param_props[] = {
+    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
+};
+
+static synth::ladspa_info small_onepole_lp_filter_info = { 0x8490, "LP6", "6dB/oct LP Filter", "Krzysztof Foltman", copyright, "LowpassPlugin" };
+static synth::ladspa_info small_onepole_hp_filter_info = { 0x8491, "HP6", "6dB/oct HP Filter", "Krzysztof Foltman", copyright, "HighpassPlugin" };
+static synth::ladspa_info small_onepole_ap_filter_info = { 0x8492, "AP", "1-pole 1-zero Allpass Filter", "Krzysztof Foltman", copyright, "AllpassPlugin" };
+
+ALL_WRAPPERS(small_onepole_lp_filter)
+ALL_WRAPPERS(small_onepole_hp_filter)
+ALL_WRAPPERS(small_onepole_ap_filter)
+
 #endif
 
 #if USE_LV2

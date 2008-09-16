@@ -11,4 +11,7 @@
     PER_MODULE_ITEM(small_hp_filter, false, "highpass12")
     PER_MODULE_ITEM(small_bp_filter, false, "bandpass6")
     PER_MODULE_ITEM(small_br_filter, false, "notch6")
+    PER_MODULE_ITEM(small_onepole_lp_filter, false, "lowpass12")
+    PER_MODULE_ITEM(small_onepole_hp_filter, false, "highpass12")
+    PER_MODULE_ITEM(small_onepole_ap_filter, false, "allpass")
 #endif
