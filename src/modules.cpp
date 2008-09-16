@@ -28,24 +28,13 @@
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#ifdef ENABLE_EXPERIMENTAL
+#include <calf/modules_small.h>
+#endif
 
 using namespace synth;
 
-#if USE_LADSPA
-#define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_info);
-#else
-#define LADSPA_WRAPPER(mod)
-#endif
-
-#if USE_LV2
-#define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_info);
-#else
-#define LV2_WRAPPER(mod)
-#endif
-
-#define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
-
-const char *copyright = "(C) 2001-2007 Krzysztof Foltman, license: LGPL";
+static const char *copyright = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -183,8 +172,6 @@ static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzyszt
 
 ALL_WRAPPERS(organ)
 
-#ifdef ENABLE_EXPERIMENTAL
-#endif
 ////////////////////////////////////////////////////////////////////////////
 
 static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
@@ -192,6 +179,26 @@ static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynt
 ALL_WRAPPERS(monosynth)
 
 ////////////////////////////////////////////////////////////////////////////
+
+#ifdef ENABLE_EXPERIMENTAL
+////////////////////////////////////////////////////////////////////////////
+
+const char *synth::small_filter_audio_module::port_names[] = {"In", "Out"};
+
+parameter_properties synth::small_filter_audio_module::param_props[] = {
+    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
+    { 0.707,  0.707,   20,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "res", "Resonance" },
+};
+
+static synth::ladspa_info small_lp_filter_info = { 0x8490, "LP12", "12dB/oct LP Filter", "Krzysztof Foltman", copyright, "LowpassPlugin" };
+static synth::ladspa_info small_hp_filter_info = { 0x8491, "HP12", "12dB/oct HP Filter", "Krzysztof Foltman", copyright, "HighpassPlugin" };
+static synth::ladspa_info small_bp_filter_info = { 0x8492, "BP6", "6dB/oct BP Filter", "Krzysztof Foltman", copyright, "BandpassPlugin" };
+
+ALL_WRAPPERS(small_lp_filter)
+ALL_WRAPPERS(small_hp_filter)
+ALL_WRAPPERS(small_bp_filter)
+
+#endif
 
 #if USE_LV2
 extern "C" {
@@ -208,6 +215,9 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
         case 6: return &::lv2_rotary_speaker.descriptor;
         case 7: return &::lv2_phaser.descriptor;
 #ifdef ENABLE_EXPERIMENTAL
+        case 8: return &::lv2_small_lp_filter.descriptor;
+        case 9: return &::lv2_small_bp_filter.descriptor;
+        case 10: return &::lv2_small_hp_filter.descriptor;
 #endif
         default: return NULL;
     }
@@ -229,6 +239,9 @@ const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
         case 4: return &::ladspa_rotary_speaker.descriptor;
         case 5: return &::ladspa_phaser.descriptor;
 #ifdef ENABLE_EXPERIMENTAL
+        case 6: return &::ladspa_small_lp_filter.descriptor;
+        case 7: return &::ladspa_small_hp_filter.descriptor;
+        case 8: return &::ladspa_small_bp_filter.descriptor;
 #endif
         default: return NULL;
     }
@@ -251,6 +264,9 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
         case 6: return &::ladspa_rotary_speaker.dssi_descriptor;
         case 7: return &::ladspa_phaser.dssi_descriptor;
 #ifdef ENABLE_EXPERIMENTAL
+        case 8: return &::ladspa_small_lp_filter.dssi_descriptor;
+        case 9: return &::ladspa_small_hp_filter.dssi_descriptor;
+        case 10: return &::ladspa_small_bp_filter.dssi_descriptor;
 #endif
         default: return NULL;
     }
@@ -271,6 +287,11 @@ std::string synth::get_builtin_modules_rdf()
     rdf += ::ladspa_organ.generate_rdf();
     rdf += ::ladspa_rotary_speaker.generate_rdf();
     rdf += ::ladspa_phaser.generate_rdf();
+#ifdef ENABLE_EXPERIMENTAL
+    rdf += ::ladspa_small_lp_filter.generate_rdf();
+    rdf += ::ladspa_small_hp_filter.generate_rdf();
+    rdf += ::ladspa_small_bp_filter.generate_rdf();
+#endif
     
     return rdf;
 }
@@ -303,4 +324,9 @@ void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
     plugins.push_back(create_plugin_info<organ_audio_module>(organ_info));
     plugins.push_back(create_plugin_info<rotary_speaker_audio_module>(rotary_speaker_info));
     plugins.push_back(create_plugin_info<phaser_audio_module>(phaser_info));
+#ifdef ENABLE_EXPERIMENTAL
+    plugins.push_back(create_plugin_info<small_lp_filter_audio_module>(small_lp_filter_info));
+    plugins.push_back(create_plugin_info<small_hp_filter_audio_module>(small_hp_filter_info));
+    plugins.push_back(create_plugin_info<small_bp_filter_audio_module>(small_bp_filter_info));
+#endif
 }

@@ -32,6 +32,7 @@
 #include <calf/jackhost.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <calf/modules_small.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
@@ -66,6 +67,12 @@ jack_host_base *synth::create_jack_host(const char *effect_name)
     else if (!strcasecmp(effect_name, "phaser"))
         return new jack_host<phaser_audio_module>();
 #ifdef ENABLE_EXPERIMENTAL
+    else if (!strcasecmp(effect_name, "lowpass12"))
+        return new jack_host<small_lp_filter_audio_module>();
+    else if (!strcasecmp(effect_name, "highpass12"))
+        return new jack_host<small_lp_filter_audio_module>();
+    else if (!strcasecmp(effect_name, "bandpass6"))
+        return new jack_host<small_lp_filter_audio_module>();
 #endif
     else
         return NULL;

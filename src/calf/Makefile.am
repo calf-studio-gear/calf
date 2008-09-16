@@ -4,6 +4,6 @@ calf_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
     ctl_curve.h ctl_keyboard.h \
     delay.h fft.h fixed_point.h giface.h gui.h inertia.h \
     jackhost.h lv2_event.h lv2_ui.h lv2_uri_map.h lv2-midiport.h lv2wrap.h \
-    main_win.h modules.h modules_dev.h modules_synths.h \
+    main_win.h modules.h modules_dev.h modules_small.h modules_synths.h \
     onepole.h organ.h osc.h osctl.h osctlnet.h preset.h preset_gui.h primitives.h \
     synth.h utils.h wave.h

@@ -27,6 +27,20 @@
 #include "audio_fx.h"
 #include "giface.h"
 
+#if USE_LADSPA
+#define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_info);
+#else
+#define LADSPA_WRAPPER(mod)
+#endif
+
+#if USE_LV2
+#define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_info);
+#else
+#define LV2_WRAPPER(mod)
+#endif
+
+#define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
+
 namespace synth {
 
 using namespace dsp;
@@ -714,7 +728,7 @@ public:
             float out_hi_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - mix2 * delay.get_interp_1616(shift + pdelta + md * xh) + mix3 * delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
 
             float out_lo_l = in_mono + delay.get_interp_1616(shift + md * xl); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
-            float out_lo_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * xl); // - delay.get_interp_1616(shift + pdelta + md * yl);
+            float out_lo_r = in_mono + delay.get_interp_1616(shift + md * yl); // - delay.get_interp_1616(shift + pdelta + md * yl);
             
             out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
             out_hi_r = crossover2r.process_d2(out_hi_r); // sanitize(out_hi_r);
