@@ -23,6 +23,7 @@
 #include <config.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/plugininfo.h>
 #if USE_LV2
 #include <calf/lv2_event.h>
 #endif
@@ -110,6 +111,8 @@ static const char *units[] = {
     NULL // rotations per minute
 };
 
+//////////////// To all haters: calm down, I'll rewrite it to use the new interface one day
+
 static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, giface_plugin_info *gpi, int param)
 {
     stringstream ss;
@@ -162,6 +165,137 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
     ports += ss.str();
 }
 
+struct lv2_port_base {
+    virtual std::string to_string() = 0;
+    virtual ~lv2_port_base() {}
+};
+
+struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
+{
+    int index;
+    string symbol, name;
+    bool is_input;
+    
+    lv2_audio_port_info(int _index, const std::string &_symbol, const std::string &_name)
+    : index(_index)
+    , symbol(_symbol)
+    , name(_name)
+    , is_input(true)
+    {
+    }
+    /// Called if it's an input port
+    virtual audio_port_info_iface& input() { is_input = true; return *this; }
+    /// Called if it's an output port
+    virtual audio_port_info_iface& output() { is_input = false; return *this; }
+    
+    std::string to_string() {
+        stringstream ss;
+        const char *ind = "        ";
+        ss << "[\n";
+        ss << ind << (is_input ? "a lv2:InputPort ;\n" : "a lv2:OutputPort ;\n");
+        ss << ind << "a lv2:AudioPort ;\n";
+        ss << ind << "lv2:index " << index << " ;\n";
+        ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
+        ss << ind << "lv2:name \"" << name << "\" ;\n";
+        ss << "    ]\n";
+        
+        return ss.str();
+    }
+};
+
+struct lv2_control_port_info: public lv2_port_base, public control_port_info_iface
+{
+    int index;
+    string symbol, name;
+    bool is_input, is_log, is_bool;
+    double min, max, def_value;
+    bool has_min, has_max;
+    
+    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, double _default)
+    : index(_index)
+    , symbol(_symbol)
+    , name(_name)
+    , is_input(true)
+    , def_value(_default)
+    {
+        has_min = has_max = is_log = is_bool = false;
+        
+    }
+    /// Called if it's an input port
+    virtual control_port_info_iface& input() { is_input = true; return *this; }
+    /// Called if it's an output port
+    virtual control_port_info_iface& output() { is_input = false; return *this; }
+    /// Called to mark the port as using linear range [from, to]
+    virtual control_port_info_iface& lin_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = false; return *this; }
+    /// Called to mark the port as using log range [from, to]
+    virtual control_port_info_iface& log_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = true; return *this; }
+    
+    std::string to_string() {
+        stringstream ss;
+        const char *ind = "        ";
+        ss << "[\n";
+        ss << ind << (is_input ? "a lv2:InputPort ;\n" : "a lv2:OutputPort ;\n");
+        ss << ind << "a lv2:ControlPort ;\n";
+        ss << ind << "lv2:index " << index << " ;\n";
+        ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
+        ss << ind << "lv2:name \"" << name << "\" ;\n";
+        if (is_input)
+            ss << ind << "lv2:default " << def_value << " ;\n";
+        if (has_min)
+            ss << ind << "lv2:minimum " << min << " ;\n";
+        if (has_max)
+            ss << ind << "lv2:maximum " << max << " ;\n";
+        ss << "    ]\n";
+        
+        return ss.str();
+    }
+};
+
+struct lv2_plugin_info: public plugin_info_iface
+{
+    /// Plugin id
+    std::string id;
+    /// Plugin name
+    std::string name;
+    /// Plugin label (short name)
+    std::string label;
+    /// Plugin class (category)
+    std::string category;
+    /// Vector of ports
+    vector<lv2_port_base *> ports;
+    /// Set plugin names (ID, name and label)
+    virtual void names(const std::string &_id, const std::string &_name, const std::string &_label, const std::string &_category) {
+        id = _id;
+        name = _name;
+        label = _label;
+        category = _category;
+    }
+    /// Add an audio port (returns a sink which accepts further description)
+    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name) {
+        lv2_audio_port_info *port = new lv2_audio_port_info(ports.size(), id, name);
+        ports.push_back(port);
+        return *port;
+    }
+    /// Add a control port (returns a sink which accepts further description)
+    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value) {
+        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, def_value);
+        ports.push_back(port);
+        return *port;
+    }
+    /// Called after plugin has reported all the information
+    virtual void finalize() {
+    }
+};
+
+struct lv2_plugin_list: public plugin_list_info_iface, public vector<lv2_plugin_info *>
+{
+    virtual plugin_info_iface &plugin() {
+        lv2_plugin_info *pi = new lv2_plugin_info;
+        push_back(pi);
+        return *pi;
+    }
+};
+
 void make_ttl(string path_prefix)
 {
     string header;
@@ -201,8 +335,10 @@ void make_ttl(string path_prefix)
     }
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
+    string gui_header;
+    
 #if USE_LV2_GUI
-    header += "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n"
+    gui_header = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
@@ -213,7 +349,7 @@ void make_ttl(string path_prefix)
         synth::giface_plugin_info &pi = plugins[i];
         string uri = string("<http://calf.sourceforge.net/plugins/")  + string(pi.info->label) + ">";
         string ttl;
-        ttl = "@prefix : " + uri + " .\n" + header;
+        ttl = "@prefix : " + uri + " .\n" + header + gui_header;
         
         ttl += uri + " a lv2:Plugin ;\n";
         
@@ -257,6 +393,39 @@ void make_ttl(string path_prefix)
         fprintf(f, "%s\n", ttl.c_str());
         fclose(f);
     }
+    lv2_plugin_list lpl;
+    synth::get_all_small_plugins(&lpl);
+    for (unsigned int i = 0; i < lpl.size(); i++)
+    {
+        lv2_plugin_info *pi = lpl[i];
+        // Copy-pasted code is the root of all evil, I know!
+        string uri = string("<http://calf.sourceforge.net/small_plugins/")  + string(pi->id) + ">";
+        string ttl;
+        ttl = "@prefix : " + uri + " .\n" + header;
+        
+        ttl += uri + " a lv2:Plugin ;\n";
+        
+        if (!pi->category.empty())
+            ttl += "    a " + pi->category+" ;\n";
+        
+        ttl += "    doap:name \""+string(pi->label)+"\" ;\n";
+        ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
+
+        if (!pi->ports.empty())
+        {
+            ttl += "    lv2:port ";
+            for (unsigned int i = 0; i < pi->ports.size(); i++)
+            {
+                if (i)
+                    ttl += "    ,\n    ";
+                ttl += pi->ports[i]->to_string();
+            }
+            ttl += ".\n\n";
+        }
+        FILE *f = fopen((path_prefix+string(pi->id)+".ttl").c_str(), "w");
+        fprintf(f, "%s\n", ttl.c_str());
+        fclose(f);
+    }
 }
 
 void make_manifest()
@@ -274,7 +443,14 @@ void make_manifest()
             + string(plugins[i].info->label)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i].info->label) + ".ttl> .\n";
 
-    printf("%s\n", ttl.c_str());
+    lv2_plugin_list lpl;
+    synth::get_all_small_plugins(&lpl);
+    for (unsigned int i = 0; i < lpl.size(); i++)
+        ttl += string("<http://calf.sourceforge.net/small_plugins/") 
+            + string(lpl[i]->id)
+            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
+
+    printf("%s\n", ttl.c_str());    
 }
 #else
 void make_manifest()

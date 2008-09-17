@@ -230,7 +230,10 @@ struct giface_plugin_info
     bool (*is_noisy)(int param_no);
 };
 
+struct plugin_list_info_iface;
+
 extern void get_all_plugins(std::vector<giface_plugin_info> &plugins);
+extern void get_all_small_plugins(plugin_list_info_iface *plii);
 
 #if USE_LADSPA
 

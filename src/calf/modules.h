@@ -35,11 +35,15 @@
 
 #if USE_LV2
 #define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_info);
+#define LV2_SMALL_WRAPPER(mod, name) static synth::lv2_small_wrapper<mod##_audio_module> lv2_##mod(name);
 #else
-#define LV2_WRAPPER(mod)
+#define LV2_WRAPPER(...)
+#define LV2_SMALL_WRAPPER(...)
 #endif
 
 #define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
+
+#define SMALL_WRAPPERS(mod, name) LV2_SMALL_WRAPPER(mod, name)
 
 namespace synth {
 

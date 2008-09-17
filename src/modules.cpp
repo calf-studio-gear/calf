@@ -181,40 +181,22 @@ ALL_WRAPPERS(monosynth)
 ////////////////////////////////////////////////////////////////////////////
 
 #ifdef ENABLE_EXPERIMENTAL
-////////////////////////////////////////////////////////////////////////////
 
-const char *synth::small_filter_audio_module::port_names[] = {"In", "Out"};
+SMALL_WRAPPERS(small_lp_filter, "lowpass12")
+SMALL_WRAPPERS(small_hp_filter, "highpass12")
+SMALL_WRAPPERS(small_bp_filter, "bandpass6")
+SMALL_WRAPPERS(small_br_filter, "notch6")
 
-parameter_properties synth::small_filter_audio_module::param_props[] = {
-    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
-    { 0.707,  0.707,   20,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "res", "Resonance" },
-};
+SMALL_WRAPPERS(small_onepole_lp_filter, "lowpass6")
+SMALL_WRAPPERS(small_onepole_hp_filter, "highpass6")
+SMALL_WRAPPERS(small_onepole_ap_filter, "allpass1")
 
-static synth::ladspa_info small_lp_filter_info = { 0x8490, "LP12", "12dB/oct LP Filter", "Krzysztof Foltman", copyright, "LowpassPlugin" };
-static synth::ladspa_info small_hp_filter_info = { 0x8491, "HP12", "12dB/oct HP Filter", "Krzysztof Foltman", copyright, "HighpassPlugin" };
-static synth::ladspa_info small_bp_filter_info = { 0x8492, "BP6", "6dB/oct BP Filter", "Krzysztof Foltman", copyright, "BandpassPlugin" };
-static synth::ladspa_info small_br_filter_info = { 0x8493, "Notch6", "6dB/oct Notch Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
-
-ALL_WRAPPERS(small_lp_filter)
-ALL_WRAPPERS(small_hp_filter)
-ALL_WRAPPERS(small_bp_filter)
-ALL_WRAPPERS(small_br_filter)
-
-////////////////////////////////////////////////////////////////////////////
-
-const char *synth::small_onepole_filter_audio_module::port_names[] = {"In", "Out"};
-
-parameter_properties synth::small_onepole_filter_audio_module::param_props[] = {
-    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
-};
-
-static synth::ladspa_info small_onepole_lp_filter_info = { 0x8490, "LP6", "6dB/oct LP Filter", "Krzysztof Foltman", copyright, "LowpassPlugin" };
-static synth::ladspa_info small_onepole_hp_filter_info = { 0x8491, "HP6", "6dB/oct HP Filter", "Krzysztof Foltman", copyright, "HighpassPlugin" };
-static synth::ladspa_info small_onepole_ap_filter_info = { 0x8492, "AP", "1-pole 1-zero Allpass Filter", "Krzysztof Foltman", copyright, "AllpassPlugin" };
-
-ALL_WRAPPERS(small_onepole_lp_filter)
-ALL_WRAPPERS(small_onepole_hp_filter)
-ALL_WRAPPERS(small_onepole_ap_filter)
+SMALL_WRAPPERS(small_min, "min")
+SMALL_WRAPPERS(small_max, "max")
+SMALL_WRAPPERS(small_minus, "minus")
+SMALL_WRAPPERS(small_mul, "mul")
+SMALL_WRAPPERS(small_neg, "neg")
+SMALL_WRAPPERS(small_map_lin2exp, "lin2exp")
 
 #endif
 
@@ -224,8 +206,8 @@ extern "C" {
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
+    #define PER_SMALL_MODULE_ITEM(name) if (!(index--)) return &::lv2_##name.descriptor;
     #include <calf/modulelist.h>
-    #undef PER_MODULE_ITEM
     return NULL;
 }
 
@@ -238,8 +220,8 @@ extern "C" {
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
+    #define PER_SMALL_MODULE_ITEM(name)
     #include <calf/modulelist.h>
-    #undef PER_MODULE_ITEM
     return NULL;
 }
 
@@ -251,8 +233,8 @@ extern "C" {
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &::ladspa_##name.dssi_descriptor;
+    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
-    #undef PER_MODULE_ITEM
     return NULL;
 }
 
@@ -264,8 +246,8 @@ std::string synth::get_builtin_modules_rdf()
     std::string rdf;
     
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += ::ladspa_##name.generate_rdf();
+    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
-    #undef PER_MODULE_ITEM
     
     return rdf;
 }
@@ -288,10 +270,19 @@ giface_plugin_info create_plugin_info(ladspa_info &info)
     return pi;
 }
 
-
 void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(create_plugin_info<name##_audio_module>(name##_info));
+    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
-    #undef PER_MODULE_ITEM
 }
+
+void synth::get_all_small_plugins(plugin_list_info_iface *iface)
+{
+    #define PER_MODULE_ITEM(name, isSynth, jackname) 
+    #define PER_SMALL_MODULE_ITEM(name) { plugin_info_iface *pii = &iface->plugin(); name##_audio_module::plugin_info(pii); pii->finalize(); }
+    #include <calf/modulelist.h>
+}
+
+// instantiate descriptor templates
+PUT_DESCRIPTORS_HERE

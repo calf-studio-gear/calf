@@ -141,7 +141,6 @@ struct lv2_wrapper
     }
 
     static void cb_activate(LV2_Handle Instance) {
-        // LV2 activate is practically useless because parameters aren't present
     }
     
     static void cb_deactivate(LV2_Handle Instance) {
@@ -248,7 +247,72 @@ struct lv2_wrapper
 };
 
 template<class Module>
-LV2_Descriptor lv2_wrapper<Module>::descriptor;
+struct lv2_small_wrapper
+{
+    typedef Module instance;
+    static LV2_Descriptor descriptor;
+    std::string uri;
+    
+    lv2_small_wrapper(const char *id)
+    {
+        uri = "http://calf.sourceforge.net/small_plugins/" + std::string(id);
+        descriptor.URI = uri.c_str();
+        descriptor.instantiate = cb_instantiate;
+        descriptor.connect_port = cb_connect;
+        descriptor.activate = cb_activate;
+        descriptor.run = cb_run;
+        descriptor.deactivate = cb_deactivate;
+        descriptor.cleanup = cb_cleanup;
+        descriptor.extension_data = cb_ext_data;
+    }
+
+    static void cb_connect(LV2_Handle Instance, uint32_t port, void *DataLocation) {
+        unsigned long ins = Module::in_count;
+        unsigned long outs = Module::out_count;
+        instance *const mod = (instance *)Instance;
+        if (port < ins)
+            mod->ins[port] = (float *)DataLocation;
+        else if (port < ins + outs)
+            mod->outs[port - ins] = (float *)DataLocation;
+    }
+
+    static void cb_activate(LV2_Handle Instance) {
+        // Note the changed semantics (now more LV2-like)
+        instance *const mod = (instance *)Instance;
+        mod->activate();
+    }
+    
+    static void cb_deactivate(LV2_Handle Instance) {
+        instance *const mod = (instance *)Instance;
+        mod->deactivate();
+    }
+
+    static LV2_Handle cb_instantiate(const LV2_Descriptor * Descriptor, double sample_rate, const char *bundle_path, const LV2_Feature *const *features)
+    {
+        instance *mod = new instance();
+        // XXXKF some people use fractional sample rates; we respect them ;-)
+        mod->srate = (uint32_t)sample_rate;
+        return mod;
+    }
+    
+    static void cb_run(LV2_Handle Instance, uint32_t SampleCount) {
+        instance *const mod = (instance *)Instance;
+        mod->process(SampleCount);
+    }
+    
+    static void cb_cleanup(LV2_Handle Instance) {
+        instance *const mod = (instance *)Instance;
+        delete mod;
+    }
+    
+    static const void *cb_ext_data(const char *URI) {
+        return NULL;
+    }
+};
+
+#define PUT_DESCRIPTORS_HERE \
+    template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor; \
+    template<class Module> LV2_Descriptor lv2_wrapper<Module>::descriptor;
 
 };
 
