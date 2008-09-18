@@ -189,7 +189,7 @@ SMALL_WRAPPERS(small_br_filter, "notch6")
 
 SMALL_WRAPPERS(small_onepole_lp_filter, "lowpass6")
 SMALL_WRAPPERS(small_onepole_hp_filter, "highpass6")
-SMALL_WRAPPERS(small_onepole_ap_filter, "allpass1")
+SMALL_WRAPPERS(small_onepole_ap_filter, "allpass")
 
 SMALL_WRAPPERS(small_min, "min")
 SMALL_WRAPPERS(small_max, "max")
