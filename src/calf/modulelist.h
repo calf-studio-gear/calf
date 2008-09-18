@@ -22,6 +22,8 @@
     PER_SMALL_MODULE_ITEM(small_map_lin2exp)
     PER_SMALL_MODULE_ITEM(small_square_osc)
     PER_SMALL_MODULE_ITEM(small_saw_osc)
+    PER_SMALL_MODULE_ITEM(small_print)
+    PER_SMALL_MODULE_ITEM(small_print2)
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

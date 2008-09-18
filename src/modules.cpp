@@ -200,6 +200,8 @@ SMALL_WRAPPERS(small_map_lin2exp, "lin2exp")
 
 SMALL_WRAPPERS(small_square_osc, "square_osc")
 SMALL_WRAPPERS(small_saw_osc, "saw_osc")
+SMALL_WRAPPERS(small_print, "print")
+SMALL_WRAPPERS(small_print2, "print2")
 
 #endif
 

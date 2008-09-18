@@ -130,6 +130,9 @@ public:
     uint32_t srate;
     static parameter_properties param_props[];
     
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
     static void port_info(plugin_info_iface *pii)
     {
         pii->audio_port("In", "in").input();
@@ -388,7 +391,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("square_osc", "squareosc", "Square Oscillator", "lv2:Oscillator");
+        pii->names("square_osc", "squareosc", "Square Oscillator", "lv2:OscillatorPlugin");
         port_info(pii);
     }
 };
@@ -404,8 +407,52 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("saw_osc", "sawosc", "Saw Oscillator", "lv2:Oscillator");
+        pii->names("saw_osc", "sawosc", "Saw Oscillator", "lv2:OscillatorPlugin");
         port_info(pii);
+    }
+};
+
+class small_print_audio_module: public null_audio_module
+{
+public:    
+    enum { in_count = 1, out_count = 0 };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    uint32_t srate;
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("print", "print", "Print To Console (C)", "lv2:UtilityPlugin");
+        pii->control_port("in", "In", 0).input();
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+    void process(uint32_t)
+    {
+        printf("%f\n", *ins[0]);
+    }
+};
+
+class small_print2_audio_module: public null_audio_module
+{
+public:    
+    enum { in_count = 1, out_count = 0 };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    uint32_t srate;
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("print2", "print2", "Print To Console (A)", "lv2:UtilityPlugin");
+        pii->audio_port("in", "In").input();
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+    void process(uint32_t)
+    {
+        printf("%f\n", *ins[0]);
     }
 };
 

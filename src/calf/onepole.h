@@ -36,6 +36,11 @@ class onepole
 public:
     T x1, y1;
     Coeff a0, a1, b1;
+
+    onepole()
+    {
+        reset();
+    }
     
     /// Set coefficients for a lowpass filter
     void set_lp(float fc, float sr)
