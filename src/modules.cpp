@@ -182,26 +182,9 @@ ALL_WRAPPERS(monosynth)
 
 #ifdef ENABLE_EXPERIMENTAL
 
-SMALL_WRAPPERS(small_lp_filter, "lowpass12")
-SMALL_WRAPPERS(small_hp_filter, "highpass12")
-SMALL_WRAPPERS(small_bp_filter, "bandpass6")
-SMALL_WRAPPERS(small_br_filter, "notch6")
-
-SMALL_WRAPPERS(small_onepole_lp_filter, "lowpass6")
-SMALL_WRAPPERS(small_onepole_hp_filter, "highpass6")
-SMALL_WRAPPERS(small_onepole_ap_filter, "allpass")
-
-SMALL_WRAPPERS(small_min, "min")
-SMALL_WRAPPERS(small_max, "max")
-SMALL_WRAPPERS(small_minus, "minus")
-SMALL_WRAPPERS(small_mul, "mul")
-SMALL_WRAPPERS(small_neg, "neg")
-SMALL_WRAPPERS(small_map_lin2exp, "lin2exp")
-
-SMALL_WRAPPERS(small_square_osc, "square_osc")
-SMALL_WRAPPERS(small_saw_osc, "saw_osc")
-SMALL_WRAPPERS(small_print, "print")
-SMALL_WRAPPERS(small_print2, "print2")
+#define PER_MODULE_ITEM(...) 
+#define PER_SMALL_MODULE_ITEM(name, id) SMALL_WRAPPERS(name, id)
+#include <calf/modulelist.h>
 
 #endif
 
@@ -211,7 +194,7 @@ extern "C" {
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(name) if (!(index--)) return &::lv2_##name.descriptor;
+    #define PER_SMALL_MODULE_ITEM(name, id) if (!(index--)) return &::lv2_##name.descriptor;
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -225,7 +208,7 @@ extern "C" {
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(name)
+    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -285,7 +268,7 @@ void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
 void synth::get_all_small_plugins(plugin_list_info_iface *iface)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) 
-    #define PER_SMALL_MODULE_ITEM(name) { plugin_info_iface *pii = &iface->plugin(); name##_audio_module::plugin_info(pii); pii->finalize(); }
+    #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); name##_audio_module::plugin_info(pii); pii->finalize(); }
     #include <calf/modulelist.h>
 }
 

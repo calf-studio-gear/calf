@@ -264,8 +264,7 @@ struct lv2_plugin_info: public plugin_info_iface
     /// Vector of ports
     vector<lv2_port_base *> ports;
     /// Set plugin names (ID, name and label)
-    virtual void names(const std::string &_id, const std::string &_name, const std::string &_label, const std::string &_category) {
-        id = _id;
+    virtual void names(const std::string &_name, const std::string &_label, const std::string &_category) {
         name = _name;
         label = _label;
         category = _category;
@@ -289,8 +288,9 @@ struct lv2_plugin_info: public plugin_info_iface
 
 struct lv2_plugin_list: public plugin_list_info_iface, public vector<lv2_plugin_info *>
 {
-    virtual plugin_info_iface &plugin() {
+    virtual plugin_info_iface &plugin(const std::string &id) {
         lv2_plugin_info *pi = new lv2_plugin_info;
+        pi->id = id;
         push_back(pi);
         return *pi;
     }

@@ -54,7 +54,7 @@ struct control_port_info_iface
 struct plugin_info_iface
 {
     /// Set plugin names (ID, name and label)
-    virtual void names(const std::string &id, const std::string &name, const std::string &label, const std::string &category) {}
+    virtual void names(const std::string &name, const std::string &label, const std::string &category) {}
     /// Add an audio port (returns a sink which accepts further description)
     virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name)=0;
     /// Add a control port (returns a sink which accepts further description)
@@ -68,7 +68,7 @@ struct plugin_info_iface
 struct plugin_list_info_iface
 {
     /// Add an empty plugin object and return the sink to be filled with information
-    virtual plugin_info_iface &plugin() = 0;
+    virtual plugin_info_iface &plugin(const std::string &id) = 0;
     virtual ~plugin_list_info_iface() {}
 };
 

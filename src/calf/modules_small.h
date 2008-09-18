@@ -72,7 +72,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("lowpass12", "lowpass12", "12dB/oct RBJ Lowpass", "lv2:LowpassPlugin");
+        pii->names("lowpass12", "12dB/oct RBJ Lowpass", "lv2:LowpassPlugin");
         port_info(pii);
     }
 };
@@ -86,7 +86,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("highpass12", "highpass12", "12dB/oct RBJ Highpass", "lv2:HighpassPlugin");
+        pii->names("highpass12", "12dB/oct RBJ Highpass", "lv2:HighpassPlugin");
         port_info(pii);
     }
 };
@@ -100,7 +100,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("bandpass6", "bandpass6", "6dB/oct RBJ Bandpass", "lv2:BandpassPlugin");
+        pii->names("bandpass6", "6dB/oct RBJ Bandpass", "lv2:BandpassPlugin");
         port_info(pii);
     }
 };
@@ -114,7 +114,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("notch6", "notch6", "6dB/oct RBJ Bandpass", "lv2:FilterPlugin");
+        pii->names("notch6", "6dB/oct RBJ Bandpass", "lv2:FilterPlugin");
         port_info(pii);
     }
 };
@@ -156,7 +156,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("lowpass6", "lowpass6", "6dB/oct Lowpass Filter", "lv2:LowpassPlugin");
+        pii->names("lowpass6", "6dB/oct Lowpass Filter", "lv2:LowpassPlugin");
         port_info(pii);
     }
 };
@@ -172,7 +172,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("highpass6", "highpass6", "6dB/oct Highpass Filter", "lv2:HighpassPlugin");
+        pii->names("highpass6", "6dB/oct Highpass Filter", "lv2:HighpassPlugin");
         port_info(pii);
     }
 };
@@ -188,7 +188,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("allpass", "allpass", "1-pole 1-zero Allpass Filter", "lv2:AllpassPlugin");
+        pii->names("allpass", "1-pole 1-zero Allpass Filter", "lv2:AllpassPlugin");
         port_info(pii);
     }
 };
@@ -228,7 +228,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "min", "Function min", "lv2:UtilityPlugin");
+        pii->names("min", "Function min", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -242,7 +242,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "max", "Function max", "lv2:UtilityPlugin");
+        pii->names("max", "Function max", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -256,7 +256,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("minus", "minus", "Subtract", "lv2:UtilityPlugin");
+        pii->names("minus", "Subtract", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -270,7 +270,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("mul", "mul", "Multiply", "lv2:UtilityPlugin");
+        pii->names("mul", "Multiply", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -284,7 +284,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("neg", "neg", "Negative value", "lv2:UtilityPlugin");
+        pii->names("neg", "Negative value", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -300,7 +300,7 @@ public:
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("lin2exp", "lin2exp", "Lin-Exp Mapper", "lv2:UtilityPlugin");
+        pii->names("lin2exp", "Lin-Exp Mapper", "lv2:UtilityPlugin");
         pii->control_port("in", "In", 0.f).input();
         pii->control_port("from_min", "Min (from)", 0).input();
         pii->control_port("from_max", "Max (from)", 1).input();
@@ -391,7 +391,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("square_osc", "squareosc", "Square Oscillator", "lv2:OscillatorPlugin");
+        pii->names("squareosc", "Square Oscillator", "lv2:OscillatorPlugin");
         port_info(pii);
     }
 };
@@ -407,7 +407,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("saw_osc", "sawosc", "Saw Oscillator", "lv2:OscillatorPlugin");
+        pii->names("sawosc", "Saw Oscillator", "lv2:OscillatorPlugin");
         port_info(pii);
     }
 };
@@ -422,7 +422,7 @@ public:
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("print", "print", "Print To Console (C)", "lv2:UtilityPlugin");
+        pii->names("print", "Print To Console (C)", "lv2:UtilityPlugin");
         pii->control_port("in", "In", 0).input();
     }
     void set_sample_rate(uint32_t sr) {
@@ -444,7 +444,7 @@ public:
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("print2", "print2", "Print To Console (A)", "lv2:UtilityPlugin");
+        pii->names("print2", "Print To Console (A)", "lv2:UtilityPlugin");
         pii->audio_port("in", "In").input();
     }
     void set_sample_rate(uint32_t sr) {
@@ -453,6 +453,65 @@ public:
     void process(uint32_t)
     {
         printf("%f\n", *ins[0]);
+    }
+};
+
+template<bool audio>
+class small_quadpower_audio_module: public null_audio_module
+{
+public:    
+    enum { in_value, in_factor, in_count , out_count = 4 };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        const char *names[8] = {"xa", "x*a^1", "xaa", "x*a^2", "xaaa", "x*a^3", "xaaaa", "x*a^4" };
+        if (audio)
+            pii->names("quadpower_a", "Quad Power (A)", "lv2:UtilityPlugin");
+        else
+            pii->names("quadpower_c", "Quad Power (C)", "lv2:UtilityPlugin");
+        if (audio)
+            pii->audio_port("x", "x").input();
+        else
+            pii->control_port("x", "x", 1).input();
+        pii->control_port("a", "a", 1).input();
+        for (int i = 0; i < 8; i += 2)
+            if (audio)
+                pii->audio_port(names[i], names[i+1]).output();
+            else
+                pii->control_port(names[i], names[i+1], 0).output();
+    }
+};
+
+class small_quadpower_a_audio_module: public small_quadpower_audio_module<true>
+{
+public:
+    void process(uint32_t count)
+    {
+        float a = *ins[in_factor];
+        for (uint32_t i = 0; i < count; i++)
+        {
+            float x = ins[in_value][i];
+            outs[0][i] = x * a;
+            outs[1][i] = x * a * a;
+            outs[2][i] = x * a * a * a;
+            outs[3][i] = x * a * a * a * a;
+        }
+    }
+};
+
+class small_quadpower_c_audio_module: public small_quadpower_audio_module<false>
+{
+public:
+    void process(uint32_t)
+    {
+        float x = *ins[in_value];
+        float a = *ins[in_factor];
+        *outs[0] = x * a;
+        *outs[1] = x * a * a;
+        *outs[2] = x * a * a * a;
+        *outs[3] = x * a * a * a * a;
     }
 };
 
