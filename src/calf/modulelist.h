@@ -20,6 +20,8 @@
     PER_SMALL_MODULE_ITEM(small_mul)
     PER_SMALL_MODULE_ITEM(small_neg)
     PER_SMALL_MODULE_ITEM(small_map_lin2exp)
+    PER_SMALL_MODULE_ITEM(small_square_osc)
+    PER_SMALL_MODULE_ITEM(small_saw_osc)
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

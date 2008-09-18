@@ -48,6 +48,11 @@ struct simple_oscillator
     {
         phasedelta = (int)(freq * 65536.0 * 256.0 * 16.0 / sr) << 4;
     }
+    /// Set phase delta based on oscillator frequency and inverse of sample rate.
+    void set_freq_odsr(float freq, double odsr)
+    {
+        phasedelta = (int)(freq * 65536.0 * 256.0 * 16.0 * odsr) << 4;
+    }
     inline float get()
     {
         float value = (phase >> 16 ) / 65535.0 - 0.5;

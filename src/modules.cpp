@@ -198,6 +198,9 @@ SMALL_WRAPPERS(small_mul, "mul")
 SMALL_WRAPPERS(small_neg, "neg")
 SMALL_WRAPPERS(small_map_lin2exp, "lin2exp")
 
+SMALL_WRAPPERS(small_square_osc, "square_osc")
+SMALL_WRAPPERS(small_saw_osc, "saw_osc")
+
 #endif
 
 #if USE_LV2

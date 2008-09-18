@@ -51,7 +51,7 @@ public:
     uint32_t srate;
     
     void activate() {
-        filter.reset();
+        filter.reset_d1();
     }
     void set_sample_rate(uint32_t sr) {
         srate = sr;
@@ -311,6 +311,101 @@ public:
     void process(uint32_t count) {
         float normalized = (*ins[in_signal] - *ins[in_from_min]) / (*ins[in_from_max] - *ins[in_from_min]);
         *outs[out_signal] = *ins[in_to_min] * pow(*ins[in_to_max] / *ins[in_to_min], normalized);
+    }
+};
+
+#define SMALL_OSC_TABLE_BITS 12
+
+class small_freq_only_osc_audio_module: public null_audio_module
+{
+public:    
+    typedef waveform_family<SMALL_OSC_TABLE_BITS> waves_type;
+    enum { in_freq, in_count };
+    enum { out_signal, out_count};
+    enum { wave_size = 1 << SMALL_OSC_TABLE_BITS };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    waves_type *waves;
+    waveform_oscillator<SMALL_OSC_TABLE_BITS> osc;
+    uint32_t srate;
+    double odsr;
+
+    /// Fill the array with the original, non-bandlimited, waveform
+    virtual void get_original_waveform(float data[wave_size]) = 0;
+    /// This function needs to be virtual to ensure a separate wave family for each class (but not each instance)
+    virtual waves_type *get_waves() = 0;
+    void activate() {
+        waves = get_waves();
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+        odsr = 1.0 / sr;
+    }
+    void process(uint32_t count)
+    {
+        osc.set_freq_odsr(*ins[in_freq], odsr);
+        osc.waveform = waves->get_level(osc.phasedelta);
+        if (osc.waveform)
+        {
+            for (uint32_t i = 0; i < count; i++)
+                outs[out_signal][i] = osc.get();
+        }
+        else
+            dsp::zero(outs[out_signal], count);
+    }
+    static void port_info(plugin_info_iface *pii)
+    {
+        pii->control_port("freq", "Frequency", 440).input().log_range(20, 20000);
+        pii->audio_port("out", "Out").output();
+    }
+    /// Generate a wave family (bandlimit levels) from the original wave
+    waves_type *create_waves() {
+        waves_type *ptr = new waves_type;
+        float source[wave_size];
+        get_original_waveform(source);
+        bandlimiter<SMALL_OSC_TABLE_BITS> bl;
+        ptr->make(bl, source);
+        return ptr;
+    }
+};
+
+#define OSC_MODULE_GET_WAVES() \
+    virtual waves_type *get_waves() { \
+        static waves_type *waves = NULL; \
+        if (!waves) \
+            waves = create_waves(); \
+        return waves; \
+    }
+
+class small_square_osc_audio_module: public small_freq_only_osc_audio_module
+{
+public:
+    OSC_MODULE_GET_WAVES()
+
+    virtual void get_original_waveform(float data[wave_size]) {
+        for (int i = 0; i < wave_size; i++)
+            data[i] = (i < wave_size / 2) ? +1 : -1;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("square_osc", "squareosc", "Square Oscillator", "lv2:Oscillator");
+        port_info(pii);
+    }
+};
+
+class small_saw_osc_audio_module: public small_freq_only_osc_audio_module
+{
+public:
+    OSC_MODULE_GET_WAVES()
+
+    virtual void get_original_waveform(float data[wave_size]) {
+        for (int i = 0; i < wave_size; i++)
+            data[i] = (i * 2.0 / wave_size) - 1;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("saw_osc", "sawosc", "Saw Oscillator", "lv2:Oscillator");
+        port_info(pii);
     }
 };
 

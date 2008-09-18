@@ -291,7 +291,7 @@ struct lv2_small_wrapper
     {
         instance *mod = new instance();
         // XXXKF some people use fractional sample rates; we respect them ;-)
-        mod->srate = (uint32_t)sample_rate;
+        mod->set_sample_rate((uint32_t)sample_rate);
         return mod;
     }
     
