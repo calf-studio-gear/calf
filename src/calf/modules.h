@@ -27,32 +27,15 @@
 #include "audio_fx.h"
 #include "giface.h"
 
-#if USE_LADSPA
-#define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_info);
-#else
-#define LADSPA_WRAPPER(mod)
-#endif
-
-#if USE_LV2
-#define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_info);
-#define LV2_SMALL_WRAPPER(mod, name) static synth::lv2_small_wrapper<mod##_audio_module> lv2_##mod(name);
-#else
-#define LV2_WRAPPER(...)
-#define LV2_SMALL_WRAPPER(...)
-#endif
-
-#define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
-
-#define SMALL_WRAPPERS(mod, name) LV2_SMALL_WRAPPER(mod, name)
-
 namespace synth {
 
 using namespace dsp;
 
 class null_audio_module;
+struct ladspa_plugin_info;
     
 /// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
-/// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class
+/// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
 class null_audio_module: public line_graph_iface
 {
 public:
@@ -131,6 +114,7 @@ public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
+    static synth::ladspa_plugin_info plugin_info;
     dsp::simple_flanger<float, 2048> left, right;
     float *ins[in_count]; 
     float *outs[out_count];
@@ -203,6 +187,7 @@ public:
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
+    static synth::ladspa_plugin_info plugin_info;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -277,6 +262,7 @@ public:
     enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
+    static synth::ladspa_plugin_info plugin_info;
     dsp::reverb<float> reverb;
     uint32_t srate;
     gain_smoothing amount;
@@ -333,6 +319,7 @@ public:
     dsp::biquad<float> left[3], right[3];
     uint32_t srate;
     static parameter_properties param_props[];
+    static synth::ladspa_plugin_info plugin_info;
     int order;
     inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
     once_per_n timer;
@@ -486,6 +473,7 @@ public:
     float *outs[out_count];
     float *params[param_count];
     static const char *port_names[in_count + out_count];
+    static synth::ladspa_plugin_info plugin_info;
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
@@ -605,6 +593,7 @@ public:
     uint32_t srate;
     int vibrato_mode;
     static parameter_properties param_props[];
+    static synth::ladspa_plugin_info plugin_info;
     /// Current CC1 (Modulation) value, normalized to [0, 1]
     float mwhl_value;
     /// Current CC64 (Hold) value, normalized to [0, 1]
@@ -701,12 +690,12 @@ public:
     inline bool incr_towards(float &aspeed, float raspeed, float delta_decc, float delta_acc)
     {
         if (aspeed < raspeed) {
-            aspeed = min(raspeed, aspeed + delta_acc);
+            aspeed = std::min(raspeed, aspeed + delta_acc);
             return true;
         }
         else if (aspeed > raspeed) 
         {
-            aspeed = max(raspeed, aspeed - delta_decc);
+            aspeed = std::max(raspeed, aspeed - delta_decc);
             return true;
         }        
         return false;
@@ -788,6 +777,7 @@ public:
 };
 
 extern std::string get_builtin_modules_rdf();
+extern const char *calf_copyright_info;
 
 };
 

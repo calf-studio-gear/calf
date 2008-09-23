@@ -24,10 +24,10 @@
 #include <stack>
 #include <map>
 #include <cmath>
+#include <cstdlib>
+#include <stdint.h>
 
 namespace dsp {
-
-using namespace std;
 
 /// Set a float to zero
 inline void zero(float &v) {
@@ -377,7 +377,7 @@ public:
         time++;
     }
     void set(int pos, task *t) {
-        timeline.insert(pair<unsigned int, task *>(time+pos, t));
+        timeline.insert(std::pair<unsigned int, task *>(time+pos, t));
         next_task = timeline.begin()->first;
     }
     void do_tasks() {

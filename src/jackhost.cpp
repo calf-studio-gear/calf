@@ -32,7 +32,6 @@
 #include <calf/jackhost.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
-#include <calf/modules_small.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>

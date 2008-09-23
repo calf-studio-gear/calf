@@ -28,13 +28,12 @@
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
-#ifdef ENABLE_EXPERIMENTAL
-#include <calf/modules_small.h>
-#endif
 
 using namespace synth;
 
-static const char *copyright = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
+template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor;
+
+const char *synth::calf_copyright_info = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -50,9 +49,7 @@ parameter_properties flanger_audio_module::param_props[] = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-static synth::ladspa_info flanger_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", copyright, "FlangerPlugin" };
-
-ALL_WRAPPERS(flanger)
+synth::ladspa_plugin_info flanger_audio_module::plugin_info = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", synth::calf_copyright_info, "FlangerPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -69,9 +66,7 @@ parameter_properties phaser_audio_module::param_props[] = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-static synth::ladspa_info phaser_info = { 0x847d, "Phaser", "Calf Phaser", "Krzysztof Foltman", copyright, "PhaserPlugin" };
-
-ALL_WRAPPERS(phaser)
+synth::ladspa_plugin_info phaser_audio_module::plugin_info = { 0x847d, "Phaser", "Calf Phaser", "Krzysztof Foltman", synth::calf_copyright_info, "PhaserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -87,9 +82,7 @@ parameter_properties reverb_audio_module::param_props[] = {
     { 0.25,       0,    2,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-static synth::ladspa_info reverb_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", copyright, "ReverbPlugin" };
-
-ALL_WRAPPERS(reverb)
+synth::ladspa_plugin_info reverb_audio_module::plugin_info = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", synth::calf_copyright_info, "ReverbPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -111,9 +104,7 @@ parameter_properties filter_audio_module::param_props[] = {
     { 20,         5,  100,    20, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Inertia"},
 };
 
-static synth::ladspa_info filter_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", copyright, "FilterPlugin" };
-
-ALL_WRAPPERS(filter)
+synth::ladspa_plugin_info filter_audio_module::plugin_info = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", synth::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -141,9 +132,7 @@ parameter_properties vintage_delay_audio_module::param_props[] = {
     { 1,         0,    2,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fbmodes, "medium", "Medium" },
 };
 
-static synth::ladspa_info vintage_delay_info = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", copyright, "DelayPlugin" };
-
-ALL_WRAPPERS(vintage_delay)
+synth::ladspa_plugin_info vintage_delay_audio_module::plugin_info = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", synth::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -162,88 +151,20 @@ parameter_properties rotary_speaker_audio_module::param_props[] = {
     { 0.3,        0,    1,  101, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "reflection", "Reflection" },
 };
 
-static synth::ladspa_info rotary_speaker_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", copyright, "SimulationPlugin" };
-
-ALL_WRAPPERS(rotary_speaker)
+synth::ladspa_plugin_info rotary_speaker_audio_module::plugin_info = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", synth::calf_copyright_info, "SimulationPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
-static synth::ladspa_info organ_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
-
-ALL_WRAPPERS(organ)
+synth::ladspa_plugin_info organ_audio_module::plugin_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
-static synth::ladspa_info monosynth_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", copyright, "SynthesizerPlugin" };
-
-ALL_WRAPPERS(monosynth)
+synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
-
-#ifdef ENABLE_EXPERIMENTAL
-
-#define PER_MODULE_ITEM(...) 
-#define PER_SMALL_MODULE_ITEM(name, id) SMALL_WRAPPERS(name, id)
-#include <calf/modulelist.h>
-
-#endif
-
-#if USE_LV2
-extern "C" {
-
-const LV2_Descriptor *lv2_descriptor(uint32_t index)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(name, id) if (!(index--)) return &::lv2_##name.descriptor;
-    #include <calf/modulelist.h>
-    return NULL;
-}
-
-};
-
-#endif
-#if USE_LADSPA
-extern "C" {
-
-const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(...)
-    #include <calf/modulelist.h>
-    return NULL;
-}
-
-};
-
-#if USE_DSSI
-extern "C" {
-
-const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &::ladspa_##name.dssi_descriptor;
-    #define PER_SMALL_MODULE_ITEM(...)
-    #include <calf/modulelist.h>
-    return NULL;
-}
-
-};
-#endif
-
-std::string synth::get_builtin_modules_rdf()
-{
-    std::string rdf;
-    
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += ::ladspa_##name.generate_rdf();
-    #define PER_SMALL_MODULE_ITEM(...)
-    #include <calf/modulelist.h>
-    
-    return rdf;
-}
-
-#endif
 
 template<class Module>
-giface_plugin_info create_plugin_info(ladspa_info &info)
+giface_plugin_info create_plugin_info(ladspa_plugin_info &info)
 {
     giface_plugin_info pi;
     pi.info = &info;
@@ -260,17 +181,8 @@ giface_plugin_info create_plugin_info(ladspa_info &info)
 
 void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(create_plugin_info<name##_audio_module>(name##_info));
+    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(create_plugin_info<name##_audio_module>(name##_audio_module::plugin_info));
     #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
 }
 
-void synth::get_all_small_plugins(plugin_list_info_iface *iface)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) 
-    #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); name##_audio_module::plugin_info(pii); pii->finalize(); }
-    #include <calf/modulelist.h>
-}
-
-// instantiate descriptor templates
-PUT_DESCRIPTORS_HERE

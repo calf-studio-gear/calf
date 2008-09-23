@@ -34,7 +34,7 @@ endif
 
 AM_CXXFLAGS += $(GLIB_DEPS_CFLAGS)
 noinst_PROGRAMS += calfmakerdf
-calfmakerdf_SOURCES = makerdf.cpp
+calfmakerdf_SOURCES = makerdf.cpp 
 calfmakerdf_LDADD = libcalfstatic.la
 
 calfbenchmark_SOURCES = benchmark.cpp
@@ -47,7 +47,7 @@ calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
 calfbenchmark_LDADD += libcalfgui.la
 endif
 
-calf_la_SOURCES = modules.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp
+calf_la_SOURCES = modules.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat 
 else
@@ -55,7 +55,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -export-sym
 endif
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = gui.cpp ctl_curve.cpp ctl_keyboard.cpp custom_ctl.cpp modules.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
+calflv2gui_la_SOURCES = gui.cpp ctl_curve.cpp ctl_keyboard.cpp custom_ctl.cpp modules.cpp giface.cpp monosynth.cpp organ.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) 
 else

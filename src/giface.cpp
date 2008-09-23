@@ -234,7 +234,7 @@ static std::string scale_to_string(parameter_properties &props)
     return tmp+"        </ladspa:Scale></ladspa:hasScale></ladspa:InputControlPort";
 }
 
-std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count,
+std::string synth::generate_ladspa_rdf(const ladspa_plugin_info &info, parameter_properties *params, const char *param_names[], unsigned int count,
                                        unsigned int ctl_ofs)
 {
     string rdf;
@@ -273,4 +273,3 @@ std::string synth::generate_ladspa_rdf(const ladspa_info &info, parameter_proper
 }
 
 #endif
-

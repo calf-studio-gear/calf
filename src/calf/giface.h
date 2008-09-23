@@ -210,7 +210,7 @@ struct midi_event {
     float param3;
 };
 
-struct ladspa_info
+struct ladspa_plugin_info
 {
     uint32_t unique_id;
     const char *label;
@@ -222,7 +222,7 @@ struct ladspa_info
 
 struct giface_plugin_info
 {
-    ladspa_info *info;
+    ladspa_plugin_info *info;
     int inputs, outputs, params;
     bool rt_capable, midi_in_capable;
     parameter_properties *param_props;
@@ -237,7 +237,7 @@ extern void get_all_small_plugins(plugin_list_info_iface *plii);
 
 #if USE_LADSPA
 
-extern std::string generate_ladspa_rdf(const ladspa_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
+extern std::string generate_ladspa_rdf(const ladspa_plugin_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
 
 template<class Module>
 struct ladspa_instance: public Module, public plugin_ctl_iface
@@ -342,9 +342,9 @@ struct ladspa_wrapper
     static std::vector<plugin_preset> *presets;
     static std::vector<DSSI_Program_Descriptor> *preset_descs;
 #endif
-    ladspa_info &info;
+    ladspa_plugin_info &info;
     
-    ladspa_wrapper(ladspa_info &i) 
+    ladspa_wrapper(ladspa_plugin_info &i) 
     : info(i)
     {
         init_descriptor(i);
@@ -363,7 +363,7 @@ struct ladspa_wrapper
 #endif
     }
 
-    void init_descriptor(ladspa_info &inf)
+    void init_descriptor(ladspa_plugin_info &inf)
     {
         int ins = Module::in_count;
         int outs = Module::out_count;
@@ -616,9 +616,6 @@ struct ladspa_wrapper
         delete mod;
     }
     
-    std::string generate_rdf() {
-        return synth::generate_ladspa_rdf(info, Module::param_props, (const char **)descriptor.PortNames, Module::param_count, Module::in_count + Module::out_count);
-    }
 };
 
 template<class Module>

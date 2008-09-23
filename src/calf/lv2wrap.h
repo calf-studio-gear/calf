@@ -109,7 +109,7 @@ struct lv2_wrapper
     static LV2_Descriptor descriptor;
     std::string uri;
     
-    lv2_wrapper(ladspa_info &info)
+    lv2_wrapper(ladspa_plugin_info &info)
     {
         uri = "http://calf.sourceforge.net/plugins/" + std::string(info.label);
         descriptor.URI = uri.c_str();
@@ -310,9 +310,7 @@ struct lv2_small_wrapper
     }
 };
 
-#define PUT_DESCRIPTORS_HERE \
-    template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor; \
-    template<class Module> LV2_Descriptor lv2_wrapper<Module>::descriptor;
+extern const LV2_Descriptor *lv2_small_descriptor(uint32_t index);
 
 };
 

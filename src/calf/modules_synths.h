@@ -44,6 +44,7 @@ public:
     enum { in_count = 0, out_count = 2, support_midi = true, rt_capable = true };
     enum { step_size = 64 };
     static const char *port_names[];
+    static synth::ladspa_plugin_info plugin_info;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -121,7 +122,7 @@ public:
     /// Update variables from control ports.
     void params_changed() {
         float sf = 0.001f;
-        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);
+        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, std::min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);
         filter_type = fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
         separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
@@ -234,6 +235,7 @@ public:
     {
     }
     static parameter_properties param_props[];
+    static synth::ladspa_plugin_info plugin_info;
     static const char *get_gui_xml();
 
     void set_sample_rate(uint32_t sr) {

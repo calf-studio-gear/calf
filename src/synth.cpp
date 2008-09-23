@@ -29,6 +29,7 @@
 
 using namespace dsp;
 using namespace synth;
+using namespace std;
 
 void basic_synth::kill_note(int note, int vel, bool just_one)
 {

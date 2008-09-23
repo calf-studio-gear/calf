@@ -367,7 +367,7 @@ struct drawbar_organ: public synth::basic_synth {
         if (fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
         {
             for (int i = 0; i < nsamples; i += 64)
-                global_vibrato.process(parameters, buf + i, min(64, nsamples - i), sample_rate);
+                global_vibrato.process(parameters, buf + i, std::min(64, nsamples - i), sample_rate);
         }
         if (percussion.get_active())
             percussion.render_percussion_to(buf, nsamples);

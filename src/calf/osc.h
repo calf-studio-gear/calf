@@ -82,7 +82,7 @@ struct bandlimiter
     void compute_spectrum(float input[SIZE])
     {
         dsp::fft<float, SIZE_BITS> &fft = get_fft();
-        std::complex<float> *data = new complex<float>[SIZE];
+        std::complex<float> *data = new std::complex<float>[SIZE];
         for (int i = 0; i < SIZE; i++)
             data[i] = input[i];
         fft.calculate(data, spectrum, false);
@@ -93,7 +93,7 @@ struct bandlimiter
     void compute_waveform(float output[SIZE])
     {
         dsp::fft<float, SIZE_BITS> &fft = get_fft();
-        std::complex<float> *data = new complex<float>[SIZE];
+        std::complex<float> *data = new std::complex<float>[SIZE];
         fft.calculate(spectrum, data, true);
         for (int i = 0; i < SIZE; i++)
             output[i] = data[i].real();
@@ -111,7 +111,7 @@ struct bandlimiter
     void make_waveform(float output[SIZE], int cutoff, bool foldover = false)
     {
         dsp::fft<float, SIZE_BITS> &fft = get_fft();
-        vector<std::complex<float> > new_spec, iffted;
+        std::vector<std::complex<float> > new_spec, iffted;
         new_spec.resize(SIZE);
         iffted.resize(SIZE);
         // Copy original harmonics up to cutoff point
@@ -154,12 +154,12 @@ struct bandlimiter
 
 /// Set of bandlimited wavetables
 template<int SIZE_BITS>
-struct waveform_family: public map<uint32_t, float *>
+struct waveform_family: public std::map<uint32_t, float *>
 {
     enum { SIZE = 1 << SIZE_BITS };
-    using map<uint32_t, float *>::iterator;
-    using map<uint32_t, float *>::end;
-    using map<uint32_t, float *>::lower_bound;
+    using std::map<uint32_t, float *>::iterator;
+    using std::map<uint32_t, float *>::end;
+    using std::map<uint32_t, float *>::lower_bound;
     float original[SIZE];
     
     /// Fill the family using specified bandlimiter and original waveform. Optionally apply foldover. 
@@ -236,7 +236,7 @@ static inline void normalize_waveform(float *table, unsigned int size)
         table[i] -= dc;
     float thismax = 0;
     for (unsigned int i = 0; i < size; i++)
-        thismax = std::max(thismax, fabs(table[i]));
+        thismax = std::max(thismax, fabsf(table[i]));
     if (thismax < 0.000001f)
         return;
     double divv = 1.0 / thismax;
