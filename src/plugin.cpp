@@ -18,7 +18,11 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <config.h>
+#include <calf/lv2wrap.h>
 #include <calf/modules.h>
+
+using namespace synth;
 
 #if USE_LADSPA
 #define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_audio_module::plugin_info);
@@ -33,6 +37,10 @@
 #endif
 
 #define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
+
+#define PER_MODULE_ITEM(name, isSynth, jackname) ALL_WRAPPERS(name)
+#define PER_SMALL_MODULE_ITEM(...)
+#include <calf/modulelist.h>
 
 #if USE_LV2
 // instantiate descriptor templates
@@ -55,6 +63,7 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 };
 
 #endif
+
 #if USE_LADSPA
 extern "C" {
 
@@ -83,8 +92,4 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 #endif
 
 #endif
-
-#define PER_MODULE_ITEM(name, isSynth, jackname) ALL_WRAPPERS(name)
-#define PER_SMALL_MODULE_ITEM(...)
-#include <calf/modulelist.h>
 

@@ -47,6 +47,9 @@ struct control_port_info_iface
     virtual control_port_info_iface& lin_range(double from, double to) { return *this; }
     /// Called to mark the port as using log range [from, to]
     virtual control_port_info_iface& log_range(double from, double to) { return *this; }
+    virtual control_port_info_iface& toggle() { return *this; }
+    virtual control_port_info_iface& trigger() { return *this; }
+    virtual control_port_info_iface& integer() { return *this; }
     virtual ~control_port_info_iface() {}
 };
 

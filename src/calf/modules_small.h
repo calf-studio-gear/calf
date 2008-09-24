@@ -26,11 +26,25 @@
 class null_small_audio_module
 {
 public:
+    uint32_t srate;
+    double odsr;
     /// LADSPA-esque activate function, except it is called after ports are connected, not before
     inline void activate() {}
     /// LADSPA-esque deactivate function
     inline void deactivate() {}
     /// Set sample rate for the plugin
-    inline void set_sample_rate(uint32_t sr) { }
+    inline void set_sample_rate(uint32_t sr) { srate = sr; odsr = 1.0 / sr; }
+};
+
+/// Templatized version useful when the number of inputs and outputs is small
+template<unsigned int Inputs, unsigned int Outputs>
+class small_audio_module_base: public null_small_audio_module
+{
+public:
+    enum { in_count = Inputs, out_count = Outputs };
+    /// Input pointers
+    float *ins[in_count]; 
+    /// Output pointers
+    float *outs[out_count];
 };
 #endif

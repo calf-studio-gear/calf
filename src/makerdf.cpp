@@ -212,7 +212,7 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
 {
     int index;
     string symbol, name;
-    bool is_input, is_log, is_bool;
+    bool is_input, is_log, is_toggle, is_trigger, is_integer;
     double min, max, def_value;
     bool has_min, has_max;
     
@@ -223,8 +223,7 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
     , is_input(true)
     , def_value(_default)
     {
-        has_min = has_max = is_log = is_bool = false;
-        
+        has_min = has_max = is_log = is_toggle = is_trigger = is_integer = false;
     }
     /// Called if it's an input port
     virtual control_port_info_iface& input() { is_input = true; return *this; }
@@ -234,7 +233,9 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
     virtual control_port_info_iface& lin_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = false; return *this; }
     /// Called to mark the port as using log range [from, to]
     virtual control_port_info_iface& log_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = true; return *this; }
-    
+    virtual control_port_info_iface& toggle() { is_toggle = true; return *this; }
+    virtual control_port_info_iface& trigger() { is_trigger = true; return *this; }
+    virtual control_port_info_iface& integer() { is_integer = true; return *this; }
     std::string to_string() {
         stringstream ss;
         const char *ind = "        ";
@@ -244,6 +245,10 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
         ss << ind << "lv2:index " << index << " ;\n";
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
+        if (is_toggle)
+            ss << ind << ":portProperty lv2:toggled ;\n";
+        if (is_integer)
+            ss << ind << ":portProperty lv2:integer ;\n";
         if (is_input)
             ss << ind << "lv2:default " << def_value << " ;\n";
         if (has_min)

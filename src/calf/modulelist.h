@@ -22,10 +22,14 @@
     PER_SMALL_MODULE_ITEM(map_lin2exp, "lin2exp")
     PER_SMALL_MODULE_ITEM(square_osc, "square_osc")
     PER_SMALL_MODULE_ITEM(saw_osc, "saw_osc")
+    PER_SMALL_MODULE_ITEM(square_lfo, "square_lfo")
+    PER_SMALL_MODULE_ITEM(saw_lfo, "saw_lfo")
     PER_SMALL_MODULE_ITEM(print, "print")
     PER_SMALL_MODULE_ITEM(print2, "print2")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")
+    PER_SMALL_MODULE_ITEM(linear_inertia_c, "linear_inertia_c")
+    PER_SMALL_MODULE_ITEM(exp_inertia_c, "exp_inertia_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

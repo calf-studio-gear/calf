@@ -34,7 +34,7 @@
 #ifdef ENABLE_EXPERIMENTAL
 
 #if USE_LV2
-#define LV2_SMALL_WRAPPER(mod, name) static synth::lv2_small_wrapper<small_##mod##_audio_module> lv2_small_##mod(name);
+#define LV2_SMALL_WRAPPER(mod, name) static synth::lv2_small_wrapper<small_plugins::mod##_audio_module> lv2_small_##mod(name);
 #else
 #define LV2_SMALL_WRAPPER(...)
 #endif
@@ -49,7 +49,10 @@ using namespace std;
 
 template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor;
 
-class small_filter_audio_module: public null_small_audio_module
+namespace small_plugins
+{
+
+class filter_base: public null_small_audio_module
 {
 public:    
     enum { in_signal, in_cutoff, in_resonance, in_count };
@@ -64,13 +67,9 @@ public:
         pii->audio_port("out", "Out").output();
     }
     dsp::biquad<float> filter;
-    uint32_t srate;
     
     void activate() {
         filter.reset_d1();
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
     }
     inline void process_inner(uint32_t count) {
         for (uint32_t i = 0; i < count; i++)
@@ -79,7 +78,7 @@ public:
     }
 };
 
-class small_lp_filter_audio_module: public small_filter_audio_module
+class lp_filter_audio_module: public filter_base
 {
 public:
     inline void process(uint32_t count) {
@@ -93,7 +92,7 @@ public:
     }
 };
 
-class small_hp_filter_audio_module: public small_filter_audio_module
+class hp_filter_audio_module: public filter_base
 {
 public:
     inline void process(uint32_t count) {
@@ -107,7 +106,7 @@ public:
     }
 };
 
-class small_bp_filter_audio_module: public small_filter_audio_module
+class bp_filter_audio_module: public filter_base
 {
 public:
     inline void process(uint32_t count) {
@@ -121,7 +120,7 @@ public:
     }
 };
 
-class small_br_filter_audio_module: public small_filter_audio_module
+class br_filter_audio_module: public filter_base
 {
 public:
     inline void process(uint32_t count) {
@@ -135,7 +134,7 @@ public:
     }
 };
 
-class small_onepole_filter_audio_module: public null_small_audio_module
+class onepole_filter_base: public null_small_audio_module
 {
 public:    
     enum { in_signal, in_cutoff, in_count };
@@ -143,12 +142,8 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     dsp::onepole<float> filter;
-    uint32_t srate;
     static parameter_properties param_props[];
     
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-    }
     static void port_info(plugin_info_iface *pii)
     {
         pii->audio_port("In", "in").input();
@@ -161,7 +156,7 @@ public:
     }
 };
 
-class small_onepole_lp_filter_audio_module: public small_onepole_filter_audio_module
+class onepole_lp_filter_audio_module: public onepole_filter_base
 {
 public:
     void process(uint32_t count) {
@@ -177,7 +172,7 @@ public:
     }
 };
 
-class small_onepole_hp_filter_audio_module: public small_onepole_filter_audio_module
+class onepole_hp_filter_audio_module: public onepole_filter_base
 {
 public:
     void process(uint32_t count) {
@@ -193,7 +188,7 @@ public:
     }
 };
 
-class small_onepole_ap_filter_audio_module: public small_onepole_filter_audio_module
+class onepole_ap_filter_audio_module: public onepole_filter_base
 {
 public:
     void process(uint32_t count) {
@@ -211,14 +206,9 @@ public:
 
 /// This works for 1 or 2 operands only...
 template<int Inputs>
-class audio_operator_audio_module: public null_small_audio_module
+class audio_operator_audio_module: public small_audio_module_base<Inputs, 1>
 {
 public:    
-    enum { in_count = Inputs, out_count = 1 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    uint32_t srate;
-    
     static void port_info(plugin_info_iface *pii)
     {
         if (Inputs == 1)
@@ -230,12 +220,9 @@ public:
         }
         pii->audio_port("out", "Out").output();
     }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-    }
 };
 
-class small_min_audio_module: public audio_operator_audio_module<2>
+class min_audio_module: public audio_operator_audio_module<2>
 {
 public:
     void process(uint32_t count) {
@@ -249,7 +236,7 @@ public:
     }
 };
 
-class small_max_audio_module: public audio_operator_audio_module<2>
+class max_audio_module: public audio_operator_audio_module<2>
 {
 public:
     void process(uint32_t count) {
@@ -263,7 +250,7 @@ public:
     }
 };
 
-class small_minus_audio_module: public audio_operator_audio_module<2>
+class minus_audio_module: public audio_operator_audio_module<2>
 {
 public:
     void process(uint32_t count) {
@@ -277,7 +264,7 @@ public:
     }
 };
 
-class small_mul_audio_module: public audio_operator_audio_module<2>
+class mul_audio_module: public audio_operator_audio_module<2>
 {
 public:
     void process(uint32_t count) {
@@ -291,7 +278,7 @@ public:
     }
 };
 
-class small_neg_audio_module: public audio_operator_audio_module<1>
+class neg_audio_module: public audio_operator_audio_module<1>
 {
 public:
     void process(uint32_t count) {
@@ -305,14 +292,13 @@ public:
     }
 };
 
-class small_map_lin2exp_audio_module: public null_small_audio_module
+class map_lin2exp_audio_module: public null_small_audio_module
 {
 public:    
     enum { in_signal, in_from_min, in_from_max, in_to_min, in_to_max, in_count };
     enum { out_signal, out_count };
     float *ins[in_count]; 
     float *outs[out_count];
-    uint32_t srate;
     
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -324,18 +310,75 @@ public:
         pii->control_port("to_max", "Max (to)", 20000).input();
         pii->control_port("out", "Out", 0.f).output();
     }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-    }
     void process(uint32_t count) {
         float normalized = (*ins[in_signal] - *ins[in_from_min]) / (*ins[in_from_max] - *ins[in_from_min]);
         *outs[out_signal] = *ins[in_to_min] * pow(*ins[in_to_max] / *ins[in_to_min], normalized);
     }
 };
 
+class freq_phase_lfo_base: public small_audio_module_base<2, 1>
+{
+public:
+    enum { in_freq, in_reset };
+    double phase;
+    inline void activate()
+    {
+        phase = 0;
+    }
+    static void port_info(plugin_info_iface *pii)
+    {
+        pii->control_port("freq", "Frequency", 1).input().log_range(0.02, 100);
+        pii->control_port("reset", "Reset", 0).input().toggle();
+        pii->control_port("out", "Out", 0).output();
+    }
+    inline void check_inputs()
+    {
+        if (*ins[in_reset])
+            phase = 0;
+    }
+    inline void advance(uint32_t count)
+    {
+        phase += count * *ins[in_freq] * odsr;
+        if (phase >= 1.0)
+            phase = fmod(phase, 1.0);
+    }
+};
+
+class square_lfo_audio_module: public freq_phase_lfo_base
+{
+public:
+    void process(uint32_t count)
+    {
+        check_inputs();
+        *outs[0] = (phase < 0.5) ? -1 : +1;
+        advance(count);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("square_lfo", "Square LFO", "lv2:OscillatorPlugin");
+        port_info(pii);
+    }
+};
+
+class saw_lfo_audio_module: public freq_phase_lfo_base
+{
+public:
+    void process(uint32_t count)
+    {
+        check_inputs();
+        *outs[0] = -1 + 2 * phase;
+        advance(count);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("saw_lfo", "Saw LFO", "lv2:OscillatorPlugin");
+        port_info(pii);
+    }
+};
+
 #define SMALL_OSC_TABLE_BITS 12
 
-class small_freq_only_osc_audio_module: public null_small_audio_module
+class freq_only_osc_base: public null_small_audio_module
 {
 public:    
     typedef waveform_family<SMALL_OSC_TABLE_BITS> waves_type;
@@ -346,8 +389,6 @@ public:
     float *outs[out_count];
     waves_type *waves;
     waveform_oscillator<SMALL_OSC_TABLE_BITS> osc;
-    uint32_t srate;
-    double odsr;
 
     /// Fill the array with the original, non-bandlimited, waveform
     virtual void get_original_waveform(float data[wave_size]) = 0;
@@ -355,10 +396,6 @@ public:
     virtual waves_type *get_waves() = 0;
     void activate() {
         waves = get_waves();
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        odsr = 1.0 / sr;
     }
     void process(uint32_t count)
     {
@@ -396,7 +433,7 @@ public:
         return waves; \
     }
 
-class small_square_osc_audio_module: public small_freq_only_osc_audio_module
+class square_osc_audio_module: public freq_only_osc_base
 {
 public:
     OSC_MODULE_GET_WAVES()
@@ -412,7 +449,7 @@ public:
     }
 };
 
-class small_saw_osc_audio_module: public small_freq_only_osc_audio_module
+class saw_osc_audio_module: public freq_only_osc_base
 {
 public:
     OSC_MODULE_GET_WAVES()
@@ -428,21 +465,13 @@ public:
     }
 };
 
-class small_print_audio_module: public null_small_audio_module
+class print_audio_module: public small_audio_module_base<1, 0>
 {
 public:    
-    enum { in_count = 1, out_count = 0 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    uint32_t srate;
-    
     static void plugin_info(plugin_info_iface *pii)
     {
         pii->names("print", "Print To Console (C)", "lv2:UtilityPlugin");
         pii->control_port("in", "In", 0).input();
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
     }
     void process(uint32_t)
     {
@@ -450,21 +479,13 @@ public:
     }
 };
 
-class small_print2_audio_module: public null_small_audio_module
+class print2_audio_module: public small_audio_module_base<1, 0>
 {
 public:    
-    enum { in_count = 1, out_count = 0 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    uint32_t srate;
-    
     static void plugin_info(plugin_info_iface *pii)
     {
         pii->names("print2", "Print To Console (A)", "lv2:UtilityPlugin");
         pii->audio_port("in", "In").input();
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
     }
     void process(uint32_t)
     {
@@ -473,7 +494,7 @@ public:
 };
 
 template<bool audio>
-class small_quadpower_audio_module: public null_small_audio_module
+class quadpower_base: public null_small_audio_module
 {
 public:    
     enum { in_value, in_factor, in_count , out_count = 4 };
@@ -500,7 +521,7 @@ public:
     }
 };
 
-class small_quadpower_a_audio_module: public small_quadpower_audio_module<true>
+class quadpower_a_audio_module: public quadpower_base<true>
 {
 public:
     void process(uint32_t count)
@@ -517,7 +538,7 @@ public:
     }
 };
 
-class small_quadpower_c_audio_module: public small_quadpower_audio_module<false>
+class quadpower_c_audio_module: public quadpower_base<false>
 {
 public:
     void process(uint32_t)
@@ -529,6 +550,73 @@ public:
         *outs[2] = x * a * a * a;
         *outs[3] = x * a * a * a * a;
     }
+};
+
+template<class Ramp>
+class inertia_c_module_base: public small_audio_module_base<3, 1>
+{
+public:
+    enum { in_value, in_inertia, in_immediate };
+    bool reset;
+    inertia<Ramp> state;
+    inertia_c_module_base()
+    : state(Ramp(1))
+    {}
+    void activate()
+    {
+        reset = true;
+    }
+    static void port_info(plugin_info_iface *pii)
+    {
+        pii->names("linear_inertia_c", "Linear Inertia (C)", "lv2:UtilityPlugin");
+        pii->control_port("in", "In", 0).input();
+        pii->control_port("time", "Inertia time", 100).input();
+        pii->control_port("reset", "Reset", 0).input().toggle();
+        pii->control_port("out", "Out", 0).output();
+    }
+    void process(uint32_t count)
+    {
+        float value = *ins[in_value];
+        if (reset || *ins[in_immediate] != 0)
+        {
+            *outs[0] = value;
+            state.set_now(value);
+            reset = false;
+        }
+        else
+        {
+            if (value != state.get_last())
+            {
+                state.ramp.set_length(dsp::clip((int)(srate * 0.001 * *ins[in_inertia]), 1, 10000000));
+            }
+            state.set_inertia(value);
+            *outs[0] = state.get_last();
+            if (count)
+                state.step_many(count);
+        }
+    }
+};
+
+class linear_inertia_c_audio_module: public inertia_c_module_base<linear_ramp>
+{
+public:
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("linear_inertia_c", "Linear Inertia (C)", "lv2:UtilityPlugin");
+        port_info(pii);
+    }
+};
+
+class exp_inertia_c_audio_module: public inertia_c_module_base<exponential_ramp>
+{
+public:
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("exp_inertia_c", "Exponential Inertia (C)", "lv2:UtilityPlugin");
+        port_info(pii);
+    }
+};
+
 };
 
 #define PER_MODULE_ITEM(...) 
@@ -548,7 +636,7 @@ const LV2_Descriptor *synth::lv2_small_descriptor(uint32_t index)
 void synth::get_all_small_plugins(plugin_list_info_iface *iface)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) 
-    #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); small_##name##_audio_module::plugin_info(pii); pii->finalize(); }
+    #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); small_plugins::name##_audio_module::plugin_info(pii); pii->finalize(); }
     #include <calf/modulelist.h>
 }
 

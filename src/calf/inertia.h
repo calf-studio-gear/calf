@@ -31,10 +31,12 @@ public:
     int ramp_len;
     float mul, delta;
 public:
+    /// Construct for given ramp length
     linear_ramp(int _ramp_len) {
         ramp_len = _ramp_len;
         mul = (float)(1.0f / ramp_len);
     }
+    /// Change ramp length
     inline void set_length(int _ramp_len) {
         ramp_len = _ramp_len;
         mul = (float)(1.0f / ramp_len);
@@ -47,9 +49,15 @@ public:
     {
         delta = mul * (end - start);
     }
+    /// Return value after single step
     inline float ramp(float value)
     {
         return value + delta;
+    }
+    /// Return value after many steps
+    inline float ramp_many(float value, int count)
+    {
+        return value + delta * count;
     }
 };
     
@@ -76,20 +84,30 @@ public:
     {
         delta = pow(end / start, root);
     }
+    /// Return value after single step
     inline float ramp(float value)
     {
         return value * delta;
     }
+    /// Return value after many steps
+    inline float ramp_many(float value, float count)
+    {
+        return value * pow(delta, count);
+    }
 };
     
-/// Generic inertia using algorithm specified as template argument
+/// Generic inertia using ramping algorithm specified as template argument. The basic idea
+/// is producing smooth(ish) output for discrete input, using specified algorithm to go from
+/// last output value to input value. It is not the same as classic running average lowpass
+/// filter, because ramping time is finite and pre-determined (it calls ramp algorithm's length()
+/// function to obtain the expected ramp length)
 template<class Ramp>
 class inertia
 {
 public:
     float old_value;
     float value;
-    int count;
+    unsigned int count;
     Ramp ramp;
 
 public:
@@ -141,7 +159,7 @@ public:
             value = old_value;
         return value;
     }
-    /// Do one inertia step, without returning the new value and without changing inertia
+    /// Do one inertia step, without returning the new value and without changing destination value
     inline void step()
     {
         if (count) {
@@ -151,12 +169,30 @@ public:
                 value = old_value;
         }
     }
+    /// Do many inertia steps, without returning the new value and without changing destination value
+    inline void step_many(unsigned int steps)
+    {
+        if (steps < count) {
+            // Skip only a part of the current ramping period
+            value = ramp.ramp_many(value, steps);
+            count -= steps;
+            if (!count) // finished ramping, set to desired value to get rid of accumulated rounding errors
+                value = old_value;
+        }
+        else
+        {
+            // The whole ramping period has been skipped, just go to destination
+            value = old_value;
+            count = 0;
+        }
+    }
     /// Get last smoothed value, without affecting anything
     inline float get_last() const
     {
         return value;
     }
-    inline bool active()
+    /// Is it still ramping?
+    inline bool active() const
     {
         return count > 0;
     }
