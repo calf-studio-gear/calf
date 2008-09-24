@@ -231,7 +231,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "Function min", "lv2:UtilityPlugin");
+        pii->names("min", "Function min (A)", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -245,7 +245,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "Function max", "lv2:UtilityPlugin");
+        pii->names("max", "Function max (A)", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -259,7 +259,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("minus", "Subtract", "lv2:UtilityPlugin");
+        pii->names("minus", "Subtract (A)", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -273,7 +273,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("mul", "Multiply", "lv2:UtilityPlugin");
+        pii->names("mul", "Multiply (A)", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -287,7 +287,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("neg", "Negative value", "lv2:UtilityPlugin");
+        pii->names("neg", "Negative value (A)", "lv2:UtilityPlugin");
         port_info(pii);
     }
 };
@@ -568,7 +568,6 @@ public:
     }
     static void port_info(plugin_info_iface *pii)
     {
-        pii->names("linear_inertia_c", "Linear Inertia (C)", "lv2:UtilityPlugin");
         pii->control_port("in", "In", 0).input();
         pii->control_port("time", "Inertia time", 100).input();
         pii->control_port("reset", "Reset", 0).input().toggle();
@@ -602,7 +601,7 @@ class linear_inertia_c_audio_module: public inertia_c_module_base<linear_ramp>
 public:
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("linear_inertia_c", "Linear Inertia (C)", "lv2:UtilityPlugin");
+        pii->names("linear_inertia_c", "Linear Inertia (C)", "lv2:FilterPlugin");
         port_info(pii);
     }
 };
@@ -612,7 +611,7 @@ class exp_inertia_c_audio_module: public inertia_c_module_base<exponential_ramp>
 public:
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("exp_inertia_c", "Exponential Inertia (C)", "lv2:UtilityPlugin");
+        pii->names("exp_inertia_c", "Exponential Inertia (C)", "lv2:FilterPlugin");
         port_info(pii);
     }
 };
