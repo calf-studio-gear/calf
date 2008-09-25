@@ -46,25 +46,20 @@ class ModulePort():
     def render(self, ctx, parent, y):
         module = self.module
         (width, margin, spacing) = (module.width, module.margin, module.spacing)
-        if self.isInput: 
-            al = "left"
-        else:
-            al = "right"
+        al = "left"
         portName = self.get_parser().get_port_name(self.portData)
-        title = goocanvas.Text(parent = parent, text = portName, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON)
+        title = goocanvas.Text(parent = parent, text = portName, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, pointer_events = False, wrap = False)
         height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
         title.ensure_updated()
         bnds = title.get_bounds()
-        print "%d+%d - %d+%d" % (bnds.x1, bnds.y1, bnds.x2, bnds.y2)
-        if self.isInput:
-            bw = bnds.x2 - bnds.x1 + 2 * margin
-        else:
-            bw = width - bnds.x1 + 2 * margin
+        bw = bnds.x2 - bnds.x1 + 2 * margin
+        if not self.isInput:
+            title.translate(width - bw, 0)
         color = self.get_parser().get_port_color(self.portData)
         if self.isInput:
-            box = goocanvas.Rect(parent = parent, x = 0, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Rect(parent = parent, x = 0.5, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         else:
-            box = goocanvas.Rect(parent = parent, x = width - bw, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Rect(parent = parent, x = width - bw - 0.5, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         box.lower(title)
         y += height + spacing
         box.type = "port"
