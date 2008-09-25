@@ -292,6 +292,45 @@ public:
     }
 };
 
+/// This works for 1 or 2 operands only...
+template<int Inputs>
+class control_operator_audio_module: public small_audio_module_base<Inputs, 1>
+{
+public:    
+    static void port_info(plugin_info_iface *pii, control_port_info_iface *cports[Inputs + 1], float in1 = 0, float in2 = 0)
+    {
+        int idx = 0;
+        if (Inputs == 1)
+            cports[idx++] = &pii->control_port("in", "In", in1).input();
+        else
+        {
+            cports[idx++] = &pii->control_port("in_1", "In 1", in1).input();
+            cports[idx++] = &pii->control_port("in_2", "In 2", in2).input();
+        }
+        cports[idx++] = &pii->control_port("out", "Out", 0).output();
+    }
+};
+
+class level2edge_c_audio_module: public control_operator_audio_module<1>
+{
+public:
+    bool last_value;
+    void activate() {
+        last_value = false;
+    }
+    void process(uint32_t count) {
+        *outs[0] = (*ins[0] > 0 && !last_value) ? 1.f : 0.f;
+        last_value = *ins[0] > 0;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("level2edge_c", "Level to edge (C)", "lv2:UtilityPlugin");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
+        cports[0]->toggle().trigger();
+    }
+};
+
 class map_lin2exp_audio_module: public null_small_audio_module
 {
 public:    
@@ -570,13 +609,13 @@ public:
     {
         pii->control_port("in", "In", 0).input();
         pii->control_port("time", "Inertia time", 100).input();
-        pii->control_port("reset", "Reset", 0).input().toggle();
+        pii->control_port("reset", "Reset", 0).input().toggle().trigger();
         pii->control_port("out", "Out", 0).output();
     }
     void process(uint32_t count)
     {
         float value = *ins[in_value];
-        if (reset || *ins[in_immediate] != 0)
+        if (reset || *ins[in_immediate] > 0)
         {
             *outs[0] = value;
             state.set_now(value);
@@ -613,6 +652,63 @@ public:
     {
         pii->names("exp_inertia_c", "Exponential Inertia (C)", "lv2:FilterPlugin");
         port_info(pii);
+    }
+};
+
+class sample_hold_base: public small_audio_module_base<2, 1>
+{
+public:
+    enum { in_value, in_gate };
+    static void port_info(plugin_info_iface *pii, const char *clock_symbol, const char *clock_name)
+    {
+        pii->control_port("in", "In", 0).input();
+        pii->control_port(clock_symbol, clock_name, 0).input().toggle().trigger();
+        pii->control_port("out", "Out", 0).output();
+    }
+};
+
+class sample_hold_edge_c_audio_module: public sample_hold_base
+{
+public:
+    bool prev_clock;
+    float value;
+    void activate()
+    {
+        prev_clock = false;
+        value = 0;
+    }
+    void process(uint32_t count)
+    {
+        if (!prev_clock && *ins[in_gate] > 0)
+            value = *ins[in_value];
+        prev_clock = *ins[in_gate] > 0;
+        *outs[0] = value;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("sample_hold_edge", "Sample&Hold (Edge, C)", "lv2:FilterPlugin");
+        port_info(pii, "clock", "Clock");
+    }
+};
+
+class sample_hold_level_c_audio_module: public sample_hold_base
+{
+public:
+    float value;
+    void activate()
+    {
+        value = 0;
+    }
+    void process(uint32_t count)
+    {
+        if (*ins[in_gate] > 0)
+            value = *ins[in_value];
+        *outs[0] = value;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("sample_hold_level", "Sample&Hold (Level, C)", "lv2:FilterPlugin");
+        port_info(pii, "gate", "Gate");
     }
 };
 

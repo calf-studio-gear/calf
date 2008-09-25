@@ -19,6 +19,7 @@
     PER_SMALL_MODULE_ITEM(minus, "minus")
     PER_SMALL_MODULE_ITEM(mul, "mul")
     PER_SMALL_MODULE_ITEM(neg, "neg")
+    PER_SMALL_MODULE_ITEM(level2edge_c, "level2edge_c")
     PER_SMALL_MODULE_ITEM(map_lin2exp, "lin2exp")
     PER_SMALL_MODULE_ITEM(square_osc, "square_osc")
     PER_SMALL_MODULE_ITEM(saw_osc, "saw_osc")
@@ -30,6 +31,8 @@
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")
     PER_SMALL_MODULE_ITEM(linear_inertia_c, "linear_inertia_c")
     PER_SMALL_MODULE_ITEM(exp_inertia_c, "exp_inertia_c")
+    PER_SMALL_MODULE_ITEM(sample_hold_edge_c, "sample_hold_edge_c")
+    PER_SMALL_MODULE_ITEM(sample_hold_level_c, "sample_hold_level_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM
