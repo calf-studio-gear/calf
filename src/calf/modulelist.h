@@ -25,6 +25,7 @@
     PER_SMALL_MODULE_ITEM(saw_osc, "saw_osc")
     PER_SMALL_MODULE_ITEM(square_lfo, "square_lfo")
     PER_SMALL_MODULE_ITEM(saw_lfo, "saw_lfo")
+    PER_SMALL_MODULE_ITEM(pulse_lfo, "pulse_lfo")
     PER_SMALL_MODULE_ITEM(print, "print")
     PER_SMALL_MODULE_ITEM(print2, "print2")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
@@ -36,6 +37,7 @@
     PER_SMALL_MODULE_ITEM(logical_and_c, "logical_and_c")
     PER_SMALL_MODULE_ITEM(logical_or_c, "logical_or_c")
     PER_SMALL_MODULE_ITEM(logical_not_c, "logical_not_c")
+    PER_SMALL_MODULE_ITEM(flipflop_c, "flipflop_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

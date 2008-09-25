@@ -327,7 +327,32 @@ public:
         pii->names("level2edge_c", "Level to edge (C)", "kf:BooleanPlugin");
         control_port_info_iface *cports[2];
         port_info(pii, cports);
+        cports[0]->toggle();
+        cports[1]->toggle().trigger();
+    }
+};
+
+class flipflop_c_audio_module: public control_operator_audio_module<1>
+{
+public:
+    bool last_value, output;
+    void activate() {
+        last_value = false;
+        output = false;
+    }
+    void process(uint32_t count) {
+        if (*ins[0] > 0 && !last_value)
+            output = !output;
+        *outs[0] = output ? 1.f : 0.f;
+        last_value = *ins[0] > 0;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("flipflop_c", "T Flip-Flop (C)", "kf:BooleanPlugin");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
         cports[0]->toggle().trigger();
+        cports[1]->toggle();
     }
 };
 
@@ -461,6 +486,27 @@ public:
     static void plugin_info(plugin_info_iface *pii)
     {
         pii->names("saw_lfo", "Saw LFO", "lv2:OscillatorPlugin");
+        port_info(pii);
+    }
+};
+
+class pulse_lfo_audio_module: public freq_phase_lfo_base
+{
+public:
+    inline void activate()
+    {
+        phase = 1.0;
+    }
+    void process(uint32_t count)
+    {
+        check_inputs();
+        double oldphase = phase;
+        advance(count);
+        *outs[0] = (phase < oldphase) ? 1.f : 0.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("pulse_lfo", "Pulse LFO", "lv2:OscillatorPlugin");
         port_info(pii);
     }
 };
