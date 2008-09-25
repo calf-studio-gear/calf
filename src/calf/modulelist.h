@@ -33,6 +33,9 @@
     PER_SMALL_MODULE_ITEM(exp_inertia_c, "exp_inertia_c")
     PER_SMALL_MODULE_ITEM(sample_hold_edge_c, "sample_hold_edge_c")
     PER_SMALL_MODULE_ITEM(sample_hold_level_c, "sample_hold_level_c")
+    PER_SMALL_MODULE_ITEM(logical_and_c, "logical_and_c")
+    PER_SMALL_MODULE_ITEM(logical_or_c, "logical_or_c")
+    PER_SMALL_MODULE_ITEM(logical_not_c, "logical_not_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

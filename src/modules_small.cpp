@@ -231,7 +231,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "Function min (A)", "lv2:UtilityPlugin");
+        pii->names("min", "Function min (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -245,7 +245,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "Function max (A)", "lv2:UtilityPlugin");
+        pii->names("max", "Function max (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -259,7 +259,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("minus", "Subtract (A)", "lv2:UtilityPlugin");
+        pii->names("minus", "Subtract (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -273,7 +273,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("mul", "Multiply (A)", "lv2:UtilityPlugin");
+        pii->names("mul", "Multiply (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -287,7 +287,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("neg", "Negative value (A)", "lv2:UtilityPlugin");
+        pii->names("neg", "Negative value (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -324,10 +324,60 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("level2edge_c", "Level to edge (C)", "lv2:UtilityPlugin");
+        pii->names("level2edge_c", "Level to edge (C)", "kf:BooleanPlugin");
         control_port_info_iface *cports[2];
         port_info(pii, cports);
         cports[0]->toggle().trigger();
+    }
+};
+
+class logical_and_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = (*ins[0] > 0 && *ins[1] > 0) ? 1.f : 0.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("logical_and_c", "Logical AND (C)", "kf:BooleanPlugin");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+        cports[0]->toggle();
+        cports[1]->toggle();
+        cports[2]->toggle();
+    }
+};
+
+class logical_or_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = (*ins[0] > 0 || *ins[1] > 0) ? 1.f : 0.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("logical_or_c", "Logical OR (C)", "kf:BooleanPlugin");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+        cports[0]->toggle();
+        cports[1]->toggle();
+        cports[2]->toggle();
+    }
+};
+
+class logical_not_c_audio_module: public control_operator_audio_module<1>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = (*ins[0] > 0) ? 0.f : 1.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("logical_not_c", "Logical NOT (C)", "kf:BooleanPlugin");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
+        cports[0]->toggle();
+        cports[1]->toggle();
     }
 };
 
@@ -544,9 +594,9 @@ public:
     {
         const char *names[8] = {"xa", "x*a^1", "xaa", "x*a^2", "xaaa", "x*a^3", "xaaaa", "x*a^4" };
         if (audio)
-            pii->names("quadpower_a", "Quad Power (A)", "lv2:UtilityPlugin");
+            pii->names("quadpower_a", "Quad Power (A)", "kf:MathOperatorPlugin");
         else
-            pii->names("quadpower_c", "Quad Power (C)", "lv2:UtilityPlugin");
+            pii->names("quadpower_c", "Quad Power (C)", "kf:MathOperatorPlugin");
         if (audio)
             pii->audio_port("x", "x").input();
         else
@@ -686,7 +736,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("sample_hold_edge", "Sample&Hold (Edge, C)", "lv2:FilterPlugin");
+        pii->names("sample_hold_edge", "Sample&Hold (Edge, C)", "lv2:UtilityPlugin");
         port_info(pii, "clock", "Clock");
     }
 };
@@ -707,7 +757,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("sample_hold_level", "Sample&Hold (Level, C)", "lv2:FilterPlugin");
+        pii->names("sample_hold_level", "Sample&Hold (Level, C)", "lv2:UtilityPlugin");
         port_info(pii, "gate", "Gate");
     }
 };

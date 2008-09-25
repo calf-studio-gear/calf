@@ -246,9 +246,9 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
         if (is_toggle)
-            ss << ind << ":portProperty lv2:toggled ;\n";
+            ss << ind << "lv2:portProperty lv2:toggled ;\n";
         if (is_integer)
-            ss << ind << ":portProperty lv2:integer ;\n";
+            ss << ind << "lv2:portProperty lv2:integer ;\n";
         if (is_input)
             ss << ind << "lv2:default " << def_value << " ;\n";
         if (has_min)
@@ -321,6 +321,7 @@ void make_ttl(string path_prefix)
         "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
+        "@prefix kf: <http://foltman.com/ns/> .\n"
 
         "\n"
     ;
@@ -444,7 +445,12 @@ void make_manifest()
     
     ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
-        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n";
+        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+        "@prefix kf: <http://foltman.com/ns/> .\n"
+        "\n"
+        "kf:BooleanPlugin a rdfs:Class ; rdfs:label \"Boolean functions\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on boolean signals\"\"\" .\n"
+        "kf:MathOperatorPlugin a rdfs:Class ; rdfs:label \"Math operators\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Mathematical operators and utility functions\"\"\" .\n"
+    ;
     
     vector<synth::giface_plugin_info> plugins;
     synth::get_all_plugins(plugins);
