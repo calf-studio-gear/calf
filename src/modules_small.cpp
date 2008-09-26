@@ -514,13 +514,37 @@ public:
         pii->names("between_c", "Between (C)", "kf:MathOperatorPlugin");
         pii->control_port("in", "In", 0.f).input();
         pii->control_port("low", "Low threshold", 0).input();
-        pii->control_port("high", "High threshold", 0.5).input();
+        pii->control_port("high", "High threshold", 1).input();
         pii->control_port("out", "Out", 0.f).output();
     }
     void process(uint32_t count)
     {
         float value = *ins[in_signal];
         *outs[out_signal] = (value >= *ins[in_low] && value <= *ins[in_high]) ? 1.f : 0.f;
+    }
+};
+
+/// Clip to range
+class clip_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_signal, in_min, in_max, in_count };
+    enum { out_signal, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("clip_c", "Clip (C)", "kf:MathOperatorPlugin", "clip");
+        pii->control_port("in", "In", 0.f).input();
+        pii->control_port("min", "Min", 0).input();
+        pii->control_port("max", "Max", 1).input();
+        pii->control_port("out", "Out", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        float value = *ins[in_signal];
+        *outs[out_signal] = std::min(*ins[in_max], std::max(value, *ins[in_min]));
     }
 };
 

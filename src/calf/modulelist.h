@@ -44,6 +44,7 @@
     PER_SMALL_MODULE_ITEM(schmitt_c, "schmitt_c")
     PER_SMALL_MODULE_ITEM(between_c, "between_c")
     PER_SMALL_MODULE_ITEM(less_c, "less_c")
+    PER_SMALL_MODULE_ITEM(clip_c, "clip_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM
