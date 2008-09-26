@@ -10,6 +10,7 @@ rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 rdfs = "http://www.w3.org/2000/01/rdf-schema#"
 epi = "http://lv2plug.in/ns/dev/extportinfo#"
 rdf_type = rdf + "type"
+tinyname_uri = "http://lv2plug.in/ns/dev/tiny-name"
 
 class DumpRDFModel:
     def addTriple(self, s, p, o):
@@ -238,6 +239,11 @@ class LV2DB:
         dest.classes = info.bySubject[uri]["a"]
         dest.requiredFeatures = info.getProperty(uri, lv2 + "requiredFeature", optional = True)
         dest.optionalFeatures = info.getProperty(uri, lv2 + "optionalFeature", optional = True)
+        dest.microname = info.getProperty(uri, tinyname_uri, optional = True)
+        if len(dest.microname):
+            dest.microname = dest.microname[0]
+        else:
+            dest.microname = None
         ports = []
         portDict = {}
         porttypes = {
@@ -274,6 +280,7 @@ class LV2DB:
             pdata.defaultValue = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
             pdata.minimum = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
             pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
+            pdata.microname = info.getProperty(psubj, [tinyname_uri], optional = True, single = True)
             pdata.properties = set(info.getProperty(psubj, [lv2 + "portProperty"], optional = True))
             ports.append(pdata)
             portDict[pdata.uri] = pdata

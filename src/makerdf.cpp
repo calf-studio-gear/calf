@@ -438,7 +438,7 @@ void make_ttl(string path_prefix)
         
         ttl += "    doap:name \""+string(pi->label)+"\" ;\n";
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
-        if (pi->microname != "N/A")
+        if (!pi->microname.empty())
             ttl += "    <http://lv2plug.in/ns/dev/tiny-name> \"" + pi->microname + "\" ;\n";
 
         if (!pi->ports.empty())

@@ -13,6 +13,7 @@ plugins = db.getPluginList()
 for uri in plugins:
     plugin = db.getPluginInfo(uri)
     print "Plugin: %s" % plugin.name
+    if plugin.microname != None: print "Tiny name: %s" % plugin.microname
     print "License: %s" % plugin.license
     print "Classes: %s" % plugin.classes
     print "Required features: %s" % list(plugin.requiredFeatures)
@@ -24,9 +25,9 @@ for uri in plugins:
         for type in types:
             if port.__dict__["is" + type]:
                 extra.append(type)
-        for sp in ["defaultValue", "minimum", "maximum"]:
+        for sp in ["defaultValue", "minimum", "maximum", "microname"]:
             if port.__dict__[sp] != None:
-                extra.append("%s=%s" % (sp, port.__dict__[sp]))
+                extra.append("%s=%s" % (sp, repr(port.__dict__[sp])))
         print "%4s %-20s %-40s %s" % (port.index, port.symbol, port.name, ", ".join(extra))
         splist = port.scalePoints
         splist.sort(lambda x, y: cmp(x[1], y[1]))
