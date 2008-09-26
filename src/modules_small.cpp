@@ -231,7 +231,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "Function min (A)", "kf:MathOperatorPlugin");
+        pii->names("min", "Min (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -245,7 +245,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "Function max (A)", "kf:MathOperatorPlugin");
+        pii->names("max", "Max (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -287,7 +287,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("neg", "Negative value (A)", "kf:MathOperatorPlugin");
+        pii->names("neg", "Negative (A)", "kf:MathOperatorPlugin");
         port_info(pii);
     }
 };
@@ -308,6 +308,21 @@ public:
             cports[idx++] = &pii->control_port("in_2", "In 2", in2).input();
         }
         cports[idx++] = &pii->control_port("out", "Out", 0).output();
+    }
+};
+
+class less_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = *ins[0] < *ins[1];
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("less_c", "Less than (C)", "kf:MathOperatorPlugin");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
+        cports[2]->toggle();
     }
 };
 
@@ -424,9 +439,71 @@ public:
         pii->control_port("to_max", "Max (to)", 20000).input();
         pii->control_port("out", "Out", 0.f).output();
     }
-    void process(uint32_t count) {
+    void process(uint32_t count)
+    {
         float normalized = (*ins[in_signal] - *ins[in_from_min]) / (*ins[in_from_max] - *ins[in_from_min]);
         *outs[out_signal] = *ins[in_to_min] * pow(*ins[in_to_max] / *ins[in_to_min], normalized);
+    }
+};
+
+/// Schmitt trigger - http://en.wikipedia.org/wiki/Schmitt_trigger - also outputs a change signal (positive spike whenever output value is changed)
+class schmitt_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_signal, in_low, in_high, in_count };
+    enum { out_signal, out_change, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    bool state;
+    
+    void activate()
+    {
+        state = false;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("schmitt_c", "Schmitt Trigger (C)", "kf:BooleanPlugin");
+        pii->control_port("in", "In", 0.f).input();
+        pii->control_port("low", "Low threshold", 0).input();
+        pii->control_port("high", "High threshold", 0.5).input();
+        pii->control_port("out", "Out", 0.f).output();
+        pii->control_port("change", "Change", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        float value = *ins[in_signal];
+        bool new_state = state;
+        if (value <= *ins[in_low])
+            new_state = false;
+        if (value >= *ins[in_high])
+            new_state = true;
+        *outs[out_signal] = new_state ? 1.f : 0.f;
+        *outs[out_change] = (new_state != state) ? 1.f : 0.f;
+        state = new_state;
+    }
+};
+
+/// Stateless 'between' operator (lo <= in <= hi)
+class between_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_signal, in_low, in_high, in_count };
+    enum { out_signal, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("between_c", "Between (C)", "kf:MathOperatorPlugin");
+        pii->control_port("in", "In", 0.f).input();
+        pii->control_port("low", "Low threshold", 0).input();
+        pii->control_port("high", "High threshold", 0.5).input();
+        pii->control_port("out", "Out", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        float value = *ins[in_signal];
+        *outs[out_signal] = (value >= *ins[in_low] && value <= *ins[in_high]) ? 1.f : 0.f;
     }
 };
 
@@ -600,12 +677,12 @@ public:
     }
 };
 
-class print_audio_module: public small_audio_module_base<1, 0>
+class print_c_audio_module: public small_audio_module_base<1, 0>
 {
 public:    
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("print", "Print To Console (C)", "lv2:UtilityPlugin");
+        pii->names("print_c", "Print To Console (C)", "lv2:UtilityPlugin");
         pii->control_port("in", "In", 0).input();
     }
     void process(uint32_t)
@@ -614,12 +691,12 @@ public:
     }
 };
 
-class print2_audio_module: public small_audio_module_base<1, 0>
+class print_a_audio_module: public small_audio_module_base<1, 0>
 {
 public:    
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("print2", "Print To Console (A)", "lv2:UtilityPlugin");
+        pii->names("print_a", "Print To Console (A)", "lv2:UtilityPlugin");
         pii->audio_port("in", "In").input();
     }
     void process(uint32_t)

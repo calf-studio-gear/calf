@@ -26,8 +26,8 @@
     PER_SMALL_MODULE_ITEM(square_lfo, "square_lfo")
     PER_SMALL_MODULE_ITEM(saw_lfo, "saw_lfo")
     PER_SMALL_MODULE_ITEM(pulse_lfo, "pulse_lfo")
-    PER_SMALL_MODULE_ITEM(print, "print")
-    PER_SMALL_MODULE_ITEM(print2, "print2")
+    PER_SMALL_MODULE_ITEM(print_a, "print_a")
+    PER_SMALL_MODULE_ITEM(print_c, "print_c")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")
     PER_SMALL_MODULE_ITEM(linear_inertia_c, "linear_inertia_c")
@@ -38,6 +38,9 @@
     PER_SMALL_MODULE_ITEM(logical_or_c, "logical_or_c")
     PER_SMALL_MODULE_ITEM(logical_not_c, "logical_not_c")
     PER_SMALL_MODULE_ITEM(flipflop_c, "flipflop_c")
+    PER_SMALL_MODULE_ITEM(schmitt_c, "schmitt_c")
+    PER_SMALL_MODULE_ITEM(between_c, "between_c")
+    PER_SMALL_MODULE_ITEM(less_c, "less_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM
