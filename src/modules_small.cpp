@@ -212,13 +212,13 @@ public:
     static void port_info(plugin_info_iface *pii)
     {
         if (Inputs == 1)
-            pii->audio_port("in", "In").input();
+            pii->audio_port("in", "In", "").input();
         else
         {
-            pii->audio_port("in_1", "In 1").input();
-            pii->audio_port("in_2", "In 2").input();
+            pii->audio_port("in_1", "In 1", "").input();
+            pii->audio_port("in_2", "In 2", "").input();
         }
-        pii->audio_port("out", "Out").output();
+        pii->audio_port("out", "Out", "").output();
     }
 };
 
@@ -231,7 +231,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "Min (A)", "kf:MathOperatorPlugin");
+        pii->names("min", "Min (A)", "kf:MathOperatorPlugin", "min");
         port_info(pii);
     }
 };
@@ -245,7 +245,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "Max (A)", "kf:MathOperatorPlugin");
+        pii->names("max", "Max (A)", "kf:MathOperatorPlugin", "max");
         port_info(pii);
     }
 };
@@ -259,7 +259,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("minus", "Subtract (A)", "kf:MathOperatorPlugin");
+        pii->names("minus", "Subtract (A)", "kf:MathOperatorPlugin", "-");
         port_info(pii);
     }
 };
@@ -273,7 +273,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("mul", "Multiply (A)", "kf:MathOperatorPlugin");
+        pii->names("mul", "Multiply (A)", "kf:MathOperatorPlugin", "*");
         port_info(pii);
     }
 };
@@ -287,7 +287,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("neg", "Negative (A)", "kf:MathOperatorPlugin");
+        pii->names("neg", "Negative (A)", "kf:MathOperatorPlugin", "-");
         port_info(pii);
     }
 };
@@ -301,11 +301,11 @@ public:
     {
         int idx = 0;
         if (Inputs == 1)
-            cports[idx++] = &pii->control_port("in", "In", in1).input();
+            cports[idx++] = &pii->control_port("in", "In", in1, "").input();
         else
         {
-            cports[idx++] = &pii->control_port("in_1", "In 1", in1).input();
-            cports[idx++] = &pii->control_port("in_2", "In 2", in2).input();
+            cports[idx++] = &pii->control_port("in_1", "In 1", in1, "").input();
+            cports[idx++] = &pii->control_port("in_2", "In 2", in2, "").input();
         }
         cports[idx++] = &pii->control_port("out", "Out", 0).output();
     }
@@ -319,7 +319,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("less_c", "Less than (C)", "kf:MathOperatorPlugin");
+        pii->names("less_c", "Less than (C)", "kf:MathOperatorPlugin", "<");
         control_port_info_iface *cports[2];
         port_info(pii, cports);
         cports[2]->toggle();
@@ -379,7 +379,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("logical_and_c", "Logical AND (C)", "kf:BooleanPlugin");
+        pii->names("logical_and_c", "Logical AND (C)", "kf:BooleanPlugin", "&&");
         control_port_info_iface *cports[3];
         port_info(pii, cports);
         cports[0]->toggle();
@@ -396,7 +396,24 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("logical_or_c", "Logical OR (C)", "kf:BooleanPlugin");
+        pii->names("logical_or_c", "Logical OR (C)", "kf:BooleanPlugin", "||");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+        cports[0]->toggle();
+        cports[1]->toggle();
+        cports[2]->toggle();
+    }
+};
+
+class logical_xor_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = ((*ins[0] > 0) != (*ins[1] > 0)) ? 1.f : 0.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("logical_xor_c", "Logical XOR (C)", "kf:BooleanPlugin", "xor");
         control_port_info_iface *cports[3];
         port_info(pii, cports);
         cports[0]->toggle();
@@ -413,7 +430,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("logical_not_c", "Logical NOT (C)", "kf:BooleanPlugin");
+        pii->names("logical_not_c", "Logical NOT (C)", "kf:BooleanPlugin", "!");
         control_port_info_iface *cports[2];
         port_info(pii, cports);
         cports[0]->toggle();
@@ -507,6 +524,54 @@ public:
     }
 };
 
+/// Two input control crossfader
+class crossfader2_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_a, in_b, in_ctl, in_count };
+    enum { out_value, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("crossfader2_c", "2-in crossfader (C)", "kf:MathOperatorPlugin", "xfC");
+        pii->control_port("in_a", "In A", 0.f).input();
+        pii->control_port("in_b", "In B", 0).input();
+        pii->control_port("mix", "B in mix", 0.5).input();
+        pii->control_port("out", "Out", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        *outs[out_value] = *ins[in_a] + (*ins[in_b] - *ins[in_a]) * dsp::clip(*ins[in_ctl], 0.f, 1.f);
+    }
+};
+
+/// Two input audio crossfader
+class crossfader2_a_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_a, in_b, in_ctl, in_count };
+    enum { out_value, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("crossfader2_a", "2-in crossfader (A)", "kf:MathOperatorPlugin", "xfA");
+        pii->audio_port("in_a", "In A").input();
+        pii->audio_port("in_b", "In B").input();
+        pii->audio_port("mix", "B in mix").input();
+        pii->audio_port("out", "Out").output();
+    }
+    void process(uint32_t count)
+    {
+        for (uint32_t i = 0; i < count; i++)
+            outs[out_value][i] = ins[in_a][i] + (ins[in_b][i] - ins[in_a][i]) * dsp::clip(ins[in_ctl][i], 0.f, 1.f);
+    }
+};
+
+/// Base class for LFOs with frequency and reset inputs
 class freq_phase_lfo_base: public small_audio_module_base<2, 1>
 {
 public:

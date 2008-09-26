@@ -33,6 +33,7 @@ struct audio_port_info_iface
     virtual audio_port_info_iface& input() { return *this; }
     /// Called if it's an output port
     virtual audio_port_info_iface& output() { return *this; }
+    virtual audio_port_info_iface& lv2_ttl(const std::string &text) { return *this; }
     virtual ~audio_port_info_iface() {}
 };
 
@@ -50,6 +51,7 @@ struct control_port_info_iface
     virtual control_port_info_iface& toggle() { return *this; }
     virtual control_port_info_iface& trigger() { return *this; }
     virtual control_port_info_iface& integer() { return *this; }
+    virtual control_port_info_iface& lv2_ttl(const std::string &text) { return *this; }
     virtual ~control_port_info_iface() {}
 };
 
@@ -57,11 +59,11 @@ struct control_port_info_iface
 struct plugin_info_iface
 {
     /// Set plugin names (ID, name and label)
-    virtual void names(const std::string &name, const std::string &label, const std::string &category) {}
+    virtual void names(const std::string &name, const std::string &label, const std::string &category, const std::string &microname = std::string()) {}
     /// Add an audio port (returns a sink which accepts further description)
-    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name)=0;
+    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A"))=0;
     /// Add a control port (returns a sink which accepts further description)
-    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value)=0;
+    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A")=0;
     /// Called after plugin has reported all the information
     virtual void finalize() {}
     virtual ~plugin_info_iface() {}

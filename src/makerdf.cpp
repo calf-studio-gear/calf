@@ -178,13 +178,14 @@ struct lv2_port_base {
 struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
 {
     int index;
-    string symbol, name;
+    string symbol, name, extras, microname;
     bool is_input;
     
-    lv2_audio_port_info(int _index, const std::string &_symbol, const std::string &_name)
+    lv2_audio_port_info(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
     : index(_index)
     , symbol(_symbol)
     , name(_name)
+    , microname(_microname)
     , is_input(true)
     {
     }
@@ -192,6 +193,7 @@ struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
     virtual audio_port_info_iface& input() { is_input = true; return *this; }
     /// Called if it's an output port
     virtual audio_port_info_iface& output() { is_input = false; return *this; }
+    virtual audio_port_info_iface& lv2_ttl(const std::string &text) { extras += text; return *this; }
     
     std::string to_string() {
         stringstream ss;
@@ -202,6 +204,10 @@ struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
         ss << ind << "lv2:index " << index << " ;\n";
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
+        if (!extras.empty())
+            ss << ind << extras << endl;
+        if (microname != "N/A")
+            ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
         ss << "    ]\n";
         
         return ss.str();
@@ -211,15 +217,16 @@ struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
 struct lv2_control_port_info: public lv2_port_base, public control_port_info_iface
 {
     int index;
-    string symbol, name;
+    string symbol, name, extras, microname;
     bool is_input, is_log, is_toggle, is_trigger, is_integer;
     double min, max, def_value;
     bool has_min, has_max;
     
-    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, double _default)
+    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, double _default, const std::string &_microname)
     : index(_index)
     , symbol(_symbol)
     , name(_name)
+    , microname(_microname)
     , is_input(true)
     , def_value(_default)
     {
@@ -236,6 +243,7 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
     virtual control_port_info_iface& toggle() { is_toggle = true; return *this; }
     virtual control_port_info_iface& trigger() { is_trigger = true; return *this; }
     virtual control_port_info_iface& integer() { is_integer = true; return *this; }
+    virtual control_port_info_iface& lv2_ttl(const std::string &text) { extras += text; return *this; }
     std::string to_string() {
         stringstream ss;
         const char *ind = "        ";
@@ -245,6 +253,12 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
         ss << ind << "lv2:index " << index << " ;\n";
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
+        if (!extras.empty())
+            ss << ind << extras << endl;
+        if (microname != "N/A")
+            ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
+        ss << ind << "lv2:name \"" << name << "\" ;\n";
+        
         if (is_toggle)
             ss << ind << "lv2:portProperty lv2:toggled ;\n";
         if (is_integer)
@@ -271,23 +285,26 @@ struct lv2_plugin_info: public plugin_info_iface
     std::string label;
     /// Plugin class (category)
     std::string category;
+    /// Plugin micro-name
+    std::string microname;
     /// Vector of ports
     vector<lv2_port_base *> ports;
     /// Set plugin names (ID, name and label)
-    virtual void names(const std::string &_name, const std::string &_label, const std::string &_category) {
+    virtual void names(const std::string &_name, const std::string &_label, const std::string &_category, const std::string &_microname) {
         name = _name;
         label = _label;
         category = _category;
+        microname = _microname;
     }
     /// Add an audio port (returns a sink which accepts further description)
-    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name) {
-        lv2_audio_port_info *port = new lv2_audio_port_info(ports.size(), id, name);
+    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &_microname) {
+        lv2_audio_port_info *port = new lv2_audio_port_info(ports.size(), id, name, _microname);
         ports.push_back(port);
         return *port;
     }
     /// Add a control port (returns a sink which accepts further description)
-    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value) {
-        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, def_value);
+    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &_microname) {
+        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, def_value, _microname);
         ports.push_back(port);
         return *port;
     }
