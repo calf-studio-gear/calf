@@ -307,7 +307,7 @@ public:
             cports[idx++] = &pii->control_port("in_1", "In 1", in1, "").input();
             cports[idx++] = &pii->control_port("in_2", "In 2", in2, "").input();
         }
-        cports[idx++] = &pii->control_port("out", "Out", 0).output();
+        cports[idx++] = &pii->control_port("out", "Out", 0, "").output();
     }
 };
 
