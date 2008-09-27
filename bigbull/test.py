@@ -44,5 +44,13 @@ print port2.get_connections()
 assert port2.get_connections() == ['system:capture_1']
 client.disconnect("system:capture_1", "system:playback_1")
 assert port2.get_connections() == []
+
+while True:
+    msg = client.get_message()
+    if msg != None:
+        print "Msg = %s" % str(msg)
+    else:
+        #time.sleep(0.1)
+        break
 client.close()
 

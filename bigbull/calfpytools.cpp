@@ -1,6 +1,7 @@
 #include <Python.h>
 #include "ttl.h"
 #include "ttldata.h"
+#include <list>
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -12,11 +13,32 @@ struct PyJackPort;
 
 typedef std::map<jack_port_t *, PyJackPort *> PortHandleMap;
 
+struct AsyncOperationInfo
+{
+    enum OpCode { INVALID_OP, PORT_REGISTERED, PORT_UNREGISTERED, PORTS_CONNECTED, PORTS_DISCONNECTED };
+    
+    OpCode opcode;
+    jack_port_id_t port, port2;
+    
+    AsyncOperationInfo() { opcode = INVALID_OP; }
+    AsyncOperationInfo(OpCode _opcode, jack_port_id_t _port, jack_port_id_t _port2 = 0)
+    : opcode(_opcode), port(_port), port2(_port2) {}
+    inline int argc() {
+        if (opcode == PORT_REGISTERED || opcode == PORT_UNREGISTERED) return 1;
+        if (opcode == PORTS_CONNECTED || opcode == PORTS_DISCONNECTED) return 2;
+        return 0;
+    }
+};
+
+typedef std::list<AsyncOperationInfo> PortOperationList;
+
 struct PyJackClient
 {
     PyObject_HEAD
     jack_client_t *client;
     PortHandleMap *port_handle_map;
+    pthread_mutex_t port_op_mutex;
+    PortOperationList *port_op_queue;
 };
 
 static PyTypeObject jackclient_type = {
@@ -40,6 +62,22 @@ static PyTypeObject jackport_type = {
     sizeof(PyJackPort),      /*tp_basicsize*/
 };
 
+static void register_cb(jack_port_id_t port, int registered, void *arg) 
+{
+    PyJackClient *self = (PyJackClient *)arg;
+    pthread_mutex_lock(&self->port_op_mutex);
+    self->port_op_queue->push_back(AsyncOperationInfo(registered ? AsyncOperationInfo::PORT_REGISTERED : AsyncOperationInfo::PORT_UNREGISTERED, port));
+    pthread_mutex_unlock(&self->port_op_mutex);
+}
+
+static void connect_cb(jack_port_id_t port1, jack_port_id_t port2, int connected, void *arg) 
+{
+    PyJackClient *self = (PyJackClient *)arg;
+    pthread_mutex_lock(&self->port_op_mutex);
+    self->port_op_queue->push_back(AsyncOperationInfo(connected ? AsyncOperationInfo::PORTS_CONNECTED : AsyncOperationInfo::PORTS_DISCONNECTED, port1, port2));
+    pthread_mutex_unlock(&self->port_op_mutex);
+}
+
 static PyObject *jackclient_open(PyJackClient *self, PyObject *args)
 {
     const char *name;
@@ -50,7 +88,16 @@ static PyObject *jackclient_open(PyJackClient *self, PyObject *args)
         return NULL;
     
     self->client = jack_client_open(name, (jack_options_t)options, &status);
-    self->port_handle_map = new PortHandleMap;
+    self->port_handle_map = new PortHandleMap;    
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
+    pthread_mutex_init(&self->port_op_mutex, &attr);
+    self->port_op_queue = new PortOperationList;
+    
+    jack_set_port_registration_callback(self->client, register_cb, self);
+    jack_set_port_connect_callback(self->client, connect_cb, self);
+    jack_activate(self->client);
     
     return Py_BuildValue("i", status);
 }
@@ -184,6 +231,43 @@ static PyObject *jackclient_connect(PyJackClient *self, PyObject *args)
     }
 }
 
+static PyObject *create_jack_port_by_id(PyJackClient *self, jack_port_id_t id)
+{
+    return create_jack_port(self, jack_port_by_id(self->client, id));
+}
+
+static PyObject *jackclient_get_message(PyJackClient *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ":get_message"))
+        return NULL;
+    
+    CHECK_CLIENT
+    
+    PyObject *obj = NULL;
+    AsyncOperationInfo info;
+    pthread_mutex_lock(&self->port_op_mutex);
+    if (self->port_op_queue->empty())
+    {
+        obj = Py_None;
+        Py_INCREF(Py_None);
+    }
+    else
+    {
+        info = self->port_op_queue->front();
+        self->port_op_queue->pop_front();
+    }
+    pthread_mutex_unlock(&self->port_op_mutex);
+    if (!obj)
+    {
+        if (info.argc() == 1)
+            obj = Py_BuildValue("iO", info.opcode, create_jack_port_by_id(self, info.port));
+        else
+        if (info.argc() == 2)
+            obj = Py_BuildValue("iOO", info.opcode, create_jack_port_by_id(self, info.port), create_jack_port_by_id(self, info.port2));
+    }
+    return obj;
+}
+
 static PyObject *jackclient_disconnect(PyJackClient *self, PyObject *args)
 {
     char *from_port = NULL, *to_port = NULL;
@@ -212,8 +296,12 @@ static PyObject *jackclient_close(PyJackClient *self, PyObject *args)
     
     CHECK_CLIENT
     
+    jack_deactivate(self->client);
     jack_client_close(self->client);
     self->client = NULL;
+    delete self->port_handle_map;
+    delete self->port_op_queue;
+    pthread_mutex_destroy(&self->port_op_mutex);
     
     Py_INCREF(Py_None);
     return Py_None;
@@ -226,7 +314,8 @@ static PyMethodDef jackclient_methods[] = {
     {"get_port", (PyCFunction)jackclient_get_port, METH_VARARGS, "Create port object from name of existing JACK port"},
     {"get_ports", (PyCFunction)jackclient_get_ports, METH_VARARGS, "Get a list of port names based on specified name, type and flag filters"},
     {"register_port", (PyCFunction)jackclient_register_port, METH_VARARGS, "Register a new port and return an object that represents it"},
-    {"get_cobj", (PyCFunction)jackclient_get_cobj, METH_VARARGS, "Retrieve jack_client_t pointer for the client"},
+    {"get_cobj", (PyCFunction)jackclient_get_cobj, METH_VARARGS, "Retrieve jack_client_t pointer for the client as CObject"},
+    {"get_message", (PyCFunction)jackclient_get_message, METH_VARARGS, "Retrieve next port registration/connection message from the message queue"},
     {"connect", (PyCFunction)jackclient_connect, METH_VARARGS, "Connect two ports with given names"},
     {"disconnect", (PyCFunction)jackclient_disconnect, METH_VARARGS, "Disconnect two ports with given names"},
     {NULL, NULL, 0, NULL}
@@ -267,6 +356,33 @@ static int jackport_dealloc(PyJackPort *self)
 
 #define CHECK_PORT_CLIENT if (!self->client || !self->client->client) { PyErr_SetString(PyExc_ValueError, "Client not opened"); return NULL; }
 #define CHECK_PORT if (!self->port) { PyErr_SetString(PyExc_ValueError, "The port is not valid"); return NULL; }
+
+static PyObject *jackport_strrepr(PyJackPort *self, int quotes)
+{
+    CHECK_PORT_CLIENT
+    CHECK_PORT
+    
+    int flags = jack_port_flags(self->port);
+    int flags_io = flags & (JackPortIsInput | JackPortIsOutput);
+    return PyString_FromFormat("<calfpytools.JackPort, name=%s%s%s, flags=%s%s%s%s>", 
+        quotes ? "\"" : "",
+        jack_port_name(self->port), 
+        quotes ? "\"" : "",
+        (flags_io == JackPortIsInput) ? "in" : (flags_io == JackPortIsOutput ? "out" : "?"),
+        flags & JackPortIsPhysical ? "|physical" : "",
+        flags & JackPortCanMonitor ? "|can_monitor" : "",
+        flags & JackPortIsTerminal ? "|terminal" : "");
+}
+
+static PyObject *jackport_str(PyJackPort *self)
+{
+    return jackport_strrepr(self, 0);
+}
+
+static PyObject *jackport_repr(PyJackPort *self)
+{
+    return jackport_strrepr(self, 1);
+}
 
 static PyObject *jackport_get_full_name(PyJackPort *self, PyObject *args)
 {
@@ -478,6 +594,8 @@ PyMODINIT_FUNC initcalfpytools()
     jackport_type.tp_methods = jackport_methods;
     jackport_type.tp_init = (initproc)jackport_init;
     jackport_type.tp_dealloc = (destructor)jackport_dealloc;
+    jackport_type.tp_str = (reprfunc)jackport_str;
+    jackport_type.tp_repr = (reprfunc)jackport_repr;
     if (PyType_Ready(&jackport_type) < 0)
         return;
     
