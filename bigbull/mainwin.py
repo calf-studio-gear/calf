@@ -90,9 +90,33 @@ class App:
         self.file_menu = add_submenu(self.menu_bar, "_File")
         add_option(self.file_menu, "_Exit", self.exit)
         self.plugin_menu = add_submenu(self.menu_bar, "_Plugins")
+        self.submenus = dict()
+        self.category_to_path = dict()
+        for (path, uri) in self.lv2db.get_categories():
+            if path == []:
+                continue;
+            parent_menu = self.plugin_menu
+            parent_path = "/".join(path[:-1])
+            if parent_path in self.submenus:
+                parent_menu = self.submenus[parent_path]
+            self.submenus["/".join(path)] = add_submenu(parent_menu, path[-1])
+            self.category_to_path[uri] = path
         for uri in self.lv2db.getPluginList():
             plugin = self.lv2db.getPluginInfo(uri)
-            add_option(self.plugin_menu, plugin.name, self.cgraph.add_module_cb, (plugin, None, None))
+            parent_menu = self.plugin_menu
+            best_path = self.get_best_category(plugin)
+            if best_path in self.submenus:
+                parent_menu = self.submenus[best_path]
+            add_option(parent_menu, plugin.name, self.cgraph.add_module_cb, (plugin, None, None))
+        
+    def get_best_category(self, plugin):
+        max_len = -1
+        best_path = []
+        for path in [self.category_to_path[c] for c in plugin.classes if c in self.category_to_path]:
+            if len(path) > max_len:
+                best_path = path
+                max_len = len(path)
+        return "/".join(best_path)
         
     def exit(self, data):
         self.window.destroy()

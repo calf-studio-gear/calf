@@ -218,6 +218,24 @@ class LV2DB:
         #fn = "/usr/lib/lv2/lv2core.lv2/lv2.ttl"
         #parseTTL(fn, file(fn).read(), self.manifests)
         self.plugins = self.manifests.getByType(lv2 + "Plugin")
+        self.categories = set()
+        self.category_paths = []
+        self.add_category_recursive([], lv2 + "Plugin")
+        
+    def add_category_recursive(self, tree_pos, category):
+        cat_name = self.manifests.getProperty(category, rdfs + "label", single = True, optional = True)
+        self.category_paths.append(((tree_pos + [cat_name])[1:], category))
+        self.categories.add(category)
+        items = self.manifests.byPredicate[rdfs + "subClassOf"]
+        for subj in items:
+            if subj in self.categories:
+                continue
+            for o in items[subj]:
+                if o == category and subj not in self.categories:
+                    self.add_category_recursive(list(tree_pos) + [cat_name], subj)
+        
+    def get_categories(self):
+        return self.category_paths
         
     def getPluginList(self):
         return self.plugins
