@@ -2,8 +2,16 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import cairo
+import pangocairo
+import pango
 import goocanvas
 import random
+
+def calc_extents(ctx, fontName, text):
+    layout = pangocairo.CairoContext(ctx).create_layout()
+    layout.set_font_description(pango.FontDescription(fontName))
+    layout.set_text(text)
+    return layout.get_pixel_size()
 
 class Colors:
     frame = 0xC0C0C0FF
@@ -29,7 +37,7 @@ class VisibleWire():
         self.dest.module.remove_wire(self)
 
 class ModulePort():
-    fontName = "DejaVu Sans Mono Book 10"
+    fontName = "DejaVu Sans 10"
     type = "port"
     def __init__(self, module, portData):
         self.module = module
@@ -42,6 +50,9 @@ class ModulePort():
         
     def get_id(self):
         return self.get_parser().get_port_id(self.portData)
+
+    def calc_width(self, ctx):
+        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.portData))[0] + 4 * self.module.margin
 
     def render(self, ctx, parent, y):
         module = self.module
@@ -57,9 +68,9 @@ class ModulePort():
             title.translate(width - bw, 0)
         color = self.get_parser().get_port_color(self.portData)
         if self.isInput:
-            box = goocanvas.Rect(parent = parent, x = 0.5, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Rect(parent = parent, x = 0.5, y = y - 0.5, width = bw, height = height + 1, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         else:
-            box = goocanvas.Rect(parent = parent, x = width - bw - 0.5, y = y - 1, width = bw, height = height + 2, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Rect(parent = parent, x = width - bw - 0.5, y = y - 0.5, width = bw, height = height + 1, line_width = 1, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         box.lower(title)
         y += height + spacing
         box.type = "port"
@@ -72,10 +83,9 @@ class ModulePort():
         return y
 
 class ModuleBox():
-    width = 100
     margin = 2
     spacing = 6
-    fontName = "DejaVu Sans Mono Book 10"
+    fontName = "DejaVu Sans Bold 10"
 
     def __init__(self, parser, parent, moduleData, graph):
         self.parser = parser
@@ -96,23 +106,41 @@ class ModuleBox():
         while self.group.get_n_children() > 0:
             self.group.remove_child(0)
         ctx = self.group.get_canvas().create_cairo_context()
+        self.title = self.get_parser().get_module_name(self.moduleData)
         self.portDict = {}
-        moduleName = self.get_parser().get_module_name(self.moduleData)
-        self.title = goocanvas.Text(parent = self.group, font = self.fontName, text = "<b>" + moduleName + "</b>", width = self.width, x = 0, y = 0, alignment = "center", use_markup = True, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, antialias = cairo.ANTIALIAS_GRAY)
-        y = self.title.get_requested_height(ctx, self.width) + self.spacing
+        width = self.get_title_width(ctx)
         for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
-            y = self.create_port(ctx, id, portData, y)
-        self.rect = goocanvas.Rect(parent = self.group, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
-        self.rect.lower(self.title)
+            mport = self.create_port(id, portData)
+            new_width = mport.calc_width(ctx)
+            if new_width > width:
+                width = new_width
+        self.width = width
+        y = self.render_title(ctx, 0)
+        for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
+            y = self.render_port(ctx, id, y)
+        self.rect = goocanvas.Rect(parent = self.group, width = self.width, height = y, line_width = 2, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box)
+        self.rect.lower(self.titleItem)
         self.rect.type = "module"
         self.rect.object = self.rect.module = self
         self.group.ensure_updated()
         self.wire = None
         
-    def create_port(self, ctx, portId, portData, y):
+    def create_port(self, portId, portData):
         mport = ModulePort(self, portData)
-        y = mport.render(ctx, self.group, y)
         self.portDict[portId] = mport
+        return mport
+        
+    def get_title_width(self, ctx):
+        return calc_extents(ctx, self.fontName, self.title)[0] + 4 * self.margin
+        
+    def render_title(self, ctx, y):
+        self.titleItem = goocanvas.Text(parent = self.group, font = self.fontName, text = self.title, width = self.width, x = 0, y = y, alignment = "center", use_markup = True, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, antialias = cairo.ANTIALIAS_GRAY)
+        y += self.titleItem.get_requested_height(ctx, self.width) + self.spacing
+        return y
+        
+    def render_port(self, ctx, portId, y):
+        mport = self.portDict[portId]
+        y = mport.render(ctx, self.group, y)
         mport.box.connect_object("button-press-event", self.port_button_press, mport)
         mport.title.connect_object("button-press-event", self.port_button_press, mport)        
         return y
