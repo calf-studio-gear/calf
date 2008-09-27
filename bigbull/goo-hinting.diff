@@ -1,0 +1,13 @@
+Index: src/goocanvastext.c
+===================================================================
+RCS file: /cvs/cairo/goocanvas/src/goocanvastext.c,v
+retrieving revision 1.22
+diff -r1.22 goocanvastext.c
+385c385
+<   cairo_hint_metrics_t hint_metrics = CAIRO_HINT_METRICS_OFF;
+---
+>   cairo_hint_metrics_t hint_metrics = CAIRO_HINT_METRICS_DEFAULT;
+412c412
+<   cairo_font_options_set_hint_style (font_options, CAIRO_HINT_STYLE_NONE);
+---
+>   cairo_font_options_set_hint_style (font_options, CAIRO_HINT_STYLE_DEFAULT);
