@@ -257,7 +257,6 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
             ss << ind << extras << endl;
         if (microname != "N/A")
             ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
-        ss << ind << "lv2:name \"" << name << "\" ;\n";
         
         if (is_toggle)
             ss << ind << "lv2:portProperty lv2:toggled ;\n";
