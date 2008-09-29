@@ -788,9 +788,8 @@ public:
         pii->names("print_e", "Print To Console (E)", "lv2:UtilityPlugin");
         pii->event_port("in", "In").input();
     }
-    void process(uint32_t)
+    void dump(LV2_Event_Buffer *event_data)
     {
-        LV2_Event_Buffer *event_data = (LV2_Event_Buffer *)ins[0];
         uint8_t *data = event_data->data;
         for(uint32_t i = 0; i < event_data->event_count; i++)
         {
@@ -807,14 +806,20 @@ public:
             data += (event->size + 19) &~ 7;
         }
     }
+    void process(uint32_t)
+    {
+        LV2_Event_Buffer *event_data = (LV2_Event_Buffer *)ins[0];
+        dump(event_data);
+    }
 };
 
 class print_em_audio_module: public print_e_audio_module
 {
 public:    
+    LV2_Event_Buffer *events;
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("print_e", "Print To Console (EM)", "lv2:UtilityPlugin");
+        pii->names("print_em", "Print To Console (EM)", "lv2:UtilityPlugin");
         pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
         pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
         pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
@@ -824,15 +829,18 @@ public:
     }
     static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
     {
-        printf("message_run\n");
-        ((print_e_audio_module *)instance)->process(0);
+        print_em_audio_module *self =  (print_em_audio_module *)instance;
+        printf("message_run (events = %p)\n", self->events);
+        self->dump(self->events);
         *outputs_written = 0;
         return false;
     }
     static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
     {
-        printf("message_connect_port %d\n", port);
-        ((print_e_audio_module *)instance)->ins[port] = (float *)data;
+        print_em_audio_module *self =  (print_em_audio_module *)instance;
+        printf("message_connect_port %d -> %p\n", port, data);
+        assert(port);
+        self->events = (LV2_Event_Buffer *)data;
     }
     static inline const void *ext_data(const char *URI) { 
         static LV2MessageContext ctx_ext_data = { message_run, message_connect_port };
