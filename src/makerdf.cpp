@@ -171,71 +171,92 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
 }
 
 struct lv2_port_base {
+    int index;
+    std::string symbol, name, extras, microname;
+    bool is_input;
+
     virtual std::string to_string() = 0;
     virtual ~lv2_port_base() {}
-};
-
-struct lv2_audio_port_info: public lv2_port_base, public audio_port_info_iface
-{
-    int index;
-    string symbol, name, extras, microname;
-    bool is_input;
-    
-    lv2_audio_port_info(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
-    : index(_index)
-    , symbol(_symbol)
-    , name(_name)
-    , microname(_microname)
-    , is_input(true)
+    void to_stream_base(stringstream &ss, string ind, string port_class)
     {
-    }
-    /// Called if it's an input port
-    virtual audio_port_info_iface& input() { is_input = true; return *this; }
-    /// Called if it's an output port
-    virtual audio_port_info_iface& output() { is_input = false; return *this; }
-    virtual audio_port_info_iface& lv2_ttl(const std::string &text) { extras += text; return *this; }
-    
-    std::string to_string() {
-        stringstream ss;
-        const char *ind = "        ";
-        ss << "[\n";
         ss << ind << (is_input ? "a lv2:InputPort ;\n" : "a lv2:OutputPort ;\n");
-        ss << ind << "a lv2:AudioPort ;\n";
+        ss << ind << "a " << port_class << " ;\n";
         ss << ind << "lv2:index " << index << " ;\n";
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
         if (!extras.empty())
-            ss << ind << extras << endl;
+            ss << ind << extras;
         if (microname != "N/A")
             ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
+    }
+};
+
+struct lv2_audio_port_base: public lv2_port_base
+{
+    std::string to_string() {
+        stringstream ss;
+        const char *ind = "        ";
+        ss << "[\n";
+        to_stream_base(ss, ind, "lv2:AudioPort");
         ss << "    ]\n";
         
         return ss.str();
     }
 };
 
-struct lv2_control_port_info: public lv2_port_base, public control_port_info_iface
+struct lv2_event_port_base: public lv2_port_base
 {
-    int index;
-    string symbol, name, extras, microname;
+    std::string to_string() {
+        stringstream ss;
+        const char *ind = "        ";
+        ss << "[\n";
+        to_stream_base(ss, ind, "lv2ev:EventPort");
+        ss << "    ]\n";
+        
+        return ss.str();
+    }
+};
+
+template<class base_iface, class base_data>
+struct lv2_port_impl: public base_iface, public base_data
+{
+    lv2_port_impl(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
+    {
+        this->index = _index;
+        this->symbol = _symbol;
+        this->name = _name;
+        this->microname = _microname;
+        this->is_input = true;
+    }
+    /// Called if it's an input port
+    virtual base_iface& input() { this->is_input = true; return *this; }
+    /// Called if it's an output port
+    virtual base_iface& output() { this->is_input = false; return *this; }
+    virtual base_iface& lv2_ttl(const std::string &text) { this->extras += text + "\n"; return *this; }
+};
+
+struct lv2_control_port_base: public lv2_port_base
+{
     bool is_input, is_log, is_toggle, is_trigger, is_integer;
     double min, max, def_value;
     bool has_min, has_max;
     
-    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, double _default, const std::string &_microname)
-    : index(_index)
-    , symbol(_symbol)
-    , name(_name)
-    , microname(_microname)
-    , is_input(true)
-    , def_value(_default)
+    lv2_control_port_base()
     {
         has_min = has_max = is_log = is_toggle = is_trigger = is_integer = false;
+        def_value = 0.f;
     }
-    /// Called if it's an input port
-    virtual control_port_info_iface& input() { is_input = true; return *this; }
-    /// Called if it's an output port
-    virtual control_port_info_iface& output() { is_input = false; return *this; }
+};
+
+typedef lv2_port_impl<plain_port_info_iface, lv2_audio_port_base> lv2_audio_port_info;
+typedef lv2_port_impl<plain_port_info_iface, lv2_event_port_base> lv2_event_port_info;
+
+struct lv2_control_port_info: public lv2_port_impl<control_port_info_iface, lv2_control_port_base> 
+{
+    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
+    : lv2_port_impl<control_port_info_iface, lv2_control_port_base>(_index, _symbol, _name, _microname)
+    {
+    }
     /// Called to mark the port as using linear range [from, to]
     virtual control_port_info_iface& lin_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = false; return *this; }
     /// Called to mark the port as using log range [from, to]
@@ -243,21 +264,12 @@ struct lv2_control_port_info: public lv2_port_base, public control_port_info_ifa
     virtual control_port_info_iface& toggle() { is_toggle = true; return *this; }
     virtual control_port_info_iface& trigger() { is_trigger = true; return *this; }
     virtual control_port_info_iface& integer() { is_integer = true; return *this; }
-    virtual control_port_info_iface& lv2_ttl(const std::string &text) { extras += text; return *this; }
+    virtual control_port_info_iface& lv2_ttl(const std::string &text) { extras += text + "\n"; return *this; }
     std::string to_string() {
         stringstream ss;
         const char *ind = "        ";
         ss << "[\n";
-        ss << ind << (is_input ? "a lv2:InputPort ;\n" : "a lv2:OutputPort ;\n");
-        ss << ind << "a lv2:ControlPort ;\n";
-        ss << ind << "lv2:index " << index << " ;\n";
-        ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
-        ss << ind << "lv2:name \"" << name << "\" ;\n";
-        if (!extras.empty())
-            ss << ind << extras << endl;
-        if (microname != "N/A")
-            ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
-        
+        to_stream_base(ss, ind, "lv2:ControlPort");
         if (is_toggle)
             ss << ind << "lv2:portProperty lv2:toggled ;\n";
         if (is_integer)
@@ -286,6 +298,8 @@ struct lv2_plugin_info: public plugin_info_iface
     std::string category;
     /// Plugin micro-name
     std::string microname;
+    /// Extra declarations for LV2
+    std::string extras;
     /// Vector of ports
     vector<lv2_port_base *> ports;
     /// Set plugin names (ID, name and label)
@@ -296,17 +310,26 @@ struct lv2_plugin_info: public plugin_info_iface
         microname = _microname;
     }
     /// Add an audio port (returns a sink which accepts further description)
-    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &_microname) {
+    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &_microname) {
         lv2_audio_port_info *port = new lv2_audio_port_info(ports.size(), id, name, _microname);
+        ports.push_back(port);
+        return *port;
+    }
+    /// Add an eventport (returns a sink which accepts further description)
+    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &_microname) {
+        lv2_event_port_info *port = new lv2_event_port_info(ports.size(), id, name, _microname);
         ports.push_back(port);
         return *port;
     }
     /// Add a control port (returns a sink which accepts further description)
     virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &_microname) {
-        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, def_value, _microname);
+        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, _microname);
+        port->def_value = def_value;
         ports.push_back(port);
         return *port;
     }
+    /// Add extra TTL to plugin declaration
+    virtual void lv2_ttl(const std::string &text) { this->extras += "    " + text + "\n";  }
     /// Called after plugin has reported all the information
     virtual void finalize() {
     }
@@ -334,6 +357,7 @@ void make_ttl(string path_prefix)
         "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
+        "@prefix lv2ctx: <http://lv2plug.in/ns/dev/contexts#> .\n"
         "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
@@ -439,6 +463,7 @@ void make_ttl(string path_prefix)
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
         if (!pi->microname.empty())
             ttl += "    <http://lv2plug.in/ns/dev/tiny-name> \"" + pi->microname + "\" ;\n";
+        ttl += pi->extras;
 
         if (!pi->ports.empty())
         {

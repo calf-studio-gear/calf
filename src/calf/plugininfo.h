@@ -27,14 +27,14 @@
 namespace synth {
 
 /// A sink to send information about an audio port
-struct audio_port_info_iface
+struct plain_port_info_iface
 {
     /// Called if it's an input port
-    virtual audio_port_info_iface& input() { return *this; }
+    virtual plain_port_info_iface& input() { return *this; }
     /// Called if it's an output port
-    virtual audio_port_info_iface& output() { return *this; }
-    virtual audio_port_info_iface& lv2_ttl(const std::string &text) { return *this; }
-    virtual ~audio_port_info_iface() {}
+    virtual plain_port_info_iface& output() { return *this; }
+    virtual plain_port_info_iface& lv2_ttl(const std::string &text) { return *this; }
+    virtual ~plain_port_info_iface() {}
 };
 
 /// A sink to send information about a control port (very incomplete, missing stuff: units, integer, boolean, toggled, notAutomatic, notGUI...)
@@ -61,9 +61,13 @@ struct plugin_info_iface
     /// Set plugin names (ID, name and label)
     virtual void names(const std::string &name, const std::string &label, const std::string &category, const std::string &microname = std::string()) {}
     /// Add an audio port (returns a sink which accepts further description)
-    virtual audio_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A"))=0;
+    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A"))=0;
+    /// Add an event port (returns a sink which accepts further description)
+    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A"))=0;
     /// Add a control port (returns a sink which accepts further description)
     virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A")=0;
+    /// Add arbitrary TTL clauses
+    virtual void lv2_ttl(const std::string &text) {}
     /// Called after plugin has reported all the information
     virtual void finalize() {}
     virtual ~plugin_info_iface() {}

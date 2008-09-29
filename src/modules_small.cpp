@@ -780,6 +780,71 @@ public:
     }
 };
 
+class print_e_audio_module: public small_audio_module_base<1, 0>
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("print_e", "Print To Console (E)", "lv2:UtilityPlugin");
+        pii->event_port("in", "In").input();
+    }
+    void process(uint32_t)
+    {
+        LV2_Event_Buffer *event_data = (LV2_Event_Buffer *)ins[0];
+        uint8_t *data = event_data->data;
+        for(uint32_t i = 0; i < event_data->event_count; i++)
+        {
+            LV2_Event *event = (LV2_Event *)data;
+            printf("Event at %d.%d, type %d, size %d:", event->frames, event->subframes, (int)event->type, (int)event->size);
+            uint32_t size = std::min((uint16_t)16, event->size);
+            
+            for (uint32_t j = 0; j < size; j++)
+                printf(" %02X", (uint32_t)data[12 + j]);
+            if (event->size > size)
+                printf("...\n");
+            else
+                printf("\n");
+            data += (event->size + 19) &~ 7;
+        }
+    }
+};
+
+class print_em_audio_module: public print_e_audio_module
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("print_e", "Print To Console (EM)", "lv2:UtilityPlugin");
+        pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
+        pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
+        pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
+    }
+    void process(uint32_t)
+    {
+    }
+    static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
+    {
+        printf("message_run\n");
+        ((print_e_audio_module *)instance)->process(0);
+        *outputs_written = 0;
+        return false;
+    }
+    static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
+    {
+        printf("message_connect_port %d\n", port);
+        ((print_e_audio_module *)instance)->ins[port] = (float *)data;
+    }
+    static inline const void *ext_data(const char *URI) { 
+        static LV2MessageContext ctx_ext_data = { message_run, message_connect_port };
+        if (!strcmp(URI, LV2_CONTEXT_MESSAGE))
+        {
+            printf("URI=%s\n", URI);
+            return &ctx_ext_data;
+        }
+        return NULL;
+    }
+};
+
 class print_a_audio_module: public small_audio_module_base<1, 0>
 {
 public:    

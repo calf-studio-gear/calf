@@ -28,6 +28,8 @@
     PER_SMALL_MODULE_ITEM(pulse_lfo, "pulse_lfo")
     PER_SMALL_MODULE_ITEM(print_a, "print_a")
     PER_SMALL_MODULE_ITEM(print_c, "print_c")
+    PER_SMALL_MODULE_ITEM(print_e, "print_e")
+    PER_SMALL_MODULE_ITEM(print_em, "print_em")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")
     PER_SMALL_MODULE_ITEM(crossfader2_a, "crossfader2_a")

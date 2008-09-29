@@ -6,6 +6,7 @@
 #include <calf/lv2-midiport.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
+#include <calf/lv2_contexts.h>
 
 namespace synth {
 
@@ -306,7 +307,7 @@ struct lv2_small_wrapper
     }
     
     static const void *cb_ext_data(const char *URI) {
-        return NULL;
+        return Module::ext_data(URI);
     }
 };
 

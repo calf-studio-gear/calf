@@ -34,6 +34,7 @@ public:
     inline void deactivate() {}
     /// Set sample rate for the plugin
     inline void set_sample_rate(uint32_t sr) { srate = sr; odsr = 1.0 / sr; }
+    static inline const void *ext_data(const char *URI) { return NULL; }
 };
 
 /// Templatized version useful when the number of inputs and outputs is small
