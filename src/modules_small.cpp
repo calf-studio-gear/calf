@@ -839,8 +839,59 @@ public:
     {
         print_em_audio_module *self =  (print_em_audio_module *)instance;
         printf("message_connect_port %d -> %p\n", port, data);
-        assert(port);
+        assert(!port);
         self->events = (LV2_Event_Buffer *)data;
+    }
+    static inline const void *ext_data(const char *URI) { 
+        static LV2MessageContext ctx_ext_data = { message_run, message_connect_port };
+        if (!strcmp(URI, LV2_CONTEXT_MESSAGE))
+        {
+            printf("URI=%s\n", URI);
+            return &ctx_ext_data;
+        }
+        return NULL;
+    }
+};
+
+class copy_em_audio_module: public small_audio_module_base<0, 0>
+{
+public:    
+    LV2_Event_Buffer *events_in, *events_out;
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("copy_em", "Message pass-through (EM)", "lv2:UtilityPlugin");
+        pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
+        pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
+        pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
+        pii->event_port("out", "Out").output().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
+    }
+    void process(uint32_t)
+    {
+    }
+    static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
+    {
+        copy_em_audio_module *self =  (copy_em_audio_module *)instance;
+        return self->message_run(outputs_written);
+    }
+    bool message_run(uint32_t *outputs_written)
+    {
+        if (events_in->size > events_in->capacity)
+        {
+            printf("Buffer capacity exceeded!\n");
+            return false;
+        }
+        events_out->event_count = events_in->event_count;
+        events_out->size = events_in->size;
+        memcpy(events_out->data, events_in->data, events_in->size);
+        *outputs_written = (events_in->event_count != 0) ? 2 : 0;
+        return true;
+    }
+    static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
+    {
+        copy_em_audio_module *self =  (copy_em_audio_module *)instance;
+        printf("message_connect_port %d -> %p\n", port, data);
+        if (port == 0) self->events_in = (LV2_Event_Buffer *)data;
+        if (port == 1) self->events_out = (LV2_Event_Buffer *)data;
     }
     static inline const void *ext_data(const char *URI) { 
         static LV2MessageContext ctx_ext_data = { message_run, message_connect_port };
