@@ -19,6 +19,9 @@
     PER_SMALL_MODULE_ITEM(minus, "minus")
     PER_SMALL_MODULE_ITEM(mul, "mul")
     PER_SMALL_MODULE_ITEM(neg, "neg")
+    PER_SMALL_MODULE_ITEM(minus_c, "minus_c")
+    PER_SMALL_MODULE_ITEM(mul_c, "mul_c")
+    PER_SMALL_MODULE_ITEM(neg_c, "neg_c")
     PER_SMALL_MODULE_ITEM(level2edge_c, "level2edge_c")
     PER_SMALL_MODULE_ITEM(map_lin2exp, "lin2exp")
     PER_SMALL_MODULE_ITEM(square_osc, "square_osc")
@@ -49,6 +52,7 @@
     PER_SMALL_MODULE_ITEM(less_c, "less_c")
     PER_SMALL_MODULE_ITEM(clip_c, "clip_c")
     PER_SMALL_MODULE_ITEM(timer_c, "timer_c")
+    PER_SMALL_MODULE_ITEM(prio_mux_c, "prio_mux_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

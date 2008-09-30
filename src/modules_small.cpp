@@ -311,6 +311,48 @@ public:
     }
 };
 
+class minus_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        outs[0][0] = ins[0][0] - ins[1][0];
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("minus_c", "Subtract (C)", "kf:MathOperatorPlugin", "-");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+    }
+};
+
+class mul_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        outs[0][0] = ins[0][0] * ins[1][0];
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("mul_c", "Multiply (C)", "kf:MathOperatorPlugin", "*");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+    }
+};
+
+class neg_c_audio_module: public control_operator_audio_module<1>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = -*ins[0];
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("neg_c", "Negative (C)", "kf:MathOperatorPlugin", "-");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
+    }
+};
+
 class less_c_audio_module: public control_operator_audio_module<2>
 {
 public:
@@ -502,7 +544,40 @@ public:
     }
 };
 
-
+/// 4-input priority multiplexer - without inertia. Outputs the first input if gate_1 is TRUE, else second input if gate_2 is TRUE, else... else "Else" input
+class prio_mux_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_in1, in_gate1, in_in2, in_gate2, in_in3, in_gate3, in_in4, in_gate4, in_else, in_count };
+    enum { out_value, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("prio_mux_c", "Priority Multiplexer (C)", "kf:BooleanPlugin");
+        for (int i = 1; i <= 4; i++)
+        {
+            string num = string("1234" + i - 1, 1);
+            pii->control_port("in_"+num, "In "+num, 0.f).input();
+            pii->control_port("gate_"+num, "Gate "+num, 0.f).input().toggle();
+        }
+        pii->control_port("in_else", "Else", 0.f).input();
+        pii->control_port("out", "Out", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (*ins[i * 2 + in_gate1] > 0)
+            {
+                *outs[out_value] = *ins[i * 2 + in_in1];
+                return;
+            }
+        }
+        *outs[out_value] = *ins[in_else];
+    }
+};
 
 /// Linear-to-exponential mapper
 class map_lin2exp_audio_module: public null_small_audio_module
