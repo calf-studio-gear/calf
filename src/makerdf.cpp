@@ -237,7 +237,7 @@ struct lv2_port_impl: public base_iface, public base_data
 
 struct lv2_control_port_base: public lv2_port_base
 {
-    bool is_input, is_log, is_toggle, is_trigger, is_integer;
+    bool is_log, is_toggle, is_trigger, is_integer;
     double min, max, def_value;
     bool has_min, has_max;
     

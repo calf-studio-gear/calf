@@ -438,6 +438,73 @@ public:
     }
 };
 
+/// Monostable multivibrator like 74121 or 74123, with reset input, progress output (0 to 1), "finished" signal, configurable to allow or forbid retriggering.
+class timer_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_trigger, in_time, in_reset, in_allow_retrig, in_count };
+    enum { out_running, out_finished, out_progress, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    bool running, finished, old_trigger;
+    double state;
+    
+    void activate()
+    {
+        state = 0.f;
+        running = false;
+        finished = false;
+        old_trigger = false;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("timer_c", "Timer (C)", "lv2:UtilityPlugin");
+        pii->control_port("trigger", "Trigger", 0.f).input().toggle().trigger();
+        pii->control_port("time", "Time", 0.f).input();
+        pii->control_port("reset", "Reset", 0).input().toggle();
+        pii->control_port("allow_retrig", "Allow retrig", 0).input().toggle();
+        pii->control_port("running", "Running", 0.f).output().toggle();
+        pii->control_port("finished", "Finished", 0.f).output().toggle();
+        pii->control_port("progress", "Progress", 0.f).output().lin_range(0, 1);
+    }
+    void process(uint32_t count)
+    {
+        // This is a branch city, which is definitely a bad thing.
+        // Perhaps I'll add a bunch of __builtin_expect hints some day, but somebody would have to start using it first.
+        if (*ins[in_reset] > 0)
+        {
+            state = 0.0;
+            running = finished = false;
+        }
+        else
+        if (!old_trigger && *ins[in_trigger] > 0 && (!running || *ins[in_allow_retrig] > 0))
+        {
+            state = 0.0;
+            running = true;
+            finished = false;
+        }
+        else
+        if (running)
+        {
+            float rate = (1.0 / std::max(0.0000001f, *ins[in_time]));
+            state += rate * odsr * count;
+            if (state >= 1.0)
+            {
+                running = false;
+                finished = true;
+                state = 1.0;
+            }
+        }
+        old_trigger = *ins[in_trigger] > 0;
+        *outs[out_running] = running ? 1.f : 0.f;
+        *outs[out_finished] = finished ? 1.f : 0.f;
+        *outs[out_progress] = state;
+    }
+};
+
+
+
+/// Linear-to-exponential mapper
 class map_lin2exp_audio_module: public null_small_audio_module
 {
 public:    
