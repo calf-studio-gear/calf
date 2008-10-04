@@ -963,6 +963,7 @@ public:
     {
         pii->names("print_em", "Print To Console (EM)", "lv2:UtilityPlugin");
         pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
+        pii->lv2_ttl("lv2:requiredFeature lv2ctx:MessageContext ;");
         pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
         pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
     }
@@ -986,9 +987,9 @@ public:
     }
     static inline const void *ext_data(const char *URI) { 
         static LV2MessageContext ctx_ext_data = { message_run, message_connect_port };
+        printf("URI=%s\n", URI);
         if (!strcmp(URI, LV2_CONTEXT_MESSAGE))
         {
-            printf("URI=%s\n", URI);
             return &ctx_ext_data;
         }
         return NULL;
@@ -1002,6 +1003,7 @@ public:
     static void plugin_info(plugin_info_iface *pii)
     {
         pii->names("copy_em", "Message pass-through (EM)", "lv2:UtilityPlugin");
+        pii->lv2_ttl("lv2:requiredFeature lv2ctx:MessageContext ;");
         pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
         pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
         pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
