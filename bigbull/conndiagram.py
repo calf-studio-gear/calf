@@ -389,6 +389,7 @@ class ConnectionGraphEditor:
         step = 2.0
         cr = self.canvas.create_cairo_context()
         w, h = self.canvas.allocation.width, self.canvas.allocation.height
+        temperature = 100
         while True:
             energy = 0.0
             x = y = 0
@@ -400,6 +401,7 @@ class ConnectionGraphEditor:
             gforce = w / 2 - x + 1j * (h / 2 - y)
             for m1 in self.modules:
                 force = gforce
+                force += temperature * random.random()
                 for m2 in self.modules:
                     if m1 == m2:
                         continue
@@ -418,6 +420,7 @@ class ConnectionGraphEditor:
                 m1.group.update(True, cr, m1.bounds)
                 m1.update_wires()
             damping *= 0.99
+            temperature *= 0.99
             self.canvas.draw(gtk.gdk.Rectangle(0, 0, w, h))
             print "Energy is %s" % energy
             if energy < 0.1:
