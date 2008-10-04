@@ -94,12 +94,13 @@ class App:
         self.add_clients(200, 0.0, calfpytools.JackPortIsInput)
         self.cgraph.canvas.update()
         self.add_wires()
+        self.cgraph.blow_up()
         
     def add_clients(self, x, y, flags):
         ports = self.parser.client.get_ports("", "", flags)
         clients = set([p.split(":")[0] for p in ports])
         for cl in clients:
-            self.cgraph.add_module(JACKClientData(cl, "", flags), x, y)
+            y += self.cgraph.add_module(JACKClientData(cl, "", flags), x, y).rect.props.height
         
     def add_wires(self):
         ports = self.parser.client.get_ports("", "", calfpytools.JackPortIsInput)
@@ -116,8 +117,12 @@ class App:
     def create_main_menu(self):
         self.menu_bar = gtk.MenuBar()
         self.file_menu = add_submenu(self.menu_bar, "_File")
+        add_option(self.file_menu, "_Blow-up", self.blow_up)
         add_option(self.file_menu, "_Exit", self.exit)
         
+    def blow_up(self, data):
+        self.cgraph.blow_up()
+    
     def exit(self, data):
         self.window.destroy()
         
