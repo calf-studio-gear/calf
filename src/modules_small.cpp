@@ -672,8 +672,9 @@ public:
     }
 };
 
-/// 8-input priority multiplexer - without inertia. Outputs the first input if gate_1 is TRUE, else second input if gate_2 is TRUE, else... else "Else" input
-class prio_enc_c_audio_module: public null_small_audio_module
+/// 8-input priority encoder - outputs the index of the first port whose value is >0. 'Any' output is set whenever any of gates is set (which tells
+/// apart no inputs set and 0th input set).
+class prio_enc8_c_audio_module: public null_small_audio_module
 {
 public:    
     enum { in_gate1, in_count = in_gate1 + 8};
@@ -683,7 +684,7 @@ public:
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("prio_enc_c", "Priority Encoder (C)", "kf:IntegerPlugin");
+        pii->names("prio_enc8_c", "Priority Encoder (C)", "kf:IntegerPlugin");
         for (int i = 0; i < 8; i++)
         {
             string num = string("01234567" + i, 1);
@@ -705,6 +706,32 @@ public:
         }
         *outs[out_value] = 0;
         *outs[out_any] = 0;
+    }
+};
+
+/// 8-input integer multiplexer, outputs the input selected by ((int)select input & 7)
+class mux8_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_select, in_in1, in_count = in_in1 + 8};
+    enum { out_value, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("mux8_c", "Multiplexer (C)", "kf:IntegerPlugin");
+        pii->control_port("select", "Select", 0.f).input().integer();
+        for (int i = 0; i < 8; i++)
+        {
+            string num = string("01234567" + i, 1);
+            pii->control_port("in_"+num, "In "+num, 0.f).input();
+        }
+        pii->control_port("out", "Out", -1).output();
+    }
+    void process(uint32_t count)
+    {
+        *outs[out_value] = *ins[in_in1 + (7 & (int)*ins[in_select])];
     }
 };
 
