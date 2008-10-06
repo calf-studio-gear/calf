@@ -651,7 +651,9 @@ public:
         pii->names("prio_mux_c", "Priority Multiplexer (C)", "kf:BooleanPlugin");
         for (int i = 1; i <= 4; i++)
         {
-            string num = string("1234" + i - 1, 1);
+            stringstream numb;
+            numb << i;
+            string num = numb.str();
             pii->control_port("in_"+num, "In "+num, 0.f).input();
             pii->control_port("gate_"+num, "Gate "+num, 0.f).input().toggle();
         }
@@ -674,20 +676,26 @@ public:
 
 /// 8-input priority encoder - outputs the index of the first port whose value is >0. 'Any' output is set whenever any of gates is set (which tells
 /// apart no inputs set and 0th input set).
-class prio_enc8_c_audio_module: public null_small_audio_module
+template<int N>
+class prio_enc_c_audio_module: public null_small_audio_module
 {
 public:    
-    enum { in_gate1, in_count = in_gate1 + 8};
+    enum { in_gate1, in_count = in_gate1 + N};
     enum { out_value, out_any, out_count };
     float *ins[in_count]; 
     float *outs[out_count];
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("prio_enc8_c", "Priority Encoder (C)", "kf:IntegerPlugin");
-        for (int i = 0; i < 8; i++)
+        char buf[32], buf2[64];
+        sprintf(buf, "prio_enc%d_c", N);
+        sprintf(buf2, "%d-input Priority Encoder (C)", N);
+        pii->names(buf, buf2, "kf:IntegerPlugin");
+        for (int i = 0; i < N; i++)
         {
-            string num = string("01234567" + i, 1);
+            stringstream numb;
+            numb << i;
+            string num = numb.str();
             pii->control_port("gate_"+num, "Gate "+num, 0.f).input().toggle();
         }
         pii->control_port("out", "Out", -1).output().integer();
@@ -695,7 +703,7 @@ public:
     }
     void process(uint32_t count)
     {
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < N; i++)
         {
             if (*ins[in_gate1 + i] > 0)
             {
@@ -709,31 +717,43 @@ public:
     }
 };
 
+typedef prio_enc_c_audio_module<8> prio_enc8_c_audio_module;
+
 /// 8-input integer multiplexer, outputs the input selected by ((int)select input & 7)
-class mux8_c_audio_module: public null_small_audio_module
+template<int N>
+class mux_c_audio_module: public null_small_audio_module
 {
 public:    
-    enum { in_select, in_in1, in_count = in_in1 + 8};
+    enum { in_select, in_in1, in_count = in_in1 + N};
     enum { out_value, out_count };
     float *ins[in_count]; 
     float *outs[out_count];
     
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("mux8_c", "Multiplexer (C)", "kf:IntegerPlugin");
-        pii->control_port("select", "Select", 0.f).input().integer();
-        for (int i = 0; i < 8; i++)
+        char buf[32], buf2[64];
+        sprintf(buf, "mux%d_c", N);
+        sprintf(buf2, "%d-input Multiplexer (C)", N);
+        pii->names(buf, buf2, "kf:IntegerPlugin");
+        pii->control_port("select", "Select", 0.f).input().integer().lin_range(0, N - 1);
+        for (int i = 0; i < N; i++)
         {
-            string num = string("01234567" + i, 1);
+            stringstream numb;
+            numb << i;
+            string num = numb.str();
             pii->control_port("in_"+num, "In "+num, 0.f).input();
         }
         pii->control_port("out", "Out", -1).output();
     }
     void process(uint32_t count)
     {
-        *outs[out_value] = *ins[in_in1 + (7 & (int)*ins[in_select])];
+        *outs[out_value] = *ins[in_in1 + ((N - 1) & (int)*ins[in_select])];
     }
 };
+
+typedef mux_c_audio_module<4> mux4_c_audio_module;
+typedef mux_c_audio_module<8> mux8_c_audio_module;
+typedef mux_c_audio_module<16> mux16_c_audio_module;
 
 /// Linear-to-exponential mapper
 class map_lin2exp_audio_module: public null_small_audio_module

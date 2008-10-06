@@ -61,7 +61,9 @@
     PER_SMALL_MODULE_ITEM(prio_enc8_c, "prio_enc8_c")
     PER_SMALL_MODULE_ITEM(ifthenelse_c, "ifthenelse_c")
     PER_SMALL_MODULE_ITEM(counter_c, "counter_c")
+    PER_SMALL_MODULE_ITEM(mux4_c, "mux4_c")
     PER_SMALL_MODULE_ITEM(mux8_c, "mux8_c")
+    PER_SMALL_MODULE_ITEM(mux16_c, "mux16_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM
