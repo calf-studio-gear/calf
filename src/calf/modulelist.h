@@ -19,6 +19,8 @@
     PER_SMALL_MODULE_ITEM(minus, "minus")
     PER_SMALL_MODULE_ITEM(mul, "mul")
     PER_SMALL_MODULE_ITEM(neg, "neg")
+    PER_SMALL_MODULE_ITEM(min_c, "min_c")
+    PER_SMALL_MODULE_ITEM(max_c, "max_c")
     PER_SMALL_MODULE_ITEM(minus_c, "minus_c")
     PER_SMALL_MODULE_ITEM(mul_c, "mul_c")
     PER_SMALL_MODULE_ITEM(neg_c, "neg_c")

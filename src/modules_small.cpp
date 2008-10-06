@@ -231,7 +231,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("min", "Min (A)", "kf:MathOperatorPlugin", "min");
+        pii->names("min", "Minimum (A)", "kf:MathOperatorPlugin", "min");
         port_info(pii);
     }
 };
@@ -245,7 +245,7 @@ public:
     }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("max", "Max (A)", "kf:MathOperatorPlugin", "max");
+        pii->names("max", "Maximum (A)", "kf:MathOperatorPlugin", "max");
         port_info(pii);
     }
 };
@@ -349,6 +349,34 @@ public:
     {
         pii->names("neg_c", "Negative (C)", "kf:MathOperatorPlugin", "-");
         control_port_info_iface *cports[2];
+        port_info(pii, cports);
+    }
+};
+
+class min_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = std::min(*ins[0], *ins[1]);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("min_c", "Minimum (C)", "kf:MathOperatorPlugin", "min");
+        control_port_info_iface *cports[3];
+        port_info(pii, cports);
+    }
+};
+
+class max_c_audio_module: public control_operator_audio_module<2>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = std::max(*ins[0], *ins[1]);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("max_c", "Maximum (C)", "kf:MathOperatorPlugin", "max");
+        control_port_info_iface *cports[3];
         port_info(pii, cports);
     }
 };
@@ -973,7 +1001,7 @@ public:
     static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
     {
         print_em_audio_module *self =  (print_em_audio_module *)instance;
-        printf("message_run (events = %p)\n", self->events);
+        printf("message_run (events = %p, count = %d)\n", self->events, self->events->event_count);
         self->dump(self->events);
         *outputs_written = 0;
         return false;
