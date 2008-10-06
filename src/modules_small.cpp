@@ -417,6 +417,71 @@ public:
     }
 };
 
+class int_c_audio_module: public control_operator_audio_module<1>
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = (int)*ins[0];
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("int_c", "Integer value (C)", "kf:IntegerPlugin");
+        control_port_info_iface *cports[2];
+        port_info(pii, cports);
+        cports[0]->integer();
+        cports[1]->integer();
+    }
+};
+
+class bitwise_op_c_module_base: public control_operator_audio_module<2>
+{
+public:
+    static void port_info(plugin_info_iface *pii)
+    {
+        pii->control_port("in_1", "In 1", 0, "").integer().input();
+        pii->control_port("in_2", "In 2", 0, "").integer().input();
+        pii->control_port("out", "Out", 0, "").integer().output();
+    }
+};
+class bit_and_c_audio_module: public bitwise_op_c_module_base
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = ((int)*ins[0]) & ((int)*ins[1]);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("bit_and_c", "Bitwise AND (C)", "kf:IntegerPlugin");
+        port_info(pii);
+    }
+};
+
+class bit_or_c_audio_module: public bitwise_op_c_module_base
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = ((int)*ins[0]) | ((int)*ins[1]);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("bit_or_c", "Bitwise OR (C)", "kf:IntegerPlugin");
+        port_info(pii);
+    }
+};
+
+class bit_xor_c_audio_module: public bitwise_op_c_module_base
+{
+public:
+    void process(uint32_t count) {
+        *outs[0] = ((int)*ins[0]) ^ ((int)*ins[1]);
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("bit_xor_c", "Bitwise XOR (C)", "kf:IntegerPlugin");
+        port_info(pii);
+    }
+};
+
 class flipflop_c_audio_module: public control_operator_audio_module<1>
 {
 public:
