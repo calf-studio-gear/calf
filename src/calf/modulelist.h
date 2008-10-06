@@ -58,6 +58,9 @@
     PER_SMALL_MODULE_ITEM(clip_c, "clip_c")
     PER_SMALL_MODULE_ITEM(timer_c, "timer_c")
     PER_SMALL_MODULE_ITEM(prio_mux_c, "prio_mux_c")
+    PER_SMALL_MODULE_ITEM(prio_enc_c, "prio_enc_c")
+    PER_SMALL_MODULE_ITEM(ifthenelse_c, "ifthenelse_c")
+    PER_SMALL_MODULE_ITEM(counter_c, "counter_c")
 #endif
 #undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM

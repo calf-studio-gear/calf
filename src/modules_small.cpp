@@ -672,6 +672,42 @@ public:
     }
 };
 
+/// 8-input priority multiplexer - without inertia. Outputs the first input if gate_1 is TRUE, else second input if gate_2 is TRUE, else... else "Else" input
+class prio_enc_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_gate1, in_count = in_gate1 + 8};
+    enum { out_value, out_any, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("prio_enc_c", "Priority Encoder (C)", "kf:IntegerPlugin");
+        for (int i = 0; i < 8; i++)
+        {
+            string num = string("01234567" + i, 1);
+            pii->control_port("gate_"+num, "Gate "+num, 0.f).input().toggle();
+        }
+        pii->control_port("out", "Out", -1).output().integer();
+        pii->control_port("any", "Any", -1).output().toggle();
+    }
+    void process(uint32_t count)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            if (*ins[in_gate1 + i] > 0)
+            {
+                *outs[out_value] = i;
+                *outs[out_any] = 1;
+                return;
+            }
+        }
+        *outs[out_value] = 0;
+        *outs[out_any] = 0;
+    }
+};
+
 /// Linear-to-exponential mapper
 class map_lin2exp_audio_module: public null_small_audio_module
 {
@@ -803,6 +839,85 @@ public:
     void process(uint32_t count)
     {
         *outs[out_value] = *ins[in_a] + (*ins[in_b] - *ins[in_a]) * dsp::clip(*ins[in_ctl], 0.f, 1.f);
+    }
+};
+
+/// 2-input multiplexer (if-then-else)
+class ifthenelse_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_if, in_then, in_else, in_count };
+    enum { out_value, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("ifthenelse_c", "If-Then-Else (C)", "kf:BooleanPlugin", "if");
+        pii->control_port("if", "If", 0.f).input().toggle();
+        pii->control_port("then", "Then", 0).input();
+        pii->control_port("else", "Else", 0).input();
+        pii->control_port("out", "Out", 0.f).output();
+    }
+    void process(uint32_t count)
+    {
+        *outs[out_value] = *ins[in_if] > 0 ? *ins[in_then] : *ins[in_else];
+    }
+};
+
+/// Integer counter with definable ranges
+class counter_c_audio_module: public null_small_audio_module
+{
+public:    
+    enum { in_clock, in_min, in_max, in_steps, in_reset, in_count };
+    enum { out_value, out_carry, out_count };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    bool state;
+    int value;
+    
+    void activate()
+    {
+        state = false;
+        value = 0;
+    }
+    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("counter_c", "Counter (C)", "kf:IntegerPlugin", "cnt");
+        pii->control_port("clock", "Clock", 0.f).input().toggle().trigger();
+        pii->control_port("min", "Min", 0).input();
+        pii->control_port("max", "Max", 15).input();
+        pii->control_port("steps", "Steps", 16).input().integer();
+        pii->control_port("reset", "Reset", 0).input().toggle();
+        pii->control_port("out", "Out", 0.f).output();
+        pii->control_port("carry", "Carry", 0.f).output().toggle().trigger();
+    }
+    void process(uint32_t count)
+    {
+        // Yes, this is slower than it should be. I will bother optimizing it when someone starts actually using it.
+        if (*ins[in_reset] > 0 || *ins[in_steps] < 2.0)
+        {
+            state = false;
+            value = 0;
+            *outs[out_value] = *ins[in_min];
+            *outs[out_carry] = 0.f;
+            return;
+        }
+        *outs[out_carry] = 0;
+        if (!state && *ins[in_clock] > 0)
+        {
+            value++;
+            state = true;
+            if (value >= (int)*ins[in_steps])
+            {
+                value = 0;
+                *outs[out_carry] = 1;
+            }
+        }
+        else
+            state = *ins[in_clock] > 0;
+        *outs[out_value] = *ins[in_min] + (*ins[in_max] - *ins[in_min]) * value / (int)(*ins[in_steps] - 1);
     }
 };
 
