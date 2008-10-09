@@ -1177,6 +1177,106 @@ public:
     }
 };
 
+/// LV2 event structure + payload as 0-length array for easy access
+struct lv2_event: public LV2_Event
+{
+    uint8_t data[0];
+};
+
+class event_port_read_iterator
+{
+protected:
+    const LV2_Event_Buffer *buffer;
+    uint32_t offset;
+public:
+    /// Default constructor creating a useless iterator you can assign to
+    event_port_read_iterator()
+    : buffer(NULL)
+    , offset(0)
+    {
+    }
+    
+    /// Create an iterator based on specified buffer and index/offset values
+    event_port_read_iterator(const LV2_Event_Buffer *_buffer, uint32_t _offset = 0)
+    : buffer(_buffer)
+    , offset(0)
+    {
+    }
+
+    /// Are any data left to be read?
+    inline operator bool() const {
+        return offset < buffer->size;
+    }
+    
+    /// Read pointer
+    inline const lv2_event &operator*() {
+        return *(const lv2_event *)(buffer->data + offset);
+    }
+
+    /// Move to the next element
+    inline event_port_read_iterator operator++() {
+        offset += ((**this).size + 19) &~7;
+        return *this;
+    }
+
+    /// Move to the next element
+    inline event_port_read_iterator operator++(int) {
+        event_port_read_iterator old = *this;
+        offset += ((**this).size + 19) &~7;
+        return old;
+    }
+};
+
+class event_port_write_iterator
+{
+protected:
+    LV2_Event_Buffer *buffer;
+    uint32_t index, offset;
+public:
+    /// Default constructor creating a useless iterator you can assign to
+    event_port_write_iterator()
+    : buffer(NULL)
+    , index(0)
+    , offset(0)
+    {
+    }
+    
+    /// Create a write iterator based on specified buffer and index/offset values
+    event_port_write_iterator(LV2_Event_Buffer *_buffer)
+    : buffer(_buffer)
+    , index(0)
+    , offset(0)
+    {
+    }
+
+    /// @return the remaining buffer space
+    inline uint32_t space_left() const {
+        return buffer->capacity - offset;
+    }
+    /// @return write pointer
+    inline lv2_event &operator*() {
+        return *(lv2_event *)(buffer->data + offset);
+    }
+    /// Update buffer data size and number of events
+    void commit() {
+        buffer->event_count = index;
+        buffer->size = offset;
+    }
+    /// Move to the next element after the current one has been written (must be called after each write)
+    inline event_port_write_iterator operator++() {
+        offset += ((**this).size + 19) &~7;
+        index++;
+        return *this;
+    }
+    /// Move to the next element after the current one has been written
+    inline event_port_write_iterator operator++(int) {
+        event_port_write_iterator old = *this;
+        offset += ((**this).size + 19) &~7;
+        index++;
+        return old;
+    }
+};
+
 class print_e_audio_module: public small_audio_module_base<1, 0>
 {
 public:    
@@ -1187,20 +1287,19 @@ public:
     }
     void dump(LV2_Event_Buffer *event_data)
     {
-        uint8_t *data = event_data->data;
-        for(uint32_t i = 0; i < event_data->event_count; i++)
+        event_port_read_iterator ei(event_data);
+        while(ei)
         {
-            LV2_Event *event = (LV2_Event *)data;
-            printf("Event at %d.%d, type %d, size %d:", event->frames, event->subframes, (int)event->type, (int)event->size);
-            uint32_t size = std::min((uint16_t)16, event->size);
+            const lv2_event &event = *ei++;
+            printf("Event at %d.%d, type %d, size %d:", event.frames, event.subframes, (int)event.type, (int)event.size);
+            uint32_t size = std::min((uint16_t)16, event.size);
             
             for (uint32_t j = 0; j < size; j++)
-                printf(" %02X", (uint32_t)data[12 + j]);
-            if (event->size > size)
+                printf(" %02X", (uint32_t)event.data[j]);
+            if (event.size > size)
                 printf("...\n");
             else
                 printf("\n");
-            data += (event->size + 19) &~ 7;
         }
     }
     void process(uint32_t)
@@ -1496,7 +1595,6 @@ public:
         port_info(pii, "gate", "Gate");
     }
 };
-
 };
 
 #define PER_MODULE_ITEM(...) 
