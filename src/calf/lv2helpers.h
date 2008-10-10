@@ -67,7 +67,7 @@ public:
 /// LV2 event structure + payload as 0-length array for easy access
 struct lv2_event: public LV2_Event
 {
-    uint8_t data[0];
+    uint8_t data[];
     inline lv2_event &operator=(const lv2_event &src) {
         *(LV2_Event *)this = (const LV2_Event &)src;
         memcpy(data, src.data, src.size);
@@ -77,6 +77,11 @@ struct lv2_event: public LV2_Event
     inline uint64_t timestamp() const {
         return ((uint64_t)frames << 32) | subframes;
     }
+private:
+    /// forbid default constructor - this object cannot be constructed, only obtained via cast from LV2_Event* (or &) to lv2_event* (or &)
+    lv2_event() {}
+    /// forbid copy constructor - see default constructor
+    lv2_event(const lv2_event &) {}
 };
 
 /// A read-only iterator-like object for reading from event buffers

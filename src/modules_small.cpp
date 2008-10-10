@@ -1398,6 +1398,42 @@ public:
     static inline const char **strings() { static const char *s[] = { "channelfilter_m", "Channel Filter", "range", "Range" }; return s;}
 };
 
+class transpose_m_audio_module: public midi_mixin<small_audio_module_base<2, 1> >
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("transpose_em", "Transpose", "kf:MIDIPlugin");
+        pii->event_port("in", "In").input();
+        pii->control_port("transpose", "Transpose", 12).input().integer();
+        pii->event_port("out", "Out").output();
+    }
+    void process(uint32_t)
+    {
+        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            if (event.type == this->midi_event_type && event.size == 3 && (event.data[0] >= 0x80 && event.data[0] <= 0x9F))
+            {
+                int new_note = event.data[1] + (int)*ins[1];
+                // ignore out-of-range notes
+                if (new_note >= 0 && new_note <= 127)
+                {
+                    // it is not possible to create copies here because they are variable length and would "nicely" overwrite the stack
+                    // so write the original event instead, and then modify the pitch
+                    *wi = event;
+                    wi->data[1] = new_note;
+                    wi++;
+                }
+            }
+            else
+                *wi++ = event;
+        }
+    }
+};
+
 class eventmerge_e_audio_module: public event_mixin<small_audio_module_base<2, 1> >
 {
 public:    
