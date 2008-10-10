@@ -1,3 +1,4 @@
+#ifdef PER_MODULE_ITEM
     PER_MODULE_ITEM(filter, false, "filter")
     PER_MODULE_ITEM(flanger, false, "flanger")
     PER_MODULE_ITEM(reverb, false, "reverb")
@@ -6,6 +7,9 @@
     PER_MODULE_ITEM(organ, true, "organ")
     PER_MODULE_ITEM(rotary_speaker, false, "rotaryspeaker")
     PER_MODULE_ITEM(phaser, false, "phaser")
+#undef PER_MODULE_ITEM
+#endif
+#ifdef PER_SMALL_MODULE_ITEM
 #ifdef ENABLE_EXPERIMENTAL
     PER_SMALL_MODULE_ITEM(lp_filter, "lowpass12")
     PER_SMALL_MODULE_ITEM(hp_filter, "highpass12")
@@ -67,5 +71,5 @@
     PER_SMALL_MODULE_ITEM(mux8_c, "mux8_c")
     PER_SMALL_MODULE_ITEM(mux16_c, "mux16_c")
 #endif
-#undef PER_MODULE_ITEM
 #undef PER_SMALL_MODULE_ITEM
+#endif

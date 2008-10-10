@@ -39,7 +39,6 @@ using namespace synth;
 #define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
 
 #define PER_MODULE_ITEM(name, isSynth, jackname) ALL_WRAPPERS(name)
-#define PER_SMALL_MODULE_ITEM(...)
 #include <calf/modulelist.h>
 
 #if USE_LV2
@@ -51,7 +50,6 @@ extern "C" {
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(...) 
     #include <calf/modulelist.h>
 #ifdef ENABLE_EXPERIMENTAL
     return lv2_small_descriptor(index);
@@ -70,7 +68,6 @@ extern "C" {
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
-    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -83,7 +80,6 @@ extern "C" {
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &::ladspa_##name.dssi_descriptor;
-    #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
     return NULL;
 }

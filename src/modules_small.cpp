@@ -30,6 +30,7 @@
 #include <calf/lv2wrap.h>
 #include <calf/osc.h>
 #include <calf/modules_small.h>
+#include <calf/lv2helpers.h>
 
 #ifdef ENABLE_EXPERIMENTAL
 
@@ -1076,7 +1077,7 @@ public:
 
 #define SMALL_OSC_TABLE_BITS 12
 
-class freq_only_osc_base: public null_small_audio_module
+class freq_only_osc_base_common: public null_small_audio_module
 {
 public:    
     typedef waveform_family<SMALL_OSC_TABLE_BITS> waves_type;
@@ -1123,19 +1124,20 @@ public:
     }
 };
 
-#define OSC_MODULE_GET_WAVES() \
-    virtual waves_type *get_waves() { \
-        static waves_type *waves = NULL; \
-        if (!waves) \
-            waves = create_waves(); \
-        return waves; \
+template<class T>
+class freq_only_osc_base: public freq_only_osc_base_common
+{
+    virtual waves_type *get_waves() {
+        static waves_type *waves = NULL;
+        if (!waves)
+            waves = create_waves();
+        return waves;
     }
+};
 
-class square_osc_audio_module: public freq_only_osc_base
+class square_osc_audio_module: public freq_only_osc_base<square_osc_audio_module>
 {
 public:
-    OSC_MODULE_GET_WAVES()
-
     virtual void get_original_waveform(float data[wave_size]) {
         for (int i = 0; i < wave_size; i++)
             data[i] = (i < wave_size / 2) ? +1 : -1;
@@ -1147,11 +1149,9 @@ public:
     }
 };
 
-class saw_osc_audio_module: public freq_only_osc_base
+class saw_osc_audio_module: public freq_only_osc_base<saw_osc_audio_module>
 {
 public:
-    OSC_MODULE_GET_WAVES()
-
     virtual void get_original_waveform(float data[wave_size]) {
         for (int i = 0; i < wave_size; i++)
             data[i] = (i * 2.0 / wave_size) - 1;
@@ -1174,101 +1174,6 @@ public:
     void process(uint32_t)
     {
         printf("%f\n", *ins[0]);
-    }
-};
-
-/// LV2 event structure + payload as 0-length array for easy access
-struct lv2_event: public LV2_Event
-{
-    uint8_t data[0];
-    inline lv2_event &operator=(const lv2_event &src) {
-        *(LV2_Event *)this = (const LV2_Event &)src;
-        memcpy(data, src.data, src.size);
-        return *this;
-    }
-};
-
-class event_port_read_iterator
-{
-protected:
-    const LV2_Event_Buffer *buffer;
-    uint32_t offset;
-public:
-    /// Default constructor creating a useless iterator you can assign to
-    event_port_read_iterator()
-    : buffer(NULL)
-    , offset(0)
-    {
-    }
-    
-    /// Create an iterator based on specified buffer and index/offset values
-    event_port_read_iterator(const LV2_Event_Buffer *_buffer, uint32_t _offset = 0)
-    : buffer(_buffer)
-    , offset(0)
-    {
-    }
-
-    /// Are any data left to be read?
-    inline operator bool() const {
-        return offset < buffer->size;
-    }
-    
-    /// Read pointer
-    inline const lv2_event &operator*() const {
-        return *(const lv2_event *)(buffer->data + offset);
-    }
-
-    /// Move to the next element
-    inline event_port_read_iterator operator++() {
-        offset += ((**this).size + 19) &~7;
-        return *this;
-    }
-
-    /// Move to the next element
-    inline event_port_read_iterator operator++(int) {
-        event_port_read_iterator old = *this;
-        offset += ((**this).size + 19) &~7;
-        return old;
-    }
-};
-
-class event_port_write_iterator
-{
-protected:
-    LV2_Event_Buffer *buffer;
-public:
-    /// Default constructor creating a useless iterator you can assign to
-    event_port_write_iterator()
-    : buffer(NULL)
-    {
-    }
-    
-    /// Create a write iterator based on specified buffer and index/offset values
-    event_port_write_iterator(LV2_Event_Buffer *_buffer)
-    : buffer(_buffer)
-    {
-    }
-
-    /// @return the remaining buffer space
-    inline uint32_t space_left() const {
-        return buffer->capacity - buffer->size;
-    }
-    /// @return write pointer
-    inline lv2_event &operator*() {
-        return *(lv2_event *)(buffer->data + buffer->size);
-    }
-    /// Move to the next element after the current one has been written (must be called after each write)
-    inline event_port_write_iterator operator++() {
-        buffer->size += ((**this).size + 19) &~7;
-        buffer->event_count ++;
-        return *this;
-    }
-    /// Move to the next element after the current one has been written
-    inline lv2_event *operator++(int) {
-        lv2_event *ptr = &**this;
-        buffer->size += ((**this).size + 19) &~7;
-        buffer->event_count ++;
-        return ptr;
     }
 };
 
@@ -1398,29 +1303,6 @@ public:
             return &ctx_ext_data;
         }
         return NULL;
-    }
-};
-
-template<class T>
-class midi_mixin: public T
-{
-public:
-    LV2_URI_Map_Feature *uri_map;
-    uint32_t midi_event_type;
-    LV2_Event_Feature *event_feature;
-    virtual void use_feature(const char *URI, void *data) {
-        if (!strcmp(URI, LV2_URI_MAP_URI))
-        {
-            uri_map = (LV2_URI_Map_Feature *)data;
-            midi_event_type = uri_map->uri_to_id(uri_map->callback_data, 
-                "http://lv2plug.in/ns/ext/event",
-                "http://lv2plug.in/ns/ext/midi#MidiEvent");
-        }
-        else if (!strcmp(URI, LV2_EVENT_URI))
-        {
-            event_feature = (LV2_Event_Feature *)data;
-        }
-        T::use_feature(URI, data);
     }
 };
 
@@ -1667,13 +1549,11 @@ public:
 };
 };
 
-#define PER_MODULE_ITEM(...) 
 #define PER_SMALL_MODULE_ITEM(name, id) SMALL_WRAPPERS(name, id)
 #include <calf/modulelist.h>
 
 const LV2_Descriptor *synth::lv2_small_descriptor(uint32_t index)
 {
-    #define PER_MODULE_ITEM(...) 
     #define PER_SMALL_MODULE_ITEM(name, id) if (!(index--)) return &::lv2_small_##name.descriptor;
     #include <calf/modulelist.h>
     return NULL;
@@ -1683,7 +1563,6 @@ const LV2_Descriptor *synth::lv2_small_descriptor(uint32_t index)
 
 void synth::get_all_small_plugins(plugin_list_info_iface *iface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) 
     #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); small_plugins::name##_audio_module::plugin_info(pii); pii->finalize(); }
     #include <calf/modulelist.h>
 }
