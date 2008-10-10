@@ -28,6 +28,15 @@ class null_small_audio_module
 public:
     uint32_t srate;
     double odsr;
+    inline void set_bundle_path(const char *path) {}
+    inline void use_features(const LV2_Feature *const *features) {
+        while(*features)
+        {
+            use_feature((*features)->URI, (*features)->data);
+            features++;
+        }
+    }
+    virtual void use_feature(const char *URI, void *data) {}
     /// LADSPA-esque activate function, except it is called after ports are connected, not before
     inline void activate() {}
     /// LADSPA-esque deactivate function

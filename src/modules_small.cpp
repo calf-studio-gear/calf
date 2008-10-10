@@ -1181,6 +1181,11 @@ public:
 struct lv2_event: public LV2_Event
 {
     uint8_t data[0];
+    inline lv2_event &operator=(const lv2_event &src) {
+        *(LV2_Event *)this = (const LV2_Event &)src;
+        memcpy(data, src.data, src.size);
+        return *this;
+    }
 };
 
 class event_port_read_iterator
@@ -1209,7 +1214,7 @@ public:
     }
     
     /// Read pointer
-    inline const lv2_event &operator*() {
+    inline const lv2_event &operator*() const {
         return *(const lv2_event *)(buffer->data + offset);
     }
 
@@ -1231,49 +1236,39 @@ class event_port_write_iterator
 {
 protected:
     LV2_Event_Buffer *buffer;
-    uint32_t index, offset;
 public:
     /// Default constructor creating a useless iterator you can assign to
     event_port_write_iterator()
     : buffer(NULL)
-    , index(0)
-    , offset(0)
     {
     }
     
     /// Create a write iterator based on specified buffer and index/offset values
     event_port_write_iterator(LV2_Event_Buffer *_buffer)
     : buffer(_buffer)
-    , index(0)
-    , offset(0)
     {
     }
 
     /// @return the remaining buffer space
     inline uint32_t space_left() const {
-        return buffer->capacity - offset;
+        return buffer->capacity - buffer->size;
     }
     /// @return write pointer
     inline lv2_event &operator*() {
-        return *(lv2_event *)(buffer->data + offset);
-    }
-    /// Update buffer data size and number of events
-    void commit() {
-        buffer->event_count = index;
-        buffer->size = offset;
+        return *(lv2_event *)(buffer->data + buffer->size);
     }
     /// Move to the next element after the current one has been written (must be called after each write)
     inline event_port_write_iterator operator++() {
-        offset += ((**this).size + 19) &~7;
-        index++;
+        buffer->size += ((**this).size + 19) &~7;
+        buffer->event_count ++;
         return *this;
     }
     /// Move to the next element after the current one has been written
-    inline event_port_write_iterator operator++(int) {
-        event_port_write_iterator old = *this;
-        offset += ((**this).size + 19) &~7;
-        index++;
-        return old;
+    inline lv2_event *operator++(int) {
+        lv2_event *ptr = &**this;
+        buffer->size += ((**this).size + 19) &~7;
+        buffer->event_count ++;
+        return ptr;
     }
 };
 
@@ -1373,14 +1368,18 @@ public:
     }
     bool message_run(uint32_t *outputs_written)
     {
-        if (events_in->size > events_in->capacity)
+        event_port_read_iterator ri(events_in);
+        event_port_write_iterator wi(events_out);
+        if (events_in->size > events_out->capacity)
         {
             printf("Buffer capacity exceeded!\n");
             return false;
         }
-        events_out->event_count = events_in->event_count;
-        events_out->size = events_in->size;
-        memcpy(events_out->data, events_in->data, events_in->size);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            *wi++ = event;
+        }
         *outputs_written = (events_in->event_count != 0) ? 2 : 0;
         return true;
     }
@@ -1399,6 +1398,77 @@ public:
             return &ctx_ext_data;
         }
         return NULL;
+    }
+};
+
+template<class T>
+class midi_mixin: public T
+{
+public:
+    LV2_URI_Map_Feature *uri_map;
+    uint32_t midi_event_type;
+    LV2_Event_Feature *event_feature;
+    virtual void use_feature(const char *URI, void *data) {
+        if (!strcmp(URI, LV2_URI_MAP_URI))
+        {
+            uri_map = (LV2_URI_Map_Feature *)data;
+            midi_event_type = uri_map->uri_to_id(uri_map->callback_data, 
+                "http://lv2plug.in/ns/ext/event",
+                "http://lv2plug.in/ns/ext/midi#MidiEvent");
+        }
+        else if (!strcmp(URI, LV2_EVENT_URI))
+        {
+            event_feature = (LV2_Event_Feature *)data;
+        }
+        T::use_feature(URI, data);
+    }
+};
+
+class notefilter_e_audio_module: public midi_mixin<small_audio_module_base<1, 1> >
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("notefilter_e", "Note Filter (M)", "lv2:UtilityPlugin");
+        pii->event_port("in", "In").input();
+        pii->event_port("out", "Out").output();
+    }
+    void process(uint32_t)
+    {
+        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            if (event.type == midi_event_type && event.size && event.data[0] >= 0x80 && event.data[0] <= 0x9F)
+                *wi++ = event;
+        }
+    }
+};
+
+class notefilter2_e_audio_module: public midi_mixin<small_audio_module_base<1, 2> >
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("notefilter2_e", "Note Filter 2 (M)", "lv2:UtilityPlugin");
+        pii->event_port("in", "In").input();
+        pii->event_port("notes", "Notes").output();
+        pii->event_port("others", "Others").output();
+    }
+    void process(uint32_t)
+    {
+        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
+        event_port_write_iterator wi2((LV2_Event_Buffer *)outs[1]);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            if (event.type == midi_event_type && event.size && event.data[0] >= 0x80 && event.data[0] <= 0x9F)
+                *wi++ = event;
+            else 
+                *wi2++ = event;
+        }
     }
 };
 
