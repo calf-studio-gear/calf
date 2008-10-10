@@ -23,15 +23,35 @@
 
 #if USE_LV2
 
-/// A mixin for adding the event feature, URI map and MIDI event type retrieval to small plugins
-/// @todo refactor into separate event feature, URI map and MIDI event type mixins some day
+/// A mixin for adding the event feature to the small plugin
 template<class T>
-class midi_mixin: public T
+class event_mixin: public T
 {
 public:
-    LV2_URI_Map_Feature *uri_map;
-    uint32_t midi_event_type;
+    /// Event feature pointer
     LV2_Event_Feature *event_feature;
+    virtual void use_feature(const char *URI, void *data) {
+        if (!strcmp(URI, LV2_EVENT_URI))
+        {
+            event_feature = (LV2_Event_Feature *)data;
+        }
+        T::use_feature(URI, data);
+    }
+    /// Create a reference
+    inline void ref_event(LV2_Event *event) { event_feature->lv2_event_ref(event_feature->callback_data, event); }
+    /// Destroy a reference
+    inline void unref_event(LV2_Event *event) { event_feature->lv2_event_unref(event_feature->callback_data, event); }
+};
+
+/// A mixin for adding the URI map and MIDI event type retrieval to small plugins
+template<class T>
+class midi_mixin: public event_mixin<T>
+{
+public:
+    /// URI map feature pointer
+    LV2_URI_Map_Feature *uri_map;
+    /// MIDI event ID, as resolved using the URI map feature
+    uint32_t midi_event_type;
     virtual void use_feature(const char *URI, void *data) {
         if (!strcmp(URI, LV2_URI_MAP_URI))
         {
@@ -40,11 +60,7 @@ public:
                 "http://lv2plug.in/ns/ext/event",
                 "http://lv2plug.in/ns/ext/midi#MidiEvent");
         }
-        else if (!strcmp(URI, LV2_EVENT_URI))
-        {
-            event_feature = (LV2_Event_Feature *)data;
-        }
-        T::use_feature(URI, data);
+        event_mixin<T>::use_feature(URI, data);
     }
 };
 

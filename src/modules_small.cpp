@@ -1306,36 +1306,23 @@ public:
     }
 };
 
-class notefilter_e_audio_module: public midi_mixin<small_audio_module_base<1, 1> >
+template<class Range>
+class miditypefilter_m_audio_module: public midi_mixin<small_audio_module_base<1, 2> >
 {
 public:    
+    static inline void extra_inputs(plugin_info_iface *pii)
+    {
+    }
+    static inline const char *plugin_symbol() { return Range::strings()[0]; }
+    static inline const char *plugin_name() { return Range::strings()[1]; }
+    static inline const char *port_symbol() { return Range::strings()[2]; }
+    static inline const char *port_name() { return Range::strings()[3]; }
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("notefilter_e", "Note Filter (M)", "lv2:UtilityPlugin");
+        pii->names(Range::plugin_symbol(), Range::plugin_name(), "kf:MIDIPlugin");
         pii->event_port("in", "In").input();
-        pii->event_port("out", "Out").output();
-    }
-    void process(uint32_t)
-    {
-        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
-        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
-        while(ri)
-        {
-            const lv2_event &event = *ri++;
-            if (event.type == midi_event_type && event.size && event.data[0] >= 0x80 && event.data[0] <= 0x9F)
-                *wi++ = event;
-        }
-    }
-};
-
-class notefilter2_e_audio_module: public midi_mixin<small_audio_module_base<1, 2> >
-{
-public:    
-    static void plugin_info(plugin_info_iface *pii)
-    {
-        pii->names("notefilter2_e", "Note Filter 2 (M)", "lv2:UtilityPlugin");
-        pii->event_port("in", "In").input();
-        pii->event_port("notes", "Notes").output();
+        Range::extra_inputs(pii);
+        pii->event_port(Range::port_symbol(), Range::port_name()).output();
         pii->event_port("others", "Others").output();
     }
     void process(uint32_t)
@@ -1346,7 +1333,7 @@ public:
         while(ri)
         {
             const lv2_event &event = *ri++;
-            if (event.type == midi_event_type && event.size && event.data[0] >= 0x80 && event.data[0] <= 0x9F)
+            if (event.type == midi_event_type && event.size && Range::is_in_range(event.data, ins))
                 *wi++ = event;
             else 
                 *wi2++ = event;
@@ -1354,14 +1341,56 @@ public:
     }
 };
 
-class eventmerge_e_audio_module: public midi_mixin<small_audio_module_base<2, 1> >
+class notefilter_m_audio_module: public miditypefilter_m_audio_module<notefilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0x80 && data[0] <= 0x9F; }
+    static inline const char **strings() { static const char *s[] = { "notefilter_m", "Note Filter", "note", "Note" }; return s;}
+};
+
+class pcfilter_m_audio_module: public miditypefilter_m_audio_module<pcfilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xA0 && data[0] <= 0xAF; }
+    static inline const char **strings() { static const char *s[] = { "pcfilter_m", "Program Change Filter", "pc", "PC" }; return s;}
+};
+
+class ccfilter_m_audio_module: public miditypefilter_m_audio_module<ccfilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xB0 && data[0] <= 0xBF; }
+    static inline const char **strings() { static const char *s[] = { "ccfilter_m", "Control Change Filter", "cc", "CC" }; return s;}
+};
+
+class pressurefilter_m_audio_module: public miditypefilter_m_audio_module<pressurefilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xC0 && data[0] <= 0xDF; }
+    static inline const char **strings() { static const char *s[] = { "pressurefilter_m", "Pressure Filter", "pressure", "Pressure" }; return s;}
+};
+
+class pitchbendfilter_m_audio_module: public miditypefilter_m_audio_module<pitchbendfilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xE0 && data[0] <= 0xEF; }
+    static inline const char **strings() { static const char *s[] = { "pitchbendfilter_m", "Pitch Bend Filter", "pbend", "Pitch Bend" }; return s;}
+};
+
+class systemfilter_m_audio_module: public miditypefilter_m_audio_module<systemfilter_m_audio_module>
+{
+public:
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xF0 && data[0] <= 0xFF; }
+    static inline const char **strings() { static const char *s[] = { "systemfilter_m", "System Msg Filter", "system", "System" }; return s;}
+};
+
+class eventmerge_e_audio_module: public event_mixin<small_audio_module_base<2, 1> >
 {
 public:    
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("eventmerge_e", "Event Merge (M)", "lv2:UtilityPlugin");
-        pii->event_port("in_1", "In").input();
-        pii->event_port("in_2", "In").input();
+        pii->names("eventmerge_e", "Event Merge (E)", "lv2:UtilityPlugin");
+        pii->event_port("in_1", "In 1").input();
+        pii->event_port("in_2", "In 2").input();
         pii->event_port("out", "Out").output();
     }
     void process(uint32_t)
@@ -1369,10 +1398,7 @@ public:
         event_port_merge_iterator<event_port_read_iterator, event_port_read_iterator> ri((const LV2_Event_Buffer *)ins[0], (const LV2_Event_Buffer *)ins[1]);
         event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
         while(ri)
-        {
-            const lv2_event &event = *ri++;
-            *wi++ = event;
-        }
+            *wi++ = *ri++;
     }
 };
 

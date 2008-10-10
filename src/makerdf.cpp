@@ -491,9 +491,10 @@ void make_manifest()
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
         "\n"
-        "kf:BooleanPlugin a rdfs:Class ; rdfs:label \"Boolean-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Modules heavily inspired by digital electronics (gates, flip-flops)\"\"\" .\n"
+        "kf:BooleanPlugin a rdfs:Class ; rdfs:label \"Boolean-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Modules heavily inspired by digital electronics (gates, flip-flops etc.)\"\"\" .\n"
         "kf:MathOperatorPlugin a rdfs:Class ; rdfs:label \"Math operators\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Mathematical operators and utility functions\"\"\" .\n"
-        "kf:IntegerPlugin a rdfs:Class ; rdfs:label \"Integer-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations using integer values (counters, multiplexers)\"\"\" .\n"
+        "kf:IntegerPlugin a rdfs:Class ; rdfs:label \"Integer-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations using integer values (counters, multiplexers etc.)\"\"\" .\n"
+        "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
     ;
     
     vector<synth::giface_plugin_info> plugins;

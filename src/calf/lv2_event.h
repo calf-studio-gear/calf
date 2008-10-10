@@ -84,13 +84,13 @@ typedef struct {
 	 * There are special rules which must be followed depending on the type
 	 * of an event.  If the plugin recognizes an event type, the definition
 	 * of that event type will describe how to interpret the event, and
-	 * any required behaviour.  Otherwise (if the plugin does not understand
-	 * the event type), lv2_event_drop must be called if the event is 'dropped'
-	 * (see above).  Even if the plugin does not understand an event, it may
-	 * pass the event through to an output by simply copying (and NOT calling
-	 * lv2_event_drop).  These rules are designed to allow for generic event
-	 * handling plugins and large non-POD events, but with minimal hassle on
-	 * simple plugins that "don't care" about these more advanced features.
+	 * any required behaviour.  Otherwise, if the type is 0, this event is a
+	 * non-POD event and lv2_event_unref MUST be called if the event is
+	 * 'dropped' (see above).  Even if the plugin does not understand an event,
+	 * it may pass the event through to an output by simply copying (and NOT
+	 * calling lv2_event_unref).  These rules are designed to allow for generic
+	 * event handling plugins and large non-POD events, but with minimal hassle
+	 * on simple plugins that "don't care" about these more advanced features.
 	 */
 	uint16_t type;
 
@@ -209,6 +209,29 @@ typedef struct {
 	 */
 	LV2_Event_Callback_Data callback_data;
 	
+	/** Take a reference to a non-POD event.
+	 *
+	 * If a plugin receives an event with type 0, it means the event is a
+	 * pointer to some object in memory and not a flat sequence of bytes
+	 * in the buffer.  When receiving a non-POD event, the plugin already
+	 * has an implicit reference to the event.  If the event is stored AND
+	 * passed to an output, lv2_event_ref MUST be called on that event.
+	 * If the event is only stored OR passed through, this is not necessary
+	 * (as the plugin already has 1 implicit reference).
+	 *
+	 * @param event An event received at an input that will not be copied to
+	 *              an output or stored in any way.
+	 * @param context The calling context.  (Like event types) this is a mapped
+	 *                URI, see lv2_context.h. Simple plugin with just a run()
+	 *                method should pass 0 here (the ID of the 'standard' LV2
+	 *                run context).  The host guarantees that this function is
+	 *                realtime safe iff @a context is realtime safe.
+	 *
+	 * PLUGINS THAT VIOLATE THESE RULES MAY CAUSE CRASHES AND MEMORY LEAKS.
+	 */
+	uint32_t (*lv2_event_ref)(LV2_Event_Callback_Data callback_data,
+	                          LV2_Event*              event);
+	
 	/** Drop a reference to a non-POD event.
 	 *
 	 * If a plugin receives an event with type 0, it means the event is a
@@ -227,9 +250,8 @@ typedef struct {
 	 *
 	 * PLUGINS THAT VIOLATE THESE RULES MAY CAUSE CRASHES AND MEMORY LEAKS.
 	 */
-	uint32_t (*lv2_event_drop)(LV2_Event_Callback_Data callback_data,
-	                           LV2_Event*              event,
-	                           uint32_t                context);
+	uint32_t (*lv2_event_unref)(LV2_Event_Callback_Data callback_data,
+	                            LV2_Event*              event);
 
 } LV2_Event_Feature;
 
