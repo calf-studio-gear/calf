@@ -1354,6 +1354,28 @@ public:
     }
 };
 
+class eventmerge_e_audio_module: public midi_mixin<small_audio_module_base<2, 1> >
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("eventmerge_e", "Event Merge (M)", "lv2:UtilityPlugin");
+        pii->event_port("in_1", "In").input();
+        pii->event_port("in_2", "In").input();
+        pii->event_port("out", "Out").output();
+    }
+    void process(uint32_t)
+    {
+        event_port_merge_iterator<event_port_read_iterator, event_port_read_iterator> ri((const LV2_Event_Buffer *)ins[0], (const LV2_Event_Buffer *)ins[1]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            *wi++ = event;
+        }
+    }
+};
+
 class print_a_audio_module: public small_audio_module_base<1, 0>
 {
 public:    

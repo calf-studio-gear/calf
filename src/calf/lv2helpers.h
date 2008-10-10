@@ -57,6 +57,10 @@ struct lv2_event: public LV2_Event
         memcpy(data, src.data, src.size);
         return *this;
     }
+    /// Returns a 64-bit timestamp for easy and inefficient comparison
+    inline uint64_t timestamp() const {
+        return ((uint64_t)frames << 32) | subframes;
+    }
 };
 
 /// A read-only iterator-like object for reading from event buffers
@@ -88,6 +92,10 @@ public:
     /// Read pointer
     inline const lv2_event &operator*() const {
         return *(const lv2_event *)(buffer->data + offset);
+    }
+    /// Pointer to member
+    inline const lv2_event *operator->() const {
+        return &**this;
     }
 
     /// Move to the next element
@@ -130,6 +138,10 @@ public:
     inline lv2_event &operator*() {
         return *(lv2_event *)(buffer->data + buffer->size);
     }
+    /// Pointer to member
+    inline lv2_event *operator->() {
+        return &**this;
+    }
     /// Move to the next element after the current one has been written (must be called after each write)
     inline event_port_write_iterator operator++() {
         buffer->size += ((**this).size + 19) &~7;
@@ -141,6 +153,64 @@ public:
         lv2_event *ptr = &**this;
         buffer->size += ((**this).size + 19) &~7;
         buffer->event_count ++;
+        return ptr;
+    }
+};
+
+template<class Iter1, class Iter2>
+class event_port_merge_iterator
+{
+public:
+    Iter1 first;
+    Iter2 second;
+public:
+    event_port_merge_iterator() {}
+    event_port_merge_iterator(const Iter1 &_first, const Iter2 &_second)
+    : first(_first)
+    , second(_second)
+    {
+    }
+    /// @retval true if any of the iterators have any data left
+    inline operator bool() const {
+        return ((bool)first) || ((bool)second);
+    }
+    inline bool select_first() const
+    {
+        if (!(bool)second)
+            return true;
+        if (!(bool)first)
+            return false;
+        return first->timestamp() < second->timestamp();
+    }
+    /// Returns the earliest of (*first, *second)
+    inline const lv2_event &operator*() const {
+        if (select_first())
+        {
+            assert((bool)first);
+            return *first;
+        }
+        assert((bool)second);
+        return *second;
+    }
+    /// Pointer to member
+    inline const lv2_event *operator->() const {
+        return &**this;
+    }
+    /// Prefix increment
+    inline event_port_merge_iterator operator++() {
+        if (select_first())
+            first++;
+        else
+            second++;
+        return *this;
+    }
+    /// Postfix increment
+    inline event_port_merge_iterator operator++(int) {
+        event_port_merge_iterator ptr = *this;
+        if (select_first())
+            first++;
+        else
+            second++;
         return ptr;
     }
 };

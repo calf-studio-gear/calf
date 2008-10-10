@@ -42,6 +42,7 @@
     PER_SMALL_MODULE_ITEM(copy_em, "copy_em")
     PER_SMALL_MODULE_ITEM(notefilter_e, "notefilter_e")
     PER_SMALL_MODULE_ITEM(notefilter2_e, "notefilter2_e")
+    PER_SMALL_MODULE_ITEM(eventmerge_e, "eventmerge_e")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")
     PER_SMALL_MODULE_ITEM(crossfader2_a, "crossfader2_a")
