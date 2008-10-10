@@ -254,7 +254,7 @@ struct lv2_wrapper
                 }
                 else
                 if (item->type == 0 && mod->event_feature)
-                    mod->event_feature->lv2_event_drop(mod->event_feature->callback_data, item, 0);
+                    mod->event_feature->lv2_event_unref(mod->event_feature->callback_data, item);
                 // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
                 data += ((sizeof(LV2_Event) + item->size + 7))&~7;
             }

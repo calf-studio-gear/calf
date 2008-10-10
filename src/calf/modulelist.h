@@ -46,6 +46,7 @@
     PER_SMALL_MODULE_ITEM(pressurefilter_m, "pressurefilter_m")
     PER_SMALL_MODULE_ITEM(pitchbendfilter_m, "pitchbendfilter_m")
     PER_SMALL_MODULE_ITEM(systemfilter_m, "systemfilter_m")
+    PER_SMALL_MODULE_ITEM(channelfilter_m, "channelfilter_m")
     PER_SMALL_MODULE_ITEM(eventmerge_e, "eventmerge_e")
     PER_SMALL_MODULE_ITEM(quadpower_a, "quadpower_a")
     PER_SMALL_MODULE_ITEM(quadpower_c, "quadpower_c")

@@ -1306,8 +1306,8 @@ public:
     }
 };
 
-template<class Range>
-class miditypefilter_m_audio_module: public midi_mixin<small_audio_module_base<1, 2> >
+template<class Range, int Inputs = 1>
+class miditypefilter_m_audio_module: public midi_mixin<small_audio_module_base<Inputs, 2> >
 {
 public:    
     static inline void extra_inputs(plugin_info_iface *pii)
@@ -1327,13 +1327,13 @@ public:
     }
     void process(uint32_t)
     {
-        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
-        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
-        event_port_write_iterator wi2((LV2_Event_Buffer *)outs[1]);
+        event_port_read_iterator ri((LV2_Event_Buffer *)this->ins[0]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)this->outs[0]);
+        event_port_write_iterator wi2((LV2_Event_Buffer *)this->outs[1]);
         while(ri)
         {
             const lv2_event &event = *ri++;
-            if (event.type == midi_event_type && event.size && Range::is_in_range(event.data, ins))
+            if (event.type == this->midi_event_type && event.size && Range::is_in_range(event.data, this->ins))
                 *wi++ = event;
             else 
                 *wi2++ = event;
@@ -1381,6 +1381,21 @@ class systemfilter_m_audio_module: public miditypefilter_m_audio_module<systemfi
 public:
     static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xF0 && data[0] <= 0xFF; }
     static inline const char **strings() { static const char *s[] = { "systemfilter_m", "System Msg Filter", "system", "System" }; return s;}
+};
+
+class channelfilter_m_audio_module: public miditypefilter_m_audio_module<channelfilter_m_audio_module, 3>
+{
+public:
+    static inline void extra_inputs(plugin_info_iface *pii)
+    {
+        pii->control_port("min", "Min Channel", 1).input().integer().lin_range(1, 16);
+        pii->control_port("max", "Max Channel", 16).input().integer().lin_range(1, 16);
+    }
+    static inline bool is_in_range(const uint8_t *data, float **ins) { 
+        int chnl = 1 + (data[0] & 0xF);
+        return data[0] < 0xF0 && chnl >= *ins[1] && chnl <= *ins[2];
+    }
+    static inline const char **strings() { static const char *s[] = { "channelfilter_m", "Channel Filter", "range", "Range" }; return s;}
 };
 
 class eventmerge_e_audio_module: public event_mixin<small_audio_module_base<2, 1> >
