@@ -1,5 +1,5 @@
 /* Calf DSP Library
- * Example audio modules - parameters and LADSPA wrapper instantiation
+ * Small modules for modular synthesizers
  *
  * Copyright (C) 2001-2008 Krzysztof Foltman
  *
@@ -1395,7 +1395,50 @@ public:
         int chnl = 1 + (data[0] & 0xF);
         return data[0] < 0xF0 && chnl >= *ins[1] && chnl <= *ins[2];
     }
-    static inline const char **strings() { static const char *s[] = { "channelfilter_m", "Channel Filter", "range", "Range" }; return s;}
+    static inline const char **strings() { static const char *s[] = { "channelfilter_m", "Channel Range Filter", "range", "Range" }; return s;}
+};
+
+class keyfilter_m_audio_module: public miditypefilter_m_audio_module<keyfilter_m_audio_module, 3>
+{
+public:
+    static inline void extra_inputs(plugin_info_iface *pii)
+    {
+        pii->control_port("min", "Min Note", 0).input().integer().lin_range(0, 127);
+        pii->control_port("max", "Max Note", 127).input().integer().lin_range(0, 127);
+    }
+    static inline bool is_in_range(const uint8_t *data, float **ins) { 
+        // XXXKF doesn't handle polyphonic aftertouch
+        return (data[0] >= 0x80 && data[0] <= 0x9F) && data[0] >= *ins[1] && data[1] <= *ins[2];
+    }
+    static inline const char **strings() { static const char *s[] = { "keyfilter_m", "Key Range Filter", "range", "Range" }; return s;}
+};
+
+class key_less_than_m_audio_module: public miditypefilter_m_audio_module<key_less_than_m_audio_module, 2>
+{
+public:
+    static inline void extra_inputs(plugin_info_iface *pii)
+    {
+        pii->control_port("threshold", "Threshold", 60).input().integer().lin_range(0, 128);
+    }
+    static inline bool is_in_range(const uint8_t *data, float **ins) { 
+        // XXXKF doesn't handle polyphonic aftertouch
+        return (data[0] >= 0x80 && data[0] <= 0x9F) && data[1] < *ins[1];
+    }
+    static inline const char **strings() { static const char *s[] = { "key_less_than_m", "Key Less-Than Filter", "less", "Less" }; return s;}
+};
+
+class channel_less_than_m_audio_module: public miditypefilter_m_audio_module<channel_less_than_m_audio_module, 2>
+{
+public:
+    static inline void extra_inputs(plugin_info_iface *pii)
+    {
+        pii->control_port("threshold", "Threshold", 10).input().integer().lin_range(1, 16);
+    }
+    static inline bool is_in_range(const uint8_t *data, float **ins) { 
+        // XXXKF doesn't handle polyphonic aftertouch
+        return (data[0] < 0xF0) && (1 + (data[0] & 0xF)) < *ins[1];
+    }
+    static inline const char **strings() { static const char *s[] = { "channel_less_than_m", "Channel Less-Than Filter", "less", "Less" }; return s;}
 };
 
 class transpose_m_audio_module: public midi_mixin<small_audio_module_base<2, 1> >
@@ -1403,7 +1446,7 @@ class transpose_m_audio_module: public midi_mixin<small_audio_module_base<2, 1> 
 public:    
     static void plugin_info(plugin_info_iface *pii)
     {
-        pii->names("transpose_em", "Transpose", "kf:MIDIPlugin");
+        pii->names("transpose_m", "Transpose", "kf:MIDIPlugin");
         pii->event_port("in", "In").input();
         pii->control_port("transpose", "Transpose", 12).input().integer();
         pii->event_port("out", "Out").output();
@@ -1427,6 +1470,36 @@ public:
                     wi->data[1] = new_note;
                     wi++;
                 }
+            }
+            else
+                *wi++ = event;
+        }
+    }
+};
+
+class setchannel_m_audio_module: public midi_mixin<small_audio_module_base<2, 1> >
+{
+public:    
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("setchannel_m", "Set Channel", "kf:MIDIPlugin");
+        pii->event_port("in", "In").input();
+        pii->control_port("channel", "Channel", 1).input().integer().lin_range(1, 16);
+        pii->event_port("out", "Out").output();
+    }
+    void process(uint32_t)
+    {
+        event_port_read_iterator ri((LV2_Event_Buffer *)ins[0]);
+        event_port_write_iterator wi((LV2_Event_Buffer *)outs[0]);
+        while(ri)
+        {
+            const lv2_event &event = *ri++;
+            if (event.type == this->midi_event_type && (event.data[0] >= 0x80 && event.data[0] <= 0xEF))
+            {
+                *wi = event;
+                // modify channel number in the first byte 
+                wi->data[0] = (wi->data[0] & 0xF0) | (((int)*ins[1] - 1) & 0xF);
+                wi++;
             }
             else
                 *wi++ = event;
