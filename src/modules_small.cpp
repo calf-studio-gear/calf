@@ -574,6 +574,32 @@ public:
     }
 };
 
+/// converter of trigger signals from audio to control rate
+class trigger_a2c_audio_module: public null_small_audio_module
+{
+public:
+    enum { in_count = 1, out_count = 1 };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    void process(uint32_t count) {
+        for (uint32_t i = 0; i < count; i++)
+        {
+            if (ins[0][i] > 0)
+            {
+                *outs[0] = 1.f;
+                return;
+            }
+        }
+        *outs[0] = 0.f;
+    }
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("trigger_a2c", "Audio-to-control OR", "kf:BooleanPlugin", "ta2c");
+        pii->audio_port("in", "In").input();
+        pii->control_port("out", "Out", 0.f).output().toggle();
+    }
+};
+
 /// Monostable multivibrator like 74121 or 74123, with reset input, progress output (0 to 1), "finished" signal, configurable to allow or forbid retriggering.
 class timer_c_audio_module: public null_small_audio_module
 {

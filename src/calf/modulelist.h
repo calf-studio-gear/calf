@@ -73,6 +73,7 @@
     PER_SMALL_MODULE_ITEM(between_c, "between_c")
     PER_SMALL_MODULE_ITEM(less_c, "less_c")
     PER_SMALL_MODULE_ITEM(clip_c, "clip_c")
+    PER_SMALL_MODULE_ITEM(trigger_a2c, "trigger_a2c")
     PER_SMALL_MODULE_ITEM(timer_c, "timer_c")
     PER_SMALL_MODULE_ITEM(prio_mux_c, "prio_mux_c")
     PER_SMALL_MODULE_ITEM(prio_enc8_c, "prio_enc8_c")
