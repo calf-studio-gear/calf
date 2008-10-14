@@ -23,17 +23,31 @@
 
 #if USE_LV2
 
-/// A mixin for adding the event feature to the small plugin
+/// A mixin for adding the event feature and URI map to the small plugin
 template<class T>
 class event_mixin: public T
 {
 public:
+    /// URI map feature pointer
+    LV2_URI_Map_Feature *uri_map;
     /// Event feature pointer
     LV2_Event_Feature *event_feature;
+    virtual uint32_t map_uri(const char *ns, const char *URI)
+    {
+        return uri_map->uri_to_id(uri_map->callback_data, ns, URI);
+    }
+    virtual void map_uris()
+    {
+    }
     virtual void use_feature(const char *URI, void *data) {
         if (!strcmp(URI, LV2_EVENT_URI))
         {
             event_feature = (LV2_Event_Feature *)data;
+        }
+        if (!strcmp(URI, LV2_URI_MAP_URI))
+        {
+            uri_map = (LV2_URI_Map_Feature *)data;
+            map_uris();
         }
         T::use_feature(URI, data);
     }
@@ -45,22 +59,27 @@ public:
 
 /// A mixin for adding the URI map and MIDI event type retrieval to small plugins
 template<class T>
-class midi_mixin: public event_mixin<T>
+class midi_mixin: public virtual event_mixin<T>
 {
 public:
-    /// URI map feature pointer
-    LV2_URI_Map_Feature *uri_map;
     /// MIDI event ID, as resolved using the URI map feature
     uint32_t midi_event_type;
-    virtual void use_feature(const char *URI, void *data) {
-        if (!strcmp(URI, LV2_URI_MAP_URI))
-        {
-            uri_map = (LV2_URI_Map_Feature *)data;
-            midi_event_type = uri_map->uri_to_id(uri_map->callback_data, 
-                "http://lv2plug.in/ns/ext/event",
-                "http://lv2plug.in/ns/ext/midi#MidiEvent");
-        }
-        event_mixin<T>::use_feature(URI, data);
+    virtual void map_uris() {
+        midi_event_type = this->map_uri("http://lv2plug.in/ns/ext/event", "http://lv2plug.in/ns/ext/midi#MidiEvent");
+        printf("MIDI event type = %d\n", midi_event_type);
+    }
+};
+
+/// A mixin for adding the URI map and MIDI event type retrieval to small plugins
+template<class T>
+class message_mixin: public virtual event_mixin<T>
+{
+public:
+    /// MIDI event ID, as resolved using the URI map feature
+    uint32_t message_event_type;
+    virtual void map_uris() {
+        message_event_type = this->map_uri("http://lv2plug.in/ns/ext/event", "http://lv2plug.in/ns/dev/msg#MessageEvent");
+        printf("Message event type = %d\n", message_event_type);
     }
 };
 

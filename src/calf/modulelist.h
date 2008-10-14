@@ -82,6 +82,7 @@
     PER_SMALL_MODULE_ITEM(mux4_c, "mux4_c")
     PER_SMALL_MODULE_ITEM(mux8_c, "mux8_c")
     PER_SMALL_MODULE_ITEM(mux16_c, "mux16_c")
+    PER_SMALL_MODULE_ITEM(msgread_e, "msgread_e")
 #endif
 #undef PER_SMALL_MODULE_ITEM
 #endif

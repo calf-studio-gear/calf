@@ -1745,6 +1745,50 @@ public:
         port_info(pii, "gate", "Gate");
     }
 };
+
+class msgread_e_audio_module: public message_mixin<small_audio_module_base<1, 1> >
+{
+public:
+    uint32_t set_float_msg, float_type;
+    static void plugin_info(plugin_info_iface *pii)
+    {
+        pii->names("msgread_e", "Msg Read", "lv2:UtilityPlugin");
+        pii->event_port("in", "In").input();
+        pii->control_port("out", "Out", 0).output();
+    }
+    virtual void map_uris()
+    {
+        message_mixin<small_audio_module_base<1, 1> >::map_uris();
+        set_float_msg = map_uri("http://lv2plug.in/ns/dev/msg", "http://foltman.com/garbage/setFloat");
+        float_type = map_uri("http://lv2plug.in/ns/dev/types", "http://lv2plug.in/ns/dev/types#float");
+    }
+    void process(uint32_t count)
+    {
+        event_port_read_iterator ri((const LV2_Event_Buffer *)ins[0]);
+        while(ri)
+        {
+            const lv2_event *event = &*ri++;
+            if (event->type == message_event_type)
+            {
+                struct payload {
+                    uint32_t selector;
+                    uint32_t parg_count;
+                    uint32_t data_type;
+                    float data_value;
+                    uint32_t narg_count;
+                };
+                const payload *p = (const payload *)event->data;
+                if (p->selector == set_float_msg) {
+                    assert(p->parg_count == 1);
+                    assert(p->data_type == float_type);
+                    *outs[0] = p->data_value;
+                    assert(p->narg_count == 0); // this is just for testing - passing 
+                }
+            }
+        }
+    }
+};
+
 };
 
 #define PER_SMALL_MODULE_ITEM(name, id) SMALL_WRAPPERS(name, id)
