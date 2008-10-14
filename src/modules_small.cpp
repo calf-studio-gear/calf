@@ -1772,6 +1772,8 @@ public:
             {
                 struct payload {
                     uint32_t selector;
+                    uint32_t serial_no;
+                    uint32_t data_size;
                     uint32_t parg_count;
                     uint32_t data_type;
                     float data_value;
@@ -1780,6 +1782,7 @@ public:
                 const payload *p = (const payload *)event->data;
                 if (p->selector == set_float_msg) {
                     assert(p->parg_count == 1);
+                    assert(p->data_size == 16);
                     assert(p->data_type == float_type);
                     *outs[0] = p->data_value;
                     assert(p->narg_count == 0); // this is just for testing - passing 
