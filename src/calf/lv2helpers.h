@@ -23,6 +23,9 @@
 
 #if USE_LV2
 
+#include <calf/lv2_event.h>
+#include <calf/lv2_uri_map.h>
+
 /// A mixin for adding the event feature and URI map to the small plugin
 template<class T>
 class event_mixin: public T

@@ -393,7 +393,15 @@ void make_ttl(string path_prefix)
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
-        "    \n";
+        "    \n"
+#ifdef ENABLE_EXPERIMENTAL
+    "<http://calf.sourceforge.net/small_plugins/gui/gtk2-gui>\n"
+        "    a uiext:GtkUI ;\n"
+        "    uiext:binary <calflv2gui.so> ;\n"
+        "    uiext:requiredFeature uiext:makeResident .\n"
+        "    \n"
+#endif
+    ;
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
@@ -452,7 +460,7 @@ void make_ttl(string path_prefix)
         // Copy-pasted code is the root of all evil, I know!
         string uri = string("<http://calf.sourceforge.net/small_plugins/")  + string(pi->id) + ">";
         string ttl;
-        ttl = "@prefix : " + uri + " .\n" + header;
+        ttl = "@prefix : " + uri + " .\n" + header + gui_header;
         
         ttl += uri + " a lv2:Plugin ;\n";
         

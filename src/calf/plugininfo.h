@@ -68,6 +68,8 @@ struct plugin_info_iface
     virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A")=0;
     /// Add arbitrary TTL clauses
     virtual void lv2_ttl(const std::string &text) {}
+    /// Add small plugin GUI
+    virtual void has_gui() { lv2_ttl("uiext:ui <http://calf.sourceforge.net/small_plugins/gui/gtk2-gui> ;"); }
     /// Called after plugin has reported all the information
     virtual void finalize() {}
     virtual ~plugin_info_iface() {}

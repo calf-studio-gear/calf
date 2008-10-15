@@ -1753,6 +1753,7 @@ public:
     static void plugin_info(plugin_info_iface *pii)
     {
         pii->names("msgread_e", "Msg Read", "lv2:UtilityPlugin");
+        pii->has_gui();
         pii->event_port("in", "In").input();
         pii->control_port("out", "Out", 0).output();
     }
