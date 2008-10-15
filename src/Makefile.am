@@ -20,8 +20,11 @@ endif
 
 AM_CXXFLAGS = -ffast-math -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
 
+if USE_GUI
+AM_CXXFLAGS += $(GUI_DEPS_CFLAGS)
+endif
 if USE_JACK
-AM_CXXFLAGS += $(JACK_DEPS_CFLAGS) $(GUI_DEPS_CFLAGS)
+AM_CXXFLAGS += $(JACK_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = jackhost.cpp

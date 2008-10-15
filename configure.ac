@@ -39,7 +39,7 @@ PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 lib
 
 if test "$have_jack_header" = "yes"; then
   PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
-    AC_CHECK_LIB([jack], [jack_port_new], JACK_FOUND="yes", JACK_FOUND="no"),
+    AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", JACK_FOUND="no"),
     JACK_FOUND="no")
 else
   JACK_FOUND="no"
