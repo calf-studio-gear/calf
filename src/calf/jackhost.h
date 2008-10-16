@@ -270,7 +270,10 @@ public:
             module.note_off(buffer[1], buffer[2]);
             break;
         case 9:
-            module.note_on(buffer[1], buffer[2]);
+            if (!buffer[2])
+                module.note_off(buffer[1], 0);
+            else
+                module.note_on(buffer[1], buffer[2]);
             break;
         case 10:
             module.program_change(buffer[1]);
