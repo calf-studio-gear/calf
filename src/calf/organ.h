@@ -23,6 +23,7 @@
 #define __CALF_ORGAN_H
 
 #include "synth.h"
+#include "envelope.h"
 
 #define ORGAN_KEYTRACK_POINTS 4
 

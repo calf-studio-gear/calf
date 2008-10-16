@@ -27,6 +27,7 @@
 #include "inertia.h"
 #include "osc.h"
 #include "synth.h"
+#include "envelope.h"
 #include "organ.h"
 
 namespace synth {
