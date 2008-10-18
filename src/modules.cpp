@@ -66,7 +66,7 @@ parameter_properties phaser_audio_module::param_props[] = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-synth::ladspa_plugin_info phaser_audio_module::plugin_info = { 0x847d, "Phaser", "Calf Phaser", "Krzysztof Foltman", synth::calf_copyright_info, "PhaserPlugin" };
+synth::ladspa_plugin_info phaser_audio_module::plugin_info = { 0x8484, "Phaser", "Calf Phaser", "Krzysztof Foltman", synth::calf_copyright_info, "PhaserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
