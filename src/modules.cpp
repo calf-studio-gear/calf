@@ -163,6 +163,16 @@ synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monos
 
 ////////////////////////////////////////////////////////////////////////////
 
+const char *subsaw_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
+
+parameter_properties subsaw_audio_module::param_props[] = {
+    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "cutoff", "Pre Cutoff" },
+};
+
+synth::ladspa_plugin_info subsaw_audio_module::plugin_info = { 0x8500, "SubSaw", "Calf SubSaw", "Krzysztof Foltman", synth::calf_copyright_info, "UtilityPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 template<class Module>
 giface_plugin_info create_plugin_info(ladspa_plugin_info &info)
 {
