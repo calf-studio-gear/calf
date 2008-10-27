@@ -776,6 +776,96 @@ public:
     static const char *get_label() { return "Rotary Speaker"; }
 };
 
+class subsaw
+{
+public:
+    dsp::onepole<float> antidc, amp;
+    float last, state, last_amp;
+    bool cnt;
+public:
+    void set_sample_rate(uint32_t sr)
+    {
+        antidc.set_hp(10.0, sr);
+        amp.set_lp(10.0, sr);
+        state = 0;
+        last = 0.f;
+        last_amp = 0.f;
+        cnt = false;
+    }
+    inline float process(float value)
+    {
+        if (last >= 0.f && value < 0.f) // && 0 == (cnt = !cnt))
+        {
+            if (amp.y1 < state)
+                amp.y1 = state;
+            state = 0;
+        }
+        else
+        {
+            state += fabs(value);
+            last_amp = amp.process(0);
+        }
+        
+        last = value;
+        return antidc.process_hp(0.25f * state);
+    }
+};
+
+// A sub-osc thingy 
+class subsaw_audio_module: public null_audio_module
+{
+public:    
+    enum { par_cutoff, param_count };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    static const char *port_names[];
+    dsp::biquad<float> filter_left, filter_right;
+    dsp::biquad<float> filter2_left, filter2_right;
+    dsp::biquad<float> filter3_left, filter3_right;
+    subsaw state_left, state_right;
+    uint32_t srate;
+    static parameter_properties param_props[];
+    static synth::ladspa_plugin_info plugin_info;
+public:    
+    subsaw_audio_module()
+    {
+    }
+    
+    void params_changed()
+    {
+        filter_left.set_bp_rbj(*params[par_cutoff], 2, srate);
+        filter_right.copy_coeffs(filter_left);
+        filter2_left.set_lp_rbj(*params[par_cutoff], 0.7, srate);
+        filter2_right.copy_coeffs(filter2_left);
+    }
+    void activate() {
+        params_changed();
+    }
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+        state_left.set_sample_rate(sr);
+        state_right.set_sample_rate(sr);
+    }
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+//        printf("sr=%d cutoff=%f res=%f mode=%f\n", srate, *params[par_cutoff], *params[par_resonance], *params[par_mode]);
+        uint32_t ostate = 3;
+        numsamples += offset;
+        filter3_left.set_lp_rbj(clip<double>(20000.0 * state_left.last_amp, 20.0, srate * 0.48), 3, srate);
+        filter3_right.set_lp_rbj(clip<double>(20000.0 * state_right.last_amp, 20.0, srate * 0.48), 3, srate);
+        while(offset < numsamples) {
+            outs[0][offset] = filter3_left.process_d1(state_left.process(filter2_left.process_d1(filter_left.process_d1(ins[0][offset]))));
+            outs[1][offset] = filter3_right.process_d1(state_right.process(filter2_right.process_d1(filter_right.process_d1(ins[1][offset]))));
+            offset ++;
+        }
+        return ostate;
+    }
+    static const char *get_id() { return "subsaw"; }
+    static const char *get_name() { return "subsaw"; }
+    static const char *get_label() { return "SubSaw"; }
+};
+
 extern std::string get_builtin_modules_rdf();
 extern const char *calf_copyright_info;
 

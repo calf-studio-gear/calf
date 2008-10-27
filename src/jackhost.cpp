@@ -49,26 +49,9 @@ const char *client_name = "calfhost";
 
 jack_host_base *synth::create_jack_host(const char *effect_name)
 {
-    if (!strcasecmp(effect_name, "reverb"))
-        return new jack_host<reverb_audio_module>();
-    else if (!strcasecmp(effect_name, "flanger"))
-        return new jack_host<flanger_audio_module>();
-    else if (!strcasecmp(effect_name, "filter"))
-        return new jack_host<filter_audio_module>();
-    else if (!strcasecmp(effect_name, "monosynth"))
-        return new jack_host<monosynth_audio_module>();
-    else if (!strcasecmp(effect_name, "vintagedelay"))
-        return new jack_host<vintage_delay_audio_module>();
-    else if (!strcasecmp(effect_name, "organ"))
-        return new jack_host<organ_audio_module>();
-    else if (!strcasecmp(effect_name, "rotaryspeaker"))
-        return new jack_host<rotary_speaker_audio_module>();
-    else if (!strcasecmp(effect_name, "phaser"))
-        return new jack_host<phaser_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
-#endif
-    else
-        return NULL;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>();
+    #include <calf/modulelist.h>
+    return NULL;
 }
 
 void destroy(GtkWindow *window, gpointer data)
