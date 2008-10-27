@@ -7,7 +7,7 @@
     PER_MODULE_ITEM(organ, true, "organ")
     PER_MODULE_ITEM(rotary_speaker, false, "rotaryspeaker")
     PER_MODULE_ITEM(phaser, false, "phaser")
-    PER_MODULE_ITEM(subsaw, false, "subsaw")
+    PER_MODULE_ITEM(multichorus, false, "multichorus")
 #undef PER_MODULE_ITEM
 #endif
 #ifdef PER_SMALL_MODULE_ITEM
