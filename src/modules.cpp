@@ -163,13 +163,17 @@ synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monos
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *subsaw_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
+const char *multichorus_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
-parameter_properties subsaw_audio_module::param_props[] = {
-    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "cutoff", "Pre Cutoff" },
+parameter_properties multichorus_audio_module::param_props[] = {
+    { 0.1,      0.1, 10,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "min_delay", "Minimum delay" },
+    { 0.5,      0.1, 10,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "mod_depth", "Modulation depth" },
+    { 0.25,    0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "mod_rate", "Modulation rate" },
+    { 0,          0, 360,   9, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "stereo", "Stereo phase" },
+    { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-synth::ladspa_plugin_info subsaw_audio_module::plugin_info = { 0x8500, "SubSaw", "Calf SubSaw", "Krzysztof Foltman", synth::calf_copyright_info, "UtilityPlugin" };
+synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", synth::calf_copyright_info, "ChorusPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

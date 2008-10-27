@@ -202,11 +202,10 @@ public:
 class chorus_base: public modulation_effect
 {
 protected:
-    int sample_rate, min_delay_samples, mod_depth_samples;
+    int min_delay_samples, mod_depth_samples;
     float min_delay, mod_depth;
     sine_table<int, 4096, 65536> sine;
 public:
-    fixed_point<unsigned int, 20> phase, dphase;
     float get_min_delay() {
         return min_delay;
     }

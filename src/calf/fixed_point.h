@@ -60,6 +60,14 @@ public:
         value = (T)(v*one());
     }
     
+    /// Makes an instance from a representation value (ie. same type of value as is used for internal storage and get/set)
+    static inline fixed_point from_base(const T &v) 
+    {
+        fixed_point result;
+        result.value = v;
+        return result;
+    }
+    
     inline T one() {
         return (T)(1) << FracBits;
     }
