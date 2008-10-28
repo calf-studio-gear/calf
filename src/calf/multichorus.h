@@ -65,8 +65,8 @@ class multichorus: public chorus_base
 {
 protected:
     simple_delay<MaxDelay,T> delay;
-    MultiLfo lfo;
 public:    
+    MultiLfo lfo;
     multichorus() {
         rate = 0.63f;
         dry = 0.5f;

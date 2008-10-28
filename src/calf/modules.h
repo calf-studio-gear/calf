@@ -789,6 +789,7 @@ public:
     static const char *port_names[];
     uint32_t srate;
     dsp::multichorus<float, sine_multi_lfo<float, 6>, 2048> left, right;
+    float last_r_phase;
     
     static parameter_properties param_props[];
     static synth::ladspa_plugin_info plugin_info;
@@ -810,6 +811,12 @@ public:
         left.set_rate(rate); right.set_rate(rate);
         left.set_min_delay(min_delay); right.set_min_delay(min_delay);
         left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+        float r_phase = *params[par_stereo] * (1.f / 360.f);
+        if (fabs(r_phase - last_r_phase) > 0.0001f) {
+            right.phase = left.phase;
+            right.lfo.phase += chorus_phase(r_phase * 4096);
+            last_r_phase = r_phase;
+        }
     }
     void activate() {
         params_changed();
