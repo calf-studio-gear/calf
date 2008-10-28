@@ -39,8 +39,14 @@ public:
     chorus_phase phase;
     /// LFO phase increment
     chorus_phase dphase;
+    /// LFO phase per-voice increment
+    chorus_phase vphase;
 
 public:
+    sine_multi_lfo()
+    {
+        phase = dphase = vphase = 0.0;
+    }
     inline uint32_t get_voices() const
     {
         return Voices;
@@ -48,7 +54,7 @@ public:
     /// Get LFO value for given voice, returns a values in range of [-65536, 65536]
     inline int get_value(uint32_t voice) {
         // find this voice's phase (= phase + voice * 360 degrees / number of voices)
-        chorus_phase voice_phase = phase + chorus_phase::from_base(Multiplier * voice);
+        chorus_phase voice_phase = phase + vphase * (int)voice;
         // find table offset
         unsigned int ipart = voice_phase.ipart();
         // interpolate (use 14 bits of precision - because the table itself uses 18 bits and the result of multiplication must fit in int32_t)

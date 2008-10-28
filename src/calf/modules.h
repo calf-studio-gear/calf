@@ -781,7 +781,7 @@ public:
 class multichorus_audio_module: public null_audio_module
 {
 public:    
-    enum { par_delay, par_depth, par_rate, par_stereo, par_amount, param_count };
+    enum { par_delay, par_depth, par_rate, par_stereo, par_vphase, par_amount, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
@@ -811,6 +811,8 @@ public:
         left.set_rate(rate); right.set_rate(rate);
         left.set_min_delay(min_delay); right.set_min_delay(min_delay);
         left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+        float vphase = *params[par_vphase] * (1.f / 360.f);
+        left.lfo.vphase = right.lfo.vphase = vphase * 4096;
         float r_phase = *params[par_stereo] * (1.f / 360.f);
         if (fabs(r_phase - last_r_phase) > 0.0001f) {
             right.lfo.phase = left.lfo.phase;
