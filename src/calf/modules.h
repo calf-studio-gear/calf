@@ -788,7 +788,7 @@ public:
     float *params[param_count];
     static const char *port_names[];
     uint32_t srate;
-    dsp::multichorus<float, sine_multi_lfo<float, 6>, 2048> left, right;
+    dsp::multichorus<float, sine_multi_lfo<float, 6>, 4096> left, right;
     float last_r_phase;
     
     static parameter_properties param_props[];

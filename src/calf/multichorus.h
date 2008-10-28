@@ -31,8 +31,7 @@ template<class T, uint32_t Voices>
 class sine_multi_lfo
 {
 protected:
-    sine_table<int, 4096, 65536> sine;
-    enum { Multiplier = (65536 / Voices) << 16 };
+    sine_table<int, 4096, 65535> sine;
     
 public:
     /// Current LFO phase
@@ -51,14 +50,15 @@ public:
     {
         return Voices;
     }
-    /// Get LFO value for given voice, returns a values in range of [-65536, 65536]
+    /// Get LFO value for given voice, returns a values in range of [-65536, 65535] (or close)
     inline int get_value(uint32_t voice) {
         // find this voice's phase (= phase + voice * 360 degrees / number of voices)
         chorus_phase voice_phase = phase + vphase * (int)voice;
         // find table offset
         unsigned int ipart = voice_phase.ipart();
-        // interpolate (use 14 bits of precision - because the table itself uses 18 bits and the result of multiplication must fit in int32_t)
-        // note, the result is still -65536 .. 65536, it's just interpolated
+        // interpolate (use 14 bits of precision - because the table itself uses 17 bits and the result of multiplication must fit in int32_t)
+        // note, the result is still -65535 .. 65535, it's just interpolated
+        // it is never reaching -65536 - but that's acceptable
         return voice_phase.lerp_by_fract_int<int, 14, int>(sine.data[ipart], sine.data[ipart+1]);
     }
     inline void step() {
@@ -77,7 +77,7 @@ public:
  * Multi-tap chorus without feedback.
  * Perhaps MaxDelay should be a bit longer!
  */
-template<class T, class MultiLfo, int MaxDelay=512>
+template<class T, class MultiLfo, int MaxDelay=4096>
 class multichorus: public chorus_base
 {
 protected:
@@ -110,7 +110,13 @@ public:
     template<class OutIter, class InIter>
     void process(OutIter buf_out, InIter buf_in, int nsamples) {
         int mds = min_delay_samples + mod_depth_samples * 1024 + 2*65536;
-        int mdepth = mod_depth_samples; // 1 sample peak-to-peak = mdepth of 32 (this scaling stuff is tricky and may - but shouldn't - be wrong)
+        int mdepth = mod_depth_samples;
+        // 1 sample peak-to-peak = mod_depth_samples of 32 (this scaling stuff is tricky and may - but shouldn't - be wrong)
+        // with 192 kHz sample rate, 1 ms = 192 samples, and the maximum 20 ms = 3840 samples (so, 4096 will be used)
+        // 3840 samples of mod depth = mdepth of 122880 (which multiplied by 65536 doesn't fit in int32_t)
+        // so, it will be right-shifted by 2, which gives it a safe range of 30720
+        // NB: calculation of mod_depth_samples (and multiply-by-32) is in chorus_base::set_mod_depth
+        mdepth = mdepth >> 2;
         T scale = lfo.get_scale();
         for (int i=0; i<nsamples; i++) {
             phase += dphase;
@@ -124,7 +130,8 @@ public:
             for (unsigned int v = 0; v < nvoices; v++)
             {
                 int lfo_output = lfo.get_value(v);
-                int v = mds + (mdepth * lfo_output >> 6);
+                // 3 = log2(32 >> 2) + 1 because the LFO value is in range of [-65535, 65535] (17 bits)
+                int v = mds + (mdepth * lfo_output >> (3 + 1));
                 int ifv = v >> 16;
                 T fd; // signal from delay's output
                 delay.get_interp(fd, ifv, (v & 0xFFFF)*(1.0/65536.0));
