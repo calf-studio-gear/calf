@@ -813,7 +813,7 @@ public:
         left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
         float r_phase = *params[par_stereo] * (1.f / 360.f);
         if (fabs(r_phase - last_r_phase) > 0.0001f) {
-            right.phase = left.phase;
+            right.lfo.phase = left.lfo.phase;
             right.lfo.phase += chorus_phase(r_phase * 4096);
             last_r_phase = r_phase;
         }
