@@ -40,15 +40,25 @@ public:
     chorus_phase dphase;
     /// LFO phase per-voice increment
     chorus_phase vphase;
-
+    /// Current number of voices
+    uint32_t voices;
+    /// Current scale (output multiplier)
+    T scale;
 public:
     sine_multi_lfo()
     {
         phase = dphase = vphase = 0.0;
+        set_voices(Voices);
     }
     inline uint32_t get_voices() const
     {
-        return Voices;
+        return voices;
+    }
+    inline void set_voices(uint32_t value)
+    {
+        voices = value;
+        // use sqrt, because some phases will cancel each other - so 1 / N is usually too low
+        scale = sqrt(1.0 / voices);
     }
     /// Get LFO value for given voice, returns a values in range of [-65536, 65535] (or close)
     inline int get_value(uint32_t voice) {
@@ -65,8 +75,7 @@ public:
         phase += dphase;
     }
     inline T get_scale() const {
-        // use sqrt, because some phases will cancel each other - so 1 / N is usually too low
-        return sqrt(1.0 / Voices);
+        return scale;
     }
     void reset() {
         phase = 0.f;
