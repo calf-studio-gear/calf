@@ -23,6 +23,7 @@
 #include <config.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 #include <calf/plugininfo.h>
 #if USE_LV2
 #include <calf/lv2_event.h>
