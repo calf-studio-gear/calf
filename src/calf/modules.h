@@ -32,6 +32,11 @@ namespace synth {
 
 using namespace dsp;
 
+#define PLUGIN_NAME_ID_LABEL(name, id, label) \
+    static const char *get_name() { return name; } \
+    static const char *get_id() { return id; } \
+    static const char *get_label() { return label; } \
+    
 class null_audio_module;
 struct ladspa_plugin_info;
     
@@ -177,9 +182,7 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    static const char *get_name() { return "flanger"; }
-    static const char *get_id() { return "flanger"; }
-    static const char *get_label() { return "Flanger"; }
+    PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
 };
 
 class phaser_audio_module: public null_audio_module
@@ -252,9 +255,7 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    static const char *get_name() { return "phaser"; }
-    static const char *get_id() { return "phaser"; }
-    static const char *get_label() { return "Phaser"; }
+    PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
 };
 
 class reverb_audio_module: public null_audio_module
@@ -303,9 +304,7 @@ public:
         reverb.extra_sanitize();
         return outputs_mask;
     }
-    static const char *get_name() { return "reverb"; }
-    static const char *get_id() { return "reverb"; }
-    static const char *get_label() { return "Reverb"; }
+    PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
 };
 
 class filter_audio_module: public null_audio_module
@@ -458,9 +457,7 @@ public:
         }
         return ostate;
     }
-    static const char *get_id() { return "filter"; }
-    static const char *get_name() { return "filter"; }
-    static const char *get_label() { return "Filter"; }
+    PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
 };
 
 class vintage_delay_audio_module: public null_audio_module
@@ -572,9 +569,7 @@ public:
         }
         return ostate;
     }
-    static const char *get_name() { return "vintage_delay"; }
-    static const char *get_id() { return "vintagedelay"; }
-    static const char *get_label() { return "Vintage Delay"; }
+    PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
 };
 
 class rotary_speaker_audio_module: public null_audio_module
@@ -772,9 +767,7 @@ public:
             return;
         }
     }
-    static const char *get_name() { return "rotary_speaker"; }
-    static const char *get_id() { return "rotaryspeaker"; }
-    static const char *get_label() { return "Rotary Speaker"; }
+    PLUGIN_NAME_ID_LABEL("rotary_speaker", "rotaryspeaker", "Rotary Speaker")
 };
 
 // A multitap stereo chorus thing
@@ -835,9 +828,7 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, numsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    static const char *get_id() { return "multichorus"; }
-    static const char *get_name() { return "multichorus"; }
-    static const char *get_label() { return "Multi Chorus"; }
+    PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };
 
 extern std::string get_builtin_modules_rdf();
