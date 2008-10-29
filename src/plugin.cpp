@@ -21,6 +21,7 @@
 #include <config.h>
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 
 using namespace synth;
 
