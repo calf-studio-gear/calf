@@ -68,7 +68,7 @@ public:
         return result;
     }
     
-    inline T one() {
+    inline static T one() {
         return (T)(1) << FracBits;
     }
 
