@@ -503,6 +503,7 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     CalfKnob *self = CALF_KNOB(widget);
 
     float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
+    gboolean moved = FALSE;
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
@@ -519,16 +520,17 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         {
             gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / scale);
         }
+        moved = TRUE;
     }
     self->last_y = event->y;
-    return FALSE;
+    return moved;
 }
 
 static gboolean
 calf_knob_scroll (GtkWidget *widget, GdkEventScroll *event)
 {
     calf_knob_incr(widget, event->direction);
-    return FALSE;
+    return TRUE;
 }
 
 static void
