@@ -155,14 +155,6 @@ synth::ladspa_plugin_info rotary_speaker_audio_module::plugin_info = { 0x8483, "
 
 ////////////////////////////////////////////////////////////////////////////
 
-synth::ladspa_plugin_info organ_audio_module::plugin_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
-
-////////////////////////////////////////////////////////////////////////////
-
-synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
-
-////////////////////////////////////////////////////////////////////////////
-
 const char *multichorus_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
 parameter_properties multichorus_audio_module::param_props[] = {

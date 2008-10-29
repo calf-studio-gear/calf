@@ -34,6 +34,8 @@
 using namespace synth;
 using namespace std;
 
+synth::ladspa_plugin_info organ_audio_module::plugin_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+
 #define DRAWBAR_UI(no) \
             "<label  attach-x=\"" no "\" attach-y=\"0\" param=\"l" no "\"/>" \
             "<vscale attach-x=\"" no "\" attach-y=\"1\" param=\"l" no "\"/>" \

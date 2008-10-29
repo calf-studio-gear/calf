@@ -52,6 +52,8 @@ const char *monosynth_filter_choices[] = {
     "2x6dB/oct Bandpass",
 };
 
+synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+
 static const char *monosynth_gui_xml =
     "<vbox border=\"10\">"
         "<hbox spacing=\"10\">"
