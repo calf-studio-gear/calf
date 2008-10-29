@@ -25,16 +25,25 @@ namespace synth {
 
 #if ENABLE_EXPERIMENTAL
 
-namespace synth {
-
 class compressor_audio_module: public null_audio_module {
 public:
     enum { in_count = 1, out_count = 1, support_midi = false, rt_capable = true };
     enum { dummy, param_count };
 
+    static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
+    float *ins[in_count];
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
     static parameter_properties param_props[];
-};
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+        return 0;
+    }
+
+    static const char *get_name() { return "compressor"; }
+    static const char *get_id() { return "compressor"; }
+    static const char *get_label() { return "Compressor"; }
 
 };
 
