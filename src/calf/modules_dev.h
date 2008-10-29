@@ -23,6 +23,19 @@
 
 #if ENABLE_EXPERIMENTAL
 
+namespace synth {
+
+class compressor_audio_module: public null_audio_module {
+public:
+    enum { in_count = 1, out_count = 1, support_midi = false, rt_capable = true };
+    enum { dummy, param_count };
+
+    static synth::ladspa_plugin_info plugin_info;
+    static parameter_properties param_props[];
+};
+
+};
+
 #endif
 
 #endif
