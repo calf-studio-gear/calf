@@ -38,7 +38,7 @@ public:
     uint32_t srate;
     static parameter_properties param_props[];
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        return 0;
+        return numsamples + offset;
     }
 
     static const char *get_name() { return "compressor"; }
