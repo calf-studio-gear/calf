@@ -21,8 +21,12 @@
 #ifndef __CALF_MODULES_DEV_H
 #define __CALF_MODULES_DEV_H
 
+namespace synth {
+
 #if ENABLE_EXPERIMENTAL
 
 #endif
+    
+};
 
 #endif
