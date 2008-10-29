@@ -52,11 +52,11 @@ enum {
 enum parameter_flags
 {
   PF_TYPEMASK = 0x000F,
-  PF_FLOAT = 0x0000,
-  PF_INT = 0x0001,
-  PF_BOOL = 0x0002,
-  PF_ENUM = 0x0003,
-  PF_ENUM_MULTI = 0x0004, 
+  PF_FLOAT = 0x0000, ///< any float value
+  PF_INT = 0x0001,   ///< integer value (still represented as float)
+  PF_BOOL = 0x0002,  ///< bool value (usually >=0.5f is treated as TRUE, which is inconsistent with LV2 etc. which treats anything >0 as TRUE)
+  PF_ENUM = 0x0003,  ///< enum value (min, min+1, ..., max, only guaranteed to work when min = 0)
+  PF_ENUM_MULTI = 0x0004, ///< SET / multiple-choice
   
   PF_SCALEMASK = 0xF0,
   PF_SCALE_DEFAULT = 0x00, ///< no scale given
@@ -76,42 +76,49 @@ enum parameter_flags
   PF_CTL_BUTTON =  0x0600,
   
   PF_CTLOPTIONS     = 0x00F000,
-  PF_CTLO_HORIZ     = 0x001000,
-  PF_CTLO_VERT      = 0x002000,
+  PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control
+  PF_CTLO_VERT      = 0x002000, ///< vertical version of the control
 
   PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
   PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation
   PF_PROP_OUTPUT_GAIN=0x050000, ///< epp:outputGain + skip epp:hasStrictBounds
   
   PF_UNITMASK = 0xFF000000,
-  PF_UNIT_DB = 0x01000000,
-  PF_UNIT_COEF = 0x02000000,
-  PF_UNIT_HZ = 0x03000000,
-  PF_UNIT_SEC = 0x04000000,
-  PF_UNIT_MSEC = 0x05000000,
-  PF_UNIT_CENTS = 0x06000000,
-  PF_UNIT_SEMITONES = 0x07000000,
-  PF_UNIT_BPM = 0x08000000,
-  PF_UNIT_DEG = 0x09000000,
-  PF_UNIT_NOTE = 0x0A000000,
-  PF_UNIT_RPM = 0x0B000000,
+  PF_UNIT_DB = 0x01000000,       ///< decibels
+  PF_UNIT_COEF = 0x02000000,     ///< multiply-by factor
+  PF_UNIT_HZ = 0x03000000,       ///< Hertz
+  PF_UNIT_SEC = 0x04000000,      ///< second
+  PF_UNIT_MSEC = 0x05000000,     ///< millisecond
+  PF_UNIT_CENTS = 0x06000000,    ///< cents (1/100 of a semitone, 1/1200 of an octave)
+  PF_UNIT_SEMITONES = 0x07000000,///< semitones
+  PF_UNIT_BPM = 0x08000000,      ///< beats per minute
+  PF_UNIT_DEG = 0x09000000,      ///< degrees
+  PF_UNIT_NOTE = 0x0A000000,     ///< MIDI note number
+  PF_UNIT_RPM = 0x0B000000,      ///< revolutions per minute
 };
 
 class null_audio_module;
 
 struct plugin_command_info
 {
-    const char *label;
-    const char *name;
-    const char *description;
+    const char *label;           ///< short command name / label
+    const char *name;            ///< human-readable command name
+    const char *description;     ///< description (for status line etc.)
 };
 
 struct parameter_properties
 {
-    float def_value, min, max, step;
-    /// OR of parameter_flags
+    /// default value
+    float def_value;
+    /// minimum value
+    float min;
+    /// maximum value
+    float max;
+    /// number of steps (for an integer value from 0 to 100 this will be 101; for 0/90/180/270/360 this will be 5), or 0 for continuous
+    float step;
+    /// logical OR of parameter_flags
     uint32_t flags;
-    /// for PF_ENUM: array of text values (from min to max step 1)
+    /// for PF_ENUM: array of text values (from min to max step 1), otherwise NULL
     const char **choices;
     /// parameter label (for use in LV2 label field etc.)
     const char *short_name;
