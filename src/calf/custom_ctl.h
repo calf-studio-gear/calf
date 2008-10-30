@@ -54,9 +54,17 @@ extern GType calf_line_graph_get_type();
 #define CALF_VUMETER_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_VUMETER, CalfVUMeterClass))
 #define CALF_IS_VUMETER_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_VUMETER))
 
+enum CalfVUMeterMode
+{
+    VU_STANDARD,
+    VU_MONOCHROME,
+    VU_MONOCHROME_REVERSE
+};
+
 struct CalfVUMeter
 {
     GtkWidget parent;
+    CalfVUMeterMode mode;
     float value;
 };
 
@@ -69,6 +77,8 @@ extern GtkWidget *calf_vumeter_new();
 extern GType calf_vumeter_get_type();
 extern void calf_vumeter_set_value(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_value(CalfVUMeter *meter);
+extern void calf_vumeter_set_mode(CalfVUMeter *meter, CalfVUMeterMode mode);
+extern CalfVUMeterMode calf_vumeter_get_mode(CalfVUMeter *meter);
 
 #define CALF_TYPE_KNOB          (calf_knob_get_type())
 #define CALF_KNOB(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_KNOB, CalfKnob))

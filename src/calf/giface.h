@@ -80,6 +80,7 @@ enum parameter_flags
   PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control
   PF_CTLO_VERT      = 0x002000, ///< vertical version of the control
   PF_CTLO_LABEL     = 0x004000, ///< add a text display to the control (meters only)
+  PF_CTLO_REVERSE   = 0x008000, ///< use VU_MONOCHROME_REVERSE mode (meters only)
 
   PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
   PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation

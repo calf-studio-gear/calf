@@ -544,6 +544,8 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
         {
             params[i] = new vumeter_param_control();
             widget = params[i]->create(this, i);
+            if (props.flags & PF_CTLO_REVERSE)
+                calf_vumeter_set_mode (CALF_VUMETER (widget), VU_MONOCHROME_REVERSE);
             if (props.flags & PF_CTLO_LABEL)
             {
                 gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
