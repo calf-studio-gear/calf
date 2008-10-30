@@ -130,6 +130,7 @@ struct scrolled_container: public control_container
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
 };
 
+/// Display-only control: static text
 struct label_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -137,8 +138,19 @@ struct label_param_control: public param_control
     virtual void set() {}
 };
 
+/// Display-only control: value text
 struct value_param_control: public param_control
 {
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set();
+};
+
+/// Display-only control: volume meter
+struct vumeter_param_control: public param_control
+{
+    CalfVUMeter *meter;
+    
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
