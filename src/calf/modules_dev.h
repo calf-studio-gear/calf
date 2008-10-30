@@ -27,8 +27,8 @@ namespace synth {
 
 class compressor_audio_module: public null_audio_module {
 public:
-    enum { in_count = 1, out_count = 1, support_midi = false, rt_capable = true };
-    enum { dummy, param_count };
+    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
+    enum { param_threshold, param_ratio, param_count };
 
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
@@ -37,14 +37,45 @@ public:
     float *params[param_count];
     uint32_t srate;
     static parameter_properties param_props[];
+    void activate() {
+        target = 1;
+        aim = 1;
+    }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        return numsamples + offset;
+        numsamples += offset;
+        float threshold = *params[param_threshold];
+        float ratio = *params[param_ratio];
+        while(offset < numsamples) {
+            for(int channel = 0; channel < 2; channel++) {
+                float sample = ins[channel][offset];
+                float asample = fabs(sample);
+                if(asample > threshold) {
+                    target = asample - threshold;
+                    target /= ratio;
+                    target += threshold;
+                    target /= asample;
+                } else {
+                    target = 1;
+                }
+                
+                sample *= aim; 
+               
+                outs[channel][offset] = sample;
+            }
+            
+            aim += (target - aim) * 0.0008;
+            
+            ++offset;
+        }
+
+        return inputs_mask;
     }
 
     static const char *get_name() { return "compressor"; }
     static const char *get_id() { return "compressor"; }
     static const char *get_label() { return "Compressor"; }
-
+private:
+    float aim, target;
 };
 
 #endif
