@@ -31,7 +31,9 @@
 
 using namespace synth;
 
+#if USE_LV2
 template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor;
+#endif
 
 const char *synth::calf_copyright_info = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
 

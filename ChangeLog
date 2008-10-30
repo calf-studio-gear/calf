@@ -1,3 +1,7 @@
+Version 0.0.16.3
+
++ Fixed compilation without LV2 core installed
+
 Version 0.0.16.2
 
 + Fixed DSSI GUI for MultiChorus

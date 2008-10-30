@@ -21,6 +21,8 @@
 #ifndef __CALF_MODULES_SMALL_H
 #define __CALF_MODULES_SMALL_H
 
+#if USE_LV2
+
 /// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
 /// subclass via template wrappers (ladspa_small_wrapper<> etc), not via base class pointer/reference
 class null_small_audio_module
@@ -57,4 +59,7 @@ public:
     /// Output pointers
     float *outs[out_count];
 };
+
+#endif
+
 #endif
