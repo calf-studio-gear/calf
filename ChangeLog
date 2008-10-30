@@ -1,3 +1,9 @@
+Version 0.0.16.2
+
++ Fixed DSSI GUI for MultiChorus
++ Fixed LV2 GUI for MultiChorus
++ Make knob control mouse wheel handling work better in Ingen
+
 Version 0.0.16
 
 + New MultiChorus plugin (stereo multitap chorus with maximum of 8 voices)

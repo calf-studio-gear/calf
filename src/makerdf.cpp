@@ -127,7 +127,10 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
     
     if (ports != "") ports += " , ";
     ss << "[\n";
-    ss << ind << "a lv2:InputPort ;\n";
+    if (pp.flags & PF_PROP_OUTPUT)
+        ss << ind << "a lv2:OutputPort ;\n";
+    else
+        ss << ind << "a lv2:InputPort ;\n";
     ss << ind << "a lv2:ControlPort ;\n";
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << pp.short_name << "\" ;\n";
@@ -138,6 +141,8 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
         ss << ind << "lv2:portProperty epp:hasStrictBounds ;\n";
     if (pp.flags & PF_PROP_EXPENSIVE)
         ss << ind << "lv2:portProperty epp:expensive ;\n";
+    if (pp.flags & PF_PROP_OPTIONAL)
+        ss << ind << "lv2:portProperty lv2:connectionOptional ;\n";
     if ((*gpi->is_noisy)(param))
         ss << ind << "lv2:portProperty epp:causesArtifacts ;\n";
     if (!(*gpi->is_cv)(param))

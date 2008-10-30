@@ -774,7 +774,7 @@ public:
 class multichorus_audio_module: public null_audio_module
 {
 public:    
-    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, param_count };
+    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_lfophase_l, par_lfophase_r, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
@@ -826,6 +826,10 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, numsamples);
         right.process(outs[1] + offset, ins[1] + offset, numsamples);
+        if (params[par_lfophase_l])
+            *params[par_lfophase_l] = (double)left.lfo.phase * 360.0 / 4096.0;
+        if (params[par_lfophase_r])
+            *params[par_lfophase_r] = (double)right.lfo.phase * 360.0 / 4096.0;
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")

@@ -869,8 +869,16 @@ void plugin_gui::on_idle()
     for (unsigned int i = 0; i < params.size(); i++)
     {
         if (params[i] != NULL)
+        {
+            parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+            bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
+            if (is_output) {
+                params[i]->set();
+            }
             params[i]->on_idle();
+        }
     }    
+    // XXXKF iterate over par2ctl, too...
 }
 
 void plugin_gui::refresh()

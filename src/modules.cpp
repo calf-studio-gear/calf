@@ -155,14 +155,6 @@ synth::ladspa_plugin_info rotary_speaker_audio_module::plugin_info = { 0x8483, "
 
 ////////////////////////////////////////////////////////////////////////////
 
-synth::ladspa_plugin_info organ_audio_module::plugin_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
-
-////////////////////////////////////////////////////////////////////////////
-
-synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
-
-////////////////////////////////////////////////////////////////////////////
-
 const char *multichorus_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
 parameter_properties multichorus_audio_module::param_props[] = {
@@ -173,6 +165,8 @@ parameter_properties multichorus_audio_module::param_props[] = {
     { 4,          1,   8,   8, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "voices", "Voices"},
     { 64,         0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "vphase", "Inter-voice phase" },
     { 2,          0,   4,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
+    { 180,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo_phase_l", "Left LFO phase" },
+    { 180,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo_phase_r", "Right LFO phase" },
 };
 
 synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", synth::calf_copyright_info, "ChorusPlugin" };

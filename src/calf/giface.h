@@ -82,19 +82,21 @@ enum parameter_flags
   PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
   PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation
   PF_PROP_OUTPUT_GAIN=0x050000, ///< epp:outputGain + skip epp:hasStrictBounds
+  PF_PROP_OUTPUT    = 0x080000, ///< output port
+  PF_PROP_OPTIONAL  = 0x100000, ///< connection optional
   
-  PF_UNITMASK = 0xFF000000,
-  PF_UNIT_DB = 0x01000000,       ///< decibels
-  PF_UNIT_COEF = 0x02000000,     ///< multiply-by factor
-  PF_UNIT_HZ = 0x03000000,       ///< Hertz
-  PF_UNIT_SEC = 0x04000000,      ///< second
-  PF_UNIT_MSEC = 0x05000000,     ///< millisecond
-  PF_UNIT_CENTS = 0x06000000,    ///< cents (1/100 of a semitone, 1/1200 of an octave)
+  PF_UNITMASK     = 0xFF000000,
+  PF_UNIT_DB      = 0x01000000,  ///< decibels
+  PF_UNIT_COEF    = 0x02000000,  ///< multiply-by factor
+  PF_UNIT_HZ      = 0x03000000,  ///< Hertz
+  PF_UNIT_SEC     = 0x04000000,  ///< second
+  PF_UNIT_MSEC    = 0x05000000,  ///< millisecond
+  PF_UNIT_CENTS   = 0x06000000,  ///< cents (1/100 of a semitone, 1/1200 of an octave)
   PF_UNIT_SEMITONES = 0x07000000,///< semitones
-  PF_UNIT_BPM = 0x08000000,      ///< beats per minute
-  PF_UNIT_DEG = 0x09000000,      ///< degrees
-  PF_UNIT_NOTE = 0x0A000000,     ///< MIDI note number
-  PF_UNIT_RPM = 0x0B000000,      ///< revolutions per minute
+  PF_UNIT_BPM     = 0x08000000,  ///< beats per minute
+  PF_UNIT_DEG     = 0x09000000,  ///< degrees
+  PF_UNIT_NOTE    = 0x0A000000,  ///< MIDI note number
+  PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
 };
 
 class null_audio_module;
