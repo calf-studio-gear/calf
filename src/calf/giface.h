@@ -68,12 +68,13 @@ enum parameter_flags
 
   PF_CTLMASK =     0x0F00,
   PF_CTL_DEFAULT = 0x0000,
-  PF_CTL_KNOB =    0x0100,
-  PF_CTL_FADER =   0x0200,
-  PF_CTL_TOGGLE =  0x0300,
-  PF_CTL_COMBO =   0x0400,
-  PF_CTL_RADIO =   0x0500,
-  PF_CTL_BUTTON =  0x0600,
+  PF_CTL_KNOB =    0x0100, ///< knob
+  PF_CTL_FADER =   0x0200, ///< fader (slider)
+  PF_CTL_TOGGLE =  0x0300, ///< toggle button
+  PF_CTL_COMBO =   0x0400, ///< combo box
+  PF_CTL_RADIO =   0x0500, ///< radio button
+  PF_CTL_BUTTON =  0x0600, ///< push button
+  PF_CTL_METER  =  0x0700, ///< volume meter
   
   PF_CTLOPTIONS     = 0x00F000,
   PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control
