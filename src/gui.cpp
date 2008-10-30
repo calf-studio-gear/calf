@@ -247,6 +247,8 @@ void vumeter_param_control::set()
     _GUARD_CHANGE_
     parameter_properties &props = get_props();
     calf_vumeter_set_value (CALF_VUMETER (widget), props.to_01(gui->plugin->get_param_value(param_no)));
+    if (label)
+        update_label();
 }
 
 // check box
@@ -542,8 +544,13 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
         {
             params[i] = new vumeter_param_control();
             widget = params[i]->create(this, i);
-            // gtk_widget_set_size_request(widget, -1, 14);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 10, 0);
+            if (props.flags & PF_CTLO_LABEL)
+            {
+                gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
+                gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 10, 0);
+            }
+            else
+                gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 10, 0);
         }
         else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
         {
