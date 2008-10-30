@@ -193,26 +193,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
 {
-    if (!strcmp(effect_name, "reverb"))
-        return new plugin_proxy<reverb_audio_module>();
-    else if (!strcmp(effect_name, "flanger"))
-        return new plugin_proxy<flanger_audio_module>();
-    else if (!strcmp(effect_name, "filter"))
-        return new plugin_proxy<filter_audio_module>();
-    else if (!strcmp(effect_name, "monosynth"))
-        return new plugin_proxy<monosynth_audio_module>();
-    else if (!strcmp(effect_name, "vintagedelay"))
-        return new plugin_proxy<vintage_delay_audio_module>();
-    else if (!strcmp(effect_name, "organ"))
-        return new plugin_proxy<organ_audio_module>();
-    else if (!strcmp(effect_name, "rotaryspeaker"))
-        return new plugin_proxy<rotary_speaker_audio_module>();
-    else if (!strcmp(effect_name, "multichorus"))
-        return new plugin_proxy<multichorus_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
-#endif
-    else
-        return NULL;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, jackname)) return new plugin_proxy<name##_audio_module>();
+    #include <calf/modulelist.h>
+    return NULL;
 }
 
 void help(char *argv[])
