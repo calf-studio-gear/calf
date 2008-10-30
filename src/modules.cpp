@@ -179,7 +179,7 @@ parameter_properties compressor_audio_module::param_props[] = {
     { 10,     1, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
     { 100,    1, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     { 1,      1, 12,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
-    { 0,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "compression", "Compression" }
+    { 0,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "compression", "Compression" }
 };
 
 synth::ladspa_plugin_info compressor_audio_module::plugin_info = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", synth::calf_copyright_info, "CompressorPlugin" };

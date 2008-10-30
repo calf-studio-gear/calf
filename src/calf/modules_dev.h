@@ -49,8 +49,10 @@ public:
         float release_coeff = 1 / (*params[param_release] * srate / 1000);
         float makeup = *params[param_makeup];
 
-        *params[param_compression] = aim;
-        
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = aim;
+        }
+
         while(offset < numsamples) {
             float asample = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
             for(int channel = 0; channel < in_count; channel++) {
