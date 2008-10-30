@@ -179,7 +179,7 @@ parameter_properties compressor_audio_module::param_props[] = {
 
 synth::ladspa_plugin_info compressor_audio_module::plugin_info = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", synth::calf_copyright_info, "CompressorPlugin" };
 
-const char *compressor_audio_module::port_names[] = {"In", "Out"};
+const char *compressor_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
 
 ////////////////////////////////////////////////////////////////////////////
 

@@ -49,9 +49,8 @@ public:
         *params[param_compression] = aim;
         
         while(offset < numsamples) {
-            for(int channel = 0; channel < 2; channel++) {
-                float sample = ins[channel][offset];
-                float asample = fabs(sample);
+            float asample = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
+            for(int channel = 0; channel < in_count; channel++) {
                 if(asample > threshold) {
                     target = asample - threshold;
                     target /= ratio;
@@ -61,9 +60,7 @@ public:
                     target = 1;
                 }
                 
-                sample *= aim; 
-               
-                outs[channel][offset] = sample;
+                outs[channel][offset] = ins[channel][offset] * aim;
             }
             
             aim += (target - aim) * 0.0008;
