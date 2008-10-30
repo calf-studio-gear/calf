@@ -207,8 +207,10 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                     r *= 0.5, g *= 0.5, b *= 0.5;
                 break;
             case VU_MONOCHROME_REVERSE:
-                ts = 1 - ts;
-                // fall through
+                r = 1, g = 1, b = 0;
+                if (!(vu->value < ts || vu->value <= 0))
+                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
             case VU_MONOCHROME:
                 r = 1, g = 1, b = 0;
                 if (vu->value < ts || vu->value <= 0)
