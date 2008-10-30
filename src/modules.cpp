@@ -174,6 +174,7 @@ synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "Mul
 parameter_properties compressor_audio_module::param_props[] = {
     { 1,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
     { 1,      1, 100,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
+    { 0,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "compression", "Compression" }
 };
 
 synth::ladspa_plugin_info compressor_audio_module::plugin_info = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", synth::calf_copyright_info, "CompressorPlugin" };
