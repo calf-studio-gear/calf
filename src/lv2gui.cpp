@@ -141,26 +141,9 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
 {
-    if (!strcmp(effect_name, "Reverb"))
-        return new plugin_proxy<reverb_audio_module>();
-    else if (!strcmp(effect_name, "Flanger"))
-        return new plugin_proxy<flanger_audio_module>();
-    else if (!strcmp(effect_name, "Filter"))
-        return new plugin_proxy<filter_audio_module>();
-    else if (!strcmp(effect_name, "Monosynth"))
-        return new plugin_proxy<monosynth_audio_module>();
-    else if (!strcmp(effect_name, "VintageDelay"))
-        return new plugin_proxy<vintage_delay_audio_module>();
-    else if (!strcmp(effect_name, "Organ"))
-        return new plugin_proxy<organ_audio_module>();
-    else if (!strcmp(effect_name, "RotarySpeaker"))
-        return new plugin_proxy<rotary_speaker_audio_module>();
-    else if (!strcmp(effect_name, "MultiChorus"))
-        return new plugin_proxy<multichorus_audio_module>();
-#ifdef ENABLE_EXPERIMENTAL
-#endif
-    else
-        return NULL;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, name##_audio_module::plugin_info.label)) return new plugin_proxy<name##_audio_module>();
+    #include <calf/modulelist.h>
+    return NULL;
 }
 
 LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
@@ -172,6 +155,8 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const LV2_Feature* const*       features)
 {
     plugin_proxy_base *proxy = create_plugin_proxy(plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1);
+    if (!proxy)
+        return NULL;
     scope_assign<bool> _a_(proxy->send, false);
     proxy->setup(write_function, controller);
     // dummy window
