@@ -76,6 +76,10 @@ public:
     static const char *get_name() { return "compressor"; }
     static const char *get_id() { return "compressor"; }
     static const char *get_label() { return "Compressor"; }
+
+    void set_sample_rate(uint32_t sr) {
+            srate = sr;
+    }
 private:
     float aim, target;
 };
