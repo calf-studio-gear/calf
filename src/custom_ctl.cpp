@@ -190,16 +190,31 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_fill(c);
     cairo_set_line_width(c, 1);
     
+    CalfVUMeterMode mode = vu->mode;
+    
     for (int x = ox; x <= ox + sx; x += 3)
     {
         float ts = (x - ox) * 1.0 / sx;
         float r, g, b;
-        if (ts < 0.75)
-            r = ts / 0.75, g = 1, b = 0;
-        else
-            r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
-        if (vu->value < ts || vu->value <= 0)
-            r *= 0.5, g *= 0.5, b *= 0.5;
+        switch(mode)
+        {
+            case VU_STANDARD:
+                if (ts < 0.75)
+                    r = ts / 0.75, g = 1, b = 0;
+                else
+                    r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+                if (vu->value < ts || vu->value <= 0)
+                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
+            case VU_MONOCHROME_REVERSE:
+                ts = 1 - ts;
+                // fall through
+            case VU_MONOCHROME:
+                r = 1, g = 1, b = 0;
+                if (vu->value < ts || vu->value <= 0)
+                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
+        }
         GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
         gdk_cairo_set_source_color(c, &sc2);
         cairo_move_to(c, x, oy);
@@ -309,6 +324,20 @@ extern void calf_vumeter_set_value(CalfVUMeter *meter, float value)
 extern float calf_vumeter_get_value(CalfVUMeter *meter)
 {
     return meter->value;
+}
+
+extern void calf_vumeter_set_mode(CalfVUMeter *meter, CalfVUMeterMode mode)
+{
+    if (mode != meter->mode)
+    {
+        meter->mode = mode;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern CalfVUMeterMode calf_vumeter_get_mode(CalfVUMeter *meter)
+{
+    return meter->mode;
 }
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
