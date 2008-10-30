@@ -207,6 +207,8 @@ plugin_proxy_base *create_plugin_proxy(const char *effect_name)
         return new plugin_proxy<organ_audio_module>();
     else if (!strcmp(effect_name, "rotaryspeaker"))
         return new plugin_proxy<rotary_speaker_audio_module>();
+    else if (!strcmp(effect_name, "multichorus"))
+        return new plugin_proxy<multichorus_audio_module>();
 #ifdef ENABLE_EXPERIMENTAL
 #endif
     else
