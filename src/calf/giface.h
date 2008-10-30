@@ -400,11 +400,10 @@ struct ladspa_wrapper
         for (; i < ins + outs + params; i++)
         {
             LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
-            ((int *)descriptor.PortDescriptors)[i] = i < ins ? LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO
-                                                  : i < ins + outs ? LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO
-                                                                   : LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
-            prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
             parameter_properties &pp = Module::param_props[i - ins - outs];
+            ((int *)descriptor.PortDescriptors)[i] = 
+                LADSPA_PORT_CONTROL | (pp.flags & PF_PROP_OUTPUT ? LADSPA_PORT_OUTPUT : LADSPA_PORT_INPUT);
+            prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;
             ((const char **)descriptor.PortNames)[i] = pp.name;
             prh.LowerBound = pp.min;
             prh.UpperBound = pp.max;
