@@ -171,13 +171,13 @@ parameter_properties multichorus_audio_module::param_props[] = {
     { 180,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo_phase_r", "Right LFO phase" },
 };
 
-#if ENABLE_EXPERIMENTAL
-
 synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", synth::calf_copyright_info, "ChorusPlugin" };
+
+#if ENABLE_EXPERIMENTAL
 
 parameter_properties compressor_audio_module::param_props[] = {
     { 1,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
-    { 1,      1, 100,  129, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
+    { 1,      1, 100,  101, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
     { 15,     0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
     { 200,    0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     { 1,      1, 12,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
