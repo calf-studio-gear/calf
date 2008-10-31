@@ -20,6 +20,7 @@
  
 #include <assert.h>
 #include <config.h>
+#include <calf/ctl_led.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
@@ -197,7 +198,10 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->name);
     
-    label = gtk_label_new(plugin->get_midi() ? "?" : "");
+    if (plugin->get_midi())
+        label = calf_led_new();
+    else
+        label = gtk_label_new("");
     gtk_table_attach(GTK_TABLE(strips_table), label, 1, 2, row, row + 2, GTK_FILL, GTK_SHRINK, 0, 0);
     strip->midi_in = label;
     gtk_widget_show(strip->midi_in);
@@ -396,7 +400,7 @@ gboolean main_window::on_idle(void *data)
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[1]), LVL(plugin->get_level(idx++)));
             }
             if (plugin->get_midi()) {
-                gtk_label_set_text(GTK_LABEL(strip->midi_in), (plugin->get_level(idx++) > 0.f) ? "*" : "");
+                calf_led_set_state (CALF_LED (strip->midi_in), plugin->get_level(idx++) > 0.f);
             }
         }
     }

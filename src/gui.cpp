@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <calf/ctl_curve.h>
 #include <calf/ctl_keyboard.h>
+#include <calf/ctl_led.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
@@ -232,7 +233,7 @@ void value_param_control::set()
     gtk_label_set_text (GTK_LABEL (widget), props.to_string(gui->plugin->get_param_value(param_no)).c_str());    
 }
 
-// value
+// VU meter
 
 GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -247,6 +248,25 @@ void vumeter_param_control::set()
     _GUARD_CHANGE_
     parameter_properties &props = get_props();
     calf_vumeter_set_value (CALF_VUMETER (widget), props.to_01(gui->plugin->get_param_value(param_no)));
+    if (label)
+        update_label();
+}
+
+// LED
+
+GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui, param_no = _param_no;
+    // parameter_properties &props = get_props();
+    widget = calf_led_new ();
+    return widget;
+}
+
+void led_param_control::set()
+{
+    _GUARD_CHANGE_
+    parameter_properties &props = get_props();
+    calf_led_set_state (CALF_LED (widget), gui->plugin->get_param_value(param_no) > 0);
     if (label)
         update_label();
 }
@@ -539,6 +559,13 @@ GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
             params[i] = new button_param_control();
             widget = params[i]->create(this, i);
             gtk_table_attach (GTK_TABLE (container), widget, 0, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
+        }
+        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                 (props.flags & PF_CTLMASK) == PF_CTL_LED)
+        {
+            params[i] = new led_param_control();
+            widget = params[i]->create(this, i);
+            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 10, 0);
         }
         else if ((props.flags & PF_CTLMASK) == PF_CTL_METER)
         {
