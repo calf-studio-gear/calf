@@ -171,6 +171,8 @@ parameter_properties multichorus_audio_module::param_props[] = {
     { 180,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo_phase_r", "Right LFO phase" },
 };
 
+#if ENABLE_EXPERIMENTAL
+
 synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", synth::calf_copyright_info, "ChorusPlugin" };
 
 parameter_properties compressor_audio_module::param_props[] = {
@@ -186,6 +188,8 @@ parameter_properties compressor_audio_module::param_props[] = {
 synth::ladspa_plugin_info compressor_audio_module::plugin_info = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", synth::calf_copyright_info, "CompressorPlugin" };
 
 const char *compressor_audio_module::port_names[] = {"In L", "In R", "Out L", "Out R"};
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
