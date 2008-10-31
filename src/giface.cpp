@@ -69,6 +69,13 @@ float parameter_properties::from_01(double value01) const
             value = rmin * pow(double(max / rmin), value01);
         }
         break;
+    case PF_SCALE_LOG_INF:
+        assert(step);
+        if (value01 > (step - 1.0) / step)
+            value = FAKE_INFINITY;
+        else
+            value = min * pow(double(max / min), value01 * step / (step - 1.0));
+        break;
     }
     switch(flags & PF_TYPEMASK)
     {
@@ -99,6 +106,12 @@ double parameter_properties::to_01(float value) const
     case PF_SCALE_LOG:
         value /= min;
         return log((double)value) / log((double)max / min);
+    case PF_SCALE_LOG_INF:
+        if (IS_FAKE_INFINITY(value))
+            return max;
+        value /= min;
+        assert(step);
+        return (step - 1.0) * log((double)value) / (step * log((double)max / min));
     case PF_SCALE_GAIN:
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return 0;
@@ -151,7 +164,6 @@ std::string parameter_properties::to_string(float value) const
         sprintf(buf, "%0.1f dB", 6.0 * log(value) / log(2));
         return string(buf);
     }
-    
     switch(flags & PF_TYPEMASK)
     {
     case PF_INT:
@@ -162,7 +174,10 @@ std::string parameter_properties::to_string(float value) const
         break;
     }
 
-    sprintf(buf, "%g", value);
+    if ((flags & PF_SCALEMASK) == PF_SCALE_LOG_INF && IS_FAKE_INFINITY(value))
+        sprintf(buf, "+inf"); // XXXKF change to utf-8 infinity
+    else
+        sprintf(buf, "%g", value);
     
     switch(flags & PF_UNITMASK) {
     case PF_UNIT_DB: return string(buf) + " dB";

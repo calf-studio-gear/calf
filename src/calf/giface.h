@@ -65,6 +65,7 @@ enum parameter_flags
   PF_SCALE_GAIN = 0x30, ///< gain = -96dB..0 or -inf dB
   PF_SCALE_PERC = 0x40, ///< percent
   PF_SCALE_QUAD = 0x50, ///< quadratic scale (decent for some gain/amplitude values)
+  PF_SCALE_LOG_INF = 0x60, ///< log scale + +inf (FAKE_INFINITY)
 
   PF_CTLMASK =     0x0F00,
   PF_CTL_DEFAULT = 0x0000,
@@ -102,6 +103,9 @@ enum parameter_flags
   PF_UNIT_NOTE    = 0x0A000000,  ///< MIDI note number
   PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
 };
+
+#define FAKE_INFINITY (65536.0 * 65536.0)
+#define IS_FAKE_INFINITY(value) (fabs(value-FAKE_INFINITY) < 1.0)
 
 class null_audio_module;
 
