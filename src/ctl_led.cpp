@@ -77,6 +77,7 @@ calf_led_realize(GtkWidget *widget)
     widget->window = gdk_window_new(gtk_widget_get_parent_window (widget), &attributes, GDK_WA_X | GDK_WA_Y);
 
     gdk_window_set_user_data(widget->window, widget);
+    widget->style = gtk_style_attach(widget->style, widget->window);
 }
 
 static void
