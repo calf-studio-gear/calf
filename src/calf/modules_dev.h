@@ -38,17 +38,17 @@ public:
     uint32_t srate;
     static parameter_properties param_props[];
     void activate() {
-        target = 1;
-        aim = 1;
+        target = 1.f;
+        aim = 1.f;
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         numsamples += offset;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
-        float attack_coeff = 1 / (*params[param_attack] * srate / 4000);
-        float release_coeff = 1 / (*params[param_release] * srate / 4000);
+        float attack_coeff = 1.f / (*params[param_attack] * srate / 4000.f);
+        float release_coeff = 1.f / (*params[param_release] * srate / 4000.f);
         float makeup = *params[param_makeup];
-        bool knee = *params[param_knee] > 0.5;
+        float knee = *params[param_knee];
 
         if(params[param_compression] != NULL) {
             *params[param_compression] = aim;
@@ -57,21 +57,17 @@ public:
         while(offset < numsamples) {
             float asample = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
             for(int channel = 0; channel < in_count; channel++) {
-                if(asample > threshold) {
+                if(asample > 0 && (asample > threshold || knee < 1)) {
                     target = asample - threshold;
                     target /= ratio;
                     target += threshold;
-                    target /= asample;
-                } else if(asample > 0 && knee) {
-                    target = asample - threshold;
-                    target /= ratio;
-                    target += threshold;
-                    float knee1 = pow(asample / threshold, 3);
-                    float knee2 = 1 - knee1;
-                    target = target * knee1 + asample * knee2;
+                    if(knee < 1) {
+                        float t = std::min(1.f, std::max(0.f, asample - knee) / (1.f - knee) / threshold);
+                        target = (target - asample) * t + asample;
+                    }
                     target /= asample;
                 } else {
-                    target = 1;
+                    target = 1.f;
                 }
                 
                 outs[channel][offset] = ins[channel][offset] * aim * makeup;
