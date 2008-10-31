@@ -195,10 +195,11 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     for (int x = ox; x <= ox + sx; x += 3)
     {
         float ts = (x - ox) * 1.0 / sx;
-        float r, g, b;
+        float r = 0.f, g = 0.f, b = 0.f;
         switch(mode)
         {
             case VU_STANDARD:
+            default:
                 if (ts < 0.75)
                     r = ts / 0.75, g = 1, b = 0;
                 else
