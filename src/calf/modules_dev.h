@@ -45,8 +45,10 @@ public:
         numsamples += offset;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
-        float attack_coeff = 1.f / (*params[param_attack] * srate / 4000.f);
-        float release_coeff = 1.f / (*params[param_release] * srate / 4000.f);
+        float attack = *params[param_attack];
+        float attack_coeff = attack == 0.05 ? 1 : std::min(1.f, 1.f / (attack * srate / 4000.f));
+        float release = *params[param_release];
+        float release_coeff = release == 0.05 ? 1 : std::min(1.f, 1.f / (release * srate / 4000.f));
         float makeup = *params[param_makeup];
         float knee = *params[param_knee];
 
