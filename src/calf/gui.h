@@ -27,8 +27,9 @@
 #include <gtk/gtk.h>
 #include "custom_ctl.h"
 
-struct CalfKeyboard;
 struct CalfCurve;
+struct CalfKeyboard;
+struct CalfLed;
 
 namespace synth {
 
@@ -150,6 +151,16 @@ struct value_param_control: public param_control
 struct vumeter_param_control: public param_control
 {
     CalfVUMeter *meter;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set();
+};
+
+/// Display-only control: LED
+struct led_param_control: public param_control
+{
+    CalfLed *meter;
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
