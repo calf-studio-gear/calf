@@ -43,17 +43,26 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(c, 0, 0, widget->allocation.width, widget->allocation.height);
     cairo_fill(c);
 
+    int xc = widget->allocation.width / 2;
+    int yc = widget->allocation.height / 2;
     
-    int diameter = (widget->allocation.width < widget->allocation.height ? widget->allocation.width : widget->allocation.height) - 2;
-    cairo_arc(c, widget->allocation.width / 2, widget->allocation.height / 2, diameter / 2 - 1, 0, 2 * M_PI);
+    int diameter = (widget->allocation.width < widget->allocation.height ? widget->allocation.width : widget->allocation.height) - 1;
+
+    cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc + diameter / 4, 0, xc, yc, diameter / 2);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.25, 0.0, 0.0);
+    cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.75 : 0.2, 0.0, 0.0);
+    cairo_pattern_add_color_stop_rgb(pt, 1.0, self->led_state ? 0.25 : 0.1, 0.0, 0.0);
+
+    cairo_arc(c, xc, yc, diameter / 2, 0, 2 * M_PI);
     cairo_set_line_join(c, CAIRO_LINE_JOIN_BEVEL);
-    cairo_set_source_rgba (c, self->led_state ? 1 : 0.0, 0, 0, 0.8);
+    cairo_set_source (c, pt);
     cairo_fill(c);
+    cairo_pattern_destroy(pt);
     
-    cairo_arc(c, widget->allocation.width / 2, widget->allocation.height / 2, diameter / 2, 0, 2 * M_PI);
-    cairo_set_line_width(c, 2);
+    cairo_arc(c, xc, yc, diameter / 2, 0, 2 * M_PI);
+    cairo_set_line_width(c, 0.5);
+    cairo_set_source_rgba (c, self->led_state ? 1.0 : 0.3, 0, 0, 0.5);
     cairo_stroke(c);
-    cairo_set_source_rgba (c, self->led_state ? 0.8 : 0.3, 0, 0, 1.0);
     
     cairo_destroy(c);
 
