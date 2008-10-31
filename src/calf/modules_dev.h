@@ -62,7 +62,7 @@ public:
                     target /= ratio;
                     target += threshold;
                     if(knee < 1) {
-                        float t = std::min(1.f, std::max(0.f, asample - knee) / (1.f - knee) / threshold);
+                        float t = std::min(1.f, std::max(0.f, asample / threshold - knee) / (1.f - knee));
                         target = (target - asample) * t + asample;
                     }
                     target /= asample;
