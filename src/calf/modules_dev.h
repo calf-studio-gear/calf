@@ -46,9 +46,9 @@ public:
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
         float attack = *params[param_attack];
-        float attack_coeff = attack == 0.05 ? 1 : std::min(1.f, 1.f / (attack * srate / 4000.f));
+        float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
         float release = *params[param_release];
-        float release_coeff = release == 0.05 ? 1 : std::min(1.f, 1.f / (release * srate / 4000.f));
+        float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         float makeup = *params[param_makeup];
         float knee = *params[param_knee];
 
@@ -60,13 +60,19 @@ public:
             float asample = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
             for(int channel = 0; channel < in_count; channel++) {
                 if(asample > 0 && (asample > threshold || knee < 1)) {
-                    target = asample - threshold;
-                    target /= ratio;
-                    target += threshold;
+                    if(IS_FAKE_INFINITY(ratio)) {
+                        target = threshold;
+                    } else {
+                        target = asample - threshold;
+                        target /= ratio;
+                        target += threshold;
+                    }
+                    
                     if(knee < 1) {
                         float t = std::min(1.f, std::max(0.f, asample / threshold - knee) / (1.f - knee));
                         target = (target - asample) * t + asample;
                     }
+                    
                     target /= asample;
                 } else {
                     target = 1.f;
