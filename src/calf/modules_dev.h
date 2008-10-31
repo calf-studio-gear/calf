@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * Prototype audio modules
  *
- * Copyright (C) 2001-2007 Krzysztof Foltman
+ * Copyright (C) 2008 Thor Harald Johansen <thj@thj.no>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,8 +45,8 @@ public:
         numsamples += offset;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
-        float attack_coeff = 1 / (*params[param_attack] * srate / 1000);
-        float release_coeff = 1 / (*params[param_release] * srate / 1000);
+        float attack_coeff = 1 / (*params[param_attack] * srate / 4000);
+        float release_coeff = 1 / (*params[param_release] * srate / 4000);
         float makeup = *params[param_makeup];
 
         if(params[param_compression] != NULL) {
