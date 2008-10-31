@@ -28,7 +28,7 @@ namespace synth {
 class compressor_audio_module: public null_audio_module {
 public:
     enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_compression, param_count };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression, param_count };
 
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
@@ -48,6 +48,7 @@ public:
         float attack_coeff = 1 / (*params[param_attack] * srate / 4000);
         float release_coeff = 1 / (*params[param_release] * srate / 4000);
         float makeup = *params[param_makeup];
+        bool knee = *params[param_knee] > 0.5;
 
         if(params[param_compression] != NULL) {
             *params[param_compression] = aim;
@@ -60,6 +61,14 @@ public:
                     target = asample - threshold;
                     target /= ratio;
                     target += threshold;
+                    target /= asample;
+                } else if(asample > 0 && knee) {
+                    target = asample - threshold;
+                    target /= ratio;
+                    target += threshold;
+                    float knee1 = pow(asample / threshold, 3);
+                    float knee2 = 1 - knee1;
+                    target = target * knee1 + asample * knee2;
                     target /= asample;
                 } else {
                     target = 1;
