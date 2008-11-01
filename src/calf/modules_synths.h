@@ -138,19 +138,6 @@ public:
     }
     void activate();
     void deactivate() {}
-    /// Hard-knee 2:1 reducation outside range [-0.75, +0.75]
-    inline float softclip(float wave) const
-    {
-        float abswave = fabs(wave);
-        if (abswave > 0.75)
-        {
-            abswave = abswave - 0.5 * (abswave - 0.75);
-            if (abswave > 1.0)
-                abswave = 1.0;
-            wave = (wave > 0.0) ? abswave : - abswave;
-        }
-        return wave;
-    }
     /// Run oscillators and two filters in series to produce mono output samples.
     void calculate_buffer_ser();
     /// Run oscillators and just one filter to produce mono output samples.
