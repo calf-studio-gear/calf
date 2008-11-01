@@ -30,7 +30,7 @@ private:
     float linslope, clip, peak;
 public:
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_rms, param_average, param_compression, param_peak, param_clip, param_bypass, param_count };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression, param_peak, param_clip, param_bypass, param_count };
 
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
@@ -46,8 +46,8 @@ public:
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         bool bypass = *params[param_bypass] > 0.5f;
-        bool rms = *params[param_rms] > 0.5f;
-        bool average = *params[param_average] > 0.5f;
+        bool rms = *params[param_detection] == 0;
+        bool average = *params[param_stereo_link] == 1;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
         float attack = *params[param_attack];

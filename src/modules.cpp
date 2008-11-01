@@ -175,6 +175,9 @@ synth::ladspa_plugin_info multichorus_audio_module::plugin_info = { 0x8501, "Mul
 
 #if ENABLE_EXPERIMENTAL
 
+const char *compressor_detection_names[] = { "RMS", "Peak" };
+const char *compressor_stereo_link_names[] = { "Maximum", "Average" };
+
 parameter_properties compressor_audio_module::param_props[] = {
     { 1,      0, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
     { 1,      1, 100,  101, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
@@ -182,8 +185,8 @@ parameter_properties compressor_audio_module::param_props[] = {
     { 200,    0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     { 1,      1, 12,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
     { 1,      0,  1,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
-    { 0,      0,  1,   0, PF_BOOL | PF_CTL_TOGGLE, NULL, "rms", "RMS" },
-    { 0,      0,  1,   0, PF_BOOL | PF_CTL_TOGGLE, NULL, "average", "Stereo Average" },
+    { 0,      0,  1,   0, PF_ENUM | PF_CTL_COMBO, compressor_detection_names, "detection", "Detection" },
+    { 0,      0,  1,   0, PF_ENUM | PF_CTL_COMBO, compressor_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "compression", "Compression" },
     { 0,      0,  1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "peak", "Peak" },
     { 0,      1,  0,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip", "Clip" },
