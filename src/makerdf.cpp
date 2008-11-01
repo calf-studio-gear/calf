@@ -84,7 +84,7 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     if (optional)
         ss << ind << "lv2:portProperty lv2:connectionOptional ;\n";
     if (!strcmp(type, "lv2ev:EventPort")) {
-        ss << ind << "lv2ev:supportsEvent lv2midi:midiEvent ;\n";
+        ss << ind << "lv2ev:supportsEvent lv2midi:MidiEvent ;\n";
         // XXXKF add a correct timestamp type here
         ss << ind << "lv2ev:supportsTimestamp <lv2ev:TimeStamp> ;\n";
     }
