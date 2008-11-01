@@ -170,7 +170,7 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
     // this may change as more complex plugins are added
-    if (unit == PF_UNIT_BPM)
+    if (unit == (PF_UNIT_BPM >> 24))
         ss << ind << "lv2:portProperty epp:reportsBpm ;\n";
     
     ss << "    ]";
