@@ -1405,7 +1405,7 @@ public:
 class systemfilter_m_audio_module: public miditypefilter_m_audio_module<systemfilter_m_audio_module>
 {
 public:
-    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xF0 && data[0] <= 0xFF; }
+    static inline bool is_in_range(const uint8_t *data, float **) { return data[0] >= 0xF0; }
     static inline const char **strings() { static const char *s[] = { "systemfilter_m", "System Msg Filter", "system", "System" }; return s;}
 };
 

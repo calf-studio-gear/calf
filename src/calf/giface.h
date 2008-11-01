@@ -220,30 +220,43 @@ struct plugin_ctl_iface
     virtual ~plugin_ctl_iface() {}
 };
 
-struct midi_event {
-    uint8_t command;
-    uint8_t param1;
-    uint16_t param2;
-    float param3;
-};
-
 struct ladspa_plugin_info
 {
+    /// LADSPA ID
     uint32_t unique_id;
+    /// plugin short name (camel case)
     const char *label;
+    /// plugin human-readable name
     const char *name;
+    /// maker (author)
     const char *maker;
+    /// copyright notice
     const char *copyright;
+    /// plugin type for LRDF/LV2
     const char *plugin_type;
 };
 
 struct giface_plugin_info
 {
+    /// information like LADSPA ID, LADSPA label, name, maker, copyright and LRDF/LV2 plugin type (category)
     ladspa_plugin_info *info;
-    int inputs, outputs, params;
-    bool rt_capable, midi_in_capable;
+    /// number of inputs
+    int inputs;
+    /// number of outputs
+    int outputs;
+    /// number of control ports (inputs or outputs)
+    int params;
+    /// is realtime-capable?
+    bool rt_capable;
+    /// has MIDI input?
+    bool midi_in_capable;
+    /// requires MIDI input handling (a synth or equivalent)
+    bool midi_in_required;
+    /// parameter properties structure
     parameter_properties *param_props;
+    /// is a given parameter a control voltage?
     bool (*is_cv)(int param_no);
+    /// is the given parameter non-interpolated?
     bool (*is_noisy)(int param_no);
 };
 

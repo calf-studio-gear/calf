@@ -206,6 +206,7 @@ giface_plugin_info create_plugin_info(ladspa_plugin_info &info)
     pi.params = Module::param_count;
     pi.rt_capable = Module::rt_capable;
     pi.midi_in_capable = Module::support_midi;
+    pi.midi_in_required = Module::require_midi;
     pi.param_props = Module::param_props;
     pi.is_noisy = Module::is_noisy;
     pi.is_cv = Module::is_cv;
