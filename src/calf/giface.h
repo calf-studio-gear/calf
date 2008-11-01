@@ -52,14 +52,14 @@ enum {
 /// Values ORed together for flags field in parameter_properties
 enum parameter_flags
 {
-  PF_TYPEMASK = 0x000F,
+  PF_TYPEMASK = 0x000F, ///< bit mask for type
   PF_FLOAT = 0x0000, ///< any float value
   PF_INT = 0x0001,   ///< integer value (still represented as float)
   PF_BOOL = 0x0002,  ///< bool value (usually >=0.5f is treated as TRUE, which is inconsistent with LV2 etc. which treats anything >0 as TRUE)
   PF_ENUM = 0x0003,  ///< enum value (min, min+1, ..., max, only guaranteed to work when min = 0)
   PF_ENUM_MULTI = 0x0004, ///< SET / multiple-choice
   
-  PF_SCALEMASK = 0xF0,
+  PF_SCALEMASK = 0xF0, ///< bit mask for scale
   PF_SCALE_DEFAULT = 0x00, ///< no scale given
   PF_SCALE_LINEAR = 0x10, ///< linear scale
   PF_SCALE_LOG = 0x20, ///< log scale
@@ -68,8 +68,8 @@ enum parameter_flags
   PF_SCALE_QUAD = 0x50, ///< quadratic scale (decent for some gain/amplitude values)
   PF_SCALE_LOG_INF = 0x60, ///< log scale + +inf (FAKE_INFINITY)
 
-  PF_CTLMASK =     0x0F00,
-  PF_CTL_DEFAULT = 0x0000,
+  PF_CTLMASK =     0x0F00, ///< bit mask for control type
+  PF_CTL_DEFAULT = 0x0000, ///< try to figure out automatically
   PF_CTL_KNOB =    0x0100, ///< knob
   PF_CTL_FADER =   0x0200, ///< fader (slider)
   PF_CTL_TOGGLE =  0x0300, ///< toggle button
@@ -79,9 +79,9 @@ enum parameter_flags
   PF_CTL_METER  =  0x0700, ///< volume meter
   PF_CTL_LED    =  0x0800, ///< light emitting diode
   
-  PF_CTLOPTIONS     = 0x00F000,
-  PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control
-  PF_CTLO_VERT      = 0x002000, ///< vertical version of the control
+  PF_CTLOPTIONS     = 0x00F000, ///< bit mask for control (widget) options
+  PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control (unused)
+  PF_CTLO_VERT      = 0x002000, ///< vertical version of the control (unused)
   PF_CTLO_LABEL     = 0x004000, ///< add a text display to the control (meters only)
   PF_CTLO_REVERSE   = 0x008000, ///< use VU_MONOCHROME_REVERSE mode (meters only)
 
@@ -91,7 +91,7 @@ enum parameter_flags
   PF_PROP_OUTPUT    = 0x080000, ///< output port
   PF_PROP_OPTIONAL  = 0x100000, ///< connection optional
   
-  PF_UNITMASK     = 0xFF000000,
+  PF_UNITMASK     = 0xFF000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels
   PF_UNIT_COEF    = 0x02000000,  ///< multiply-by factor
   PF_UNIT_HZ      = 0x03000000,  ///< Hertz
@@ -105,11 +105,14 @@ enum parameter_flags
   PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
 };
 
+/// A fake infinity value (because real infinity may break some hosts)
 #define FAKE_INFINITY (65536.0 * 65536.0)
+/// Check for infinity (with appropriate-ish tolerance)
 #define IS_FAKE_INFINITY(value) (fabs(value-FAKE_INFINITY) < 1.0)
 
 class null_audio_module;
 
+/// Information record about plugin's menu command
 struct plugin_command_info
 {
     const char *label;           ///< short command name / label
@@ -117,6 +120,7 @@ struct plugin_command_info
     const char *description;     ///< description (for status line etc.)
 };
 
+/// Range, default value, flags and names for a parameter
 struct parameter_properties
 {
     /// default value
@@ -221,6 +225,7 @@ struct plugin_ctl_iface
     virtual ~plugin_ctl_iface() {}
 };
 
+/// General information about the plugin
 struct ladspa_plugin_info
 {
     /// LADSPA ID
@@ -490,6 +495,7 @@ struct ladspa_wrapper
 #endif
     }
 
+    /// LADSPA instantiation function (create a plugin instance)
     static LADSPA_Handle cb_instantiate(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate)
     {
         instance *mod = new instance();
@@ -498,6 +504,7 @@ struct ladspa_wrapper
     }
 
 #if USE_DSSI
+    /// DSSI get program descriptor function; for 0, it returns the default program (from parameter properties table), for others, it uses global or user preset
     static const DSSI_Program_Descriptor *cb_get_program(LADSPA_Handle Instance, unsigned long index) {
         if (index > presets->size())
             return NULL;
@@ -506,6 +513,7 @@ struct ladspa_wrapper
         return &dssi_default_program;
     }
     
+    /// DSSI select program function; for 0, it sets the defaults, for others, it sets global or user preset
     static void cb_select_program(LADSPA_Handle Instance, unsigned long Bank, unsigned long Program) {
         instance *mod = (instance *)Instance;
         unsigned int no = (Bank << 7) + Program - 1;
@@ -524,6 +532,7 @@ struct ladspa_wrapper
     
 #endif
     
+    /// LADSPA port connection function
     static void cb_connect(LADSPA_Handle Instance, unsigned long port, LADSPA_Data *DataLocation) {
         unsigned long ins = Module::in_count;
         unsigned long outs = Module::out_count;
@@ -540,11 +549,13 @@ struct ladspa_wrapper
         }
     }
 
+    /// LADSPA activate function (note that at this moment the ports are not set)
     static void cb_activate(LADSPA_Handle Instance) {
         instance *const mod = (instance *)Instance;
         mod->activate_flag = true;
     }
     
+    /// utility function: zero port values if mask is 0
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)
     {
         for (int i=0; i<Module::out_count; i++) {
@@ -554,6 +565,7 @@ struct ladspa_wrapper
         }
     }
 
+    /// LADSPA run function - does set sample rate / activate logic when it's run first time after activation
     static void cb_run(LADSPA_Handle Instance, unsigned long SampleCount) {
         instance *const mod = (instance *)Instance;
         if (mod->activate_flag)
@@ -566,6 +578,7 @@ struct ladspa_wrapper
         process_slice(mod, 0, SampleCount);
     }
     
+    /// utility function: call process, and if it returned zeros in output masks, zero out the relevant output port buffers
     static inline void process_slice(Module *mod, uint32_t offset, uint32_t end)
     {
         while(offset < end)
@@ -578,6 +591,7 @@ struct ladspa_wrapper
     }
 
 #if USE_DSSI
+    /// DSSI "run synth" function, same as run() except it allows for event delivery
     static void cb_run_synth(LADSPA_Handle Instance, unsigned long SampleCount, 
             snd_seq_event_t *Events, unsigned long EventCount) {
         instance *const mod = (instance *)Instance;
@@ -602,6 +616,7 @@ struct ladspa_wrapper
             process_slice(mod, offset, SampleCount);
     }
     
+    /// DSSI configure function (named properties)
     static char *cb_configure(LADSPA_Handle Instance,
 		       const char *Key,
 		       const char *Value)
@@ -610,6 +625,7 @@ struct ladspa_wrapper
         return mod->configure(Key, Value);
     }
     
+    /// Utility function: handle MIDI event (only handles a subset in this version)
     static void process_dssi_event(Module *module, snd_seq_event_t &event)
     {
         switch(event.type) {
@@ -632,16 +648,19 @@ struct ladspa_wrapper
     }
 #endif
 
+    /// LADSPA deactivate function
     static void cb_deactivate(LADSPA_Handle Instance) {
         instance *const mod = (instance *)Instance;
         mod->deactivate();
     }
 
+    /// LADSPA cleanup (delete instance) function
     static void cb_cleanup(LADSPA_Handle Instance) {
         instance *const mod = (instance *)Instance;
         delete mod;
     }
     
+    /// Get a wrapper singleton - used to prevent initialization order problems which were present in older versions
     static ladspa_wrapper &get() { 
         static ladspa_wrapper instance;
         return instance;
@@ -679,7 +698,7 @@ public:
     virtual ~audio_exception() throw () {}
 };
 
-// this should go into some utility library, perhaps
+/// Escape a string to be used in XML file
 std::string xml_escape(const std::string &src);
 
 };
