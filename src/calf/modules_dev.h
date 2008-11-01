@@ -47,7 +47,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         bool bypass = *params[param_bypass] > 0.5f;
         bool rms = *params[param_detection] == 0;
-        bool average = *params[param_stereo_link] == 1;
+        bool average = *params[param_stereo_link] == 0;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
         float attack = *params[param_attack];
