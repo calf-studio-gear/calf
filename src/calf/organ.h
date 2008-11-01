@@ -218,7 +218,7 @@ protected:
     enum { VibratoSize = 6 };
     float vibrato_x1[VibratoSize][2], vibrato_y1[VibratoSize][2];
     float lfo_phase;
-    onepole<float> vibrato[2];
+    dsp::onepole<float> vibrato[2];
 public:
     void reset();
     void process(organ_parameters *parameters, float (*data)[2], unsigned int len, float sample_rate);
@@ -232,9 +232,9 @@ protected:
         float aux_buffers[3][BlockSize][Channels];
     };
     dsp::fixed_point<int64_t, 52> phase, dphase;
-    biquad<float> filterL[2], filterR[2];
+    dsp::biquad<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
-    inertia<linear_ramp> expression;
+    dsp::inertia<dsp::linear_ramp> expression;
     organ_vibrato vibrato;
     float velocity;
     bool perc_released;
@@ -244,7 +244,7 @@ protected:
 public:
     organ_voice()
     : organ_voice_base(NULL, sample_rate, perc_released),
-    expression(linear_ramp(16)) {
+    expression(dsp::linear_ramp(16)) {
     }
 
     void reset() {
@@ -365,7 +365,7 @@ struct drawbar_organ: public synth::basic_synth {
         float buf[4096][2];
         dsp::zero(&buf[0][0], 2 * nsamples);
         basic_synth::render_to(buf, nsamples);
-        if (fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
+        if (dsp::fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
         {
             for (int i = 0; i < nsamples; i += 64)
                 global_vibrato.process(parameters, buf + i, std::min(64, nsamples - i), sample_rate);
