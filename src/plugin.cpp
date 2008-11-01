@@ -25,23 +25,6 @@
 
 using namespace synth;
 
-#if USE_LADSPA
-#define LADSPA_WRAPPER(mod) static synth::ladspa_wrapper<mod##_audio_module> ladspa_##mod(mod##_audio_module::plugin_info);
-#else
-#define LADSPA_WRAPPER(mod)
-#endif
-
-#if USE_LV2
-#define LV2_WRAPPER(mod) static synth::lv2_wrapper<mod##_audio_module> lv2_##mod(mod##_audio_module::plugin_info);
-#else
-#define LV2_WRAPPER(...)
-#endif
-
-#define ALL_WRAPPERS(mod) LADSPA_WRAPPER(mod) LV2_WRAPPER(mod)
-
-#define PER_MODULE_ITEM(name, isSynth, jackname) ALL_WRAPPERS(name)
-#include <calf/modulelist.h>
-
 #if USE_LV2
 // instantiate descriptor templates
 template<class Module> LV2_Descriptor synth::lv2_wrapper<Module>::descriptor;
@@ -50,7 +33,7 @@ extern "C" {
 
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &::lv2_##name.descriptor;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(index--)) return &synth::lv2_wrapper<name##_audio_module>::get().descriptor;
     #include <calf/modulelist.h>
 #ifdef ENABLE_EXPERIMENTAL
     return lv2_small_descriptor(index);
@@ -68,7 +51,7 @@ extern "C" {
 
 const LADSPA_Descriptor *ladspa_descriptor(unsigned long Index)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &::ladspa_##name.descriptor;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth && !(Index--)) return &synth::ladspa_wrapper<name##_audio_module>::get().descriptor;
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -80,7 +63,7 @@ extern "C" {
 
 const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &::ladspa_##name.dssi_descriptor;
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!(Index--)) return &synth::ladspa_wrapper<name##_audio_module>::get().dssi_descriptor;
     #include <calf/modulelist.h>
     return NULL;
 }

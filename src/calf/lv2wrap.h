@@ -133,8 +133,9 @@ struct lv2_wrapper
     static LV2_Descriptor descriptor;
     std::string uri;
     
-    lv2_wrapper(ladspa_plugin_info &info)
+    lv2_wrapper()
     {
+        ladspa_plugin_info &info = Module::plugin_info;
         uri = "http://calf.sourceforge.net/plugins/" + std::string(info.label);
         descriptor.URI = uri.c_str();
         descriptor.instantiate = cb_instantiate;
@@ -267,6 +268,10 @@ struct lv2_wrapper
     }
     static const void *cb_ext_data(const char *URI) {
         return NULL;
+    }
+    static lv2_wrapper &get() { 
+        static lv2_wrapper instance;
+        return instance;
     }
 };
 

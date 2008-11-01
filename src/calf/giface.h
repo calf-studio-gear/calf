@@ -49,6 +49,7 @@ enum {
     MAX_SAMPLE_RUN = 256
 };
     
+/// Values ORed together for flags field in parameter_properties
 enum parameter_flags
 {
   PF_TYPEMASK = 0x000F,
@@ -269,6 +270,7 @@ extern void get_all_small_plugins(plugin_list_info_iface *plii);
 
 extern std::string generate_ladspa_rdf(const ladspa_plugin_info &info, parameter_properties *params, const char *param_names[], unsigned int count, unsigned int ctl_ofs);
 
+/// A template implementing plugin_ctl_iface for a given plugin
 template<class Module>
 struct ladspa_instance: public Module, public plugin_ctl_iface
 {
@@ -359,6 +361,7 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
 };
 
+/// A wrapper class for plugin class object (there is only one ladspa_wrapper for many instances of the same plugin)
 template<class Module>
 struct ladspa_wrapper
 {
@@ -372,37 +375,18 @@ struct ladspa_wrapper
     static std::vector<plugin_preset> *presets;
     static std::vector<DSSI_Program_Descriptor> *preset_descs;
 #endif
-    ladspa_plugin_info &info;
     
-    ladspa_wrapper(ladspa_plugin_info &i) 
-    : info(i)
-    {
-        init_descriptor(i);
-    }
-    
-    ~ladspa_wrapper()
-    {
-        delete []descriptor.PortNames;
-        delete []descriptor.PortDescriptors;
-        delete []descriptor.PortRangeHints;
-#if USE_DSSI
-        presets->clear();
-        preset_descs->clear();
-        delete presets;
-        delete preset_descs;
-#endif
-    }
-
-    void init_descriptor(ladspa_plugin_info &inf)
+    ladspa_wrapper() 
     {
         int ins = Module::in_count;
         int outs = Module::out_count;
         int params = Module::param_count;
-        descriptor.UniqueID = inf.unique_id;
-        descriptor.Label = inf.label;
-        descriptor.Name = inf.name;
-        descriptor.Maker = inf.maker;
-        descriptor.Copyright = inf.copyright;
+        ladspa_plugin_info &plugin_info = Module::plugin_info;
+        descriptor.UniqueID = plugin_info.unique_id;
+        descriptor.Label = plugin_info.label;
+        descriptor.Name = plugin_info.name;
+        descriptor.Maker = plugin_info.maker;
+        descriptor.Copyright = plugin_info.copyright;
         descriptor.Properties = Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0;
         descriptor.PortCount = ins + outs + params;
         descriptor.PortNames = new char *[descriptor.PortCount];
@@ -490,6 +474,19 @@ struct ladspa_wrapper
         }
         // printf("presets = %p:%d name = %s\n", presets, presets->size(), descriptor.Label);
         
+#endif
+    }
+
+    ~ladspa_wrapper()
+    {
+        delete []descriptor.PortNames;
+        delete []descriptor.PortDescriptors;
+        delete []descriptor.PortRangeHints;
+#if USE_DSSI
+        presets->clear();
+        preset_descs->clear();
+        delete presets;
+        delete preset_descs;
 #endif
     }
 
@@ -645,6 +642,10 @@ struct ladspa_wrapper
         delete mod;
     }
     
+    static ladspa_wrapper &get() { 
+        static ladspa_wrapper instance;
+        return instance;
+    }
 };
 
 template<class Module>
