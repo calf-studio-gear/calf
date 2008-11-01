@@ -23,6 +23,7 @@
 
 #include <assert.h>
 #include "biquad.h"
+#include "onepole.h"
 #include "audio_fx.h"
 #include "inertia.h"
 #include "osc.h"
@@ -57,9 +58,9 @@ public:
     
     float buffer[step_size], buffer2[step_size];
     uint32_t output_pos;
-    onepole<float> phaseshifter;
-    biquad<float> filter;
-    biquad<float> filter2;
+    dsp::onepole<float> phaseshifter;
+    dsp::biquad<float> filter;
+    dsp::biquad<float> filter2;
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
@@ -68,7 +69,7 @@ public:
     int legato;
     synth::adsr envelope;
     synth::keystack stack;
-    gain_smoothing master;
+    dsp::gain_smoothing master;
     
     static parameter_properties param_props[];
     static const char *get_gui_xml();
@@ -94,7 +95,7 @@ public:
             {
                 last_key = note = stack.nth(stack.count() - 1);
                 start_freq = freq;
-                target_freq = freq = note_to_hz(note);
+                target_freq = freq = dsp::note_to_hz(note);
                 set_frequency();
                 if (!(legato & 1)) {
                     envelope.note_on();
@@ -124,7 +125,7 @@ public:
     void params_changed() {
         float sf = 0.001f;
         envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, std::min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);
-        filter_type = fastf2i_drm(*params[par_filtertype]);
+        filter_type = dsp::fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
         separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
         wave1 = dsp::clip(dsp::fastf2i_drm(*params[par_wave1]), 0, (int)wave_count - 1);
@@ -138,19 +139,6 @@ public:
     }
     void activate();
     void deactivate() {}
-    /// Hard-knee 2:1 reducation outside range [-0.75, +0.75]
-    inline float softclip(float wave) const
-    {
-        float abswave = fabs(wave);
-        if (abswave > 0.75)
-        {
-            abswave = abswave - 0.5 * (abswave - 0.75);
-            if (abswave > 1.0)
-                abswave = 1.0;
-            wave = (wave > 0.0) ? abswave : - abswave;
-        }
-        return wave;
-    }
     /// Run oscillators and two filters in series to produce mono output samples.
     void calculate_buffer_ser();
     /// Run oscillators and just one filter to produce mono output samples.

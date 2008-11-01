@@ -40,54 +40,6 @@ using namespace dsp;
 class null_audio_module;
 struct ladspa_plugin_info;
     
-/// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
-/// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
-class null_audio_module: public line_graph_iface
-{
-public:
-    /// Handle MIDI Note On
-    inline void note_on(int note, int velocity) {}
-    /// Handle MIDI Note Off
-    inline void note_off(int note, int velocity) {}
-    /// Handle MIDI Program Change
-    inline void program_change(int program) {}
-    /// Handle MIDI Control Change
-    inline void control_change(int controller, int value) {}
-    /// Handle MIDI Pitch Bend
-    /// @param value pitch bend value (-8192 to 8191, defined as in MIDI ie. 8191 = 200 ct by default)
-    inline void pitch_bend(int value) {}
-    /// Called when params are changed (before processing)
-    inline void params_changed() {}
-    /// LADSPA-esque activate function, except it is called after ports are connected, not before
-    inline void activate() {}
-    /// LADSPA-esque deactivate function
-    inline void deactivate() {}
-    /// Set sample rate for the plugin
-    inline void set_sample_rate(uint32_t sr) { }
-    /// Get "live" graph
-    inline bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
-    inline static const char *get_gui_xml() { return NULL; }
-    /// Get "static" graph (one that is dependent on single parameter value and doesn't use other parameters or plugin internal state).
-    /// Used by waveform graphs.
-    inline static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
-    /// Return the NULL-terminated list of menu commands
-    inline static plugin_command_info *get_commands() { return NULL; }
-    /// does parameter number represent a CV port? (yes by default, except for synths)
-    static bool is_cv(int param_no) { return true; }
-    /// does parameter change cause an audible click?
-    static bool is_noisy(int param_no) { return false; }
-    /// Execute menu command with given number
-    inline void execute(int cmd_no) {}
-    /// DSSI configure call
-    inline char *configure(const char *key, const char *value) { return NULL; }
-    /// Send all understood configure vars
-    inline void send_configures(send_configure_iface *sci) {}
-    /// Get all configure vars that are supposed to be set to initialize a preset
-    static inline const char **get_default_configure_vars() { return NULL; }
-    /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
-    inline void params_reset() {}
-};
-
 class amp_audio_module: public null_audio_module
 {
 public:
@@ -836,7 +788,6 @@ public:
 };
 
 extern std::string get_builtin_modules_rdf();
-extern const char *calf_copyright_info;
 
 };
 

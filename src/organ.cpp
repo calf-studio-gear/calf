@@ -27,8 +27,7 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
+#include <calf/modules_synths.h>
 #include <iostream>
 
 using namespace synth;

@@ -265,7 +265,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
 void led_param_control::set()
 {
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    // parameter_properties &props = get_props();
     calf_led_set_state (CALF_LED (widget), gui->plugin->get_param_value(param_no) > 0);
     if (label)
         update_label();

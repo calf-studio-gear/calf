@@ -26,7 +26,6 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
-#include <calf/modules.h>
 #include <calf/modules_synths.h>
 
 using namespace synth;
@@ -411,7 +410,7 @@ void monosynth_audio_module::calculate_buffer_ser()
         float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
         wave = filter.process_d1(wave);
         wave = filter2.process_d1(wave);
-        buffer[i] = softclip(wave);
+        buffer[i] = wave;
         fgain += fgain_delta;
     }
 }
@@ -424,7 +423,7 @@ void monosynth_audio_module::calculate_buffer_single()
         float osc2val = osc2.get();
         float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
         wave = filter.process_d1(wave);
-        buffer[i] = softclip(wave);
+        buffer[i] = wave;
         fgain += fgain_delta;
     }
 }
@@ -437,8 +436,8 @@ void monosynth_audio_module::calculate_buffer_stereo()
         float osc2val = osc2.get();
         float wave1 = osc1val + (osc2val - osc1val) * xfade;
         float wave2 = phaseshifter.process_ap(wave1);
-        buffer[i] = softclip(fgain * filter.process_d1(wave1));
-        buffer2[i] = softclip(fgain * filter2.process_d1(wave2));
+        buffer[i] = fgain * filter.process_d1(wave1);
+        buffer2[i] = fgain * filter2.process_d1(wave2);
         fgain += fgain_delta;
     }
 }
