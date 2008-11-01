@@ -37,7 +37,7 @@ public:
     float *params[param_count];
     uint32_t srate;
     static parameter_properties param_props[];
-    float clip, peak;
+    float clip, peak, asample2;
     void activate() {
         target = 1.f;
         aim = 1.f;
@@ -56,16 +56,18 @@ public:
         float knee = *params[param_knee];
 
         while(offset < numsamples) {
-            float asample = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
-            if(rms) asample *= asample;
-            
+            float asample1 = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
+            float asample;
+            if(rms) {
+                asample2 += (asample1*asample1 - asample2) * 200 / srate;
+                asample = sqrt(asample2);
+            } else asample = asample1;
+
             if(asample > 0 && (asample > threshold || knee < 1)) {
                 if(IS_FAKE_INFINITY(ratio)) {
                     target = threshold;
                 } else {
-                    target = asample - threshold;
-                    target /= ratio;
-                    target += threshold;
+                    target = (asample - threshold) / ratio + threshold;
                 }
                 
                 if(knee < 1) {
@@ -82,21 +84,17 @@ public:
             
             peak -= peak * 0.0001;
             
-            float raim;
-            if(rms) raim = sqrt(aim);
-            raim = aim;
-
-            float outL = ins[0][offset] * raim * makeup;
+            float outL = ins[0][offset] * aim * makeup;
             outs[0][offset] = outL;
 
-            float outR = ins[1][offset] * raim * makeup;
+            float outR = ins[1][offset] * aim * makeup;
             outs[1][offset] = outR;
 
             ++offset;
             
             float maxLR = std::max(fabs(outL), fabs(outR));
            
-            if(maxLR > 1) clip = srate / 10;
+            if(maxLR > 1) clip = srate / 10; /* blink clip LED for 100 ms */
             if(maxLR > peak) peak = maxLR;
             
             if(clip > 0) {
