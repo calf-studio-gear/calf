@@ -27,6 +27,7 @@
 #include <calf/plugininfo.h>
 #if USE_LV2
 #include <calf/lv2_event.h>
+#include <calf/lv2_uri_map.h>
 #endif
 
 using namespace std;
@@ -434,8 +435,16 @@ void make_ttl(string path_prefix)
         if (pi.rt_capable)
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
         if (pi.midi_in_capable)
-            ttl += "    lv2:optionalFeature <" LV2_EVENT_URI "> ;\n";
-            // ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
+        {
+            if (pi.midi_in_required) {
+                ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
+                ttl += "    lv2:requiredFeature <" LV2_URI_MAP_URI "> ;\n";                
+            }
+            else {
+                ttl += "    lv2:optionalFeature <" LV2_EVENT_URI "> ;\n";
+                ttl += "    lv2:optionalFeature <" LV2_URI_MAP_URI "> ;\n";                
+            }
+        }
         
         string ports = "";
         int pn = 0;

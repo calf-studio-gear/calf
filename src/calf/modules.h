@@ -91,7 +91,7 @@ public:
 class amp_audio_module: public null_audio_module
 {
 public:
-    enum { in_count = 2, out_count = 2, param_count = 1, support_midi = false, rt_capable = true };
+    enum { in_count = 2, out_count = 2, param_count = 1, support_midi = false, require_midi = false, rt_capable = true };
     float *ins[2]; 
     float *outs[2];
     float *params[1];
@@ -118,7 +118,7 @@ class flanger_audio_module: public null_audio_module
 {
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
     dsp::simple_flanger<float, 2048> left, right;
@@ -189,7 +189,7 @@ class phaser_audio_module: public null_audio_module
 {
 public:
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
     float *ins[in_count]; 
@@ -262,7 +262,7 @@ class reverb_audio_module: public null_audio_module
 {
 public:    
     enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
     dsp::reverb<float> reverb;
@@ -311,7 +311,7 @@ class filter_audio_module: public null_audio_module
 {
 public:    
     enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
+    enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = false, support_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -466,7 +466,7 @@ public:
     // 1MB of delay memory per channel... uh, RAM is cheap
     enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
     enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -576,7 +576,7 @@ class rotary_speaker_audio_module: public null_audio_module
 {
 public:
     enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, par_reflection, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = true, rt_capable = true };
+    enum { in_count = 2, out_count = 2, support_midi = true, require_midi = false, rt_capable = true };
     static const char *port_names[];
     float *ins[in_count]; 
     float *outs[out_count];
@@ -775,7 +775,7 @@ class multichorus_audio_module: public null_audio_module
 {
 public:    
     enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_lfophase_l, par_lfophase_r, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
