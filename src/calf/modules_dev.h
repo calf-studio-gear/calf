@@ -26,9 +26,11 @@ namespace synth {
 #if ENABLE_EXPERIMENTAL
 
 class compressor_audio_module: public null_audio_module {
+private:
+    float linslope, clip, peak;
 public:
-    enum { in_count = 2, out_count = 2, support_midi = false, rt_capable = true };
-    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_rms, param_compression, param_peak, param_clip, param_count };
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_rms, param_average, param_compression, param_peak, param_clip, param_bypass, param_count };
 
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
@@ -37,15 +39,15 @@ public:
     float *params[param_count];
     uint32_t srate;
     static parameter_properties param_props[];
-    float clip, peak, asample2;
     void activate() {
-        target = 1.f;
-        aim = 1.f;
+        linslope = 0.f;
         peak = 0.f;
+        clip = 0.f;
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        numsamples += offset;
+        bool bypass = *params[param_bypass] > 0.5f;
         bool rms = *params[param_rms] > 0.5f;
+        bool average = *params[param_average] > 0.5f;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
         float attack = *params[param_attack];
@@ -55,56 +57,75 @@ public:
         float makeup = *params[param_makeup];
         float knee = *params[param_knee];
 
-        while(offset < numsamples) {
-            float asample1 = std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
-            float asample;
-            if(rms) {
-                asample2 += (asample1*asample1 - asample2) * 200 / srate;
-                asample = sqrt(asample2);
-            } else asample = asample1;
+        numsamples += offset;
+        
+        if(bypass) {
+            int count = numsamples * sizeof(float);
+            memcpy(outs[0], ins[0], count);
+            memcpy(outs[1], ins[1], count);
 
-            if(asample > 0 && (asample > threshold || knee < 1)) {
+            if(params[param_compression] != NULL) {
+                *params[param_compression] = 1.f;
+            }
+
+            if(params[param_clip] != NULL) {
+                *params[param_clip] = 0.f;
+            }
+
+            if(params[param_peak] != NULL) {
+                *params[param_peak] = 0.f;
+            }
+      
+            return inputs_mask;
+        }
+
+        float gain = 1.f;
+        
+        while(offset < numsamples) {
+            float absample = average ? (fabs(ins[0][offset]) + fabs(ins[1][offset])) / 2 : std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
+            if(rms) absample *= absample;
+            linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
+            float slope = rms ? sqrt(linslope) : linslope;
+
+            if(slope > 0 && (slope > threshold || knee < 1)) {
                 if(IS_FAKE_INFINITY(ratio)) {
-                    target = threshold;
+                    gain = threshold;
                 } else {
-                    target = (asample - threshold) / ratio + threshold;
+                    gain = (slope - threshold) / ratio + threshold;
                 }
                 
                 if(knee < 1) {
-                    float t = std::min(1.f, std::max(0.f, asample / threshold - knee) / (1.f - knee));
-                    target = (target - asample) * t + asample;
+                    float t = std::min(1.f, std::max(0.f, slope / threshold - knee) / (1.f - knee));
+                    gain = (gain - slope) * t + slope;
                 }
                 
-                target /= asample;
-            } else {
-                target = 1.f;
+                gain /= slope;
             }
         
-            aim += (target - aim) * (aim > target ? attack_coeff : release_coeff);
             
-            peak -= peak * 0.0001;
-            
-            float outL = ins[0][offset] * aim * makeup;
+            float outL = ins[0][offset] * gain * makeup;
             outs[0][offset] = outL;
 
-            float outR = ins[1][offset] * aim * makeup;
+            float outR = ins[1][offset] * gain * makeup;
             outs[1][offset] = outR;
 
             ++offset;
             
             float maxLR = std::max(fabs(outL), fabs(outR));
-           
-            if(maxLR > 1) clip = srate / 10; /* blink clip LED for 100 ms */
-            if(maxLR > peak) peak = maxLR;
             
             if(clip > 0) {
                 --clip;
             }
-
+            if(maxLR > 1.f) clip = srate / 10.f; /* blink clip LED for 100 ms */
+            
+            peak -= peak * 0.0001;
+            if(maxLR > peak) {
+                peak = maxLR;
+            }
         }
         
         if(params[param_compression] != NULL) {
-            *params[param_compression] = aim;
+            *params[param_compression] = gain;
         }
 
         if(params[param_clip] != NULL) {
@@ -125,8 +146,6 @@ public:
     void set_sample_rate(uint32_t sr) {
             srate = sr;
     }
-private:
-    float aim, target;
 };
 
 #endif
