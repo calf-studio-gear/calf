@@ -329,6 +329,16 @@ void reverbir_calc()
     }
 }
 
+void eq_calc()
+{
+    biquad_coeffs<float> bqc;
+    bqc.set_lowshelf_rbj(2000, 2.0, 4.0, 10000);
+    for (int i = 0; i <= 5000; i += 100)
+    {
+        printf("%d %f\n", i, bqc.freq_gain(i * 1.0, 10000));
+    }
+}
+
 #ifdef TEST_OSC
 
 struct my_sink: public osc_message_sink<osc_strstream>
@@ -431,6 +441,9 @@ int main(int argc, char *argv[])
 
     if (unit && !strcmp(unit, "reverbir"))
         reverbir_calc();
+
+    if (unit && !strcmp(unit, "eq"))
+        eq_calc();
 
     return 0;
 }

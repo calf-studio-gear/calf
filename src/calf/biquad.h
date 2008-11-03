@@ -23,6 +23,7 @@
 #ifndef __CALF_BIQUAD_H
 #define __CALF_BIQUAD_H
 
+#include <complex>
 #include "primitives.h"
 
 namespace dsp {
@@ -35,6 +36,9 @@ namespace dsp {
  * except where it's not. 
  * The coefficient calculation is NOT mine, the only exception is the lossy 
  * optimization in Zoelzer and rbj HP filter code.
+ * 
+ * See http://www.musicdsp.org/files/Audio-EQ-Cookbook.txt for reference.
+ * 
  * don't use this for integers because it won't work
  */
 template<class Coeff = float>
@@ -58,6 +62,10 @@ public:
     /** Lowpass filter based on Robert Bristow-Johnson's equations
      * Perhaps every synth code that doesn't use SVF uses these
      * equations :)
+     * @param fc     resonant frequency
+     * @param q      resonance (gain at fc)
+     * @param sr     sample rate
+     * @param gain   amplification (gain at 0Hz)
      */
     inline void set_lp_rbj(float fc, float q, float sr, float gain = 1.0)
     {
@@ -93,11 +101,17 @@ public:
         a1 =  a0 + a0;
     }
 
+    /** Highpass filter based on Robert Bristow-Johnson's equations
+     * @param fc     resonant frequency
+     * @param q      resonance (gain at fc)
+     * @param sr     sample rate
+     * @param gain   amplification (gain at sr/2)
+     */
     void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
     {
         Coeff omega=(float)(2*M_PI*fc/esr);
-		Coeff sn=sin(omega);
-		Coeff cs=cos(omega);
+        Coeff sn=sin(omega);
+        Coeff cs=cos(omega);
         Coeff alpha=(float)(sn/(2*q));
 
         float inv=(float)(1.0/(1.0+alpha));
@@ -113,8 +127,8 @@ public:
     void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
     {
         Coeff omega=(float)(2*M_PI*fc/esr);
-		Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
-		Coeff cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
+        Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
+        Coeff cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
         Coeff alpha=(float)(sn/(2*q));
 
         float inv=(float)(1.0/(1.0+alpha));
@@ -126,7 +140,12 @@ public:
         b2 =  (Coeff)((1 - alpha)*inv);
     }
     
-    // rbj's bandpass
+    /** Bandpass filter based on Robert Bristow-Johnson's equations (normalized to 1.0 at center frequency)
+     * @param fc     center frequency (gain at fc = 1.0)
+     * @param q      =~ fc/bandwidth (not quite, but close)  - 1/Q = 2*sinh(ln(2)/2*BW*w0/sin(w0))
+     * @param sr     sample rate
+     * @param gain   amplification (gain at sr/2)
+     */
     void set_bp_rbj(double fc, double q, double esr, double gain=1.0)
     {
         float omega=(float)(2*M_PI*fc/esr);
@@ -175,12 +194,84 @@ public:
     /// set digital filter parameters based on given analog filter parameters
     void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)
     {
-            float q=(float)(1.0/(ab0+ab1+ab2));
-            a0 = (aa0+aa1+aa2)*q;
-            a1 = 2*(aa0-aa2)*q;
-            a2 = (aa0-aa1+aa2)*q;
-            b1 = 2*(ab0-ab2)*q;
-            b2 = (ab0-ab1+ab2)*q;
+        float q=(float)(1.0/(ab0+ab1+ab2));
+        a0 = (aa0+aa1+aa2)*q;
+        a1 = 2*(aa0-aa2)*q;
+        a2 = (aa0-aa1+aa2)*q;
+        b1 = 2*(ab0-ab2)*q;
+        b2 = (ab0-ab1+ab2)*q;
+    }
+    
+    /// RBJ peaking EQ
+    /// @param freq   peak frequency
+    /// @param q      q (correlated to freq/bandwidth, @see set_bp_rbj)
+    /// @param peak   peak gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
+    void set_peakeq_rbj(float freq, float q, float peak, float sr)
+    {
+        float A = sqrt(peak);
+        float w0 = freq * 2 * M_PI * (1.0 / sr);
+        float alpha = sin(w0) / (2 * q);
+        float ib0 = 1.0 / (1 + alpha/A);
+        a1 = b1 = -2*cos(w0) * ib0;
+        a0 = ib0 * (1 + alpha*A);
+        a2 = ib0 * (1 - alpha*A);
+        b2 = ib0 * (1 - alpha/A);
+    }
+    
+    /// RBJ low shelf EQ - amplitication of 'peak' at 0 Hz and of 1.0 (0dB) at sr/2 Hz
+    /// @param freq   corner frequency (gain at freq is sqrt(peak))
+    /// @param q      q (relates bandwidth and peak frequency), the higher q, the louder the resonant peak (situated below fc) is
+    /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
+    void set_lowshelf_rbj(float freq, float q, float peak, float sr)
+    {
+        float A = sqrt(peak);
+        float w0 = freq * 2 * M_PI * (1.0 / sr);
+        float alpha = sin(w0) / (2 * q);
+        float cw0 = cos(w0);
+        float tmp = 2 * sqrt(A) * alpha;
+        float b0 = 0.f, ib0 = 0.f;
+        
+        a0 =    A*( (A+1) - (A-1)*cw0 + tmp);
+        a1 =  2*A*( (A-1) - (A+1)*cw0);
+        a2 =    A*( (A+1) - (A-1)*cw0 - tmp);
+        b0 =        (A+1) + (A-1)*cw0 + tmp;
+        b1 =   -2*( (A-1) + (A+1)*cw0);
+        b2 =        (A+1) + (A-1)*cw0 - tmp;
+        
+        ib0 = 1.0 / b0;
+        b1 *= ib0;
+        b2 *= ib0;
+        a0 *= ib0;
+        a1 *= ib0;
+        a2 *= ib0;
+    }
+    
+    /// RBJ high shelf EQ - amplitication of 0dB at 0 Hz and of peak at sr/2 Hz
+    /// @param freq   corner frequency (gain at freq is sqrt(peak))
+    /// @param q      q (relates bandwidth and peak frequency), the higher q, the louder the resonant peak (situated above fc) is
+    /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
+    void set_highshelf_rbj(float freq, float q, float peak, float sr)
+    {
+        float A = sqrt(peak);
+        float w0 = freq * 2 * M_PI * (1.0 / sr);
+        float alpha = sin(w0) / (2 * q);
+        float cw0 = cos(w0);
+        float tmp = 2 * sqrt(A) * alpha;
+        float b0 = 0.f, ib0 = 0.f;
+        
+        a0 =    A*( (A+1) + (A-1)*cw0 + tmp);
+        a1 = -2*A*( (A-1) + (A+1)*cw0);
+        a2 =    A*( (A+1) + (A-1)*cw0 - tmp);
+        b0 =        (A+1) - (A-1)*cw0 + tmp;
+        b1 =    2*( (A-1) - (A+1)*cw0);
+        b2 =        (A+1) - (A-1)*cw0 - tmp;
+        
+        ib0 = 1.0 / b0;
+        b1 *= ib0;
+        b2 *= ib0;
+        a0 *= ib0;
+        a1 *= ib0;
+        a2 *= ib0;
     }
     
     /// copy coefficients from another biquad
@@ -193,6 +284,19 @@ public:
         b1 = src.b1;
         b2 = src.b2;
     }
+    
+    /// Return the filter's gain at frequency freq
+    /// @param freq   Frequency to look up
+    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq));
+        
+        return std::abs((cfloat(a0) + double(a1) * z + double(a2) * z*z) / (cfloat(1.0) + double(b1) * z + double(b2) * z*z));
+    }
+    
 };
 
 /**
