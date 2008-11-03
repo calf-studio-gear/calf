@@ -21,6 +21,8 @@
 #ifndef __CALF_MODULES_DEV_H
 #define __CALF_MODULES_DEV_H
 
+#include "loudness.h"
+
 namespace synth {
 
 #if ENABLE_EXPERIMENTAL
@@ -28,9 +30,11 @@ namespace synth {
 class compressor_audio_module: public null_audio_module {
 private:
     float linslope, clip, peak;
+    bool aweighting;
+    aweighter awL, awR;
 public:
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression, param_peak, param_clip, param_bypass, param_count };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_aweighting, param_compression, param_peak, param_clip, param_bypass, param_count };
 
     static const char *port_names[in_count + out_count];
     static synth::ladspa_plugin_info plugin_info;
@@ -48,6 +52,7 @@ public:
         bool bypass = *params[param_bypass] > 0.5f;
         bool rms = *params[param_detection] == 0;
         bool average = *params[param_stereo_link] == 0;
+        aweighting = *params[param_aweighting] > 0.5f;
         float threshold = *params[param_threshold];
         float ratio = *params[param_ratio];
         float attack = *params[param_attack];
@@ -82,7 +87,13 @@ public:
         float gain = 1.f;
         
         while(offset < numsamples) {
-            float absample = average ? (fabs(ins[0][offset]) + fabs(ins[1][offset])) / 2 : std::max(fabs(ins[0][offset]), fabs(ins[1][offset]));
+            float left = ins[0][offset];
+            float right = ins[1][offset];
+            if(aweighting) {
+                left = awL.process(left);
+                right = awR.process(right);
+            }
+            float absample = average ? (fabs(left) + fabs(right)) / 2 : std::max(fabs(left), fabs(right));
             if(rms) absample *= absample;
             linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
             float slope = rms ? sqrt(linslope) : linslope;
@@ -145,6 +156,8 @@ public:
 
     void set_sample_rate(uint32_t sr) {
             srate = sr;
+            awL.set(sr);
+            awR.set(sr);
     }
 };
 
