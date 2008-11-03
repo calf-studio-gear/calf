@@ -59,8 +59,8 @@ public:
     float buffer[step_size], buffer2[step_size];
     uint32_t output_pos;
     dsp::onepole<float> phaseshifter;
-    dsp::biquad<float> filter;
-    dsp::biquad<float> filter2;
+    dsp::biquad_d1<float> filter;
+    dsp::biquad_d1<float> filter2;
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;

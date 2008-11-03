@@ -268,7 +268,7 @@ public:
     float *outs[out_count];
     float *params[param_count];
     static const char *port_names[];
-    dsp::biquad<float> left[3], right[3];
+    dsp::biquad_d1<float> left[3], right[3];
     uint32_t srate;
     static parameter_properties param_props[];
     static synth::ladspa_plugin_info plugin_info;
@@ -341,51 +341,51 @@ public:
     void set_sample_rate(uint32_t sr) {
         srate = sr;
     }
-    inline int process_channel(dsp::biquad<float> *filter, float *in, float *out, uint32_t numsamples, int inmask) {
+    inline int process_channel(dsp::biquad_d1<float> *filter, float *in, float *out, uint32_t numsamples, int inmask) {
         if (inmask) {
             switch(order) {
                 case 1:
                     for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process_d1(in[i]);
+                        out[i] = filter[0].process(in[i]);
                     break;
                 case 2:
                     for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[1].process_d1(filter[0].process_d1(in[i]));
+                        out[i] = filter[1].process(filter[0].process(in[i]));
                     break;
                 case 3:
                     for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[2].process_d1(filter[1].process_d1(filter[0].process_d1(in[i])));
+                        out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
                     break;
             }
         } else {
-            if (filter[order - 1].empty_d1())
+            if (filter[order - 1].empty())
                 return 0;
             switch(order) {
                 case 1:
                     for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process_d1_zeroin();
+                        out[i] = filter[0].process_zeroin();
                     break;
                 case 2:
-                    if (filter[0].empty_d1())
+                    if (filter[0].empty())
                         for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process_d1_zeroin();
+                            out[i] = filter[1].process_zeroin();
                     else
                         for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process_d1(filter[0].process_d1_zeroin());
+                            out[i] = filter[1].process(filter[0].process_zeroin());
                     break;
                 case 3:
-                    if (filter[1].empty_d1())
+                    if (filter[1].empty())
                         for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process_d1_zeroin();
+                            out[i] = filter[2].process_zeroin();
                     else
                         for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process_d1(filter[1].process_d1(filter[0].process_d1_zeroin()));
+                            out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
                     break;
             }
         }
         for (int i = 0; i < order; i++)
-            filter[i].sanitize_d1();
-        return filter[order - 1].empty_d1() ? 0 : inmask;
+            filter[i].sanitize();
+        return filter[order - 1].empty() ? 0 : inmask;
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
 //        printf("sr=%d cutoff=%f res=%f mode=%f\n", srate, *params[par_cutoff], *params[par_resonance], *params[par_mode]);
@@ -428,7 +428,7 @@ public:
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
     
-    dsp::biquad<float> biquad_left[2], biquad_right[2];
+    dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     
     uint32_t srate;
     static parameter_properties param_props[];
@@ -503,20 +503,20 @@ public:
             {
                 for(uint32_t i = offset; i < end; i++)
                 {
-                    buffers[0][bufptr] = biquad_left[0].process_d2_lp(biquad_left[1].process_d2(buffers[0][bufptr]));
-                    buffers[1][bufptr] = biquad_right[0].process_d2_lp(biquad_right[1].process_d2(buffers[1][bufptr]));
+                    buffers[0][bufptr] = biquad_left[0].process_lp(biquad_left[1].process(buffers[0][bufptr]));
+                    buffers[1][bufptr] = biquad_right[0].process_lp(biquad_right[1].process(buffers[1][bufptr]));
                     bufptr = (bufptr + 1) & (MAX_DELAY - 1);
                 }
-                biquad_left[0].sanitize_d2();biquad_right[0].sanitize_d2();
+                biquad_left[0].sanitize();biquad_right[0].sanitize();
             } else {
                 for(uint32_t i = offset; i < end; i++)
                 {
-                    buffers[0][bufptr] = biquad_left[1].process_d2(buffers[0][bufptr]);
-                    buffers[1][bufptr] = biquad_right[1].process_d2(buffers[1][bufptr]);
+                    buffers[0][bufptr] = biquad_left[1].process(buffers[0][bufptr]);
+                    buffers[1][bufptr] = biquad_right[1].process(buffers[1][bufptr]);
                     bufptr = (bufptr + 1) & (MAX_DELAY - 1);
                 }
             }
-            biquad_left[1].sanitize_d2();biquad_right[1].sanitize_d2();
+            biquad_left[1].sanitize();biquad_right[1].sanitize();
             
         }
         return ostate;
@@ -536,7 +536,7 @@ public:
     /// Current phases and phase deltas for bass and treble rotors
     uint32_t phase_l, dphase_l, phase_h, dphase_h;
     dsp::simple_delay<1024, float> delay;
-    dsp::biquad<float> crossover1l, crossover1r, crossover2l, crossover2r;
+    dsp::biquad_d2<float> crossover1l, crossover1r, crossover2l, crossover2r;
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
     int vibrato_mode;
@@ -671,10 +671,10 @@ public:
             float out_lo_l = in_mono + delay.get_interp_1616(shift + md * xl); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
             float out_lo_r = in_mono + delay.get_interp_1616(shift + md * yl); // - delay.get_interp_1616(shift + pdelta + md * yl);
             
-            out_hi_l = crossover2l.process_d2(out_hi_l); // sanitize(out_hi_l);
-            out_hi_r = crossover2r.process_d2(out_hi_r); // sanitize(out_hi_r);
-            out_lo_l = crossover1l.process_d2(out_lo_l); // sanitize(out_lo_l);
-            out_lo_r = crossover1r.process_d2(out_lo_r); // sanitize(out_lo_r);
+            out_hi_l = crossover2l.process(out_hi_l); // sanitize(out_hi_l);
+            out_hi_r = crossover2r.process(out_hi_r); // sanitize(out_hi_r);
+            out_lo_l = crossover1l.process(out_lo_l); // sanitize(out_lo_l);
+            out_lo_r = crossover1r.process(out_lo_r); // sanitize(out_lo_r);
             
             float out_l = out_hi_l + out_lo_l;
             float out_r = out_hi_r + out_lo_r;
@@ -688,10 +688,10 @@ public:
             phase_l += dphase_l;
             phase_h += dphase_h;
         }
-        crossover1l.sanitize_d2();
-        crossover1r.sanitize_d2();
-        crossover2l.sanitize_d2();
-        crossover2r.sanitize_d2();
+        crossover1l.sanitize();
+        crossover1r.sanitize();
+        crossover2l.sanitize();
+        crossover2r.sanitize();
         float delta = nsamples * 1.0 / srate;
         if (vibrato_mode == 5)
             update_speed_manual(delta);

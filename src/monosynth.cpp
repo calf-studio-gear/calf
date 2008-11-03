@@ -388,7 +388,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * M_PI / srate;
             cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
-            biquad<float> &f = subindex ? filter2 : filter;
+            biquad_d1<float> &f = subindex ? filter2 : filter;
             float level = abs((cfloat(f.a0) + double(f.a1) * z + double(f.a2) * z*z) / (cfloat(1.0) + double(f.b1) * z + double(f.b2) * z*z));
             if (!is_stereo_filter())
                 level *= abs((cfloat(filter2.a0) + double(filter2.a1) * z + double(filter2.a2) * z*z) / (cfloat(1.0) + double(filter2.b1) * z + double(filter2.b2) * z*z));
@@ -408,8 +408,8 @@ void monosynth_audio_module::calculate_buffer_ser()
         float osc1val = osc1.get();
         float osc2val = osc2.get();
         float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
-        wave = filter.process_d1(wave);
-        wave = filter2.process_d1(wave);
+        wave = filter.process(wave);
+        wave = filter2.process(wave);
         buffer[i] = wave;
         fgain += fgain_delta;
     }
@@ -422,7 +422,7 @@ void monosynth_audio_module::calculate_buffer_single()
         float osc1val = osc1.get();
         float osc2val = osc2.get();
         float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
-        wave = filter.process_d1(wave);
+        wave = filter.process(wave);
         buffer[i] = wave;
         fgain += fgain_delta;
     }
@@ -436,8 +436,8 @@ void monosynth_audio_module::calculate_buffer_stereo()
         float osc2val = osc2.get();
         float wave1 = osc1val + (osc2val - osc1val) * xfade;
         float wave2 = phaseshifter.process_ap(wave1);
-        buffer[i] = fgain * filter.process_d1(wave1);
-        buffer2[i] = fgain * filter2.process_d1(wave2);
+        buffer[i] = fgain * filter.process(wave1);
+        buffer2[i] = fgain * filter2.process(wave2);
         fgain += fgain_delta;
     }
 }

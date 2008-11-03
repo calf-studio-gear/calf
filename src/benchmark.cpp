@@ -51,12 +51,13 @@ struct empty_benchmark
     double scaler() { return BUF_SIZE; }
 };
 
+template<class filter_class>
 struct filter_lp24dB_benchmark
 {
     enum { BUF_SIZE = 256 };
     float buffer[BUF_SIZE];
     float result;
-    dsp::biquad<float> biquad, biquad2;
+    filter_class biquad, biquad2;
     void prepare()
     {
         for (int i = 0; i < BUF_SIZE; i++)
@@ -69,70 +70,70 @@ struct filter_lp24dB_benchmark
     double scaler() { return BUF_SIZE; }
 };
 
-struct filter_24dB_lp_twopass_d1: public filter_lp24dB_benchmark
+struct filter_24dB_lp_twopass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad.process_d1(buffer[i]);
+            buffer[i] = biquad.process(buffer[i]);
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad2.process_d1(buffer[i]);
+            buffer[i] = biquad2.process(buffer[i]);
     }
 };
 
-struct filter_24dB_lp_onepass_d1: public filter_lp24dB_benchmark
+struct filter_24dB_lp_onepass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad2.process_d1(biquad.process_d2(buffer[i]));
+            buffer[i] = biquad2.process(biquad.process(buffer[i]));
     }
 };
 
-struct filter_12dB_lp_d1: public filter_lp24dB_benchmark
+struct filter_12dB_lp_d1: public filter_lp24dB_benchmark<biquad_d1<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad.process_d1(buffer[i]);
+            buffer[i] = biquad.process(buffer[i]);
     }
 };
 
-struct filter_24dB_lp_twopass_d2: public filter_lp24dB_benchmark
+struct filter_24dB_lp_twopass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad.process_d1(buffer[i]);
+            buffer[i] = biquad.process(buffer[i]);
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad2.process_d1(buffer[i]);
+            buffer[i] = biquad2.process(buffer[i]);
     }
 };
 
-struct filter_24dB_lp_onepass_d2: public filter_lp24dB_benchmark
+struct filter_24dB_lp_onepass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad2.process_d2(biquad.process_d2(buffer[i]));
+            buffer[i] = biquad2.process(biquad.process(buffer[i]));
     }
 };
 
-struct filter_24dB_lp_onepass_d2_lp: public filter_lp24dB_benchmark
+struct filter_24dB_lp_onepass_d2_lp: public filter_lp24dB_benchmark<biquad_d2<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad2.process_d2_lp(biquad.process_d2_lp(buffer[i]));
+            buffer[i] = biquad2.process_lp(biquad.process_lp(buffer[i]));
     }
 };
 
-struct filter_12dB_lp_d2: public filter_lp24dB_benchmark
+struct filter_12dB_lp_d2: public filter_lp24dB_benchmark<biquad_d2<> >
 {
     void run()
     {
         for (int i = 0; i < BUF_SIZE; i++)
-            buffer[i] = biquad.process_d2(buffer[i]);
+            buffer[i] = biquad.process(buffer[i]);
     }
 };
 

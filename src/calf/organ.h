@@ -232,7 +232,7 @@ protected:
         float aux_buffers[3][BlockSize][Channels];
     };
     dsp::fixed_point<int64_t, 52> phase, dphase;
-    dsp::biquad<float> filterL[2], filterR[2];
+    dsp::biquad_d1<float> filterL[2], filterR[2];
     adsr envs[EnvCount];
     dsp::inertia<dsp::linear_ramp> expression;
     organ_vibrato vibrato;

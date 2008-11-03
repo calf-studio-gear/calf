@@ -28,26 +28,25 @@
 namespace dsp {
 
 /**
- * Two-pole two-zero filter, for floating point values.
- * Coefficient calculation is based on famous Robert Bristow-Johnson's equations.
+ * Coefficients for two-pole two-zero filter, for floating point values,
+ * plus a bunch of functions to set them to typical values.
+ * 
+ * Coefficient calculation is based on famous Robert Bristow-Johnson's equations,
+ * except where it's not. 
  * The coefficient calculation is NOT mine, the only exception is the lossy 
  * optimization in Zoelzer and rbj HP filter code.
  * don't use this for integers because it won't work
  */
-template<class T = float, class Coeff = float>
-class biquad
+template<class Coeff = float>
+class biquad_coeffs
 {
 public:
-    // type I filter state variables
-    T x1, y1, x2, y2;
-    // type II filter state variables
-    T w1, w2;
     // filter coefficients
     Coeff a0, a1, a2, b1, b2;
 
-    biquad()
+    biquad_coeffs()
     {
-        reset();
+        set_null();
     }
     
     inline void set_null()
@@ -184,8 +183,9 @@ public:
             b2 = (ab0-ab1+ab2)*q;
     }
     
+    /// copy coefficients from another biquad
     template<class U>
-    inline void copy_coeffs(const biquad<U> &src)
+    inline void copy_coeffs(const biquad_coeffs<U> &src)
     {
         a0 = src.a0;
         a1 = src.a1;
@@ -193,9 +193,36 @@ public:
         b1 = src.b1;
         b2 = src.b2;
     }
+};
 
-    // direct I form with four state variables
-    inline T process_d1(T in)
+/**
+ * Two-pole two-zero filter, for floating point values.
+ * Uses "traditional" Direct I form (separate FIR and IIR halves).
+ * don't use this for integers because it won't work
+ */
+template<class Coeff = float, class T = float>
+struct biquad_d1: public biquad_coeffs<Coeff>
+{
+    using biquad_coeffs<Coeff>::a0;
+    using biquad_coeffs<Coeff>::a1;
+    using biquad_coeffs<Coeff>::a2;
+    using biquad_coeffs<Coeff>::b1;
+    using biquad_coeffs<Coeff>::b2;
+    /// input[n-1]
+    T x1; 
+    /// input[n-2]
+    T x2; 
+    /// output[n-1]
+    T y1; 
+    /// output[n-2]
+    T y2; 
+    /// Constructor (initializes state to all zeros)
+    biquad_d1()
+    {
+        reset();
+    }
+    /// direct I form with four state variables
+    inline T process(T in)
     {
         T out = in * a0 + x1 * a1 + x2 * a2 - y1 * b1 - y2 * b2;
         x2 = x1;
@@ -205,8 +232,8 @@ public:
         return out;
     }
     
-    // direct I form with zero input
-    inline T process_d1_zeroin()
+    /// direct I form with zero input
+    inline T process_zeroin()
     {
         T out = - y1 * b1 - y2 * b2;
         y2 = y1;
@@ -214,8 +241,8 @@ public:
         return out;
     }
     
-    // simplified version for lowpass case with two zeros at -1
-    inline T process_d1_lp(T in)
+    /// simplified version for lowpass case with two zeros at -1
+    inline T process_lp(T in)
     {
         T out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
         x2 = x1;
@@ -224,9 +251,54 @@ public:
         y1 = out;
         return out;
     }
+    /// Sanitize (set to 0 if potentially denormal) filter state
+    inline void sanitize() 
+    {
+        dsp::sanitize(x1);
+        dsp::sanitize(y1);
+        dsp::sanitize(x2);
+        dsp::sanitize(y2);
+    }
+    /// Reset state variables
+    inline void reset()
+    {
+        dsp::zero(x1);
+        dsp::zero(y1);
+        dsp::zero(x2);
+        dsp::zero(y2);
+    }
+    inline bool empty() {
+        return (y1 == 0.f && y2 == 0.f);
+    }
     
-    // direct II form with two state variables
-    inline T process_d2(T in)
+};
+    
+/**
+ * Two-pole two-zero filter, for floating point values.
+ * Uses slightly faster Direct II form (combined FIR and IIR halves).
+ * However, when used with wildly varying coefficients, it may 
+ * make more zipper noise than Direct I form, so it's better to
+ * use it when filter coefficients are not changed mid-stream.
+ */
+template<class Coeff = float, class T = float>
+struct biquad_d2: public biquad_coeffs<Coeff>
+{
+    using biquad_coeffs<Coeff>::a0;
+    using biquad_coeffs<Coeff>::a1;
+    using biquad_coeffs<Coeff>::a2;
+    using biquad_coeffs<Coeff>::b1;
+    using biquad_coeffs<Coeff>::b2;
+    /// state[n-1]
+    float w1; 
+    /// state[n-2]
+    float w2; 
+    /// Constructor (initializes state to all zeros)
+    biquad_d2()
+    {
+        reset();
+    }
+    /// direct II form with two state variables
+    inline T process(T in)
     {
         T tmp = in - w1 * b1 - w2 * b2;
         T out = tmp * a0 + w1 * a1 + w2 * a2;
@@ -237,7 +309,7 @@ public:
     
     // direct II form with two state variables, lowpass version
     // interesting fact: this is actually slower than the general version!
-    inline T process_d2_lp(T in)
+    inline T process_lp(T in)
     {
         T tmp = in - w1 * b1 - w2 * b2;
         T out = (tmp  + w2 + w1* 2) * a0;
@@ -245,46 +317,22 @@ public:
         w1 = tmp;
         return out;
     }
-    
-    inline bool empty_d1() {
-        return (y1 == 0.f && y2 == 0.f);
-    }
-    
-    inline bool empty_d2() {
+
+    /// Is the filter state completely silent? (i.e. set to 0 by sanitize function)
+    inline bool empty() {
         return (w1 == 0.f && w2 == 0.f);
     }
     
-    inline void sanitize_d1() 
-    {
-        dsp::sanitize(x1);
-        dsp::sanitize(y1);
-        dsp::sanitize(x2);
-        dsp::sanitize(y2);
-    }
     
-    inline void sanitize_d2() 
+    /// Sanitize (set to 0 if potentially denormal) filter state
+    inline void sanitize() 
     {
         dsp::sanitize(w1);
         dsp::sanitize(w2);
     }
     
+    /// Reset state variables
     inline void reset()
-    {
-        dsp::zero(x1);
-        dsp::zero(y1);
-        dsp::zero(w1);
-        dsp::zero(x2);
-        dsp::zero(y2);
-        dsp::zero(w2);
-    }
-    inline void reset_d1()
-    {
-        dsp::zero(x1);
-        dsp::zero(y1);
-        dsp::zero(x2);
-        dsp::zero(y2);
-    }
-    inline void reset_d2()
     {
         dsp::zero(w1);
         dsp::zero(w2);

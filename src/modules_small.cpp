@@ -67,15 +67,15 @@ public:
         pii->control_port("res", "Resonance", 0.707).input().log_range(0.707, 20);
         pii->audio_port("out", "Out").output();
     }
-    dsp::biquad<float> filter;
+    dsp::biquad_d1<float> filter;
     
     void activate() {
-        filter.reset_d1();
+        filter.reset();
     }
     inline void process_inner(uint32_t count) {
         for (uint32_t i = 0; i < count; i++)
-            outs[out_signal][i] = filter.process_d1(ins[in_signal][i]);
-        filter.sanitize_d1();
+            outs[out_signal][i] = filter.process(ins[in_signal][i]);
+        filter.sanitize();
     }
 };
 

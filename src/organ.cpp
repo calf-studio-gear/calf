@@ -1160,23 +1160,23 @@ void organ_voice::render_block() {
     if (parameters->filter_chain >= 0.5f)
     {
         for (int i=0; i < (int) BlockSize; i++) {
-            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a2 * filterL[1].process_d1(a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + aux_buffers[2][i][0]));
-            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a2 * filterR[1].process_d1(a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + aux_buffers[2][i][1]));
+            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a2 * filterL[1].process(a1 * filterL[0].process(aux_buffers[1][i][0]) + aux_buffers[2][i][0]));
+            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a2 * filterR[1].process(a1 * filterR[0].process(aux_buffers[1][i][1]) + aux_buffers[2][i][1]));
             a0 += d0, a1 += d1, a2 += d2, a3 += d3;
         }
     }
     else
     {
         for (int i=0; i < (int) BlockSize; i++) {
-            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a1 * filterL[0].process_d1(aux_buffers[1][i][0]) + a2 * filterL[1].process_d1(aux_buffers[2][i][0]));
-            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process_d1(aux_buffers[1][i][1]) + a2 * filterR[1].process_d1(aux_buffers[2][i][1]));
+            output_buffer[i][0] = a3 * (a0 * output_buffer[i][0] + a1 * filterL[0].process(aux_buffers[1][i][0]) + a2 * filterL[1].process(aux_buffers[2][i][0]));
+            output_buffer[i][1] = a3 * (a0 * output_buffer[i][1] + a1 * filterR[0].process(aux_buffers[1][i][1]) + a2 * filterR[1].process(aux_buffers[2][i][1]));
             a0 += d0, a1 += d1, a2 += d2, a3 += d3;
         }
     }
-    filterL[0].sanitize_d1();
-    filterR[0].sanitize_d1();
-    filterL[1].sanitize_d1();
-    filterR[1].sanitize_d1();
+    filterL[0].sanitize();
+    filterR[0].sanitize();
+    filterL[1].sanitize();
+    filterR[1].sanitize();
     if (vibrato_mode == lfomode_voice)
         vibrato.process(parameters, output_buffer, BlockSize, sample_rate);
 
