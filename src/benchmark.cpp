@@ -24,6 +24,7 @@
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <calf/loudness.h>
 #include <calf/benchmark.h>
 
 // #define TEST_OSC
@@ -339,6 +340,16 @@ void eq_calc()
     }
 }
 
+void aweighting_calc()
+{
+    aweighter aw;
+    aw.set(48000);
+    for (int i = 10; i < 20000; i += 10)
+    {
+        printf("%d %f\n", i, 20*log10(aw.freq_gain(i * 1.0, 48000)));
+    }
+}
+
 #ifdef TEST_OSC
 
 struct my_sink: public osc_message_sink<osc_strstream>
@@ -444,6 +455,9 @@ int main(int argc, char *argv[])
 
     if (unit && !strcmp(unit, "eq"))
         eq_calc();
+
+    if (unit && !strcmp(unit, "aweighting"))
+        aweighting_calc();
 
     return 0;
 }

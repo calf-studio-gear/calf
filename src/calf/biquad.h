@@ -107,7 +107,7 @@ public:
      * @param sr     sample rate
      * @param gain   amplification (gain at sr/2)
      */
-    void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
+    inline void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
     {
         Coeff omega=(float)(2*M_PI*fc/esr);
         Coeff sn=sin(omega);
@@ -124,7 +124,7 @@ public:
     }
 
     // this replaces sin/cos with polynomial approximation
-    void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
+    inline void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
     {
         Coeff omega=(float)(2*M_PI*fc/esr);
         Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
@@ -146,7 +146,7 @@ public:
      * @param sr     sample rate
      * @param gain   amplification (gain at sr/2)
      */
-    void set_bp_rbj(double fc, double q, double esr, double gain=1.0)
+    inline void set_bp_rbj(double fc, double q, double esr, double gain=1.0)
     {
         float omega=(float)(2*M_PI*fc/esr);
         float sn=sin(omega);
@@ -163,7 +163,7 @@ public:
     }
     
     // rbj's bandreject
-    void set_br_rbj(double fc, double q, double esr, double gain=1.0)
+    inline void set_br_rbj(double fc, double q, double esr, double gain=1.0)
     {
         float omega=(float)(2*M_PI*fc/esr);
         float sn=sin(omega);
@@ -181,15 +181,27 @@ public:
     // this is mine (and, I guess, it sucks/doesn't work)
     void set_allpass(float freq, float pole_r, float sr)
     {
-            float a=prewarp(freq, sr);
-            float q=pole_r;
-            set_bilinear(a*a+q*q, -2.0f*a, 1, a*a+q*q, 2.0f*a, 1);
+        float a=prewarp(freq, sr);
+        float q=pole_r;
+        set_bilinear(a*a+q*q, -2.0f*a, 1, a*a+q*q, 2.0f*a, 1);
     }
     /// prewarping for bilinear transform, maps given digital frequency to analog counterpart for analog filter design
-    float prewarp(float freq, float sr)
+    static inline float prewarp(float freq, float sr)
     {
-            if (freq>sr*0.49) freq=(float)(sr*0.49);
-            return (float)(tan(M_PI*freq/sr));
+        if (freq>sr*0.49) freq=(float)(sr*0.49);
+        return (float)(tan(M_PI*freq/sr));
+    }
+    /// convert analog frequency-corresponding pole value to digital
+    static inline float unwarp(float freq, float sr)
+    {
+        float T = 1.0 / sr;
+        return (2 / T) * atan(freq * T / 2);
+    }
+    /// convert analog frequency-corresponding pole value to digital
+    static inline float unwarpf(float coeff, float sr)
+    {
+        float T = 1.0 / sr;
+        return 1.0 / ((2 / T) * atan((1.0 / coeff) * T / 2));
     }
     /// set digital filter parameters based on given analog filter parameters
     void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)
@@ -206,7 +218,7 @@ public:
     /// @param freq   peak frequency
     /// @param q      q (correlated to freq/bandwidth, @see set_bp_rbj)
     /// @param peak   peak gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
-    void set_peakeq_rbj(float freq, float q, float peak, float sr)
+    inline void set_peakeq_rbj(float freq, float q, float peak, float sr)
     {
         float A = sqrt(peak);
         float w0 = freq * 2 * M_PI * (1.0 / sr);
@@ -222,7 +234,7 @@ public:
     /// @param freq   corner frequency (gain at freq is sqrt(peak))
     /// @param q      q (relates bandwidth and peak frequency), the higher q, the louder the resonant peak (situated below fc) is
     /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
-    void set_lowshelf_rbj(float freq, float q, float peak, float sr)
+    inline void set_lowshelf_rbj(float freq, float q, float peak, float sr)
     {
         float A = sqrt(peak);
         float w0 = freq * 2 * M_PI * (1.0 / sr);
@@ -250,7 +262,7 @@ public:
     /// @param freq   corner frequency (gain at freq is sqrt(peak))
     /// @param q      q (relates bandwidth and peak frequency), the higher q, the louder the resonant peak (situated above fc) is
     /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
-    void set_highshelf_rbj(float freq, float q, float peak, float sr)
+    inline void set_highshelf_rbj(float freq, float q, float peak, float sr)
     {
         float A = sqrt(peak);
         float w0 = freq * 2 * M_PI * (1.0 / sr);
