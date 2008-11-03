@@ -385,16 +385,16 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         for (int i = 0; i < points; i++)
         {
             typedef complex<double> cfloat;
-            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points) * M_PI / srate;
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
             biquad_d1<float> &f = subindex ? filter2 : filter;
-            float level = abs((cfloat(f.a0) + double(f.a1) * z + double(f.a2) * z*z) / (cfloat(1.0) + double(f.b1) * z + double(f.b2) * z*z));
+            float level = f.freq_gain(freq, srate);
             if (!is_stereo_filter())
-                level *= abs((cfloat(filter2.a0) + double(filter2.a1) * z + double(filter2.a2) * z*z) / (cfloat(1.0) + double(filter2.b1) * z + double(filter2.b2) * z*z));
+                level *= filter2.freq_gain(freq, srate);
             level *= fgain;
             
-            data[i] = log(level) / log(1024.0) + 0.25;
+            data[i] = log(level) / log(1024.0) + 0.5;
         }
         return true;
     }
