@@ -87,14 +87,14 @@ public:
             linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
             float slope = rms ? sqrt(linslope) : linslope;
 
-            if(slope > 0 && (slope > threshold || knee < 1)) {
+            if(slope > 0.f && (slope > threshold || knee < 1.f)) {
                 if(IS_FAKE_INFINITY(ratio)) {
                     gain = threshold;
                 } else {
                     gain = (slope - threshold) / ratio + threshold;
                 }
                 
-                if(knee < 1) {
+                if(knee < 1.f) {
                     float t = std::min(1.f, std::max(0.f, slope / threshold - knee) / (1.f - knee));
                     gain = (gain - slope) * t + slope;
                 }
