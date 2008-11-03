@@ -191,17 +191,21 @@ public:
         if (freq>sr*0.49) freq=(float)(sr*0.49);
         return (float)(tan(M_PI*freq/sr));
     }
-    /// convert analog frequency-corresponding pole value to digital
-    static inline float unwarp(float freq, float sr)
+    /// convert analog angular frequency value to digital
+    static inline float unwarp(float omega, float sr)
     {
         float T = 1.0 / sr;
-        return (2 / T) * atan(freq * T / 2);
+        return (2 / T) * atan(omega * T / 2);
     }
-    /// convert analog frequency-corresponding pole value to digital
-    static inline float unwarpf(float coeff, float sr)
+    /// convert analog filter time constant to digital counterpart
+    static inline float unwarpf(float t, float sr)
     {
-        float T = 1.0 / sr;
-        return 1.0 / ((2 / T) * atan((1.0 / coeff) * T / 2));
+        // this is most likely broken and works by pure accident!
+        float omega = 1.0 / t;
+        omega = unwarp(omega, sr);
+        // I really don't know why does it have to be M_PI and not 2 * M_PI!
+        float f = M_PI / omega;
+        return f / sr;
     }
     /// set digital filter parameters based on given analog filter parameters
     void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)

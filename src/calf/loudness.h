@@ -31,32 +31,37 @@ class aweighter {
 public:
     biquad_d2<float> bq1, bq2, bq3;
     
+    /// Produce one output sample from one input sample
     float process(float sample)
     {
         return bq1.process(bq2.process(bq3.process(sample)));
     }
     
+    /// Set sample rate (updates filter coefficients)
     void set(float sr)
     {
-        // lowpass : H(s) = 1 / (1 + st) = 1 / (1 + s/w) = 1 / (1 + s/(2piF))
-        // wc = 2pi * fc
-
-        // This is not done yet - I need to finish redoing the coeffs properly
-        float f1 = 129.4f / sr; 
-        float f2 = 676.7f / sr; 
-        float f3 = 4636.f / sr; 
-        float f4 = 76655.f / sr;
-        /*
-        float f1 = biquad_coeffs<float>::unwarpf(129.4f, sr);
-        float f2 = biquad_coeffs<float>::unwarpf(676.7f, sr);
-        float f3 = biquad_coeffs<float>::unwarpf(4636.f, sr);
-        float f4 = biquad_coeffs<float>::unwarpf(76655.f, sr);
-        */
+        // analog coeffs taken from: http://www.diracdelta.co.uk/science/source/a/w/aweighting/source.html
+        // first we need to adjust them by doing some obscene sort of reverse pre-warping (a broken one, too!)
+        float f1 = biquad_coeffs<float>::unwarpf(20.6f, sr);
+        float f2 = biquad_coeffs<float>::unwarpf(107.7f, sr);
+        float f3 = biquad_coeffs<float>::unwarpf(738.f, sr);
+        float f4 = biquad_coeffs<float>::unwarpf(12200.f, sr);
+        // then map s domain to z domain using bilinear transform
+        // note: f1 and f4 are double poles
         bq1.set_bilinear(0, 0, 1, f1*f1, 2 * f1, 1);
-        bq2.set_bilinear(4.0, 0, 0, f2*f3, f2 + f3, 1);
+        bq2.set_bilinear(1, 0, 0, f2*f3, f2 + f3, 1);
         bq3.set_bilinear(0, 0, 1, f4*f4, 2 * f4, 1);
+        // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
+        // find actual gain
+        float gain1kHz = freq_gain(1000.0, sr);
+        // divide one filter's x[n-m] coefficients by that value
+        float gc = 1.0 / gain1kHz;
+        bq1.a0 *= gc;
+        bq1.a1 *= gc;
+        bq1.a2 *= gc;
     }
     
+    /// Reset to zero if at risk of denormals
     void sanitize()
     {
         bq1.sanitize();
@@ -64,6 +69,7 @@ public:
         bq3.sanitize();
     }
     
+    /// Reset state to zero
     void reset()
     {
         bq1.reset();
@@ -71,6 +77,7 @@ public:
         bq3.reset();
     }
     
+    /// Gain and a given frequency
     float freq_gain(float freq, float sr)
     {
         return bq1.freq_gain(freq, sr) * bq2.freq_gain(freq, sr) * bq3.freq_gain(freq, sr);

@@ -343,10 +343,11 @@ void eq_calc()
 void aweighting_calc()
 {
     aweighter aw;
-    aw.set(48000);
+    float fs = 44100;
+    aw.set(fs);
     for (int i = 10; i < 20000; i += 10)
     {
-        printf("%d %f\n", i, 20*log10(aw.freq_gain(i * 1.0, 48000)));
+        printf("%d %f\n", i, 20*log10(aw.freq_gain(i * 1.0, fs)));
     }
 }
 
