@@ -1,6 +1,5 @@
 /* Calf DSP Library
- * API wrappers for Linux audio standards (apart from JACK, which is
- * a separate file now!)
+ * Common plugin interface definitions (shared between LADSPA/LV2/DSSI/standalone).
  *
  * Copyright (C) 2007 Krzysztof Foltman
  *

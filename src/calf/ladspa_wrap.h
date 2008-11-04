@@ -1,8 +1,7 @@
 /* Calf DSP Library
- * API wrappers for Linux audio standards (apart from JACK, which is
- * a separate file now!)
+ * API wrappers for LADSPA/DSSI
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2008 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
