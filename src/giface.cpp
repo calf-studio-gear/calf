@@ -22,8 +22,6 @@
 #include <assert.h>
 #include <memory.h>
 #include <calf/giface.h>
-#include <calf/modules.h>
-#include <calf/lv2wrap.h>
 
 using namespace synth;
 using namespace std;
