@@ -17,13 +17,15 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <assert.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <config.h>
-#include <calf/giface.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
+#include <calf/audio_fx.h>
+//#include <calf/giface.h>
+//#include <calf/modules.h>
+//#include <calf/modules_dev.h>
 #include <calf/loudness.h>
 #include <calf/benchmark.h>
 
@@ -209,6 +211,7 @@ void alignment_test()
         do_simple_benchmark<aligned_double>();
 }
 
+#if 0
 template<class Effect>
 void get_default_effect_params(float params[Effect::param_count], uint32_t &sr);
 
@@ -296,6 +299,12 @@ void effect_test()
     dsp::do_simple_benchmark<effect_benchmark<synth::filter_audio_module> >(5, 10000);
 }
 
+#else
+void effect_test()
+{
+    printf("Test temporarily removed due to refactoring\n");
+}
+#endif
 void reverbir_calc()
 {
     enum { LEN = 1048576 };
@@ -303,7 +312,7 @@ void reverbir_calc()
     
     for (int t = 1; t < 38; t++)
     {
-        reverb<float> rvb;
+        dsp::reverb<float> rvb;
         
         memset(data, 0, sizeof(data));
         data[0][0] = 1;

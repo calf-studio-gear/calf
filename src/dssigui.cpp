@@ -85,25 +85,25 @@ struct plugin_proxy_base: public plugin_ctl_iface
     }
 };
 
-template<class Module>
-struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
+template<class Metadata>
+struct plugin_proxy: public plugin_proxy_base, public Metadata
 {
-    float params[Module::param_count];
+    using Metadata::param_count;
+    
+    float params[param_count];
+
     plugin_proxy()
     {
-        for (unsigned int i = 0; i < Module::param_count; i++)
+        for (unsigned int i = 0; i < param_count; i++)
             params[i] = get_param_props(i)->def_value;
     }
-    virtual parameter_properties *get_param_props(int param_no) {
-        return Module::param_props + param_no;
-    }
     virtual float get_param_value(int param_no) {
-        if (param_no < 0 || param_no >= Module::param_count)
+        if (param_no < 0 || param_no >= param_count)
             return 0;
         return params[param_no];
     }
     virtual void set_param_value(int param_no, float value) {
-        if (param_no < 0 || param_no >= Module::param_count)
+        if (param_no < 0 || param_no >= param_count)
             return;
         params[param_no] = value;
         if (send_osc)
@@ -112,18 +112,6 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             str << (uint32_t)(param_no + get_param_port_offset()) << value;
             client->send("/control", str);
         }
-    }
-    virtual int get_param_count() {
-        return Module::param_count;
-    }
-    virtual int get_param_port_offset() {
-        return Module::in_count + Module::out_count;
-    }
-    virtual const char *get_gui_xml() {
-        return Module::get_gui_xml();
-    }
-    virtual line_graph_iface *get_line_graph_iface() {
-        return this;
     }
     virtual bool activate_preset(int bank, int program) { 
         if (send_osc) {
@@ -134,28 +122,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
         }
         return false;
     }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) {
-        return Module::get_static_graph(index, subindex, params[index], data, points, context);
-    }
-    virtual const char *inst_get_name()
-    {
-        return Module::get_name();
-    }
-    virtual const char *inst_get_id()
-    {
-        return Module::get_id();
-    }
-    virtual const char *inst_get_label()
-    {
-        return Module::get_label();
-    }
-    virtual int get_input_count() { return Module::in_count; }
-    virtual int get_output_count() { return Module::out_count; }
-    virtual bool get_midi() { return Module::support_midi; }
     virtual float get_level(unsigned int port) { return 0.f; }
-    virtual plugin_command_info *get_commands() {
-        return Module::get_commands();
-    }
     virtual void execute(int command_no) { 
         if (send_osc) {
             stringstream ss;
@@ -182,7 +149,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
     void clear_preset() {
-        const char **p = Module::get_default_configure_vars();
+        const char **p = get_default_configure_vars();
         if (p)
         {
             for(; p[0]; p += 2)
@@ -193,7 +160,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, jackname)) return new plugin_proxy<name##_audio_module>();
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, jackname)) return new plugin_proxy<name##_metadata>();
     #include <calf/modulelist.h>
     return NULL;
 }

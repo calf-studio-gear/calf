@@ -43,11 +43,12 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64 };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
+    const char *get_gui_xml();
 };
     
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
-class monosynth_audio_module: public audio_module<monosynth_metadata>
+class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface
 {
 public:
     float *ins[in_count]; 
@@ -74,7 +75,6 @@ public:
     synth::keystack stack;
     dsp::gain_smoothing master;
     
-    static const char *get_gui_xml();
     static void generate_waves();
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
@@ -158,9 +158,9 @@ public:
         return filter_type == flt_2lp12 || filter_type == flt_2bp6;
     }
     /// No CV inputs for now
-    static bool is_cv(int param_no) { return false; }
+    bool is_cv(int param_no) { return false; }
     /// Practically all the stuff here is noisy
-    static bool is_noisy(int param_no) { return true; }
+    bool is_noisy(int param_no) { return true; }
     /// Calculate control signals and produce step_size samples of output.
     void calculate_step();
     /// Main processing function
@@ -197,9 +197,6 @@ public:
             
         return 3;
     }
-    static const char *get_name() { return "monosynth"; }
-    static const char *get_id() { return "monosynth"; }
-    static const char *get_label() { return "Monosynth"; }
 };
 
 struct organ_metadata: public plugin_metadata<organ_metadata>
@@ -207,6 +204,9 @@ struct organ_metadata: public plugin_metadata<organ_metadata>
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { param_count = drawbar_organ::param_count };
     PLUGIN_NAME_ID_LABEL("organ", "organ", "Organ")
+    plugin_command_info *get_commands();
+    const char **get_default_configure_vars();
+    const char *get_gui_xml();
 };
 
 struct organ_audio_module: public audio_module<organ_metadata>, public drawbar_organ
@@ -229,7 +229,6 @@ public:
     : drawbar_organ(&par_values)
     {
     }
-    static const char *get_gui_xml();
 
     void set_sample_rate(uint32_t sr) {
         srate = sr;
@@ -261,18 +260,14 @@ public:
         return 3;
     }
     /// No CV inputs for now
-    static bool is_cv(int param_no) { return false; }
+    bool is_cv(int param_no) { return false; }
     /// Practically all the stuff here is noisy
-    static bool is_noisy(int param_no) { return true; }
+    bool is_noisy(int param_no) { return true; }
     void execute(int cmd_no);
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
-    static const char *get_name() { return "organ"; }    
-    static const char *get_id() { return "organ"; }    
-    static const char *get_label() { return "Organ"; }    
-    static plugin_command_info *get_commands();
+    
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
-    static const char **get_default_configure_vars();
 };
 
 };

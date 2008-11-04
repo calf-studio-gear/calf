@@ -29,9 +29,11 @@
 #include <expat.h>
 #include <calf/preset.h>
 #include <calf/giface.h>
+#include <calf/utils.h>
 
 using namespace synth;
 using namespace std;
+using namespace calf_utils;
 
 extern synth::preset_list &synth::get_builtin_presets()
 {

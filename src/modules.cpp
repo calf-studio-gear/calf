@@ -25,15 +25,10 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
-#include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 
 using namespace synth;
-
-#if USE_LV2
-template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor;
-#endif
 
 const char *synth::calf_copyright_info = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
 
@@ -204,26 +199,9 @@ CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Thor 
 
 ////////////////////////////////////////////////////////////////////////////
 
-template<class Module>
-giface_plugin_info create_plugin_info(ladspa_plugin_info &info)
+void synth::get_all_plugins(std::vector<plugin_metadata_iface *> &plugins)
 {
-    giface_plugin_info pi;
-    pi.info = &info;
-    pi.inputs = Module::in_count;
-    pi.outputs = Module::out_count;
-    pi.params = Module::param_count;
-    pi.rt_capable = Module::rt_capable;
-    pi.midi_in_capable = Module::support_midi;
-    pi.midi_in_required = Module::require_midi;
-    pi.param_props = Module::param_props;
-    pi.is_noisy = Module::is_noisy;
-    pi.is_cv = Module::is_cv;
-    return pi;
-}
-
-void synth::get_all_plugins(std::vector<giface_plugin_info> &plugins)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(create_plugin_info<name##_audio_module>(name##_audio_module::plugin_info));
+    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(new name##_metadata);
     #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
 }

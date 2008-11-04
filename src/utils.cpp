@@ -23,11 +23,12 @@
 #include <calf/osctl.h>
 #include <calf/utils.h>
 
-using namespace calf_utils;
 using namespace std;
 using namespace osctl;
 
-string calf_utils::encodeMap(const dictionary &data)
+namespace calf_utils {
+
+string encode_map(const dictionary &data)
 {
     osctl::string_buffer sb;
     osc_stream<osctl::string_buffer> str(sb);
@@ -39,7 +40,7 @@ string calf_utils::encodeMap(const dictionary &data)
     return sb.data;
 }
 
-void calf_utils::decodeMap(dictionary &data, const string &src)
+void decode_map(dictionary &data, const string &src)
 {
     osctl::string_buffer sb(src);
     osc_stream<osctl::string_buffer> str(sb);
@@ -53,4 +54,36 @@ void calf_utils::decodeMap(dictionary &data, const string &src)
         str >> tmp2;
         data[tmp] = tmp2;
     }
+}
+
+std::string xml_escape(const std::string &src)
+{
+    string dest;
+    for (size_t i = 0; i < src.length(); i++) {
+        // XXXKF take care of string encoding
+        if (src[i] < 0 || src[i] == '"' || src[i] == '<' || src[i] == '>' || src[i] == '&')
+            dest += "&"+i2s((uint8_t)src[i])+";";
+        else
+            dest += src[i];
+    }
+    return dest;
+}
+
+
+std::string i2s(int value)
+{
+    char buf[32];
+    sprintf(buf, "%d", value);
+    
+    return std::string(buf);
+}
+
+std::string f2s(double value)
+{
+    // XXXKF might not work with some locale settings
+    char buf[64];
+    sprintf(buf, "%g", value);
+    return buf;
+}
+
 }

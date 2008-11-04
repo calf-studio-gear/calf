@@ -23,16 +23,6 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#if USE_LADSPA
-#include <ladspa.h>
-#endif
-#if USE_DSSI
-#include <dssi.h>
-#endif
-#if USE_JACK
-#include <jack/jack.h>
-#include <jack/midiport.h>
-#endif
 #include <exception>
 #include <string>
 #include "primitives.h"
@@ -175,58 +165,7 @@ struct send_configure_iface
 
 struct plugin_command_info;
 
-struct plugin_metadata_iface
-{
-    /// @return plugin long name
-    virtual const char *inst_get_name() = 0;
-    /// @return plugin LV2 label
-    virtual const char *inst_get_id() = 0;
-    /// @return plugin human-readable label
-    virtual const char *inst_get_label() = 0;
-};
-
-/// Interface for host-GUI-plugin interaction (should be really split in two, but ... meh)
-struct plugin_ctl_iface: public virtual plugin_metadata_iface
-{
-    /// @return description structure for given parameter
-    virtual parameter_properties *get_param_props(int param_no) = 0;
-    /// @return total number of parameters
-    virtual int get_param_count() = 0;
-    /// @return value of given parameter
-    virtual float get_param_value(int param_no) = 0;
-    /// Set value of given parameter
-    virtual void set_param_value(int param_no, float value) = 0;
-    /// Return custom XML
-    virtual const char *get_gui_xml() = 0;
-    /// @return line_graph_iface if any
-    virtual line_graph_iface *get_line_graph_iface() = 0;
-    /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
-    virtual int get_param_port_offset() = 0;
-    /// Load preset with given number
-    virtual bool activate_preset(int bank, int program) = 0;
-    /// @return number of audio inputs
-    virtual int get_input_count()=0;
-    /// @return number of audio outputs
-    virtual int get_output_count()=0;
-    /// @return true if plugin has MIDI input
-    virtual bool get_midi()=0;
-    /// @return volume level for port'th port (if supported by the implementation, currently only jack_host<Module> implements that by measuring signal level on plugin ports)
-    virtual float get_level(unsigned int port)=0;
-    /// @return NULL-terminated list of menu commands
-    virtual plugin_command_info *get_commands() { return NULL; }
-    /// Execute menu command with given number
-    virtual void execute(int cmd_no)=0;
-    /// Set a configure variable on a plugin
-    virtual char *configure(const char *key, const char *value) { return NULL; }
-    /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
-    virtual void send_configures(send_configure_iface *)=0;
-    /// Restore all state (parameters and configure vars) to default values
-    virtual void clear_preset()=0;
-    /// Do-nothing destructor to silence compiler warning
-    virtual ~plugin_ctl_iface() {}
-};
-
-/// General information about the plugin
+/// General information about the plugin - @todo XXXKF lacks the "new" id-label-name triple
 struct ladspa_plugin_info
 {
     /// LADSPA ID
@@ -243,33 +182,79 @@ struct ladspa_plugin_info
     const char *plugin_type;
 };
 
-struct giface_plugin_info
+/// An interface returning metadata about a plugin
+struct plugin_metadata_iface
 {
-    /// information like LADSPA ID, LADSPA label, name, maker, copyright and LRDF/LV2 plugin type (category)
-    ladspa_plugin_info *info;
-    /// number of inputs
-    int inputs;
-    /// number of outputs
-    int outputs;
-    /// number of control ports (inputs or outputs)
-    int params;
-    /// is realtime-capable?
-    bool rt_capable;
-    /// has MIDI input?
-    bool midi_in_capable;
-    /// requires MIDI input handling (a synth or equivalent)
-    bool midi_in_required;
-    /// parameter properties structure
-    parameter_properties *param_props;
+    /// @return plugin long name
+    virtual const char *get_name() = 0;
+    /// @return plugin LV2 label
+    virtual const char *get_id() = 0;
+    /// @return plugin human-readable label
+    virtual const char *get_label() = 0;
+    /// @return total number of parameters
+    virtual int get_param_count() = 0;
+    /// Return custom XML
+    virtual const char *get_gui_xml() = 0;
+    /// @return number of audio inputs
+    virtual int get_input_count()=0;
+    /// @return number of audio outputs
+    virtual int get_output_count()=0;
+    /// @return true if plugin can work in hard-realtime conditions
+    virtual bool is_rt_capable()=0;
+    /// @return true if plugin has MIDI input
+    virtual bool get_midi()=0;
+    /// @return true if plugin has MIDI input
+    virtual bool requires_midi()=0;
+    /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
+    virtual int get_param_port_offset() = 0;
+    /// @return line_graph_iface if any
+    virtual line_graph_iface *get_line_graph_iface() = 0;
+    /// @return NULL-terminated list of menu commands
+    virtual plugin_command_info *get_commands() { return NULL; }
+    /// @return description structure for given parameter
+    virtual parameter_properties *get_param_props(int param_no) = 0;
+    /// @return retrieve names of audio ports (@note control ports are named in parameter_properties, not here)
+    virtual const char **get_port_names() = 0;
+    /// @return description structure for the plugin
+    virtual const ladspa_plugin_info &get_plugin_info() = 0;
+    /// Get all configure vars that are supposed to be set to initialize a preset
+    /// @return key, value, key, value, ..., NULL
+    virtual const char **get_default_configure_vars() = 0;
     /// is a given parameter a control voltage?
-    bool (*is_cv)(int param_no);
+    virtual bool is_cv(int param_no) = 0;
     /// is the given parameter non-interpolated?
-    bool (*is_noisy)(int param_no);
+    virtual bool is_noisy(int param_no) = 0;
+
+    /// Do-nothing destructor to silence compiler warning
+    virtual ~plugin_metadata_iface() {}
+};
+
+/// Interface for host-GUI-plugin interaction (should be really split in two, but ... meh)
+struct plugin_ctl_iface: public virtual plugin_metadata_iface
+{
+    /// @return value of given parameter
+    virtual float get_param_value(int param_no) = 0;
+    /// Set value of given parameter
+    virtual void set_param_value(int param_no, float value) = 0;
+    /// Load preset with given number
+    virtual bool activate_preset(int bank, int program) = 0;
+    /// @return volume level for port'th port (if supported by the implementation, currently only jack_host<Module> implements that by measuring signal level on plugin ports)
+    virtual float get_level(unsigned int port)=0;
+    /// Execute menu command with given number
+    virtual void execute(int cmd_no)=0;
+    /// Set a configure variable on a plugin
+    virtual char *configure(const char *key, const char *value) { return NULL; }
+    /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
+    virtual void send_configures(send_configure_iface *)=0;
+    /// Restore all state (parameters and configure vars) to default values - implemented in giface.cpp
+    virtual void clear_preset();
+    /// Do-nothing destructor to silence compiler warning
+    virtual ~plugin_ctl_iface() {}
 };
 
 struct plugin_list_info_iface;
 
-extern void get_all_plugins(std::vector<giface_plugin_info> &plugins);
+extern void get_all_plugins(std::vector<plugin_metadata_iface *> &plugins);
 extern void get_all_small_plugins(plugin_list_info_iface *plii);
 
 
@@ -283,15 +268,14 @@ public:
     virtual ~audio_exception() throw () {}
 };
 
-/// Escape a string to be used in XML file
-std::string xml_escape(const std::string &src);
-
 /// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
 /// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
 template<class Metadata>
 class audio_module: public Metadata
 {
 public:
+    typedef Metadata metadata_type;
+
     /// Handle MIDI Note On
     inline void note_on(int note, int velocity) {}
     /// Handle MIDI Note Off
@@ -311,30 +295,17 @@ public:
     inline void deactivate() {}
     /// Set sample rate for the plugin
     inline void set_sample_rate(uint32_t sr) { }
-    /// Get "live" graph
-    inline bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
-    inline static const char *get_gui_xml() { return NULL; }
-    /// Get "static" graph (one that is dependent on single parameter value and doesn't use other parameters or plugin internal state).
-    /// Used by waveform graphs.
-    inline static bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
-    /// Return the NULL-terminated list of menu commands
-    inline static plugin_command_info *get_commands() { return NULL; }
-    /// does parameter number represent a CV port? (yes by default, except for synths)
-    static bool is_cv(int param_no) { return true; }
-    /// does parameter change cause an audible click?
-    static bool is_noisy(int param_no) { return false; }
     /// Execute menu command with given number
     inline void execute(int cmd_no) {}
     /// DSSI configure call
     inline char *configure(const char *key, const char *value) { return NULL; }
     /// Send all understood configure vars
     inline void send_configures(send_configure_iface *sci) {}
-    /// Get all configure vars that are supposed to be set to initialize a preset
-    static inline const char **get_default_configure_vars() { return NULL; }
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
 };
 
+/// Metadata base class template, to provide default versions of interface functions
 template<class Metadata>
 class plugin_metadata: public virtual plugin_metadata_iface
 {    
@@ -343,19 +314,37 @@ public:
     static parameter_properties param_props[];
     static synth::ladspa_plugin_info plugin_info;
 
-    const char *inst_get_name() { return Metadata::get_name(); } 
-    const char *inst_get_id() { return Metadata::get_id(); } 
-    const char *inst_get_label() { return Metadata::get_label(); } 
-    
+    // These below are stock implementations based on enums and static members in Metadata class
+    // they may be overridden to provide more interesting functionality
+
+    const char *get_name() { return Metadata::impl_get_name(); } 
+    const char *get_id() { return Metadata::impl_get_id(); } 
+    const char *get_label() { return Metadata::impl_get_label(); } 
+    int get_input_count() { return Metadata::in_count; }
+    int get_output_count() { return Metadata::out_count; }
+    int get_param_count() { return Metadata::param_count; }
+    bool get_midi() { return Metadata::support_midi; }
+    bool requires_midi() { return Metadata::require_midi; }
+    bool is_rt_capable() { return Metadata::rt_capable; }
+    line_graph_iface *get_line_graph_iface() { return dynamic_cast<line_graph_iface *>(this); }    
+    int get_param_port_offset()  { return Metadata::in_count + Metadata::out_count; }
+    const char *get_gui_xml() { return NULL; }
+    plugin_command_info *get_commands() { return NULL; }
+    parameter_properties *get_param_props(int param_no) { return &param_props[param_no]; }
+    const char **get_port_names() { return port_names; }
+    const char **get_default_configure_vars() { return NULL; }
+    bool is_cv(int param_no) { return true; }
+    bool is_noisy(int param_no) { return false; }
+    virtual const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *synth::plugin_metadata<name##_metadata>::port_names[]
 #define CALF_PORT_PROPS(name) template<> parameter_properties plugin_metadata<name##_metadata>::param_props[]
 #define CALF_PLUGIN_INFO(name) template<> synth::ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info
 #define PLUGIN_NAME_ID_LABEL(name, id, label) \
-    static const char *get_name() { return name; } \
-    static const char *get_id() { return id; } \
-    static const char *get_label() { return label; } \
+    static const char *impl_get_name() { return name; } \
+    static const char *impl_get_id() { return id; } \
+    static const char *impl_get_label() { return label; } \
     
 
 extern const char *calf_copyright_info;

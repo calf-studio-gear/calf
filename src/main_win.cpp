@@ -191,9 +191,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_show(sep);
     row++;
     
-    plugin_metadata_iface *pmi = dynamic_cast<plugin_metadata_iface *>(plugin);
-    assert(pmi);
-    GtkWidget *label = gtk_toggle_button_new_with_label(pmi->inst_get_label());
+    GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_label());
     gtk_table_attach(GTK_TABLE(strips_table), label, 0, 1, row, row + 2, ao, GTK_SHRINK, 0, 0);
     strip->name = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
@@ -252,9 +250,7 @@ void main_window::update_strip(plugin_ctl_iface *plugin)
 void main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this);
-    plugin_metadata_iface *pmi = dynamic_cast<plugin_metadata_iface *>(plugin);
-    assert(pmi);
-    gui_win->create(plugin, (prefix + pmi->inst_get_name()).c_str(), pmi->inst_get_id());
+    gui_win->create(plugin, (prefix + plugin->get_name()).c_str(), plugin->get_id());
     gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }
@@ -293,15 +289,18 @@ void main_window::new_plugin(const char *plugin)
 std::string main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
-    std::vector<giface_plugin_info> plugins;
+    std::vector<plugin_metadata_iface *> plugins;
     synth::get_all_plugins(plugins);
     for(unsigned int i = 0; i < plugins.size(); i++)
     {
-        string action_name = "Add" + string(plugins[i].info->label)+"Action";
+        synth::plugin_metadata_iface *p = plugins[i];
+        string action_name = "Add" + string(p->get_label())+"Action";
         s += string("<menuitem action=\"") + action_name + "\" />";
-        GtkActionEntry ae = { action_name.c_str(), NULL, plugins[i].info->name, NULL, NULL, (GCallback)add_plugin_action };
-        gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, plugins[i].info->label), action_destroy_notify);
+        GtkActionEntry ae = { action_name.c_str(), NULL, p->get_name(), NULL, NULL, (GCallback)add_plugin_action };
+        gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_label()), action_destroy_notify);
+        delete p;
     }
+    plugins.clear();
     return s + plugin_post_xml;
 }
 

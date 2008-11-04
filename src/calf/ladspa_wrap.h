@@ -23,6 +23,10 @@
 
 #if USE_LADSPA
 
+#include <ladspa.h>
+#if USE_DSSI
+#include <dssi.h>
+#endif
 #include "giface.h"
 
 namespace synth {

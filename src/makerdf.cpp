@@ -22,8 +22,6 @@
 #include <stdlib.h>
 #include <config.h>
 #include <calf/giface.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
 #include <calf/plugininfo.h>
 #include <calf/utils.h>
 #if USE_LV2
@@ -129,13 +127,17 @@ void make_rdf()
     
     rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
 
-    #define RDF_EXPR(Module) \
-        generate_ladspa_rdf(Module::plugin_info, Module::param_props, Module::port_names, Module::param_count, Module::in_count + Module::out_count);
-    
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += RDF_EXPR(name##_metadata)
-    #define PER_SMALL_MODULE_ITEM(...)
-    #include <calf/modulelist.h>
-    
+    vector<synth::plugin_metadata_iface *> plugins;
+    synth::get_all_plugins(plugins);
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        synth::plugin_metadata_iface *p = plugins[i];
+        if (!p->requires_midi()) {
+            rdf += generate_ladspa_rdf(p->get_plugin_info(), p->get_param_props(0), p->get_port_names(), p->get_param_count(), p->get_param_port_offset());
+        }
+        delete p;
+    }    
+    plugins.clear();
     rdf += "</rdf:RDF>\n";
     
     printf("%s\n", rdf.c_str());
@@ -194,7 +196,7 @@ static const char *units[] = {
 
 //////////////// To all haters: calm down, I'll rewrite it to use the new interface one day
 
-static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, giface_plugin_info *gpi, int param)
+static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plugin_metadata_iface *pmi, int param)
 {
     stringstream ss;
     const char *ind = "        ";
@@ -218,9 +220,9 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, gifa
         ss << ind << "lv2:portProperty epp:expensive ;\n";
     if (pp.flags & PF_PROP_OPTIONAL)
         ss << ind << "lv2:portProperty lv2:connectionOptional ;\n";
-    if ((*gpi->is_noisy)(param))
+    if (pmi->is_noisy(param))
         ss << ind << "lv2:portProperty epp:causesArtifacts ;\n";
-    if (!(*gpi->is_cv)(param))
+    if (!pmi->is_cv(param))
         ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
     if (pp.flags & PF_PROP_OUTPUT_GAIN)
         ss << ind << "lv2:portProperty epp:outputGain ;\n";
@@ -447,7 +449,7 @@ void make_ttl(string path_prefix)
         "\n"
     ;
     
-    vector<synth::giface_plugin_info> plugins;
+    vector<synth::plugin_metadata_iface *> plugins;
     synth::get_all_plugins(plugins);
     
     map<string, string> classes;
@@ -486,18 +488,19 @@ void make_ttl(string path_prefix)
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
-        synth::giface_plugin_info &pi = plugins[i];
-        string uri = string("<http://calf.sourceforge.net/plugins/")  + string(pi.info->label) + ">";
+        synth::plugin_metadata_iface *pi = plugins[i];
+        const synth::ladspa_plugin_info &lpi = pi->get_plugin_info();
+        string uri = string("<http://calf.sourceforge.net/plugins/")  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
         
         ttl += uri + " a lv2:Plugin ;\n";
         
-        if (classes.count(pi.info->plugin_type))
-            ttl += "    a " + classes[pi.info->plugin_type]+" ;\n";
+        if (classes.count(lpi.plugin_type))
+            ttl += "    a " + classes[lpi.plugin_type]+" ;\n";
         
             
-        ttl += "    doap:name \""+string(pi.info->name)+"\" ;\n";
+        ttl += "    doap:name \""+string(lpi.name)+"\" ;\n";
 
 #if USE_LV2_GUI
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
@@ -506,11 +509,11 @@ void make_ttl(string path_prefix)
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
         // XXXKF not really optional for now, to be honest
         ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
-        if (pi.rt_capable)
+        if (pi->is_rt_capable())
             ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
-        if (pi.midi_in_capable)
+        if (pi->get_midi())
         {
-            if (pi.midi_in_required) {
+            if (pi->requires_midi()) {
                 ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
                 ttl += "    lv2:requiredFeature <" LV2_URI_MAP_URI "> ;\n";                
             }
@@ -524,20 +527,20 @@ void make_ttl(string path_prefix)
         int pn = 0;
         const char *in_names[] = { "in_l", "in_r" };
         const char *out_names[] = { "out_l", "out_r" };
-        for (int i = 0; i < pi.inputs; i++)
+        for (int i = 0; i < pi->get_input_count(); i++)
             add_port(ports, in_names[i], in_names[i], "Input", pn++);
-        for (int i = 0; i < pi.outputs; i++)
+        for (int i = 0; i < pi->get_output_count(); i++)
             add_port(ports, out_names[i], out_names[i], "Output", pn++);
-        for (int i = 0; i < pi.params; i++)
-            add_ctl_port(ports, pi.param_props[i], pn++, &pi, i);
-        if (pi.midi_in_capable) {
+        for (int i = 0; i < pi->get_param_count(); i++)
+            add_ctl_port(ports, *pi->get_param_props(i), pn++, pi, i);
+        if (pi->get_midi()) {
             add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
         }
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";
         ttl += ".\n\n";
         
-        FILE *f = fopen((path_prefix+string(pi.info->label)+".ttl").c_str(), "w");
+        FILE *f = fopen((path_prefix+string(lpi.label)+".ttl").c_str(), "w");
         fprintf(f, "%s\n", ttl.c_str());
         fclose(f);
     }
@@ -594,12 +597,12 @@ void make_manifest()
         "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
     ;
     
-    vector<synth::giface_plugin_info> plugins;
+    vector<synth::plugin_metadata_iface *> plugins;
     synth::get_all_plugins(plugins);
     for (unsigned int i = 0; i < plugins.size(); i++)
         ttl += string("<http://calf.sourceforge.net/plugins/") 
-            + string(plugins[i].info->label)
-            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i].info->label) + ".ttl> .\n";
+            + string(plugins[i]->get_plugin_info().label)
+            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> .\n";
 
     lv2_plugin_list lpl;
     synth::get_all_small_plugins(&lpl);

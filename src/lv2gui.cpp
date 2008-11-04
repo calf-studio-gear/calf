@@ -59,78 +59,40 @@ struct plugin_proxy_base: public plugin_ctl_iface
     
 };
 
-template<class Module>
-struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
+template<class Metadata>
+struct plugin_proxy: public plugin_proxy_base, public Metadata
 {
-    float params[Module::param_count];
+    using Metadata::param_count;
+    
+    float params[param_count];
     plugin_proxy()
     {
         send = true;
-        for (int i = 0; i < Module::param_count; i++)
-            params[i] = Module::param_props[i].def_value;
+        for (int i = 0; i < param_count; i++)
+            params[i] = Metadata::param_props[i].def_value;
     }
     
-    virtual parameter_properties *get_param_props(int param_no) {
-        return Module::param_props + param_no;
-    }
     virtual float get_param_value(int param_no) {
-        if (param_no < 0 || param_no >= Module::param_count)
+        if (param_no < 0 || param_no >= Metadata::param_count)
             return 0;
         return params[param_no];
     }
     virtual void set_param_value(int param_no, float value) {
-        if (param_no < 0 || param_no >= Module::param_count)
+        if (param_no < 0 || param_no >= Metadata::param_count)
             return;
         params[param_no] = value;
         if (send) {
             scope_assign<bool> _a_(send, false);
-            write_function(controller, param_no + Module::in_count + Module::out_count, sizeof(float), 0, &params[param_no]);
+            write_function(controller, param_no + Metadata::in_count + Metadata::out_count, sizeof(float), 0, &params[param_no]);
         }
     }
-    virtual int get_param_count()
-    {
-        return Module::param_count;
-    }
-    virtual int get_param_port_offset()
-    {
-        return Module::in_count + Module::out_count;
-    }
-    virtual const char *get_gui_xml()
-    {
-        return Module::get_gui_xml();
-    }
-    virtual line_graph_iface *get_line_graph_iface()
-    {
-        return this;
-    }
+    
     virtual bool activate_preset(int bank, int program)
     {
         return false;
     }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) 
-    {
-        return Module::get_static_graph(index, subindex, params[index], data, points, context);
-    }
-    virtual const char *inst_get_name()
-    {
-        return Module::get_name();
-    }
-    virtual const char *inst_get_id()
-    {
-        return Module::get_id();
-    }
-    virtual const char *inst_get_label()
-    {
-        return Module::get_label();
-    }
-    virtual int get_input_count() { return Module::in_count; }
-    virtual int get_output_count() { return Module::out_count; }
-    virtual bool get_midi() { return Module::support_midi; }
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
-    virtual plugin_command_info *get_commands() {
-        return Module::get_commands();
-    }
     void send_configures(send_configure_iface *sci) { 
         fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
     }
@@ -141,7 +103,7 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, name##_audio_module::plugin_info.label)) return new plugin_proxy<name##_audio_module>();
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, name##_metadata::plugin_info.label)) return new plugin_proxy<name##_metadata>();
     #include <calf/modulelist.h>
     return NULL;
 }

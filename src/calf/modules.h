@@ -261,6 +261,8 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
     enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = false, support_midi = false };
     PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
+    /// do not export mode and inertia as CVs, as those are settings and not parameters
+    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
 };
 
 class filter_audio_module: public audio_module<filter_metadata>
@@ -283,8 +285,6 @@ public:
         order = 0;
     }
     
-    /// do not export mode and inertia as CVs, as those are settings and not parameters
-    inline static bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
     void calculate_filter()
     {
         float freq = inertia_cutoff.get_last();

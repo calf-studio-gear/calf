@@ -185,16 +185,15 @@ std::string parameter_properties::to_string(float value) const
     return string(buf);
 }
 
-std::string synth::xml_escape(const std::string &src)
-{
-    string dest;
-    for (size_t i = 0; i < src.length(); i++) {
-        // XXXKF take care of string encoding
-        if (src[i] < 0 || src[i] == '"' || src[i] == '<' || src[i] == '>' || src[i] == '&')
-            dest += "&"+i2s((uint8_t)src[i])+";";
-        else
-            dest += src[i];
+void synth::plugin_ctl_iface::clear_preset() {
+    int param_count = get_param_count();
+    for (int i=0; i < param_count; i++)
+        set_param_value(i, get_param_props(i)->def_value);
+    // This is never called in practice, at least for now
+    const char **p = get_default_configure_vars();
+    if (p)
+    {
+        for(; p[0]; p += 2)
+            configure(p[0], p[1]);
     }
-    return dest;
 }
-

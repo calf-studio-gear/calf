@@ -28,6 +28,7 @@
 namespace calf_utils
 {
 
+/// Pthreads based mutex class
 class ptmutex
 {
 public:
@@ -63,6 +64,7 @@ public:
     }
 };
 
+/// Exception-safe mutex lock
 class ptlock
 {
     ptmutex &mutex;
@@ -89,6 +91,7 @@ public:
     }
 };
 
+/// Exception-safe temporary assignment
 template<class T>
 class scope_assign
 {
@@ -105,26 +108,22 @@ public:
     }
 };
 
+/// String-to-string mapping
 typedef std::map<std::string, std::string> dictionary;
 
-extern std::string encodeMap(const dictionary &data);
-extern void decodeMap(dictionary &data, const std::string &src);
+/// Serialize a dictonary to a string
+extern std::string encode_map(const dictionary &data);
+/// Deserialize a dictonary from a string
+extern void decode_map(dictionary &data, const std::string &src);
 
-static inline std::string i2s(int value)
-{
-    char buf[32];
-    sprintf(buf, "%d", value);
-    
-    return std::string(buf);
-}
+/// int-to-string
+extern std::string i2s(int value);
 
-static inline std::string f2s(double value)
-{
-    // XXXKF might not work with some locale settings
-    char buf[64];
-    sprintf(buf, "%g", value);
-    return buf;
-}
+/// float-to-string
+extern std::string f2s(double value);
+
+/// Escape a string to be used in XML file
+std::string xml_escape(const std::string &src);
 
 };
 

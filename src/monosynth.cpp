@@ -224,7 +224,7 @@ CALF_PORT_PROPS(monosynth) = {
 
 float silence[4097];
 
-const char *monosynth_audio_module::get_gui_xml()
+const char *monosynth_metadata::get_gui_xml()
 {
     return monosynth_gui_xml;
 }

@@ -51,7 +51,7 @@ CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", 
             "<value  attach-x=\"" no "\" attach-y=\"11\" param=\"pan" no "\"/>" \
             "<combo  attach-x=\"" no "\" attach-y=\"12\" param=\"routing" no "\"/>" 
 
-const char *organ_audio_module::get_gui_xml()
+const char *organ_metadata::get_gui_xml()
 {
     return 
     "<vbox border=\"10\">"
@@ -381,6 +381,23 @@ const char *organ_audio_module::get_gui_xml()
     "</vbox>"
     ;
 }
+
+const char **organ_metadata::get_default_configure_vars()
+{
+    static const char *data[] = { "map_curve", "2\n0 1\n1 1\n", NULL };
+    return data;
+}
+
+plugin_command_info *organ_metadata::get_commands()
+{
+    static plugin_command_info cmds[] = {
+        { "cmd_panic", "Panic!", "Stop all sounds and reset all controllers" },
+        { NULL }
+    };
+    return cmds;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
@@ -1290,17 +1307,3 @@ void organ_audio_module::send_configures(send_configure_iface *sci)
     sci->send_configure("map_curve", var_map_curve.c_str());
 }
 
-const char **organ_audio_module::get_default_configure_vars()
-{
-    static const char *data[] = { "map_curve", "2\n0 1\n1 1\n", NULL };
-    return data;
-}
-
-plugin_command_info *organ_audio_module::get_commands()
-{
-    static plugin_command_info cmds[] = {
-        { "cmd_panic", "Panic!", "Stop all sounds and reset all controllers" },
-        { NULL }
-    };
-    return cmds;
-}

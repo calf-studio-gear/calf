@@ -23,6 +23,8 @@
 
 #if USE_JACK
 
+#include <jack/jack.h>
+#include <jack/midiport.h>
 #include "gui.h"
 #include "utils.h"
 #include <pthread.h>
@@ -379,43 +381,13 @@ public:
     virtual port *get_inputs() { return inputs; }
     virtual port *get_outputs() { return outputs; }
     virtual float *get_params() { return param_values; }
-    virtual int get_input_count() { return Module::in_count; }
-    virtual int get_output_count() { return Module::out_count; }
-    virtual int get_param_count() { return Module::param_count; }
-    virtual bool get_midi() { return Module::support_midi; }
     virtual bool activate_preset(int bank, int program) { return false; }
-    virtual int get_param_port_offset() 
-    {
-        return Module::in_count + Module::out_count;
-    }
     virtual float get_param_value(int param_no) {
         return param_values[param_no];
     }
     virtual void set_param_value(int param_no, float value) {
         param_values[param_no] = value;
         changed = true;
-    }
-    virtual const char *get_gui_xml() {
-        return Module::get_gui_xml();
-    }
-    virtual line_graph_iface *get_line_graph_iface()
-    {
-        return dynamic_cast<line_graph_iface *>(this);
-    }
-    virtual const char *get_name()
-    {
-        return Module::get_name();
-    }
-    virtual const char *get_id()
-    {
-        return Module::get_id();
-    }
-    virtual const char *get_label()
-    {
-        return Module::get_label();
-    }
-    virtual plugin_command_info *get_commands() {
-        return Module::get_commands();
     }
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
@@ -425,17 +397,6 @@ public:
     }
     virtual void send_configures(send_configure_iface *sci) {
         Module::send_configures(sci);
-    }
-    virtual void clear_preset() {
-        for (int i=0; i < Module::param_count; i++)
-            param_values[i] = Module::param_props[i].def_value;
-        // This is never called in practice, at least for now
-        const char **p = Module::get_default_configure_vars();
-        if (p)
-        {
-            for(; p[0]; p += 2)
-                configure(p[0], p[1]);
-        }
     }
 };
 

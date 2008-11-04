@@ -244,7 +244,7 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
 
 bool host_session::activate_preset(int plugin_no, const std::string &preset, bool builtin)
 {
-    string cur_plugin = dynamic_cast<plugin_metadata_iface *>(plugins[plugin_no])->inst_get_id();
+    string cur_plugin = plugins[plugin_no]->get_id();
     preset_vector &pvec = (builtin ? get_builtin_presets() : get_user_presets()).presets;
     for (unsigned int i = 0; i < pvec.size(); i++) {
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
@@ -361,7 +361,7 @@ void host_session::update_lash()
                 tmp["input_prefix"] = i_name;
                 tmp["output_prefix"] = stripfmt(client.output_name);
                 tmp["midi_prefix"] = stripfmt(client.midi_name);
-                pstr = encodeMap(tmp);
+                pstr = encode_map(tmp);
                 lash_config_set_value(cfg, pstr.c_str(), pstr.length());
                 lash_send_config(lash_client, cfg);
                 
@@ -369,7 +369,7 @@ void host_session::update_lash()
                     jack_host_base *p = plugins[i];
                     char ss[32];
                     plugin_preset preset;
-                    preset.plugin = dynamic_cast<plugin_metadata_iface *>(p)->inst_get_id();
+                    preset.plugin = p->get_id();
                     preset.get_from(p);
                     sprintf(ss, "Plugin%d", i);
                     pstr = preset.to_xml();
@@ -381,7 +381,7 @@ void host_session::update_lash()
                     if (p->get_midi_port())
                         tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
                     tmp["preset"] = pstr;
-                    pstr = encodeMap(tmp);
+                    pstr = encode_map(tmp);
                     lash_config_t *cfg = lash_config_new_with_key(ss);
                     lash_config_set_value(cfg, pstr.c_str(), pstr.length());
                     lash_send_config(lash_client, cfg);
@@ -400,7 +400,7 @@ void host_session::update_lash()
                     if (!strcmp(key, "global"))
                     {
                         dictionary dict;
-                        decodeMap(dict, data);
+                        decode_map(dict, data);
                         if (dict.count("input_prefix")) client.input_name = dict["input_prefix"]+"%d";
                         if (dict.count("output_prefix")) client.output_name = dict["output_prefix"]+"%d";
                         if (dict.count("midi_prefix")) client.midi_name = dict["midi_prefix"]+"%d";
@@ -409,7 +409,7 @@ void host_session::update_lash()
                     {
                         unsigned int nplugin = atoi(key + 6);
                         dictionary dict;
-                        decodeMap(dict, data);
+                        decode_map(dict, data);
                         data = dict["preset"];
                         if (dict.count("input_name")) client.input_nr = atoi(dict["input_name"].c_str());
                         if (dict.count("output_name")) client.output_nr = atoi(dict["output_name"].c_str());
