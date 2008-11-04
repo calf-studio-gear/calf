@@ -244,7 +244,7 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
 
 bool host_session::activate_preset(int plugin_no, const std::string &preset, bool builtin)
 {
-    string cur_plugin = plugins[plugin_no]->get_id();
+    string cur_plugin = dynamic_cast<plugin_metadata_iface *>(plugins[plugin_no])->inst_get_id();
     preset_vector &pvec = (builtin ? get_builtin_presets() : get_user_presets()).presets;
     for (unsigned int i = 0; i < pvec.size(); i++) {
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
@@ -369,7 +369,7 @@ void host_session::update_lash()
                     jack_host_base *p = plugins[i];
                     char ss[32];
                     plugin_preset preset;
-                    preset.plugin = p->get_id();
+                    preset.plugin = dynamic_cast<plugin_metadata_iface *>(p)->inst_get_id();
                     preset.get_from(p);
                     sprintf(ss, "Plugin%d", i);
                     pstr = preset.to_xml();

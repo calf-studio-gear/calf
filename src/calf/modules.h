@@ -32,14 +32,9 @@ namespace synth {
 
 using namespace dsp;
 
-#define PLUGIN_NAME_ID_LABEL(name, id, label) \
-    static const char *get_name() { return name; } \
-    static const char *get_id() { return id; } \
-    static const char *get_label() { return label; } \
-    
-class null_audio_module;
 struct ladspa_plugin_info;
     
+#if 0
 class amp_audio_module: public null_audio_module
 {
 public:
@@ -48,7 +43,6 @@ public:
     float *outs[2];
     float *params[1];
     uint32_t srate;
-    static const char *port_names[in_count + out_count];
     static parameter_properties param_props[];
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         if (!inputs_mask)
@@ -61,18 +55,20 @@ public:
         }
         return inputs_mask;
     }
-    static const char *get_name() { return "amp"; }
-    static const char *get_id() { return "amp"; }
-    static const char *get_label() { return "Amp"; }
 };
+#endif
 
-class flanger_audio_module: public null_audio_module
+struct flanger_metadata: public plugin_metadata<flanger_metadata>
 {
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    static const char *port_names[in_count + out_count];
-    static synth::ladspa_plugin_info plugin_info;
+    PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
+};
+
+class flanger_audio_module: public audio_module<flanger_metadata>
+{
+public:
     dsp::simple_flanger<float, 2048> left, right;
     float *ins[in_count]; 
     float *outs[out_count];
@@ -80,7 +76,6 @@ public:
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
-    static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
         srate = sr;
         left.setup(sr);
@@ -134,16 +129,18 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
 };
 
-class phaser_audio_module: public null_audio_module
+struct phaser_metadata: public plugin_metadata<phaser_metadata>
 {
-public:
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    static const char *port_names[in_count + out_count];
-    static synth::ladspa_plugin_info plugin_info;
+    PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
+};
+
+class phaser_audio_module: public audio_module<phaser_metadata>
+{
+public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -151,7 +148,6 @@ public:
     bool clear_reset;
     float last_r_phase;
     dsp::simple_phaser<12> left, right;
-    static parameter_properties param_props[];
     void set_sample_rate(uint32_t sr) {
         srate = sr;
         left.setup(sr);
@@ -207,23 +203,25 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
 };
 
-class reverb_audio_module: public null_audio_module
+struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
-public:    
     enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    static const char *port_names[in_count + out_count];
-    static synth::ladspa_plugin_info plugin_info;
+    PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
+};
+
+
+class reverb_audio_module: public audio_module<reverb_metadata>
+{
+public:    
     dsp::reverb<float> reverb;
     uint32_t srate;
     gain_smoothing amount;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static parameter_properties param_props[];
     
     void params_changed() {
         //reverb.set_time(0.5*pow(8.0f, *params[par_decay]));
@@ -256,22 +254,23 @@ public:
         reverb.extra_sanitize();
         return outputs_mask;
     }
-    PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
 };
 
-class filter_audio_module: public null_audio_module
+struct filter_metadata: public plugin_metadata<filter_metadata>
 {
-public:    
     enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = false, support_midi = false };
+    PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
+};
+
+class filter_audio_module: public audio_module<filter_metadata>
+{
+public:    
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static const char *port_names[];
     dsp::biquad_d1<float> left[3], right[3];
     uint32_t srate;
-    static parameter_properties param_props[];
-    static synth::ladspa_plugin_info plugin_info;
     int order;
     inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
     once_per_n timer;
@@ -409,21 +408,23 @@ public:
         }
         return ostate;
     }
-    PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
 };
 
-class vintage_delay_audio_module: public null_audio_module
+struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
+{
+    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
+    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
+    PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
+};
+
+class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 {
 public:    
     // 1MB of delay memory per channel... uh, RAM is cheap
     enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
-    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static const char *port_names[in_count + out_count];
-    static synth::ladspa_plugin_info plugin_info;
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
@@ -431,7 +432,6 @@ public:
     dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     
     uint32_t srate;
-    static parameter_properties param_props[];
     
     vintage_delay_audio_module()
     {
@@ -521,15 +521,19 @@ public:
         }
         return ostate;
     }
-    PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
 };
 
-class rotary_speaker_audio_module: public null_audio_module
+struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
 {
 public:
     enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, par_reflection, param_count };
     enum { in_count = 2, out_count = 2, support_midi = true, require_midi = false, rt_capable = true };
-    static const char *port_names[];
+    PLUGIN_NAME_ID_LABEL("rotary_speaker", "rotaryspeaker", "Rotary Speaker")
+};
+
+class rotary_speaker_audio_module: public audio_module<rotary_speaker_metadata>
+{
+public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -540,8 +544,6 @@ public:
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
     int vibrato_mode;
-    static parameter_properties param_props[];
-    static synth::ladspa_plugin_info plugin_info;
     /// Current CC1 (Modulation) value, normalized to [0, 1]
     float mwhl_value;
     /// Current CC64 (Hold) value, normalized to [0, 1]
@@ -719,25 +721,28 @@ public:
             return;
         }
     }
-    PLUGIN_NAME_ID_LABEL("rotary_speaker", "rotaryspeaker", "Rotary Speaker")
 };
 
-// A multitap stereo chorus thing
-class multichorus_audio_module: public null_audio_module
+/// A multitap stereo chorus thing - metadata
+struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 {
 public:    
     enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_lfophase_l, par_lfophase_r, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
+    PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
+};
+
+/// A multitap stereo chorus thing - processing
+class multichorus_audio_module: public audio_module<multichorus_metadata>
+{
+public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    static const char *port_names[];
     uint32_t srate;
     dsp::multichorus<float, sine_multi_lfo<float, 8>, 4096> left, right;
     float last_r_phase;
     
-    static parameter_properties param_props[];
-    static synth::ladspa_plugin_info plugin_info;
 public:    
     multichorus_audio_module()
     {
@@ -784,7 +789,6 @@ public:
             *params[par_lfophase_r] = (double)right.lfo.phase * 360.0 / 4096.0;
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };
 
 extern std::string get_builtin_modules_rdf();

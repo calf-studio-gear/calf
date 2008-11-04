@@ -132,7 +132,7 @@ void make_rdf()
     #define RDF_EXPR(Module) \
         generate_ladspa_rdf(Module::plugin_info, Module::param_props, Module::port_names, Module::param_count, Module::in_count + Module::out_count);
     
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += RDF_EXPR(name##_audio_module)
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += RDF_EXPR(name##_metadata)
     #define PER_SMALL_MODULE_ITEM(...)
     #include <calf/modulelist.h>
     

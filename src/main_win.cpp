@@ -191,7 +191,9 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_show(sep);
     row++;
     
-    GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_label());
+    plugin_metadata_iface *pmi = dynamic_cast<plugin_metadata_iface *>(plugin);
+    assert(pmi);
+    GtkWidget *label = gtk_toggle_button_new_with_label(pmi->inst_get_label());
     gtk_table_attach(GTK_TABLE(strips_table), label, 0, 1, row, row + 2, ao, GTK_SHRINK, 0, 0);
     strip->name = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
@@ -250,7 +252,9 @@ void main_window::update_strip(plugin_ctl_iface *plugin)
 void main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this);
-    gui_win->create(plugin, (prefix + plugin->get_name()).c_str(), plugin->get_id());
+    plugin_metadata_iface *pmi = dynamic_cast<plugin_metadata_iface *>(plugin);
+    assert(pmi);
+    gui_win->create(plugin, (prefix + pmi->inst_get_name()).c_str(), pmi->inst_get_id());
     gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }

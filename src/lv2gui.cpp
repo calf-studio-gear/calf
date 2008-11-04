@@ -111,15 +111,15 @@ struct plugin_proxy: public plugin_proxy_base, public line_graph_iface
     {
         return Module::get_static_graph(index, subindex, params[index], data, points, context);
     }
-    virtual const char *get_name()
+    virtual const char *inst_get_name()
     {
         return Module::get_name();
     }
-    virtual const char *get_id()
+    virtual const char *inst_get_id()
     {
         return Module::get_id();
     }
-    virtual const char *get_label()
+    virtual const char *inst_get_label()
     {
         return Module::get_label();
     }

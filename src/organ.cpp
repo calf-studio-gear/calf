@@ -32,8 +32,9 @@
 
 using namespace synth;
 using namespace std;
+using namespace dsp;
 
-synth::ladspa_plugin_info organ_audio_module::plugin_info = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
 
 #define DRAWBAR_UI(no) \
             "<label  attach-x=\"" no "\" attach-y=\"0\" param=\"l" no "\"/>" \
@@ -420,7 +421,7 @@ bool organ_audio_module::get_graph(int index, int subindex, float *data, int poi
     return false;
 }
 
-const char *organ_audio_module::port_names[] = {"Out L", "Out R"};
+CALF_PORT_NAMES(organ) = {"Out L", "Out R"};
 
 const char *organ_percussion_trigger_names[] = { "First note", "Each note", "Each, no retrig", "Polyphonic" };
 
@@ -442,7 +443,7 @@ const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  
 
 const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
-parameter_properties organ_audio_module::param_props[] = {
+CALF_PORT_PROPS(organ) = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l2", "5 1/3'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l3", "8'" },

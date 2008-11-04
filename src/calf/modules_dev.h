@@ -27,22 +27,24 @@ namespace synth {
 
 #if ENABLE_EXPERIMENTAL
 
-class compressor_audio_module: public null_audio_module {
+struct compressor_metadata: public plugin_metadata<compressor_metadata>
+{
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_aweighting, param_compression, param_peak, param_clip, param_bypass, param_count };
+    PLUGIN_NAME_ID_LABEL("compressor", "compressor", "Compressor")
+};
+
+class compressor_audio_module: public audio_module<compressor_metadata> {
 private:
     float linslope, clip, peak;
     bool aweighting;
     aweighter awL, awR;
 public:
-    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_aweighting, param_compression, param_peak, param_clip, param_bypass, param_count };
 
-    static const char *port_names[in_count + out_count];
-    static synth::ladspa_plugin_info plugin_info;
     float *ins[in_count];
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate;
-    static parameter_properties param_props[];
     void activate() {
         linslope = 0.f;
         peak = 0.f;
@@ -149,10 +151,6 @@ public:
 
         return inputs_mask;
     }
-
-    static const char *get_name() { return "compressor"; }
-    static const char *get_id() { return "compressor"; }
-    static const char *get_label() { return "Compressor"; }
 
     void set_sample_rate(uint32_t sr) {
             srate = sr;

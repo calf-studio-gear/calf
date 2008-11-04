@@ -109,8 +109,6 @@ enum parameter_flags
 /// Check for infinity (with appropriate-ish tolerance)
 #define IS_FAKE_INFINITY(value) (fabs(value-FAKE_INFINITY) < 1.0)
 
-class null_audio_module;
-
 /// Information record about plugin's menu command
 struct plugin_command_info
 {
@@ -177,8 +175,18 @@ struct send_configure_iface
 
 struct plugin_command_info;
 
+struct plugin_metadata_iface
+{
+    /// @return plugin long name
+    virtual const char *inst_get_name() = 0;
+    /// @return plugin LV2 label
+    virtual const char *inst_get_id() = 0;
+    /// @return plugin human-readable label
+    virtual const char *inst_get_label() = 0;
+};
+
 /// Interface for host-GUI-plugin interaction (should be really split in two, but ... meh)
-struct plugin_ctl_iface
+struct plugin_ctl_iface: public virtual plugin_metadata_iface
 {
     /// @return description structure for given parameter
     virtual parameter_properties *get_param_props(int param_no) = 0;
@@ -196,12 +204,6 @@ struct plugin_ctl_iface
     virtual int get_param_port_offset() = 0;
     /// Load preset with given number
     virtual bool activate_preset(int bank, int program) = 0;
-    /// @return plugin long name
-    virtual const char *get_name() = 0;
-    /// @return plugin LV2 label
-    virtual const char *get_id() = 0;
-    /// @return plugin human-readable label
-    virtual const char *get_label() = 0;
     /// @return number of audio inputs
     virtual int get_input_count()=0;
     /// @return number of audio outputs
@@ -286,7 +288,8 @@ std::string xml_escape(const std::string &src);
 
 /// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
 /// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
-class null_audio_module: public line_graph_iface
+template<class Metadata>
+class audio_module: public Metadata
 {
 public:
     /// Handle MIDI Note On
@@ -331,6 +334,29 @@ public:
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
 };
+
+template<class Metadata>
+class plugin_metadata: public virtual plugin_metadata_iface
+{    
+public:
+    static const char *port_names[];
+    static parameter_properties param_props[];
+    static synth::ladspa_plugin_info plugin_info;
+
+    const char *inst_get_name() { return Metadata::get_name(); } 
+    const char *inst_get_id() { return Metadata::get_id(); } 
+    const char *inst_get_label() { return Metadata::get_label(); } 
+    
+};
+
+#define CALF_PORT_NAMES(name) template<> const char *synth::plugin_metadata<name##_metadata>::port_names[]
+#define CALF_PORT_PROPS(name) template<> parameter_properties plugin_metadata<name##_metadata>::param_props[]
+#define CALF_PLUGIN_INFO(name) template<> synth::ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info
+#define PLUGIN_NAME_ID_LABEL(name, id, label) \
+    static const char *get_name() { return name; } \
+    static const char *get_id() { return id; } \
+    static const char *get_label() { return label; } \
+    
 
 extern const char *calf_copyright_info;
 

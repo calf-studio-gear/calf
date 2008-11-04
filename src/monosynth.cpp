@@ -31,7 +31,7 @@
 using namespace synth;
 using namespace std;
 
-const char *monosynth_audio_module::port_names[] = {
+CALF_PORT_NAMES(monosynth) = {
     "Out L", "Out R", 
 };
 
@@ -51,7 +51,7 @@ const char *monosynth_filter_choices[] = {
     "2x6dB/oct Bandpass",
 };
 
-synth::ladspa_plugin_info monosynth_audio_module::plugin_info = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
 
 static const char *monosynth_gui_xml =
     "<vbox border=\"10\">"
@@ -192,9 +192,9 @@ static const char *monosynth_gui_xml =
         "</hbox>"
     "</vbox>";
 
-parameter_properties monosynth_audio_module::param_props[] = {
-    { wave_saw,         0, wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
-    { wave_sqr,         0, wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o2_wave", "Osc2 Wave" },
+CALF_PORT_PROPS(monosynth) = {
+    { monosynth_metadata::wave_saw,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
+    { monosynth_metadata::wave_sqr,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o2_wave", "Osc2 Wave" },
     { 10,         0,  100,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "o12_detune", "O1<>2 Detune" },
     { 12,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o2_xpose", "Osc 2 transpose" },
     { 0,          0,    5,    0, PF_ENUM | PF_CTL_COMBO, monosynth_mode_names, "phase_mode", "Phase mode" },
@@ -388,7 +388,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
-            biquad_d1<float> &f = subindex ? filter2 : filter;
+            dsp::biquad_d1<float> &f = subindex ? filter2 : filter;
             float level = f.freq_gain(freq, srate);
             if (!is_stereo_filter())
                 level *= filter2.freq_gain(freq, srate);

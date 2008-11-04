@@ -219,7 +219,7 @@ struct waveform_oscillator: public simple_oscillator
     inline float get()
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
-        float value = lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
         phase += phasedelta;
         return value;
     }

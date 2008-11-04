@@ -230,19 +230,22 @@ struct vumeter
 };
 
 template<class Module>
-class jack_host: public jack_host_base {
+class jack_host: public jack_host_base, public Module {
 public:
-    Module module;
-    port inputs[Module::in_count], outputs[Module::out_count];
-    vumeter input_vus[Module::in_count], output_vus[Module::out_count];
-    float params[Module::param_count];
+    using Module::in_count;
+    using Module::out_count;
+    using Module::param_count;
+
+    port inputs[in_count], outputs[out_count];
+    vumeter input_vus[in_count], output_vus[out_count];
+    float param_values[param_count];
     float midi_meter;
     
     jack_host()
     {
         for (int i = 0; i < Module::param_count; i++) {
-            module.params[i] = &params[i];
-            params[i] = Module::param_props[i].def_value;
+            param_values[i] = Module::param_props[i].def_value;
+            Module::params[i] = &param_values[i];
         }
         midi_meter = 0;
     }
@@ -254,9 +257,9 @@ public:
     }
     
     virtual void init_module() {
-        module.set_sample_rate(client->sample_rate);
-        module.activate();
-        module.params_changed();
+        Module::set_sample_rate(client->sample_rate);
+        Module::activate();
+        Module::params_changed();
     }
 
     virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
@@ -267,23 +270,23 @@ public:
         switch(buffer[0] >> 4)
         {
         case 8:
-            module.note_off(buffer[1], buffer[2]);
+            Module::note_off(buffer[1], buffer[2]);
             break;
         case 9:
             if (!buffer[2])
-                module.note_off(buffer[1], 0);
+                Module::note_off(buffer[1], 0);
             else
-                module.note_on(buffer[1], buffer[2]);
+                Module::note_on(buffer[1], buffer[2]);
             break;
         case 10:
-            module.program_change(buffer[1]);
+            Module::program_change(buffer[1]);
             break;
         case 11:
-            module.control_change(buffer[1], buffer[2]);
+            Module::control_change(buffer[1], buffer[2]);
             break;
         case 14:
             value = buffer[1] + 128 * buffer[2] - 8192;
-            module.pitch_bend(value);
+            Module::pitch_bend(value);
             break;
         }
     }
@@ -291,16 +294,16 @@ public:
     {
         if (!len)
             return;
-        for (int i = 0; i < Module::in_count; i++)
-            input_vus[i].update(module.ins[i] + time, len);
-        unsigned int mask = module.process(time, len, -1, -1);
-        for (int i = 0; i < Module::out_count; i++)
+        for (int i = 0; i < in_count; i++)
+            input_vus[i].update(Module::ins[i] + time, len);
+        unsigned int mask = Module::process(time, len, -1, -1);
+        for (int i = 0; i < out_count; i++)
         {
             if (!(mask & (1 << i))) {
-                dsp::zero(module.outs[i] + time, len);
+                dsp::zero(Module::outs[i] + time, len);
                 output_vus[i].update_zeros(len);
             } else
-                output_vus[i].update(module.outs[i] + time, len);
+                output_vus[i].update(Module::outs[i] + time, len);
         }
         // decay linearly for 0.1s
         float new_meter = midi_meter - len / (0.1 * client->sample_rate);
@@ -309,25 +312,25 @@ public:
         midi_meter = new_meter;
     }
     virtual float get_level(unsigned int port) { 
-        if (port < Module::in_count)
+        if (port < in_count)
             return input_vus[port].level;
-        port -= Module::in_count;
-        if (port < Module::out_count)
+        port -= in_count;
+        if (port < out_count)
             return output_vus[port].level;
-        port -= Module::out_count;
+        port -= out_count;
         if (port == 0 && Module::support_midi)
             return midi_meter;
         return 0.f;
     }
     int process(jack_nframes_t nframes)
     {
-        for (int i=0; i<Module::in_count; i++) {
-            module.ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, nframes);
+        for (int i=0; i<in_count; i++) {
+            Module::ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, nframes);
         }
         if (Module::support_midi)
             midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, nframes);
         if (changed) {
-            module.params_changed();
+            Module::params_changed();
             changed = false;
         }
 
@@ -357,14 +360,14 @@ public:
             }
         }
         process_part(time, nframes - time);
-        module.params_reset();
+        Module::params_reset();
         return 0;
     }
     
     void cache_ports()
     {
-        for (int i=0; i<Module::out_count; i++) {
-            module.outs[i] = outputs[i].data = (float *)jack_port_get_buffer(outputs[i].handle, 0);
+        for (int i=0; i<out_count; i++) {
+            Module::outs[i] = outputs[i].data = (float *)jack_port_get_buffer(outputs[i].handle, 0);
         }
     }
     
@@ -375,7 +378,7 @@ public:
     
     virtual port *get_inputs() { return inputs; }
     virtual port *get_outputs() { return outputs; }
-    virtual float *get_params() { return params; }
+    virtual float *get_params() { return param_values; }
     virtual int get_input_count() { return Module::in_count; }
     virtual int get_output_count() { return Module::out_count; }
     virtual int get_param_count() { return Module::param_count; }
@@ -386,10 +389,10 @@ public:
         return Module::in_count + Module::out_count;
     }
     virtual float get_param_value(int param_no) {
-        return params[param_no];
+        return param_values[param_no];
     }
     virtual void set_param_value(int param_no, float value) {
-        params[param_no] = value;
+        param_values[param_no] = value;
         changed = true;
     }
     virtual const char *get_gui_xml() {
@@ -397,7 +400,7 @@ public:
     }
     virtual line_graph_iface *get_line_graph_iface()
     {
-        return &module;
+        return dynamic_cast<line_graph_iface *>(this);
     }
     virtual const char *get_name()
     {
@@ -415,17 +418,17 @@ public:
         return Module::get_commands();
     }
     virtual void execute(int cmd_no) {
-        module.execute(cmd_no);
+        Module::execute(cmd_no);
     }
     virtual char *configure(const char *key, const char *value) { 
-        return module.configure(key, value);
+        return Module::configure(key, value);
     }
     virtual void send_configures(send_configure_iface *sci) {
-        module.send_configures(sci);
+        Module::send_configures(sci);
     }
     virtual void clear_preset() {
         for (int i=0; i < Module::param_count; i++)
-            *module.params[i] = Module::param_props[i].def_value;
+            param_values[i] = Module::param_props[i].def_value;
         // This is never called in practice, at least for now
         const char **p = Module::get_default_configure_vars();
         if (p)

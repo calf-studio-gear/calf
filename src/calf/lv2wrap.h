@@ -83,7 +83,7 @@ struct lv2_instance: public Module, public plugin_ctl_iface
     }
     virtual line_graph_iface *get_line_graph_iface()
     {
-        return this;
+        return dynamic_cast<line_graph_iface *>(this);
     }
     virtual bool activate_preset(int bank, int program) { 
         return false;
