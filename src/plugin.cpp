@@ -19,6 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 #include <config.h>
+#include <calf/ladspa_wrap.h>
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>

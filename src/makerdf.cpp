@@ -25,6 +25,7 @@
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <calf/plugininfo.h>
+#include <calf/utils.h>
 #if USE_LV2
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
@@ -32,6 +33,7 @@
 
 using namespace std;
 using namespace synth;
+using namespace calf_utils;
 
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
@@ -41,6 +43,78 @@ static struct option long_options[] = {
 };
 
 #if USE_LADSPA
+
+static std::string unit_to_string(parameter_properties &props)
+{
+    uint32_t flags = props.flags & PF_UNITMASK;
+    
+    switch(flags) {
+        case PF_UNIT_DB:
+            return "ladspa:hasUnit=\"&ladspa;dB\" ";
+        case PF_UNIT_COEF:
+            return "ladspa:hasUnit=\"&ladspa;coef\" ";
+        case PF_UNIT_HZ:
+            return "ladspa:hasUnit=\"&ladspa;Hz\" ";
+        case PF_UNIT_SEC:
+            return "ladspa:hasUnit=\"&ladspa;seconds\" ";
+        case PF_UNIT_MSEC:
+            return "ladspa:hasUnit=\"&ladspa;milliseconds\" ";
+        default:
+            return string();
+    }
+}
+
+static std::string scale_to_string(parameter_properties &props)
+{
+    if ((props.flags & PF_TYPEMASK) != PF_ENUM) {
+        return "/";
+    }
+    string tmp = "><ladspa:hasScale><ladspa:Scale>\n";
+    for (int i = (int)props.min; i <= (int)props.max; i++) {
+        tmp += "          <ladspa:hasPoint><ladspa:Point rdf:value=\""+i2s(i)+"\" ladspa:hasLabel=\""+props.choices[(int)(i - props.min)]+"\" /></ladspa:hasPoint>\n";
+    }
+    return tmp+"        </ladspa:Scale></ladspa:hasScale></ladspa:InputControlPort";
+}
+
+std::string generate_ladspa_rdf(const ladspa_plugin_info &info, parameter_properties *params, const char *param_names[], unsigned int count,
+                                       unsigned int ctl_ofs)
+{
+    string rdf;
+    string plugin_id = "&ladspa;" + i2s(info.unique_id);
+    string plugin_type = string(info.plugin_type); 
+    
+    rdf += "  <ladspa:" + plugin_type + " rdf:about=\"" + plugin_id + "\">\n";
+    rdf += "    <dc:creator>" + xml_escape(info.maker) + "</dc:creator>\n";
+    rdf += "    <dc:title>" + xml_escape(info.name) + "</dc:title>\n";
+    
+    for (unsigned int i = 0; i < count; i++) {
+        rdf += 
+            "    <ladspa:hasPort>\n"
+            "      <ladspa:" + string(params[i].flags & PF_PROP_OUTPUT ? "Output" : "Input") 
+            + "ControlPort rdf:about=\"" + plugin_id + "."+i2s(ctl_ofs + i)+"\" "
+            + unit_to_string(params[i]) +
+            "ladspa:hasLabel=\"" + params[i].short_name + "\" "
+            + scale_to_string(params[i]) + 
+            ">\n"
+            "    </ladspa:hasPort>\n";
+    }
+    rdf += "    <ladspa:hasSetting>\n"
+        "      <ladspa:Default>\n";
+    for (unsigned int i = 0; i < count; i++) {
+        rdf += 
+            "        <ladspa:hasPortValue>\n"
+            "           <ladspa:PortValue rdf:value=\"" + f2s(params[i].def_value) + "\">\n"
+            "             <ladspa:forPort rdf:resource=\"" + plugin_id + "." + i2s(ctl_ofs + i) + "\"/>\n"
+            "           </ladspa:PortValue>\n"
+            "        </ladspa:hasPortValue>\n";
+    }
+    rdf += "      </ladspa:Default>\n"
+        "    </ladspa:hasSetting>\n";
+
+    rdf += "  </ladspa:" + plugin_type + ">\n";
+    return rdf;
+}
+
 void make_rdf()
 {
     string rdf;
@@ -56,7 +130,7 @@ void make_rdf()
     rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
 
     #define RDF_EXPR(Module) \
-        synth::generate_ladspa_rdf(Module::plugin_info, Module::param_props, Module::port_names, Module::param_count, Module::in_count + Module::out_count);
+        generate_ladspa_rdf(Module::plugin_info, Module::param_props, Module::port_names, Module::param_count, Module::in_count + Module::out_count);
     
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!isSynth) rdf += RDF_EXPR(name##_audio_module)
     #define PER_SMALL_MODULE_ITEM(...)

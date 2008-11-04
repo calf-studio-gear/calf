@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <map>
+#include <string>
 
 namespace calf_utils
 {
@@ -108,6 +109,22 @@ typedef std::map<std::string, std::string> dictionary;
 
 extern std::string encodeMap(const dictionary &data);
 extern void decodeMap(dictionary &data, const std::string &src);
+
+static inline std::string i2s(int value)
+{
+    char buf[32];
+    sprintf(buf, "%d", value);
+    
+    return std::string(buf);
+}
+
+static inline std::string f2s(double value)
+{
+    // XXXKF might not work with some locale settings
+    char buf[64];
+    sprintf(buf, "%g", value);
+    return buf;
+}
 
 };
 
