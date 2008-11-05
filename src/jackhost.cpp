@@ -38,16 +38,16 @@
 #include <calf/main_win.h>
 #include <calf/utils.h>
 
-using namespace synth;
 using namespace std;
 using namespace calf_utils;
+using namespace calf_plugins;
 
 // I don't need anyone to tell me this is stupid. I already know that :)
 plugin_gui_window *gui_win;
 
 const char *client_name = "calfhost";
 
-jack_host_base *synth::create_jack_host(const char *effect_name)
+jack_host_base *calf_plugins::create_jack_host(const char *effect_name)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>();
     #include <calf/modulelist.h>
@@ -520,7 +520,7 @@ int main(int argc, char *argv[])
         get_builtin_presets().load_defaults(true);
         get_user_presets().load_defaults(false);
     }
-    catch(synth::preset_exception &e)
+    catch(calf_plugins::preset_exception &e)
     {
         // XXXKF this exception is already handled by load_defaults, so this is redundant
         fprintf(stderr, "Error while loading presets: %s\n", e.what());

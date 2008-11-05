@@ -26,7 +26,7 @@
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
 
-using namespace synth;
+using namespace calf_plugins;
 using namespace std;
 
 // this way of filling presets menu is not that great
@@ -39,7 +39,7 @@ void store_preset_dlg_destroy(GtkWindow *window, gpointer data)
     store_preset_dlg = NULL;
 }
 
-void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
+void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
 {
     if (store_preset_dlg)
     {
@@ -105,7 +105,7 @@ void synth::store_preset(GtkWindow *toplevel, plugin_gui *gui)
     //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }
 
-void synth::activate_preset(GtkAction *action, activate_preset_params *params)
+void calf_plugins::activate_preset(GtkAction *action, activate_preset_params *params)
 {
     plugin_gui *gui = params->gui;
     plugin_preset &p = (params->builtin ? get_builtin_presets() : get_user_presets()).presets[params->preset];

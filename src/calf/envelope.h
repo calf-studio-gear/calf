@@ -23,7 +23,7 @@
 
 #include "primitives.h"
 
-namespace synth {
+namespace dsp {
 
 /// Rate-based ADSR envelope class. Note that if release rate is slower than decay
 /// rate, this envelope won't use release rate until output level falls below sustain level

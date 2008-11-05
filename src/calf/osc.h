@@ -25,7 +25,7 @@
 #include "fft.h"
 #include <map>
 
-namespace synth
+namespace dsp
 {
 
 /** Very simple, non-bandlimited saw oscillator. Should not be used for anything

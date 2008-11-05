@@ -23,7 +23,7 @@
 #include <calf/giface.h>
 #include <calf/gui.h>
 
-namespace synth {
+namespace calf_plugins {
 
 struct activate_preset_params
 {

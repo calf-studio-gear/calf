@@ -29,7 +29,7 @@
 #include <string.h>
 #include "utils.h"
 
-namespace synth {
+namespace calf_plugins {
 
 class plugin_ctl_iface;
     

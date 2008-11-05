@@ -32,7 +32,7 @@ struct _cairo;
     
 typedef struct _cairo cairo_t;
     
-namespace synth {
+namespace calf_plugins {
 
 enum {
     MAX_SAMPLE_RUN = 256
@@ -312,7 +312,7 @@ class plugin_metadata: public virtual plugin_metadata_iface
 public:
     static const char *port_names[];
     static parameter_properties param_props[];
-    static synth::ladspa_plugin_info plugin_info;
+    static ladspa_plugin_info plugin_info;
 
     // These below are stock implementations based on enums and static members in Metadata class
     // they may be overridden to provide more interesting functionality
@@ -370,9 +370,9 @@ public:
     
 };
 
-#define CALF_PORT_NAMES(name) template<> const char *synth::plugin_metadata<name##_metadata>::port_names[]
+#define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]
 #define CALF_PORT_PROPS(name) template<> parameter_properties plugin_metadata<name##_metadata>::param_props[]
-#define CALF_PLUGIN_INFO(name) template<> synth::ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info
+#define CALF_PLUGIN_INFO(name) template<> calf_plugins::ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info
 #define PLUGIN_NAME_ID_LABEL(name, id, label) \
     static const char *impl_get_name() { return name; } \
     static const char *impl_get_id() { return id; } \

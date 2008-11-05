@@ -35,7 +35,7 @@
 #ifdef ENABLE_EXPERIMENTAL
 
 #if USE_LV2
-#define LV2_SMALL_WRAPPER(mod, name) static synth::lv2_small_wrapper<small_plugins::mod##_audio_module> lv2_small_##mod(name);
+#define LV2_SMALL_WRAPPER(mod, name) static calf_plugins::lv2_small_wrapper<small_plugins::mod##_audio_module> lv2_small_##mod(name);
 #else
 #define LV2_SMALL_WRAPPER(...)
 #endif
@@ -44,7 +44,7 @@
 
 #if USE_LV2
 
-using namespace synth;
+using namespace calf_plugins;
 using namespace dsp;
 using namespace std;
 
@@ -1798,7 +1798,7 @@ public:
 #define PER_SMALL_MODULE_ITEM(name, id) SMALL_WRAPPERS(name, id)
 #include <calf/modulelist.h>
 
-const LV2_Descriptor *synth::lv2_small_descriptor(uint32_t index)
+const LV2_Descriptor *calf_plugins::lv2_small_descriptor(uint32_t index)
 {
     #define PER_SMALL_MODULE_ITEM(name, id) if (!(index--)) return &::lv2_small_##name.descriptor;
     #include <calf/modulelist.h>
@@ -1807,7 +1807,7 @@ const LV2_Descriptor *synth::lv2_small_descriptor(uint32_t index)
 #endif
 #endif
 
-void synth::get_all_small_plugins(plugin_list_info_iface *iface)
+void calf_plugins::get_all_small_plugins(plugin_list_info_iface *iface)
 {
     #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); small_plugins::name##_audio_module::plugin_info(pii); pii->finalize(); }
     #include <calf/modulelist.h>

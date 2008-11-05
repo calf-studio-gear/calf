@@ -29,7 +29,7 @@
 #include "utils.h"
 #include <pthread.h>
 
-namespace synth {
+namespace calf_plugins {
 
 class jack_host_base;
     
@@ -264,7 +264,7 @@ public:
         Module::params_changed();
     }
 
-    virtual synth::parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
+    virtual parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
     
     void handle_event(uint8_t *buffer, uint32_t size)
     {

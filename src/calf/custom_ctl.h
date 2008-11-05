@@ -35,7 +35,7 @@ G_BEGIN_DECLS
 struct CalfLineGraph
 {
     GtkWidget parent;
-    synth::line_graph_iface *source;
+    calf_plugins::line_graph_iface *source;
     int source_id;
 };
 

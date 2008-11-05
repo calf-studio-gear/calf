@@ -27,7 +27,7 @@
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
 
-using namespace synth;
+using namespace calf_plugins;
 using namespace std;
 
 static const char *ui_xml = 
@@ -290,10 +290,10 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
     std::vector<plugin_metadata_iface *> plugins;
-    synth::get_all_plugins(plugins);
+    calf_plugins::get_all_plugins(plugins);
     for(unsigned int i = 0; i < plugins.size(); i++)
     {
-        synth::plugin_metadata_iface *p = plugins[i];
+        plugin_metadata_iface *p = plugins[i];
         string action_name = "Add" + string(p->get_label())+"Action";
         s += string("<menuitem action=\"") + action_name + "\" />";
         GtkActionEntry ae = { action_name.c_str(), NULL, p->get_name(), NULL, NULL, (GCallback)add_plugin_action };

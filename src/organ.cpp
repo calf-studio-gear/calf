@@ -30,11 +30,11 @@
 #include <calf/modules_synths.h>
 #include <iostream>
 
-using namespace synth;
 using namespace std;
 using namespace dsp;
+using namespace calf_plugins;
 
-CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
 
 #define DRAWBAR_UI(no) \
             "<label  attach-x=\"" no "\" attach-y=\"0\" param=\"l" no "\"/>" \
@@ -1047,7 +1047,7 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
 void organ_voice::update_pitch()
 {
     organ_voice_base::update_pitch();
-    dphase.set(synth::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * parameters->pitch_bend);
+    dphase.set(dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * parameters->pitch_bend);
 }
 
 void organ_voice::render_block() {
@@ -1220,7 +1220,7 @@ void drawbar_organ::update_params()
         parameters->multiplier[i] = parameters->harmonics[i] * pow(2.0, parameters->detune[i] * (1.0 / 1200.0));
         parameters->phaseshift[i] = int(parameters->phase[i] * 65536 / 360) << 16;
     }
-    double dphase = synth::midi_note_to_phase((int)parameters->foldover, 0, sample_rate);
+    double dphase = dsp::midi_note_to_phase((int)parameters->foldover, 0, sample_rate);
     parameters->foldvalue = (int)(dphase);
 }
 

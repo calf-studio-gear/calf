@@ -31,20 +31,9 @@
 #include "envelope.h"
 #include "organ.h"
 
-namespace synth {
+namespace calf_plugins {
 
 #define MONOSYNTH_WAVE_BITS 12
-    
-struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
-{
-    enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_varistep, wave_skewsaw, wave_skewsqr, wave_test1, wave_test2, wave_test3, wave_test4, wave_test5, wave_test6, wave_test7, wave_test8, wave_count };
-    enum { flt_lp12, flt_lp24, flt_2lp12, flt_hp12, flt_lpbr, flt_hpbr, flt_bp6, flt_2bp6 };
-    enum { par_wave1, par_wave2, par_detune, par_osc2xpose, par_oscmode, par_oscmix, par_filtertype, par_cutoff, par_resonance, par_cutoffsep, par_envmod, par_envtores, par_envtoamp, par_attack, par_decay, par_sustain, par_release, par_keyfollow, par_legato, par_portamento, par_vel2filter, par_vel2amp, par_master, param_count };
-    enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
-    enum { step_size = 64 };
-    PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
-    const char *get_gui_xml();
-};
     
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
@@ -55,8 +44,8 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate, crate;
-    static waveform_family<MONOSYNTH_WAVE_BITS> *waves;
-    waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
+    static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
+    dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
     bool running, stopping, gate;
     int last_key;
     
@@ -71,8 +60,8 @@ public:
     float odcr, porta_time;
     int queue_note_on, stop_count;
     int legato;
-    synth::adsr envelope;
-    synth::keystack stack;
+    dsp::adsr envelope;
+    dsp::keystack stack;
     dsp::gain_smoothing master;
     
     static void generate_waves();
@@ -199,17 +188,7 @@ public:
     }
 };
 
-struct organ_metadata: public plugin_metadata<organ_metadata>
-{
-    enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
-    enum { param_count = drawbar_organ::param_count };
-    PLUGIN_NAME_ID_LABEL("organ", "organ", "Organ")
-    plugin_command_info *get_commands();
-    const char **get_default_configure_vars();
-    const char *get_gui_xml();
-};
-
-struct organ_audio_module: public audio_module<organ_metadata>, public drawbar_organ
+struct organ_audio_module: public audio_module<organ_metadata>, public dsp::drawbar_organ
 {
 public:
     using drawbar_organ::note_on;
@@ -219,7 +198,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    organ_parameters par_values;
+    dsp::organ_parameters par_values;
     uint32_t srate;
     bool panic_flag;
     /// Value for configure variable map_curve

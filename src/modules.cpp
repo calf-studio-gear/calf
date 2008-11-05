@@ -28,9 +28,10 @@
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 
-using namespace synth;
+using namespace dsp;
+using namespace calf_plugins;
 
-const char *synth::calf_copyright_info = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
+const char *calf_plugins::calf_copyright_info = "(C) 2001-2008 Krzysztof Foltman, license: LGPL";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +47,7 @@ CALF_PORT_PROPS(flanger) = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", synth::calf_copyright_info, "FlangerPlugin" };
+CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "FlangerPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +64,7 @@ CALF_PORT_PROPS(phaser) = {
     { 1,          0, 2,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Krzysztof Foltman", synth::calf_copyright_info, "PhaserPlugin" };
+CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "PhaserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +80,7 @@ CALF_PORT_PROPS(reverb) = {
     { 0.25,       0,    2,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
 };
 
-CALF_PLUGIN_INFO(reverb) = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", synth::calf_copyright_info, "ReverbPlugin" };
+CALF_PLUGIN_INFO(reverb) = { 0x847e, "Reverb", "Calf Reverb", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ReverbPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +102,7 @@ CALF_PORT_PROPS(filter) = {
     { 20,         5,  100,    20, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Inertia"},
 };
 
-CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", synth::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -129,7 +130,7 @@ CALF_PORT_PROPS(vintage_delay) = {
     { 1,         0,    2,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fbmodes, "medium", "Medium" },
 };
 
-CALF_PLUGIN_INFO(vintage_delay) = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", synth::calf_copyright_info, "DelayPlugin" };
+CALF_PLUGIN_INFO(vintage_delay) = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -148,7 +149,7 @@ CALF_PORT_PROPS(rotary_speaker) = {
     { 0.3,        0,    1,  101, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "reflection", "Reflection" },
 };
 
-CALF_PLUGIN_INFO(rotary_speaker) = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", synth::calf_copyright_info, "SimulationPlugin" };
+CALF_PLUGIN_INFO(rotary_speaker) = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SimulationPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -166,7 +167,7 @@ CALF_PORT_PROPS(multichorus) = {
     { 180,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo_phase_r", "Right LFO phase" },
 };
 
-CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", synth::calf_copyright_info, "ChorusPlugin" };
+CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ChorusPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -193,13 +194,13 @@ CALF_PORT_PROPS(compressor) = {
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
 };
 
-CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", synth::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
 
-void synth::get_all_plugins(std::vector<plugin_metadata_iface *> &plugins)
+void calf_plugins::get_all_plugins(std::vector<plugin_metadata_iface *> &plugins)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(new name##_metadata);
     #define PER_SMALL_MODULE_ITEM(...)

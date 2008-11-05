@@ -24,10 +24,11 @@
 
 #include "synth.h"
 #include "envelope.h"
+#include "metadata.h"
 
 #define ORGAN_KEYTRACK_POINTS 4
 
-namespace synth 
+namespace dsp
 {
 
 struct organ_parameters {
@@ -107,51 +108,9 @@ struct organ_parameters {
 /// 2^ORGAN_BIG_WAVE_SHIFT = how many (quasi)periods per sample
 #define ORGAN_BIG_WAVE_SHIFT 5
 
-class organ_voice_base
+class organ_voice_base: public calf_plugins::organ_enums
 {
 public:
-    enum organ_waveform { 
-        wave_sine, 
-        wave_sinepl1, wave_sinepl2, wave_sinepl3,
-        wave_ssaw, wave_ssqr, wave_spls, wave_saw, wave_sqr, wave_pulse, wave_sinepl05, wave_sqr05, wave_halfsin, wave_clvg, wave_bell, wave_bell2,
-        wave_w1, wave_w2, wave_w3, wave_w4, wave_w5, wave_w6, wave_w7, wave_w8, wave_w9,
-        wave_dsaw, wave_dsqr, wave_dpls,
-        wave_count_small,
-        wave_strings = wave_count_small,
-        wave_strings2,
-        wave_sinepad,
-        wave_bellpad,
-        wave_space,
-        wave_choir,
-        wave_choir2,
-        wave_choir3,
-        wave_count,
-        wave_count_big = wave_count - wave_count_small
-    };
-    enum {
-        ampctl_none,
-        ampctl_direct,
-        ampctl_f1,
-        ampctl_f2,
-        ampctl_all,
-        ampctl_count
-    };
-    enum { 
-        lfomode_off = 0,
-        lfomode_direct,
-        lfomode_filter1,
-        lfomode_filter2,
-        lfomode_voice,
-        lfomode_global,
-        lfomode_count
-    };
-    enum {
-        perctrig_first = 0,
-        perctrig_each,
-        perctrig_eachplus,
-        perctrig_polyphonic,
-        perctrig_count
-    };
     typedef waveform_family<ORGAN_WAVE_BITS> small_wave_family;
     typedef waveform_family<ORGAN_BIG_WAVE_BITS> big_wave_family;
 public:
@@ -194,7 +153,7 @@ public:
     static void precalculate_waves();
     void update_pitch()
     {
-        float phase = synth::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
+        float phase = dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
         dpphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
         moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
     }
@@ -224,7 +183,7 @@ public:
     void process(organ_parameters *parameters, float (*data)[2], unsigned int len, float sample_rate);
 };
 
-class organ_voice: public synth::voice, public organ_voice_base {
+class organ_voice: public dsp::voice, public organ_voice_base {
 protected:    
     enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
     union {
@@ -326,35 +285,11 @@ public:
     }
 };
 
-struct drawbar_organ: public synth::basic_synth {
+struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums {
     organ_parameters *parameters;
     percussion_voice percussion;
     organ_vibrato global_vibrato;
     
-    enum { 
-        par_drawbar1, par_drawbar2, par_drawbar3, par_drawbar4, par_drawbar5, par_drawbar6, par_drawbar7, par_drawbar8, par_drawbar9, 
-        par_frequency1, par_frequency2, par_frequency3, par_frequency4, par_frequency5, par_frequency6, par_frequency7, par_frequency8, par_frequency9, 
-        par_waveform1, par_waveform2, par_waveform3, par_waveform4, par_waveform5, par_waveform6, par_waveform7, par_waveform8, par_waveform9, 
-        par_detune1, par_detune2, par_detune3, par_detune4, par_detune5, par_detune6, par_detune7, par_detune8, par_detune9, 
-        par_phase1, par_phase2, par_phase3, par_phase4, par_phase5, par_phase6, par_phase7, par_phase8, par_phase9, 
-        par_pan1, par_pan2, par_pan3, par_pan4, par_pan5, par_pan6, par_pan7, par_pan8, par_pan9, 
-        par_routing1, par_routing2, par_routing3, par_routing4, par_routing5, par_routing6, par_routing7, par_routing8, par_routing9, 
-        par_foldover,
-        par_percdecay, par_perclevel, par_percwave, par_percharm, par_percvel2amp,
-        par_percfmdecay, par_percfmdepth, par_percfmwave, par_percfmharm, par_percvel2fm,
-        par_perctrigger, par_percstereo,
-        par_filterchain,
-        par_master, 
-        par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
-        par_f2cutoff, par_f2res, par_f2env1, par_f2env2, par_f2env3, par_f2keyf,
-        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl, par_eg1ampctl, 
-        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl, par_eg2ampctl, 
-        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
-        par_lforate, par_lfoamt, par_lfowet, par_lfophase, par_lfomode,
-        par_transpose, par_detune,
-        param_count
-    };
-
      drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
@@ -378,7 +313,7 @@ struct drawbar_organ: public synth::basic_synth {
             output[1][i] = gain*buf[i][1];
         }
     }
-    synth::voice *alloc_voice() {
+    dsp::voice *alloc_voice() {
         block_voice<organ_voice> *v = new block_voice<organ_voice>();
         v->parameters = parameters;
         return v;
@@ -401,7 +336,7 @@ struct drawbar_organ: public synth::basic_synth {
         {
             parameters->cutoff = value / 64.0 - 1;
         }
-        synth::basic_synth::control_change(controller, value);
+        dsp::basic_synth::control_change(controller, value);
     }
     void pitch_bend(int amt);
     virtual bool check_percussion() { 

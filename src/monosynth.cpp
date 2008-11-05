@@ -28,7 +28,8 @@
 #include <calf/giface.h>
 #include <calf/modules_synths.h>
 
-using namespace synth;
+using namespace dsp;
+using namespace calf_plugins;
 using namespace std;
 
 CALF_PORT_NAMES(monosynth) = {
@@ -51,7 +52,7 @@ const char *monosynth_filter_choices[] = {
     "2x6dB/oct Bandpass",
 };
 
-CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", synth::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
 
 static const char *monosynth_gui_xml =
     "<vbox border=\"10\">"

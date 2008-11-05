@@ -32,7 +32,7 @@
 
 using namespace std;
 using namespace dsp;
-using namespace synth;
+using namespace calf_plugins;
 using namespace calf_utils;
 
 struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy

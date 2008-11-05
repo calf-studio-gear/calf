@@ -28,12 +28,11 @@
 #include <calf/synth.h>
 
 using namespace dsp;
-using namespace synth;
 using namespace std;
 
 void basic_synth::kill_note(int note, int vel, bool just_one)
 {
-    for (list<synth::voice *>::iterator it = active_voices.begin(); it != active_voices.end(); it++) {
+    for (list<dsp::voice *>::iterator it = active_voices.begin(); it != active_voices.end(); it++) {
         // preserve sostenuto notes
         if ((*it)->get_current_note() == note && !(sostenuto && (*it)->sostenuto)) {
             (*it)->note_off(vel);
@@ -43,12 +42,12 @@ void basic_synth::kill_note(int note, int vel, bool just_one)
     }
 }
 
-synth::voice *basic_synth::give_voice()
+dsp::voice *basic_synth::give_voice()
 {
     if (unused_voices.empty())
         return alloc_voice();
     else {
-        synth::voice *v = unused_voices.top();
+        dsp::voice *v = unused_voices.top();
         unused_voices.pop();
         v->reset();
         return v;
@@ -62,7 +61,7 @@ void basic_synth::note_on(int note, int vel)
         return;
     }
     bool perc = check_percussion();
-    synth::voice *v = alloc_voice();
+    dsp::voice *v = alloc_voice();
     v->setup(sample_rate);
     v->released = false;
     v->sostenuto = false;
@@ -81,7 +80,7 @@ void basic_synth::note_off(int note, int vel)
         kill_note(note, vel, false);
 }
 
-#define for_all_voices(iter) for (std::list<synth::voice *>::iterator iter = active_voices.begin(); iter != active_voices.end(); iter++)
+#define for_all_voices(iter) for (std::list<dsp::voice *>::iterator iter = active_voices.begin(); iter != active_voices.end(); iter++)
     
 void basic_synth::on_pedal_release()
 {
@@ -158,8 +157,8 @@ void basic_synth::control_change(int ctl, int val)
 void basic_synth::render_to(float (*output)[2], int nsamples)
 {
     // render voices, eliminate ones that aren't sounding anymore
-    for (list<synth::voice *>::iterator i = active_voices.begin(); i != active_voices.end();) {
-        synth::voice *v = *i;
+    for (list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end();) {
+        dsp::voice *v = *i;
         v->render_to(output, nsamples);
         if (!v->get_active()) {
             i = active_voices.erase(i);

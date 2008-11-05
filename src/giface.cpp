@@ -23,9 +23,9 @@
 #include <memory.h>
 #include <calf/giface.h>
 
-using namespace synth;
 using namespace std;
 using namespace calf_utils;
+using namespace calf_plugins;
 
 float parameter_properties::from_01(double value01) const
 {
@@ -185,7 +185,7 @@ std::string parameter_properties::to_string(float value) const
     return string(buf);
 }
 
-void synth::plugin_ctl_iface::clear_preset() {
+void calf_plugins::plugin_ctl_iface::clear_preset() {
     int param_count = get_param_count();
     for (int i=0; i < param_count; i++)
         set_param_value(i, get_param_props(i)->def_value);

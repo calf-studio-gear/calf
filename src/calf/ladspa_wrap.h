@@ -29,7 +29,7 @@
 #endif
 #include "giface.h"
 
-namespace synth {
+namespace calf_plugins {
 
 /// A template implementing plugin_ctl_iface for a given plugin
 template<class Module>

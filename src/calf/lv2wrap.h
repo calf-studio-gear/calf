@@ -31,7 +31,7 @@
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_contexts.h>
 
-namespace synth {
+namespace calf_plugins {
 
 template<class Module>
 struct lv2_instance: public Module, public plugin_ctl_iface

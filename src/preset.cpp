@@ -31,19 +31,19 @@
 #include <calf/giface.h>
 #include <calf/utils.h>
 
-using namespace synth;
 using namespace std;
+using namespace calf_plugins;
 using namespace calf_utils;
 
-extern synth::preset_list &synth::get_builtin_presets()
+extern calf_plugins::preset_list &calf_plugins::get_builtin_presets()
 {
-    static synth::preset_list plist;
+    static calf_plugins::preset_list plist;
     return plist;
 }
 
-extern synth::preset_list &synth::get_user_presets()
+extern calf_plugins::preset_list &calf_plugins::get_user_presets()
 {
-    static synth::preset_list plist;
+    static calf_plugins::preset_list plist;
     return plist;
 }
 
@@ -115,7 +115,7 @@ void plugin_preset::get_from(plugin_ctl_iface *plugin)
     plugin->send_configures(&tmp);
 }
     
-string synth::preset_list::get_preset_filename(bool builtin)
+string calf_plugins::preset_list::get_preset_filename(bool builtin)
 {
     if (builtin)
     {

@@ -28,7 +28,7 @@
 #include "primitives.h"
 #include "audio_fx.h"
 
-namespace synth {
+namespace dsp {
 
 /**
  * A kind of set with fast non-ordered iteration, used for storing lists of pressed keys.
@@ -189,9 +189,9 @@ protected:
     /// Sostenuto pedal state
     bool sostenuto;
     /// Voices currently playing
-    std::list<synth::voice *> active_voices;
+    std::list<dsp::voice *> active_voices;
     /// Voices allocated, but not used
-    std::stack<synth::voice *> unused_voices;
+    std::stack<dsp::voice *> unused_voices;
     /// Gate values for all 128 MIDI notes
     std::bitset<128> gate;
 
@@ -202,8 +202,8 @@ public:
         hold = false;
         sostenuto = false;
     }
-    virtual synth::voice *give_voice();
-    virtual synth::voice *alloc_voice()=0;
+    virtual dsp::voice *give_voice();
+    virtual dsp::voice *alloc_voice()=0;
     virtual void render_to(float (*output)[2], int nsamples);
     virtual void note_on(int note, int vel);
     virtual void percussion_note_on(int note, int vel) {}

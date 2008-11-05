@@ -27,8 +27,9 @@
 #include "audio_fx.h"
 #include "multichorus.h"
 #include "giface.h"
+#include "metadata.h"
 
-namespace synth {
+namespace calf_plugins {
 
 using namespace dsp;
 
@@ -57,14 +58,6 @@ public:
     }
 };
 #endif
-
-struct flanger_metadata: public plugin_metadata<flanger_metadata>
-{
-public:
-    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
-};
 
 class flanger_audio_module: public audio_module<flanger_metadata>
 {
@@ -129,13 +122,6 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-};
-
-struct phaser_metadata: public plugin_metadata<phaser_metadata>
-{
-    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
 };
 
 class phaser_audio_module: public audio_module<phaser_metadata>
@@ -254,15 +240,6 @@ public:
         reverb.extra_sanitize();
         return outputs_mask;
     }
-};
-
-struct filter_metadata: public plugin_metadata<filter_metadata>
-{
-    enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = false, support_midi = false };
-    PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
-    /// do not export mode and inertia as CVs, as those are settings and not parameters
-    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
 };
 
 class filter_audio_module: public audio_module<filter_metadata>
@@ -410,13 +387,6 @@ public:
     }
 };
 
-struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
-{
-    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
-    PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
-};
-
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 {
 public:    
@@ -521,14 +491,6 @@ public:
         }
         return ostate;
     }
-};
-
-struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
-{
-public:
-    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, par_reflection, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = true, require_midi = false, rt_capable = true };
-    PLUGIN_NAME_ID_LABEL("rotary_speaker", "rotaryspeaker", "Rotary Speaker")
 };
 
 class rotary_speaker_audio_module: public audio_module<rotary_speaker_metadata>
@@ -721,15 +683,6 @@ public:
             return;
         }
     }
-};
-
-/// A multitap stereo chorus thing - metadata
-struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
-{
-public:    
-    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_lfophase_l, par_lfophase_r, param_count };
-    enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
-    PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };
 
 /// A multitap stereo chorus thing - processing

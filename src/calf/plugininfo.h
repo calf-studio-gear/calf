@@ -24,7 +24,7 @@
 
 #include <string>
 
-namespace synth {
+namespace calf_plugins {
 
 /// A sink to send information about an audio port
 struct plain_port_info_iface

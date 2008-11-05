@@ -31,7 +31,7 @@
 
 #include <iostream>
 
-using namespace synth;
+using namespace calf_plugins;
 using namespace std;
 
 /******************************** controls ********************************/
@@ -1217,7 +1217,7 @@ plugin_gui_window::~plugin_gui_window()
     delete gui;
 }
 
-void synth::activate_command(GtkAction *action, activate_command_params *params)
+void calf_plugins::activate_command(GtkAction *action, activate_command_params *params)
 {
     plugin_gui *gui = params->gui;
     gui->plugin->execute(params->function_idx);

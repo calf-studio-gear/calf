@@ -30,8 +30,8 @@
 #endif
 
 using namespace std;
-using namespace synth;
 using namespace calf_utils;
+using namespace calf_plugins;
 
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
@@ -127,11 +127,11 @@ void make_rdf()
     
     rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
 
-    vector<synth::plugin_metadata_iface *> plugins;
-    synth::get_all_plugins(plugins);
+    vector<calf_plugins::plugin_metadata_iface *> plugins;
+    calf_plugins::get_all_plugins(plugins);
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
-        synth::plugin_metadata_iface *p = plugins[i];
+        plugin_metadata_iface *p = plugins[i];
         if (!p->requires_midi()) {
             rdf += generate_ladspa_rdf(p->get_plugin_info(), p->get_param_props(0), p->get_port_names(), p->get_param_count(), p->get_param_port_offset());
         }
@@ -449,8 +449,8 @@ void make_ttl(string path_prefix)
         "\n"
     ;
     
-    vector<synth::plugin_metadata_iface *> plugins;
-    synth::get_all_plugins(plugins);
+    vector<plugin_metadata_iface *> plugins;
+    calf_plugins::get_all_plugins(plugins);
     
     map<string, string> classes;
     
@@ -488,8 +488,8 @@ void make_ttl(string path_prefix)
 #endif
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
-        synth::plugin_metadata_iface *pi = plugins[i];
-        const synth::ladspa_plugin_info &lpi = pi->get_plugin_info();
+        plugin_metadata_iface *pi = plugins[i];
+        const ladspa_plugin_info &lpi = pi->get_plugin_info();
         string uri = string("<http://calf.sourceforge.net/plugins/")  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
@@ -545,7 +545,7 @@ void make_ttl(string path_prefix)
         fclose(f);
     }
     lv2_plugin_list lpl;
-    synth::get_all_small_plugins(&lpl);
+    calf_plugins::get_all_small_plugins(&lpl);
     for (unsigned int i = 0; i < lpl.size(); i++)
     {
         lv2_plugin_info *pi = lpl[i];
@@ -597,15 +597,15 @@ void make_manifest()
         "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
     ;
     
-    vector<synth::plugin_metadata_iface *> plugins;
-    synth::get_all_plugins(plugins);
+    vector<plugin_metadata_iface *> plugins;
+    calf_plugins::get_all_plugins(plugins);
     for (unsigned int i = 0; i < plugins.size(); i++)
         ttl += string("<http://calf.sourceforge.net/plugins/") 
             + string(plugins[i]->get_plugin_info().label)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> .\n";
 
     lv2_plugin_list lpl;
-    synth::get_all_small_plugins(&lpl);
+    calf_plugins::get_all_small_plugins(&lpl);
     for (unsigned int i = 0; i < lpl.size(); i++)
         ttl += string("<http://calf.sourceforge.net/small_plugins/") 
             + string(lpl[i]->id)

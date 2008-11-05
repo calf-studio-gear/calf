@@ -30,7 +30,7 @@
 #include <calf/jackhost.h>
 #include "custom_ctl.h"
 
-namespace synth {
+namespace calf_plugins {
 
     class main_window: public main_window_iface
     {

@@ -32,7 +32,7 @@
 
 using namespace std;
 using namespace dsp;
-using namespace synth;
+using namespace calf_plugins;
 using namespace osctl;
 
 #define debug_printf(...)
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
         get_builtin_presets().load_defaults(true);
         get_user_presets().load_defaults(false);
     }
-    catch(synth::preset_exception &e)
+    catch(calf_plugins::preset_exception &e)
     {
         fprintf(stderr, "Error while loading presets: %s\n", e.what());
         exit(1);

@@ -31,7 +31,7 @@ struct CalfCurve;
 struct CalfKeyboard;
 struct CalfLed;
 
-namespace synth {
+namespace calf_plugins {
 
 class plugin_gui;
 

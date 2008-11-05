@@ -23,7 +23,7 @@
 
 #include "loudness.h"
 
-namespace synth {
+namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
 
