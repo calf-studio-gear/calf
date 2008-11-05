@@ -148,14 +148,6 @@ struct plugin_proxy: public plugin_proxy_base, public Metadata
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
-    void clear_preset() {
-        const char **p = get_default_configure_vars();
-        if (p)
-        {
-            for(; p[0]; p += 2)
-                configure(p[0], p[1]);
-        }
-    }
 };
 
 plugin_proxy_base *create_plugin_proxy(const char *effect_name)

@@ -338,6 +338,38 @@ public:
     virtual const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
 };
 
+/// A class for delegating metadata implementation to "remote" metadata class.
+/// Used for GUI wrappers that cannot have a dependency on actual classes,
+/// and which instead take an "external" metadata object pointer, obtained
+/// through get_all_plugins.
+class plugin_metadata_proxy: public virtual plugin_metadata_iface
+{
+public:
+    plugin_metadata_iface *impl;
+public:
+    plugin_metadata_proxy(plugin_metadata_iface *_impl) { impl = _impl; }
+    const char *get_name() { return impl->get_name(); } 
+    const char *get_id() { return impl->get_id(); } 
+    const char *get_label() { return impl->get_label(); } 
+    int get_input_count() { return impl->get_input_count(); }
+    int get_output_count() { return impl->get_output_count(); }
+    int get_param_count() { return impl->get_param_count(); }
+    bool get_midi() { return impl->get_midi(); }
+    bool requires_midi() { return impl->requires_midi(); }
+    bool is_rt_capable() { return impl->is_rt_capable(); }
+    line_graph_iface *get_line_graph_iface() { return impl->get_line_graph_iface(); }    
+    int get_param_port_offset()  { return impl->get_param_port_offset(); }
+    const char *get_gui_xml() { return impl->get_gui_xml(); }
+    plugin_command_info *get_commands() { return impl->get_commands(); }
+    parameter_properties *get_param_props(int param_no) { return impl->get_param_props(param_no); }
+    const char **get_port_names() { return impl->get_port_names(); }
+    const char **get_default_configure_vars() { return impl->get_default_configure_vars(); }
+    bool is_cv(int param_no) { return impl->is_cv(param_no); }
+    bool is_noisy(int param_no) { return impl->is_noisy(param_no); }
+    virtual const ladspa_plugin_info &get_plugin_info() { return impl->get_plugin_info(); }
+    
+};
+
 #define CALF_PORT_NAMES(name) template<> const char *synth::plugin_metadata<name##_metadata>::port_names[]
 #define CALF_PORT_PROPS(name) template<> parameter_properties plugin_metadata<name##_metadata>::param_props[]
 #define CALF_PLUGIN_INFO(name) template<> synth::ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info

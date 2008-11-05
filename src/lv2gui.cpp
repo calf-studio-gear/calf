@@ -17,6 +17,7 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <assert.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -24,9 +25,6 @@
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/main_win.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
-#include <calf/benchmark.h>
 #include <calf/lv2_ui.h>
 #include <calf/preset_gui.h>
 #include <calf/utils.h>
@@ -37,18 +35,25 @@ using namespace dsp;
 using namespace synth;
 using namespace calf_utils;
 
-struct plugin_proxy_base: public plugin_ctl_iface
+struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
 {
     LV2UI_Write_Function write_function;
     LV2UI_Controller controller;
     
     bool send;
     plugin_gui *gui;
+    float *params;
+    int param_count;
     
-    plugin_proxy_base()
+    plugin_proxy(plugin_metadata_iface *md)
+    : plugin_metadata_proxy(md)
     {
-        send = false;
         gui = NULL;
+        send = true;
+        param_count = get_param_count();
+        params = new float[param_count];
+        for (int i = 0; i < param_count; i++)
+            params[i] = get_param_props(i)->def_value;
     }
     
     void setup(LV2UI_Write_Function wfn, LV2UI_Controller ctl)
@@ -57,33 +62,19 @@ struct plugin_proxy_base: public plugin_ctl_iface
         controller = ctl;
     }
     
-};
-
-template<class Metadata>
-struct plugin_proxy: public plugin_proxy_base, public Metadata
-{
-    using Metadata::param_count;
-    
-    float params[param_count];
-    plugin_proxy()
-    {
-        send = true;
-        for (int i = 0; i < param_count; i++)
-            params[i] = Metadata::param_props[i].def_value;
-    }
-    
     virtual float get_param_value(int param_no) {
-        if (param_no < 0 || param_no >= Metadata::param_count)
+        if (param_no < 0 || param_no >= param_count)
             return 0;
         return params[param_no];
     }
+    
     virtual void set_param_value(int param_no, float value) {
-        if (param_no < 0 || param_no >= Metadata::param_count)
+        if (param_no < 0 || param_no >= param_count)
             return;
         params[param_no] = value;
         if (send) {
             scope_assign<bool> _a_(send, false);
-            write_function(controller, param_no + Metadata::in_count + Metadata::out_count, sizeof(float), 0, &params[param_no]);
+            write_function(controller, param_no + get_param_port_offset(), sizeof(float), 0, &params[param_no]);
         }
     }
     
@@ -91,6 +82,7 @@ struct plugin_proxy: public plugin_proxy_base, public Metadata
     {
         return false;
     }
+    
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
     void send_configures(send_configure_iface *sci) { 
@@ -99,14 +91,11 @@ struct plugin_proxy: public plugin_proxy_base, public Metadata
     void clear_preset() {
         fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in LV2 GUIs\n");
     }
+    ~plugin_proxy()
+    {
+        delete []params;
+    }
 };
-
-plugin_proxy_base *create_plugin_proxy(const char *effect_name)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, name##_metadata::plugin_info.label)) return new plugin_proxy<name##_metadata>();
-    #include <calf/modulelist.h>
-    return NULL;
-}
 
 LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     plugin_uri,
@@ -116,7 +105,18 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
-    plugin_proxy_base *proxy = create_plugin_proxy(plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1);
+    vector<plugin_metadata_iface *> plugins;
+    get_all_plugins(plugins);
+    const char *label = plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1;
+    plugin_proxy *proxy = NULL;
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        if (!strcmp(plugins[i]->get_plugin_info().label, label))
+        {
+            proxy = new plugin_proxy(plugins[i]);
+            break;
+        }
+    }
     if (!proxy)
         return NULL;
     scope_assign<bool> _a_(proxy->send, false);
@@ -150,7 +150,7 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
         return;
     if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
-    plugin_proxy_base *proxy = dynamic_cast<plugin_proxy_base *>(gui->plugin);
+    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
     assert(proxy);
     {
         scope_assign<bool> _a_(proxy->send, false);
