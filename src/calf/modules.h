@@ -191,14 +191,6 @@ public:
     }
 };
 
-struct reverb_metadata: public plugin_metadata<reverb_metadata>
-{
-    enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
-    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
-    PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
-};
-
-
 class reverb_audio_module: public audio_module<reverb_metadata>
 {
 public:    

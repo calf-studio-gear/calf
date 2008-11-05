@@ -2,6 +2,7 @@
  * Audio module (plugin) metadata - header file
  *
  * Copyright (C) 2007-2008 Krzysztof Foltman
+ * Copyright (C) 2008 Thor Harald Johansen <thj@thj.no>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -50,6 +51,13 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
     bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
 };
 
+struct reverb_metadata: public plugin_metadata<reverb_metadata>
+{
+    enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, param_count };
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
+    PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
+};
+
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
     enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
@@ -74,6 +82,7 @@ public:
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };
 
+/// Monosynth - metadata
 struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
 {
     enum { wave_saw, wave_sqr, wave_pulse, wave_sine, wave_triangle, wave_varistep, wave_skewsaw, wave_skewsqr, wave_test1, wave_test2, wave_test3, wave_test4, wave_test5, wave_test6, wave_test7, wave_test8, wave_count };
@@ -85,6 +94,16 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     const char *get_gui_xml();
 };
     
+/// Thor's compressor - metadata
+struct compressor_metadata: public plugin_metadata<compressor_metadata>
+{
+    enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_aweighting, param_compression, param_peak, param_clip, param_bypass, param_count };
+    PLUGIN_NAME_ID_LABEL("compressor", "compressor", "Compressor")
+};
+
+/// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
+/// a bad design decision and should be sorted out some day) XXXKF @todo
 struct organ_enums
 {
     enum { 
@@ -154,6 +173,7 @@ struct organ_enums
     };
 };
 
+/// Organ - metadata
 struct organ_metadata: public organ_enums, public plugin_metadata<organ_metadata>
 {
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };

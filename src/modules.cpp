@@ -25,8 +25,7 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
+#include <calf/metadata.h>
 
 using namespace dsp;
 using namespace calf_plugins;
