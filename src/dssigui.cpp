@@ -17,15 +17,13 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <assert.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <config.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
-#include <calf/benchmark.h>
 #include <calf/main_win.h>
 #include <calf/osctl.h>
 #include <calf/osctlnet.h>
@@ -70,31 +68,24 @@ void osctl_test()
 }
 #endif
 
-struct plugin_proxy_base: public plugin_ctl_iface
+struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
 {
     osc_client *client;
     bool send_osc;
     plugin_gui *gui;
     map<string, string> cfg_vars;
-    
-    plugin_proxy_base()
+    int param_count;
+    float *params;
+
+    plugin_proxy(plugin_metadata_iface *md)
+    : plugin_metadata_proxy(md)
     {
         client = NULL;
         send_osc = false;
         gui = NULL;
-    }
-};
-
-template<class Metadata>
-struct plugin_proxy: public plugin_proxy_base, public Metadata
-{
-    using Metadata::param_count;
-    
-    float params[param_count];
-
-    plugin_proxy()
-    {
-        for (unsigned int i = 0; i < param_count; i++)
+        param_count = md->get_param_count();
+        params = new float[param_count];
+        for (int i = 0; i < param_count; i++)
             params[i] = get_param_props(i)->def_value;
     }
     virtual float get_param_value(int param_no) {
@@ -150,13 +141,6 @@ struct plugin_proxy: public plugin_proxy_base, public Metadata
     }
 };
 
-plugin_proxy_base *create_plugin_proxy(const char *effect_name)
-{
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcmp(effect_name, jackname)) return new plugin_proxy<name##_metadata>();
-    #include <calf/modulelist.h>
-    return NULL;
-}
-
 void help(char *argv[])
 {
     printf("GTK+ user interface for Calf DSSI plugins\nSyntax: %s [--help] [--version] <osc-url> <so-file> <plugin-label> <instance-name>\n", argv[0]);
@@ -175,7 +159,7 @@ static bool osc_debug = false;
 
 struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
 {
-    plugin_proxy_base *plugin;
+    plugin_proxy *plugin;
     main_window *main_win;
     plugin_gui_window *window;
     string effect_name, title;
@@ -203,7 +187,17 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     void create_window()
     {
-        plugin = create_plugin_proxy(effect_name.c_str());
+        plugin = NULL;
+        vector<plugin_metadata_iface *> plugins;
+        get_all_plugins(plugins);
+        for (unsigned int i = 0; i < plugins.size(); i++)
+        {
+            if (!strcmp(plugins[i]->get_id(), effect_name.c_str()))
+            {
+                plugin = new plugin_proxy(plugins[i]);
+                break;
+            }
+        }
         if (!plugin)
         {
             fprintf(stderr, "Unknown plugin: %s\n", effect_name.c_str());
