@@ -44,11 +44,15 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     plugin_gui *gui;
     float *params;
     int param_count;
+    /// Instance pointer - usually NULL unless the host supports instance-access extension
+    plugin_ctl_iface *instance;
+    int source_id;
     
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         gui = NULL;
+        instance = NULL;
         send = true;
         param_count = get_param_count();
         params = new float[param_count];
@@ -83,6 +87,11 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         return false;
     }
     
+    virtual line_graph_iface *get_line_graph_iface() {
+        printf("lgi=%p\n", instance->get_line_graph_iface());
+        return instance->get_line_graph_iface();
+    }
+    
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
     void send_configures(send_configure_iface *sci) { 
@@ -96,6 +105,13 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         delete []params;
     }
 };
+
+static gboolean plugin_on_idle(void *data)
+{
+    plugin_gui *self = (plugin_gui *)data;
+    self->on_idle();
+    return TRUE;
+}
 
 LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     plugin_uri,
@@ -119,10 +135,23 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     }
     if (!proxy)
         return NULL;
+    for (int i = 0; features[i]; i++)
+    {
+        if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
+        {
+            proxy->instance = (plugin_ctl_iface *)features[i]->data;
+            printf("Instance %p\n", features[i]->data);
+        }
+        if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
+        {
+            printf("Data %p\n", features[i]->data);
+        }
+    }
     scope_assign<bool> _a_(proxy->send, false);
     proxy->setup(write_function, controller);
     // dummy window
     main_window *main = new main_window;
+    main->conditions.insert("directlink");
     main->conditions.insert("lv2gui");    
     plugin_gui_window *window = new plugin_gui_window(main);
     plugin_gui *gui = new plugin_gui(window);
@@ -132,12 +161,18 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     else
         *(GtkWidget **)(widget) = gui->create(proxy);
     
+    if (*(GtkWidget **)(widget))
+        proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
+    
     return (LV2UI_Handle)gui;
 }
 
 void gui_cleanup(LV2UI_Handle handle)
 {
     plugin_gui *gui = (plugin_gui *)handle;
+    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
+    if (proxy->source_id)
+        g_source_remove(proxy->source_id);
     delete gui;
 }
 
@@ -163,7 +198,7 @@ const void *gui_extension(const char *uri)
     return NULL;
 }
 
-namespace synth {
+namespace calf_plugins {
 
 // this function is normally implemented in preset_gui.cpp, but we're not using that file
 void activate_preset(GtkAction *action, activate_preset_params *params)

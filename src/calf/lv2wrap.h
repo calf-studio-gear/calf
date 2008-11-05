@@ -34,7 +34,7 @@
 namespace calf_plugins {
 
 template<class Module>
-struct lv2_instance: public Module, public plugin_ctl_iface
+struct lv2_instance: public plugin_ctl_iface, public Module
 {
     bool set_srate;
     int srate_to_set;
