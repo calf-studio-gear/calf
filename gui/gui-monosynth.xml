@@ -10,12 +10,16 @@
           <combo attach-x="1" attach-y="1" param="o2_wave"/>
         </table>
         <hbox>
-          <line-graph param="o1_wave"/>
+          <if cond="directlink">
+            <line-graph param="o1_wave"/>
+          </if>
           <vbox>
             <label param="o12_mix"/>
             <hscale param="o12_mix" position="bottom"/>
           </vbox>
-          <line-graph param="o2_wave"/>
+          <if cond="directlink">
+            <line-graph param="o2_wave"/>
+          </if>
         </hbox>
         <hbox>
           <vbox>
