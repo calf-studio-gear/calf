@@ -512,6 +512,9 @@ static void action_destroy_notify(gpointer data)
 
 GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
 {
+    // This code should not be used anymore, unless custom GUI is not found (which should not be a case)
+    fprintf(stderr, "ERROR: cannot find an XML-based GUI for the plugin - this is most likely an installation-related problem\n");
+    assert(0);
     plugin = _plugin;
     param_count = plugin->get_param_count();
     params.resize(param_count);

@@ -81,6 +81,7 @@ install-data-hook:
 	install -d -m 755 $(DESTDIR)$(pkglibdir)    
 	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkglibdir)
 	install -c -m 644 $(top_srcdir)/knob.png $(DESTDIR)$(pkglibdir)
+	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkglibdir)
 	install -c -m 644 $(top_srcdir)/gui/gui-*.xml $(DESTDIR)$(pkglibdir)
 if USE_JACK
 	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkglibdir)
@@ -107,7 +108,6 @@ if USE_LV2_GUI
 endif
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl
 	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(with_lv2_dir)/calf.lv2/
-	$(top_builddir)/src/calfmakerdf -m manifest >$(DESTDIR)$(with_lv2_dir)/calf.lv2/manifest.ttl
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
@@ -117,7 +117,7 @@ if USE_LV2_GUI
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
 endif
 	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/{Filter,Flanger,Reverb,Monosynth,VintageDelay,Organ,RotarySpeaker,Phaser,manifest}.ttl
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/*.ttl
 	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true
 endif
 if USE_JACK

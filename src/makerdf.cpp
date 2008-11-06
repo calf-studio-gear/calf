@@ -37,6 +37,7 @@ static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
     {"mode", 0, 0, 'm'},
+    {"path", 0, 0, 'p'},
     {0,0,0,0},
 };
 
@@ -430,6 +431,11 @@ struct lv2_plugin_list: public plugin_list_info_iface, public vector<lv2_plugin_
 
 void make_ttl(string path_prefix)
 {
+    if (path_prefix.empty())
+    {
+        fprintf(stderr, "Path parameter is required for TTL mode\n");
+        exit(1);
+    }
     string header;
     
     header = 
@@ -580,13 +586,10 @@ void make_ttl(string path_prefix)
         fprintf(f, "%s\n", ttl.c_str());
         fclose(f);
     }
-}
-
-void make_manifest()
-{
-    string ttl;
     
-    ttl = 
+    // Generate a manifest
+    
+    string ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
@@ -597,32 +600,116 @@ void make_manifest()
         "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
     ;
     
-    vector<plugin_metadata_iface *> plugins;
-    calf_plugins::get_all_plugins(plugins);
     for (unsigned int i = 0; i < plugins.size(); i++)
         ttl += string("<http://calf.sourceforge.net/plugins/") 
             + string(plugins[i]->get_plugin_info().label)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> .\n";
 
-    lv2_plugin_list lpl;
-    calf_plugins::get_all_small_plugins(&lpl);
     for (unsigned int i = 0; i < lpl.size(); i++)
         ttl += string("<http://calf.sourceforge.net/small_plugins/") 
             + string(lpl[i]->id)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
 
-    printf("%s\n", ttl.c_str());    
+    FILE *f = fopen((path_prefix+"manifest.ttl").c_str(), "w");
+    fprintf(f, "%s\n", ttl.c_str());
+    fclose(f);
 }
 #else
-void make_manifest()
-{
-    fprintf(stderr, "LV2 not supported.\n");
-}
 void make_ttl(string tmp)
 {
     fprintf(stderr, "LV2 not supported.\n");
 }
 #endif
+
+void make_gui(string path_prefix)
+{
+    if (path_prefix.empty())
+    {
+        fprintf(stderr, "Path parameter is required for GUI mode\n");
+        exit(1);
+    }
+    vector<plugin_metadata_iface *> plugins;
+    calf_plugins::get_all_plugins(plugins);
+    path_prefix += "/gui-";
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        plugin_metadata_iface *pi = plugins[i];
+        
+        stringstream xml;
+        xml << "<table rows=\"" << pi->get_param_count() << "\" cols=\"3\">\n";
+        for (int j = 0; j < pi->get_param_count(); j++)
+        {
+            if (j)
+                xml << "\n    <!-- -->\n\n";
+            parameter_properties &props = *pi->get_param_props(j);
+            string expand_x = "expand-x=\"1\" ";
+            string fill_x = "fill-x=\"1\" ";
+            string shrink_x = "shrink-x=\"1\" ";
+            string pad_x = "pad-x=\"10\" ";
+            string attach_x = "attach-x=\"1\" attach-w=\"2\" ";
+            string attach_y = "attach-y=\"" + i2s(j) + "\" ";
+            string param = "param=\"" + string(props.short_name) + "\" ";
+            string label = "    <label attach-x=\"0\" " + attach_y + " " + param + " />\n";
+            string value = "    <value " + param + " " + "attach-x=\"2\" " + attach_y + pad_x + "/>\n";
+            string attach_xv = "attach-x=\"1\" attach-w=\"1\" ";
+            string ctl;
+            if ((props.flags & PF_TYPEMASK) == PF_ENUM && 
+                (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
+            {
+                ctl = "    <combo " + attach_x + attach_y + param + expand_x + " />\n";
+            }
+            else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                     (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
+            {
+                ctl = "    <align " + attach_x + attach_y + expand_x + fill_x + pad_x + "><toggle " + param + "/></align>\n";
+            }
+            else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                     (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
+            {
+                ctl = "    <button attach-x=\"0\" attach-w=\"3\" " + expand_x + attach_y + param + "/>\n";
+                label.clear();
+            }
+            else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
+                     (props.flags & PF_CTLMASK) == PF_CTL_LED)
+            {
+                ctl = "    <led " + attach_x + attach_y + param + shrink_x + pad_x + " />\n";
+            }
+            else if ((props.flags & PF_CTLMASK) == PF_CTL_METER)
+            {
+                if (props.flags & PF_CTLO_LABEL) {
+                    attach_x = attach_xv;
+                    pad_x.clear();
+                }
+                if (props.flags & PF_CTLO_REVERSE)
+                    ctl = "    <vumeter " + attach_x + attach_y + expand_x + fill_x + param + pad_x + "mode=\"2\"/>\n";
+                else
+                    ctl = "    <vumeter " + attach_x + attach_y + expand_x + fill_x + param + pad_x + "/>\n";
+                if (props.flags & PF_CTLO_LABEL)
+                    ctl += value;
+            }
+            else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
+            {
+                if ((props.flags & PF_UNITMASK) == PF_UNIT_DEG)
+                    ctl = "    <knob " + attach_xv + attach_y + param + " type=\"3\"/>\n";
+                else
+                    ctl = "    <knob " + attach_xv + attach_y + param + " />\n";
+                ctl += value;
+            }
+            else
+            {
+                ctl += "     <hscale " + param + " " + attach_x + attach_y + " pad-x=\"10\"/>";
+            }
+            if (!label.empty()) 
+                xml << label;
+            if (!ctl.empty()) 
+                xml << ctl;
+        }
+        xml << "</table>\n";
+        FILE *f = fopen((path_prefix+string(pi->get_id())+".xml").c_str(), "w");
+        fprintf(f, "%s\n", xml.str().c_str());
+        fclose(f);
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -636,14 +723,14 @@ int main(int argc, char *argv[])
         switch(c) {
             case 'h':
             case '?':
-                printf("LADSPA RDF / LV2 TTL generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|manifest]\n", argv[0]);
+                printf("LADSPA RDF / LV2 TTL / XML GUI generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|gui] [--path <path>]\n", argv[0]);
                 return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);
                 return 0;
             case 'm':
                 mode = optarg;
-                if (mode != "rdf" && mode != "ttl" && mode != "manifest") {
+                if (mode != "rdf" && mode != "ttl" && mode != "gui") {
                     fprintf(stderr, "calfmakerdf: Invalid mode %s\n", optarg);
                     return 1;
                 }
@@ -663,9 +750,9 @@ int main(int argc, char *argv[])
 #if USE_LV2
     else if (mode == "ttl")
         make_ttl(path_prefix);
-    else if (mode == "manifest")
-        make_manifest();
 #endif
+    else if (mode == "gui")
+        make_gui(path_prefix);
     else
     {
         fprintf(stderr, "calfmakerdf: Mode %s unsupported in this version\n", optarg);
