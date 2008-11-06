@@ -88,8 +88,9 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     }
     
     virtual line_graph_iface *get_line_graph_iface() {
-        printf("lgi=%p\n", instance->get_line_graph_iface());
-        return instance->get_line_graph_iface();
+        if (instance)
+            return instance->get_line_graph_iface();
+        return NULL;
     }
     
     virtual float get_level(unsigned int port) { return 0.f; }
@@ -151,7 +152,8 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     proxy->setup(write_function, controller);
     // dummy window
     main_window *main = new main_window;
-    main->conditions.insert("directlink");
+    if (proxy->instance)
+        main->conditions.insert("directlink");
     main->conditions.insert("lv2gui");    
     plugin_gui_window *window = new plugin_gui_window(main);
     plugin_gui *gui = new plugin_gui(window);
