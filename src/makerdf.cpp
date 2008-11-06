@@ -649,14 +649,14 @@ void make_gui(string path_prefix)
             string attach_x = "attach-x=\"1\" attach-w=\"2\" ";
             string attach_y = "attach-y=\"" + i2s(j) + "\" ";
             string param = "param=\"" + string(props.short_name) + "\" ";
-            string label = "    <label attach-x=\"0\" " + attach_y + " " + param + " />\n";
+            string label = "    <align attach-x=\"0\" " + attach_y + " " + " align-x=\"1\"><label " + param + " /></align>\n";
             string value = "    <value " + param + " " + "attach-x=\"2\" " + attach_y + pad_x + "/>\n";
             string attach_xv = "attach-x=\"1\" attach-w=\"1\" ";
             string ctl;
             if ((props.flags & PF_TYPEMASK) == PF_ENUM && 
                 (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
             {
-                ctl = "    <combo " + attach_x + attach_y + param + expand_x + " />\n";
+                ctl = "    <combo " + attach_x + attach_y + param + expand_x + pad_x + " />\n";
             }
             else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                      (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
@@ -666,7 +666,7 @@ void make_gui(string path_prefix)
             else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                      (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
             {
-                ctl = "    <button attach-x=\"0\" attach-w=\"3\" " + expand_x + attach_y + param + "/>\n";
+                ctl = "    <button attach-x=\"0\" attach-w=\"3\" " + expand_x + attach_y + param + pad_x + "/>\n";
                 label.clear();
             }
             else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
@@ -690,9 +690,9 @@ void make_gui(string path_prefix)
             else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
             {
                 if ((props.flags & PF_UNITMASK) == PF_UNIT_DEG)
-                    ctl = "    <knob " + attach_xv + attach_y + param + " type=\"3\"/>\n";
+                    ctl = "    <knob " + attach_xv + attach_y + shrink_x + param + " type=\"3\"/>\n";
                 else
-                    ctl = "    <knob " + attach_xv + attach_y + param + " />\n";
+                    ctl = "    <knob " + attach_xv + attach_y + shrink_x + param + " />\n";
                 ctl += value;
             }
             else
