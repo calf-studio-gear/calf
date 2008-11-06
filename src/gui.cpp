@@ -240,6 +240,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
+    calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
     return widget;
 }
 
@@ -773,6 +774,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new keyboard_param_control;
     if (!strcmp(element, "curve"))
         return new curve_param_control;
+    if (!strcmp(element, "led"))
+        return new led_param_control;
     return NULL;
 }
 
