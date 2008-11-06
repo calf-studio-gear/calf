@@ -54,6 +54,64 @@ jack_host_base *calf_plugins::create_jack_host(const char *effect_name)
     return NULL;
 }
 
+void jack_host_base::open(jack_client *_client)
+{
+    client = _client; //jack_client_open(client_name, JackNullOption, &status);
+    
+    create_ports();
+    
+    cache_ports();
+    
+    init_module();
+    changed = false;
+}
+
+void jack_host_base::create_ports() {
+    char buf[32];
+    port *inputs = get_inputs();
+    port *outputs = get_outputs();
+    int in_count = get_input_count(), out_count = get_output_count();
+    for (int i=0; i<in_count; i++) {
+        sprintf(buf, client->input_name.c_str(), client->input_nr++);
+        inputs[i].name = buf;
+        inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
+        inputs[i].data = NULL;
+        if (!inputs[i].handle)
+            throw text_exception("Could not create JACK input port");
+    }
+    for (int i=0; i<out_count; i++) {
+        sprintf(buf, client->output_name.c_str(), client->output_nr++);
+        outputs[i].name = buf;
+        outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
+        outputs[i].data = NULL;
+        if (!outputs[i].handle)
+            throw text_exception("Could not create JACK output port");
+    }
+    if (get_midi()) {
+        sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
+        midi_port.name = buf;
+        midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+        if (!midi_port.handle)
+            throw text_exception("Could not create JACK MIDI port");
+    }
+}
+
+void jack_host_base::close() {
+    port *inputs = get_inputs(), *outputs = get_outputs();
+    int input_count = get_input_count(), output_count = get_output_count();
+    for (int i = 0; i < input_count; i++) {
+        jack_port_unregister(client->client, inputs[i].handle);
+        inputs[i].data = NULL;
+    }
+    for (int i = 0; i < output_count; i++) {
+        jack_port_unregister(client->client, outputs[i].handle);
+        outputs[i].data = NULL;
+    }
+    if (get_midi())
+        jack_port_unregister(client->client, midi_port.handle);
+    client = NULL;
+}
+
 void destroy(GtkWindow *window, gpointer data)
 {
     gtk_main_quit();
@@ -175,7 +233,13 @@ void host_session::add_plugin(string name, string preset)
 #ifdef ENABLE_EXPERIMENTAL
 #else
 #endif
-        throw audio_exception("Unknown plugin name; allowed are: reverb, flanger, filter, vintagedelay, monosynth, organ, rotaryspeaker, phaser\n");
+        string s = 
+        #define PER_MODULE_ITEM(name, isSynth, jackname) jackname ", "
+        #include <calf/modulelist.h>
+        ;
+        if (!s.empty())
+            s = s.substr(0, s.length() - 2);
+        throw text_exception("Unknown plugin name; allowed are: " + s);
     }
     jh->open(&client);
     

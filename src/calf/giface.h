@@ -265,19 +265,12 @@ struct plugin_ctl_iface: public virtual plugin_metadata_iface
 
 struct plugin_list_info_iface;
 
+/// Get a list of all "large" (effect/synthesizer) plugins
 extern void get_all_plugins(std::vector<plugin_metadata_iface *> &plugins);
+/// Get a list of all "small" (module) plugins
 extern void get_all_small_plugins(plugin_list_info_iface *plii);
-
-
-struct audio_exception: public std::exception
-{
-    const char *text;
-    std::string container;
-public:
-    audio_exception(const std::string &t) : container(t) { text = container.c_str(); }
-    virtual const char *what() const throw () { return text; }
-    virtual ~audio_exception() throw () {}
-};
+/// Load and strdup a text file with GUI definition
+extern const char *load_gui_xml(const std::string &plugin_id);
 
 /// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
 /// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
@@ -339,7 +332,7 @@ public:
     bool is_rt_capable() { return Metadata::rt_capable; }
     line_graph_iface *get_line_graph_iface() { return dynamic_cast<line_graph_iface *>(this); }    
     int get_param_port_offset()  { return Metadata::in_count + Metadata::out_count; }
-    const char *get_gui_xml() { return NULL; }
+    const char *get_gui_xml() { static const char *data_ptr = calf_plugins::load_gui_xml(get_id()); return data_ptr; }
     plugin_command_info *get_commands() { return NULL; }
     parameter_properties *get_param_props(int param_no) { return &param_props[param_no]; }
     const char **get_port_names() { return port_names; }

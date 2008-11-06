@@ -91,7 +91,6 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64 };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
-    const char *get_gui_xml();
 };
     
 /// Thor's compressor - metadata
@@ -180,7 +179,6 @@ struct organ_metadata: public organ_enums, public plugin_metadata<organ_metadata
     PLUGIN_NAME_ID_LABEL("organ", "organ", "Organ")
     plugin_command_info *get_commands();
     const char **get_default_configure_vars();
-    const char *get_gui_xml();
 };
 
 };

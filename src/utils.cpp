@@ -69,6 +69,22 @@ std::string xml_escape(const std::string &src)
     return dest;
 }
 
+std::string load_file(const std::string &src)
+{
+    std::string str;
+    FILE *f = fopen(src.c_str(), "rb");
+    if (!f)
+        throw file_exception(src);
+    while(!feof(f))
+    {
+        char buffer[1024];
+        int len = fread(buffer, 1, sizeof(buffer), f);
+        if (len < 0)
+            throw file_exception(src);
+        str += string(buffer, len);
+    }
+    return str;
+}
 
 std::string i2s(int value)
 {

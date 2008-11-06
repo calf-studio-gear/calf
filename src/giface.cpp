@@ -197,3 +197,14 @@ void calf_plugins::plugin_ctl_iface::clear_preset() {
             configure(p[0], p[1]);
     }
 }
+
+const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
+{
+    try {
+        return strdup(calf_utils::load_file((std::string(PKGLIBDIR) + "/gui-" + plugin_id + ".xml").c_str()).c_str());
+    }
+    catch(file_exception e)
+    {
+        return NULL;
+    }
+}

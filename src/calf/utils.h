@@ -21,6 +21,7 @@
 #ifndef __CALF_UTILS_H
 #define __CALF_UTILS_H
 
+#include <errno.h>
 #include <pthread.h>
 #include <map>
 #include <string>
@@ -108,6 +109,27 @@ public:
     }
 };
 
+struct text_exception: public std::exception
+{
+    const char *text;
+    std::string container;
+public:
+    text_exception(const std::string &t) : container(t) { text = container.c_str(); }
+    virtual const char *what() const throw () { return text; }
+    virtual ~text_exception() throw () {}
+};
+
+struct file_exception: public std::exception
+{
+    const char *text;
+    std::string message, filename, container;
+public:
+    file_exception(const std::string &f) : message(strerror(errno)), filename(f), container(filename + ":" + message) { text = container.c_str(); }
+    file_exception(const std::string &f, const std::string &t) : message(t), filename(f), container(filename + ":" + message) { text = container.c_str(); }
+    virtual const char *what() const throw () { return text; }
+    virtual ~file_exception() throw () {}
+};
+
 /// String-to-string mapping
 typedef std::map<std::string, std::string> dictionary;
 
@@ -124,6 +146,9 @@ extern std::string f2s(double value);
 
 /// Escape a string to be used in XML file
 std::string xml_escape(const std::string &src);
+
+/// Load file from disk into a std::string blob, or throw file_exception
+std::string load_file(const std::string &src);
 
 };
 

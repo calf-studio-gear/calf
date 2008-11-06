@@ -70,7 +70,7 @@ public:
         jack_status_t status;
         client = jack_client_open(client_name, JackNullOption, &status);
         if (!client)
-            throw audio_exception("Could not initialize JACK subsystem");
+            throw calf_utils::text_exception("Could not initialize JACK subsystem");
         sample_rate = jack_get_sample_rate(client);
         jack_set_process_callback(client, do_jack_process, this);
         jack_set_buffer_size_callback(client, do_jack_bufsize, this);
@@ -96,7 +96,7 @@ public:
     void connect(const std::string &p1, const std::string &p2)
     {
         if (jack_connect(client, p1.c_str(), p2.c_str()) != 0)
-            throw audio_exception("Could not connect JACK ports "+p1+" and "+p2);
+            throw calf_utils::text_exception("Could not connect JACK ports "+p1+" and "+p2);
     }
     
     void close()
@@ -144,63 +144,11 @@ public:
         changed = true;
     }
     
-    void open(jack_client *_client)
-    {
-        client = _client; //jack_client_open(client_name, JackNullOption, &status);
-        
-        create_ports();
-        
-        cache_ports();
-        
-        init_module();
-        changed = false;
-    }
+    void open(jack_client *_client);
     
-    virtual void create_ports() {
-        char buf[32];
-        port *inputs = get_inputs();
-        port *outputs = get_outputs();
-        int in_count = get_input_count(), out_count = get_output_count();
-        for (int i=0; i<in_count; i++) {
-            sprintf(buf, client->input_name.c_str(), client->input_nr++);
-            inputs[i].name = buf;
-            inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
-            inputs[i].data = NULL;
-            if (!inputs[i].handle)
-                throw audio_exception("Could not create JACK input port");
-        }
-        for (int i=0; i<out_count; i++) {
-            sprintf(buf, client->output_name.c_str(), client->output_nr++);
-            outputs[i].name = buf;
-            outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
-            outputs[i].data = NULL;
-            if (!outputs[i].handle)
-                throw audio_exception("Could not create JACK output port");
-        }
-        if (get_midi()) {
-            sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
-            midi_port.name = buf;
-            midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-            if (!midi_port.handle)
-                throw audio_exception("Could not create JACK MIDI port");
-        }
-    }
+    virtual void create_ports();
     
-    void close() {
-        port *inputs = get_inputs(), *outputs = get_outputs();
-        int input_count = get_input_count(), output_count = get_output_count();
-        for (int i = 0; i < input_count; i++) {
-            jack_port_unregister(client->client, inputs[i].handle);
-            inputs[i].data = NULL;
-        }
-        for (int i = 0; i < output_count; i++) {
-            jack_port_unregister(client->client, outputs[i].handle);
-            outputs[i].data = NULL;
-        }
-        if (get_midi())
-            jack_port_unregister(client->client, midi_port.handle);
-        client = NULL;
-    }
+    void close();
 
     virtual ~jack_host_base() {
     }
