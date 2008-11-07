@@ -79,6 +79,7 @@ enum parameter_flags
   PF_PROP_OUTPUT_GAIN=0x050000, ///< epp:outputGain + skip epp:hasStrictBounds
   PF_PROP_OUTPUT    = 0x080000, ///< output port
   PF_PROP_OPTIONAL  = 0x100000, ///< connection optional
+  PF_PROP_GRAPH     = 0x200000, ///< add graph
   
   PF_UNITMASK     = 0xFF000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels

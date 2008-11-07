@@ -636,7 +636,14 @@ void make_gui(string path_prefix)
         plugin_metadata_iface *pi = plugins[i];
         
         stringstream xml;
-        xml << "<table rows=\"" << pi->get_param_count() << "\" cols=\"3\">\n";
+        int graphs = 0;
+        for (int j = 0; j < pi->get_param_count(); j++)
+        {
+            parameter_properties &props = *pi->get_param_props(j);
+            if (props.flags & PF_PROP_GRAPH)
+                graphs++;
+        }
+        xml << "<table rows=\"" << pi->get_param_count() << "\" cols=\"" << (graphs ? "4" : "3") << "\">\n";
         for (int j = 0; j < pi->get_param_count(); j++)
         {
             if (j)
@@ -703,6 +710,21 @@ void make_gui(string path_prefix)
                 xml << label;
             if (!ctl.empty()) 
                 xml << ctl;
+        }
+        if (graphs)
+        {
+            xml << "    <if cond=\"directlink\">" << endl;
+            xml << "        <vbox expand-x=\"1\" fill-x=\"1\" attach-x=\"3\" attach-y=\"0\" attach-h=\"" << pi->get_param_count() << "\">" << endl;
+            for (int j = 0; j < pi->get_param_count(); j++)
+            {
+                parameter_properties &props = *pi->get_param_props(j);
+                if (props.flags & PF_PROP_GRAPH)
+                {
+                    xml << "            <line-graph refresh=\"1\" width=\"160\" param=\"" << props.short_name << "\"/>\n" << endl;
+                }
+            }
+            xml << "        </vbox>" << endl;
+            xml << "    </if>" << endl;
         }
         xml << "</table>\n";
         FILE *f = fopen((path_prefix+string(pi->get_id())+".xml").c_str(), "w");
