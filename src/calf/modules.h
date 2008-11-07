@@ -234,7 +234,7 @@ public:
     }
 };
 
-class filter_audio_module: public audio_module<filter_metadata>
+class filter_audio_module: public audio_module<filter_metadata>, public line_graph_iface
 {
 public:    
     float *ins[in_count]; 
@@ -376,6 +376,22 @@ public:
             offset += numnow;
         }
         return ostate;
+    }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+    {
+        if (index == par_cutoff && !subindex) {
+            for (int i = 0; i < points; i++)
+            {
+                typedef std::complex<double> cfloat;
+                double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+                float level = 1.0;
+                for (int j = 0; j < order; j++)
+                    level *= left[j].freq_gain(freq, srate);                
+                data[i] = log(level) / log(1024.0) + 0.5;
+            }
+            return true;
+        }
+        return false;
     }
 };
 
