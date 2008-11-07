@@ -152,6 +152,31 @@ public:
             lfo.step();
         }
     }
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq)); // z^-1        
+        cfloat h = 0.0;
+        int mds = min_delay_samples + mod_depth_samples * 1024 + 2*65536;
+        int mdepth = mod_depth_samples;
+        mdepth = mdepth >> 2;
+        T scale = lfo.get_scale();
+        unsigned int nvoices = lfo.get_voices();
+        for (unsigned int v = 0; v < nvoices; v++)
+        {
+            int lfo_output = lfo.get_value(v);
+            // 3 = log2(32 >> 2) + 1 because the LFO value is in range of [-65535, 65535] (17 bits)
+            int v = mds + (mdepth * lfo_output >> (3 + 1));
+            int fldp = v >> 16;
+            cfloat zn = std::pow(z, fldp); // z^-N
+            h += zn + (zn * z - zn) * cfloat(v / 65536.0 - fldp);
+        }
+        // simulate a lerped comb filter - H(z) = 1 / (1 + fb * (lerp(z^-N, z^-(N+1), fracpos))), N = int(pos), fracpos = pos - int(pos)
+        // mix with dry signal
+        float v = std::abs(cfloat(gs_dry.get_last()) + cfloat(scale * gs_wet.get_last()) * h);
+        return v;
+    }
 };
 
 };

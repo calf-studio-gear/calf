@@ -713,7 +713,7 @@ public:
 };
 
 /// A multitap stereo chorus thing - processing
-class multichorus_audio_module: public audio_module<multichorus_metadata>
+class multichorus_audio_module: public audio_module<multichorus_metadata>, public line_graph_iface
 {
 public:
     float *ins[in_count]; 
@@ -768,6 +768,16 @@ public:
         if (params[par_lfophase_r])
             *params[par_lfophase_r] = (double)right.lfo.phase * 360.0 / 4096.0;
         return outputs_mask; // XXXKF allow some delay after input going blank
+    }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+    {
+        if (index == par_delay && subindex < 2) 
+            return calf_plugins::get_graph(*this, subindex, data, points);
+        return false;
+    }
+    float freq_gain(int subindex, float freq, float srate)
+    {
+        return (subindex ? right : left).freq_gain(freq, srate);                
     }
 };
 
