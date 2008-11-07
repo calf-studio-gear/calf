@@ -191,7 +191,6 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         {
             typedef complex<double> cfloat;
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-            cfloat z = 1.0 / exp(cfloat(0.0, freq));
             
             dsp::biquad_d1<float> &f = subindex ? filter2 : filter;
             float level = f.freq_gain(freq, srate);
