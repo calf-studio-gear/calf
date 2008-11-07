@@ -380,7 +380,8 @@ public:
         cfloat zn = std::pow(z, fldp); // z^-N
         cfloat zn1 = zn * z; // z^-(N+1)
         // simulate a lerped comb filter - H(z) = 1 / (1 + fb * (lerp(z^-N, z^-(N+1), fracpos))), N = int(pos), fracpos = pos - int(pos)
-        cfloat h = cfloat(1.0) / (cfloat(1.0) + cfloat(fb) * (zn + (zn1 - zn) * cfloat(ldp - fldp)));
+        cfloat delayed = zn + (zn1 - zn) * cfloat(ldp - fldp);
+        cfloat h = cfloat(delayed) / (cfloat(1.0) - cfloat(fb) * delayed);
         // mix with dry signal
         float v = std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * h);
         return v;
