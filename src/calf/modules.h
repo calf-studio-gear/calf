@@ -59,7 +59,19 @@ public:
 };
 #endif
 
-class flanger_audio_module: public audio_module<flanger_metadata>
+template<class Fx>
+bool get_graph(Fx &fx, int subindex, float *data, int points)
+{
+    for (int i = 0; i < points; i++)
+    {
+        typedef std::complex<double> cfloat;
+        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        data[i] = log(fx.freq_gain(subindex, freq, fx.srate)) / log(1024.0) + 0.5;
+    }
+    return true;
+}
+
+class flanger_audio_module: public audio_module<flanger_metadata>, public line_graph_iface
 {
 public:
     dsp::simple_flanger<float, 2048> left, right;
@@ -121,6 +133,16 @@ public:
         left.process(outs[0] + offset, ins[0] + offset, nsamples);
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
+    }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+    {
+        if (index == par_delay && subindex < 2) 
+            return calf_plugins::get_graph(*this, subindex, data, points);
+        return false;
+    }
+    float freq_gain(int subindex, float freq, float srate)
+    {
+        return (subindex ? right : left).freq_gain(freq, srate);                
     }
 };
 
@@ -379,19 +401,16 @@ public:
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
     {
-        if (index == par_cutoff && !subindex) {
-            for (int i = 0; i < points; i++)
-            {
-                typedef std::complex<double> cfloat;
-                double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-                float level = 1.0;
-                for (int j = 0; j < order; j++)
-                    level *= left[j].freq_gain(freq, srate);                
-                data[i] = log(level) / log(1024.0) + 0.5;
-            }
-            return true;
-        }
+        if (index == par_cutoff && !subindex) 
+            return calf_plugins::get_graph(*this, subindex, data, points);
         return false;
+    }
+    float freq_gain(int subindex, float freq, float srate)
+    {
+        float level = 1.0;
+        for (int j = 0; j < order; j++)
+            level *= left[j].freq_gain(freq, srate);                
+        return level;
     }
 };
 

@@ -21,6 +21,8 @@
 #ifndef __CALF_AUDIOFX_H
 #define __CALF_AUDIOFX_H
 
+#include <complex>
+#include <iostream>
 #include "primitives.h"
 #include "delay.h"
 #include "fixed_point.h"
@@ -366,6 +368,22 @@ public:
             last_actual_delay_pos = delay_pos;
         }
         last_delay_pos = delay_pos;
+    }
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq)); // z^-1
+        
+        float ldp = last_delay_pos / 65536.0;
+        float fldp = floor(ldp);
+        cfloat zn = std::pow(z, fldp); // z^-N
+        cfloat zn1 = zn * z; // z^-(N+1)
+        // simulate a lerped comb filter - H(z) = 1 / (1 + fb * (lerp(z^-N, z^-(N+1), fracpos))), N = int(pos), fracpos = pos - int(pos)
+        cfloat h = cfloat(1.0) / (cfloat(1.0) + cfloat(fb) * (zn + (zn1 - zn) * cfloat(ldp - fldp)));
+        // mix with dry signal
+        float v = std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * h);
+        return v;
     }
 };
 
