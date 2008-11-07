@@ -80,6 +80,16 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             cairo_stroke(c);
         }
+        float x, y;
+        int size = 0;
+        GdkColor sc3 = { 0, 32767, 65535, 0 };
+        gdk_cairo_set_source_color(c, &sc3);
+        for(int gn = 0; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, c); gn++)
+        {
+            int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
+            cairo_arc(c, ox + (x + 1) * sx / 2, yv, size, 0, 2 * M_PI);
+            cairo_fill(c);
+        }
         delete []data;
     }
     

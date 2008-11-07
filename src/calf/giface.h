@@ -142,7 +142,7 @@ struct parameter_properties
 /// 'provides live line graph values' interface
 struct line_graph_iface
 {
-    /// Obtain subindex'th graph of parameter index
+    /// Obtain subindex'th graph of parameter 'index'
     /// @param index parameter/graph number (usually tied to particular plugin control port)
     /// @param subindex graph number (there may be multiple overlaid graphs for one parameter, eg. for monosynth 2x12dB filters)
     /// @param data buffer for normalized output values
@@ -151,6 +151,11 @@ struct line_graph_iface
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
+
+    /// Obtain subindex'th dot of parameter 'index'
+    /// @param index parameter/dot number (usually tied to particular plugin control port)
+    /// @param subindex dot number (there may be multiple dots graphs for one parameter)
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) { return false; }
     
     /// Obtain subindex'th static graph of parameter index (static graphs are only dependent on parameter value, not plugin state)
     /// @param index parameter/graph number (usually tied to particular plugin control port)
@@ -162,6 +167,7 @@ struct line_graph_iface
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
+    
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
 };

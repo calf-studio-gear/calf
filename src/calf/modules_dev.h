@@ -27,7 +27,7 @@ namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
 
-class compressor_audio_module: public audio_module<compressor_metadata> {
+class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
     float linslope, clip, peak;
     bool aweighting;
@@ -149,6 +149,52 @@ public:
             srate = sr;
             awL.set(sr);
             awR.set(sr);
+    }
+    inline float output_level(float slope)
+    {
+        float threshold = *params[param_threshold];
+        float ratio = *params[param_ratio];
+        float makeup = *params[param_makeup];
+        float knee = *params[param_knee];
+        
+        if(slope > 0.f && (slope > threshold || knee < 1.f)) {
+            float gain = 0.f;
+            if(IS_FAKE_INFINITY(ratio)) {
+                gain = threshold;
+            } else {
+                gain = (slope - threshold) / ratio + threshold;
+            }
+            
+            if(knee < 1.f) {
+                float t = std::min(1.f, std::max(0.f, slope / threshold - knee) / (1.f - knee));
+                gain = (gain - slope) * t + slope;
+            }
+            return gain * makeup;
+        }
+        return slope * makeup;
+    }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { 
+        if (subindex > 0) // 1
+            return false;
+        for (int i = 0; i < points; i++)
+        {
+            float input = pow(65536.0, i * 1.0 / (points - 1) - 1);
+            float output = output_level(input);
+            //if (subindex == 0)
+            //    data[i] = 1 + 2 * log(input) / log(65536);
+            //else
+            data[i] = 1 + 2 * log(output) / log(65536);
+        }
+        return true;
+    }
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) {
+        if (!subindex)
+        {
+            x = 1 + 2 * log(peak) / log(65536);
+            y = 1 + 2 * log(output_level(peak)) / log(65536);
+            return true;
+        }
+        return false;
     }
 };
 
