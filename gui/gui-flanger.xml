@@ -1,0 +1,46 @@
+<vbox border="10">
+    <frame label="Timbre">
+        <hbox>
+            <vbox border="10">
+                <label param="min_delay" />
+                <knob param="min_delay" />
+                <value param="min_delay" />
+            </vbox>
+            <vbox border="10">
+                <label param="mod_depth" />
+                <knob param="mod_depth" />
+                <value param="mod_depth" />
+            </vbox>
+            <vbox border="10">
+                <label param="feedback" />
+                <knob param="feedback" />
+                <value param="feedback" />
+            </vbox>
+            <vbox border="10">
+                <label param="amount" />
+                <knob param="amount" />
+                <value param="amount" />
+            </vbox>
+        </hbox>
+    </frame>
+    <frame label="LFO">
+        <hbox>
+            <vbox border="10">
+                <label param="mod_rate" />
+                <knob param="mod_rate" />
+                <value param="mod_rate" />
+            </vbox>
+            <align><button param="reset" /></align>
+            <vbox border="10">
+                <label param="stereo" />
+                <knob param="stereo" />
+                <value param="stereo" />
+            </vbox>
+        </hbox>
+    </frame>
+    <if cond="directlink">
+        <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+            <line-graph refresh="1" width="160" height="160" param="min_delay"/>
+        </vbox>
+    </if>
+</vbox>
