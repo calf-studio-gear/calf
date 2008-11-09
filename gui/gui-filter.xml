@@ -1,0 +1,28 @@
+<vbox border="10">
+    <hbox>
+        <label param="mode"  />
+        <combo param="mode" expand-x="1" />
+    </hbox>
+    <hbox>
+        <vbox border="10">
+            <label param="freq" />
+            <knob param="freq" />
+            <value param="freq" />
+        </vbox>
+        <vbox border="10">
+            <label param="res" />
+            <knob param="res" />
+            <value param="res" />
+        </vbox>
+        <vbox border="10">
+            <label param="inertia" />
+            <knob param="inertia"/>
+            <value param="inertia" />
+        </vbox>
+    </hbox>
+    <if cond="directlink">
+        <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+            <line-graph refresh="1" width="160" height="160" param="freq"/>
+        </vbox>
+    </if>
+</vbox>
