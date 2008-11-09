@@ -13,7 +13,7 @@
             </vbox>
             <vbox border="10">
                 <label param="feedback" />
-                <knob param="feedback" />
+                <knob param="feedback" type="1"/>
                 <value param="feedback" />
             </vbox>
             <vbox border="10">
