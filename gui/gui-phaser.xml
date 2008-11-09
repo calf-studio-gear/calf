@@ -1,0 +1,50 @@
+<vbox border="10">
+    <frame label="Timbre">
+        <vbox>
+            <hbox>
+                <vbox border="10">
+                    <label param="base_freq" />
+                    <knob param="base_freq" />
+                    <value param="base_freq" />
+                </vbox>
+                <vbox border="10">
+                    <label param="mod_depth" />
+                    <knob param="mod_depth" />
+                    <value param="mod_depth" />
+                </vbox>
+                <vbox border="10">
+                    <label param="amount" />
+                    <knob param="amount" />
+                    <value param="amount" />
+                </vbox>
+            </hbox>
+            <hbox>
+                <vbox border="10">
+                    <label param="stages" />
+                    <knob param="stages" />
+                    <value param="stages" />
+                </vbox>
+                <vbox border="10">
+                    <label param="feedback" />
+                    <knob param="feedback" type="1"/>
+                    <value param="feedback" />
+                </vbox>
+            </hbox>
+        </vbox>
+    </frame>
+    <frame label="LFO">
+        <hbox>
+            <vbox border="10">
+                <label param="mod_rate" />
+                <knob param="mod_rate" />
+                <value param="mod_rate" />
+            </vbox>
+            <align><button param="reset" /></align>
+            <vbox border="10">
+                <label param="stereo" />
+                <knob param="stereo" type="3" />
+                <value param="stereo" />
+            </vbox>
+        </hbox>
+    </frame>
+</vbox>
