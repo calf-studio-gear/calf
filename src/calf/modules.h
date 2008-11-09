@@ -81,11 +81,7 @@ public:
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        left.setup(sr);
-        right.setup(sr);
-    }
+    void set_sample_rate(uint32_t sr);
     void params_changed() {
         float dry = 1.0;
         float wet = *params[par_amount];
@@ -120,30 +116,15 @@ public:
             clear_reset = false;
         }
     }
-    void activate() {
-        left.reset();
-        right.reset();
-        last_r_phase = *params[par_stereo] * (1.f / 360.f);
-        left.reset_phase(0.f);
-        right.reset_phase(last_r_phase);
-    }
-    void deactivate() {
-    }
+    void activate();
+    void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, nsamples);
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
-    {
-        if (index == par_delay && subindex < 2) 
-            return calf_plugins::get_graph(*this, subindex, data, points);
-        return false;
-    }
-    float freq_gain(int subindex, float freq, float srate)
-    {
-        return (subindex ? right : left).freq_gain(freq, srate);                
-    }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    float freq_gain(int subindex, float freq, float srate);
 };
 
 class phaser_audio_module: public audio_module<phaser_metadata>
@@ -156,11 +137,6 @@ public:
     bool clear_reset;
     float last_r_phase;
     dsp::simple_phaser<12> left, right;
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        left.setup(sr);
-        right.setup(sr);
-    }
     void params_changed() {
         float dry = 1.0;
         float wet = *params[par_amount];
@@ -197,15 +173,9 @@ public:
             clear_reset = false;
         }
     }
-    void activate() {
-        left.reset();
-        right.reset();
-        last_r_phase = *params[par_stereo] * (1.f / 360.f);
-        left.reset_phase(0.f);
-        right.reset_phase(last_r_phase);
-    }
-    void deactivate() {
-    }
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, nsamples);
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
@@ -231,16 +201,6 @@ public:
         reverb.set_cutoff(*params[par_hfdamp]);
         amount.set_inertia(*params[par_amount]);
     }
-    void activate() {
-        reverb.reset();
-    }
-    void deactivate() {
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        reverb.setup(sr);
-        amount.set_sample_rate(sr);
-    }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         numsamples += offset;
         for (uint32_t i = offset; i < numsamples; i++) {
@@ -254,6 +214,9 @@ public:
         reverb.extra_sanitize();
         return outputs_mask;
     }
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
 };
 
 class filter_audio_module: public audio_module<filter_metadata>, public line_graph_iface
@@ -317,20 +280,9 @@ public:
         inertia_resonance.step();
         calculate_filter();
     }
-    void activate() {
-        params_changed();
-        for (int i=0; i < order; i++) {
-            left[i].reset();
-            right[i].reset();
-        }
-        timer = once_per_n(srate / 1000);
-        timer.start();
-    }
-    void deactivate() {
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-    }
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
     inline int process_channel(dsp::biquad_d1<float> *filter, float *in, float *out, uint32_t numsamples, int inmask) {
         if (inmask) {
             switch(order) {
@@ -399,19 +351,8 @@ public:
         }
         return ostate;
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
-    {
-        if (index == par_cutoff && !subindex) 
-            return calf_plugins::get_graph(*this, subindex, data, points);
-        return false;
-    }
-    float freq_gain(int subindex, float freq, float srate)
-    {
-        float level = 1.0;
-        for (int j = 0; j < order; j++)
-            level *= left[j].freq_gain(freq, srate);                
-        return level;
-    }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    float freq_gain(int subindex, float freq, float srate);
 };
 
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
@@ -548,35 +489,14 @@ public:
     /// Current rotation speed for treble rotor - manual mode
     float maspeed_h;
 
-    rotary_speaker_audio_module()
-    {
-        mwhl_value = hold_value = 0.f;
-        phase_h = phase_l = 0.f;
-        aspeed_l = 1.f;
-        aspeed_h = 1.f;
-        dspeed = 0.f;
-    }    
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        setup();
-    }
-    void setup()
-    {
-        crossover1l.set_lp_rbj(800.f, 0.7, (float)srate);
-        crossover1r.set_lp_rbj(800.f, 0.7, (float)srate);
-        crossover2l.set_hp_rbj(800.f, 0.7, (float)srate);
-        crossover2r.set_hp_rbj(800.f, 0.7, (float)srate);
-        set_vibrato();
-    }
+    rotary_speaker_audio_module();
+    void set_sample_rate(uint32_t sr);
+    void setup();
+    void activate();
+    void deactivate();
+    
     void params_changed() {
         set_vibrato();
-    }
-    void activate() {
-        phase_h = phase_l = 0.f;
-        maspeed_h = maspeed_l = 0.f;
-        setup();
-    }
-    void deactivate() {
     }
     void set_vibrato()
     {
@@ -695,21 +615,7 @@ public:
         }
         return outputs_mask;
     }
-    virtual void control_change(int ctl, int val)
-    {
-        if (vibrato_mode == 3 && ctl == 64)
-        {
-            hold_value = val / 127.f;
-            set_vibrato();
-            return;
-        }
-        if (vibrato_mode == 4 && ctl == 1)
-        {
-            mwhl_value = val / 127.f;
-            set_vibrato();
-            return;
-        }
-    }
+    virtual void control_change(int ctl, int val);
 };
 
 /// A multitap stereo chorus thing - processing
@@ -752,14 +658,6 @@ public:
             last_r_phase = r_phase;
         }
     }
-    void activate() {
-        params_changed();
-    }
-    void set_sample_rate(uint32_t sr) {
-        srate = sr;
-        left.setup(sr);
-        right.setup(sr);
-    }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, numsamples);
         right.process(outs[1] + offset, ins[1] + offset, numsamples);
@@ -769,16 +667,10 @@ public:
             *params[par_lfophase_r] = (double)right.lfo.phase * 360.0 / 4096.0;
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context)
-    {
-        if (index == par_delay && subindex < 2) 
-            return calf_plugins::get_graph(*this, subindex, data, points);
-        return false;
-    }
-    float freq_gain(int subindex, float freq, float srate)
-    {
-        return (subindex ? right : left).freq_gain(freq, srate);                
-    }
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    float freq_gain(int subindex, float freq, float srate);
 };
 
 extern std::string get_builtin_modules_rdf();

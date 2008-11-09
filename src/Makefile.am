@@ -50,7 +50,7 @@ calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
 calfbenchmark_LDADD += libcalfgui.la
 endif
 
-calf_la_SOURCES = modules.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp
+calf_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static
 else
@@ -66,7 +66,7 @@ calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-
 endif
 endif
 
-libcalfstatic_la_SOURCES = modules.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp
+libcalfstatic_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat -disable-shared
 
 if USE_GUI
