@@ -211,6 +211,7 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
     else
         text = attribs["text"];
     widget = gtk_label_new(text.c_str());
+    gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
     return widget;
 }
 
@@ -222,7 +223,7 @@ GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
     parameter_properties &props = get_props();
     widget = gtk_label_new ("");
     gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
-    gtk_misc_set_alignment (GTK_MISC (widget), 0.5, 0.5);
+    gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
     return widget;
 }
 
