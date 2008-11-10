@@ -479,7 +479,8 @@ void make_ttl(string path_prefix)
     string gui_header;
     
 #if USE_LV2_GUI
-    gui_header = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>\n"
+    string gui_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>";
+    gui_header = gui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
@@ -500,6 +501,15 @@ void make_ttl(string path_prefix)
         string uri = string("<http://calf.sourceforge.net/plugins/")  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
+        
+#if USE_LV2_GUI
+        for (int j = 0; j < pi->get_param_count(); j++)
+        {
+            parameter_properties &props = *pi->get_param_props(j);
+            if (props.flags & PF_PROP_OUTPUT)
+                ttl += gui_uri + " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
+        }
+#endif
         
         ttl += uri + " a lv2:Plugin ;\n";
         
