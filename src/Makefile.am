@@ -106,7 +106,7 @@ if USE_LV2
 if USE_LV2_GUI
 	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
 endif
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.ttl
+	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/*.ttl
 	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(with_lv2_dir)/calf.lv2/
 endif
 
