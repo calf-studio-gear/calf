@@ -451,6 +451,7 @@ void make_ttl(string path_prefix)
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
+        "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
 
         "\n"
     ;
@@ -507,6 +508,7 @@ void make_ttl(string path_prefix)
         
             
         ttl += "    doap:name \""+string(lpi.name)+"\" ;\n";
+        ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
 
 #if USE_LV2_GUI
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
