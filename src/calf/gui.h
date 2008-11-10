@@ -281,7 +281,6 @@ public:
     std::vector<param_control *> params;
 
     plugin_gui(plugin_gui_window *_window);
-    GtkWidget *create(plugin_ctl_iface *_plugin);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
     param_control *create_control_from_xml(const char *element, const char *attributes[]);
     control_container *create_container_from_xml(const char *element, const char *attributes[]);

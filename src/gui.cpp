@@ -511,103 +511,6 @@ static void action_destroy_notify(gpointer data)
     delete (activate_preset_params *)data;
 }
 
-GtkWidget *plugin_gui::create(plugin_ctl_iface *_plugin)
-{
-    // This code should not be used anymore, unless custom GUI is not found (which should not be a case)
-    fprintf(stderr, "ERROR: cannot find an XML-based GUI for the plugin - this is most likely an installation-related problem\n");
-    assert(0);
-    plugin = _plugin;
-    param_count = plugin->get_param_count();
-    params.resize(param_count);
-    for (int i = 0; i < param_count; i++) {
-        params[i] = NULL;
-    }
-    
-    container = gtk_table_new (param_count, 3, FALSE);
-    
-    for (int i = 0; i < param_count; i++) {
-        int trow = i;
-        parameter_properties &props = *plugin->get_param_props(i);
-        
-        GtkWidget *label = NULL;
-        bool use_label = true;
-        if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
-            (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
-            use_label = false;
-        
-        if (use_label)
-        {
-            label = gtk_label_new (props.name);
-            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
-            gtk_table_attach (GTK_TABLE (container), label, 0, 1, trow, trow + 1, GTK_FILL, GTK_FILL, 2, 2);
-        }
-        
-        GtkWidget *widget = NULL;
-        
-        if ((props.flags & PF_TYPEMASK) == PF_ENUM && 
-            (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
-        {
-            params[i] = new combo_box_param_control();
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
-        }
-        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
-                 (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
-        {
-            params[i] = new toggle_param_control();
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
-        }
-        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
-                 (props.flags & PF_CTLMASK) == PF_CTL_BUTTON)
-        {
-            params[i] = new button_param_control();
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 0, 3, trow, trow + 1, GTK_EXPAND, GTK_SHRINK, 0, 0);
-        }
-        else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
-                 (props.flags & PF_CTLMASK) == PF_CTL_LED)
-        {
-            params[i] = new led_param_control();
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 10, 0);
-        }
-        else if ((props.flags & PF_CTLMASK) == PF_CTL_METER)
-        {
-            params[i] = new vumeter_param_control();
-            widget = params[i]->create(this, i);
-            if (props.flags & PF_CTLO_REVERSE)
-                calf_vumeter_set_mode (CALF_VUMETER (widget), VU_MONOCHROME_REVERSE);
-            if (props.flags & PF_CTLO_LABEL)
-            {
-                gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
-                gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 10, 0);
-            }
-            else
-                gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 10, 0);
-        }
-        else if ((props.flags & PF_CTLMASK) != PF_CTL_FADER)
-        {
-            params[i] = new knob_param_control();
-            if ((props.flags & PF_UNITMASK) == PF_UNIT_DEG)
-                params[i]->attribs["type"] = "3";
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 2, trow, trow + 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
-            gtk_table_attach (GTK_TABLE (container), params[i]->create_label(), 2, 3, trow, trow + 1, (GtkAttachOptions)(GTK_SHRINK | GTK_FILL), GTK_SHRINK, 10, 0);
-        }
-        else
-        {
-            gtk_misc_set_alignment (GTK_MISC (label), 1.0, 1.0);
-            params[i] = new hscale_param_control();
-            widget = params[i]->create(this, i);
-            gtk_table_attach (GTK_TABLE (container), widget, 1, 3, trow, trow + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_SHRINK, 0, 0);
-        }
-        params[i]->hook_params();
-        params[i]->set();
-    }
-    return container;
-}
-
 void control_base::require_attribute(const char *name)
 {
     if (attribs.count(name) == 0) {
@@ -1174,10 +1077,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     
     GtkWidget *container;
     const char *xml = _jh->get_gui_xml();
-    if (xml)
-        container = gui->create_from_xml(_jh, xml);
-    else
-        container = gui->create(_jh);
+    assert(xml);
+    container = gui->create_from_xml(_jh, xml);
 
     string command_xml = make_gui_command_list(command_actions);
     gtk_ui_manager_insert_action_group(ui_mgr, command_actions, 0);

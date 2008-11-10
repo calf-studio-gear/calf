@@ -158,10 +158,8 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     plugin_gui_window *window = new plugin_gui_window(main);
     plugin_gui *gui = new plugin_gui(window);
     const char *xml = proxy->get_gui_xml();
-    if (xml)
-        *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
-    else
-        *(GtkWidget **)(widget) = gui->create(proxy);
+    assert(xml);
+    *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
     
     if (*(GtkWidget **)(widget))
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
