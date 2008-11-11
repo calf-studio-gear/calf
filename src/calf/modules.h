@@ -81,6 +81,11 @@ public:
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
+    bool is_active;
+public:
+    flanger_audio_module() {
+        is_active = false;
+    }
     void set_sample_rate(uint32_t sr);
     void params_changed() {
         float dry = 1.0;
@@ -137,6 +142,11 @@ public:
     bool clear_reset;
     float last_r_phase;
     dsp::simple_phaser<12> left, right;
+    bool is_active;
+public:
+    phaser_audio_module() {
+        is_active = false;
+    }
     void params_changed() {
         float dry = 1.0;
         float wet = *params[par_amount];
@@ -230,6 +240,7 @@ public:
     int order;
     inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
     once_per_n timer;
+    bool is_active;
     
     filter_audio_module()
     : inertia_cutoff(exponential_ramp(128), 20)
@@ -237,6 +248,7 @@ public:
     , timer(128)
     {
         order = 0;
+        is_active = false;
     }
     
     void calculate_filter()
@@ -628,10 +640,12 @@ public:
     uint32_t srate;
     dsp::multichorus<float, sine_multi_lfo<float, 8>, 4096> left, right;
     float last_r_phase;
+    bool is_active;
     
 public:    
     multichorus_audio_module()
     {
+        is_active = false;
     }
     
     void params_changed()
@@ -668,6 +682,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     void activate();
+    void deactivate();
     void set_sample_rate(uint32_t sr);
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     float freq_gain(int subindex, float freq, float srate);

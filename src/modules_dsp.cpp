@@ -36,6 +36,7 @@ void flanger_audio_module::activate() {
     last_r_phase = *params[par_stereo] * (1.f / 360.f);
     left.reset_phase(0.f);
     right.reset_phase(last_r_phase);
+    is_active = true;
 }
 
 void flanger_audio_module::set_sample_rate(uint32_t sr) {
@@ -45,10 +46,13 @@ void flanger_audio_module::set_sample_rate(uint32_t sr) {
 }
 
 void flanger_audio_module::deactivate() {
+    is_active = false;
 }
 
 bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
+    if (!is_active)
+        return false;
     if (index == par_delay && subindex < 2) 
         return calf_plugins::get_graph(*this, subindex, data, points);
     return false;
@@ -70,6 +74,7 @@ void phaser_audio_module::set_sample_rate(uint32_t sr)
 
 void phaser_audio_module::activate()
 {
+    is_active = true;
     left.reset();
     right.reset();
     last_r_phase = *params[par_stereo] * (1.f / 360.f);
@@ -79,6 +84,7 @@ void phaser_audio_module::activate()
 
 void phaser_audio_module::deactivate()
 {
+    is_active = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,10 +116,12 @@ void filter_audio_module::activate()
     }
     timer = once_per_n(srate / 1000);
     timer.start();
+    is_active = true;
 }
 
 void filter_audio_module::deactivate()
 {
+    is_active = false;
 }
 
 void filter_audio_module::set_sample_rate(uint32_t sr)
@@ -123,6 +131,8 @@ void filter_audio_module::set_sample_rate(uint32_t sr)
 
 bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
+    if (!is_active)
+        return false;
     if (index == par_cutoff && !subindex) 
         return calf_plugins::get_graph(*this, subindex, data, points);
     return false;
@@ -191,8 +201,15 @@ void rotary_speaker_audio_module::control_change(int ctl, int val)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void multichorus_audio_module::activate() {
+void multichorus_audio_module::activate()
+{
+    is_active = true;
     params_changed();
+}
+
+void multichorus_audio_module::deactivate()
+{
+    is_active = false;
 }
 
 void multichorus_audio_module::set_sample_rate(uint32_t sr) {
@@ -203,6 +220,8 @@ void multichorus_audio_module::set_sample_rate(uint32_t sr) {
 
 bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
 {
+    if (!is_active)
+        return false;
     if (index == par_delay && subindex < 2) 
         return calf_plugins::get_graph(*this, subindex, data, points);
     return false;
