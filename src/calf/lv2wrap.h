@@ -166,6 +166,8 @@ struct lv2_wrapper
     }
 
     static void cb_activate(LV2_Handle Instance) {
+        instance *const mod = (instance *)Instance;
+        mod->set_srate = true;
     }
     
     static void cb_deactivate(LV2_Handle Instance) {
