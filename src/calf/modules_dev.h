@@ -29,7 +29,7 @@ namespace calf_plugins {
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linslope, clip, peak;
+    float linslope, clip, peak, detected;
     bool aweighting;
     aweighter awL, awR;
 public:
@@ -92,6 +92,7 @@ public:
             if(rms) absample *= absample;
             linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
             float slope = rms ? sqrt(linslope) : linslope;
+            detected = slope;
 
             if(slope > 0.f && (slope > threshold || knee < 1.f)) {
                 if(IS_FAKE_INFINITY(ratio)) {
@@ -190,8 +191,8 @@ public:
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) {
         if (!subindex)
         {
-            x = 1 + 2 * log(peak) / log(65536);
-            y = 1 + 2 * log(output_level(peak)) / log(65536);
+            x = 1 + 2 * log(detected) / log(65536);
+            y = 1 + 2 * log(output_level(detected)) / log(65536);
             return true;
         }
         return false;
