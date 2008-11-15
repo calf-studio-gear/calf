@@ -28,10 +28,6 @@
 #include "primitives.h"
 #include "preset.h"
 
-struct _cairo;
-    
-typedef struct _cairo cairo_t;
-    
 namespace calf_plugins {
 
 enum {
@@ -139,6 +135,13 @@ struct parameter_properties
     float get_increment() const;
 };
 
+struct cairo_iface
+{
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
+    virtual void set_line_width(float width) = 0;
+    virtual ~cairo_iface() {}
+};
+
 /// 'provides live line graph values' interface
 struct line_graph_iface
 {
@@ -150,17 +153,17 @@ struct line_graph_iface
     /// @param context cairo context to adjust (for multicolour graphs etc.)
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { return false; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) { return false; }
 
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) { return false; }
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) { return false; }
     
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context) { return false; }
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context) { return false; }
     
     /// Obtain subindex'th static graph of parameter index (static graphs are only dependent on parameter value, not plugin state)
     /// @param index parameter/graph number (usually tied to particular plugin control port)
@@ -171,7 +174,7 @@ struct line_graph_iface
     /// @param context cairo context to adjust (for multicolour graphs etc.)
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context) { return false; }
+    virtual bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context) { return false; }
     
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}

@@ -161,7 +161,7 @@ void monosynth_audio_module::generate_waves()
     waves[wave_test8].make(bl, data);
 }
 
-bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_t *context)
+bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context)
 {
     monosynth_audio_module::generate_waves();
     if (index == par_wave1 || index == par_wave2) {
@@ -178,7 +178,7 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
     return false;
 }
 
-bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     monosynth_audio_module::generate_waves();
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);

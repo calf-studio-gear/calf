@@ -60,12 +60,14 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_clip_preserve(c);
     cairo_fill(c);
+    cairo_impl cimpl;
+    cimpl.context = c;
 
     if (lg->source) {
         float pos = 0;
         bool vertical = false;
         cairo_set_line_width(c, 1);
-        for(int gn = 0; cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, c); gn++)
+        for(int gn = 0; cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, &cimpl); gn++)
         {
             if (vertical)
             {
@@ -86,7 +88,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         gdk_cairo_set_source_color(c, &sc2);
         cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(c, 1);
-        for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, c); gn++)
+        for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
             for (int i = 0; i < 2 * sx; i++)
             {
@@ -105,7 +107,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         int size = 0;
         GdkColor sc3 = { 0, 32767, 65535, 0 };
         gdk_cairo_set_source_color(c, &sc3);
-        for(int gn = 0; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, c); gn++)
+        for(int gn = 0; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cimpl); gn++)
         {
             int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
             cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);

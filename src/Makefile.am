@@ -52,9 +52,9 @@ endif
 
 calf_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp
 if USE_DEBUG
-calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -lcairo -disable-static
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static
 else
-calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -lcairo -disable-static -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"
 endif
 
 if USE_LV2_GUI

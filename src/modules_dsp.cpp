@@ -26,27 +26,26 @@
 #endif
 #include <calf/giface.h>
 #include <calf/modules.h>
-#include <cairo/cairo.h>
 
 using namespace dsp;
 using namespace calf_plugins;
 
-static void set_channel_color(cairo_t *context, int channel)
+static void set_channel_color(cairo_iface *context, int channel)
 {
     if (channel & 1)
-        cairo_set_source_rgb(context, 0.75, 1, 0);
+        context->set_source_rgba(0.75, 1, 0);
     else
-        cairo_set_source_rgb(context, 0, 1, 0.75);
+        context->set_source_rgba(0, 1, 0.75);
 }
 
-static bool get_freq_gridline(int subindex, float &pos, bool &vertical, cairo_t *context)
+static bool get_freq_gridline(int subindex, float &pos, bool &vertical, cairo_iface *context)
 {
     float gain = 16.0 / (1 << subindex);
     pos = log(gain) / log(1024.0) + 0.5;
     if (pos < -1)
         return false;
     if (subindex != 4)
-        cairo_set_source_rgba(context, 0.25, 0.25, 0.25, 0.5);
+        context->set_source_rgba(0.25, 0.25, 0.25, 0.5);
     vertical = false;
     return true;
 }
@@ -71,7 +70,7 @@ void flanger_audio_module::deactivate() {
     is_active = false;
 }
 
-bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (!is_active)
         return false;
@@ -88,7 +87,7 @@ float flanger_audio_module::freq_gain(int subindex, float freq, float srate)
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
 
-bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
 {
     if (index == par_delay)
         return get_freq_gridline(subindex, pos, vertical, context);
@@ -161,7 +160,7 @@ void filter_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
 }
 
-bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (!is_active)
         return false;
@@ -178,7 +177,7 @@ float filter_audio_module::freq_gain(int subindex, float freq, float srate)
     return level;
 }
 
-bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
 {
     if (index == par_cutoff)
         return get_freq_gridline(subindex, pos, vertical, context);
@@ -257,7 +256,7 @@ void multichorus_audio_module::set_sample_rate(uint32_t sr) {
     right.setup(sr);
 }
 
-bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (!is_active)
         return false;
@@ -274,7 +273,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
     return false;
 }
 
-bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context)
+bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
 {
     if ((index != par_rate && index != par_depth) || subindex >= 2 * (int)*params[par_voices])
         return false;
@@ -295,7 +294,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float 
     return true;
 }
 
-bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
 {
     if (index == par_rate && !subindex)
     {

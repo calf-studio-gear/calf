@@ -36,7 +36,7 @@ using namespace calf_plugins;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_t *context)
+bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (index == par_master) {
         organ_voice_base::precalculate_waves();

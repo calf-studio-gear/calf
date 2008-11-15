@@ -174,7 +174,7 @@ public:
         }
         return slope * makeup;
     }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_t *context) { 
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) { 
         if (subindex > 0) // 1
             return false;
         for (int i = 0; i < points; i++)
@@ -188,7 +188,7 @@ public:
         }
         return true;
     }
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) {
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) {
         if (!subindex)
         {
             x = 1 + log(detected) / log(65536);

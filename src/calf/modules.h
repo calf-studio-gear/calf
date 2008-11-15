@@ -128,8 +128,8 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context);
     float freq_gain(int subindex, float freq, float srate);
 };
 
@@ -364,9 +364,9 @@ public:
         }
         return ostate;
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     float freq_gain(int subindex, float freq, float srate);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context);
 };
 
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
@@ -686,10 +686,10 @@ public:
     void activate();
     void deactivate();
     void set_sample_rate(uint32_t sr);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     float freq_gain(int subindex, float freq, float srate);
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
+    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context);
 };
 
 extern std::string get_builtin_modules_rdf();

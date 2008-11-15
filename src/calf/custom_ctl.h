@@ -106,4 +106,12 @@ extern GType calf_knob_get_type();
 
 G_END_DECLS
 
+class cairo_impl: public calf_plugins::cairo_iface
+{
+public:
+    cairo_t *context;
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f) { cairo_set_source_rgba(context, r, g, b, a); }
+    virtual void set_line_width(float width) { cairo_set_line_width(context, width); }
+};
+
 #endif
