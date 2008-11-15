@@ -51,6 +51,7 @@
             </frame>
             <frame label="LFO positions">
                 <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+                    <line-graph refresh="1" width="160" height="30" param="mod_depth"/>
                     <line-graph refresh="1" width="160" height="160" param="mod_rate"/>
                 </vbox>
             </frame>

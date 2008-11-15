@@ -39,6 +39,19 @@ static void set_channel_color(cairo_t *context, int channel)
         cairo_set_source_rgb(context, 0, 1, 0.75);
 }
 
+static bool get_freq_gridline(int subindex, float &pos, bool &vertical, cairo_t *context)
+{
+    float gain = 16.0 / (1 << subindex);
+    pos = log(gain) / log(1024.0) + 0.5;
+    if (pos < -1)
+        return false;
+    if (subindex != 4)
+        cairo_set_source_rgba(context, 0.25, 0.25, 0.25, 0.5);
+    vertical = false;
+    return true;
+}
+
+
 void flanger_audio_module::activate() {
     left.reset();
     right.reset();
@@ -77,12 +90,8 @@ float flanger_audio_module::freq_gain(int subindex, float freq, float srate)
 
 bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
 {
-    if (index == par_delay && !subindex)
-    {
-        pos = 0.5;
-        vertical = false;
-        return true;
-    }
+    if (index == par_delay)
+        return get_freq_gridline(subindex, pos, vertical, context);
     return false;
 }
 
@@ -171,12 +180,8 @@ float filter_audio_module::freq_gain(int subindex, float freq, float srate)
 
 bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
 {
-    if (index == par_cutoff && !subindex)
-    {
-        pos = 0.5;
-        vertical = false;
-        return true;
-    }
+    if (index == par_cutoff)
+        return get_freq_gridline(subindex, pos, vertical, context);
     return false;
 }
 
@@ -271,13 +276,22 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
 
 bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context)
 {
-    if (index != par_rate || subindex >= 2 * (int)*params[par_voices])
+    if ((index != par_rate && index != par_depth) || subindex >= 2 * (int)*params[par_voices])
         return false;
 
     set_channel_color(context, subindex);
     sine_multi_lfo<float, 8> &lfo = (subindex & 1 ? right : left).lfo;
-    x = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
-    y = 0.95 * sin(x * 2 * M_PI);
+    if (index == par_rate)
+    {
+        x = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
+        y = 0.95 * sin(x * 2 * M_PI);
+    }
+    else
+    {
+        double ph = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
+        x = 0.5 + 0.5 * sin(ph * 2 * M_PI);
+        y = subindex & 1 ? -0.75 : 0.75;
+    }
     return true;
 }
 
@@ -289,12 +303,8 @@ bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos,
         vertical = false;
         return true;
     }
-    if (index == par_delay && !subindex)
-    {
-        pos = 0.5;
-        vertical = false;
-        return true;
-    }
+    if (index == par_delay)
+        return get_freq_gridline(subindex, pos, vertical, context);
     return false;
 }
 
