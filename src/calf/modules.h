@@ -129,6 +129,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
     float freq_gain(int subindex, float freq, float srate);
 };
 
@@ -365,6 +366,7 @@ public:
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     float freq_gain(int subindex, float freq, float srate);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
 };
 
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
@@ -686,6 +688,8 @@ public:
     void set_sample_rate(uint32_t sr);
     bool get_graph(int index, int subindex, float *data, int points, cairo_t *context);
     float freq_gain(int subindex, float freq, float srate);
+    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context);
 };
 
 extern std::string get_builtin_modules_rdf();

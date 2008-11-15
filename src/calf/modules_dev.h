@@ -191,7 +191,7 @@ public:
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context) {
         if (!subindex)
         {
-            x = 1 + 2 * log(detected) / log(65536);
+            x = 1 + log(detected) / log(65536);
             y = 1 + 2 * log(output_level(detected)) / log(65536);
             return true;
         }

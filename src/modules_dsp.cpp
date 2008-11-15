@@ -26,9 +26,18 @@
 #endif
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <cairo/cairo.h>
 
 using namespace dsp;
 using namespace calf_plugins;
+
+static void set_channel_color(cairo_t *context, int channel)
+{
+    if (channel & 1)
+        cairo_set_source_rgb(context, 0.75, 1, 0);
+    else
+        cairo_set_source_rgb(context, 0, 1, 0.75);
+}
 
 void flanger_audio_module::activate() {
     left.reset();
@@ -54,13 +63,27 @@ bool flanger_audio_module::get_graph(int index, int subindex, float *data, int p
     if (!is_active)
         return false;
     if (index == par_delay && subindex < 2) 
+    {
+        set_channel_color(context, subindex);
         return calf_plugins::get_graph(*this, subindex, data, points);
+    }
     return false;
 }
 
 float flanger_audio_module::freq_gain(int subindex, float freq, float srate)
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
+}
+
+bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+{
+    if (index == par_delay && !subindex)
+    {
+        pos = 0.5;
+        vertical = false;
+        return true;
+    }
+    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,6 +169,17 @@ float filter_audio_module::freq_gain(int subindex, float freq, float srate)
     return level;
 }
 
+bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+{
+    if (index == par_cutoff && !subindex)
+    {
+        pos = 0.5;
+        vertical = false;
+        return true;
+    }
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 rotary_speaker_audio_module::rotary_speaker_audio_module()
@@ -223,7 +257,44 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
     if (!is_active)
         return false;
     if (index == par_delay && subindex < 2) 
+    {
+        set_channel_color(context, subindex);
         return calf_plugins::get_graph(*this, subindex, data, points);
+    }
+    if (index == par_rate && !subindex) {
+        for (int i = 0; i < points; i++)
+            data[i] = 0.95 * sin(i * 2 * M_PI / points);
+        return true;
+    }
+    return false;
+}
+
+bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_t *context)
+{
+    if (index != par_rate || subindex >= 2 * (int)*params[par_voices])
+        return false;
+
+    set_channel_color(context, subindex);
+    sine_multi_lfo<float, 8> &lfo = (subindex & 1 ? right : left).lfo;
+    x = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
+    y = 0.95 * sin(x * 2 * M_PI);
+    return true;
+}
+
+bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_t *context)
+{
+    if (index == par_rate && !subindex)
+    {
+        pos = 0;
+        vertical = false;
+        return true;
+    }
+    if (index == par_delay && !subindex)
+    {
+        pos = 0.5;
+        vertical = false;
+        return true;
+    }
     return false;
 }
 

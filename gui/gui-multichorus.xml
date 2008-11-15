@@ -43,8 +43,17 @@
         </hbox>
     </frame>
     <if cond="directlink">
-        <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-            <line-graph refresh="1" width="160" height="160" param="min_delay"/>
-        </vbox>
+        <hbox>
+            <frame label="Freq. response">
+                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+                    <line-graph refresh="1" width="160" height="160" param="min_delay"/>
+                </vbox>
+            </frame>
+            <frame label="LFO positions">
+                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+                    <line-graph refresh="1" width="160" height="160" param="mod_rate"/>
+                </vbox>
+            </frame>
+        </hbox>
     </if>
 </vbox>
