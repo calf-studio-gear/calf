@@ -25,6 +25,7 @@
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/main_win.h>
+#include <calf/lv2_data_access.h>
 #include <calf/lv2_ui.h>
 #include <calf/preset_gui.h>
 #include <calf/utils.h>
@@ -34,6 +35,10 @@ using namespace std;
 using namespace dsp;
 using namespace calf_plugins;
 using namespace calf_utils;
+
+struct LV2_Calf_Descriptor {
+    plugin_ctl_iface *(*get_pci)(LV2_Handle Instance);
+};
 
 struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
 {
@@ -47,12 +52,16 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     /// Instance pointer - usually NULL unless the host supports instance-access extension
     plugin_ctl_iface *instance;
     int source_id;
+    LV2_Handle instance_handle;
+    LV2_Extension_Data_Feature *data_access;
     
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         gui = NULL;
         instance = NULL;
+        instance_handle = NULL;
+        data_access = NULL;
         send = true;
         param_count = get_param_count();
         params = new float[param_count];
@@ -101,6 +110,15 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     void clear_preset() {
         fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in LV2 GUIs\n");
     }
+    void resolve_instance() {
+        if (instance_handle && data_access)
+        {
+            LV2_Calf_Descriptor *calf = (LV2_Calf_Descriptor *)(*data_access->data_access)("http://foltman.com/ns/calf-plugin-instance");
+            if (calf && calf->get_pci)
+                instance = calf->get_pci(instance_handle);
+        }
+    }
+        
     ~plugin_proxy()
     {
         delete []params;
@@ -140,14 +158,14 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     {
         if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
         {
-            proxy->instance = (plugin_ctl_iface *)features[i]->data;
-            printf("Instance %p\n", features[i]->data);
+            proxy->instance_handle = features[i]->data;
         }
         if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
         {
-            printf("Data %p\n", features[i]->data);
+            proxy->data_access = (LV2_Extension_Data_Feature *)features[i]->data;
         }
     }
+    proxy->resolve_instance();
     scope_assign<bool> _a_(proxy->send, false);
     proxy->setup(write_function, controller);
     // dummy window

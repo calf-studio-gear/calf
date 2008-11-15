@@ -126,11 +126,16 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     }
 };
 
+struct LV2_Calf_Descriptor {
+    plugin_ctl_iface *(*get_pci)(LV2_Handle Instance);
+};
+
 template<class Module>
 struct lv2_wrapper
 {
     typedef lv2_instance<Module> instance;
     static LV2_Descriptor descriptor;
+    static LV2_Calf_Descriptor calf_descriptor;
     std::string uri;
     
     lv2_wrapper()
@@ -145,6 +150,7 @@ struct lv2_wrapper
         descriptor.deactivate = cb_deactivate;
         descriptor.cleanup = cb_cleanup;
         descriptor.extension_data = cb_ext_data;
+        calf_descriptor.get_pci = cb_get_pci;
     }
 
     static void cb_connect(LV2_Handle Instance, uint32_t port, void *DataLocation) {
@@ -207,6 +213,11 @@ struct lv2_wrapper
             }
         }
     }
+    static plugin_ctl_iface *cb_get_pci(LV2_Handle Instance)
+    {
+        return (plugin_ctl_iface *)Instance;
+    }
+
     static inline void process_slice(Module *mod, uint32_t offset, uint32_t end)
     {
         while(offset < end)
@@ -269,6 +280,8 @@ struct lv2_wrapper
         delete mod;
     }
     static const void *cb_ext_data(const char *URI) {
+        if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
+            return &calf_descriptor;
         return NULL;
     }
     static lv2_wrapper &get() { 

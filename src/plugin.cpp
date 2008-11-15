@@ -29,6 +29,7 @@ using namespace calf_plugins;
 #if USE_LV2
 // instantiate descriptor templates
 template<class Module> LV2_Descriptor calf_plugins::lv2_wrapper<Module>::descriptor;
+template<class Module> LV2_Calf_Descriptor calf_plugins::lv2_wrapper<Module>::calf_descriptor;
 
 extern "C" {
 
