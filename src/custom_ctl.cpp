@@ -58,9 +58,29 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_clip_preserve(c);
     cairo_fill(c);
 
     if (lg->source) {
+        float pos = 0;
+        bool vertical = false;
+        cairo_set_line_width(c, 1);
+        for(int gn = 0; cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, c); gn++)
+        {
+            if (vertical)
+            {
+                float x = floor(ox + pos * sx) + 0.5;
+                cairo_move_to(c, x, oy);
+                cairo_line_to(c, x, oy + sy);
+            }
+            else
+            {
+                float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
+                cairo_move_to(c, ox, y);
+                cairo_line_to(c, ox + sx, y);
+            }
+            cairo_stroke(c);
+        }
         float *data = new float[2 * sx];
         GdkColor sc2 = { 0, 0, 65535, 0 };
         gdk_cairo_set_source_color(c, &sc2);
@@ -71,8 +91,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             for (int i = 0; i < 2 * sx; i++)
             {
                 int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
-                if (y < oy) y = oy;
-                if (y >= oy + sy) y = oy + sy - 1;
+                //if (y < oy) y = oy;
+                //if (y >= oy + sy) y = oy + sy - 1;
                 if (i)
                     cairo_line_to(c, ox + i * 0.5, y);
                 else
@@ -80,6 +100,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             cairo_stroke(c);
         }
+        delete []data;
         float x, y;
         int size = 0;
         GdkColor sc3 = { 0, 32767, 65535, 0 };
@@ -87,10 +108,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         for(int gn = 0; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, c); gn++)
         {
             int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
-            cairo_arc(c, ox + (x + 1) * sx / 2, yv, size, 0, 2 * M_PI);
+            cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);
             cairo_fill(c);
         }
-        delete []data;
     }
     
     cairo_destroy(c);
