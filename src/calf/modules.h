@@ -666,7 +666,7 @@ public:
         int voices = (int)*params[par_voices];
         left.lfo.set_voices(voices); right.lfo.set_voices(voices);
         float vphase = *params[par_vphase] * (1.f / 360.f);
-        left.lfo.vphase = right.lfo.vphase = vphase * 4096;
+        left.lfo.vphase = right.lfo.vphase = vphase * (4096 / std::max(voices - 1, 1));
         float r_phase = *params[par_stereo] * (1.f / 360.f);
         if (fabs(r_phase - last_r_phase) > 0.0001f) {
             right.lfo.phase = left.lfo.phase;
