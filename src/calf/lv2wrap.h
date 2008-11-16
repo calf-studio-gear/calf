@@ -215,7 +215,7 @@ struct lv2_wrapper
     }
     static plugin_ctl_iface *cb_get_pci(LV2_Handle Instance)
     {
-        return (plugin_ctl_iface *)Instance;
+        return static_cast<plugin_ctl_iface *>(Instance);
     }
 
     static inline void process_slice(Module *mod, uint32_t offset, uint32_t end)
