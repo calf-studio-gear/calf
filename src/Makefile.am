@@ -18,7 +18,7 @@ if USE_LV2_GUI
 noinst_LTLIBRARIES += calflv2gui.la
 endif
 
-AM_CXXFLAGS = -ffast-math -finline-limit=80 -DPKGLIBDIR=\"$(pkglibdir)\"
+AM_CXXFLAGS = -ffast-math -finline-limit=80 
 
 if USE_GUI
 AM_CXXFLAGS += $(GUI_DEPS_CFLAGS)
