@@ -522,6 +522,8 @@ void make_ttl(string path_prefix)
 
 #if USE_LV2_GUI
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
+        ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n";
+        ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n";
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
