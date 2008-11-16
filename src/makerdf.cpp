@@ -237,10 +237,14 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
     }
     else if ((pp.flags & PF_TYPEMASK) > 0)
         ss << ind << "lv2:portProperty lv2:integer ;\n";
+    else if ((pp.flags & PF_SCALEMASK) == PF_SCALE_LOG)
+        ss << ind << "lv2:portProperty epp:logarithmic ;\n";
     ss << showpoint;
     ss << ind << "lv2:default " << pp.def_value << " ;\n";
     ss << ind << "lv2:minimum " << pp.min << " ;\n";
     ss << ind << "lv2:maximum " << pp.max << " ;\n";
+    if (pp.step > 1)
+        ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
     uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
     if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
         ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
