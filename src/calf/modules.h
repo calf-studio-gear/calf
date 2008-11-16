@@ -262,11 +262,11 @@ public:
         int mode = (int)*params[par_mode];
         // printf("freq = %f q = %f mode = %d\n", freq, q, mode);
         if (mode < 3) {
-            left[0].set_lp_rbj(freq, q, srate);
             order = mode + 1;
+            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate);
         } else {
-            left[0].set_hp_rbj(freq, q, srate);
             order = mode - 2;
+            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate);
         }
         // XXXKF this is highly inefficient and should be replaced as soon as I have fast f2i in primitives.h
         int inertia = dsp::fastf2i_drm(*params[par_inertia]);
