@@ -111,9 +111,11 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in LV2 GUIs\n");
     }
     void resolve_instance() {
+        fprintf(stderr, "CALF DEBUG: instance %p data %p\n", instance_handle, data_access);
         if (instance_handle && data_access)
         {
             LV2_Calf_Descriptor *calf = (LV2_Calf_Descriptor *)(*data_access->data_access)("http://foltman.com/ns/calf-plugin-instance");
+            fprintf(stderr, "CALF DEBUG: calf %p cpi %p\n", calf, calf ? calf->get_pci : NULL);
             if (calf && calf->get_pci)
                 instance = calf->get_pci(instance_handle);
         }
