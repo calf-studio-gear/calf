@@ -38,14 +38,20 @@ static void set_channel_color(cairo_iface *context, int channel)
         context->set_source_rgba(0, 1, 0.75);
 }
 
-static bool get_freq_gridline(int subindex, float &pos, bool &vertical, cairo_iface *context)
+static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     float gain = 16.0 / (1 << subindex);
     pos = log(gain) / log(1024.0) + 0.5;
     if (pos < -1)
         return false;
     if (subindex != 4)
-        context->set_source_rgba(0.25, 0.25, 0.25, 0.5);
+        context->set_source_rgba(0.25, 0.25, 0.25, subindex & 1 ? 0.5 : 0.75);
+    if (!(subindex & 1))
+    {
+        std::stringstream ss;
+        ss << (24 - 6 * subindex) << " dB";
+        legend = ss.str();
+    }
     vertical = false;
     return true;
 }
@@ -87,10 +93,10 @@ float flanger_audio_module::freq_gain(int subindex, float freq, float srate)
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
 
-bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
+bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     if (index == par_delay)
-        return get_freq_gridline(subindex, pos, vertical, context);
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
     return false;
 }
 
@@ -177,10 +183,10 @@ float filter_audio_module::freq_gain(int subindex, float freq, float srate)
     return level;
 }
 
-bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
+bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     if (index == par_cutoff)
-        return get_freq_gridline(subindex, pos, vertical, context);
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
     return false;
 }
 
@@ -294,7 +300,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float 
     return true;
 }
 
-bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context)
+bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     if (index == par_rate && !subindex)
     {
@@ -303,7 +309,7 @@ bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos,
         return true;
     }
     if (index == par_delay)
-        return get_freq_gridline(subindex, pos, vertical, context);
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
     return false;
 }
 

@@ -87,11 +87,11 @@ CALF_PORT_NAMES(filter) = {"In L", "In R", "Out L", "Out R"};
 
 const char *filter_choices[] = {
     "12dB/oct Lowpass",
-    "24dB/oct Lowpass",
-    "36dB/oct Lowpass",
+    "24dB/oct Lowpass (2xRes)",
+    "36dB/oct Lowpass (3xRes)",
     "12dB/oct Highpass",
-    "24dB/oct Highpass",
-    "36dB/oct Highpass",
+    "24dB/oct Highpass (2xRes)",
+    "36dB/oct Highpass (3xRes)",
 };
 
 CALF_PORT_PROPS(filter) = {

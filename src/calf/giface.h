@@ -163,7 +163,7 @@ struct line_graph_iface
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, cairo_iface *context) { return false; }
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) { return false; }
     
     /// Obtain subindex'th static graph of parameter index (static graphs are only dependent on parameter value, not plugin state)
     /// @param index parameter/graph number (usually tied to particular plugin control port)

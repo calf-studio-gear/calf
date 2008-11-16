@@ -62,26 +62,44 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_fill(c);
     cairo_impl cimpl;
     cimpl.context = c;
+    cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(c, 9);
 
     if (lg->source) {
         float pos = 0;
         bool vertical = false;
         cairo_set_line_width(c, 1);
-        for(int gn = 0; cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, &cimpl); gn++)
+        std::string legend;
+        for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
         {
+            cairo_text_extents_t tx;
+            if (!legend.empty())
+                cairo_text_extents(c, legend.c_str(), &tx);
             if (vertical)
             {
                 float x = floor(ox + pos * sx) + 0.5;
                 cairo_move_to(c, x, oy);
                 cairo_line_to(c, x, oy + sy);
+                cairo_stroke(c);
+                if (!legend.empty()) {
+                    
+                    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+                    cairo_move_to(c, x + 2, oy);
+                    cairo_show_text(c, legend.c_str());
+                }
             }
             else
             {
                 float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
                 cairo_move_to(c, ox, y);
                 cairo_line_to(c, ox + sx, y);
+                cairo_stroke(c);
+                if (!legend.empty()) {
+                    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+                    cairo_move_to(c, ox + 2, y + tx.height/2);
+                    cairo_show_text(c, legend.c_str());
+                }
             }
-            cairo_stroke(c);
         }
         float *data = new float[2 * sx];
         GdkColor sc2 = { 0, 0, 65535, 0 };
