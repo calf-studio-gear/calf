@@ -442,6 +442,7 @@ void make_ttl(string path_prefix)
         "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+        "@prefix dc: <http://dublincore.org/documents/dcmi-namespace/> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
         "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
@@ -527,6 +528,7 @@ void make_ttl(string path_prefix)
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
+        ttl += "    dc:replaces <ladspa:" + i2s(lpi.unique_id) + "> ;\n";
         // XXXKF not really optional for now, to be honest
         ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
         if (pi->is_rt_capable())
