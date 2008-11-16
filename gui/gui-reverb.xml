@@ -1,29 +1,36 @@
 <vbox border="10">
     <hbox>
-        <vbox border="10">
+        <vbox border="5">
             <label param="decay_time" />
             <knob param="decay_time" />
             <value param="decay_time" />
         </vbox>
-        <vbox border="10">
+        <vbox border="5">
             <label param="hf_damp" />
             <knob param="hf_damp" />
             <value param="hf_damp" />
         </vbox>
-        <vbox border="10">
-            <label param="diffusion" />
-            <knob param="diffusion" />
-            <value param="diffusion" />
+        <vbox border="5">
+            <label param="dry" />
+            <knob param="dry" />
+            <value param="dry" />
         </vbox>
-        <vbox border="10">
+        <vbox border="5">
             <label param="amount" />
             <knob param="amount" />
             <value param="amount" />
         </vbox>
     </hbox>
     <hbox>
-        <label param="room_size"  />
-        <combo param="room_size" />
+        <vbox border="5">
+            <label param="diffusion" />
+            <knob param="diffusion" />
+            <value param="diffusion" />
+        </vbox>
+        <vbox border="5">
+            <label param="room_size"  />
+            <combo param="room_size" />
+        </vbox>
     </hbox>
 </vbox>
 

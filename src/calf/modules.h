@@ -199,7 +199,7 @@ class reverb_audio_module: public audio_module<reverb_metadata>
 public:    
     dsp::reverb<float> reverb;
     uint32_t srate;
-    gain_smoothing amount;
+    gain_smoothing amount, dryamount;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -211,16 +211,18 @@ public:
         reverb.set_time(*params[par_decay]);
         reverb.set_cutoff(*params[par_hfdamp]);
         amount.set_inertia(*params[par_amount]);
+        dryamount.set_inertia(*params[par_dry]);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         numsamples += offset;
         for (uint32_t i = offset; i < numsamples; i++) {
+            float dry = dryamount.get();
             float wet = amount.get();
             float l = ins[0][i], r = ins[1][i];
             float rl = l, rr = r;
             reverb.process(rl, rr);
-            outs[0][i] = l + wet*rl;
-            outs[1][i] = r + wet*rr;
+            outs[0][i] = dry*l + wet*rl;
+            outs[1][i] = dry*r + wet*rr;
         }
         reverb.extra_sanitize();
         return outputs_mask;
