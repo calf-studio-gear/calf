@@ -145,7 +145,7 @@ struct ladspa_wrapper
         ladspa_plugin_info &plugin_info = Module::plugin_info;
         descriptor.UniqueID = plugin_info.unique_id;
         descriptor.Label = plugin_info.label;
-        descriptor.Name = plugin_info.name;
+        descriptor.Name = strdup((std::string(plugin_info.name) + " LADSPA").c_str());
         descriptor.Maker = plugin_info.maker;
         descriptor.Copyright = plugin_info.copyright;
         descriptor.Properties = Module::rt_capable ? LADSPA_PROPERTY_HARD_RT_CAPABLE : 0;
