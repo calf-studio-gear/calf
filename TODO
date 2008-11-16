@@ -4,16 +4,14 @@
 - envelope follower
 - better reverb (more features, use nested allpasses, use 1-pole 
   1-zero allpass instead of fractional delays)
-- dynamics processing
+- dynamics processing (Thor already did the compressor)
 - distortion?
 - windy rotary speakery stuff
-- true phaser
 - filter: more types
 
 2. Some instruments
 
-- update and merge the old electric organ thingy
-- some virtual analogue thing
+- some virtual analogue thing (something larger than Monosynth)
 - FM (by reusing my MMX code, or something)
 
 3. DSP library
@@ -30,6 +28,9 @@
 - buzztard
 - Linux VST
 - LV2
+  Message Context (for Organ)
+  EPP (the rest of them)
+  Mixing Controls
 
 5. Organization stuff (autotools etc)
 
