@@ -171,8 +171,6 @@ CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf MultiChorus", "Kr
 
 ////////////////////////////////////////////////////////////////////////////
 
-#if ENABLE_EXPERIMENTAL
-
 CALF_PORT_NAMES(compressor) = {"In L", "In R", "Out L", "Out R"};
 
 const char *compressor_detection_names[] = { "RMS", "Peak" };
@@ -195,8 +193,6 @@ CALF_PORT_PROPS(compressor) = {
 };
 
 CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
-
-#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
