@@ -85,7 +85,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 if (!legend.empty()) {
                     
                     cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                    cairo_move_to(c, x + 2, oy);
+                    cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
                     cairo_show_text(c, legend.c_str());
                 }
             }
@@ -97,7 +97,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_stroke(c);
                 if (!legend.empty()) {
                     cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                    cairo_move_to(c, ox + 2, y + tx.height/2);
+                    cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
                     cairo_show_text(c, legend.c_str());
                 }
             }
