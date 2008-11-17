@@ -8,8 +8,8 @@
     PER_MODULE_ITEM(rotary_speaker, false, "rotaryspeaker")
     PER_MODULE_ITEM(phaser, false, "phaser")
     PER_MODULE_ITEM(multichorus, false, "multichorus")
-#ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(compressor, false, "compressor")
+#ifdef ENABLE_EXPERIMENTAL
 #endif
 #undef PER_MODULE_ITEM
 #endif
