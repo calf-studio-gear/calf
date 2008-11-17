@@ -1,4 +1,4 @@
-SRCDIRS = src
+SRCDIRS = src gui
 
 SUBDIRS = $(SRCDIRS)
 

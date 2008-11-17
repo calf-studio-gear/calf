@@ -197,6 +197,7 @@ AC_CHECK_FUNCS([floor memset pow])
 
 AC_CONFIG_FILES([Makefile
                  calf.desktop
+                 gui/Makefile
                  src/Makefile
                  src/calf/Makefile])
 AC_MSG_RESULT([

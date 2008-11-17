@@ -123,6 +123,7 @@ endif
 if USE_JACK
 	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
 endif
+	rm -f $(DESTDIR)$(pkglibdir)/gui-*.xml
 	rm -f $(DESTDIR)$(pkglibdir)/presets.xml
 	rm -f $(DESTDIR)$(pkglibdir)/knob.png
 	rmdir $(DESTDIR)$(pkglibdir) || true
