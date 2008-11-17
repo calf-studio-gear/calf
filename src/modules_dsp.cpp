@@ -317,3 +317,63 @@ float multichorus_audio_module::freq_gain(int subindex, float freq, float srate)
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+compressor_audio_module::compressor_audio_module()
+{
+    is_active = false;
+    srate = 0;
+}
+
+void compressor_audio_module::activate()
+{
+    is_active = true;
+    linslope = 0.f;
+    peak = 0.f;
+    clip = 0.f;
+}
+
+void compressor_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void compressor_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    awL.set(sr);
+    awR.set(sr);
+}
+
+bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+{ 
+    if (!is_active)
+        return false;
+    if (subindex > 0) // 1
+        return false;
+    for (int i = 0; i < points; i++)
+    {
+        float input = pow(65536.0, i * 1.0 / (points - 1) - 1);
+        float output = output_level(input);
+        //if (subindex == 0)
+        //    data[i] = 1 + 2 * log(input) / log(65536);
+        //else
+        data[i] = 1 + 2 * log(output) / log(65536);
+    }
+    return true;
+}
+
+bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    if (!subindex)
+    {
+        x = 1 + log(detected) / log(65536);
+        y = 1 + 2 * log(output_level(detected)) / log(65536);
+        return true;
+    }
+    return false;
+}
+
