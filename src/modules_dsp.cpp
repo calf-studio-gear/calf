@@ -30,6 +30,18 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+/// convert amplitude value to normalized grid-ish value (0dB = 0.5, 30dB = 1.0, -30 dB = 0.0, -60dB = -0.5, -90dB = -1.0)
+static inline float dB_grid(float amp)
+{
+    return log(amp) / log(1024.0) + 0.5;
+}
+
+/// convert normalized grid-ish value back to amplitude value
+static inline float dB_grid_inv(float pos)
+{
+    return pow(1024.0, pos - 0.5);
+}
+
 static void set_channel_color(cairo_iface *context, int channel)
 {
     if (channel & 1)
@@ -41,7 +53,7 @@ static void set_channel_color(cairo_iface *context, int channel)
 static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     float gain = 16.0 / (1 << subindex);
-    pos = log(gain) / log(1024.0) + 0.5;
+    pos = dB_grid(gain);
     if (pos < -1)
         return false;
     if (subindex != 4)
@@ -350,16 +362,22 @@ bool compressor_audio_module::get_graph(int index, int subindex, float *data, in
 { 
     if (!is_active)
         return false;
-    if (subindex > 0) // 1
+    if (subindex > 1) // 1
         return false;
     for (int i = 0; i < points; i++)
     {
-        float input = pow(65536.0, i * 1.0 / (points - 1) - 1);
+        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         float output = output_level(input);
-        //if (subindex == 0)
-        //    data[i] = 1 + 2 * log(input) / log(65536);
-        //else
-        data[i] = 1 + 2 * log(output) / log(65536);
+        if (subindex == 0)
+            data[i] = dB_grid(input);
+        else
+            data[i] = dB_grid(output); 
+    }
+    if (!subindex)
+        context->set_source_rgba(0.5, 0.5, 0.5, 0.5);
+    else {
+        context->set_source_rgba(0, 1, 0, 1);
+        context->set_line_width(2);
     }
     return true;
 }
@@ -370,10 +388,28 @@ bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &
         return false;
     if (!subindex)
     {
-        x = 1 + log(detected) / log(65536);
-        y = 1 + 2 * log(output_level(detected)) / log(65536);
+        x = 0.5 + 0.5 * dB_grid(detected);
+        y = dB_grid(output_level(detected));
         return true;
     }
     return false;
 }
 
+bool compressor_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    bool tmp;
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}

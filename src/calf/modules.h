@@ -839,6 +839,7 @@ public:
     }
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
 };
 
 extern std::string get_builtin_modules_rdf();
