@@ -467,6 +467,39 @@ inline float note_to_hz(double note)
     return 440 * pow(2.0, (note - 69) / 12.0);
 }
 
+/// Hermite interpolation between two points and slopes in normalized range (written after Wikipedia article)
+/// @arg t normalized x coordinate (0-1 over the interval in question)
+/// @arg p0 first point
+/// @arg p1 second point
+/// @arg m0 first slope (multiply by interval width when using over non-1-wide interval)
+/// @arg m1 second slope (multiply by interval width when using over non-1-wide interval)
+inline float normalized_hermite(float t, float p0, float p1, float m0, float m1)
+{
+    float t2 = t*t;
+    float t3 = t2*t;
+    return (2*t3 - 3*t2 + 1) * p0 + (t3 - 2*t2 + t) * m0 + (-2*t3 + 3*t2) * p1 + (t3-t2) * m1;
+}
+
+/// Hermite interpolation between two points and slopes 
+/// @arg t normalized x coordinate (0-1 over the interval in question)
+/// @arg x point within interval (x0 <= x <= x1)
+/// @arg x0 interval start
+/// @arg x1 interval end
+/// @arg p0 value at x0
+/// @arg p1 value at x1
+/// @arg m0 slope (steepness, tangent) at x0
+/// @arg m1 slope at x1
+inline float hermite_interpolation(float x, float x0, float x1, float p0, float p1, float m0, float m1)
+{
+    float width = x1 - x0;
+    float t = (x - x0) / width;
+    m0 *= width;
+    m1 *= width;
+    float t2 = t*t;
+    float t3 = t2*t;
+    return (2*t3 - 3*t2 + 1) * p0 + (t3 - 2*t2 + t) * m0 + (-2*t3 + 3*t2) * p1 + (t3-t2) * m1;
+}
+
 };
 
 #endif
