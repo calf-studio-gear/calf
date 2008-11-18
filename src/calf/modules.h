@@ -29,6 +29,7 @@
 #include "giface.h"
 #include "metadata.h"
 #include "loudness.h"
+#include "primitives.h"
 
 namespace calf_plugins {
 
@@ -821,17 +822,23 @@ public:
         float makeup = *params[param_makeup];
         float knee = *params[param_knee];
         
-        if(slope > 0.f && slope > threshold) {
+        float kneeSqrt = sqrt(knee);
+        float kneeStart = threshold / kneeSqrt;
+        float kneeStop = threshold * kneeSqrt;
+
+        if(slope > 0.f && slope > kneeStart) {
             float gain = 0.f;
+            float delta = 0.f;
             if(IS_FAKE_INFINITY(ratio)) {
                 gain = threshold;
+                delta = 0.f;
             } else {
                 gain = (slope - threshold) / ratio + threshold;
+                delta = 1.f / ratio;
             }
             
-            if(knee > 1.f) {
-                float t = std::max(0.f, std::min(1.f, slope - threshold));
-                gain = (gain - slope) * t + slope;
+            if(knee > 1.f && slope < kneeStop) {
+                gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, (threshold * kneeSqrt - threshold) / ratio + threshold, 1.f, delta);
             }
             return gain * makeup;
         }
