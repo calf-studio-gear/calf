@@ -821,7 +821,7 @@ public:
         float makeup = *params[param_makeup];
         float knee = *params[param_knee];
         
-        if(slope > 0.f && (slope > threshold || knee < 1.f)) {
+        if(slope > 0.f && slope > threshold) {
             float gain = 0.f;
             if(IS_FAKE_INFINITY(ratio)) {
                 gain = threshold;
@@ -829,8 +829,8 @@ public:
                 gain = (slope - threshold) / ratio + threshold;
             }
             
-            if(knee < 1.f) {
-                float t = std::min(1.f, std::max(0.f, slope / threshold - knee) / (1.f - knee));
+            if(knee > 1.f) {
+                float t = std::max(0.f, std::min(1.f, slope - threshold));
                 gain = (gain - slope) * t + slope;
             }
             return gain * makeup;
