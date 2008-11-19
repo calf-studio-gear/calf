@@ -33,13 +33,25 @@ using namespace calf_plugins;
 /// convert amplitude value to normalized grid-ish value (0dB = 0.5, 30dB = 1.0, -30 dB = 0.0, -60dB = -0.5, -90dB = -1.0)
 static inline float dB_grid(float amp)
 {
-    return log(amp) / log(1024.0) + 0.5;
+    return log(amp) / log(256.0) + 0.4;
+}
+
+template<class Fx>
+static bool get_graph(Fx &fx, int subindex, float *data, int points)
+{
+    for (int i = 0; i < points; i++)
+    {
+        typedef std::complex<double> cfloat;
+        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        data[i] = dB_grid(fx.freq_gain(subindex, freq, fx.srate));
+    }
+    return true;
 }
 
 /// convert normalized grid-ish value back to amplitude value
 static inline float dB_grid_inv(float pos)
 {
-    return pow(1024.0, pos - 0.5);
+    return pow(256.0, pos - 0.4);
 }
 
 static void set_channel_color(cairo_iface *context, int channel)
@@ -48,6 +60,7 @@ static void set_channel_color(cairo_iface *context, int channel)
         context->set_source_rgba(0.75, 1, 0);
     else
         context->set_source_rgba(0, 1, 0.75);
+    context->set_line_width(1.5);
 }
 
 static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
@@ -95,7 +108,7 @@ bool flanger_audio_module::get_graph(int index, int subindex, float *data, int p
     if (index == par_delay && subindex < 2) 
     {
         set_channel_color(context, subindex);
-        return calf_plugins::get_graph(*this, subindex, data, points);
+        return ::get_graph(*this, subindex, data, points);
     }
     return false;
 }
@@ -182,8 +195,10 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
 {
     if (!is_active)
         return false;
-    if (index == par_cutoff && !subindex) 
-        return calf_plugins::get_graph(*this, subindex, data, points);
+    if (index == par_cutoff && !subindex) {
+        context->set_line_width(1.5);
+        return ::get_graph(*this, subindex, data, points);
+    }
     return false;
 }
 
@@ -281,7 +296,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
     if (index == par_delay && subindex < 2) 
     {
         set_channel_color(context, subindex);
-        return calf_plugins::get_graph(*this, subindex, data, points);
+        return ::get_graph(*this, subindex, data, points);
     }
     if (index == par_rate && !subindex) {
         for (int i = 0; i < points; i++)
