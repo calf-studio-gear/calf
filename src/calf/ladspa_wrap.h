@@ -31,18 +31,35 @@
 
 namespace calf_plugins {
 
+template<class Module>
+inline int calc_real_param_count()
+{
+    for (int i=0; i < Module::param_count; i++)
+    {
+        if ((Module::param_props[i].flags & PF_TYPEMASK) >= PF_STRING)
+            return i;
+    }
+    return Module::param_count;
+}
+    
 /// A template implementing plugin_ctl_iface for a given plugin
 template<class Module>
 struct ladspa_instance: public Module, public plugin_ctl_iface
 {
     bool activate_flag;
+    static int real_param_count()
+    {
+        static int _real_param_count = calc_real_param_count<Module>();
+        return _real_param_count;
+    }
     ladspa_instance()
     {
         for (int i=0; i < Module::in_count; i++)
             Module::ins[i] = NULL;
         for (int i=0; i < Module::out_count; i++)
             Module::outs[i] = NULL;
-        for (int i=0; i < Module::param_count; i++)
+        int rpc = real_param_count();
+        for (int i=0; i < rpc; i++)
             Module::params[i] = NULL;
         activate_flag = true;
     }
@@ -60,7 +77,7 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
     virtual int get_param_count()
     {
-        return Module::param_count;
+        return real_param_count();
     }
     virtual int get_param_port_offset() 
     {
@@ -110,16 +127,6 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     virtual void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
     }
-    virtual void clear_preset() {
-        for (int i=0; i < Module::param_count; i++)
-            *Module::params[i] = Module::param_props[i].def_value;
-        const char **p = Module::get_default_configure_vars();
-        if (p)
-        {
-            for(; p[0]; p += 2)
-                configure(p[0], p[1]);
-        }
-    }
 };
 
 /// A wrapper class for plugin class object (there is only one ladspa_wrapper for many instances of the same plugin)
@@ -141,7 +148,7 @@ struct ladspa_wrapper
     {
         int ins = Module::in_count;
         int outs = Module::out_count;
-        int params = Module::param_count;
+        int params = ladspa_instance<Module>::real_param_count();
         ladspa_plugin_info &plugin_info = Module::plugin_info;
         descriptor.UniqueID = plugin_info.unique_id;
         descriptor.Label = plugin_info.label;

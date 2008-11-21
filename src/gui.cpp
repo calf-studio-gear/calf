@@ -52,8 +52,10 @@ void param_control::update_label()
 
 void param_control::hook_params()
 {
-    if (param_no != -1)
+    if (param_no != -1) {
         gui->add_param_ctl(param_no, this);
+    }
+    gui->params.push_back(this);
 }
 
 param_control::~param_control()
@@ -407,7 +409,7 @@ struct curve_param_control_callback: public CalfCurve::EventAdapter
         ss << data.size() << endl;
         for (size_t i = 0; i < data.size(); i++)
             ss << data[i].first << " " << data[i].second << endl;
-        ctl->gui->send_configure(ctl->attribs["key"].c_str(), ss.str().c_str());
+        ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), ss.str().c_str());
     }
     virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide)
     {
@@ -771,7 +773,6 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             current_control->init_xml(element);
             current_control->set();
             current_control->hook_params();
-            params.push_back(current_control);
             return;
         }
     }
@@ -833,22 +834,26 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
 
 void plugin_gui::send_configure(const char *key, const char *value)
 {
-    plugin->configure(key, value);
+    // XXXKF this should really be replaced by a separate list of SCI-capable param controls
+    for (unsigned int i = 0; i < params.size(); i++)
+    {
+        assert(params[i] != NULL);
+        send_configure_iface *sci = dynamic_cast<send_configure_iface *>(params[i]);
+        if (sci)
+            sci->send_configure(key, value);
+    }
 }
 
 void plugin_gui::on_idle()
 {
     for (unsigned int i = 0; i < params.size(); i++)
     {
-        if (params[i] != NULL)
-        {
-            parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
-            bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
-            if (is_output) {
-                params[i]->set();
-            }
-            params[i]->on_idle();
+        parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+        bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
+        if (is_output) {
+            params[i]->set();
         }
+        params[i]->on_idle();
     }    
     // XXXKF iterate over par2ctl, too...
 }
@@ -857,13 +862,10 @@ void plugin_gui::refresh()
 {
     for (unsigned int i = 0; i < params.size(); i++)
     {
-        if (params[i] != NULL)
-            params[i]->set();
+        params[i]->set();
         send_configure_iface *sci = dynamic_cast<send_configure_iface *>(params[i]);
         if (sci)
-        {
             plugin->send_configures(sci);
-        }
     }
 }
 
@@ -1107,6 +1109,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
 
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     gtk_ui_manager_ensure_update(ui_mgr);
+    gui->plugin->send_configures(gui);
 }
 
 void plugin_gui_window::close()

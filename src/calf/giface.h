@@ -244,9 +244,6 @@ struct plugin_metadata_iface
     virtual const char **get_port_names() = 0;
     /// @return description structure for the plugin
     virtual const ladspa_plugin_info &get_plugin_info() = 0;
-    /// Get all configure vars that are supposed to be set to initialize a preset
-    /// @return key, value, key, value, ..., NULL
-    virtual const char **get_default_configure_vars() = 0;
     /// is a given parameter a control voltage?
     virtual bool is_cv(int param_no) = 0;
     /// is the given parameter non-interpolated?
@@ -352,7 +349,6 @@ public:
     plugin_command_info *get_commands() { return NULL; }
     parameter_properties *get_param_props(int param_no) { return &param_props[param_no]; }
     const char **get_port_names() { return port_names; }
-    const char **get_default_configure_vars() { return NULL; }
     bool is_cv(int param_no) { return true; }
     bool is_noisy(int param_no) { return false; }
     virtual const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
@@ -383,7 +379,6 @@ public:
     plugin_command_info *get_commands() { return impl->get_commands(); }
     parameter_properties *get_param_props(int param_no) { return impl->get_param_props(param_no); }
     const char **get_port_names() { return impl->get_port_names(); }
-    const char **get_default_configure_vars() { return impl->get_default_configure_vars(); }
     bool is_cv(int param_no) { return impl->is_cv(param_no); }
     bool is_noisy(int param_no) { return impl->is_noisy(param_no); }
     virtual const ladspa_plugin_info &get_plugin_info() { return impl->get_plugin_info(); }

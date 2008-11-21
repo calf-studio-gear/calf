@@ -194,9 +194,9 @@ public:
     jack_host()
     {
         for (int i = 0; i < Module::param_count; i++) {
-            param_values[i] = Module::param_props[i].def_value;
             Module::params[i] = &param_values[i];
         }
+        clear_preset();
         midi_meter = 0;
     }
     

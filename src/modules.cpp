@@ -289,6 +289,8 @@ const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  
 
 const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
+const char *organ_init_map_curve = "2\n0 1\n1 1\n";
+
 CALF_PORT_PROPS(organ) = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l2", "5 1/3'" },
@@ -428,6 +430,8 @@ CALF_PORT_PROPS(organ) = {
 
     { -12,        -24, 24,   49, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,  201, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
+    
+    { 0,          0,    0,    0, PF_STRING, &organ_init_map_curve, "map_curve", "Key mapping curve" },
 };
 
 ////////////////////////////////////////////////////////////////////////////
