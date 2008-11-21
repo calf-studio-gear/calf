@@ -43,6 +43,7 @@ enum parameter_flags
   PF_BOOL = 0x0002,  ///< bool value (usually >=0.5f is treated as TRUE, which is inconsistent with LV2 etc. which treats anything >0 as TRUE)
   PF_ENUM = 0x0003,  ///< enum value (min, min+1, ..., max, only guaranteed to work when min = 0)
   PF_ENUM_MULTI = 0x0004, ///< SET / multiple-choice
+  PF_STRING = 0x0005, ///< see: http://lv2plug.in/docs/index.php?title=String_port
   
   PF_SCALEMASK = 0xF0, ///< bit mask for scale
   PF_SCALE_DEFAULT = 0x00, ///< no scale given

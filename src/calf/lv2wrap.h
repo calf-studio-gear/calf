@@ -30,6 +30,7 @@
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_contexts.h>
+#include <calf/lv2_string_port.h>
 
 namespace calf_plugins {
 
