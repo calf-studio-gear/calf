@@ -129,6 +129,9 @@ struct organ_enums
         par_var_mapcurve,
         param_count
     };
+    enum {
+        var_count = 1
+    };
     enum organ_waveform { 
         wave_sine, 
         wave_sinepl1, wave_sinepl2, wave_sinepl3,

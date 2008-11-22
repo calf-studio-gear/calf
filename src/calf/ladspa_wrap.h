@@ -69,10 +69,16 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
     virtual float get_param_value(int param_no)
     {
+        // XXXKF hack
+        if (param_no >= real_param_count())
+            return 0;
         return *Module::params[param_no];
     }
     virtual void set_param_value(int param_no, float value)
     {
+        // XXXKF hack
+        if (param_no >= real_param_count())
+            return;
         *Module::params[param_no] = value;
     }
     virtual int get_param_count()
@@ -282,7 +288,8 @@ struct ladspa_wrapper
         unsigned int no = (Bank << 7) + Program - 1;
         // printf("no = %d presets = %p:%d\n", no, presets, presets->size());
         if (no == -1U) {
-            for (int i =0 ; i < Module::param_count; i++)
+            int rpc = ladspa_instance<Module>::real_param_count();
+            for (int i =0 ; i < rpc; i++)
                 *mod->params[i] = Module::param_props[i].def_value;
             return;
         }
@@ -299,7 +306,7 @@ struct ladspa_wrapper
     static void cb_connect(LADSPA_Handle Instance, unsigned long port, LADSPA_Data *DataLocation) {
         unsigned long ins = Module::in_count;
         unsigned long outs = Module::out_count;
-        unsigned long params = Module::param_count;
+        unsigned long params = ladspa_instance<Module>::real_param_count();
         instance *const mod = (instance *)Instance;
         if (port < ins)
             mod->ins[port] = DataLocation;

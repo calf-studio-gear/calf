@@ -213,7 +213,7 @@ public:
         srate = sr;
     }
     void params_changed() {
-        for (int i = 0; i < param_count; i++)
+        for (int i = 0; i < param_count - var_count; i++)
             ((float *)&par_values)[i] = *params[i];
         update_params();
     }
