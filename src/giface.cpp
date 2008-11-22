@@ -211,3 +211,25 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
         return NULL;
     }
 }
+
+bool calf_plugins::check_for_message_context_ports(parameter_properties *parameters, int count)
+{
+    for (int i = count - 1; i >= 0; i--)
+    {
+        if (parameters[i].flags & PF_PROP_MSGCONTEXT)
+            return true;
+    }
+    return false;
+}
+
+bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int count)
+{
+    for (int i = count - 1; i >= 0; i--)
+    {
+        if ((parameters[i].flags & PF_TYPEMASK) == PF_STRING)
+            return true;
+        if ((parameters[i].flags & PF_TYPEMASK) < PF_STRING)
+            return false;
+    }
+    return false;
+}

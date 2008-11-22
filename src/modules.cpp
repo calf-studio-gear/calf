@@ -431,7 +431,7 @@ CALF_PORT_PROPS(organ) = {
     { -12,        -24, 24,   49, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,  201, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
     
-    { 0,          0,    0,    0, PF_STRING, &organ_init_map_curve, "map_curve", "Key mapping curve" },
+    { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &organ_init_map_curve, "map_curve", "Key mapping curve" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

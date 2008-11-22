@@ -232,6 +232,8 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
         ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
     if (pp.flags & PF_PROP_OUTPUT_GAIN)
         ss << ind << "lv2:portProperty epp:outputGain ;\n";
+    if (pp.flags & PF_PROP_MSGCONTEXT)
+        ss << ind << "lv2ctx:context lv2ctx:MessageContext ;\n";
     if (type == PF_STRING)
     {
         ss << ind << "strport:default \"\"\"" << pp.choices[0] << "\"\"\" ;\n";
@@ -560,6 +562,14 @@ void make_ttl(string path_prefix)
                 ttl += "    lv2:optionalFeature <" LV2_URI_MAP_URI "> ;\n";                
             }
         }
+        
+        if (pi->requires_message_context())
+        {
+            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;\n";
+            ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
+        }
+        if (pi->requires_string_ports())
+            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port> ;\n";
         
         string ports = "";
         int pn = 0;

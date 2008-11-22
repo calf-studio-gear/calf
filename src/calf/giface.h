@@ -77,6 +77,7 @@ enum parameter_flags
   PF_PROP_OUTPUT    = 0x080000, ///< output port
   PF_PROP_OPTIONAL  = 0x100000, ///< connection optional
   PF_PROP_GRAPH     = 0x200000, ///< add graph
+  PF_PROP_MSGCONTEXT= 0x400000, ///< message context
   
   PF_UNITMASK     = 0xFF000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels
@@ -248,6 +249,10 @@ struct plugin_metadata_iface
     virtual bool is_cv(int param_no) = 0;
     /// is the given parameter non-interpolated?
     virtual bool is_noisy(int param_no) = 0;
+    /// does the plugin require message context? (or DSSI configure) may be slow
+    virtual bool requires_message_context() = 0;
+    /// does the plugin require string port extension? (or DSSI configure) may be slow
+    virtual bool requires_string_ports() = 0;
 
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_metadata_iface() {}
@@ -322,6 +327,9 @@ public:
     inline void params_reset() {}
 };
 
+extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
+extern bool check_for_string_ports(parameter_properties *parameters, int count);
+
 /// Metadata base class template, to provide default versions of interface functions
 template<class Metadata>
 class plugin_metadata: public virtual plugin_metadata_iface
@@ -351,7 +359,9 @@ public:
     const char **get_port_names() { return port_names; }
     bool is_cv(int param_no) { return true; }
     bool is_noisy(int param_no) { return false; }
-    virtual const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
+    const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
+    bool requires_message_context() { return check_for_message_context_ports(param_props, Metadata::param_count); }
+    bool requires_string_ports() { return check_for_string_ports(param_props, Metadata::param_count); }
 };
 
 /// A class for delegating metadata implementation to "remote" metadata class.
@@ -381,8 +391,9 @@ public:
     const char **get_port_names() { return impl->get_port_names(); }
     bool is_cv(int param_no) { return impl->is_cv(param_no); }
     bool is_noisy(int param_no) { return impl->is_noisy(param_no); }
-    virtual const ladspa_plugin_info &get_plugin_info() { return impl->get_plugin_info(); }
-    
+    const ladspa_plugin_info &get_plugin_info() { return impl->get_plugin_info(); }
+    bool requires_message_context() { return impl->requires_message_context(); }
+    bool requires_string_ports() { return impl->requires_string_ports(); }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]
