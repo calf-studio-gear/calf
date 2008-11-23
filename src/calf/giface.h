@@ -253,6 +253,8 @@ struct plugin_metadata_iface
     virtual bool requires_message_context() = 0;
     /// does the plugin require string port extension? (or DSSI configure) may be slow
     virtual bool requires_string_ports() = 0;
+    /// add all message context parameter numbers to the ports vector
+    virtual void get_message_context_parameters(std::vector<int> &ports) = 0;
 
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_metadata_iface() {}
@@ -320,11 +322,17 @@ public:
     /// Execute menu command with given number
     inline void execute(int cmd_no) {}
     /// DSSI configure call
-    inline char *configure(const char *key, const char *value) { return NULL; }
+    virtual char *configure(const char *key, const char *value) { return NULL; }
     /// Send all understood configure vars
     inline void send_configures(send_configure_iface *sci) {}
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
+    /// Handle 'message context' port message
+    /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
+    inline void message_run(uint32_t *output_ports) { 
+        fprintf(stderr, "ERROR: message run not implemented\n");
+        // configure(param_props[parameter].short_name, dynamic_cast<>()); 
+    }
 };
 
 extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
@@ -362,6 +370,12 @@ public:
     const ladspa_plugin_info &get_plugin_info() { return plugin_info; }
     bool requires_message_context() { return check_for_message_context_ports(param_props, Metadata::param_count); }
     bool requires_string_ports() { return check_for_string_ports(param_props, Metadata::param_count); }
+    void get_message_context_parameters(std::vector<int> &ports) {
+        for (int i = 0; i < get_param_count(); ++i) {
+            if (get_param_props(i)->flags & PF_PROP_MSGCONTEXT)
+                ports.push_back(i);
+        }
+    }
 };
 
 /// A class for delegating metadata implementation to "remote" metadata class.
@@ -394,6 +408,7 @@ public:
     const ladspa_plugin_info &get_plugin_info() { return impl->get_plugin_info(); }
     bool requires_message_context() { return impl->requires_message_context(); }
     bool requires_string_ports() { return impl->requires_string_ports(); }
+    void get_message_context_parameters(std::vector<int> &ports) { impl->get_message_context_parameters(ports); }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]

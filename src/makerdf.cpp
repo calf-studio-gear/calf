@@ -25,6 +25,7 @@
 #include <calf/plugininfo.h>
 #include <calf/utils.h>
 #if USE_LV2
+#include <calf/lv2_contexts.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #endif
@@ -566,6 +567,7 @@ void make_ttl(string path_prefix)
         if (pi->requires_message_context())
         {
             ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;\n";
+            ttl += "    lv2:requiredFeature <" LV2_CONTEXT_MESSAGE "> ;\n";
             ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
         }
         if (pi->requires_string_ports())
