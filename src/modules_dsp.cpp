@@ -388,7 +388,7 @@ bool compressor_audio_module::get_graph(int index, int subindex, float *data, in
         else
             data[i] = dB_grid(output); 
     }
-    if (!subindex)
+    if (subindex == (*params[param_bypass] > 0.5f ? 1 : 0))
         context->set_source_rgba(0.5, 0.5, 0.5, 0.5);
     else {
         context->set_source_rgba(0, 1, 0, 1);
@@ -404,8 +404,8 @@ bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &
     if (!subindex)
     {
         x = 0.5 + 0.5 * dB_grid(detected);
-        y = dB_grid(output_level(detected));
-        return true;
+        y = dB_grid(*params[param_bypass] > 0.5f ? detected : output_level(detected));
+        return *params[param_bypass] > 0.5f ? false : true;
     }
     return false;
 }
