@@ -1809,7 +1809,9 @@ const LV2_Descriptor *calf_plugins::lv2_small_descriptor(uint32_t index)
 
 void calf_plugins::get_all_small_plugins(plugin_list_info_iface *iface)
 {
+#if USE_LV2
     #define PER_SMALL_MODULE_ITEM(name, id) { plugin_info_iface *pii = &iface->plugin(id); small_plugins::name##_audio_module::plugin_info(pii); pii->finalize(); }
     #include <calf/modulelist.h>
+#endif
 }
 

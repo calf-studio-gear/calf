@@ -71,34 +71,43 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         bool vertical = false;
         cairo_set_line_width(c, 1);
         std::string legend;
-        for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
+        for(int phase = 1; phase <= 2; phase++)
         {
-            cairo_text_extents_t tx;
-            if (!legend.empty())
-                cairo_text_extents(c, legend.c_str(), &tx);
-            if (vertical)
+            for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
-                float x = floor(ox + pos * sx) + 0.5;
-                cairo_move_to(c, x, oy);
-                cairo_line_to(c, x, oy + sy);
-                cairo_stroke(c);
-                if (!legend.empty()) {
-                    
-                    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                    cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
-                    cairo_show_text(c, legend.c_str());
+                cairo_text_extents_t tx;
+                if (!legend.empty())
+                    cairo_text_extents(c, legend.c_str(), &tx);
+                if (vertical)
+                {
+                    float x = floor(ox + pos * sx) + 0.5;
+                    if (phase == 1)
+                    {
+                        cairo_move_to(c, x, oy);
+                        cairo_line_to(c, x, oy + sy);
+                        cairo_stroke(c);
+                    }
+                    if (phase == 2 && !legend.empty()) {
+                        
+                        cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+                        cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
+                        cairo_show_text(c, legend.c_str());
+                    }
                 }
-            }
-            else
-            {
-                float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
-                cairo_move_to(c, ox, y);
-                cairo_line_to(c, ox + sx, y);
-                cairo_stroke(c);
-                if (!legend.empty()) {
-                    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                    cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
-                    cairo_show_text(c, legend.c_str());
+                else
+                {
+                    float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
+                    if (phase == 1)
+                    {
+                        cairo_move_to(c, ox, y);
+                        cairo_line_to(c, ox + sx, y);
+                        cairo_stroke(c);
+                    }
+                    if (phase == 2 && !legend.empty()) {
+                        cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+                        cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
+                        cairo_show_text(c, legend.c_str());
+                    }
                 }
             }
         }

@@ -68,6 +68,22 @@ else
   GUI_ENABLED="no"
 fi
 
+if test "$LADSPA_FOUND" = "yes"; then
+  AC_MSG_CHECKING([whether to allow LADSPA])
+  AC_ARG_WITH(ladspa,
+    AC_HELP_STRING([--without-ladspa],[disable LADSPA and DSSI interfaces]),
+      [if test "$withval" = "no"; then LADSPA_FOUND="no"; DSSI_FOUND="no"; fi],[])
+  AC_MSG_RESULT($LADSPA_FOUND)
+fi
+
+if test "$LV2_ENABLED" = "yes"; then
+  AC_MSG_CHECKING([whether to allow LV2])
+  AC_ARG_WITH(lv2,
+    AC_HELP_STRING([--without-lv2],[disable LV2 interface]),
+      [if test "$withval" = "no"; then LV2_ENABLED="no"; fi],[])
+  AC_MSG_RESULT($LV2_ENABLED)
+fi
+
 if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
   JACK_ENABLED="yes"
 else

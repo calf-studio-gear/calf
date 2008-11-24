@@ -61,18 +61,6 @@ public:
 };
 #endif
 
-template<class Fx>
-bool get_graph(Fx &fx, int subindex, float *data, int points)
-{
-    for (int i = 0; i < points; i++)
-    {
-        typedef std::complex<double> cfloat;
-        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        data[i] = log(fx.freq_gain(subindex, freq, fx.srate)) / log(1024.0) + 0.5;
-    }
-    return true;
-}
-
 class flanger_audio_module: public audio_module<flanger_metadata>, public line_graph_iface
 {
 public:
