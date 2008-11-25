@@ -471,6 +471,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
     widget->requisition.width = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
+    calf_line_graph_set_square(clg, get_int("square", 0));
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
         

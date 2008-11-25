@@ -1,5 +1,5 @@
 <table border="10" rows="2" cols="2">
-    <hbox attach-x="1" attach-y="0">
+    <hbox attach-x="0" attach-y="0" attach-w="3">
     	<vbox>
              <label param="bypass"/>
              <align><toggle param="bypass" shrink="1"/></align>
@@ -18,11 +18,20 @@
         </vbox>
     </hbox>
     <if cond="directlink">
-        <vbox attach-x="1" attach-y="1" >
-            <line-graph refresh="1" width="320" height="320" param="compression" square="1"/>
-        </vbox>
+        <align attach-x="1" attach-y="1" scale-x="1" scale-y="1">
+            <table rows="7" cols="2">
+                <line-graph attach-x="0" attach-y="0" attach-h="7" refresh="1" width="160" height="160" param="compression" square="1" shrink-x="1"/>
+                <label attach-x="1" attach-y="0" param="compression"/>
+                <vumeter attach-x="1" attach-y="1" shrink-x="1" expand-y="0" param="compression" mode="2"/>
+                <label attach-x="1" attach-y="2" param="peak"/>
+                <vumeter attach-x="1" attach-y="3" shrink-x="1" expand-y="0" param="peak" mode="0"/>
+                <label attach-x="1" attach-y="4" param="clip"/>
+                <led attach-x="1" attach-y="5" param="clip" expand-x="0" expand-y="0"/>
+                <label attach-x="1" attach-y="6"/>
+            </table>
+        </align>
     </if>
-    <hbox attach-x="1" attach-y="2">
+    <hbox attach-x="0" attach-y="2" attach-w="3">
         <vbox border="10">
             <label param="attack" />
             <knob param="attack" />
