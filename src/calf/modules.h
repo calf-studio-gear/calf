@@ -686,11 +686,10 @@ public:
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup, logarithmic;
-    bool aweighting;
+    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup;
+    bool aweighting, logarithmic;
     aweighter awL, awR;
 public:
-
     float *ins[in_count];
     float *outs[out_count];
     float *params[param_count];
@@ -704,7 +703,7 @@ public:
         bool rms = *params[param_detection] == 0;
         bool average = *params[param_stereo_link] == 0;
         aweighting = *params[param_aweighting] > 0.5f;
-        threshold = *params[param_threshold];
+        float linThreshold = *params[param_threshold];
         ratio = *params[param_ratio];
         float attack = *params[param_attack];
         float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
@@ -712,17 +711,20 @@ public:
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         makeup = *params[param_makeup];
         knee = *params[param_knee];
+        logarithmic = *params[param_logarithmic] > 0.5f;
 
-        logarithmic = true;
-
-        kneeSqrt = sqrt(knee);
-        kneeStart = threshold / kneeSqrt;
-        kneeStop = threshold * kneeSqrt;
+        float linKneeSqrt = sqrt(knee);
+        float linKneeStart = linThreshold / linKneeSqrt;
+        float linKneeStop = linThreshold * linKneeSqrt;
         
         if(logarithmic) {
-            threshold = threshold > 0.f ? log(threshold) / log(2) : 0.f;
-            kneeStart = kneeStart > 0.f ? log(kneeStart) / log(2) : 0.f;
-            kneeStop = kneeStop > 0.f ? log(kneeStop) / log(2) : 0.f;
+            threshold = linThreshold > 0.f ? log(linThreshold) / log(2) : 0.f;
+            kneeStart = linKneeStart > 0.f ? log(linKneeStart) / log(2) : 0.f;
+            kneeStop = linKneeStop > 0.f ? log(linKneeStop) / log(2) : 0.f;
+        } else {
+            threshold = linThreshold;
+            kneeStart = linKneeStart;
+            kneeStop = linKneeStop;
         }
 
         numsamples += offset;
