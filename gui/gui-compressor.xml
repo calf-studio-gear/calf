@@ -25,7 +25,7 @@
             <label param="compression" />
             <vumeter param="compression" mode="2" />
         </vbox>
-        <vbox shrink-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="1" attach-y="0">
             <label param="clip" expand="0" fill="0" />
             <led param="clip" expand="0" fill="0" />
         </vbox>
