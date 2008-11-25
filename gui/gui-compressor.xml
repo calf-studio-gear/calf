@@ -1,0 +1,52 @@
+<table border="10" rows="2" cols="2">
+    <hbox attach-x="1" attach-y="0">
+    	<vbox>
+             <label param="bypass"/>
+             <align><toggle param="bypass" shrink="1"/></align>
+        </vbox>
+    	<vbox>
+             <label param="detection"/>
+             <combo param="detection"/>
+        </vbox>
+    	<vbox>
+             <label param="stereo_link"/>
+             <combo param="stereo_link"/>
+        </vbox>
+    	<vbox>
+             <label param="aweighting"/>
+             <align><toggle param="aweighting"/></align>
+        </vbox>
+    </hbox>
+    <if cond="directlink">
+        <vbox attach-x="1" attach-y="1" >
+            <line-graph refresh="1" width="320" height="320" param="compression" square="1"/>
+        </vbox>
+    </if>
+    <hbox attach-x="1" attach-y="2">
+        <vbox border="10">
+            <label param="attack" />
+            <knob param="attack" />
+            <value param="attack" />
+        </vbox>
+        <vbox border="10">
+            <label param="release" />
+            <knob param="release" />
+            <value param="release" />
+        </vbox>
+        <vbox border="10">
+            <label param="threshold" />
+            <knob param="threshold"/>
+            <value param="threshold" />
+        </vbox>
+        <vbox border="10">
+            <label param="ratio" />
+            <knob param="ratio" />
+            <value param="ratio" />
+        </vbox>
+        <vbox border="10">
+            <label param="makeup" />
+            <knob param="makeup" />
+            <value param="makeup" />
+        </vbox>
+    </hbox>
+</table>
