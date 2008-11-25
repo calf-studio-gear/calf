@@ -686,7 +686,7 @@ public:
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup;
+    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup, logarithmic;
     bool aweighting;
     aweighter awL, awR;
 public:
@@ -712,10 +712,18 @@ public:
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         makeup = *params[param_makeup];
         knee = *params[param_knee];
-        
+
+        logarithmic = true;
+
         kneeSqrt = sqrt(knee);
         kneeStart = threshold / kneeSqrt;
         kneeStop = threshold * kneeSqrt;
+        
+        if(logarithmic) {
+            threshold = threshold > 0.f ? log(threshold) / log(2) : 0.f;
+            kneeStart = kneeStart > 0.f ? log(kneeStart) / log(2) : 0.f;
+            kneeStop = kneeStop > 0.f ? log(kneeStop) / log(2) : 0.f;
+        }
 
         numsamples += offset;
         
@@ -803,7 +811,14 @@ public:
         return output_gain(slope) * makeup;
     }
     
-    inline float output_gain(float slope) {
+    inline float output_gain(float linSlope) {
+         float slope;
+         if(logarithmic) {
+            slope = linSlope > 0.f ? log(linSlope) / log(2) : 0;
+         } else {
+            slope = linSlope;
+         }
+
          if(slope > kneeStart) {
             float gain = 0.f;
             float delta = 0.f;
@@ -819,10 +834,14 @@ public:
                 gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, (kneeStop - threshold) / ratio + threshold, 1.f, delta);
             }
             
-            return gain;
+            if(logarithmic) {
+                return pow(2, gain);
+            } else {
+                return gain;
+            }
         }
 
-        return slope;
+        return linSlope;
     }
 
     void set_sample_rate(uint32_t sr);
