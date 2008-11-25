@@ -151,6 +151,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     return TRUE;
 }
 
+void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square)
+{
+    g_assert(CALF_IS_LINE_GRAPH(graph));
+    graph->is_square = is_square;
+}
+
 static void
 calf_line_graph_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
@@ -165,9 +171,23 @@ calf_line_graph_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     
     widget->allocation = *allocation;
-    // printf("allocation %d x %d\n", allocation->width, allocation->height);
+    GtkAllocation &a = widget->allocation;
+    if (lg->is_square)
+    {
+        if (a.width > a.height)
+        {
+            a.x += (a.width - a.height) / 2;
+            a.width = a.height;
+        }
+        if (a.width < a.height)
+        {
+            a.y += (a.height - a.width) / 2;
+            a.height = a.width;
+        }
+    }
 }
 
 static void
