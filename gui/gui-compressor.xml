@@ -18,7 +18,7 @@
         </vbox>
     </hbox>
     <if cond="directlink">
-        <line-graph attach-x="0" attach-y="1" refresh="1" width="160" height="160" param="compression" square="1" expand-y="1" fill-y="1"/>
+        <line-graph attach-x="0" attach-y="1" refresh="1" width="384" height="384" param="compression" square="1" expand-y="1" fill-y="1"/>
     </if>
     <table attach-x="0" attach-y="2" expand-y="0" expand-x="1" spacing="10" rows="1" cols="3">
         <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="0" attach-y="0">

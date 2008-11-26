@@ -711,21 +711,14 @@ public:
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         makeup = *params[param_makeup];
         knee = *params[param_knee];
-        logarithmic = *params[param_logarithmic] > 0.5f;
 
         float linKneeSqrt = sqrt(knee);
         float linKneeStart = linThreshold / linKneeSqrt;
         float linKneeStop = linThreshold * linKneeSqrt;
         
-        if(logarithmic) {
-            threshold = linThreshold > 0.f ? log(linThreshold) / log(2) : 0.f;
-            kneeStart = linKneeStart > 0.f ? log(linKneeStart) / log(2) : 0.f;
-            kneeStop = linKneeStop > 0.f ? log(linKneeStop) / log(2) : 0.f;
-        } else {
-            threshold = linThreshold;
-            kneeStart = linKneeStart;
-            kneeStop = linKneeStop;
-        }
+        threshold = lin2log(linThreshold);
+        kneeStart = lin2log(linKneeStart);
+        kneeStop = lin2log(linKneeStop);
 
         numsamples += offset;
         
@@ -809,17 +802,16 @@ public:
         return inputs_mask;
     }
 
+    inline float lin2log(float x) {
+        return x > 0.f ? log(x) / log(2.f) : 0.f;
+    }
+
     inline float output_level(float slope) {
         return output_gain(slope) * makeup;
     }
     
     inline float output_gain(float linSlope) {
-         float slope;
-         if(logarithmic) {
-            slope = linSlope > 0.f ? log(linSlope) / log(2) : 0;
-         } else {
-            slope = linSlope;
-         }
+         float slope = lin2log(linSlope);
 
          if(slope > kneeStart) {
             float gain = 0.f;
@@ -836,11 +828,7 @@ public:
                 gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, (kneeStop - threshold) / ratio + threshold, 1.f, delta);
             }
             
-            if(logarithmic) {
-                return pow(2, gain);
-            } else {
-                return gain;
-            }
+            return pow(2, gain);
         }
 
         return linSlope;
