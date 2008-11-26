@@ -686,8 +686,8 @@ public:
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup;
-    bool aweighting, logarithmic;
+    float linSlope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup, linKneeStart, compressedKneeStop;
+    bool aweighting, logarithmic, rms;
     aweighter awL, awR;
 public:
     float *ins[in_count];
@@ -700,27 +700,6 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         bool bypass = *params[param_bypass] > 0.5f;
-        bool rms = *params[param_detection] == 0;
-        bool average = *params[param_stereo_link] == 0;
-        aweighting = *params[param_aweighting] > 0.5f;
-        float linThreshold = *params[param_threshold];
-        ratio = *params[param_ratio];
-        float attack = *params[param_attack];
-        float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
-        float release = *params[param_release];
-        float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
-        makeup = *params[param_makeup];
-        knee = *params[param_knee];
-
-        float linKneeSqrt = sqrt(knee);
-        float linKneeStart = linThreshold / linKneeSqrt;
-        float linKneeStop = linThreshold * linKneeSqrt;
-        
-        threshold = lin2log(linThreshold);
-        kneeStart = lin2log(linKneeStart);
-        kneeStop = lin2log(linKneeStop);
-
-        numsamples += offset;
         
         if(bypass) {
             int count = numsamples * sizeof(float);
@@ -742,46 +721,84 @@ public:
             return inputs_mask;
         }
 
+        rms = *params[param_detection] == 0;
+        bool average = *params[param_stereo_link] == 0;
+        aweighting = *params[param_aweighting] > 0.5f;
+        float linThreshold = *params[param_threshold];
+        ratio = *params[param_ratio];
+        float attack = *params[param_attack];
+        float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
+        float release = *params[param_release];
+        float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
+        makeup = *params[param_makeup];
+        knee = *params[param_knee];
+
+        float linKneeSqrt = sqrt(knee);
+        linKneeStart = linThreshold / linKneeSqrt;
+        float linKneeStop = linThreshold * linKneeSqrt;
+        
+        threshold = lin2log(linThreshold);
+        kneeStart = lin2log(linKneeStart);
+        kneeStop = lin2log(linKneeStop);
+        compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
+
+        numsamples += offset;
+        
         float compression = 1.f;
 
+        peak -= peak * 5.f * numsamples / srate;
+        
+        if(clip > 0) {
+            clip -= numsamples;
+        }
+      
+        detected = rms ? sqrt(linSlope) : linSlope;
+
         while(offset < numsamples) {
-            float gain = 1.f;
             float left = ins[0][offset];
             float right = ins[1][offset];
+            
             if(aweighting) {
                 left = awL.process(left);
                 right = awR.process(right);
             }
-            float absample = average ? (fabs(left) + fabs(right)) / 2 : std::max(fabs(left), fabs(right));
+            
+            float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
             if(rms) absample *= absample;
-            linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
-            float slope = rms ? sqrt(linslope) : linslope;
-            detected = slope;
-
-            if(slope > 0.f) {
-                gain = output_gain(slope);
-                gain /= slope;
+            
+            linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
+            
+            float gain = 1.f;
+            
+            if(linSlope > 0.f) {
+                gain = output_gain(linSlope, rms);
             }
 
             compression = gain;
-            gain *= makeup;
+            
+            if(gain == 1.f) {
+                gain = makeup;
+            } else if(makeup != 1.f) {
+                gain *= makeup;
+            }
 
-            float outL = ins[0][offset] * gain;
+            float outL = ins[0][offset];
+            float outR = ins[1][offset];
+            
+            if(gain != 1.f) {
+                outL *= gain;
+                outR *= gain;
+            }
+
             outs[0][offset] = outL;
-
-            float outR = ins[1][offset] * gain;
             outs[1][offset] = outR;
-
+            
             ++offset;
             
             float maxLR = std::max(fabs(outL), fabs(outR));
             
-            if(clip > 0) {
-                --clip;
-            }
             if(maxLR > 1.f) clip = srate / 10.f; /* blink clip LED for 100 ms */
             
-            peak -= peak * 0.0001;
             if(maxLR > peak) {
                 peak = maxLR;
             }
@@ -803,15 +820,17 @@ public:
     }
 
     inline float lin2log(float x) {
-        return x > 0.f ? log(x) / log(2.f) : 0.f;
+        return x > 0.f ? log(x) : 0.f;
     }
 
     inline float output_level(float slope) {
-        return output_gain(slope) * makeup;
+        return slope * output_gain(slope, false) * makeup;
     }
     
-    inline float output_gain(float linSlope) {
+    inline float output_gain(float linSlope, bool doRms) {
          float slope = lin2log(linSlope);
+        
+         if(doRms) slope *= 0.5f;
 
          if(slope > kneeStart) {
             float gain = 0.f;
@@ -825,13 +844,13 @@ public:
             }
             
             if(knee > 1.f && slope < kneeStop) {
-                gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, (kneeStop - threshold) / ratio + threshold, 1.f, delta);
+                gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, compressedKneeStop, 1.f, delta);
             }
             
-            return pow(2, gain);
+            return exp(gain - slope);
         }
 
-        return linSlope;
+        return 1.f;
     }
 
     void set_sample_rate(uint32_t sr);
