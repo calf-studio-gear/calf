@@ -257,16 +257,33 @@ void get_default_effect_params<calf_plugins::flanger_audio_module>(float params[
 }
 
 template<>
-void get_default_effect_params<calf_plugins::compressor_audio_module>(float params[5], uint32_t &sr)
+void get_default_effect_params<calf_plugins::compressor_audio_module>(float params[], uint32_t &sr)
 {
     typedef calf_plugins::compressor_audio_module mod;
-    params[mod::param_threshold] = 0.01;
+    params[mod::param_threshold] = 10;
     params[mod::param_ratio] = 2;
     params[mod::param_attack] = 0.1;
     params[mod::param_release] = 100;
     params[mod::param_makeup] = 1;
-    params[mod::param_knee] = 1;
+    params[mod::param_stereo_link] = 1;
+    params[mod::param_detection] = 0;
+    params[mod::param_knee] = 40000;
     params[mod::param_bypass] = 0;
+    params[mod::param_aweighting] = 1;
+    sr = 44100;
+}
+
+template<>
+void get_default_effect_params<calf_plugins::multichorus_audio_module>(float params[], uint32_t &sr)
+{
+    typedef calf_plugins::multichorus_audio_module mod;
+    params[mod::par_delay] = 10;
+    params[mod::par_depth] = 10;
+    params[mod::par_rate] = 1;
+    params[mod::par_voices] = 6;
+    params[mod::par_stereo] = 180;
+    params[mod::par_vphase] = 20;
+    params[mod::par_amount] = 0.9;
     sr = 44100;
 }
 
@@ -320,6 +337,7 @@ void effect_test()
     dsp::do_simple_benchmark<effect_benchmark<calf_plugins::reverb_audio_module> >(5, 1000);
     dsp::do_simple_benchmark<effect_benchmark<calf_plugins::filter_audio_module> >(5, 10000);
     dsp::do_simple_benchmark<effect_benchmark<calf_plugins::compressor_audio_module> >(5, 10000);
+    dsp::do_simple_benchmark<effect_benchmark<calf_plugins::multichorus_audio_module> >(5, 10000);
 }
 
 #else
