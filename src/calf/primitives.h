@@ -493,27 +493,6 @@ inline float hermite_interpolation(float x, float x0, float x1, float p0, float 
 {
     float width = x1 - x0;
     float t = (x - x0) / width;
-#if 0
-    // attempt to adjust the slopes to avoid "bumps" - removed, because it's not exactly what we wanted!
-    float delta = (p1-p0)/width;
-    if (fabs(delta) == small_value<float>())
-    {
-        m0 = m1 = 0.f;
-    }
-    else
-    {
-        float idelta = 1.0 / delta;
-        float alpha = m0 / delta;
-        float beta = m1 / delta;
-        if (alpha*alpha + beta*beta > 9)
-        {
-            float sc = (3.0 * delta) / sqrt(m0*m0+m1*m1);
-            m0 = sc * alpha * delta;
-            m1 = sc * beta * delta;
-            // printf("bump...%f\n", sc);
-        }
-    }
-#endif    
     m0 *= width;
     m1 *= width;
     float t2 = t*t;
