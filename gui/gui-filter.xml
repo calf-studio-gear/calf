@@ -1,9 +1,10 @@
-<vbox border="10">
-    <hbox>
-        <label param="mode"  />
-        <combo param="mode" expand-x="1" />
-    </hbox>
-    <hbox>
+<table border="10" rows="3" cols="1">
+    <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
+        <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
+        <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10"/>
+        <combo param="mode" attach-x="2" attach-y="0"/>
+    </table>
+    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
         <vbox border="10">
             <label param="freq" />
             <knob param="freq" />
@@ -21,8 +22,8 @@
         </vbox>
     </hbox>
     <if cond="directlink">
-        <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+        <vbox expand-x="1" fill-x="1" attach-x="0" attach-y="2">
             <line-graph refresh="1" width="160" height="160" param="freq"/>
         </vbox>
     </if>
-</vbox>
+</table>

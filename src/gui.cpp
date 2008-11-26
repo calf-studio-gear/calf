@@ -473,6 +473,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
     widget->requisition.width = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
+    calf_line_graph_set_square(clg, get_int("square", 0));
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
         
@@ -570,8 +571,10 @@ void table_container::add(GtkWidget *widget, control_base *base)
     base->require_int_attribute("attach-y");
     int x = base->get_int("attach-x"), y = base->get_int("attach-y");
     int w = base->get_int("attach-w", 1), h = base->get_int("attach-h", 1);
-    int fillx = (base->get_int("fill-x", 1) ? GTK_FILL : 0) | (base->get_int("expand-x", 1) ? GTK_EXPAND : 0) | (base->get_int("shrink-x", 0) ? GTK_SHRINK : 0);
-    int filly = (base->get_int("fill-y", 1) ? GTK_FILL : 0) | (base->get_int("expand-y", 1) ? GTK_EXPAND : 0) | (base->get_int("shrink-y", 0) ? GTK_SHRINK : 0);
+    int shrinkx = base->get_int("shrink-x", 0);
+    int shrinky = base->get_int("shrink-y", 0);
+    int fillx = (base->get_int("fill-x", !shrinkx) ? GTK_FILL : 0) | (base->get_int("expand-x", !shrinkx) ? GTK_EXPAND : 0) | (shrinkx ? GTK_SHRINK : 0);
+    int filly = (base->get_int("fill-y", !shrinky) ? GTK_FILL : 0) | (base->get_int("expand-y", !shrinky) ? GTK_EXPAND : 0) | (base->get_int("shrink-y", 0) ? GTK_SHRINK : 0);
     int padx = base->get_int("pad-x", 2);
     int pady = base->get_int("pad-y", 2);
     gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);

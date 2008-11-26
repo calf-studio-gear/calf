@@ -1,5 +1,5 @@
-<vbox border="10">
-    <frame label="Timbre">
+<table rows="3" cols="2" border="10">
+    <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
         <hbox>
             <vbox border="10">
                 <label param="min_delay" />
@@ -23,7 +23,7 @@
             </vbox>
         </hbox>
     </frame>
-    <frame label="LFO">
+    <frame label="LFO" attach-x="0" attach-y="1" shrink-y="1">
         <hbox>
             <vbox border="10">
                 <label param="mod_rate" />
@@ -43,7 +43,7 @@
         </hbox>
     </frame>
     <if cond="directlink">
-        <hbox>
+        <hbox attach-x="0" attach-y="2" fill-y="1" expand-y="1">
             <frame label="Freq. response">
                 <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
                     <line-graph refresh="1" width="160" height="160" param="min_delay"/>
@@ -57,4 +57,4 @@
             </frame>
         </hbox>
     </if>
-</vbox>
+</table>

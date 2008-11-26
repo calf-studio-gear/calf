@@ -37,6 +37,7 @@ struct CalfLineGraph
     GtkWidget parent;
     calf_plugins::line_graph_iface *source;
     int source_id;
+    bool is_square;
 };
 
 struct CalfLineGraphClass
@@ -47,6 +48,8 @@ struct CalfLineGraphClass
 extern GtkWidget *calf_line_graph_new();
 
 extern GType calf_line_graph_get_type();
+
+extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
 #define CALF_TYPE_VUMETER          (calf_vumeter_get_type())
 #define CALF_VUMETER(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_VUMETER, CalfVUMeter))

@@ -21,6 +21,7 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <config.h>
 #include <calf/audio_fx.h>
 //#include <calf/giface.h>
