@@ -686,8 +686,8 @@ public:
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linSlope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup, linKneeStart, compressedKneeStop;
-    bool aweighting, logarithmic, rms;
+    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, threshold, ratio, knee, makeup, compressedKneeStop, adjKneeStart;
+    uint32_t clip;
     aweighter awL, awR;
 public:
     float *ins[in_count];
@@ -721,9 +721,9 @@ public:
             return inputs_mask;
         }
 
-        rms = *params[param_detection] == 0;
+        bool rms = *params[param_detection] == 0;
         bool average = *params[param_stereo_link] == 0;
-        aweighting = *params[param_aweighting] > 0.5f;
+        float aweighting = *params[param_aweighting] > 0.5f;
         float linThreshold = *params[param_threshold];
         ratio = *params[param_ratio];
         float attack = *params[param_attack];
@@ -735,11 +735,12 @@ public:
 
         float linKneeSqrt = sqrt(knee);
         linKneeStart = linThreshold / linKneeSqrt;
+        adjKneeStart = linKneeStart*linKneeStart;
         float linKneeStop = linThreshold * linKneeSqrt;
         
-        threshold = lin2log(linThreshold);
-        kneeStart = lin2log(linKneeStart);
-        kneeStop = lin2log(linKneeStop);
+        threshold = log(linThreshold);
+        kneeStart = log(linKneeStart);
+        kneeStop = log(linKneeStop);
         compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
 
         numsamples += offset;
@@ -749,10 +750,8 @@ public:
         peak -= peak * 5.f * numsamples / srate;
         
         if(clip > 0) {
-            clip -= numsamples;
+            clip -= std::min(clip, numsamples);
         }
-      
-        detected = rms ? sqrt(linSlope) : linSlope;
 
         while(offset < numsamples) {
             float left = ins[0][offset];
@@ -769,27 +768,17 @@ public:
             linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
             
             float gain = 1.f;
-            
+
             if(linSlope > 0.f) {
                 gain = output_gain(linSlope, rms);
             }
 
             compression = gain;
-            
-            if(gain == 1.f) {
-                gain = makeup;
-            } else if(makeup != 1.f) {
-                gain *= makeup;
-            }
+            gain *= makeup;
 
-            float outL = ins[0][offset];
-            float outR = ins[1][offset];
+            float outL = ins[0][offset] * gain;
+            float outR = ins[1][offset] * gain;
             
-            if(gain != 1.f) {
-                outL *= gain;
-                outR *= gain;
-            }
-
             outs[0][offset] = outL;
             outs[1][offset] = outR;
             
@@ -797,12 +786,14 @@ public:
             
             float maxLR = std::max(fabs(outL), fabs(outR));
             
-            if(maxLR > 1.f) clip = srate / 10.f; /* blink clip LED for 100 ms */
+            if(maxLR > 1.f) clip = (int)(srate * 0.1f); /* blink clip LED for 100 ms */
             
             if(maxLR > peak) {
                 peak = maxLR;
             }
         }
+        
+        detected = rms ? sqrt(linSlope) : linSlope;
         
         if(params[param_compression] != NULL) {
             *params[param_compression] = compression;
@@ -819,20 +810,15 @@ public:
         return inputs_mask;
     }
 
-    inline float lin2log(float x) {
-        return x > 0.f ? log(x) : 0.f;
-    }
-
     inline float output_level(float slope) {
         return slope * output_gain(slope, false) * makeup;
     }
     
     inline float output_gain(float linSlope, bool doRms) {
-         float slope = lin2log(linSlope);
-        
-         if(doRms) slope *= 0.5f;
+         if(doRms ? linSlope > adjKneeStart : linSlope > linKneeStart) {
+            float slope = log(linSlope);
+            if(doRms) slope *= 0.5f;
 
-         if(slope > kneeStart) {
             float gain = 0.f;
             float delta = 0.f;
             if(IS_FAKE_INFINITY(ratio)) {
