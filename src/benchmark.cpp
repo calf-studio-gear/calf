@@ -17,6 +17,9 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+ 
+#define BENCHMARK_PLUGINS
+
 #include <assert.h>
 #include <getopt.h>
 #include <stdint.h>
@@ -24,9 +27,13 @@
 #include <string.h>
 #include <config.h>
 #include <calf/audio_fx.h>
-//#include <calf/giface.h>
-//#include <calf/modules.h>
-//#include <calf/modules_dev.h>
+
+#ifdef BENCHMARK_PLUGINS
+#include <calf/giface.h>
+#include <calf/modules.h>
+#include <calf/modules_dev.h>
+#endif
+
 #include <calf/loudness.h>
 #include <calf/benchmark.h>
 
@@ -212,14 +219,14 @@ void alignment_test()
         do_simple_benchmark<aligned_double>();
 }
 
-#if 0
+#ifdef BENCHMARK_PLUGINS
 template<class Effect>
 void get_default_effect_params(float params[Effect::param_count], uint32_t &sr);
 
 template<>
-void get_default_effect_params<synth::reverb_audio_module>(float params[3], uint32_t &sr)
+void get_default_effect_params<calf_plugins::reverb_audio_module>(float params[3], uint32_t &sr)
 {
-    typedef synth::reverb_audio_module mod;
+    typedef calf_plugins::reverb_audio_module mod;
     params[mod::par_decay] = 4;
     params[mod::par_hfdamp] = 2000;
     params[mod::par_amount] = 2;
@@ -227,9 +234,9 @@ void get_default_effect_params<synth::reverb_audio_module>(float params[3], uint
 }
 
 template<>
-void get_default_effect_params<synth::filter_audio_module>(float params[4], uint32_t &sr)
+void get_default_effect_params<calf_plugins::filter_audio_module>(float params[4], uint32_t &sr)
 {
-    typedef synth::filter_audio_module mod;
+    typedef calf_plugins::filter_audio_module mod;
     params[mod::par_cutoff] = 500;
     params[mod::par_resonance] = 3;
     params[mod::par_mode] = 2;
@@ -238,14 +245,28 @@ void get_default_effect_params<synth::filter_audio_module>(float params[4], uint
 }
 
 template<>
-void get_default_effect_params<synth::flanger_audio_module>(float params[5], uint32_t &sr)
+void get_default_effect_params<calf_plugins::flanger_audio_module>(float params[5], uint32_t &sr)
 {
-    typedef synth::flanger_audio_module mod;
+    typedef calf_plugins::flanger_audio_module mod;
     params[mod::par_delay] = 1;
     params[mod::par_depth] = 2;
     params[mod::par_rate] = 1;
     params[mod::par_fb] = 0.9;
     params[mod::par_amount] = 0.9;
+    sr = 44100;
+}
+
+template<>
+void get_default_effect_params<calf_plugins::compressor_audio_module>(float params[5], uint32_t &sr)
+{
+    typedef calf_plugins::compressor_audio_module mod;
+    params[mod::param_threshold] = 0.01;
+    params[mod::param_ratio] = 2;
+    params[mod::param_attack] = 0.1;
+    params[mod::param_release] = 100;
+    params[mod::param_makeup] = 1;
+    params[mod::param_knee] = 1;
+    params[mod::param_bypass] = 0;
     sr = 44100;
 }
 
@@ -295,9 +316,10 @@ public:
 
 void effect_test()
 {
-    dsp::do_simple_benchmark<effect_benchmark<synth::flanger_audio_module> >(5, 10000);
-    dsp::do_simple_benchmark<effect_benchmark<synth::reverb_audio_module> >(5, 1000);
-    dsp::do_simple_benchmark<effect_benchmark<synth::filter_audio_module> >(5, 10000);
+    dsp::do_simple_benchmark<effect_benchmark<calf_plugins::flanger_audio_module> >(5, 10000);
+    dsp::do_simple_benchmark<effect_benchmark<calf_plugins::reverb_audio_module> >(5, 1000);
+    dsp::do_simple_benchmark<effect_benchmark<calf_plugins::filter_audio_module> >(5, 10000);
+    dsp::do_simple_benchmark<effect_benchmark<calf_plugins::compressor_audio_module> >(5, 10000);
 }
 
 #else
