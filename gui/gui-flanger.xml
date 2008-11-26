@@ -1,37 +1,37 @@
-<vbox border="10">
-    <frame label="Timbre">
+<table rows="3" cols="1">
+    <frame label="Timbre" fill-y="0" expand-y="0" shrink-y="1" attach-x="0" attach-y="0" >
         <hbox>
-            <vbox border="10">
+            <vbox border="10" expand="0">
                 <label param="min_delay" />
                 <knob param="min_delay" />
                 <value param="min_delay" />
             </vbox>
-            <vbox border="10">
+            <vbox border="10" expand="0">
                 <label param="mod_depth" />
                 <knob param="mod_depth" />
                 <value param="mod_depth" />
             </vbox>
-            <vbox border="10">
+            <vbox border="10" expand="0">
                 <label param="feedback" />
                 <knob param="feedback" type="1"/>
                 <value param="feedback" />
             </vbox>
-            <vbox border="10">
+            <vbox border="10" expand="0">
                 <label param="amount" />
                 <knob param="amount" />
                 <value param="amount" />
             </vbox>
         </hbox>
     </frame>
-    <frame label="LFO">
+    <frame label="LFO" fill-y="0" expand-y="0" shrink-y="1" attach-x="0" attach-y="1" >
         <hbox>
-            <vbox border="10">
+            <vbox border="10" expand="0">
                 <label param="mod_rate" />
                 <knob param="mod_rate" />
                 <value param="mod_rate" />
             </vbox>
-            <align><button param="reset" /></align>
-            <vbox border="10">
+            <align expand="0"><button param="reset" /></align>
+            <vbox border="10" expand="0">
                 <label param="stereo" />
                 <knob param="stereo" type="3" />
                 <value param="stereo" />
@@ -39,8 +39,6 @@
         </hbox>
     </frame>
     <if cond="directlink">
-        <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-            <line-graph refresh="1" width="160" height="160" param="min_delay"/>
-        </vbox>
+        <line-graph expand-y="1" fill-y="1" attach-x="0" attach-y="2" refresh="1" width="160" height="160" param="min_delay"/>
     </if>
-</vbox>
+</table>
