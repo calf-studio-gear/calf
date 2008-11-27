@@ -812,10 +812,10 @@ public:
         return slope * output_gain(slope, false) * makeup;
     }
     
-    inline float output_gain(float linSlope, bool doRms) {
-         if(doRms ? linSlope > adjKneeStart : linSlope > linKneeStart) {
+    inline float output_gain(float linSlope, bool rms) {
+         if(linSlope > rms ? adjKneeStart : linKneeStart) {
             float slope = log(linSlope);
-            if(doRms) slope *= 0.5f;
+            if(rms) slope *= 0.5f;
 
             float gain = 0.f;
             float delta = 0.f;
