@@ -749,9 +749,7 @@ public:
 
         peak -= peak * 5.f * numsamples / srate;
         
-        if(clip > 0) {
-            clip -= std::min(clip, numsamples);
-        }
+        clip -= std::min(clip, numsamples);
 
         while(offset < numsamples) {
             float left = ins[0][offset];
@@ -786,7 +784,7 @@ public:
             
             float maxLR = std::max(fabs(outL), fabs(outR));
             
-            if(maxLR > 1.f) clip = (int)(srate * 0.1f); /* blink clip LED for 100 ms */
+            if(maxLR > 1.f) clip = srate >> 3; /* blink clip LED for 125 ms */
             
             if(maxLR > peak) {
                 peak = maxLR;
