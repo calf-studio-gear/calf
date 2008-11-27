@@ -448,10 +448,9 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="32.2368" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
-  <param name="master" value="0.406126" />
+  <param name="master" value="0.25" />
   <param name="f1_cutoff" value="20" />
   <param name="f1_res" value="0.7" />
   <param name="f1_env1" value="0" />
@@ -555,7 +554,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0.25" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -662,7 +660,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0.25" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -769,7 +766,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="5" />
   <param name="perc_trigger" value="2" />
   <param name="filter_chain" value="1" />
   <param name="master" value="0.1" />
@@ -876,7 +872,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -983,7 +978,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1090,7 +1084,6 @@
   <param name="foldnote" value="127" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1197,7 +1190,6 @@
   <param name="foldnote" value="127" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0.164938" />
-  <param name="perc_timbre" value="4" />
   <param name="perc_trigger" value="2" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1304,7 +1296,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="1" />
   <param name="master" value="0.1" />
@@ -1411,7 +1402,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0.25" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1518,7 +1508,6 @@
   <param name="foldnote" value="106" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1625,7 +1614,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="3" />
   <param name="perc_trigger" value="1" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1732,7 +1720,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.1" />
@@ -1839,7 +1826,6 @@
   <param name="foldnote" value="114" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="1" />
@@ -1946,7 +1932,6 @@
   <param name="foldnote" value="96" />
   <param name="perc_decay" value="200" />
   <param name="perc_level" value="0" />
-  <param name="perc_timbre" value="2" />
   <param name="perc_trigger" value="0" />
   <param name="filter_chain" value="0" />
   <param name="master" value="0.535887" />
@@ -2450,6 +2435,249 @@
 0 0.638889
 0.471831 0
 1 0
+</var>
+</preset>
+<preset bank="0" program="0" plugin="organ" name="Zyn Brass">
+  <param name="l1" value="8" />
+  <param name="l2" value="8" />
+  <param name="l3" value="0" />
+  <param name="l4" value="0" />
+  <param name="l5" value="0" />
+  <param name="l6" value="0" />
+  <param name="l7" value="0" />
+  <param name="l8" value="0" />
+  <param name="l9" value="0" />
+  <param name="f1" value="1" />
+  <param name="f2" value="1" />
+  <param name="f3" value="2" />
+  <param name="f4" value="4" />
+  <param name="f5" value="6" />
+  <param name="f6" value="8" />
+  <param name="f7" value="10" />
+  <param name="f8" value="12" />
+  <param name="f9" value="16" />
+  <param name="w1" value="28" />
+  <param name="w2" value="28" />
+  <param name="w3" value="0" />
+  <param name="w4" value="0" />
+  <param name="w5" value="0" />
+  <param name="w6" value="0" />
+  <param name="w7" value="0" />
+  <param name="w8" value="0" />
+  <param name="w9" value="0" />
+  <param name="detune1" value="-4" />
+  <param name="detune2" value="4" />
+  <param name="detune3" value="0" />
+  <param name="detune4" value="0" />
+  <param name="detune5" value="0" />
+  <param name="detune6" value="0" />
+  <param name="detune7" value="0" />
+  <param name="detune8" value="0" />
+  <param name="detune9" value="0" />
+  <param name="phase1" value="133.2" />
+  <param name="phase2" value="327.6" />
+  <param name="phase3" value="0" />
+  <param name="phase4" value="0" />
+  <param name="phase5" value="0" />
+  <param name="phase6" value="0" />
+  <param name="phase7" value="0" />
+  <param name="phase8" value="0" />
+  <param name="phase9" value="0" />
+  <param name="pan1" value="-1" />
+  <param name="pan2" value="1" />
+  <param name="pan3" value="0" />
+  <param name="pan4" value="0" />
+  <param name="pan5" value="0" />
+  <param name="pan6" value="0" />
+  <param name="pan7" value="0" />
+  <param name="pan8" value="0" />
+  <param name="pan9" value="0" />
+  <param name="routing1" value="1" />
+  <param name="routing2" value="1" />
+  <param name="routing3" value="0" />
+  <param name="routing4" value="0" />
+  <param name="routing5" value="0" />
+  <param name="routing6" value="0" />
+  <param name="routing7" value="0" />
+  <param name="routing8" value="0" />
+  <param name="routing9" value="0" />
+  <param name="foldnote" value="96" />
+  <param name="perc_decay" value="200" />
+  <param name="perc_level" value="0" />
+  <param name="perc_waveform" value="0" />
+  <param name="perc_harmonic" value="6" />
+  <param name="perc_vel2amp" value="0" />
+  <param name="perc_fm_decay" value="200" />
+  <param name="perc_fm_depth" value="0" />
+  <param name="perc_fm_waveform" value="0" />
+  <param name="perc_fm_harmonic" value="6" />
+  <param name="perc_vel2fm" value="0" />
+  <param name="perc_trigger" value="0" />
+  <param name="perc_stereo" value="90" />
+  <param name="filter_chain" value="1" />
+  <param name="master" value="1" />
+  <param name="f1_cutoff" value="37.2417" />
+  <param name="f1_res" value="0.7" />
+  <param name="f1_env1" value="10800" />
+  <param name="f1_env2" value="0" />
+  <param name="f1_env3" value="0" />
+  <param name="f1_keyf" value="0.4" />
+  <param name="f2_cutoff" value="37.4763" />
+  <param name="f2_res" value="0.7" />
+  <param name="f2_env1" value="10800" />
+  <param name="f2_env2" value="0" />
+  <param name="f2_env3" value="0" />
+  <param name="f2_keyf" value="0.4" />
+  <param name="adsr_a" value="23.7864" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.51" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="eg1_amp_ctl" value="4" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="eg2_amp_ctl" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+  <param name="eg3_amp_ctl" value="0" />
+  <param name="vib_rate" value="6.6" />
+  <param name="vib_amt" value="0.5" />
+  <param name="vib_wet" value="0.5" />
+  <param name="vib_phase" value="180" />
+  <param name="vib_mode" value="0" />
+  <param name="transpose" value="-12" />
+  <param name="detune" value="0" />
+  <var name="map_curve">2
+0 1
+1 1
+</var>
+</preset>
+<preset bank="0" program="49" plugin="organ" name="Sitarean Pipes">
+  <param name="l1" value="2.85057" />
+  <param name="l2" value="2.57471" />
+  <param name="l3" value="8" />
+  <param name="l4" value="8" />
+  <param name="l5" value="8" />
+  <param name="l6" value="0" />
+  <param name="l7" value="0" />
+  <param name="l8" value="0" />
+  <param name="l9" value="0" />
+  <param name="f1" value="1" />
+  <param name="f2" value="1" />
+  <param name="f3" value="2" />
+  <param name="f4" value="4" />
+  <param name="f5" value="6" />
+  <param name="f6" value="8" />
+  <param name="f7" value="10" />
+  <param name="f8" value="12" />
+  <param name="f9" value="16" />
+  <param name="w1" value="0" />
+  <param name="w2" value="0" />
+  <param name="w3" value="14" />
+  <param name="w4" value="15" />
+  <param name="w5" value="10" />
+  <param name="w6" value="0" />
+  <param name="w7" value="0" />
+  <param name="w8" value="0" />
+  <param name="w9" value="0" />
+  <param name="detune1" value="0" />
+  <param name="detune2" value="0" />
+  <param name="detune3" value="-2" />
+  <param name="detune4" value="1" />
+  <param name="detune5" value="0" />
+  <param name="detune6" value="0" />
+  <param name="detune7" value="0" />
+  <param name="detune8" value="0" />
+  <param name="detune9" value="0" />
+  <param name="phase1" value="320.4" />
+  <param name="phase2" value="68.4" />
+  <param name="phase3" value="316.8" />
+  <param name="phase4" value="39.6" />
+  <param name="phase5" value="0" />
+  <param name="phase6" value="0" />
+  <param name="phase7" value="0" />
+  <param name="phase8" value="0" />
+  <param name="phase9" value="0" />
+  <param name="pan1" value="-1" />
+  <param name="pan2" value="1" />
+  <param name="pan3" value="-0.36" />
+  <param name="pan4" value="0.34" />
+  <param name="pan5" value="0" />
+  <param name="pan6" value="0" />
+  <param name="pan7" value="0" />
+  <param name="pan8" value="0" />
+  <param name="pan9" value="0" />
+  <param name="routing1" value="0" />
+  <param name="routing2" value="0" />
+  <param name="routing3" value="1" />
+  <param name="routing4" value="1" />
+  <param name="routing5" value="0" />
+  <param name="routing6" value="0" />
+  <param name="routing7" value="0" />
+  <param name="routing8" value="0" />
+  <param name="routing9" value="0" />
+  <param name="foldnote" value="127" />
+  <param name="perc_decay" value="625.827" />
+  <param name="perc_level" value="1" />
+  <param name="perc_waveform" value="1" />
+  <param name="perc_harmonic" value="2" />
+  <param name="perc_vel2amp" value="0" />
+  <param name="perc_fm_decay" value="200" />
+  <param name="perc_fm_depth" value="0.28" />
+  <param name="perc_fm_waveform" value="1" />
+  <param name="perc_fm_harmonic" value="2" />
+  <param name="perc_vel2fm" value="0" />
+  <param name="perc_trigger" value="3" />
+  <param name="perc_stereo" value="90" />
+  <param name="filter_chain" value="1" />
+  <param name="master" value="0.34822" />
+  <param name="f1_cutoff" value="468.846" />
+  <param name="f1_res" value="0.7" />
+  <param name="f1_env1" value="6048" />
+  <param name="f1_env2" value="0" />
+  <param name="f1_env3" value="0" />
+  <param name="f1_keyf" value="0.94" />
+  <param name="f2_cutoff" value="408.348" />
+  <param name="f2_res" value="0.7" />
+  <param name="f2_env1" value="6048" />
+  <param name="f2_env2" value="0" />
+  <param name="f2_env3" value="0" />
+  <param name="f2_keyf" value="0.84" />
+  <param name="adsr_a" value="21.5437" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="eg1_amp_ctl" value="2" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="eg2_amp_ctl" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+  <param name="eg3_amp_ctl" value="0" />
+  <param name="vib_rate" value="0.310809" />
+  <param name="vib_amt" value="0.5" />
+  <param name="vib_wet" value="0.27" />
+  <param name="vib_phase" value="180" />
+  <param name="vib_mode" value="5" />
+  <param name="transpose" value="0" />
+  <param name="detune" value="0" />
+  <param name="map_curve" value="1.4013e-45" />
+  <var name="map_curve">2
+0 1
+1 1
 </var>
 </preset>
 </presets>
