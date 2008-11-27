@@ -1,35 +1,38 @@
 <table border="10" cols="1" rows="2">
     <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
         <vbox>
-            <hbox>
-                <vbox border="10">
+            <table rows="2" cols="3">
+                <vbox border="10" attach-x="0" attach-y="0">
                     <label param="base_freq" />
                     <knob param="base_freq" />
                     <value param="base_freq" />
                 </vbox>
-                <vbox border="10">
+                <vbox border="10" attach-x="1" attach-y="0">
                     <label param="mod_depth" />
                     <knob param="mod_depth" />
                     <value param="mod_depth" />
                 </vbox>
-                <vbox border="10">
+                <vbox border="10" attach-x="2" attach-y="0">
                     <label param="amount" />
                     <knob param="amount" />
                     <value param="amount" />
                 </vbox>
-            </hbox>
-            <hbox>
-                <vbox border="10">
+                <vbox border="10" attach-x="0" attach-y="1">
                     <label param="stages" />
                     <knob param="stages" />
                     <value param="stages" />
                 </vbox>
-                <vbox border="10">
+                <vbox border="10" attach-x="1" attach-y="1">
                     <label param="feedback" />
                     <knob param="feedback" type="1"/>
                     <value param="feedback" />
                 </vbox>
-            </hbox>
+                <vbox border="10" attach-x="2" attach-y="1">
+                    <label param="dry" />
+                    <knob param="dry" />
+                    <value param="dry" />
+                </vbox>
+            </table>
         </vbox>
     </frame>
     <frame label="LFO"  attach-x="0" attach-y="1" shrink-y="1">
