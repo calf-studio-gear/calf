@@ -811,7 +811,7 @@ public:
     }
     
     inline float output_gain(float linSlope, bool rms) {
-         if(linSlope > rms ? adjKneeStart : linKneeStart) {
+         if(linSlope > (rms ? adjKneeStart : linKneeStart)) {
             float slope = log(linSlope);
             if(rms) slope *= 0.5f;
 
