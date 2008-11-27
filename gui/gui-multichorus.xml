@@ -12,9 +12,9 @@
                 <value param="mod_depth" />
             </vbox>
             <vbox border="10">
-                <label param="voices" />
-                <knob param="voices" />
-                <value param="voices" />
+                <label param="dry" />
+                <knob param="dry" />
+                <value param="dry" />
             </vbox>
             <vbox border="10">
                 <label param="amount" />
@@ -29,6 +29,11 @@
                 <label param="mod_rate" />
                 <knob param="mod_rate" />
                 <value param="mod_rate" />
+            </vbox>
+            <vbox border="10">
+                <label param="voices" />
+                <knob param="voices" />
+                <value param="voices" />
             </vbox>
             <vbox border="10">
                 <label param="stereo" />

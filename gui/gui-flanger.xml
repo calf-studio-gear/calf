@@ -17,6 +17,11 @@
                 <value param="feedback" />
             </vbox>
             <vbox border="10" expand="0">
+                <label param="dry" />
+                <knob param="dry" />
+                <value param="dry" />
+            </vbox>
+            <vbox border="10" expand="0">
                 <label param="amount" />
                 <knob param="amount" />
                 <value param="amount" />
