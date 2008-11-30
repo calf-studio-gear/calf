@@ -26,7 +26,9 @@
 #include <calf/gui.h>
 #include <calf/main_win.h>
 #include <calf/lv2_data_access.h>
+#include <calf/lv2_string_port.h>
 #include <calf/lv2_ui.h>
+#include <calf/lv2_uri_map.h>
 #include <calf/preset_gui.h>
 #include <calf/utils.h>
 #include <calf/lv2helpers.h>
@@ -54,6 +56,9 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     int source_id;
     LV2_Handle instance_handle;
     LV2_Extension_Data_Feature *data_access;
+    LV2_URI_Map_Feature *uri_map;
+    map<string, int> params_by_name;
+    uint32_t string_port_uri;
     
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
@@ -65,8 +70,14 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         send = true;
         param_count = get_param_count();
         params = new float[param_count];
+        string_port_uri = 0;
         for (int i = 0; i < param_count; i++)
-            params[i] = get_param_props(i)->def_value;
+        {
+            parameter_properties *pp = get_param_props(i);
+            params_by_name[pp->short_name] = i;
+            if ((pp->flags & PF_TYPEMASK) < PF_STRING)
+                params[i] = pp->def_value;
+        }
     }
     
     void setup(LV2UI_Write_Function wfn, LV2UI_Controller ctl)
@@ -84,6 +95,11 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
+        if ((get_param_props(param_no)->flags & PF_TYPEMASK) >= PF_STRING)
+        {
+            //assert(0);
+            return;
+        }
         params[param_no] = value;
         if (send) {
             scope_assign<bool> _a_(send, false);
@@ -102,13 +118,30 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         return NULL;
     }
     
+    virtual char *configure(const char *key, const char *value)
+    {
+        map<string, int>::iterator i = params_by_name.find(key);
+        if (i == params_by_name.end())
+        {
+            fprintf(stderr, "ERROR: configure called for unknown key %s\n", key);
+            assert(0);
+            return NULL;
+        }
+        LV2_String_Data data;
+        
+        int idx = i->second;
+        if (string_port_uri) {
+            printf("write port\n");
+            write_function(controller, idx + get_param_port_offset(), sizeof(LV2_String_Data), string_port_uri, &data);
+        }
+        
+        return NULL;
+    }
+    
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
     void send_configures(send_configure_iface *sci) { 
         fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
-    }
-    void clear_preset() {
-        fprintf(stderr, "TODO: clear_preset (reset to init state) not implemented in LV2 GUIs\n");
     }
     void resolve_instance() {
         fprintf(stderr, "CALF DEBUG: instance %p data %p\n", instance_handle, data_access);
@@ -119,6 +152,12 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
             if (calf && calf->get_pci)
                 instance = calf->get_pci(instance_handle);
         }
+    }
+    uint32_t map_uri(const char *mapURI, const char *keyURI)
+    {
+        if (!uri_map)
+            return 0;
+        return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
     }
         
     ~plugin_proxy()
@@ -159,12 +198,14 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     for (int i = 0; features[i]; i++)
     {
         if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
-        {
             proxy->instance_handle = features[i]->data;
-        }
-        if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
-        {
+        else if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
             proxy->data_access = (LV2_Extension_Data_Feature *)features[i]->data;
+        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
+        {
+            proxy->uri_map = (LV2_URI_Map_Feature *)features[i]->data;
+            proxy->string_port_uri = proxy->map_uri("http://lv2plug.in/ns/extensions/ui", 
+                LV2_STRING_PORT_URI);
         }
     }
     proxy->resolve_instance();
