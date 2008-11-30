@@ -99,6 +99,8 @@ void plugin_preset::get_from(plugin_ctl_iface *plugin)
 {
     int count = plugin->get_param_count();
     for (int i = 0; i < count; i++) {
+        if ((plugin->get_param_props(i)->flags & PF_TYPEMASK) >= PF_STRING)
+            continue;
         param_names.push_back(plugin->get_param_props(i)->short_name);
         values.push_back(plugin->get_param_value(i));
     }
