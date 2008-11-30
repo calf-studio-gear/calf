@@ -207,6 +207,7 @@ public:
     organ_audio_module()
     : drawbar_organ(&par_values)
     {
+        var_map_curve = "2\n0 1\n1 1\n"; // XXXKF hacky bugfix
     }
 
     void set_sample_rate(uint32_t sr) {

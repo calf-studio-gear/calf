@@ -31,14 +31,19 @@
             </hbox>
             <hbox>
                 <vbox>
-                    <label param="amount"  />
-                    <knob param="amount"/>
-                    <value param="amount"/>
-                </vbox>
-                <vbox>
                     <label param="feedback"  />
                     <knob param="feedback"/>
                     <value param="feedback"/>
+                </vbox>
+                <vbox>
+                    <label param="dry"  />
+                    <knob param="dry"/>
+                    <value param="dry"/>
+                </vbox>
+                <vbox>
+                    <label param="amount"  />
+                    <knob param="amount"/>
+                    <value param="amount"/>
                 </vbox>
             </hbox>
         </vbox>

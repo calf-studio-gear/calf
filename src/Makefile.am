@@ -41,7 +41,7 @@ calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalfstatic.la
 
 calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) 
+calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) libcalfstatic.la
 
 if USE_DSSI_GUI
 calfdssigui_SOURCES = dssigui.cpp

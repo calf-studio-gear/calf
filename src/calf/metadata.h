@@ -30,14 +30,14 @@ namespace calf_plugins {
 struct flanger_metadata: public plugin_metadata<flanger_metadata>
 {
 public:
-    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, param_count };
+    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, par_dryamount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
 };
 
 struct phaser_metadata: public plugin_metadata<phaser_metadata>
 {
-    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, param_count };
+    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, par_dryamount, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
 };
@@ -60,7 +60,7 @@ struct reverb_metadata: public plugin_metadata<reverb_metadata>
 
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
-    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, param_count };
+    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
 };
@@ -77,7 +77,7 @@ public:
 struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 {
 public:    
-    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_lfophase_l, par_lfophase_r, param_count };
+    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };

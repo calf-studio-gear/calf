@@ -493,33 +493,18 @@ inline float hermite_interpolation(float x, float x0, float x1, float p0, float 
 {
     float width = x1 - x0;
     float t = (x - x0) / width;
-#if 0
-    // attempt to adjust the slopes to avoid "bumps" - removed, because it's not exactly what we wanted!
-    float delta = (p1-p0)/width;
-    if (fabs(delta) == small_value<float>())
-    {
-        m0 = m1 = 0.f;
-    }
-    else
-    {
-        float idelta = 1.0 / delta;
-        float alpha = m0 / delta;
-        float beta = m1 / delta;
-        if (alpha*alpha + beta*beta > 9)
-        {
-            float sc = (3.0 * delta) / sqrt(m0*m0+m1*m1);
-            m0 = sc * alpha * delta;
-            m1 = sc * beta * delta;
-            // printf("bump...%f\n", sc);
-        }
-    }
-#endif    
     m0 *= width;
     m1 *= width;
     float t2 = t*t;
     float t3 = t2*t;
-    // printf("t=%f p0=%f p1=%f m0=%f m1=%f\n", t, p0, p1, m0, m1);
-    return (2*t3 - 3*t2 + 1) * p0 + (t3 - 2*t2 + t) * m0 + (-2*t3 + 3*t2) * p1 + (t3-t2) * m1;
+    
+    float ct0 = p0;
+    float ct1 = m0;
+    float ct2 = -3 * p0 - 2 * m0 + 3 * p1 - m1;
+    float ct3 = 2 * p0 + m0  - 2 * p1 + m1;
+    
+    return ct3 * t3 + ct2 * t2 + ct1 * t + ct0;
+    //return (2*t3 - 3*t2 + 1) * p0 + (t3 - 2*t2 + t) * m0 + (-2*t3 + 3*t2) * p1 + (t3-t2) * m1;
 }
 
 };

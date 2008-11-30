@@ -309,7 +309,7 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
         }
         if (percussion.get_active())
             percussion.render_percussion_to(buf, nsamples);
-        float gain = parameters->master * (1.0 / (9 * 8));
+        float gain = parameters->master * (1.0 / 8);
         for (int i=0; i<nsamples; i++) {
             output[0][i] = gain*buf[i][0];
             output[1][i] = gain*buf[i][1];
@@ -334,10 +334,12 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
     void update_params();
     void control_change(int controller, int value)
     {
+#if 0
         if (controller == 11)
         {
             parameters->cutoff = value / 64.0 - 1;
         }
+#endif
         dsp::basic_synth::control_change(controller, value);
     }
     void pitch_bend(int amt);

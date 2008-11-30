@@ -49,7 +49,7 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     int diameter = (widget->allocation.width < widget->allocation.height ? widget->allocation.width : widget->allocation.height) - 1;
 
     cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc + diameter / 4, 0, xc, yc, diameter / 2);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.25, 0.0, 0.0);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.25, self->led_state ? 0.5 : 0.125, 0.0);
     cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.75 : 0.2, 0.0, 0.0);
     cairo_pattern_add_color_stop_rgb(pt, 1.0, self->led_state ? 0.25 : 0.1, 0.0, 0.0);
 

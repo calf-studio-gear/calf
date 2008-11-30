@@ -434,7 +434,7 @@ GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
 
 void curve_param_control::send_configure(const char *key, const char *value)
 {
-    cout << "send conf " << key << endl;
+    // cout << "send conf " << key << endl;
     if (attribs["key"] == key)
     {
         stringstream ss(value);

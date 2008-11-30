@@ -356,7 +356,7 @@ compressor_audio_module::compressor_audio_module()
 void compressor_audio_module::activate()
 {
     is_active = true;
-    linslope = 0.f;
+    linSlope = 0.f;
     peak = 0.f;
     clip = 0.f;
 }

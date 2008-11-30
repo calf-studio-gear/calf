@@ -17,6 +17,11 @@
                 <value param="feedback" />
             </vbox>
             <vbox border="10" expand="0">
+                <label param="dry" />
+                <knob param="dry" />
+                <value param="dry" />
+            </vbox>
+            <vbox border="10" expand="0">
                 <label param="amount" />
                 <knob param="amount" />
                 <value param="amount" />
@@ -39,6 +44,8 @@
         </hbox>
     </frame>
     <if cond="directlink">
-        <line-graph expand-y="1" fill-y="1" attach-x="0" attach-y="2" refresh="1" width="160" height="160" param="min_delay"/>
+        <frame expand-y="1" fill-y="1" attach-x="0" attach-y="2" label="Freq. response">
+            <line-graph refresh="1" width="160" height="160" param="min_delay"/>
+        </frame>
     </if>
 </table>

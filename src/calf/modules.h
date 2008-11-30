@@ -78,7 +78,7 @@ public:
     }
     void set_sample_rate(uint32_t sr);
     void params_changed() {
-        float dry = 1.0;
+        float dry = *params[par_dryamount];
         float wet = *params[par_amount];
         float rate = *params[par_rate]; // 0.01*pow(1000.0f,*params[par_rate]);
         float min_delay = *params[par_delay] / 1000.0;
@@ -139,7 +139,7 @@ public:
         is_active = false;
     }
     void params_changed() {
-        float dry = 1.0;
+        float dry = *params[par_dryamount];
         float wet = *params[par_amount];
         float rate = *params[par_rate]; // 0.01*pow(1000.0f,*params[par_rate]);
         float base_frq = *params[par_freq];
@@ -372,6 +372,7 @@ public:
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
+    float dry;
     
     dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     
@@ -388,7 +389,8 @@ public:
         deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
         deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
         amt_left.set_inertia(*params[par_amount]); amt_right.set_inertia(*params[par_amount]);
-        float fb = *params[par_feedback];;
+        float fb = *params[par_feedback];
+        dry = *params[par_dryamount];
         mixmode = dsp::fastf2i_drm(*params[par_mixmode]);
         medium = dsp::fastf2i_drm(*params[par_medium]);
         if (mixmode == 0)
@@ -433,8 +435,8 @@ public:
             float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK], in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_left, out_right, del_left, del_right;
             dsp::sanitize(in_left), dsp::sanitize(in_right);
 
-            out_left = ins[0][i] + in_left * amt_left.get();
-            out_right = ins[1][i] + in_right * amt_right.get();
+            out_left = dry * ins[0][i] + in_left * amt_left.get();
+            out_right = dry * ins[1][i] + in_right * amt_right.get();
             del_left = ins[0][i] + in_left * fb_left.get();
             del_right = ins[1][i] + in_right * fb_right.get();
             
@@ -645,7 +647,7 @@ public:
     void params_changed()
     {
         // delicious copy-pasta from flanger module - it'd be better to keep it common or something
-        float dry = 1.0;
+        float dry = *params[par_dryamount];
         float wet = *params[par_amount];
         float rate = *params[par_rate];
         float min_delay = *params[par_delay] / 1000.0;
@@ -669,10 +671,6 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, numsamples);
         right.process(outs[1] + offset, ins[1] + offset, numsamples);
-        if (params[par_lfophase_l])
-            *params[par_lfophase_l] = (double)left.lfo.phase * 360.0 / 4096.0;
-        if (params[par_lfophase_r])
-            *params[par_lfophase_r] = (double)right.lfo.phase * 360.0 / 4096.0;
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     void activate();
@@ -686,8 +684,8 @@ public:
 
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
-    float linslope, clip, peak, detected, kneeSqrt, kneeStart, kneeStop, threshold, ratio, knee, makeup;
-    bool aweighting, logarithmic;
+    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, threshold, ratio, knee, makeup, compressedKneeStop, adjKneeStart;
+    uint32_t clip;
     aweighter awL, awR;
 public:
     float *ins[in_count];
@@ -700,27 +698,6 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         bool bypass = *params[param_bypass] > 0.5f;
-        bool rms = *params[param_detection] == 0;
-        bool average = *params[param_stereo_link] == 0;
-        aweighting = *params[param_aweighting] > 0.5f;
-        float linThreshold = *params[param_threshold];
-        ratio = *params[param_ratio];
-        float attack = *params[param_attack];
-        float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
-        float release = *params[param_release];
-        float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
-        makeup = *params[param_makeup];
-        knee = *params[param_knee];
-
-        float linKneeSqrt = sqrt(knee);
-        float linKneeStart = linThreshold / linKneeSqrt;
-        float linKneeStop = linThreshold * linKneeSqrt;
-        
-        threshold = lin2log(linThreshold);
-        kneeStart = lin2log(linKneeStart);
-        kneeStop = lin2log(linKneeStop);
-
-        numsamples += offset;
         
         if(bypass) {
             int count = numsamples * sizeof(float);
@@ -742,50 +719,77 @@ public:
             return inputs_mask;
         }
 
+        bool rms = *params[param_detection] == 0;
+        bool average = *params[param_stereo_link] == 0;
+        bool aweighting = *params[param_aweighting] > 0.5f;
+        float linThreshold = *params[param_threshold];
+        ratio = *params[param_ratio];
+        float attack = *params[param_attack];
+        float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
+        float release = *params[param_release];
+        float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
+        makeup = *params[param_makeup];
+        knee = *params[param_knee];
+
+        float linKneeSqrt = sqrt(knee);
+        linKneeStart = linThreshold / linKneeSqrt;
+        adjKneeStart = linKneeStart*linKneeStart;
+        float linKneeStop = linThreshold * linKneeSqrt;
+        
+        threshold = log(linThreshold);
+        kneeStart = log(linKneeStart);
+        kneeStop = log(linKneeStop);
+        compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
+
+        numsamples += offset;
+        
         float compression = 1.f;
 
+        peak -= peak * 5.f * numsamples / srate;
+        
+        clip -= std::min(clip, numsamples);
+
         while(offset < numsamples) {
-            float gain = 1.f;
             float left = ins[0][offset];
             float right = ins[1][offset];
+            
             if(aweighting) {
                 left = awL.process(left);
                 right = awR.process(right);
             }
-            float absample = average ? (fabs(left) + fabs(right)) / 2 : std::max(fabs(left), fabs(right));
+            
+            float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
             if(rms) absample *= absample;
-            linslope += (absample - linslope) * (absample > linslope ? attack_coeff : release_coeff);
-            float slope = rms ? sqrt(linslope) : linslope;
-            detected = slope;
+            
+            linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
+            
+            float gain = 1.f;
 
-            if(slope > 0.f) {
-                gain = output_gain(slope);
-                gain /= slope;
+            if(linSlope > 0.f) {
+                gain = output_gain(linSlope, rms);
             }
 
             compression = gain;
             gain *= makeup;
 
             float outL = ins[0][offset] * gain;
-            outs[0][offset] = outL;
-
             float outR = ins[1][offset] * gain;
+            
+            outs[0][offset] = outL;
             outs[1][offset] = outR;
-
+            
             ++offset;
             
             float maxLR = std::max(fabs(outL), fabs(outR));
             
-            if(clip > 0) {
-                --clip;
-            }
-            if(maxLR > 1.f) clip = srate / 10.f; /* blink clip LED for 100 ms */
+            if(maxLR > 1.f) clip = srate >> 3; /* blink clip LED for 125 ms */
             
-            peak -= peak * 0.0001;
             if(maxLR > peak) {
                 peak = maxLR;
             }
         }
+        
+        detected = rms ? sqrt(linSlope) : linSlope;
         
         if(params[param_compression] != NULL) {
             *params[param_compression] = compression;
@@ -802,18 +806,15 @@ public:
         return inputs_mask;
     }
 
-    inline float lin2log(float x) {
-        return x > 0.f ? log(x) / log(2.f) : 0.f;
-    }
-
     inline float output_level(float slope) {
-        return output_gain(slope) * makeup;
+        return slope * output_gain(slope, false) * makeup;
     }
     
-    inline float output_gain(float linSlope) {
-         float slope = lin2log(linSlope);
+    inline float output_gain(float linSlope, bool rms) {
+         if(linSlope > (rms ? adjKneeStart : linKneeStart)) {
+            float slope = log(linSlope);
+            if(rms) slope *= 0.5f;
 
-         if(slope > kneeStart) {
             float gain = 0.f;
             float delta = 0.f;
             if(IS_FAKE_INFINITY(ratio)) {
@@ -825,13 +826,13 @@ public:
             }
             
             if(knee > 1.f && slope < kneeStop) {
-                gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, (kneeStop - threshold) / ratio + threshold, 1.f, delta);
+                gain = hermite_interpolation(slope, kneeStart, kneeStop, kneeStart, compressedKneeStop, 1.f, delta);
             }
             
-            return pow(2, gain);
+            return exp(gain - slope);
         }
 
-        return linSlope;
+        return 1.f;
     }
 
     void set_sample_rate(uint32_t sr);
