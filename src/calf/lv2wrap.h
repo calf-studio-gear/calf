@@ -61,7 +61,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
         set_srate = true;
         srate_to_set = 44100;
         get_message_context_parameters(message_params);
-        printf("message params %d\n", (int)message_params.size());
+        // printf("message params %d\n", (int)message_params.size());
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -120,7 +120,8 @@ struct lv2_instance: public plugin_ctl_iface, public Module
         {
             int pn = message_params[i];
             parameter_properties &pp = *get_param_props(pn);
-            if ((pp.flags & PF_TYPEMASK) == PF_STRING) {
+            if ((pp.flags & PF_TYPEMASK) == PF_STRING
+                && (((LV2_String_Data *)Module::params[pn])->flags & LV2_STRING_DATA_CHANGED_FLAG)) {
                 printf("Calling configure on %s\n", pp.short_name);
                 configure(pp.short_name, ((LV2_String_Data *)Module::params[pn])->data);
             }
@@ -312,7 +313,6 @@ struct lv2_wrapper
         delete mod;
     }
     static const void *cb_ext_data(const char *URI) {
-        fprintf(stderr, "%s\n", URI);
         if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
             return &calf_descriptor;
         if (!strcmp(URI, LV2_CONTEXT_MESSAGE))

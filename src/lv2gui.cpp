@@ -120,6 +120,8 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     
     virtual char *configure(const char *key, const char *value)
     {
+        if (!send)
+            return NULL;
         map<string, int>::iterator i = params_by_name.find(key);
         if (i == params_by_name.end())
         {
@@ -134,7 +136,6 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         data.flags = 0;
         data.pad = 0;
         
-        printf("write port\n");
         int idx = i->second;
         if (string_port_uri) {
             write_function(controller, idx + get_param_port_offset(), sizeof(LV2_String_Data), string_port_uri, &data);
@@ -245,20 +246,20 @@ void gui_cleanup(LV2UI_Handle handle)
 void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
     plugin_gui *gui = (plugin_gui *)handle;
+    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
+    assert(proxy);
     float v = *(float *)buffer;
     port -= gui->plugin->get_param_port_offset();
     if (port >= (uint32_t)gui->plugin->get_param_count())
         return;
     if ((gui->plugin->get_param_props(port)->flags & PF_TYPEMASK) == PF_STRING)
     {
-        printf("port event: %s\n", ((LV2_String_Data *)buffer)->data);
+        scope_assign<bool> _a_(proxy->send, false);
         gui->plugin->configure(gui->plugin->get_param_props(port)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
     if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
-    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
-    assert(proxy);
     {
         scope_assign<bool> _a_(proxy->send, false);
         gui->set_param_value(port, v);
