@@ -571,7 +571,7 @@ void make_ttl(string path_prefix)
             ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
         }
         if (pi->requires_string_ports())
-            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port> ;\n";
+            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port#StringTransfer> ;\n";
         
         string ports = "";
         int pn = 0;

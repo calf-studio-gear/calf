@@ -128,10 +128,15 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
             return NULL;
         }
         LV2_String_Data data;
+        data.data = (char *)value;
+        data.len = strlen(value);
+        data.storage = -1; // host doesn't need that
+        data.flags = 0;
+        data.pad = 0;
         
+        printf("write port\n");
         int idx = i->second;
         if (string_port_uri) {
-            printf("write port\n");
             write_function(controller, idx + get_param_port_offset(), sizeof(LV2_String_Data), string_port_uri, &data);
         }
         
@@ -244,6 +249,12 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     port -= gui->plugin->get_param_port_offset();
     if (port >= (uint32_t)gui->plugin->get_param_count())
         return;
+    if ((gui->plugin->get_param_props(port)->flags & PF_TYPEMASK) == PF_STRING)
+    {
+        printf("port event: %s\n", ((LV2_String_Data *)buffer)->data);
+        gui->plugin->configure(gui->plugin->get_param_props(port)->short_name, ((LV2_String_Data *)buffer)->data);
+        return;
+    }
     if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
     plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);

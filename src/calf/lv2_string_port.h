@@ -1,5 +1,5 @@
 /* lv2_string_port.h - C header file for LV2 string port extension.
- * Draft version 2.
+ * Draft version 3.
  *
  * Copyright (C) 2008 Krzysztof Foltman <wdev@foltman.com>
  *
@@ -60,15 +60,15 @@ the host MUST resend the last value that was sent to the port before session
 has been saved. In other words, string port values "stick" to message ports.
 */
 
-/** URI for the string port transfer mechanism */
-#define LV2_STRING_PORT_URI "http://lv2plug.in/ns/dev/string-port#StringXfer"
+/** URI for the string port transfer mechanism feature */
+#define LV2_STRING_PORT_URI "http://lv2plug.in/ns/dev/string-port#StringTransfer"
 
 /** Flag: port data has been updated; for input ports, this flag is set by
 the host. For output ports, this flag is set by the plugin. */
 #define LV2_STRING_DATA_CHANGED_FLAG 1
 
 /** structure for string port data */
-typedef struct 
+struct _LV2_String_Data
 {
     /** buffer for UTF-8 encoded zero-terminated string value; host-allocated */
     char *data;
@@ -80,6 +80,8 @@ typedef struct
     uint32_t flags;
     /** undefined yet, used for padding to 8 bytes */
     uint32_t pad;
-} LV2_String_Data;
+};
+
+typedef struct _LV2_String_Data LV2_String_Data;
 
 #endif
