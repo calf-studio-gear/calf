@@ -220,6 +220,7 @@ AC_MSG_RESULT([
     Calf configured
 
     Debug mode:             $set_enable_debug
+    Experimental plugins:   $set_enable_experimental
     LADSPA enabled:         $LADSPA_FOUND
     DSSI enabled:           $DSSI_FOUND
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
