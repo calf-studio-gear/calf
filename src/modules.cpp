@@ -101,7 +101,7 @@ CALF_PORT_PROPS(filter) = {
     { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq", "Frequency" },
     { 0.707,  0.707,   32,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "res", "Resonance" },
     { 0,          0,    5,    1, PF_ENUM | PF_CTL_COMBO, filter_choices, "mode", "Mode" },
-    { 20,         5,  100,    20, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Inertia"},
+    { 20,         5,  100,    20, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC | PF_PROP_MSGCONTEXT, NULL, "inertia", "Inertia"},
 };
 
 CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "FilterPlugin" };
@@ -291,6 +291,8 @@ const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  
 
 const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
+const char *organ_init_map_curve = "2\n0 1\n1 1\n";
+
 CALF_PORT_PROPS(organ) = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l2", "5 1/3'" },
@@ -430,6 +432,8 @@ CALF_PORT_PROPS(organ) = {
 
     { -12,        -24, 24,   49, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,  201, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
+    
+    { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &organ_init_map_curve, "map_curve", "Key mapping curve" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

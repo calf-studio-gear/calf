@@ -25,6 +25,7 @@
 #include <calf/plugininfo.h>
 #include <calf/utils.h>
 #if USE_LV2
+#include <calf/lv2_contexts.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #endif
@@ -202,6 +203,8 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
     stringstream ss;
     const char *ind = "        ";
 
+    parameter_flags type = (parameter_flags)(pp.flags & PF_TYPEMASK);
+    uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
     
     if (ports != "") ports += " , ";
     ss << "[\n";
@@ -209,7 +212,10 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
         ss << ind << "a lv2:OutputPort ;\n";
     else
         ss << ind << "a lv2:InputPort ;\n";
-    ss << ind << "a lv2:ControlPort ;\n";
+    if (type == PF_STRING)
+        ss << ind << "a strport:StringPort ;\n";
+    else
+        ss << ind << "a lv2:ControlPort ;\n";
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << pp.short_name << "\" ;\n";
     ss << ind << "lv2:name \"" << pp.name << "\" ;\n";
@@ -227,27 +233,35 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
         ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
     if (pp.flags & PF_PROP_OUTPUT_GAIN)
         ss << ind << "lv2:portProperty epp:outputGain ;\n";
-    if ((pp.flags & PF_TYPEMASK) == PF_BOOL)
+    if (pp.flags & PF_PROP_MSGCONTEXT)
+        ss << ind << "lv2ctx:context lv2ctx:MessageContext ;\n";
+    if (type == PF_STRING)
+    {
+        ss << ind << "strport:default \"\"\"" << pp.choices[0] << "\"\"\" ;\n";
+    }
+    else if (type == PF_BOOL)
         ss << ind << "lv2:portProperty lv2:toggled ;\n";
-    else if ((pp.flags & PF_TYPEMASK) == PF_ENUM)
+    else if (type == PF_ENUM)
     {
         ss << ind << "lv2:portProperty lv2:integer ;\n";
         for (int i = (int)pp.min; i <= (int)pp.max; i++)
             ss << ind << "lv2:scalePoint [ rdfs:label \"" << pp.choices[i - (int)pp.min] << "\"; rdf:value " << i <<" ] ;\n";
     }
-    else if ((pp.flags & PF_TYPEMASK) > 0)
+    else if (type == PF_INT || type == PF_ENUM_MULTI)
         ss << ind << "lv2:portProperty lv2:integer ;\n";
     else if ((pp.flags & PF_SCALEMASK) == PF_SCALE_LOG)
         ss << ind << "lv2:portProperty epp:logarithmic ;\n";
     ss << showpoint;
-    ss << ind << "lv2:default " << pp.def_value << " ;\n";
-    ss << ind << "lv2:minimum " << pp.min << " ;\n";
-    ss << ind << "lv2:maximum " << pp.max << " ;\n";
-    if (pp.step > 1)
-        ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
-    uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
-    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
-        ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
+    if (type != PF_STRING)
+    {
+        ss << ind << "lv2:default " << pp.def_value << " ;\n";
+        ss << ind << "lv2:minimum " << pp.min << " ;\n";
+        ss << ind << "lv2:maximum " << pp.max << " ;\n";
+        if (pp.step > 1)
+            ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
+        if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
+            ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
+    }
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
     // this may change as more complex plugins are added
@@ -452,6 +466,7 @@ void make_ttl(string path_prefix)
         "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
         "@prefix lv2ctx: <http://lv2plug.in/ns/dev/contexts#> .\n"
+        "@prefix strport: <http://lv2plug.in/ns/dev/string-port#> .\n"
         "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
@@ -548,6 +563,15 @@ void make_ttl(string path_prefix)
                 ttl += "    lv2:optionalFeature <" LV2_URI_MAP_URI "> ;\n";                
             }
         }
+        
+        if (pi->requires_message_context())
+        {
+            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;\n";
+            ttl += "    lv2:requiredFeature <" LV2_CONTEXT_MESSAGE "> ;\n";
+            ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
+        }
+        if (pi->requires_string_ports())
+            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port#StringTransfer> ;\n";
         
         string ports = "";
         int pn = 0;

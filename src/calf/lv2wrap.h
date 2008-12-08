@@ -24,12 +24,14 @@
 #if USE_LV2
 
 #include <string>
+#include <vector>
 #include <lv2.h>
 #include <calf/giface.h>
 #include <calf/lv2-midiport.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_contexts.h>
+#include <calf/lv2_string_port.h>
 
 namespace calf_plugins {
 
@@ -43,6 +45,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     LV2_URI_Map_Feature *uri_map;
     LV2_Event_Feature *event_feature;
     uint32_t midi_event_type;
+    std::vector<int> message_params;
     lv2_instance()
     {
         for (int i=0; i < Module::in_count; i++)
@@ -57,6 +60,8 @@ struct lv2_instance: public plugin_ctl_iface, public Module
         midi_event_type = 0xFFFFFFFF;
         set_srate = true;
         srate_to_set = 44100;
+        get_message_context_parameters(message_params);
+        // printf("message params %d\n", (int)message_params.size());
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -110,6 +115,25 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
     }
+    void impl_message_run(uint32_t *output_ports) {
+        for (unsigned int i = 0; i < message_params.size(); i++)
+        {
+            int pn = message_params[i];
+            parameter_properties &pp = *get_param_props(pn);
+            if ((pp.flags & PF_TYPEMASK) == PF_STRING
+                && (((LV2_String_Data *)Module::params[pn])->flags & LV2_STRING_DATA_CHANGED_FLAG)) {
+                printf("Calling configure on %s\n", pp.short_name);
+                configure(pp.short_name, ((LV2_String_Data *)Module::params[pn])->data);
+            }
+        }
+        Module::message_run(output_ports);
+    }
+    char *configure(const char *key, const char *value) { 
+        // disambiguation - the plugin_ctl_iface version is just a stub, so don't use it
+        return Module::configure(key, value);
+    }
+#if 0
+    // the default implementation should be fine
     virtual void clear_preset() {
         // This is never called in practice, at least for now
         // However, it will change when presets are implemented
@@ -124,6 +148,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
         }
         */
     }
+#endif
 };
 
 struct LV2_Calf_Descriptor {
@@ -136,6 +161,7 @@ struct lv2_wrapper
     typedef lv2_instance<Module> instance;
     static LV2_Descriptor descriptor;
     static LV2_Calf_Descriptor calf_descriptor;
+    static LV2MessageContext message_context;
     std::string uri;
     
     lv2_wrapper()
@@ -151,6 +177,8 @@ struct lv2_wrapper
         descriptor.cleanup = cb_cleanup;
         descriptor.extension_data = cb_ext_data;
         calf_descriptor.get_pci = cb_get_pci;
+        message_context.message_connect_port = cb_connect;
+        message_context.message_run = cb_message_run;
     }
 
     static void cb_connect(LV2_Handle Instance, uint32_t port, void *DataLocation) {
@@ -229,6 +257,11 @@ struct lv2_wrapper
         }
     }
 
+    static bool cb_message_run(LV2_Handle Instance, uint32_t *outputs_written) {
+        instance *mod = (instance *)Instance;
+        mod->impl_message_run(outputs_written);
+        return true;
+    }
     static void cb_run(LV2_Handle Instance, uint32_t SampleCount) {
         instance *const mod = (instance *)Instance;
         if (mod->set_srate) {
@@ -282,6 +315,8 @@ struct lv2_wrapper
     static const void *cb_ext_data(const char *URI) {
         if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
             return &calf_descriptor;
+        if (!strcmp(URI, LV2_CONTEXT_MESSAGE))
+            return &message_context;
         return NULL;
     }
     static lv2_wrapper &get() { 

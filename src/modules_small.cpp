@@ -1244,7 +1244,7 @@ public:
         pii->names("print_em", "Print To Console (EM)", "lv2:UtilityPlugin");
         pii->lv2_ttl("lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;");
         pii->lv2_ttl("lv2:requiredFeature lv2ctx:MessageContext ;");
-        pii->lv2_ttl("lv2:requiredContext lv2ctx:MessageContext ;");
+        pii->lv2_ttl("lv2ctx:requiredContext lv2ctx:MessageContext ;");
         pii->event_port("in", "In").input().lv2_ttl("lv2ctx:context lv2ctx:MessageContext ;");
     }
     void process(uint32_t)

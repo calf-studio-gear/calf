@@ -214,7 +214,7 @@ public:
         srate = sr;
     }
     void params_changed() {
-        for (int i = 0; i < param_count; i++)
+        for (int i = 0; i < param_count - var_count; i++)
             ((float *)&par_values)[i] = *params[i];
         update_params();
     }
@@ -248,6 +248,9 @@ public:
     
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
+    void message_run(uint32_t *output_ports) { 
+        // silence a default printf (which is kind of a warning about unhandled message_run)
+    }
 };
 
 };

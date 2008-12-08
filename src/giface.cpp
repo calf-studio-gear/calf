@@ -149,6 +149,8 @@ std::string parameter_properties::to_string(float value) const
     }
     switch(flags & PF_TYPEMASK)
     {
+    case PF_STRING:
+        return "N/A";
     case PF_INT:
     case PF_BOOL:
     case PF_ENUM:
@@ -188,13 +190,14 @@ std::string parameter_properties::to_string(float value) const
 void calf_plugins::plugin_ctl_iface::clear_preset() {
     int param_count = get_param_count();
     for (int i=0; i < param_count; i++)
-        set_param_value(i, get_param_props(i)->def_value);
-    // This is never called in practice, at least for now
-    const char **p = get_default_configure_vars();
-    if (p)
     {
-        for(; p[0]; p += 2)
-            configure(p[0], p[1]);
+        parameter_properties &pp = *get_param_props(i);
+        if ((pp.flags & PF_TYPEMASK) == PF_STRING)
+        {
+            configure(pp.short_name, pp.choices ? pp.choices[0] : "");
+        }
+        else
+            set_param_value(i, pp.def_value);
     }
 }
 
@@ -207,4 +210,26 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     {
         return NULL;
     }
+}
+
+bool calf_plugins::check_for_message_context_ports(parameter_properties *parameters, int count)
+{
+    for (int i = count - 1; i >= 0; i--)
+    {
+        if (parameters[i].flags & PF_PROP_MSGCONTEXT)
+            return true;
+    }
+    return false;
+}
+
+bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int count)
+{
+    for (int i = count - 1; i >= 0; i--)
+    {
+        if ((parameters[i].flags & PF_TYPEMASK) == PF_STRING)
+            return true;
+        if ((parameters[i].flags & PF_TYPEMASK) < PF_STRING)
+            return false;
+    }
+    return false;
 }

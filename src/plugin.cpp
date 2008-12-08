@@ -30,6 +30,7 @@ using namespace calf_plugins;
 // instantiate descriptor templates
 template<class Module> LV2_Descriptor calf_plugins::lv2_wrapper<Module>::descriptor;
 template<class Module> LV2_Calf_Descriptor calf_plugins::lv2_wrapper<Module>::calf_descriptor;
+template<class Module> LV2MessageContext calf_plugins::lv2_wrapper<Module>::message_context;
 
 extern "C" {
 

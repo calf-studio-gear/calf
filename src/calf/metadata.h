@@ -126,7 +126,11 @@ struct organ_enums
         par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl, par_eg3ampctl, 
         par_lforate, par_lfoamt, par_lfowet, par_lfophase, par_lfomode,
         par_transpose, par_detune,
+        par_var_mapcurve,
         param_count
+    };
+    enum {
+        var_count = 1
     };
     enum organ_waveform { 
         wave_sine, 

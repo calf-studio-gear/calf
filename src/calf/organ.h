@@ -83,6 +83,8 @@ struct organ_parameters {
     float global_transpose;
     float global_detune;
     
+    float dummy_mapcurve;
+    
     //////////////////////////////////////////////////////////////////////////
     // these parameters are calculated
     
