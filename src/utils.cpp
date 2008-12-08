@@ -22,6 +22,7 @@
 #include <config.h>
 #include <calf/osctl.h>
 #include <calf/utils.h>
+#include <sstream>
 
 using namespace std;
 using namespace osctl;
@@ -97,9 +98,9 @@ std::string i2s(int value)
 std::string f2s(double value)
 {
     // XXXKF might not work with some locale settings
-    char buf[64];
-    sprintf(buf, "%g", value);
-    return buf;
+    stringstream ss;
+    ss << value;
+    return ss.str();
 }
 
 }
