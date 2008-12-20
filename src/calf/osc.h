@@ -177,13 +177,23 @@ struct waveform_family: public std::map<uint32_t, float *>
     {
         bl.remove_dc();
         
-        uint32_t multiple = 1, base = 1 << (32 - SIZE_BITS);
-        while(multiple < limit) {
+        uint32_t base = 1 << (32 - SIZE_BITS);
+        uint32_t cutoff = SIZE / 2, top = SIZE / 2;
+        float vmax = 0;
+        for (unsigned int i = 0; i < cutoff; i++)
+            vmax = std::max(vmax, abs(bl.spectrum[i]));
+        float vthres = vmax / 1024.0;  // -60dB
+        while(cutoff > (SIZE / limit)) {
+            if (!foldover)
+            {
+                while(cutoff > 1 && abs(bl.spectrum[cutoff - 1]) < vthres)
+                    cutoff--;
+            }
             float *wf = new float[SIZE+1];
-            bl.make_waveform(wf, (int)((1 << SIZE_BITS) / (1.5 * multiple)), foldover);
+            bl.make_waveform(wf, cutoff, foldover);
             wf[SIZE] = wf[0];
-            (*this)[base * multiple] = wf;
-            multiple = multiple << 1;
+            (*this)[base * (top / cutoff)] = wf;
+            cutoff = (int)(0.75 * cutoff);
         }
     }
     
