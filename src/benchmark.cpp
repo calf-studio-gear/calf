@@ -148,6 +148,28 @@ struct filter_12dB_lp_d2: public filter_lp24dB_benchmark<biquad_d2<> >
     }
 };
 
+template<int N>
+struct fft_test_class
+{
+    typedef fft<float, N> fft_class;
+    fft_class ffter;
+    float result;
+    complex<float> data[1 << N], output[1 << N];
+    void prepare() {
+        for (int i = 0; i < (1 << N); i++)
+            data[i] = sin(i);
+        result = 0;
+    }
+    void cleanup()
+    {
+    }
+    void run()
+    {
+        ffter.calculate(data, output, false);
+    }
+    double scaler() { return 1 << N; }
+};
+
 #define ALIGN_TEST_RUN 1024
 
 struct __attribute__((aligned(8))) alignment_test: public empty_benchmark<ALIGN_TEST_RUN>
@@ -211,6 +233,11 @@ void biquad_test()
         do_simple_benchmark<filter_24dB_lp_onepass_d2>();
         do_simple_benchmark<filter_24dB_lp_onepass_d2_lp>();
         do_simple_benchmark<filter_12dB_lp_d2>();
+}
+
+void fft_test()
+{
+        do_simple_benchmark<fft_test_class<17> >(5, 10);
 }
 
 void alignment_test()
@@ -510,5 +537,8 @@ int main(int argc, char *argv[])
     if (unit && !strcmp(unit, "aweighting"))
         aweighting_calc();
 
+    if (!unit || !strcmp(unit, "fft"))
+        fft_test();
+    
     return 0;
 }
