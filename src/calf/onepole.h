@@ -133,6 +133,15 @@ public:
         return out;
     }
     
+    /// Process one sample using external state variables, including filter coeff
+    inline T process_ap(T in, float &x1, float &y1, float a0)
+    {
+        T out = (in - y1) * a0 + x1;
+        x1 = in;
+        y1 = out;
+        return out;
+    }
+    
     inline bool empty() {
         return y1 == 0;
     }

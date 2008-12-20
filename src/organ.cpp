@@ -120,10 +120,17 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     for (int i = 0; i <= ORGAN_BIG_WAVE_SIZE / 2; i++) {
         blDest.spectrum[i] = 0;
     }
-    for (int i = 1; i <= (ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT)); i++) {
+    int MAXHARM = (ORGAN_WAVE_SIZE >> (1 + ORGAN_BIG_WAVE_SHIFT));
+    for (int i = 1; i <= MAXHARM; i++) {
         //float esc = 0.25 * (1 + 0.5 * log(i));
         float esc = 0.5;
         float amp = abs(blSrc.spectrum[i]);
+        // fade out starting from half
+        if (i >= MAXHARM / 2) {
+            float pos = (i - MAXHARM/2) * 1.0 / (MAXHARM / 2);
+            amp *= 1.0 - pos;
+            amp *= 1.0 - pos;
+        }
         int bw = 1 + 20 * i;
         float sum = 1;
         int delta = 1;
@@ -144,10 +151,11 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
         {
             float p = j * 1.0 / bw;
             float val = amp * exp(-p * p * esc);
-            int pos = orig + j * bwscale / 40;
+            int dist = j * bwscale / 40;
+            int pos = orig + dist;
             if (pos < 1 || pos >= ORGAN_BIG_WAVE_SIZE / 2)
                 continue;
-            int pos2 = 2 * orig - pos;
+            int pos2 = orig - dist;
             if (pos2 < 1 || pos2 >= ORGAN_BIG_WAVE_SIZE / 2)
                 continue;
             blDest.spectrum[pos] += val;
@@ -495,8 +503,13 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
     lfo_phase += parameters->lfo_rate * len / sample_rate;
     if (lfo_phase >= 1.0)
         lfo_phase -= 1.0;
+    if (!len)
+        return;
+    float olda0[2] = {vibrato[0].a0, vibrato[1].a0};
     vibrato[0].set_ap(3000 + 7000 * parameters->lfo_amt * lfo1 * lfo1, sample_rate);
     vibrato[1].set_ap(3000 + 7000 * parameters->lfo_amt * lfo2 * lfo2, sample_rate);
+    float ilen = 1.0 / len;
+    float deltaa0[2] = {(vibrato[0].a0 - olda0[0])*ilen, (vibrato[1].a0 - olda0[1])*ilen};
     
     float vib_wet = parameters->lfo_wet;
     for (int c = 0; c < 2; c++)
@@ -505,8 +518,9 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
         {
             float v = data[i][c];
             float v0 = v;
+            float coeff = olda0[c] + deltaa0[c] * i;
             for (int t = 0; t < VibratoSize; t++)
-                v = vibrato[c].process_ap(v, vibrato_x1[t][c], vibrato_y1[t][c]);
+                v = vibrato[c].process_ap(v, vibrato_x1[t][c], vibrato_y1[t][c], coeff);
             
             data[i][c] += (v - v0) * vib_wet;
         }
