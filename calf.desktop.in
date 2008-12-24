@@ -8,3 +8,4 @@ Exec=calfjackhost
 Terminal=false
 Type=Application
 Categories=Application;AudioVideo;Audio
+Icon=calf

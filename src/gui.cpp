@@ -1050,6 +1050,7 @@ gboolean plugin_gui_window::on_idle(void *data)
 void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const char *effect)
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_default_icon_name("calf");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
     

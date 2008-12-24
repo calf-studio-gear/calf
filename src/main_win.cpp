@@ -307,6 +307,7 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
 void main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_default_icon_name("calf");
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
     
