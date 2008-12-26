@@ -115,7 +115,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
     }
-    void impl_message_run(uint32_t *output_ports) {
+    uint32_t impl_message_run(uint32_t *valid_inputs, uint32_t *output_ports) {
         for (unsigned int i = 0; i < message_params.size(); i++)
         {
             int pn = message_params[i];
@@ -126,7 +126,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
                 configure(pp.short_name, ((LV2_String_Data *)Module::params[pn])->data);
             }
         }
-        Module::message_run(output_ports);
+        return Module::message_run(valid_inputs, output_ports);
     }
     char *configure(const char *key, const char *value) { 
         // disambiguation - the plugin_ctl_iface version is just a stub, so don't use it
@@ -257,10 +257,9 @@ struct lv2_wrapper
         }
     }
 
-    static bool cb_message_run(LV2_Handle Instance, uint32_t *outputs_written) {
+    static uint32_t cb_message_run(LV2_Handle Instance, uint32_t *valid_inputs, uint32_t *outputs_written) {
         instance *mod = (instance *)Instance;
-        mod->impl_message_run(outputs_written);
-        return true;
+        return mod->impl_message_run(valid_inputs, outputs_written);
     }
     static void cb_run(LV2_Handle Instance, uint32_t SampleCount) {
         instance *const mod = (instance *)Instance;

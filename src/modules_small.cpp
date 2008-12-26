@@ -1250,13 +1250,13 @@ public:
     void process(uint32_t)
     {
     }
-    static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
+    static uint32_t message_run(LV2_Handle instance, uint32_t *valid_inputs, uint32_t *outputs_written)
     {
         print_em_audio_module *self =  (print_em_audio_module *)instance;
         printf("message_run (events = %p, count = %d)\n", self->events, self->events->event_count);
         self->dump(self->events);
         *outputs_written = 0;
-        return false;
+        return 0;
     }
     static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
     {
@@ -1292,12 +1292,12 @@ public:
     void process(uint32_t)
     {
     }
-    static bool message_run(LV2_Handle instance, uint32_t *outputs_written)
+    static uint32_t message_run(LV2_Handle instance, uint32_t *valid_inputs, uint32_t *outputs_written)
     {
         copy_em_audio_module *self =  (copy_em_audio_module *)instance;
-        return self->message_run(outputs_written);
+        return self->message_run(valid_inputs, outputs_written);
     }
-    bool message_run(uint32_t *outputs_written)
+    uint32_t message_run(uint32_t *inputs_written, uint32_t *outputs_written)
     {
         event_port_read_iterator ri(events_in);
         event_port_write_iterator wi(events_out);
@@ -1312,7 +1312,7 @@ public:
             *wi++ = event;
         }
         *outputs_written = (events_in->event_count != 0) ? 2 : 0;
-        return true;
+        return *outputs_written != 0 ? 1 : 0;
     }
     static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
     {
