@@ -189,11 +189,36 @@ struct ladspa_wrapper
             switch(pp.flags & PF_TYPEMASK) {
                 case PF_BOOL: 
                     prh.HintDescriptor |= LADSPA_HINT_TOGGLED;
+                    prh.HintDescriptor &= ~(LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW);
                     break;
                 case PF_INT: 
                 case PF_ENUM: 
                     prh.HintDescriptor |= LADSPA_HINT_INTEGER;
                     break;
+                default: {
+                    int defpt = (int)(100 * (pp.def_value - pp.min) / (pp.max - pp.min));
+                    if (defpt < 12)
+                        prh.HintDescriptor |= LADSPA_HINT_DEFAULT_MINIMUM;
+                    else if (defpt < 37)
+                        prh.HintDescriptor |= LADSPA_HINT_DEFAULT_LOW;
+                    else if (defpt < 63)
+                        prh.HintDescriptor |= LADSPA_HINT_DEFAULT_MIDDLE;
+                    else if (defpt < 88)
+                        prh.HintDescriptor |= LADSPA_HINT_DEFAULT_HIGH;
+                    else
+                        prh.HintDescriptor |= LADSPA_HINT_DEFAULT_MAXIMUM;
+                }
+            }
+            if (pp.def_value == 0 || pp.def_value == 1 || pp.def_value == 100 || pp.def_value == 440 ) {
+                prh.HintDescriptor &= ~LADSPA_HINT_DEFAULT_MASK;
+                if (pp.def_value == 1)
+                    prh.HintDescriptor |= LADSPA_HINT_DEFAULT_1;
+                else if (pp.def_value == 100)
+                    prh.HintDescriptor |= LADSPA_HINT_DEFAULT_100;
+                else if (pp.def_value == 440)
+                    prh.HintDescriptor |= LADSPA_HINT_DEFAULT_440;
+                else
+                    prh.HintDescriptor |= LADSPA_HINT_DEFAULT_0;
             }
             switch(pp.flags & PF_SCALEMASK) {
                 case PF_SCALE_LOG:
