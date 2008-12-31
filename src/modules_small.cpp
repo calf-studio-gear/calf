@@ -380,8 +380,11 @@ public:
 class mul_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return x * y;
+    }
     void process(uint32_t count) {
-        outs[0][0] = ins[0][0] * ins[1][0];
+        do_process<mul_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -394,8 +397,11 @@ public:
 class neg_c_audio_module: public control_operator_audio_module<1>
 {
 public:
+    static inline float process_single(float x) {
+        return -x;
+    }
     void process(uint32_t count) {
-        *outs[0] = -*ins[0];
+        do_process<neg_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -408,8 +414,11 @@ public:
 class min_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return std::min(x, y);
+    }
     void process(uint32_t count) {
-        *outs[0] = std::min(*ins[0], *ins[1]);
+        do_process<min_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -422,8 +431,11 @@ public:
 class max_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return std::max(x, y);
+    }
     void process(uint32_t count) {
-        *outs[0] = std::max(*ins[0], *ins[1]);
+        do_process<max_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -436,8 +448,11 @@ public:
 class less_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return x < y;
+    }
     void process(uint32_t count) {
-        *outs[0] = *ins[0] < *ins[1];
+        do_process<less_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -472,8 +487,11 @@ public:
 class int_c_audio_module: public control_operator_audio_module<1>
 {
 public:
+    static inline float process_single(float x) {
+        return (int)x;
+    }
     void process(uint32_t count) {
-        *outs[0] = (int)*ins[0];
+        do_process<int_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -490,16 +508,19 @@ class bitwise_op_c_module_base: public control_operator_audio_module<2>
 public:
     static void port_info(plugin_info_iface *pii)
     {
-        pii->control_port("in_1", "In 1", 0, "").integer().input();
-        pii->control_port("in_2", "In 2", 0, "").integer().input();
-        pii->control_port("out", "Out", 0, "").integer().output();
+        pii->control_port("in_1", "In 1", 0, "").polymorphic().poly_audio().integer().input();
+        pii->control_port("in_2", "In 2", 0, "").polymorphic().poly_audio().integer().input();
+        pii->control_port("out", "Out", 0, "").polymorphic().poly_audio().integer().output();
     }
 };
 class bit_and_c_audio_module: public bitwise_op_c_module_base
 {
 public:
+    static inline float process_single(float x, float y) {
+        return ((int)x) & ((int)y);
+    }
     void process(uint32_t count) {
-        *outs[0] = ((int)*ins[0]) & ((int)*ins[1]);
+        do_process<bit_and_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -511,8 +532,11 @@ public:
 class bit_or_c_audio_module: public bitwise_op_c_module_base
 {
 public:
+    static inline float process_single(float x, float y) {
+        return ((int)x) | ((int)y);
+    }
     void process(uint32_t count) {
-        *outs[0] = ((int)*ins[0]) | ((int)*ins[1]);
+        do_process<bit_or_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -524,8 +548,11 @@ public:
 class bit_xor_c_audio_module: public bitwise_op_c_module_base
 {
 public:
+    static inline float process_single(float x, float y) {
+        return ((int)x) ^ ((int)y);
+    }
     void process(uint32_t count) {
-        *outs[0] = ((int)*ins[0]) ^ ((int)*ins[1]);
+        do_process<bit_xor_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -561,8 +588,11 @@ public:
 class logical_and_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return (x > 0 && y > 0) ? 1.f : 0.f;
+    }
     void process(uint32_t count) {
-        *outs[0] = (*ins[0] > 0 && *ins[1] > 0) ? 1.f : 0.f;
+        do_process<logical_and_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -578,8 +608,11 @@ public:
 class logical_or_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return (x > 0 || y > 0) ? 1.f : 0.f;
+    }
     void process(uint32_t count) {
-        *outs[0] = (*ins[0] > 0 || *ins[1] > 0) ? 1.f : 0.f;
+        do_process<logical_or_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -595,8 +628,11 @@ public:
 class logical_xor_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return ((x > 0) != (y > 0)) ? 1.f : 0.f;
+    }
     void process(uint32_t count) {
-        *outs[0] = ((*ins[0] > 0) != (*ins[1] > 0)) ? 1.f : 0.f;
+        do_process<logical_xor_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
@@ -612,8 +648,11 @@ public:
 class logical_not_c_audio_module: public control_operator_audio_module<1>
 {
 public:
+    static inline float process_single(float x) {
+        return (x <= 0) ? 1.f : 0.f;
+    }
     void process(uint32_t count) {
-        *outs[0] = (*ins[0] > 0) ? 0.f : 1.f;
+        do_process<logical_not_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {
