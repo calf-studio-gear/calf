@@ -329,7 +329,7 @@ public:
     inline void params_reset() {}
     /// Handle 'message context' port message
     /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
-    inline uint32_t message_run(uint32_t *valid_ports, uint32_t *output_ports) { 
+    inline uint32_t message_run(const void *valid_ports, void *output_ports) { 
         fprintf(stderr, "ERROR: message run not implemented\n");
         return 0;
     }

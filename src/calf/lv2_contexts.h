@@ -26,18 +26,18 @@
 #define LV2_CONTEXT_MESSAGE "http://lv2plug.in/ns/dev/contexts#MessageContext"
 
 static inline void
-lv2_contexts_set_port_valid(uint32_t* flags, uint32_t index) {
-	((uint8_t*)flags)[(index) / 8] |= 1 << ((index) % 8);
+lv2_contexts_set_port_valid(void* flags, uint32_t index) {
+	((uint8_t*)flags)[index / 8] |= 1 << (index % 8);
 }
 
 static inline void
-lv2_contexts_unset_port_valid(uint32_t* flags, uint32_t index) {
-	((uint8_t*)flags)[(index) / 8] &= ~(1 << ((index) % 8));
+lv2_contexts_unset_port_valid(void* flags, uint32_t index) {
+	((uint8_t*)flags)[index / 8] &= ~(1 << (index % 8));
 }
 
 static inline int
-lv2_contexts_port_is_valid(uint32_t flags, uint32_t index) {
-	return ((flags & (1 << index)) != 0);
+lv2_contexts_port_is_valid(const void* flags, uint32_t index) {
+	return (((uint8_t*)flags)[index / 8] & (1 << (index % 8))) != 0;
 }
 
 #include "lv2.h"
@@ -55,9 +55,9 @@ typedef struct {
 	 * to that port in the duration of this function invocation.
 	 * The plugin must return 1 if outputs have been written, 0 otherwise.
 	 */
-	uint32_t (*message_run)(LV2_Handle instance,
-	                        uint32_t*  valid_inputs,
-	                        uint32_t*  valid_outputs);
+	uint32_t (*message_run)(LV2_Handle  instance,
+	                        const void* valid_inputs,
+	                        void*       valid_outputs);
 
 	/** The message thread function alalogous to the LV2 connect_port
 	 * function.  This function must only be used to connect ports that

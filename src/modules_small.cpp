@@ -1250,12 +1250,14 @@ public:
     void process(uint32_t)
     {
     }
-    static uint32_t message_run(LV2_Handle instance, uint32_t *valid_inputs, uint32_t *outputs_written)
+    static uint32_t message_run(LV2_Handle instance, const void *valid_inputs, void *outputs_written)
     {
         print_em_audio_module *self =  (print_em_audio_module *)instance;
-        printf("message_run (events = %p, count = %d)\n", self->events, self->events->event_count);
-        self->dump(self->events);
-        *outputs_written = 0;
+        if (lv2_contexts_port_is_valid(valid_inputs, 0))
+        {
+            printf("message_run (events = %p, count = %d)\n", self->events, self->events->event_count);
+            self->dump(self->events);
+        }
         return 0;
     }
     static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
@@ -1292,27 +1294,35 @@ public:
     void process(uint32_t)
     {
     }
-    static uint32_t message_run(LV2_Handle instance, uint32_t *valid_inputs, uint32_t *outputs_written)
+    static uint32_t message_run(LV2_Handle instance, const void *valid_inputs, void *outputs_written)
     {
         copy_em_audio_module *self =  (copy_em_audio_module *)instance;
         return self->message_run(valid_inputs, outputs_written);
     }
-    uint32_t message_run(uint32_t *inputs_written, uint32_t *outputs_written)
+    uint32_t message_run(const void *inputs_written, void *outputs_written)
     {
-        event_port_read_iterator ri(events_in);
-        event_port_write_iterator wi(events_out);
-        if (events_in->size > events_out->capacity)
+        if (lv2_contexts_port_is_valid(inputs_written, 0))
         {
-            printf("Buffer capacity exceeded!\n");
-            return false;
+            event_port_read_iterator ri(events_in);
+            event_port_write_iterator wi(events_out);
+            if (events_in->size > events_out->capacity)
+            {
+                printf("Buffer capacity exceeded!\n");
+                return false;
+            }
+            while(ri)
+            {
+                const lv2_event &event = *ri++;
+                *wi++ = event;
+            }
+            if (events_in->event_count != 0)
+            {
+                lv2_contexts_set_port_valid(outputs_written, 1);
+                return 1;
+            } 
         }
-        while(ri)
-        {
-            const lv2_event &event = *ri++;
-            *wi++ = event;
-        }
-        *outputs_written = (events_in->event_count != 0) ? 2 : 0;
-        return *outputs_written != 0 ? 1 : 0;
+        lv2_contexts_unset_port_valid(outputs_written, 1);
+        return 0;
     }
     static void message_connect_port(LV2_Handle instance, uint32_t port, void* data)
     {

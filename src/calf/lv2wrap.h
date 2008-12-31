@@ -115,7 +115,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
     }
-    uint32_t impl_message_run(uint32_t *valid_inputs, uint32_t *output_ports) {
+    uint32_t impl_message_run(const void *valid_inputs, void *output_ports) {
         for (unsigned int i = 0; i < message_params.size(); i++)
         {
             int pn = message_params[i];
@@ -257,7 +257,7 @@ struct lv2_wrapper
         }
     }
 
-    static uint32_t cb_message_run(LV2_Handle Instance, uint32_t *valid_inputs, uint32_t *outputs_written) {
+    static uint32_t cb_message_run(LV2_Handle Instance, const void *valid_inputs, void *outputs_written) {
         instance *mod = (instance *)Instance;
         return mod->impl_message_run(valid_inputs, outputs_written);
     }
@@ -323,74 +323,6 @@ struct lv2_wrapper
         return instance;
     }
 };
-
-template<class Module>
-struct lv2_small_wrapper
-{
-    typedef Module instance;
-    static LV2_Descriptor descriptor;
-    std::string uri;
-    
-    lv2_small_wrapper(const char *id)
-    {
-        uri = "http://calf.sourceforge.net/small_plugins/" + std::string(id);
-        descriptor.URI = uri.c_str();
-        descriptor.instantiate = cb_instantiate;
-        descriptor.connect_port = cb_connect;
-        descriptor.activate = cb_activate;
-        descriptor.run = cb_run;
-        descriptor.deactivate = cb_deactivate;
-        descriptor.cleanup = cb_cleanup;
-        descriptor.extension_data = cb_ext_data;
-    }
-
-    static void cb_connect(LV2_Handle Instance, uint32_t port, void *DataLocation) {
-        unsigned long ins = Module::in_count;
-        unsigned long outs = Module::out_count;
-        instance *const mod = (instance *)Instance;
-        if (port < ins)
-            mod->ins[port] = (float *)DataLocation;
-        else if (port < ins + outs)
-            mod->outs[port - ins] = (float *)DataLocation;
-    }
-
-    static void cb_activate(LV2_Handle Instance) {
-        // Note the changed semantics (now more LV2-like)
-        instance *const mod = (instance *)Instance;
-        mod->activate();
-    }
-    
-    static void cb_deactivate(LV2_Handle Instance) {
-        instance *const mod = (instance *)Instance;
-        mod->deactivate();
-    }
-
-    static LV2_Handle cb_instantiate(const LV2_Descriptor * Descriptor, double sample_rate, const char *bundle_path, const LV2_Feature *const *features)
-    {
-        instance *mod = new instance();
-        // XXXKF some people use fractional sample rates; we respect them ;-)
-        mod->set_bundle_path(bundle_path);
-        mod->use_features(features);
-        mod->set_sample_rate((uint32_t)sample_rate);
-        return mod;
-    }
-    
-    static void cb_run(LV2_Handle Instance, uint32_t SampleCount) {
-        instance *const mod = (instance *)Instance;
-        mod->process(SampleCount);
-    }
-    
-    static void cb_cleanup(LV2_Handle Instance) {
-        instance *const mod = (instance *)Instance;
-        delete mod;
-    }
-    
-    static const void *cb_ext_data(const char *URI) {
-        return Module::ext_data(URI);
-    }
-};
-
-extern const LV2_Descriptor *lv2_small_descriptor(uint32_t index);
 
 };
 

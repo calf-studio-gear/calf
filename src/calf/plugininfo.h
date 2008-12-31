@@ -75,6 +75,38 @@ struct plugin_info_iface
     virtual ~plugin_info_iface() {}
 };
 
+struct plugin_port_type_grabber: public plugin_info_iface, public control_port_info_iface
+{
+    std::string &dest;
+    
+    struct ppii: public plain_port_info_iface {
+        std::string &target;
+        ppii(std::string &_target) : target (_target) {}
+        virtual plain_port_info_iface& output() {
+            target[target.length() - 1] &= ~32;
+            return *this;
+        }
+    };
+    
+    struct cpii: public control_port_info_iface {
+        std::string &target;
+        cpii(std::string &_target) : target (_target) {}
+        virtual control_port_info_iface& output() {
+            target[target.length() - 1] &= ~32;
+            return *this;
+        }
+    };
+    
+    ppii pp;
+    cpii cp;
+    
+    plugin_port_type_grabber(std::string &_dest) : dest(_dest), pp(_dest), cp(_dest) {}
+        
+    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { dest += 'a'; return pp; }
+    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { dest += 'e'; return pp; }
+    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A") { dest += 'c'; return cp; }
+};
+
 /// A sink to send information about plugins
 struct plugin_list_info_iface
 {

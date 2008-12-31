@@ -248,7 +248,7 @@ public:
     
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
-    uint32_t message_run(uint32_t *valid_inputs, uint32_t *output_ports) { 
+    uint32_t message_run(const void *valid_inputs, void *output_ports) { 
         // silence a default printf (which is kind of a warning about unhandled message_run)
         return 0;
     }
