@@ -49,6 +49,7 @@ using namespace dsp;
 using namespace std;
 
 template<class Module> LV2_Descriptor lv2_small_wrapper<Module>::descriptor;
+template<class Module> uint32_t lv2_small_wrapper<Module>::poly_port_types;
 
 namespace small_plugins
 {
@@ -302,13 +303,13 @@ public:
     {
         int idx = 0;
         if (Inputs == 1)
-            cports[idx++] = &pii->control_port("in", "In", in1, "").input();
+            cports[idx++] = &pii->control_port("in", "In", in1, "").polymorphic().poly_audio().input();
         else
         {
-            cports[idx++] = &pii->control_port("in_1", "In 1", in1, "").input();
-            cports[idx++] = &pii->control_port("in_2", "In 2", in2, "").input();
+            cports[idx++] = &pii->control_port("in_1", "In 1", in1, "").polymorphic().poly_audio().input();
+            cports[idx++] = &pii->control_port("in_2", "In 2", in2, "").polymorphic().poly_audio().input();
         }
-        cports[idx++] = &pii->control_port("out", "Out", 0, "").output();
+        cports[idx++] = &pii->control_port("out", "Out", 0, "").poly_audio().output();
     }
 };
 

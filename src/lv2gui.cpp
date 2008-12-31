@@ -287,7 +287,7 @@ void store_preset(GtkWindow *toplevel, plugin_gui *gui)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-class small_plugin_gui
+class small_plugin_gui: public uri_map_access
 {
 public:
     LV2UI_Write_Function write_function;

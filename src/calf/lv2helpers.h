@@ -26,31 +26,47 @@
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 
+class uri_map_access
+{
+public:
+    /// URI map feature pointer (previously in a mixin, but polymorphic ports made it necessary for most plugins)
+    LV2_URI_Map_Feature *uri_map;
+
+    uri_map_access()
+    : uri_map(NULL)
+    {}
+
+    /// Map an URI through an URI map
+    uint32_t map_uri(const char *ns, const char *URI)
+    {
+        if (uri_map)
+            return uri_map->uri_to_id(uri_map->callback_data, ns, URI);
+        return 0;
+    }
+    /// Called on instantiation for every LV2 feature sent by a host
+    void use_feature(const char *URI, void *data) {
+        if (!strcmp(URI, LV2_URI_MAP_URI))
+        {
+            uri_map = (LV2_URI_Map_Feature *)data;
+            map_uris();
+        }
+    }
+    virtual void map_uris()
+    {
+    }
+};
+    
 /// A mixin for adding the event feature and URI map to the small plugin
 template<class T>
 class event_mixin: public T
 {
 public:
-    /// URI map feature pointer
-    LV2_URI_Map_Feature *uri_map;
     /// Event feature pointer
     LV2_Event_Feature *event_feature;
-    virtual uint32_t map_uri(const char *ns, const char *URI)
-    {
-        return uri_map->uri_to_id(uri_map->callback_data, ns, URI);
-    }
-    virtual void map_uris()
-    {
-    }
     virtual void use_feature(const char *URI, void *data) {
         if (!strcmp(URI, LV2_EVENT_URI))
         {
             event_feature = (LV2_Event_Feature *)data;
-        }
-        if (!strcmp(URI, LV2_URI_MAP_URI))
-        {
-            uri_map = (LV2_URI_Map_Feature *)data;
-            map_uris();
         }
         T::use_feature(URI, data);
     }
@@ -70,6 +86,7 @@ public:
     virtual void map_uris() {
         midi_event_type = this->map_uri("http://lv2plug.in/ns/ext/event", "http://lv2plug.in/ns/ext/midi#MidiEvent");
         printf("MIDI event type = %d\n", midi_event_type);
+        event_mixin<T>::map_uris();
     }
 };
 
@@ -83,6 +100,7 @@ public:
     virtual void map_uris() {
         message_event_type = this->map_uri("http://lv2plug.in/ns/ext/event", "http://lv2plug.in/ns/dev/msg#MessageEvent");
         printf("Message event type = %d\n", message_event_type);
+        event_mixin<T>::map_uris();
     }
 };
 

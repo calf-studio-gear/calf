@@ -23,28 +23,72 @@
 
 #if USE_LV2
 
-#include "giface.h"
+#include <lv2.h>
 #include "plugininfo.h"
-#include <string.h>
+#include "lv2_polymorphic_port.h"
+#include "lv2helpers.h"
 
 namespace calf_plugins {
 
-/// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
-/// subclass via template wrappers (ladspa_small_wrapper<> etc), not via base class pointer/reference
-class null_small_audio_module
+/// Empty implementations for plugin functions. Note, that some functions aren't virtual, because they're called via the particular
+/// subclass via template wrappers (ladspa_small_wrapper<> etc), not via base class pointer/reference. On the other hand,
+/// other functions are virtual when overhead is acceptable (instantiation time functions etc.)
+class null_small_audio_module: public uri_map_access
 {
 public:
     uint32_t srate;
     double odsr;
+    uint32_t poly_type_control, poly_type_audio;
+    /// for polymorphic ports: "is audio" flags for first 32 ports (should be sufficient for most plugins)
+    uint32_t poly_port_types;
+
+    null_small_audio_module()
+    : srate((uint32_t)-1)
+    , odsr(0.)
+    , poly_type_control(0)
+    , poly_type_audio(0)
+    , poly_port_types(0)
+    {
+    }
+
+    /// Called when host changes type of the polymorphic port
+    inline void set_port_type(uint32_t port, uint32_t type, void *type_data) {
+        if (port >= 32)
+            return;
+        uint32_t port_mask = 1 << port;
+        if (type == poly_type_control)
+            poly_port_types &= ~port_mask;
+        else if (type == poly_type_audio)
+            poly_port_types |= port_mask;
+        on_port_types_changed();
+    }
+    
+    /// Returns 1 for audio ports and 0 for control ports
+    inline unsigned int port_is_audio(unsigned int port) {
+        return (poly_port_types >> port) & 1;
+    }
+        
+    /// Returns (unsigned)-1 for audio ports and 0 for control ports
+    inline unsigned int port_audio_mask(unsigned int port) {
+        return 0 - ((poly_port_types >> port) & 1);
+    }
+        
+    virtual void on_port_types_changed() {}
     inline void set_bundle_path(const char *path) {}
-    inline void use_features(const LV2_Feature *const *features) {
+    /// Called to map all the necessary URIs
+    virtual void map_uris()
+    {
+        poly_type_control = map_uri(LV2_POLYMORPHIC_PORT_URI, "http://lv2plug.in/ns/lv2core#ControlPort");
+        poly_type_audio = map_uri(LV2_POLYMORPHIC_PORT_URI, "http://lv2plug.in/ns/lv2core#AudioPort");
+    }
+    /// Called on instantiation with the list of LV2 features called
+    virtual void use_features(const LV2_Feature *const *features) {
         while(*features)
         {
             use_feature((*features)->URI, (*features)->data);
             features++;
         }
     }
-    virtual void use_feature(const char *URI, void *data) {}
     /// LADSPA-esque activate function, except it is called after ports are connected, not before
     inline void activate() {}
     /// LADSPA-esque deactivate function
@@ -72,7 +116,7 @@ struct lv2_small_wrapper
     typedef Module instance;
     static LV2_Descriptor descriptor;
     std::string uri;
-    char *types;
+    static uint32_t poly_port_types;
     
     lv2_small_wrapper(const char *id)
     {
@@ -86,10 +130,8 @@ struct lv2_small_wrapper
         descriptor.cleanup = cb_cleanup;
         descriptor.extension_data = cb_ext_data;
         
-        std::string types_tmp;
-        plugin_port_type_grabber ptg(types_tmp);
+        plugin_port_type_grabber ptg(poly_port_types);
         Module::plugin_info(&ptg);
-        types = strdup(types_tmp.c_str());
     }
 
     static void cb_connect(LV2_Handle Instance, uint32_t port, void *DataLocation) {
@@ -112,10 +154,18 @@ struct lv2_small_wrapper
         instance *const mod = (instance *)Instance;
         mod->deactivate();
     }
+    
+    static uint32_t cb_set_type(LV2_Handle Instance, uint32_t port, uint32_t type, void *type_data)
+    {
+        instance *const mod = (instance *)Instance;
+        mod->set_port_type(port, type, type_data);
+        return 0;
+    }
 
     static LV2_Handle cb_instantiate(const LV2_Descriptor * Descriptor, double sample_rate, const char *bundle_path, const LV2_Feature *const *features)
     {
         instance *mod = new instance();
+        mod->poly_port_types = poly_port_types;
         // XXXKF some people use fractional sample rates; we respect them ;-)
         mod->set_bundle_path(bundle_path);
         mod->use_features(features);

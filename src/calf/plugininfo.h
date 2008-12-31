@@ -52,6 +52,8 @@ struct control_port_info_iface
     virtual control_port_info_iface& trigger() { return *this; }
     virtual control_port_info_iface& integer() { return *this; }
     virtual control_port_info_iface& lv2_ttl(const std::string &text) { return *this; }
+    virtual control_port_info_iface& polymorphic() { return lv2_ttl("a poly:PolymorphicPort ;"); }
+    virtual control_port_info_iface& poly_audio() { return lv2_ttl("poly:supportsType lv2:AudioPort ;"); }
     virtual ~control_port_info_iface() {}
 };
 
@@ -77,34 +79,17 @@ struct plugin_info_iface
 
 struct plugin_port_type_grabber: public plugin_info_iface, public control_port_info_iface
 {
-    std::string &dest;
+    uint32_t &target;
+    uint32_t index;
     
-    struct ppii: public plain_port_info_iface {
-        std::string &target;
-        ppii(std::string &_target) : target (_target) {}
-        virtual plain_port_info_iface& output() {
-            target[target.length() - 1] &= ~32;
-            return *this;
-        }
-    };
+    plain_port_info_iface pp;
+    control_port_info_iface cp;
     
-    struct cpii: public control_port_info_iface {
-        std::string &target;
-        cpii(std::string &_target) : target (_target) {}
-        virtual control_port_info_iface& output() {
-            target[target.length() - 1] &= ~32;
-            return *this;
-        }
-    };
-    
-    ppii pp;
-    cpii cp;
-    
-    plugin_port_type_grabber(std::string &_dest) : dest(_dest), pp(_dest), cp(_dest) {}
+    plugin_port_type_grabber(uint32_t &_target) : target(_target), index(0) { target = 0; }
         
-    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { dest += 'a'; return pp; }
-    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { dest += 'e'; return pp; }
-    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A") { dest += 'c'; return cp; }
+    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { target |= (1 << index); index++; return pp; }
+    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &microname = std::string("N/A")) { index++; return pp; }
+    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &microname = "N/A") { index++; return cp; }
 };
 
 /// A sink to send information about plugins

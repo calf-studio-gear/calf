@@ -286,8 +286,9 @@ struct lv2_port_base {
         ss << ind << "lv2:index " << index << " ;\n";
         ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
         ss << ind << "lv2:name \"" << name << "\" ;\n";
-        if (!extras.empty())
-            ss << ind << extras;
+        if (!extras.empty()) {
+            ss << calf_utils::indent(extras, ind);
+        }
         if (microname != "N/A")
             ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
     }
@@ -472,6 +473,7 @@ void make_ttl(string path_prefix)
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
+        "@prefix poly: <http://lv2plug.in/ns/dev/polymorphic-port#> .\n"
 
         "\n"
     ;
