@@ -150,6 +150,9 @@ std::string xml_escape(const std::string &src);
 /// Load file from disk into a std::string blob, or throw file_exception
 std::string load_file(const std::string &src);
 
+/// Indent a string by another string (prefix each line)
+std::string indent(const std::string &src, const std::string &indent);
+
 };
 
 #endif

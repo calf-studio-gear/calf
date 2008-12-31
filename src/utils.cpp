@@ -103,4 +103,20 @@ std::string f2s(double value)
     return ss.str();
 }
 
+std::string indent(const std::string &src, const std::string &indent)
+{
+    std::string dest;
+    size_t pos = 0;
+    do {
+        size_t epos = src.find("\n", pos);
+        if (epos == string::npos)
+            break;
+        dest += indent + src.substr(pos, epos - pos) + "\n";
+        pos = epos + 1;
+    } while(pos < src.length());
+    if (pos < src.length())
+        dest += indent + src.substr(pos);
+    return dest;
+}
+
 }
