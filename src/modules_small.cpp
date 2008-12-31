@@ -294,11 +294,54 @@ public:
     }
 };
 
+template<class T, int Inputs> struct polymorphic_process;
+
+template<class T> struct polymorphic_process<T, 1>
+{
+    static inline void run(float **ins, float **outs, uint32_t count, uint32_t poly_port_types) {
+        if (poly_port_types < 2) // control to control or audio to control
+            *outs[0] = T::process_single(*ins[0]);
+        else if (poly_port_types == 2) {
+            outs[0][0] = T::process_single(ins[0][0]); // same as above, but the index might not be 0 in later versions
+            for (uint32_t i = 1; i < count; i++)
+                outs[0][i] = outs[0][0];
+        }
+        else { // audio to audio
+            for (uint32_t i = 0; i < count; i++)
+                outs[0][i] = T::process_single(ins[0][i]);
+        }
+    };
+};
+
+template<class T> struct polymorphic_process<T, 2>
+{
+    static inline void run(float **ins, float **outs, uint32_t count, uint32_t poly_port_types) {
+        poly_port_types &= ~1;
+        if (poly_port_types < 4) // any to control 
+            *outs[0] = T::process_single(*ins[0], *ins[1]);
+        else if (poly_port_types == 4) { // control+control to audio
+            outs[0][0] = T::process_single(*ins[0], *ins[1]); // same as above, but the index might not be 0 in later versions
+            for (uint32_t i = 1; i < count; i++)
+                outs[0][i] = outs[0][0];
+        }
+        else { // {control+audio or audio+control or audio+audio} to audio
+            // use masks to force 0 for index for control ports
+            uint32_t mask1 = null_small_audio_module::port_audio_mask(0, poly_port_types);
+            uint32_t mask2 = null_small_audio_module::port_audio_mask(1, poly_port_types);
+            for (uint32_t i = 0; i < count; i++)
+                outs[0][i] = T::process_single(ins[0][i & mask1], ins[1][i & mask2]);
+        }
+    };
+};
+
 /// This works for 1 or 2 operands only...
 template<int Inputs>
 class control_operator_audio_module: public small_audio_module_base<Inputs, 1>
 {
 public:    
+    using small_audio_module_base<Inputs, 1>::ins;
+    using small_audio_module_base<Inputs, 1>::outs;
+    using small_audio_module_base<Inputs, 1>::poly_port_types;
     static void port_info(plugin_info_iface *pii, control_port_info_iface *cports[Inputs + 1], float in1 = 0, float in2 = 0)
     {
         int idx = 0;
@@ -311,13 +354,20 @@ public:
         }
         cports[idx++] = &pii->control_port("out", "Out", 0, "").poly_audio().output();
     }
+    
+    template<class T> inline void do_process(uint32_t count) {
+        polymorphic_process<T, Inputs>::run(ins, outs, count, poly_port_types);
+    }
 };
 
 class minus_c_audio_module: public control_operator_audio_module<2>
 {
 public:
+    static inline float process_single(float x, float y) {
+        return x - y;
+    }
     void process(uint32_t count) {
-        outs[0][0] = ins[0][0] - ins[1][0];
+        do_process<minus_c_audio_module>(count);
     }
     static void plugin_info(plugin_info_iface *pii)
     {

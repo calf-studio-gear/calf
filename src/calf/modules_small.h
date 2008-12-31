@@ -73,6 +73,11 @@ public:
         return 0 - ((poly_port_types >> port) & 1);
     }
         
+    /// Returns (unsigned)-1 for audio ports and 0 for control ports
+    static inline unsigned int port_audio_mask(unsigned int port, uint32_t poly_port_types) {
+        return 0 - ((poly_port_types >> port) & 1);
+    }
+        
     virtual void on_port_types_changed() {}
     inline void set_bundle_path(const char *path) {}
     /// Called to map all the necessary URIs
