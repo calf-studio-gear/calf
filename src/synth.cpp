@@ -44,6 +44,12 @@ void basic_synth::kill_note(int note, int vel, bool just_one)
 
 dsp::voice *basic_synth::give_voice()
 {
+    if (active_voices.size() >= polyphony_limit)
+    {
+        dsp::voice *stolen = steal_voice();
+        if (stolen)
+            return stolen;
+    }
     if (unused_voices.empty())
         return alloc_voice();
     else {
@@ -54,6 +60,42 @@ dsp::voice *basic_synth::give_voice()
     }   
 }
 
+dsp::voice *basic_synth::steal_voice()
+{
+    std::list<dsp::voice *>::iterator found = active_voices.end();
+    float priority = 10000;
+    for(std::list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    {
+        if ((*i)->get_priority() < priority)
+        {
+            priority = (*i)->get_priority();
+            found = i;
+        }
+    }
+    if (found == active_voices.end())
+        return NULL;
+    
+    (*found)->steal();
+    return NULL;
+}
+
+void basic_synth::trim_voices()
+{
+    // count stealable voices
+    unsigned int count = 0;
+    for(std::list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    {
+        if ((*i)->get_priority() < 10000)
+            count++;
+    }
+    // printf("Count=%d limit=%d\n", count, polyphony_limit);
+    // steal any voices above polyphony limit
+    if (count > polyphony_limit) {
+        for (unsigned int i = 0; i < count - polyphony_limit; i++)
+            steal_voice();
+    }
+}
+
 void basic_synth::note_on(int note, int vel)
 {
     if (!vel) {
@@ -61,7 +103,7 @@ void basic_synth::note_on(int note, int vel)
         return;
     }
     bool perc = check_percussion();
-    dsp::voice *v = alloc_voice();
+    dsp::voice *v = give_voice();
     v->setup(sample_rate);
     v->released = false;
     v->sostenuto = false;

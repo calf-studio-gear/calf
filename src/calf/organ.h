@@ -219,6 +219,7 @@ public:
     }
 
     void note_on(int note, int vel) {
+        stolen = false;
         finishing = false;
         perc_released = false;
         released = false;
@@ -247,6 +248,12 @@ public:
         rel_age_const = pamp.get() * ((1.0/44100.0)/0.03);
         for (int i = 0; i < EnvCount; i++)
             envs[i].note_off();
+    }
+    
+    virtual void steal() {
+        perc_released = true;
+        finishing = true;
+        stolen = true;
     }
 
     void render_block();

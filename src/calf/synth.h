@@ -103,9 +103,9 @@ inline unsigned int midi_note_to_phase(int note, double cents, int sr) {
 class voice {
 public:
     int sample_rate;
-    bool released, sostenuto;
+    bool released, sostenuto, stolen;
 
-    voice() : sample_rate(-1), released(false), sostenuto(false) {}
+    voice() : sample_rate(-1), released(false), sostenuto(false), stolen(false) {}
 
     /// reset voice to default state (used when a voice is to be reused)
     virtual void setup(int sr) { sample_rate = sr; }
@@ -119,8 +119,11 @@ public:
     virtual bool get_active()=0;
     /// render voice data to buffer
     virtual void render_to(float (*buf)[2], int nsamples)=0;
+    /// very fast note off
+    virtual void steal()=0;
     /// return the note used by this voice
     virtual int get_current_note()=0;
+    virtual float get_priority() { return stolen ? 20000 : (released ? 1 : 100); }
     /// empty virtual destructor
     virtual ~voice() {}
 };
@@ -171,7 +174,6 @@ public:
             read_ptr += ncopy;
         }
     }
-    
 };
 
 /// Base class for all kinds of polyphonic instruments, provides
@@ -194,6 +196,8 @@ protected:
     std::stack<dsp::voice *> unused_voices;
     /// Gate values for all 128 MIDI notes
     std::bitset<128> gate;
+    /// Maximum allocated number of channels
+    unsigned int polyphony_limit;
 
     void kill_note(int note, int vel, bool just_one);
 public:
@@ -201,9 +205,12 @@ public:
         sample_rate = sr;
         hold = false;
         sostenuto = false;
+        polyphony_limit = (unsigned)-1;
     }
+    virtual void trim_voices();
     virtual dsp::voice *give_voice();
     virtual dsp::voice *alloc_voice()=0;
+    virtual dsp::voice *steal_voice();
     virtual void render_to(float (*output)[2], int nsamples);
     virtual void note_on(int note, int vel);
     virtual void percussion_note_on(int note, int vel) {}

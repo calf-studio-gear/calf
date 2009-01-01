@@ -6,12 +6,19 @@
         <line-graph param="master" refresh="1" width="120" height="40" expand="0" fill="0"/>
       </align>
     </if>
-    <align scale-x="0.0" scale-y="0.0" align-x="1.0" align-y="0.5">
-      <vbox>
-        <label param="master"/>
-        <knob param="master"/>
-        <value param="master"/>
-      </vbox>
+    <align scale-x="0.25" scale-y="0.0" align-x="1.0" align-y="0.5">
+      <hbox>
+        <vbox>
+          <label param="polyphony"/>
+          <knob param="polyphony"/>
+          <value param="polyphony"/>
+        </vbox>
+        <vbox>
+          <label param="master"/>
+          <knob param="master"/>
+          <value param="master"/>
+        </vbox>
+      </hbox>
     </align>
   </hbox>
   <notebook>

@@ -216,6 +216,12 @@ public:
     void params_changed() {
         for (int i = 0; i < param_count - var_count; i++)
             ((float *)&par_values)[i] = *params[i];
+
+        unsigned int old_poly = polyphony_limit;
+        polyphony_limit = dsp::clip(dsp::fastf2i_drm(*params[par_polyphony]), 1, 32);
+        if (polyphony_limit < old_poly)
+            trim_voices();
+        
         update_params();
     }
     inline void pitch_bend(int amt)
