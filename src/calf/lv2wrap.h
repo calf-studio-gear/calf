@@ -293,8 +293,8 @@ struct lv2_wrapper
                     {
                     case 8: mod->note_off(item->data[1], item->data[2]); break;
                     case 9: mod->note_on(item->data[1], item->data[2]); break;
-                    case 10: mod->program_change(item->data[1]); break;
                     case 11: mod->control_change(item->data[1], item->data[2]); break;
+                    case 12: mod->program_change(item->data[1]); break;
                     case 14: mod->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
                     }
                 }
