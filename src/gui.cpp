@@ -306,6 +306,43 @@ void toggle_param_control::set()
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
 
+// spin button
+
+GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    
+    const parameter_properties &props = get_props();
+    if (props.step > 1)
+        widget  = gtk_spin_button_new_with_range (props.min, props.max, (props.max - props.min) / (props.step - 1));
+    if (props.step > 0)
+        widget  = gtk_spin_button_new_with_range (props.min, props.max, props.step);
+    else
+        widget  = gtk_spin_button_new_with_range (props.min, props.max, 1);
+    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (value_changed), (gpointer)this);
+    return widget;
+}
+
+void spin_param_control::value_changed(GtkSpinButton *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    jhp->get();
+}
+
+void spin_param_control::get()
+{
+    // const parameter_properties &props = get_props();
+    gui->set_param_value(param_no, gtk_spin_button_get_value_as_float (GTK_SPIN_BUTTON (widget)), this);
+}
+
+void spin_param_control::set()
+{
+    _GUARD_CHANGE_
+    // const parameter_properties &props = get_props();
+    gtk_spin_button_set_value (GTK_SPIN_BUTTON (widget), gui->plugin->get_param_value(param_no));
+}
+
 // button
 
 GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
@@ -672,6 +709,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new combo_box_param_control;
     if (!strcmp(element, "toggle"))
         return new toggle_param_control;
+    if (!strcmp(element, "spin"))
+        return new spin_param_control;
     if (!strcmp(element, "button"))
         return new button_param_control;
     if (!strcmp(element, "label"))

@@ -167,6 +167,7 @@ struct led_param_control: public param_control
     virtual void set();
 };
 
+/// Horizontal slider
 struct hscale_param_control: public param_control
 {
     GtkHScale *scale;
@@ -179,15 +180,25 @@ struct hscale_param_control: public param_control
     static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
 };
 
+/// Vertical slider
 struct vscale_param_control: public param_control
 {
-    GtkHScale *scale;
+    GtkVScale *scale;
 
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
     virtual void init_xml(const char *element);
     static void vscale_value_changed(GtkHScale *widget, gpointer value);
+};
+
+/// Spin button
+struct spin_param_control: public param_control
+{
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static void value_changed(GtkSpinButton *widget, gpointer value);
 };
 
 struct toggle_param_control: public param_control
