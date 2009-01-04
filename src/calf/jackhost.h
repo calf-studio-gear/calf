@@ -122,6 +122,7 @@ public:
     bool changed;
     port midi_port;
     std::string name;
+    std::string instance_name;
     virtual port *get_inputs()=0;
     virtual port *get_outputs()=0;
     virtual port *get_midi_port() { return get_midi() ? &midi_port : NULL; }
@@ -130,7 +131,9 @@ public:
     virtual void cache_ports()=0;
     virtual int process(jack_nframes_t nframes)=0;
     
-    jack_host_base() {
+    jack_host_base(const std::string &_name, const std::string &_instance_name) {
+        name = _name;
+        instance_name = _instance_name;
         client = NULL;
         changed = true;
     }
@@ -191,7 +194,8 @@ public:
     float param_values[param_count];
     float midi_meter;
     
-    jack_host()
+    jack_host(const std::string &_name, const std::string &_instance_name)
+    : jack_host_base(_name, _instance_name)
     {
         for (int i = 0; i < Module::param_count; i++) {
             Module::params[i] = &param_values[i];
@@ -348,7 +352,7 @@ public:
     }
 };
 
-extern jack_host_base *create_jack_host(const char *name);
+extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name);
 
 #endif
 

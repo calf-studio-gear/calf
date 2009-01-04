@@ -250,7 +250,7 @@ void main_window::update_strip(plugin_ctl_iface *plugin)
 void main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this);
-    gui_win->create(plugin, (prefix + plugin->get_name()).c_str(), plugin->get_id());
+    gui_win->create(plugin, (prefix + plugin->get_label()).c_str(), plugin->get_id());
     gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }

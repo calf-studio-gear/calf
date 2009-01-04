@@ -47,9 +47,9 @@ plugin_gui_window *gui_win;
 
 const char *client_name = "calfhost";
 
-jack_host_base *calf_plugins::create_jack_host(const char *effect_name)
+jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>();
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>(effect_name, instance_name);
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -68,31 +68,39 @@ void jack_host_base::open(jack_client *_client)
 
 void jack_host_base::create_ports() {
     char buf[32];
+    char buf2[64];
+    static const char *suffixes[] = { "l", "r", "2l", "2r" };
     port *inputs = get_inputs();
     port *outputs = get_outputs();
     int in_count = get_input_count(), out_count = get_output_count();
     for (int i=0; i<in_count; i++) {
-        sprintf(buf, client->input_name.c_str(), client->input_nr++);
+        sprintf(buf, "%s_in_%s", instance_name.c_str(), suffixes[i]);
+        sprintf(buf2, client->input_name.c_str(), client->input_nr++);
         inputs[i].name = buf;
         inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
         inputs[i].data = NULL;
         if (!inputs[i].handle)
             throw text_exception("Could not create JACK input port");
+        jack_port_set_alias(inputs[i].handle, buf2);
     }
     for (int i=0; i<out_count; i++) {
-        sprintf(buf, client->output_name.c_str(), client->output_nr++);
+        sprintf(buf, "%s_out_%s", instance_name.c_str(), suffixes[i]);
+        sprintf(buf2, client->output_name.c_str(), client->output_nr++);
         outputs[i].name = buf;
         outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
         outputs[i].data = NULL;
         if (!outputs[i].handle)
             throw text_exception("Could not create JACK output port");
+        jack_port_set_alias(outputs[i].handle, buf2);
     }
     if (get_midi()) {
-        sprintf(buf, client->midi_name.c_str(), client->midi_nr++);
+        sprintf(buf, "%s_midi_in", instance_name.c_str());
+        sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
         midi_port.name = buf;
         midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
         if (!midi_port.handle)
             throw text_exception("Could not create JACK MIDI port");
+        jack_port_set_alias(midi_port.handle, buf2);
     }
 }
 
@@ -187,6 +195,7 @@ struct host_session: public main_window_owner_iface
     main_window *main_win;
     int lash_source_id;
     bool restoring_session;
+    std::set<std::string> instances;
     
     host_session();
     void open();
@@ -211,6 +220,7 @@ struct host_session: public main_window_owner_iface
 #endif
     virtual void new_plugin(const char *name);    
     virtual void remove_plugin(plugin_ctl_iface *plugin);
+    std::string get_next_instance_name(const std::string &effect_name);
 };
 
 host_session::host_session()
@@ -226,9 +236,23 @@ host_session::host_session()
     main_win->set_owner(this);
 }
 
+std::string host_session::get_next_instance_name(const std::string &effect_name)
+{
+    if (!instances.count(effect_name))
+        return effect_name;
+    for (int i = 2; ; i++)
+    {
+        string tmp = string(effect_name) + i2s(i);
+        if (!instances.count(tmp))
+            return tmp;
+    }
+    assert(0);
+    return "-";
+}
+
 void host_session::add_plugin(string name, string preset)
 {
-    jack_host_base *jh = create_jack_host(name.c_str());
+    jack_host_base *jh = create_jack_host(name.c_str(), get_next_instance_name(name));
     if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
 #else
@@ -241,6 +265,7 @@ void host_session::add_plugin(string name, string preset)
             s = s.substr(0, s.length() - 2);
         throw text_exception("Unknown plugin name; allowed are: " + s);
     }
+    instances.insert(jh->instance_name);
     jh->open(&client);
     
     plugins.push_back(jh);
@@ -281,9 +306,10 @@ void host_session::open()
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host_base *jh = create_jack_host(name);
+    jack_host_base *jh = create_jack_host(name, get_next_instance_name(name));
     if (!jh)
         return;
+    instances.insert(jh->instance_name);
     jh->open(&client);
     
     plugins.push_back(jh);
