@@ -141,8 +141,12 @@ struct ladspa_wrapper
 {
     typedef ladspa_instance<Module> instance;
     
+    /// LADSPA descriptor
     static LADSPA_Descriptor descriptor;
+    /// LADSPA descriptor for DSSI (uses a different name for the plugin, otherwise same as descriptor)
+    static LADSPA_Descriptor descriptor_for_dssi;
 #if USE_DSSI
+    /// Extended DSSI descriptor (points to descriptor_for_dssi for things like name/label/port info etc.)
     static DSSI_Descriptor dssi_descriptor;
     static DSSI_Program_Descriptor dssi_default_program;
 
@@ -236,9 +240,11 @@ struct ladspa_wrapper
         descriptor.deactivate = cb_deactivate;
         descriptor.cleanup = cb_cleanup;
 #if USE_DSSI
+        memcpy(&descriptor_for_dssi, &descriptor, sizeof(descriptor));
+        descriptor_for_dssi.Name = strdup((std::string(plugin_info.name) + " DSSI").c_str());
         memset(&dssi_descriptor, 0, sizeof(dssi_descriptor));
         dssi_descriptor.DSSI_API_Version = 1;
-        dssi_descriptor.LADSPA_Plugin = &descriptor;
+        dssi_descriptor.LADSPA_Plugin = &descriptor_for_dssi;
         dssi_descriptor.configure = cb_configure;
         dssi_descriptor.get_program = cb_get_program;
         dssi_descriptor.select_program = cb_select_program;
@@ -461,24 +467,6 @@ struct ladspa_wrapper
         return instance;
     }
 };
-
-template<class Module>
-LADSPA_Descriptor ladspa_wrapper<Module>::descriptor;
-
-#if USE_DSSI
-
-template<class Module>
-DSSI_Descriptor ladspa_wrapper<Module>::dssi_descriptor;
-
-template<class Module>
-DSSI_Program_Descriptor ladspa_wrapper<Module>::dssi_default_program;
-
-template<class Module>
-std::vector<plugin_preset> *ladspa_wrapper<Module>::presets;
-
-template<class Module>
-std::vector<DSSI_Program_Descriptor> *ladspa_wrapper<Module>::preset_descs;
-#endif
 
 };
 

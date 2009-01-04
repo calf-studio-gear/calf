@@ -27,6 +27,29 @@
 
 using namespace calf_plugins;
 
+#if USE_LADSPA
+template<class Module>
+LADSPA_Descriptor ladspa_wrapper<Module>::descriptor;
+
+template<class Module>
+LADSPA_Descriptor ladspa_wrapper<Module>::descriptor_for_dssi;
+
+#if USE_DSSI
+
+template<class Module>
+DSSI_Descriptor ladspa_wrapper<Module>::dssi_descriptor;
+
+template<class Module>
+DSSI_Program_Descriptor ladspa_wrapper<Module>::dssi_default_program;
+
+template<class Module>
+std::vector<plugin_preset> *ladspa_wrapper<Module>::presets;
+
+template<class Module>
+std::vector<DSSI_Program_Descriptor> *ladspa_wrapper<Module>::preset_descs;
+#endif
+#endif
+
 #if USE_LV2
 // instantiate descriptor templates
 template<class Module> LV2_Descriptor calf_plugins::lv2_wrapper<Module>::descriptor;
