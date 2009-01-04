@@ -40,7 +40,7 @@ protected:
 public:
     jack_client_t *client;
     int input_nr, output_nr, midi_nr;
-    std::string input_name, output_name, midi_name;
+    std::string name, input_name, output_name, midi_name;
     int sample_rate;
 
     jack_client()
@@ -74,6 +74,7 @@ public:
         sample_rate = jack_get_sample_rate(client);
         jack_set_process_callback(client, do_jack_process, this);
         jack_set_buffer_size_callback(client, do_jack_bufsize, this);
+        name = get_name();
     }
     
     std::string get_name()

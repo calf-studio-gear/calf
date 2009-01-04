@@ -69,6 +69,7 @@ void jack_host_base::open(jack_client *_client)
 void jack_host_base::create_ports() {
     char buf[32];
     char buf2[64];
+    string prefix = client->name + ":";
     static const char *suffixes[] = { "l", "r", "2l", "2r" };
     port *inputs = get_inputs();
     port *outputs = get_outputs();
@@ -76,31 +77,31 @@ void jack_host_base::create_ports() {
     for (int i=0; i<in_count; i++) {
         sprintf(buf, "%s_in_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->input_name.c_str(), client->input_nr++);
-        inputs[i].name = buf;
+        inputs[i].name = buf2;
         inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
         inputs[i].data = NULL;
         if (!inputs[i].handle)
             throw text_exception("Could not create JACK input port");
-        jack_port_set_alias(inputs[i].handle, buf2);
+        jack_port_set_alias(inputs[i].handle, (prefix + buf2).c_str());
     }
     if (get_midi()) {
         sprintf(buf, "%s_midi_in", instance_name.c_str());
         sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
-        midi_port.name = buf;
+        midi_port.name = buf2;
         midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
         if (!midi_port.handle)
             throw text_exception("Could not create JACK MIDI port");
-        jack_port_set_alias(midi_port.handle, buf2);
+        jack_port_set_alias(midi_port.handle, (prefix + buf2).c_str());
     }
     for (int i=0; i<out_count; i++) {
         sprintf(buf, "%s_out_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->output_name.c_str(), client->output_nr++);
-        outputs[i].name = buf;
+        outputs[i].name = buf2;
         outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
         outputs[i].data = NULL;
         if (!outputs[i].handle)
             throw text_exception("Could not create JACK output port");
-        jack_port_set_alias(outputs[i].handle, buf2);
+        jack_port_set_alias(outputs[i].handle, (prefix + buf2).c_str());
     }
 }
 
@@ -199,7 +200,7 @@ struct host_session: public main_window_owner_iface
     
     host_session();
     void open();
-    void add_plugin(string name, string preset);
+    void add_plugin(string name, string preset, string instance_name = string());
     void create_plugins_from_list();
     void connect();
     void close();
@@ -250,9 +251,11 @@ std::string host_session::get_next_instance_name(const std::string &effect_name)
     return "-";
 }
 
-void host_session::add_plugin(string name, string preset)
+void host_session::add_plugin(string name, string preset, string instance_name)
 {
-    jack_host_base *jh = create_jack_host(name.c_str(), get_next_instance_name(name));
+    if (instance_name.empty())
+        instance_name = get_next_instance_name(name);
+    jack_host_base *jh = create_jack_host(name.c_str(), instance_name);
     if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
 #else
@@ -464,6 +467,7 @@ void host_session::update_lash()
                     sprintf(ss, "Plugin%d", i);
                     pstr = preset.to_xml();
                     tmp.clear();
+                    tmp["instance_name"] = p->instance_name;
                     if (p->get_input_count())
                         tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
                     if (p->get_output_count())
@@ -501,6 +505,8 @@ void host_session::update_lash()
                         dictionary dict;
                         decode_map(dict, data);
                         data = dict["preset"];
+                        string instance_name;
+                        if (dict.count("instance_name")) instance_name = dict["instance_name"];
                         if (dict.count("input_name")) client.input_nr = atoi(dict["input_name"].c_str());
                         if (dict.count("output_name")) client.output_nr = atoi(dict["output_name"].c_str());
                         if (dict.count("midi_name")) client.midi_nr = atoi(dict["midi_name"].c_str());
@@ -509,7 +515,7 @@ void host_session::update_lash()
                         if (tmp.presets.size())
                         {
                             printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());
-                            add_plugin(tmp.presets[0].plugin, "");
+                            add_plugin(tmp.presets[0].plugin, "", instance_name);
                             tmp.presets[0].activate(plugins[nplugin]);
                             main_win->refresh_plugin(plugins[nplugin]);
                         }
