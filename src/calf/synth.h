@@ -123,7 +123,7 @@ public:
     virtual void steal()=0;
     /// return the note used by this voice
     virtual int get_current_note()=0;
-    virtual float get_priority() { return stolen ? 20000 : (released ? 1 : 100); }
+    virtual float get_priority() { return stolen ? 20000 : (released ? 1 : (sostenuto ? 200 : 100)); }
     /// empty virtual destructor
     virtual ~voice() {}
 };
