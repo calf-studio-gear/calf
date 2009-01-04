@@ -1,3 +1,16 @@
+Version 0.0.18 (ongoing)
+
++ Organ: added polyphony limit
++ Small plugins: added support for polymorphic port extension to allow
+  the same plugins to be used for control and audio signals
++ DSSI: renamed all the plugins from "plugin LADSPA" to "plugin DSSI"
++ LADSPA: more reasonable default value hints, fixed locale issue in LRDF
++ JACK host: added icons by Thorsten Wilms (thanks!)
++ Organ, Monosynth: better memory usage
++ LV2: attempt at supporting configure-like parameters (key mapping curve
+  in Organ) by the new String Port extension
++ AutoHell: configure script prints if --enable-experimental was specified
+
 Version 0.0.17
 
 + Compressor: new plugin by Thor Harald Johansen
