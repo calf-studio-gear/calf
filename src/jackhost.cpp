@@ -83,6 +83,15 @@ void jack_host_base::create_ports() {
             throw text_exception("Could not create JACK input port");
         jack_port_set_alias(inputs[i].handle, buf2);
     }
+    if (get_midi()) {
+        sprintf(buf, "%s_midi_in", instance_name.c_str());
+        sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
+        midi_port.name = buf;
+        midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+        if (!midi_port.handle)
+            throw text_exception("Could not create JACK MIDI port");
+        jack_port_set_alias(midi_port.handle, buf2);
+    }
     for (int i=0; i<out_count; i++) {
         sprintf(buf, "%s_out_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->output_name.c_str(), client->output_nr++);
@@ -92,15 +101,6 @@ void jack_host_base::create_ports() {
         if (!outputs[i].handle)
             throw text_exception("Could not create JACK output port");
         jack_port_set_alias(outputs[i].handle, buf2);
-    }
-    if (get_midi()) {
-        sprintf(buf, "%s_midi_in", instance_name.c_str());
-        sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
-        midi_port.name = buf;
-        midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-        if (!midi_port.handle)
-            throw text_exception("Could not create JACK MIDI port");
-        jack_port_set_alias(midi_port.handle, buf2);
     }
 }
 
