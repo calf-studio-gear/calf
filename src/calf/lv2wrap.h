@@ -28,15 +28,16 @@
 #include <lv2.h>
 #include <calf/giface.h>
 #include <calf/lv2-midiport.h>
-#include <calf/lv2_event.h>
-#include <calf/lv2_uri_map.h>
 #include <calf/lv2_contexts.h>
+#include <calf/lv2_event.h>
+#include <calf/lv2_progress.h>
 #include <calf/lv2_string_port.h>
+#include <calf/lv2_uri_map.h>
 
 namespace calf_plugins {
 
 template<class Module>
-struct lv2_instance: public plugin_ctl_iface, public Module
+struct lv2_instance: public plugin_ctl_iface, public progress_report_iface, public Module
 {
     bool set_srate;
     int srate_to_set;
@@ -46,6 +47,7 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     LV2_Event_Feature *event_feature;
     uint32_t midi_event_type;
     std::vector<int> message_params;
+    LV2_Progress *progress_report_feature;
     lv2_instance()
     {
         for (int i=0; i < Module::in_count; i++)
@@ -61,7 +63,15 @@ struct lv2_instance: public plugin_ctl_iface, public Module
         set_srate = true;
         srate_to_set = 44100;
         get_message_context_parameters(message_params);
+        progress_report_feature = NULL;
         // printf("message params %d\n", (int)message_params.size());
+    }
+    /// This, and not Module::post_instantiate, is actually called by lv2_wrapper class
+    void post_instantiate()
+    {
+        if (progress_report_feature)
+            Module::progress_report = this;
+        Module::post_instantiate();
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -111,6 +121,10 @@ struct lv2_instance: public plugin_ctl_iface, public Module
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int cmd_no) {
         Module::execute(cmd_no);
+    }
+    virtual void report_progress(float percentage, const std::string &message) {
+        if (progress_report_feature)
+            (*progress_report_feature->progress)(progress_report_feature->context, percentage, !message.empty() ? message.c_str() : NULL);
     }
     void send_configures(send_configure_iface *sci) { 
         Module::send_configures(sci);
@@ -229,8 +243,13 @@ struct lv2_wrapper
             {
                 mod->event_feature = (LV2_Event_Feature *)((*features)->data);
             }
+            else if (!strcmp((*features)->URI, LV2_PROGRESS_URI))
+            {
+                mod->progress_report_feature = (LV2_Progress *)((*features)->data);
+            }
             features++;
         }
+        mod->post_instantiate();
         return mod;
     }
     static inline void zero_by_mask(Module *module, uint32_t mask, uint32_t offset, uint32_t nsamples)

@@ -300,6 +300,7 @@ struct ladspa_wrapper
     {
         instance *mod = new instance();
         mod->srate = sample_rate;
+        mod->post_instantiate();
         return mod;
     }
 

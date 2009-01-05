@@ -184,11 +184,12 @@ struct vumeter
 };
 
 template<class Module>
-class jack_host: public jack_host_base, public Module {
+class jack_host: public jack_host_base, public Module, public calf_plugins::progress_report_iface {
 public:
     using Module::in_count;
     using Module::out_count;
     using Module::param_count;
+    using Module::progress_report;
 
     port inputs[in_count], outputs[out_count];
     vumeter input_vus[in_count], output_vus[out_count];
@@ -203,6 +204,8 @@ public:
         }
         clear_preset();
         midi_meter = 0;
+        progress_report = this;
+        Module::post_instantiate();
     }
     
     ~jack_host()
@@ -210,6 +213,13 @@ public:
         if (client)
             close();
     }
+    
+    virtual void report_progress(float percentage, const std::string &message) {
+        if (!message.empty())
+            printf("Message: %s\n", message.c_str());
+        printf("Percentage: %0.1f\n", percentage);
+    }
+    
     
     virtual void init_module() {
         Module::set_sample_rate(client->sample_rate);

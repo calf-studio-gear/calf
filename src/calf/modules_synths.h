@@ -209,6 +209,11 @@ public:
     {
         var_map_curve = "2\n0 1\n1 1\n"; // XXXKF hacky bugfix
     }
+    
+    void post_instantiate()
+    {
+        dsp::organ_voice_base::precalculate_waves(progress_report);
+    }
 
     void set_sample_rate(uint32_t sr) {
         srate = sr;

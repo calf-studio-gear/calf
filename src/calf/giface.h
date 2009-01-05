@@ -144,6 +144,12 @@ struct cairo_iface
     virtual ~cairo_iface() {}
 };
 
+struct progress_report_iface
+{
+    virtual void report_progress(float percentage, const std::string &message) = 0;
+    virtual ~progress_report_iface() {}
+};
+
 /// 'provides live line graph values' interface
 struct line_graph_iface
 {
@@ -300,6 +306,12 @@ class audio_module: public Metadata
 public:
     typedef Metadata metadata_type;
 
+    progress_report_iface *progress_report;
+
+    audio_module() {
+        progress_report = NULL;
+    }
+
     /// Handle MIDI Note On
     inline void note_on(int note, int velocity) {}
     /// Handle MIDI Note Off
@@ -327,6 +339,8 @@ public:
     inline void send_configures(send_configure_iface *sci) {}
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
+    /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)
+    inline void post_instantiate() {}
     /// Handle 'message context' port message
     /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
     inline uint32_t message_run(const void *valid_ports, void *output_ports) { 

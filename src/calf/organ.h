@@ -152,7 +152,7 @@ public:
     static inline big_wave_family &get_big_wave(int wave) {
         return (*big_waves)[wave];
     }
-    static void precalculate_waves();
+    static void precalculate_waves(calf_plugins::progress_report_iface *reporter);
     void update_pitch()
     {
         float phase = dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
@@ -302,7 +302,6 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
      drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
-        organ_voice_base::precalculate_waves();
     }
     void render_separate(float *output[], int nsamples)
     {

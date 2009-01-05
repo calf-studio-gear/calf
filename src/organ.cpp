@@ -39,7 +39,7 @@ using namespace calf_plugins;
 bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (index == par_master) {
-        organ_voice_base::precalculate_waves();
+        organ_voice_base::precalculate_waves(progress_report);
         if (subindex)
             return false;
         float *waveforms[9];
@@ -190,7 +190,10 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
     #endif
 }
 
-void organ_voice_base::precalculate_waves()
+#define LARGE_WAVEFORM_PROGRESS() do { if (reporter) { progress += 100; reporter->report_progress(floor(progress / totalwaves), "Precalculating large waveforms"); } } while(0)
+
+
+void organ_voice_base::precalculate_waves(progress_report_iface *reporter)
 {
     static bool inited = false;
     if (!inited)
@@ -200,6 +203,10 @@ void organ_voice_base::precalculate_waves()
         organ_voice_base::waves = &waves;
         organ_voice_base::big_waves = &big_waves;
         
+        float progress = 0.0;
+        int totalwaves = 1 + wave_count_big;
+        if (reporter)
+            reporter->report_progress(0, "Precalculating small waveforms");
         float tmp[ORGAN_WAVE_SIZE];
         static bandlimiter<ORGAN_WAVE_BITS> bl;
         static bandlimiter<ORGAN_BIG_WAVE_BITS> blBig;
@@ -360,24 +367,28 @@ void organ_voice_base::precalculate_waves()
         phaseshift(bl, tmp);
         waves[wave_dpls].make(bl, tmp);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_strings - wave_count_small], 15);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = -1 + (i * 2.0 / ORGAN_WAVE_SIZE);
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_strings2 - wave_count_small], 40);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
             tmp[i] = sin(i * 2 * M_PI / ORGAN_WAVE_SIZE);
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_sinepad - wave_count_small], 20);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -388,6 +399,7 @@ void organ_voice_base::precalculate_waves()
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_bellpad - wave_count_small], 30, 30, true);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -398,6 +410,7 @@ void organ_voice_base::precalculate_waves()
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_space - wave_count_small], 30, 30);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -408,6 +421,7 @@ void organ_voice_base::precalculate_waves()
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_choir - wave_count_small], 50, 10);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
@@ -418,6 +432,7 @@ void organ_voice_base::precalculate_waves()
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_choir2 - wave_count_small], 50, 10);
 
+        LARGE_WAVEFORM_PROGRESS();
         for (int i = 0; i < ORGAN_WAVE_SIZE; i++)
         {
             float ph = i * 2 * M_PI / ORGAN_WAVE_SIZE;
