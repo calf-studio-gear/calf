@@ -221,6 +221,7 @@ struct host_session: public main_window_owner_iface
 #endif
     virtual void new_plugin(const char *name);    
     virtual void remove_plugin(plugin_ctl_iface *plugin);
+    void remove_all_plugins();
     std::string get_next_instance_name(const std::string &effect_name);
 };
 
@@ -332,6 +333,18 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
             delete plugin;
             return;
         }
+    }
+}
+
+void host_session::remove_all_plugins()
+{
+    while(!plugins.empty())
+    {
+        plugin_ctl_iface *plugin = plugins[0];
+        client.del(0);
+        plugins.erase(plugins.begin());
+        main_win->del_plugin(plugin);
+        delete plugin;
     }
 }
 
@@ -487,6 +500,7 @@ void host_session::update_lash()
             case LASH_Restore_Data_Set:
             {
                 // printf("!!!Restore data set!!!\n");
+                remove_all_plugins();
                 while(lash_config_t *cfg = lash_get_config(lash_client)) {
                     const char *key = lash_config_get_key(cfg);
                     // printf("key = %s\n", lash_config_get_key(cfg));

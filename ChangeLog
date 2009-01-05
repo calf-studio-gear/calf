@@ -1,5 +1,6 @@
 Version 0.0.18 (ongoing)
 
++ JACK host: use sensible port names (possibly breaking new LASH sessions)
 + Organ: added polyphony limit
 + Small plugins: added support for polymorphic port extension to allow
   the same plugins to be used for control and audio signals
