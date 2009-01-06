@@ -135,6 +135,7 @@ public:
     jack_host_base(const std::string &_name, const std::string &_instance_name) {
         name = _name;
         instance_name = _instance_name;
+        
         client = NULL;
         changed = true;
     }
@@ -153,7 +154,7 @@ public:
     virtual void create_ports();
     
     void close();
-
+    
     virtual ~jack_host_base() {
     }
 };
@@ -184,7 +185,7 @@ struct vumeter
 };
 
 template<class Module>
-class jack_host: public jack_host_base, public Module, public calf_plugins::progress_report_iface {
+class jack_host: public jack_host_base, public Module {
 public:
     using Module::in_count;
     using Module::out_count;
@@ -196,7 +197,7 @@ public:
     float param_values[param_count];
     float midi_meter;
     
-    jack_host(const std::string &_name, const std::string &_instance_name)
+    jack_host(const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
     : jack_host_base(_name, _instance_name)
     {
         for (int i = 0; i < Module::param_count; i++) {
@@ -204,7 +205,7 @@ public:
         }
         clear_preset();
         midi_meter = 0;
-        progress_report = this;
+        progress_report = _priface;
         Module::post_instantiate();
     }
     
@@ -213,13 +214,6 @@ public:
         if (client)
             close();
     }
-    
-    virtual void report_progress(float percentage, const std::string &message) {
-        if (!message.empty())
-            printf("Message: %s\n", message.c_str());
-        printf("Percentage: %0.1f\n", percentage);
-    }
-    
     
     virtual void init_module() {
         Module::set_sample_rate(client->sample_rate);
@@ -363,7 +357,7 @@ public:
     }
 };
 
-extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name);
+extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
 
 #endif
 

@@ -47,9 +47,9 @@ plugin_gui_window *gui_win;
 
 const char *client_name = "calfhost";
 
-jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name)
+jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>(effect_name, instance_name);
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>(effect_name, instance_name, priface);
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -178,7 +178,7 @@ void jack_client::delete_plugins()
     plugins.clear();
 }
 
-struct host_session: public main_window_owner_iface
+struct host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface
 {
     string client_name, input_name, output_name, midi_name;
     vector<string> plugin_names;
@@ -197,6 +197,7 @@ struct host_session: public main_window_owner_iface
     int lash_source_id;
     bool restoring_session;
     std::set<std::string> instances;
+    GtkWidget *progress_window;
     
     host_session();
     void open();
@@ -223,6 +224,11 @@ struct host_session: public main_window_owner_iface
     virtual void remove_plugin(plugin_ctl_iface *plugin);
     void remove_all_plugins();
     std::string get_next_instance_name(const std::string &effect_name);
+    
+    /// Create a toplevel window with progress bar
+    GtkWidget *create_progress_window();
+    /// Implementation of progress_report_iface function
+    void report_progress(float percentage, const std::string &message);
 };
 
 host_session::host_session()
@@ -236,6 +242,7 @@ host_session::host_session()
     restoring_session = false;
     main_win = new main_window;
     main_win->set_owner(this);
+    progress_window = NULL;
 }
 
 std::string host_session::get_next_instance_name(const std::string &effect_name)
@@ -256,7 +263,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
 {
     if (instance_name.empty())
         instance_name = get_next_instance_name(name);
-    jack_host_base *jh = create_jack_host(name.c_str(), instance_name);
+    jack_host_base *jh = create_jack_host(name.c_str(), instance_name, this);
     if (!jh) {
 #ifdef ENABLE_EXPERIMENTAL
 #else
@@ -286,11 +293,51 @@ void host_session::add_plugin(string name, string preset, string instance_name)
     }
 }
 
+void host_session::report_progress(float percentage, const std::string &message)
+{
+    if (percentage < 100)
+    {
+        if (!progress_window) {
+            progress_window = create_progress_window();
+            gtk_window_set_modal (GTK_WINDOW (progress_window), TRUE);
+            if (main_win->toplevel)
+                gtk_window_set_transient_for (GTK_WINDOW (progress_window), main_win->toplevel);
+        }
+        gtk_widget_show(progress_window);
+        GtkWidget *pbar = gtk_bin_get_child (GTK_BIN (progress_window));
+        if (!message.empty())
+            gtk_progress_bar_set_text (GTK_PROGRESS_BAR (pbar), message.c_str());
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (pbar), percentage / 100.0);
+    }
+    else
+    {
+        if (progress_window) {
+            gtk_window_set_modal (GTK_WINDOW (progress_window), FALSE);
+            gtk_widget_destroy (progress_window);
+            progress_window = NULL;
+        }
+    }
+    
+    while (gtk_events_pending ())
+        gtk_main_iteration ();
+}
+
+
 void host_session::create_plugins_from_list()
 {
     for (unsigned int i = 0; i < plugin_names.size(); i++) {
         add_plugin(plugin_names[i], presets.count(i) ? presets[i] : string());
     }
+}
+
+GtkWidget *host_session::create_progress_window()
+{
+    GtkWidget *tlw = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
+    gtk_window_set_type_hint (GTK_WINDOW (tlw), GDK_WINDOW_TYPE_HINT_DIALOG);
+    GtkWidget *pbar = gtk_progress_bar_new();
+    gtk_container_add (GTK_CONTAINER(tlw), pbar);
+    gtk_widget_show_all (pbar);
+    return tlw;
 }
 
 void host_session::open()
@@ -310,7 +357,7 @@ void host_session::open()
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host_base *jh = create_jack_host(name, get_next_instance_name(name));
+    jack_host_base *jh = create_jack_host(name, get_next_instance_name(name), this);
     if (!jh)
         return;
     instances.insert(jh->instance_name);
@@ -559,6 +606,7 @@ int main(int argc, char *argv[])
     host_session &sess = current_session;
     map<int, string> preset_options;
     gtk_init(&argc, &argv);
+    
 #if USE_LASH
     for (int i = 1; i < argc; i++)
     {
