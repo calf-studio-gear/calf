@@ -442,6 +442,7 @@ void organ_voice_base::precalculate_waves(progress_report_iface *reporter)
         normalize_waveform(tmp, ORGAN_WAVE_SIZE);
         bl.compute_spectrum(tmp);
         padsynth(bl, blBig, big_waves[wave_choir3 - wave_count_small], 50, 10);
+        LARGE_WAVEFORM_PROGRESS();
         
         inited = true;
     }
