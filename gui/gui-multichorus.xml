@@ -62,4 +62,23 @@
             </frame>
         </hbox>
     </if>
+    <frame label="LFO" attach-x="0" attach-y="3" shrink-y="1">
+        <hbox>
+            <vbox border="10">
+                <label param="freq" />
+                <knob param="freq" />
+                <value param="freq" />
+            </vbox>
+            <vbox border="10">
+                <label param="freq2" />
+                <knob param="freq2" />
+                <value param="freq2" />
+            </vbox>
+            <vbox border="10">
+                <label param="q" />
+                <knob param="q" />
+                <value param="q" />
+            </vbox>
+        </hbox>
+    </frame>
 </table>

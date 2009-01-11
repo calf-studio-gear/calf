@@ -293,9 +293,14 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
 {
     if (!is_active)
         return false;
-    if (index == par_delay && subindex < 2) 
+    if (index == par_delay && subindex < 3) 
     {
-        set_channel_color(context, subindex);
+        if (subindex < 2)
+            set_channel_color(context, subindex);
+        else {
+            context->set_source_rgba(0, 1, 0);
+            context->set_line_width(1.0);
+        }
         return ::get_graph(*this, subindex, data, points);
     }
     if (index == par_rate && !subindex) {
@@ -342,6 +347,8 @@ bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos,
 
 float multichorus_audio_module::freq_gain(int subindex, float freq, float srate)
 {
+    if (subindex == 2)
+        return *params[par_amount] * left.post.freq_gain(freq, srate);
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
 

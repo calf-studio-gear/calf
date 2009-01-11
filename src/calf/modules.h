@@ -626,6 +626,74 @@ public:
     virtual void control_change(int ctl, int val);
 };
 
+/// Compose two filters in series
+template<class F1, class F2>
+class filter_compose {
+public:
+    typedef std::complex<float> cfloat;
+    F1 f1;
+    F2 f2;
+public:
+    float process(float value) {
+        return f2.process(f1.process(value));
+    }
+    
+    cfloat h_z(const cfloat &z) {
+        return f1.h_z(z) * f2.h_z(z);
+    }
+    
+    /// Return the filter's gain at frequency freq
+    /// @param freq   Frequency to look up
+    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq));
+        
+        return std::abs(h_z(z));
+    }
+    
+    void sanitize() {
+        f1.sanitize();
+        f2.sanitize();
+    }
+};
+
+/// Compose two filters in parallel
+template<class F1, class F2>
+class filter_sum {
+public:
+    typedef std::complex<double> cfloat;
+    F1 f1;
+    F2 f2;
+public:
+    float process(float value) {
+        return f2.process(value) + f1.process(value);
+    }
+    
+    inline cfloat h_z(const cfloat &z) {
+        return f1.h_z(z) + f2.h_z(z);
+    }
+    
+    /// Return the filter's gain at frequency freq
+    /// @param freq   Frequency to look up
+    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq));
+        
+        return std::abs(h_z(z));
+    }
+    
+    void sanitize() {
+        f1.sanitize();
+        f2.sanitize();
+    }
+};
+
 /// A multitap stereo chorus thing - processing
 class multichorus_audio_module: public audio_module<multichorus_metadata>, public line_graph_iface
 {
@@ -634,8 +702,9 @@ public:
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate;
-    dsp::multichorus<float, sine_multi_lfo<float, 8>, 4096> left, right;
+    dsp::multichorus<float, sine_multi_lfo<float, 8>, filter_sum<dsp::biquad_d2<>, dsp::biquad_d2<> >, 4096> left, right;
     float last_r_phase;
+    float cutoff;
     bool is_active;
     
 public:    
@@ -667,6 +736,10 @@ public:
             right.lfo.phase += chorus_phase(r_phase * 4096);
             last_r_phase = r_phase;
         }
+        left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
+        left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
+        right.post.f1.copy_coeffs(left.post.f1);
+        right.post.f2.copy_coeffs(left.post.f2);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         left.process(outs[0] + offset, ins[0] + offset, numsamples);

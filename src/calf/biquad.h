@@ -47,6 +47,7 @@ class biquad_coeffs
 public:
     // filter coefficients
     Coeff a0, a1, a2, b1, b2;
+    typedef std::complex<double> cfloat;
 
     biquad_coeffs()
     {
@@ -310,7 +311,16 @@ public:
         freq *= 2.0 * M_PI / sr;
         cfloat z = 1.0 / exp(cfloat(0.0, freq));
         
-        return std::abs((cfloat(a0) + double(a1) * z + double(a2) * z*z) / (cfloat(1.0) + double(b1) * z + double(b2) * z*z));
+        return std::abs(h_z(z));
+    }
+    
+    /// Return H(z) the filter's gain at frequency freq
+    /// @param freq   Frequency to look up
+    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    cfloat h_z(const cfloat &z)
+    {
+        
+        return (cfloat(a0) + double(a1) * z + double(a2) * z*z) / (cfloat(1.0) + double(b1) * z + double(b2) * z*z);
     }
     
 };

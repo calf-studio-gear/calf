@@ -86,13 +86,15 @@ public:
  * Multi-tap chorus without feedback.
  * Perhaps MaxDelay should be a bit longer!
  */
-template<class T, class MultiLfo, int MaxDelay=4096>
+template<class T, class MultiLfo, class Postprocessor, int MaxDelay=4096>
 class multichorus: public chorus_base
 {
 protected:
     simple_delay<MaxDelay,T> delay;
 public:    
     MultiLfo lfo;
+    Postprocessor post;
+public:
     multichorus() {
         rate = 0.63f;
         dry = 0.5f;
@@ -140,17 +142,20 @@ public:
             {
                 int lfo_output = lfo.get_value(v);
                 // 3 = log2(32 >> 2) + 1 because the LFO value is in range of [-65535, 65535] (17 bits)
-                int v = mds + (mdepth * lfo_output >> (3 + 1));
-                int ifv = v >> 16;
+                int dv = mds + (mdepth * lfo_output >> (3 + 1));
+                int ifv = dv >> 16;
                 T fd; // signal from delay's output
-                delay.get_interp(fd, ifv, (v & 0xFFFF)*(1.0/65536.0));
+                delay.get_interp(fd, ifv, (dv & 0xFFFF)*(1.0/65536.0));
                 out += fd;
             }
+            // apply the post filter
+            out = post.process(out);
             T sdry = in * gs_dry.get();
             T swet = out * gs_wet.get() * scale;
             *buf_out++ = sdry + swet;
             lfo.step();
         }
+        post.sanitize();
     }
     float freq_gain(float freq, float sr)
     {
@@ -167,12 +172,13 @@ public:
         {
             int lfo_output = lfo.get_value(v);
             // 3 = log2(32 >> 2) + 1 because the LFO value is in range of [-65535, 65535] (17 bits)
-            int v = mds + (mdepth * lfo_output >> (3 + 1));
-            int fldp = v >> 16;
+            int dv = mds + (mdepth * lfo_output >> (3 + 1));
+            int fldp = dv >> 16;
             cfloat zn = std::pow(z, fldp); // z^-N
-            h += zn + (zn * z - zn) * cfloat(v / 65536.0 - fldp);
+            h += zn + (zn * z - zn) * cfloat(dv / 65536.0 - fldp);
         }
-        // simulate a lerped comb filter - H(z) = 1 / (1 + fb * (lerp(z^-N, z^-(N+1), fracpos))), N = int(pos), fracpos = pos - int(pos)
+        // apply the post filter
+        h *= post.h_z(z);
         // mix with dry signal
         float v = std::abs(cfloat(gs_dry.get_last()) + cfloat(scale * gs_wet.get_last()) * h);
         return v;
