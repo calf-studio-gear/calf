@@ -65,6 +65,29 @@ static void set_channel_color(cairo_iface *context, int channel)
 
 static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
+    if (subindex < 28)
+    {
+        vertical = true;
+        if (subindex == 9) legend = "100 Hz";
+        if (subindex == 18) legend = "1 kHz";
+        if (subindex == 27) legend = "10 kHz";
+        float freq = 100;
+        if (subindex < 9)
+            freq = 10 * (subindex + 1);
+        else if (subindex < 18)
+            freq = 100 * (subindex - 9 + 1);
+        else if (subindex < 27)
+            freq = 1000 * (subindex - 18 + 1);
+        else
+            freq = 10000 * (subindex - 27 + 1);
+        pos = log(freq / 20.0) / log(1000);
+        if (!legend.empty())
+            context->set_source_rgba(0.25, 0.25, 0.25, 0.75);
+        else
+            context->set_source_rgba(0.25, 0.25, 0.25, 0.5);
+        return true;
+    }
+    subindex -= 28;
     float gain = 16.0 / (1 << subindex);
     pos = dB_grid(gain);
     if (pos < -1)
