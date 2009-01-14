@@ -53,7 +53,7 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
 
 struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
-    enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, param_count };
+    enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, param_count };
     enum { in_count = 2, out_count = 2, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
 };

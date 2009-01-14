@@ -463,12 +463,29 @@ public:
             tl[4] = 1075 << 16, tr[4] = 1099 << 16;
             tl[5] = 1003 << 16, tr[5] = 1073 << 16;
             break;
+        case 4:
+            tl[0] =  197 << 16, tr[0] =  133 << 16;
+            tl[1] =  357 << 16, tr[1] =  229 << 16;
+            tl[2] =  549 << 16, tr[2] =  431 << 16;
+            tl[3] =  949 << 16, tr[3] = 1277 << 16;
+            tl[4] = 1173 << 16, tr[4] = 1671 << 16;
+            tl[5] = 1477 << 16, tr[5] = 1881 << 16;
+            break;
+        case 5:
+            tl[0] =  197 << 16, tr[0] =  133 << 16;
+            tl[1] =  257 << 16, tr[1] =  179 << 16;
+            tl[2] =  549 << 16, tr[2] =  431 << 16;
+            tl[3] =  619 << 16, tr[3] =  497 << 16;
+            tl[4] = 1173 << 16, tr[4] = 1371 << 16;
+            tl[5] = 1577 << 16, tr[5] = 1881 << 16;
+            break;
         }
         
-        float fDec=1000 + 1400.f * diffusion;
-        for (int i = 0 ; i < 6; i++)
+        float fDec=1000 + 2400.f * diffusion;
+        for (int i = 0 ; i < 6; i++) {
             ldec[i]=exp(-float(tl[i] >> 16) / fDec), 
             rdec[i]=exp(-float(tr[i] >> 16) / fDec);
+        }
     }
     float get_time() {
         return time;
@@ -529,12 +546,7 @@ public:
         unsigned int ipart = phase.ipart();
         
         // the interpolated LFO might be an overkill here
-        int lfo = phase.lerp_by_fract_int<int, 14, int>(sine.data[ipart], sine.data[ipart+1]);
-        /*
-        static int tmp = 0;
-        if ((tmp++) % 10 == 0)
-            printf("lfo=%d\n", lfo);
-            */
+        int lfo = phase.lerp_by_fract_int<int, 14, int>(sine.data[ipart], sine.data[ipart+1]) >> 2;
         phase += dphase;
         
         left += old_right;
@@ -543,7 +555,7 @@ public:
         float out_left = left;
         left = apL3.process_allpass_comb_lerp16(left, tl[2] + 54*lfo, ldec[2]);
         left = apL4.process_allpass_comb_lerp16(left, tl[3] - 69*lfo, ldec[3]);
-        left = apL5.process_allpass_comb_lerp16(left, tl[4] - 69*lfo, ldec[4]);
+        left = apL5.process_allpass_comb_lerp16(left, tl[4] + 69*lfo, ldec[4]);
         left = apL6.process_allpass_comb_lerp16(left, tl[5] - 46*lfo, ldec[5]);
         old_left = lp_left.process(left * fb);
         sanitize(old_left);
@@ -554,7 +566,7 @@ public:
         float out_right = right;
         right = apR3.process_allpass_comb_lerp16(right, tr[2] + 54*lfo, rdec[2]);
         right = apR4.process_allpass_comb_lerp16(right, tr[3] - 69*lfo, rdec[3]);
-        right = apR5.process_allpass_comb_lerp16(right, tr[4] - 69*lfo, rdec[4]);
+        right = apR5.process_allpass_comb_lerp16(right, tr[4] + 69*lfo, rdec[4]);
         right = apR6.process_allpass_comb_lerp16(right, tr[5] - 46*lfo, rdec[5]);
         old_right = lp_right.process(right * fb);
         sanitize(old_right);

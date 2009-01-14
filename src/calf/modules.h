@@ -188,8 +188,11 @@ class reverb_audio_module: public audio_module<reverb_metadata>
 {
 public:    
     dsp::reverb<float> reverb;
+    dsp::simple_delay<16384, stereo_sample<float> > pre_delay;
+    dsp::onepole<float> left_lo, right_lo, left_hi, right_hi;
     uint32_t srate;
     gain_smoothing amount, dryamount;
+    int predelay_amt;
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -202,19 +205,33 @@ public:
         reverb.set_cutoff(*params[par_hfdamp]);
         amount.set_inertia(*params[par_amount]);
         dryamount.set_inertia(*params[par_dry]);
+        left_lo.set_lp(dsp::clip(*params[par_treblecut], 20.f, (float)(srate * 0.49f)), srate);
+        left_hi.set_hp(dsp::clip(*params[par_basscut], 20.f, (float)(srate * 0.49f)), srate);
+        right_lo.copy_coeffs(left_lo);
+        right_hi.copy_coeffs(left_hi);
+        predelay_amt = srate * (*params[par_predelay]) * (1.0f / 1000.0f) + 1;
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         numsamples += offset;
+        
         for (uint32_t i = offset; i < numsamples; i++) {
             float dry = dryamount.get();
             float wet = amount.get();
-            float l = ins[0][i], r = ins[1][i];
-            float rl = l, rr = r;
+            stereo_sample<float> s(ins[0][i], ins[1][i]);
+            stereo_sample<float> s2 = pre_delay.process(s, predelay_amt);
+            
+            float rl = s2.left, rr = s2.right;
+            rl = left_lo.process(left_hi.process(rl));
+            rr = right_lo.process(right_hi.process(rr));
             reverb.process(rl, rr);
-            outs[0][i] = dry*l + wet*rl;
-            outs[1][i] = dry*r + wet*rr;
+            outs[0][i] = dry*s.left + wet*rl;
+            outs[1][i] = dry*s.right + wet*rr;
         }
         reverb.extra_sanitize();
+        left_lo.sanitize();
+        left_hi.sanitize();
+        right_lo.sanitize();
+        right_hi.sanitize();
         return outputs_mask;
     }
     void activate();

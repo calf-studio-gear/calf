@@ -28,9 +28,24 @@
             <value param="diffusion" />
         </vbox>
         <vbox border="5">
-            <label param="room_size"  />
-            <combo param="room_size" />
+            <label param="predelay" />
+            <knob param="predelay" />
+            <value param="predelay" />
+        </vbox>
+        <vbox border="5">
+            <label param="bass_cut" />
+            <knob param="bass_cut" />
+            <value param="bass_cut" />
+        </vbox>
+        <vbox border="5">
+            <label param="treble_cut" />
+            <knob param="treble_cut" />
+            <value param="treble_cut" />
         </vbox>
     </hbox>
+    <vbox border="5">
+        <label param="room_size"  />
+        <combo param="room_size" />
+    </vbox>
 </vbox>
 
