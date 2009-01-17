@@ -361,7 +361,7 @@ public:
     static parameter_properties param_props[];
     static ladspa_plugin_info plugin_info;
 
-    // These below are stock implementations based on enums and static members in Metadata class
+    // These below are stock implementations based on enums and static members in Metadata classes
     // they may be overridden to provide more interesting functionality
 
     const char *get_name() { return Metadata::impl_get_name(); } 
@@ -392,7 +392,7 @@ public:
     }
 };
 
-/// A class for delegating metadata implementation to "remote" metadata class.
+/// A class for delegating metadata implementation to a "remote" metadata class.
 /// Used for GUI wrappers that cannot have a dependency on actual classes,
 /// and which instead take an "external" metadata object pointer, obtained
 /// through get_all_plugins.
