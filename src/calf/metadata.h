@@ -92,6 +92,14 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum { step_size = 64 };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
 };
+
+/*
+/// Filterclavier - metadata
+struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
+{
+	
+};
+*/
     
 /// Thor's compressor - metadata
 struct compressor_metadata: public plugin_metadata<compressor_metadata>

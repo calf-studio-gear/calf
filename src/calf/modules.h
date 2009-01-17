@@ -239,6 +239,7 @@ public:
     void deactivate();
 };
 
+#if !ENABLE_EXPERIMENTAL
 class filter_audio_module: public audio_module<filter_metadata>, public line_graph_iface
 {
 public:    
@@ -377,6 +378,7 @@ public:
     float freq_gain(int subindex, float freq, float srate);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
 };
+#endif
 
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 {

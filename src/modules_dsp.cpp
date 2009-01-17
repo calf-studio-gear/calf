@@ -26,6 +26,7 @@
 #endif
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -191,7 +192,7 @@ void reverb_audio_module::set_sample_rate(uint32_t sr)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
+#if !ENABLE_EXPERIMENTAL
 void filter_audio_module::activate()
 {
     params_changed();
@@ -239,7 +240,25 @@ bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     return false;
 }
+#else
+bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    if (index == par_cutoff && !subindex) {
+        context->set_line_width(1.5);
+        return ::get_graph(*this, subindex, data, points);
+    }
+    return false;
+}
 
+bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    if (index == par_cutoff)
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
+    return false;
+}
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 rotary_speaker_audio_module::rotary_speaker_audio_module()
