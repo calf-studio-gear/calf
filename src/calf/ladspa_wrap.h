@@ -201,6 +201,8 @@ struct ladspa_wrapper
                     break;
                 default: {
                     int defpt = (int)(100 * (pp.def_value - pp.min) / (pp.max - pp.min));
+                    if ((pp.flags & PF_SCALEMASK) == PF_SCALE_LOG)
+                        defpt = (int)(100 * log(pp.def_value / pp.min) / log(pp.max / pp.min));
                     if (defpt < 12)
                         prh.HintDescriptor |= LADSPA_HINT_DEFAULT_MINIMUM;
                     else if (defpt < 37)
