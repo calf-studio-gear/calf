@@ -2,7 +2,7 @@
 .SH NAME
 calfjackhost \- JACK wrapper for Calf plugins
 .SH SYNOPSIS
-.B calfjackhost [\fIoptions\fR] \fIplugin\fR [\fB!\fR] ...
+.B calfjackhost [\fIoptions\fR] \fIplugin[:preset]\fR [\fB!\fR] ...
 .br
 .SH DESCRIPTION
 Calf JACK host application provides a way to use Calf plugins directly, without need for any external host application. It also offers best GUI functionality (using GTK+ 2 widget set), as there is no restrictive plugin standard getting in a way between GUI and audio processing code.
@@ -27,9 +27,6 @@ automatically connect all MIDI ports to \fIclient:port\fR
 \fB--connect-midi\fR \fB!\fIn\fR
 automatically connect all MIDI ports to \fBsystem:midi_capture_\fIn\fR
 .TP
-\fB--preset\fR \fIname\fR
-when preceding a plugin name, starts a plugin with specified preset
-.TP
 \fB--version\fR
 prints a version string (calf some.version.number)
 .TP
@@ -47,8 +44,10 @@ Plugin names (should be self-explanatory):
  * reverb
  * vintagedelay
  * monosynth
- * organ (when enabled during compilation)
- * rotaryspeaker (when enabled during compilation)
+ * multichorus (chorus effect with multiple voices)
+ * compressor (Thor Harald Johansen's dynamic compressor)
+ * organ (polyphonic synthesizer emulating tonewheel or solid state organs)
+ * rotaryspeaker (not a faithful emulation, not even close)
 
 .SH BUGS
 Please send bug reports to <wdev@foltman.com>.
@@ -67,6 +66,10 @@ Other examples:
 
 (runs monosynth into vintagedelay and vintagedelay into flanger, then to
 output; connects monosynth's MIDI input to JACK's system:midi_capture_2)
+
+        calfjackhost "monosynth:Fat Bass"
+
+(runs monosynth with a Fat Bass preset into monosynth, does not autoconnect)
 
         calfjackhost ! reverb !
 
