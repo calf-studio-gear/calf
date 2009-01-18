@@ -135,7 +135,6 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
     {"effect", 0, 0, 'e'},
-    {"preset", 1, 0, 'p'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {"connect-midi", 1, 0, 'M'},
@@ -146,7 +145,7 @@ void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
         "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>]\n"
-        "       [--connect-midi <name|capture-index>] [--help] [--version] [!] [--preset <name>] pluginname [!] ...\n", 
+        "       [--connect-midi <name|capture-index>] [--help] [--version] [!] pluginname[:<preset>] [!] ...\n", 
         argv[0]);
 }
 
@@ -604,7 +603,6 @@ host_session current_session;
 int main(int argc, char *argv[])
 {
     host_session &sess = current_session;
-    map<int, string> preset_options;
     gtk_init(&argc, &argv);
     
 #if USE_LASH
@@ -624,7 +622,7 @@ int main(int argc, char *argv[])
     glade_init();
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:o:m:M:ep:hv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:o:m:M:ehv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -637,9 +635,6 @@ int main(int argc, char *argv[])
                 return 0;
             case 'e':
                 fprintf(stderr, "Warning: switch -%c is deprecated!\n", c);
-                break;
-            case 'p':
-                preset_options[optind] = optarg;
                 break;
             case 'c':
                 sess.client_name = optarg;
@@ -666,12 +661,13 @@ int main(int argc, char *argv[])
             sess.chains.insert(sess.plugin_names.size());
             optind++;
         } else {
-            while (!preset_options.empty() && preset_options.begin()->first < optind) {
-                sess.presets[sess.plugin_names.size()] = preset_options.begin()->second;
-                // printf("preset[%s] = %s\n", argv[optind], presets[names.size()].c_str());
-                preset_options.erase(preset_options.begin());
+            string plugname = argv[optind++];
+            size_t pos = plugname.find(":");
+            if (pos != string::npos) {
+                sess.presets[sess.plugin_names.size()] = plugname.substr(pos + 1);
+                plugname = plugname.substr(0, pos);
             }
-            sess.plugin_names.push_back(argv[optind++]);
+            sess.plugin_names.push_back(plugname);
         }
     }
     try {
