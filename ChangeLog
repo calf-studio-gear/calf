@@ -1,5 +1,11 @@
 Version 0.0.18 (ongoing)
 
++ JACK host: discontinue the broken option -p; allow giving preset names
+  after a colon sign (reverb:DiscoVerb instead of -p DiscoVerb reverb)
++ Reverb: less modulation; tone controls; 2 more room types
++ MultiChorus: add double bandpass filter on input
++ GUI: added frequency grid
++ Organ: added progress reporting on load (works with JACK host and LV2)
 + JACK host: use sensible port names (possibly breaking new LASH sessions)
 + Organ: added polyphony limit
 + Small plugins: added support for polymorphic port extension to allow
