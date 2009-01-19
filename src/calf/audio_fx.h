@@ -194,6 +194,21 @@ public:
             *buf_out++ = sdry + swet;
         }
     }
+    float freq_gain(float freq, float sr)
+    {
+        typedef std::complex<double> cfloat;
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq)); // z^-1
+        
+        cfloat p = cfloat(1.0);
+        cfloat stg = stage1.h_z(z);
+        
+        for (int i = 0; i < stages; i++)
+            p = p * stg;
+        
+        p = p / (cfloat(1.0) - cfloat(fb) * p);        
+        return std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * p);
+    }
 };
 
 /**

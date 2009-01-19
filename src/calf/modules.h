@@ -123,7 +123,7 @@ public:
     float freq_gain(int subindex, float freq, float srate);
 };
 
-class phaser_audio_module: public audio_module<phaser_metadata>
+class phaser_audio_module: public audio_module<phaser_metadata>, public line_graph_iface
 {
 public:
     float *ins[in_count]; 
@@ -182,6 +182,9 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    float freq_gain(int subindex, float freq, float srate);
 };
 
 class reverb_audio_module: public audio_module<reverb_metadata>
