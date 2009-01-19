@@ -131,7 +131,7 @@ calf_led_class_init (CalfLedClass *klass)
 static void
 calf_led_init (CalfLed *self)
 {
-    GtkWidget *widget = GTK_WIDGET(self);
+    // GtkWidget *widget = GTK_WIDGET(self);
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->led_state = FALSE;
 }

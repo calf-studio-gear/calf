@@ -128,7 +128,7 @@ static void
 calf_keyboard_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
-    CalfKeyboard *self = CALF_KEYBOARD(widget);
+    // CalfKeyboard *self = CALF_KEYBOARD(widget);
     g_assert(CALF_IS_KEYBOARD(widget));
     widget->allocation = *allocation;
     widget->allocation.width = widget->requisition.width;
