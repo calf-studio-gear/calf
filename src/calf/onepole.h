@@ -34,6 +34,8 @@ template<class T = float, class Coeff = float>
 class onepole
 {
 public:
+    typedef std::complex<double> cfloat;
+
     T x1, y1;
     Coeff a0, a1, b1;
 
@@ -164,6 +166,24 @@ public:
         a0 = src.a0;
         a1 = src.a1;
         b1 = src.b1;
+    }
+    
+    /// Return the filter's gain at frequency freq
+    /// @param freq   Frequency to look up
+    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    float freq_gain(float freq, float sr)
+    {
+        freq *= 2.0 * M_PI / sr;
+        cfloat z = 1.0 / exp(cfloat(0.0, freq));
+        
+        return std::abs(h_z(z));
+    }
+    
+    /// Return H(z) the filter's gain at frequency freq
+    /// @param z   Z variable (e^jw)
+    cfloat h_z(const cfloat &z)
+    {
+        return (cfloat(a0) + double(a1) * z) / (cfloat(1.0) + double(b1) * z);
     }
 };
 

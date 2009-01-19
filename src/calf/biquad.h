@@ -315,8 +315,7 @@ public:
     }
     
     /// Return H(z) the filter's gain at frequency freq
-    /// @param freq   Frequency to look up
-    /// @param sr     Filter sample rate (used to convert frequency to angular frequency)
+    /// @param z   Z variable (e^jw)
     cfloat h_z(const cfloat &z)
     {
         

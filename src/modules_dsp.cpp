@@ -172,6 +172,28 @@ void phaser_audio_module::deactivate()
     is_active = false;
 }
 
+bool phaser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    if (subindex < 2) 
+    {
+        set_channel_color(context, subindex);
+        return ::get_graph(*this, subindex, data, points);
+    }
+    return false;
+}
+
+float phaser_audio_module::freq_gain(int subindex, float freq, float srate)
+{
+    return (subindex ? right : left).freq_gain(freq, srate);                
+}
+
+bool phaser_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void reverb_audio_module::activate()

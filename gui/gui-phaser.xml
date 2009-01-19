@@ -50,4 +50,11 @@
             </vbox>
         </hbox>
     </frame>
+    <if cond="directlink">
+        <frame label="Freq. response" attach-x="0" attach-y="2" >
+            <vbox expand-x="1" fill-x="1" >
+                <line-graph refresh="1" width="160" height="160" param="base_freq"/>
+            </vbox>
+        </frame>
+    </if>
 </table>
