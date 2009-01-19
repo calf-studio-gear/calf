@@ -19,6 +19,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef __CALF_OSCTL_H
+#define __CALF_OSCTL_H
+
 #include <string>
 #include <vector>
 #include <string.h>
@@ -539,3 +542,5 @@ struct osc_message_dump: public osc_message_sink<OscStream>
 };
 
 };
+
+#endif

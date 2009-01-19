@@ -27,6 +27,7 @@
 #include <calf/main_win.h>
 #include <calf/osctl.h>
 #include <calf/osctlnet.h>
+#include <calf/osctlserv.h>
 
 using namespace std;
 using namespace dsp;

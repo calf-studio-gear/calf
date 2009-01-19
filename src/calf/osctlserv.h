@@ -1,7 +1,7 @@
 /* Calf DSP Library
- * Open Sound Control UDP support
+ * Open Sound Control UDP server support
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2009 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,32 +19,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CALF_OSCTLNET_H
-#define __CALF_OSCTLNET_H
+#ifndef __CALF_OSCTLSERV_H
+#define __CALF_OSCTLSERV_H
+
+#include <glib.h>
+#include "osctlnet.h"
 
 namespace osctl
 {
     
-struct osc_socket
+struct osc_server: public osc_socket
 {
-    int socket, srcid;
-    std::string prefix;
-
-    osc_socket() : socket(-1), srcid(0) {}
-    void bind(const char *hostaddr = "0.0.0.0", int port = 0);
-    std::string get_uri() const;
-    virtual void on_bind() {}
-    virtual ~osc_socket();
-};
-
-struct osc_client: public osc_socket
-{
-    sockaddr_in addr;
+    GIOChannel *ioch;
+    osc_message_dump<osc_strstream, std::ostream> dump;
+    osc_message_sink<osc_strstream> *sink;
     
-    void set_addr(const char *hostaddr, int port);
-    void set_url(const char *url);
-    bool send(const std::string &address, osctl::osc_typed_strstream &stream);
-    bool send(const std::string &address);
+    osc_server() : ioch(NULL), dump(std::cout), sink(&dump) {}
+    
+    virtual void on_bind();
+    
+    static gboolean on_data(GIOChannel *channel, GIOCondition cond, void *obj);
+    void parse_message(const char *buffer, int len);    
+    ~osc_server();
 };
 
 };

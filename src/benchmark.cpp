@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <config.h>
+#include <glib.h>
 #include <calf/audio_fx.h>
 
 #ifdef BENCHMARK_PLUGINS
@@ -45,6 +46,7 @@ using namespace dsp;
 #ifdef TEST_OSC
 #include <calf/osctl.h>
 #include <calf/osctlnet.h>
+#include <calf/osctlserv.h>
 using namespace osctl;
 #endif
 
