@@ -1,5 +1,6 @@
 Version 0.0.18 (ongoing)
 
++ Phaser: added frequency response graph
 + JACK host: discontinue the broken option -p; allow giving preset names
   after a colon sign (reverb:DiscoVerb instead of -p DiscoVerb reverb)
 + Reverb: less modulation; tone controls; 2 more room types
