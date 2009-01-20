@@ -203,7 +203,15 @@ calf_curve_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
     g_assert(CALF_IS_CURVE(widget));
     if (event->is_hint)
+    {
+#if GTK_CHECK_VERSION(2,12,0)
         gdk_event_request_motions(event);
+#else
+        int a, b;
+        GdkModifierType mod;
+        gdk_window_get_pointer (event->window, &a, &b, (GdkModifierType*)&mod);
+#endif
+    }
     CalfCurve *self = CALF_CURVE(widget);
     if (self->cur_pt != -1)
     {
