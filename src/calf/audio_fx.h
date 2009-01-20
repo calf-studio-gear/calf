@@ -23,6 +23,7 @@
 
 #include <complex>
 #include <iostream>
+#include <calf/biquad.h>
 #include "primitives.h"
 #include "delay.h"
 #include "fixed_point.h"
@@ -592,6 +593,123 @@ public:
     {
         lp_left.sanitize();
         lp_right.sanitize();
+    }
+};
+
+class filter_module_iface
+{
+public:
+    virtual void  calculate_filter(float freq, float q, int mode) = 0;
+    virtual void  filter_activate() = 0;
+    virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
+    virtual float freq_gain(int subindex, float freq, float srate) = 0;
+};
+
+class biquad_filter_module: public filter_module_iface
+{
+private:
+    dsp::biquad_d1<float> left[3], right[3];
+    int order;
+    
+public:    
+    uint32_t srate;
+    
+public:
+    biquad_filter_module() : order(0) {}
+    
+    void calculate_filter(float freq, float q, int mode)
+    {
+        if (mode < 3) {
+            order = mode + 1;
+            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate);
+        } else {
+            order = mode - 2;
+            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate);
+        }
+        
+        right[0].copy_coeffs(left[0]);
+        for (int i = 1; i < order; i++) {
+            left[i].copy_coeffs(left[0]);
+            right[i].copy_coeffs(left[0]);
+        }
+    }
+    
+    void filter_activate()
+    {
+        for (int i=0; i < order; i++) {
+            left[i].reset();
+            right[i].reset();
+        }
+    }
+    
+    inline int process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) {
+        dsp::biquad_d1<float> *filter;
+        switch (channel_no) {
+        case 0:
+            filter = left;
+            break;
+            
+        case 1:
+            filter = right;
+            break;
+        
+        default:
+            assert(false);
+            break;
+        }
+        
+        if (inmask) {
+            switch(order) {
+                case 1:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[0].process(in[i]);
+                    break;
+                case 2:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[1].process(filter[0].process(in[i]));
+                    break;
+                case 3:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
+                    break;
+            }
+        } else {
+            if (filter[order - 1].empty())
+                return 0;
+            switch(order) {
+                case 1:
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[0].process_zeroin();
+                    break;
+                case 2:
+                    if (filter[0].empty())
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[1].process_zeroin();
+                    else
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[1].process(filter[0].process_zeroin());
+                    break;
+                case 3:
+                    if (filter[1].empty())
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[2].process_zeroin();
+                    else
+                        for (uint32_t i = 0; i < numsamples; i++)
+                            out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
+                    break;
+            }
+        }
+        for (int i = 0; i < order; i++)
+            filter[i].sanitize();
+        return filter[order - 1].empty() ? 0 : inmask;
+    }
+    
+    float freq_gain(int subindex, float freq, float srate)
+    {
+        float level = 1.0;
+        for (int j = 0; j < order; j++)
+            level *= left[j].freq_gain(freq, srate);                
+        return level;
     }
 };
 

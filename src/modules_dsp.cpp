@@ -26,6 +26,7 @@
 #endif
 #include <calf/giface.h>
 #include <calf/modules.h>
+#include <calf/modules_dev.h>
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -214,28 +215,6 @@ void reverb_audio_module::set_sample_rate(uint32_t sr)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void filter_audio_module::activate()
-{
-    params_changed();
-    for (int i=0; i < order; i++) {
-        left[i].reset();
-        right[i].reset();
-    }
-    timer = once_per_n(srate / 1000);
-    timer.start();
-    is_active = true;
-}
-
-void filter_audio_module::deactivate()
-{
-    is_active = false;
-}
-
-void filter_audio_module::set_sample_rate(uint32_t sr)
-{
-    srate = sr;
-}
-
 bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (!is_active)
@@ -245,14 +224,6 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
         return ::get_graph(*this, subindex, data, points);
     }
     return false;
-}
-
-float filter_audio_module::freq_gain(int subindex, float freq, float srate)
-{
-    float level = 1.0;
-    for (int j = 0; j < order; j++)
-        level *= left[j].freq_gain(freq, srate);                
-    return level;
 }
 
 bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
