@@ -78,13 +78,13 @@ clean-local:
 	$(RM) -f calfjackhost *~
 
 install-data-hook:
-	install -d -m 755 $(DESTDIR)$(pkglibdir)    
-	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkglibdir)
-	install -c -m 644 $(top_srcdir)/knob.png $(DESTDIR)$(pkglibdir)
-	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkglibdir)
-	install -c -m 644 $(top_srcdir)/gui/gui-*.xml $(DESTDIR)$(pkglibdir)
+	install -d -m 755 $(DESTDIR)$(pkgdatadir)    
+	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkgdatadir)
+	install -c -m 644 $(top_srcdir)/knob.png $(DESTDIR)$(pkgdatadir)
+	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
+	install -c -m 644 $(top_srcdir)/gui/gui-*.xml $(DESTDIR)$(pkgdatadir)
 if USE_JACK
-	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkglibdir)
+	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkgdatadir)
 endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
@@ -121,12 +121,12 @@ endif
 	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true
 endif
 if USE_JACK
-	rm -f $(DESTDIR)$(pkglibdir)/calf.glade 
+	rm -f $(DESTDIR)$(pkgdatadir)/calf.glade 
 endif
-	rm -f $(DESTDIR)$(pkglibdir)/gui-*.xml
-	rm -f $(DESTDIR)$(pkglibdir)/presets.xml
-	rm -f $(DESTDIR)$(pkglibdir)/knob.png
-	rmdir $(DESTDIR)$(pkglibdir) || true
+	rm -f $(DESTDIR)$(pkgdatadir)/gui-*.xml
+	rm -f $(DESTDIR)$(pkgdatadir)/presets.xml
+	rm -f $(DESTDIR)$(pkgdatadir)/knob.png
+	rmdir $(DESTDIR)$(pkgdatadir) || true
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(RM) -f $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf

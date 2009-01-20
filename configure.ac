@@ -206,7 +206,7 @@ if test "$LV2_ENABLED" == "yes"; then
   AC_SUBST(with_lv2_dir)
 fi
 
-AC_DEFINE_UNQUOTED(PKGLIBDIR,"$prefix/lib/calf/",[Calf shared data directory (bitmaps, GUI XML etc.)])
+AC_DEFINE_UNQUOTED(PKGLIBDIR,"$prefix/share/calf/",[Calf shared data directory (bitmaps, GUI XML etc.)])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([floor memset pow])
