@@ -600,10 +600,10 @@ public:
 class filter_module_iface
 {
 public:
-	virtual void  calculate_filter(float freq, float q, int mode) = 0;
-	virtual void  filter_activate() = 0;
-	virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
-	virtual float freq_gain(int subindex, float freq, float srate) = 0;
+    virtual void  calculate_filter(float freq, float q, int mode) = 0;
+    virtual void  filter_activate() = 0;
+    virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
+    virtual float freq_gain(int subindex, float freq, float srate) = 0;
 };
 
 class biquad_filter_module: public filter_module_iface
@@ -616,8 +616,8 @@ public:
     uint32_t srate;
     
 public:
-	biquad_filter_module() : order(0) {}
-	
+    biquad_filter_module() : order(0) {}
+    
     void calculate_filter(float freq, float q, int mode)
     {
         if (mode < 3) {
@@ -642,23 +642,23 @@ public:
             right[i].reset();
         }
     }
-	
+    
     inline int process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) {
-    	dsp::biquad_d1<float> *filter;
-    	switch (channel_no) {
-    	case 0:
-    		filter = left;
-    		break;
-    		
-    	case 1:
-    		filter = right;
-    		break;
-    	
-    	default:
-    		throw std::invalid_argument("channel_no");
-    		break;
-    	}
-    	
+        dsp::biquad_d1<float> *filter;
+        switch (channel_no) {
+        case 0:
+            filter = left;
+            break;
+            
+        case 1:
+            filter = right;
+            break;
+        
+        default:
+            throw std::invalid_argument("channel_no");
+            break;
+        }
+        
         if (inmask) {
             switch(order) {
                 case 1:

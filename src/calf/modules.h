@@ -629,7 +629,7 @@ public:
     
     void template_activate()
     {
-    	template_params_changed();
+        template_params_changed();
         FilterClass::filter_activate();
         timer = once_per_n(FilterClass::srate / 1000);
         timer.start();
@@ -638,7 +638,7 @@ public:
     
     void template_set_sample_rate(uint32_t sr)
     {
-    	FilterClass::srate = sr;
+        FilterClass::srate = sr;
     }
 
     
@@ -674,33 +674,33 @@ public:
 };
 
 class filter_audio_module: 
-	public audio_module<filter_metadata>, 
-	public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
-	public line_graph_iface
+    public audio_module<filter_metadata>, 
+    public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
+    public line_graph_iface
 {
 public:    
     void params_changed()
     { 
-    	template_params_changed(); 
+        template_params_changed(); 
     }
         
     void activate()
     {
-    	template_activate();
+        template_activate();
     }
     
     void set_sample_rate(uint32_t sr)
     {
-    	template_set_sample_rate(sr);
+        template_set_sample_rate(sr);
     }
 
     
     void deactivate()
     {
-    	template_deactivate();
+        template_deactivate();
     }
     
-	
+    
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
 };

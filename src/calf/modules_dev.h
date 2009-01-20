@@ -21,7 +21,6 @@
 #ifndef __CALF_MODULES_DEV_H
 #define __CALF_MODULES_DEV_H
 
-
 namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
