@@ -579,6 +579,8 @@ template<typename FilterClass, typename Metadata>
 class filter_module_with_inertia: public FilterClass
 {
 public:
+    typedef filter_module_with_inertia inertia_filter_module;
+    
     float *ins[Metadata::in_count]; 
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
@@ -613,7 +615,7 @@ public:
         FilterClass::calculate_filter(freq, q, mode);
     }
     
-    void template_params_changed()
+    void params_changed()
     {
         inertia_cutoff.set_inertia(*params[Metadata::par_cutoff]);
         inertia_resonance.set_inertia(*params[Metadata::par_resonance]);
@@ -627,22 +629,22 @@ public:
         calculate_filter();
     }
     
-    void template_activate()
+    void activate()
     {
-        template_params_changed();
+        params_changed();
         FilterClass::filter_activate();
         timer = once_per_n(FilterClass::srate / 1000);
         timer.start();
         is_active = true;
     }
     
-    void template_set_sample_rate(uint32_t sr)
+    void set_sample_rate(uint32_t sr)
     {
         FilterClass::srate = sr;
     }
 
     
-    void template_deactivate()
+    void deactivate()
     {
         is_active = false;
     }
@@ -681,23 +683,23 @@ class filter_audio_module:
 public:    
     void params_changed()
     { 
-        template_params_changed(); 
+        inertia_filter_module::params_changed(); 
     }
         
     void activate()
     {
-        template_activate();
+        inertia_filter_module::activate();
     }
     
     void set_sample_rate(uint32_t sr)
     {
-        template_set_sample_rate(sr);
+        inertia_filter_module::set_sample_rate(sr);
     }
 
     
     void deactivate()
     {
-        template_deactivate();
+        inertia_filter_module::deactivate();
     }
     
     

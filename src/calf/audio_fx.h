@@ -23,7 +23,6 @@
 
 #include <complex>
 #include <iostream>
-#include <stdexcept>
 #include <calf/biquad.h>
 #include "primitives.h"
 #include "delay.h"
@@ -655,7 +654,7 @@ public:
             break;
         
         default:
-            throw std::invalid_argument("channel_no");
+            assert(false);
             break;
         }
         
