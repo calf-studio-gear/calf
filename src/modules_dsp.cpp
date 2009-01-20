@@ -480,3 +480,116 @@ bool compressor_audio_module::get_gridline(int index, int subindex, float &pos, 
     }
     return result;
 }
+
+// In case of doubt: this function is written by Thor. I just moved it to this file, damaging
+// the output of "git annotate" in the process.
+uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    
+    if(bypass) {
+        int count = numsamples * sizeof(float);
+        memcpy(outs[0], ins[0], count);
+        memcpy(outs[1], ins[1], count);
+
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = 1.f;
+        }
+
+        if(params[param_clip] != NULL) {
+            *params[param_clip] = 0.f;
+        }
+
+        if(params[param_peak] != NULL) {
+            *params[param_peak] = 0.f;
+        }
+  
+        return inputs_mask;
+    }
+
+    bool rms = *params[param_detection] == 0;
+    bool average = *params[param_stereo_link] == 0;
+    bool aweighting = *params[param_aweighting] > 0.5f;
+    float linThreshold = *params[param_threshold];
+    ratio = *params[param_ratio];
+    float attack = *params[param_attack];
+    float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
+    float release = *params[param_release];
+    float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
+    makeup = *params[param_makeup];
+    knee = *params[param_knee];
+
+    float linKneeSqrt = sqrt(knee);
+    linKneeStart = linThreshold / linKneeSqrt;
+    adjKneeStart = linKneeStart*linKneeStart;
+    float linKneeStop = linThreshold * linKneeSqrt;
+    
+    threshold = log(linThreshold);
+    kneeStart = log(linKneeStart);
+    kneeStop = log(linKneeStop);
+    compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
+
+    numsamples += offset;
+    
+    float compression = 1.f;
+
+    peak -= peak * 5.f * numsamples / srate;
+    
+    clip -= std::min(clip, numsamples);
+
+    while(offset < numsamples) {
+        float left = ins[0][offset];
+        float right = ins[1][offset];
+        
+        if(aweighting) {
+            left = awL.process(left);
+            right = awR.process(right);
+        }
+        
+        float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
+        if(rms) absample *= absample;
+        
+        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
+        
+        float gain = 1.f;
+
+        if(linSlope > 0.f) {
+            gain = output_gain(linSlope, rms);
+        }
+
+        compression = gain;
+        gain *= makeup;
+
+        float outL = ins[0][offset] * gain;
+        float outR = ins[1][offset] * gain;
+        
+        outs[0][offset] = outL;
+        outs[1][offset] = outR;
+        
+        ++offset;
+        
+        float maxLR = std::max(fabs(outL), fabs(outR));
+        
+        if(maxLR > 1.f) clip = srate >> 3; /* blink clip LED for 125 ms */
+        
+        if(maxLR > peak) {
+            peak = maxLR;
+        }
+    }
+    
+    detected = rms ? sqrt(linSlope) : linSlope;
+    
+    if(params[param_compression] != NULL) {
+        *params[param_compression] = compression;
+    }
+
+    if(params[param_clip] != NULL) {
+        *params[param_clip] = clip;
+    }
+
+    if(params[param_peak] != NULL) {
+        *params[param_peak] = peak;
+    }
+
+    return inputs_mask;
+}
