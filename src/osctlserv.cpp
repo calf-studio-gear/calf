@@ -45,41 +45,6 @@ void osc_server::parse_message(const char *buffer, int len)
     }
 }
 
-void osc_socket::bind(const char *hostaddr, int port)
-{
-    socket = ::socket(PF_INET, SOCK_DGRAM, 0);
-    if (socket < 0)
-        throw osc_net_exception("socket");
-    
-    sockaddr_in sadr;
-    sadr.sin_family = AF_INET;
-    sadr.sin_port = htons(port);
-    inet_aton(hostaddr, &sadr.sin_addr);
-    if (::bind(socket, (sockaddr *)&sadr, sizeof(sadr)) < 0)
-        throw osc_net_exception("bind");
-    on_bind();
-}
-
-std::string osc_socket::get_uri() const
-{
-    sockaddr_in sadr;
-    socklen_t len = sizeof(sadr);
-    if (getsockname(socket, (sockaddr *)&sadr, &len) < 0)
-        throw osc_net_exception("getsockname");
-    
-    char name[INET_ADDRSTRLEN], buf[32];
-    
-    inet_ntop(AF_INET, &sadr.sin_addr, name, INET_ADDRSTRLEN);
-    sprintf(buf, "%d", ntohs(sadr.sin_port));
-    
-    return string("osc.udp://") + name + ":" + buf + prefix;
-}
-
-osc_socket::~osc_socket()
-{
-    close(socket);
-}
-
 void osc_server::on_bind()
 {    
     ioch = g_io_channel_unix_new(socket);

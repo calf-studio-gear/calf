@@ -66,7 +66,7 @@ calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-
 endif
 endif
 
-libcalfstatic_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp preset.cpp synth.cpp utils.cpp
+libcalfstatic_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp preset.cpp synth.cpp utils.cpp
 libcalfstatic_la_LDFLAGS = -static -lexpat -disable-shared
 
 if USE_GUI

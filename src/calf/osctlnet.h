@@ -22,6 +22,10 @@
 #ifndef __CALF_OSCTLNET_H
 #define __CALF_OSCTLNET_H
 
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <calf/osctl.h>
+
 namespace osctl
 {
     
