@@ -21,10 +21,62 @@
 #ifndef __CALF_MODULES_DEV_H
 #define __CALF_MODULES_DEV_H
 
+#include <calf/metadata.h>
+#include <calf/modules.h>
+
 namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
 
+/// Filterclavier --- MIDI controlled filter
+// TODO: add bandpass (set_bp_rbj)
+class filterclavier_audio_module: 
+        public audio_module<filterclavier_metadata>, 
+        public filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>, 
+        public line_graph_iface
+    {
+    public:    
+        
+        void params_changed()
+        { 
+            inertia_filter_module::params_changed(); 
+        }
+            
+        void activate()
+        {
+            inertia_filter_module::activate();
+        }
+        
+        void set_sample_rate(uint32_t sr)
+        {
+            inertia_filter_module::set_sample_rate(sr);
+        }
+
+        
+        void deactivate()
+        {
+            inertia_filter_module::deactivate();
+        }
+      
+        /// MIDI control
+        virtual void note_on(int note, int vel)
+        {
+            inertia_filter_module::inertia_cutoff.set_inertia(note_to_hz(note, *params[par_detune]));
+            inertia_filter_module::inertia_resonance.set_inertia( 
+                    (float(vel) / 127.0) * (param_props[par_resonance].max - param_props[par_resonance].min)
+                    + param_props[par_resonance].min);
+            inertia_filter_module::calculate_filter();
+        }
+        
+        virtual void note_off(int note, int vel)
+        {
+            inertia_filter_module::inertia_resonance.set_inertia(param_props[par_resonance].min);
+            inertia_filter_module::calculate_filter();
+        }        
+        
+        bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+        bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    };
 
 #endif
     

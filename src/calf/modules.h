@@ -675,6 +675,7 @@ public:
     }
 };
 
+/// biquad filter module
 class filter_audio_module: 
     public audio_module<filter_metadata>, 
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
