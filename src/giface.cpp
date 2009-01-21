@@ -242,6 +242,7 @@ void calf_plugins::send_graph_via_osc(osctl::osc_client &client, const std::stri
     client.send(address, os);
 }
 
+#if USE_DSSI
 calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI)
 {
     client = new osctl::osc_client;
@@ -256,4 +257,4 @@ calf_plugins::dssi_feedback_sender::~dssi_feedback_sender()
     // client->send("/iQuit");
     delete client;
 }
-
+#endif
