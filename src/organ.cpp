@@ -802,7 +802,7 @@ char *organ_audio_module::configure(const char *key, const char *value)
         }
         return NULL;
     }
-    cout << "Set unknown configure value " << key << " to " << value;
+    cout << "Set unknown configure value " << key << " to " << value << endl;
     return NULL;
 }
 
