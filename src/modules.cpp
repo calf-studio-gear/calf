@@ -111,6 +111,29 @@ CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(filterclavier) = {"In L", "In R", "Out L", "Out R"};
+
+const char *filterclavier_choices[] = {
+    "12dB/oct Lowpass",
+    "24dB/oct Lowpass",
+    "36dB/oct Lowpass",
+    "12dB/oct Highpass",
+    "24dB/oct Highpass",
+    "36dB/oct Highpass",
+};
+
+CALF_PORT_PROPS(filterclavier) = {
+    { 2000,      10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq", "Frequency" },
+    { 0,       -100,  100,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
+    { 0.707,  0.707,   32,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "res", "Resonance" },
+    { 0,          0,    5,    1, PF_ENUM | PF_CTL_COMBO, filterclavier_choices, "mode", "Mode" },
+    { 20,         5,  100,    20, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Inertia"},
+};
+
+CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Krzysztof Foltman / Hans Baier", calf_plugins::calf_copyright_info, "FilterclavierPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(vintage_delay) = {"In L", "In R", "Out L", "Out R"};
 
 const char *vintage_delay_mixmodes[] = {
