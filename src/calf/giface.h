@@ -23,10 +23,15 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <exception>
 #include <string>
 #include "primitives.h"
 #include "preset.h"
+
+namespace osctl {
+    struct osc_client;
+}
 
 namespace calf_plugins {
 
@@ -351,6 +356,20 @@ public:
 
 extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
 extern bool check_for_string_ports(parameter_properties *parameters, int count);
+extern void send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph);
+
+#if USE_DSSI
+/// A class to send status updates via OSC
+struct dssi_feedback_sender
+{
+    osctl::osc_client *client;
+    pthread_t bg_thread;
+    bool quit;
+    
+    dssi_feedback_sender(const char *URI);
+    ~dssi_feedback_sender();
+};
+#endif
 
 /// Metadata base class template, to provide default versions of interface functions
 template<class Metadata>

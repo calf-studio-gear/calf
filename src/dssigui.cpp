@@ -216,6 +216,14 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         presets.insert(presets.end(), tmp_presets.begin(), tmp_presets.end());
     }
     
+    void set_osc_update(bool enabled)
+    {
+        osc_inline_typed_strstream data;
+        data << "OSC:FEEDBACK_URI";
+        data << (enabled ? get_uri() : "");
+        cli.send("/configure", data);
+    }
+    
     virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
     {
         if (osc_debug)
@@ -227,13 +235,14 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
             debug_printf("UPDATE: %s\n", str.c_str());
             return;
         }
-        if (address == prefix + "/quit")
+        else if (address == prefix + "/quit")
         {
+            set_osc_update(false);
             debug_printf("QUIT\n");
             g_main_loop_quit(mainloop);
             return;
         }
-        if (address == prefix + "/configure"&& args == "ss")
+        else if (address == prefix + "/configure"&& args == "ss")
         {
             string key, value;
             buffer >> key >> value;
@@ -242,7 +251,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
             window->gui->refresh();
             return;
         }
-        if (address == prefix + "/program"&& args == "ii")
+        else if (address == prefix + "/program"&& args == "ii")
         {
             uint32_t bank, program;
             
@@ -274,7 +283,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
             // cli.send("/update", data);
             return;
         }
-        if (address == prefix + "/control" && args == "if")
+        else if (address == prefix + "/control" && args == "if")
         {
             uint32_t port;
             float val;
@@ -289,16 +298,22 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
             plugin->send_osc = sosc;
             return;
         }
-        if (address == prefix + "/show")
+        else if (address == prefix + "/show")
         {
+            set_osc_update(true);
+
             gtk_widget_show_all(GTK_WIDGET(window->toplevel));
             return;
         }
-        if (address == prefix + "/hide")
+        else if (address == prefix + "/hide")
         {
+            set_osc_update(false);
+
             gtk_widget_hide(GTK_WIDGET(window->toplevel));
             return;
         }
+        else
+            printf("Unknown OSC address: %s\n", address.c_str());
     }
 };
 
@@ -369,6 +384,8 @@ int main(int argc, char *argv[])
     }
     
     g_main_loop_run(mainloop);
+
+    srv.set_osc_update(false);
     debug_printf("exited\n");
     
     return 0;

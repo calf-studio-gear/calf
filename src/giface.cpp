@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <memory.h>
 #include <calf/giface.h>
+#include <calf/osctlnet.h>
 
 using namespace std;
 using namespace calf_utils;
@@ -233,3 +234,26 @@ bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int 
     }
     return false;
 }
+
+void calf_plugins::send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph)
+{
+    osctl::osc_inline_typed_strstream os;
+    os << (uint32_t)10;
+    client.send(address, os);
+}
+
+calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI)
+{
+    client = new osctl::osc_client;
+    client->bind("0.0.0.0", 0);
+    client->set_url(URI);
+    client->send("/iAmHere");
+}
+
+calf_plugins::dssi_feedback_sender::~dssi_feedback_sender()
+{
+    // this would not be received by GUI's main loop because it's already been terminated
+    // client->send("/iQuit");
+    delete client;
+}
+

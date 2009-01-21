@@ -41,12 +41,16 @@ inline int calc_real_param_count()
     }
     return Module::param_count;
 }
-    
+
 /// A template implementing plugin_ctl_iface for a given plugin
 template<class Module>
 struct ladspa_instance: public Module, public plugin_ctl_iface
 {
     bool activate_flag;
+#if USE_DSSI
+    dssi_feedback_sender *feedback_sender;
+#endif
+    
     static int real_param_count()
     {
         static int _real_param_count = calc_real_param_count<Module>();
@@ -62,6 +66,9 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
         for (int i=0; i < rpc; i++)
             Module::params[i] = NULL;
         activate_flag = true;
+#if USE_DSSI
+        feedback_sender = NULL;
+#endif
     }
     virtual parameter_properties *get_param_props(int param_no)
     {
@@ -113,6 +120,29 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
     virtual char *configure(const char *key, const char *value)
     {
+        printf("%s = %s\n", key, value);
+#if USE_DSSI
+        if (!strcmp(key, "OSC:FEEDBACK_URI"))
+        {
+            if (*value)
+            {
+                if (feedback_sender) {
+                    delete feedback_sender;
+                    feedback_sender = NULL;
+                }
+                feedback_sender = new dssi_feedback_sender(value);
+            }
+            else
+            {
+                if (feedback_sender) {
+                    delete feedback_sender;
+                    feedback_sender = NULL;
+                }
+            }
+            return NULL;
+        }
+        else 
+#endif
         if (!strcmp(key, "ExecCommand"))
         {
             if (*value)
