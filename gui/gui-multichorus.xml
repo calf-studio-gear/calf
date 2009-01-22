@@ -47,22 +47,7 @@
             </vbox>
         </hbox>
     </frame>
-    <if cond="directlink">
-        <hbox attach-x="0" attach-y="2" fill-y="1" expand-y="1">
-            <frame label="Freq. response">
-                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-                    <line-graph refresh="1" width="160" height="160" param="min_delay"/>
-                </vbox>
-            </frame>
-            <frame label="LFO positions">
-                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-                    <line-graph refresh="1" width="160" height="30" param="mod_depth"/>
-                    <line-graph refresh="1" width="160" height="160" param="mod_rate"/>
-                </vbox>
-            </frame>
-        </hbox>
-    </if>
-    <frame label="LFO" attach-x="0" attach-y="3" shrink-y="1">
+    <frame label="Post Filter" attach-x="0" attach-y="2" shrink-y="1">
         <hbox>
             <vbox border="10">
                 <label param="freq" />
@@ -81,4 +66,19 @@
             </vbox>
         </hbox>
     </frame>
+    <if cond="directlink">
+        <hbox attach-x="0" attach-y="3" fill-y="1" expand-y="1">
+            <frame label="Freq. response">
+                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+                    <line-graph refresh="1" width="160" height="160" param="min_delay"/>
+                </vbox>
+            </frame>
+            <frame label="LFO positions">
+                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
+                    <line-graph refresh="1" width="160" height="30" param="mod_depth"/>
+                    <line-graph refresh="1" width="160" height="160" param="mod_rate"/>
+                </vbox>
+            </frame>
+        </hbox>
+    </if>
 </table>
