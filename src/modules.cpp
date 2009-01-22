@@ -120,12 +120,15 @@ const char *filterclavier_choices[] = {
     "12dB/oct Highpass",
     "24dB/oct Highpass",
     "36dB/oct Highpass",
+    "12dB/oct Bandpass", // TODO: are we lying here?
+    "24dB/oct Bandpass", // TODO: are we lying here?
+    "36dB/oct Bandpass", // TODO: are we lying here?
 };
 
 CALF_PORT_PROPS(filterclavier) = {
     { 0,        -48,   48, 48*2+1, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,      0, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
-    { 0,          0,    5,      1, PF_ENUM  | PF_CTL_COMBO, filterclavier_choices, "mode", "Mode" },
+    { 6,          0,    8,      1, PF_ENUM  | PF_CTL_COMBO, filterclavier_choices, "mode", "Mode" },
     { 20,         1,  2000,    20, PF_FLOAT | PF_SCALE_LOG    | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Portamento time"}
 };
 

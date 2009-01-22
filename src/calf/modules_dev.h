@@ -37,9 +37,19 @@ class filterclavier_audio_module:
     {        
         const float min_resonance;
         const float max_resonance;
+        const float min_gain;
+        const float max_gain;
+        
+        int last_note;
             
     public:    
-        filterclavier_audio_module() : min_resonance(0.707), max_resonance(20.0) {}
+        filterclavier_audio_module() 
+            : 
+                min_resonance(0.707), 
+                max_resonance(20.0),
+                min_gain(1.0),
+                max_gain(32.0),
+                last_note(-1) {}
         
         void params_changed()
         { 
@@ -65,20 +75,44 @@ class filterclavier_audio_module:
         /// MIDI control
         virtual void note_on(int note, int vel)
         {
+            last_note = note;
             inertia_filter_module::inertia_cutoff.set_inertia(
                     note_to_hz(note + *params[par_transpose], *params[par_detune]));
+
             inertia_filter_module::inertia_resonance.set_inertia( 
                     (float(vel) / 127.0) * (max_resonance - min_resonance)
                     + min_resonance);
+            
+            int   mode = dsp::fastf2i_drm(*params[par_mode]);
+            // for bandpasses: boost gain for velocities > 0
+            if ( (mode_12db_bp <= mode) && (mode <= mode_36db_bp) ) {
+                // gain for velocity 0:   1.0
+                // gain for velocity 127: 32.0
+                float mode_max_gain = max_gain;
+                // max_gain is right for mode_12db_bp
+                if (mode == mode_24db_bp)
+                    mode_max_gain /= 6.0;
+                if (mode == mode_36db_bp)
+                    mode_max_gain /= 10.5;
+                
+                inertia_filter_module::inertia_gain.set_inertia(
+                        (float(vel) / 127.0) * (mode_max_gain - min_gain) + min_gain);
+            } else {
+                inertia_filter_module::inertia_gain.set_inertia(min_gain);
+            }
+
             inertia_filter_module::calculate_filter();
         }
         
         virtual void note_off(int note, int vel)
         {
-            inertia_filter_module::inertia_resonance.set_inertia(min_resonance);
-            inertia_filter_module::calculate_filter();
-        }        
-        
+            if (note == last_note) {
+                inertia_filter_module::inertia_resonance.set_inertia(min_resonance);
+                inertia_filter_module::inertia_gain.set_inertia(min_gain);
+                inertia_filter_module::calculate_filter();
+            }
+        }
+
         bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
         bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
     };

@@ -298,7 +298,6 @@ static void send_graph_via_osc(osctl::osc_client &client, const std::string &add
     client.send(address, os);
 }
 
-#if USE_DSSI
 calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI, line_graph_iface *_graph, calf_plugins::parameter_properties *props, int num_params)
 {
     graph = _graph;

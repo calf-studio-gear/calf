@@ -585,13 +585,14 @@ public:
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
 
-    inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
+    inertia<exponential_ramp> inertia_cutoff, inertia_resonance, inertia_gain;
     once_per_n timer;
     bool is_active;    
     
     filter_module_with_inertia()
     : inertia_cutoff(exponential_ramp(128), 20)
     , inertia_resonance(exponential_ramp(128), 20)
+    , inertia_gain(exponential_ramp(128), 1.0)
     , timer(128)
     {
         is_active = false;
@@ -610,9 +611,10 @@ public:
         if (inertia != inertia_cutoff.ramp.length()) {
             inertia_cutoff.ramp.set_length(inertia);
             inertia_resonance.ramp.set_length(inertia);
+            inertia_gain.ramp.set_length(inertia);
         }
         
-        FilterClass::calculate_filter(freq, q, mode);
+        FilterClass::calculate_filter(freq, q, mode, inertia_gain.get_last());
     }
     
     virtual void params_changed()
@@ -624,6 +626,7 @@ public:
     {
         inertia_cutoff.step();
         inertia_resonance.step();
+        inertia_gain.step();
         calculate_filter();
     }
     
