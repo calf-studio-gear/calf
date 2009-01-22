@@ -250,6 +250,7 @@ struct osc_cairo_control: public cairo_iface
     }
 };
 
+#if USE_DSSI
 static void send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph, std::vector<int> &params)
 {
     osctl::osc_inline_typed_strstream os;
@@ -297,7 +298,6 @@ static void send_graph_via_osc(osctl::osc_client &client, const std::string &add
     client.send(address, os);
 }
 
-#if USE_DSSI
 calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI, line_graph_iface *graph, calf_plugins::parameter_properties *props, int num_params)
 {
     client = new osctl::osc_client;
