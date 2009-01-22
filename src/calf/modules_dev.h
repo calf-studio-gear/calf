@@ -61,7 +61,8 @@ class filterclavier_audio_module:
         /// MIDI control
         virtual void note_on(int note, int vel)
         {
-            inertia_filter_module::inertia_cutoff.set_inertia(note_to_hz(note, *params[par_detune]));
+            inertia_filter_module::inertia_cutoff.set_inertia(
+                    note_to_hz(note + *params[par_transpose], *params[par_detune]));
             inertia_filter_module::inertia_resonance.set_inertia( 
                     (float(vel) / 127.0) * (param_props[par_resonance].max - param_props[par_resonance].min)
                     + param_props[par_resonance].min);
