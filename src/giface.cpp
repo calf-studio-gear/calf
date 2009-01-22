@@ -268,7 +268,7 @@ static void send_graph_via_osc(osctl::osc_client &client, const std::string &add
                 os << (uint32_t)LGI_SUBGRAPH;
                 os << (uint32_t)128;
                 for (int p = 0; p < 128; p++)
-                    os << data[i];
+                    os << data[p];
             }
             else
                 break;
@@ -298,17 +298,21 @@ static void send_graph_via_osc(osctl::osc_client &client, const std::string &add
     client.send(address, os);
 }
 
-calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI, line_graph_iface *graph, calf_plugins::parameter_properties *props, int num_params)
+calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI, line_graph_iface *_graph, calf_plugins::parameter_properties *props, int num_params)
 {
+    graph = _graph;
     client = new osctl::osc_client;
     client->bind("0.0.0.0", 0);
     client->set_url(URI);
-    client->send("/iAmHere");
     for (int i = 0; i < num_params; i++)
     {
         if (props[i].flags & PF_PROP_GRAPH)
             indices.push_back(i);
     }
+}
+
+void calf_plugins::dssi_feedback_sender::update()
+{
     send_graph_via_osc(*client, "/lineGraph", graph, indices);
 }
 
