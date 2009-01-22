@@ -6,11 +6,6 @@
     </table>
     <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
         <vbox border="10">
-            <label param="freq" />
-            <knob param="freq" />
-            <value param="freq" />
-        </vbox>
-        <vbox border="10">
             <label param="transpose" />
             <knob param="transpose" type="1"/>
             <value param="transpose" />
@@ -21,11 +16,6 @@
             <value param="detune" />
         </vbox>
         <vbox border="10">
-            <label param="res" />
-            <knob param="res" />
-            <value param="res" />
-        </vbox>
-        <vbox border="10">
             <label param="inertia" />
             <knob param="inertia"/>
             <value param="inertia" />
@@ -33,7 +23,7 @@
     </hbox>
     <if cond="directlink">
         <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="0" attach-y="2">
-            <line-graph refresh="1" width="160" height="160" param="freq"/>
+            <line-graph refresh="1" width="160" height="160"/>
         </frame>
     </if>
 </table>

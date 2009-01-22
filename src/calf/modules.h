@@ -615,10 +615,8 @@ public:
         FilterClass::calculate_filter(freq, q, mode);
     }
     
-    void params_changed()
+    virtual void params_changed()
     {
-        inertia_cutoff.set_inertia(*params[Metadata::par_cutoff]);
-        inertia_resonance.set_inertia(*params[Metadata::par_resonance]);
         calculate_filter();
     }
     
@@ -684,6 +682,8 @@ class filter_audio_module:
 public:    
     void params_changed()
     { 
+        inertia_cutoff.set_inertia(*params[par_cutoff]);
+        inertia_resonance.set_inertia(*params[par_resonance]);
         inertia_filter_module::params_changed(); 
     }
         
@@ -702,7 +702,6 @@ public:
     {
         inertia_filter_module::deactivate();
     }
-    
     
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);

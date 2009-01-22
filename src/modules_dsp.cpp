@@ -241,9 +241,10 @@ bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool
 
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
-    if (!is_active)
+    if (!is_active) {
         return false;
-    if (index == par_cutoff && !subindex) {
+    }
+    if (!subindex) {
         context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
     }
@@ -252,10 +253,7 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
 
 bool filterclavier_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
-    if (index == par_cutoff) {
-        return get_freq_gridline(subindex, pos, vertical, legend, context);
-    }
-    return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

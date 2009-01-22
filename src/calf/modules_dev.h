@@ -34,12 +34,16 @@ class filterclavier_audio_module:
         public audio_module<filterclavier_metadata>, 
         public filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>, 
         public line_graph_iface
-    {
+    {        
+        const float min_resonance;
+        const float max_resonance;
+            
     public:    
+        filterclavier_audio_module() : min_resonance(0.707), max_resonance(20.0) {}
         
         void params_changed()
         { 
-            inertia_filter_module::params_changed(); 
+            inertia_filter_module::calculate_filter(); 
         }
             
         void activate()
@@ -60,18 +64,18 @@ class filterclavier_audio_module:
       
         /// MIDI control
         virtual void note_on(int note, int vel)
-        {
+        {            
             inertia_filter_module::inertia_cutoff.set_inertia(
                     note_to_hz(note + *params[par_transpose], *params[par_detune]));
             inertia_filter_module::inertia_resonance.set_inertia( 
-                    (float(vel) / 127.0) * (param_props[par_resonance].max - param_props[par_resonance].min)
-                    + param_props[par_resonance].min);
+                    (float(vel) / 127.0) * (max_resonance - min_resonance)
+                    + min_resonance);
             inertia_filter_module::calculate_filter();
         }
         
         virtual void note_off(int note, int vel)
         {
-            inertia_filter_module::inertia_resonance.set_inertia(param_props[par_resonance].min);
+            inertia_filter_module::inertia_resonance.set_inertia(min_resonance);
             inertia_filter_module::calculate_filter();
         }        
         
