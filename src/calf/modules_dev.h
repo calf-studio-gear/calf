@@ -64,7 +64,11 @@ class filterclavier_audio_module:
       
         /// MIDI control
         virtual void note_on(int note, int vel)
+<<<<<<< HEAD:src/calf/modules_dev.h
         {            
+=======
+        {
+>>>>>>> 76e4cd1c0814040a2e2c847ba3452b641d22e823:src/calf/modules_dev.h
             inertia_filter_module::inertia_cutoff.set_inertia(
                     note_to_hz(note + *params[par_transpose], *params[par_detune]));
             inertia_filter_module::inertia_resonance.set_inertia( 

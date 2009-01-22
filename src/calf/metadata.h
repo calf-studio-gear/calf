@@ -102,6 +102,19 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum { step_size = 64 };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
 };
+<<<<<<< HEAD:src/calf/metadata.h
+=======
+
+/// Filterclavier - metadata
+struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
+{
+    enum { par_cutoff, par_transpose, par_detune, par_resonance, par_mode, par_inertia,  param_count };
+    enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = false, support_midi = true };
+    PLUGIN_NAME_ID_LABEL("filterclavier", "filterclavier", "Filterclavier")
+    /// do not export mode and inertia as CVs, as those are settings and not parameters
+    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
+};
+>>>>>>> 76e4cd1c0814040a2e2c847ba3452b641d22e823:src/calf/metadata.h
     
 /// Thor's compressor - metadata
 struct compressor_metadata: public plugin_metadata<compressor_metadata>
