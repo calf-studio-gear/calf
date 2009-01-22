@@ -139,12 +139,14 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     int param_count;
     float *params;
     map<int, param_line_graphs> graphs;
+    bool update_graphs;
 
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         client = NULL;
         send_osc = false;
+        update_graphs = true;
         gui = NULL;
         param_count = md->get_param_count();
         params = new float[param_count];
@@ -159,6 +161,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
+        update_graphs = true;
         params[param_no] = value;
         if (send_osc)
         {
@@ -287,6 +290,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     vector<plugin_preset> presets;
     /// Timeout callback source ID
     int source_id;
+    bool osc_link_active;
     
     dssi_osc_server()
     : plugin(NULL)
@@ -295,6 +299,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     {
         sink = this;
         source_id = 0;
+        osc_link_active = false;
     }
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
@@ -347,6 +352,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     void set_osc_update(bool enabled)
     {
+        osc_link_active = enabled;
         osc_inline_typed_strstream data;
         data << "OSC:FEEDBACK_URI";
         data << (enabled ? get_uri() : "");
@@ -441,6 +447,8 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         string str;
         buffer >> str;
         debug_printf("UPDATE: %s\n", str.c_str());
+        set_osc_update(true);
+        send_osc_update();
         return;
     }
     else if (address == prefix + "/quit")
@@ -504,8 +512,8 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         plugin->send_osc = false;
         window->gui->set_param_value(idx, val);
         plugin->send_osc = sosc;
-        set_osc_update(false);
-        set_osc_update(true);
+        if (plugin->get_param_props(idx)->flags & PF_PROP_GRAPH)
+            plugin->update_graphs = true;
         return;
     }
     else if (address == prefix + "/show")
@@ -525,6 +533,13 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     else if (address == prefix + "/lineGraph")
     {
         unmarshal_line_graph(buffer);
+        if (plugin->update_graphs) {
+            // updates graphs that are only redrawn on startup and parameter changes
+            // (the OSC message may come a while after the parameter has been changed,
+            // so the redraw triggered by parameter change usually shows stale values)
+            window->gui->refresh();
+            plugin->update_graphs = false;
+        }
         return;
     }
     else
