@@ -356,17 +356,32 @@ public:
 
 extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
 extern bool check_for_string_ports(parameter_properties *parameters, int count);
-extern void send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph);
 
 #if USE_DSSI
+
+enum line_graph_item
+{
+    LGI_END = 0,
+    LGI_GRAPH,
+    LGI_SUBGRAPH,
+    LGI_LEGEND,
+    LGI_DOT,
+    LGI_END_ITEM,
+};
+
 /// A class to send status updates via OSC
 struct dssi_feedback_sender
 {
+    /// OSC client object used to send updates
     osctl::osc_client *client;
+    /// Background thread handle
     pthread_t bg_thread;
+    /// Quit flag (used to terminate the thread)
     bool quit;
+    /// Indices of graphs to send
+    std::vector<int> indices;
     
-    dssi_feedback_sender(const char *URI);
+    dssi_feedback_sender(const char *URI, line_graph_iface *graph, calf_plugins::parameter_properties *props, int num_params);
     ~dssi_feedback_sender();
 };
 #endif

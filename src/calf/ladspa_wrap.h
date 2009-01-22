@@ -120,17 +120,19 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
     }
     virtual char *configure(const char *key, const char *value)
     {
-        printf("%s = %s\n", key, value);
 #if USE_DSSI
         if (!strcmp(key, "OSC:FEEDBACK_URI"))
         {
+            line_graph_iface *lgi = dynamic_cast<line_graph_iface *>(this);
+            if (!lgi)
+                return NULL;
             if (*value)
             {
                 if (feedback_sender) {
                     delete feedback_sender;
                     feedback_sender = NULL;
                 }
-                feedback_sender = new dssi_feedback_sender(value);
+                feedback_sender = new dssi_feedback_sender(value, lgi, get_param_props(0), get_param_count());
             }
             else
             {

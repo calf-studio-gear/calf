@@ -156,7 +156,7 @@ static struct option long_options[] = {
 
 GMainLoop *mainloop;
 
-static bool osc_debug = false;
+static bool osc_debug = true;
 
 struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
 {

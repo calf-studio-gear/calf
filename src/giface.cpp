@@ -235,20 +235,81 @@ bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int 
     return false;
 }
 
-void calf_plugins::send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph)
+struct osc_cairo_control: public cairo_iface
+{
+    osctl::osc_inline_typed_strstream &os;
+    
+    osc_cairo_control(osctl::osc_inline_typed_strstream &_os) : os(_os) {}
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f)
+    {
+        // os << some control stuff
+    }
+    virtual void set_line_width(float width)
+    {
+        // os << some control stuff
+    }
+};
+
+static void send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph, std::vector<int> &params)
 {
     osctl::osc_inline_typed_strstream os;
-    os << (uint32_t)10;
+    osc_cairo_control cairoctl(os);
+    for (size_t i = 0; i < params.size(); i++)
+    {
+        int index = params[i];
+        os << (uint32_t)LGI_GRAPH;
+        os << (uint32_t)index;
+        for (int j = 0; ; j++)
+        {
+            float data[128];
+            if (graph->get_graph(index, j, data, 128, &cairoctl))
+            {
+                os << (uint32_t)LGI_SUBGRAPH;
+                os << (uint32_t)128;
+                for (int p = 0; p < 128; p++)
+                    os << data[i];
+            }
+            else
+                break;
+        }
+        for (int j = 0; ; j++)
+        {
+            float x, y;
+            int size;
+            if (graph->get_dot(index, j, x, y, size, &cairoctl))
+                os << (uint32_t)LGI_DOT << x << y << (uint32_t)size;
+            else
+                break;
+        }
+        for (int j = 0; ; j++)
+        {
+            float pos = 0;
+            bool vertical = false;
+            string legend;
+            if (graph->get_gridline(index, j, pos, vertical, legend, &cairoctl))
+                os << (uint32_t)LGI_LEGEND << pos << (uint32_t)(vertical ? 1 : 0) << legend;
+            else
+                break;
+        }
+        os << (uint32_t)LGI_END_ITEM;
+    }
+    os << (uint32_t)LGI_END;
     client.send(address, os);
 }
 
 #if USE_DSSI
-calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI)
+calf_plugins::dssi_feedback_sender::dssi_feedback_sender(const char *URI, line_graph_iface *graph, calf_plugins::parameter_properties *props, int num_params)
 {
     client = new osctl::osc_client;
     client->bind("0.0.0.0", 0);
     client->set_url(URI);
     client->send("/iAmHere");
+    for (int i = 0; i < num_params; i++)
+    {
+        if (props[i].flags & PF_PROP_GRAPH)
+            indices.push_back(i);
+    }
+    send_graph_via_osc(*client, "/lineGraph", graph, indices);
 }
 
 calf_plugins::dssi_feedback_sender::~dssi_feedback_sender()
