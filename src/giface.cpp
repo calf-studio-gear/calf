@@ -276,7 +276,7 @@ static void send_graph_via_osc(osctl::osc_client &client, const std::string &add
         for (int j = 0; ; j++)
         {
             float x, y;
-            int size;
+            int size = 3;
             if (graph->get_dot(index, j, x, y, size, &cairoctl))
                 os << (uint32_t)LGI_DOT << x << y << (uint32_t)size;
             else
