@@ -144,6 +144,13 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
             return NULL;
         }
         else 
+        if (!strcmp(key, "OSC:UPDATE"))
+        {
+            if (feedback_sender)
+                feedback_sender->update();
+            return NULL;
+        }
+        else
 #endif
         if (!strcmp(key, "ExecCommand"))
         {

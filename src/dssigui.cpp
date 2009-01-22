@@ -69,7 +69,32 @@ void osctl_test()
 }
 #endif
 
-struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
+struct graph_item
+{
+    float data[128];
+};
+
+struct dot_item
+{
+    float x, y;
+    int32_t size;
+};
+
+struct gridline_item
+{
+    float pos;
+    int32_t vertical;
+    std::string text;
+};
+
+struct param_line_graphs
+{
+    vector<graph_item *> graphs;
+    vector<dot_item *> dots;
+    vector<gridline_item *> gridlines;
+};
+
+struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public line_graph_iface
 {
     osc_client *client;
     bool send_osc;
@@ -77,6 +102,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     map<string, string> cfg_vars;
     int param_count;
     float *params;
+    map<int, param_line_graphs> graphs;
 
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
@@ -140,23 +166,65 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
+    virtual line_graph_iface *get_line_graph_iface() { return this; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
 };
 
-void help(char *argv[])
+bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
-    printf("GTK+ user interface for Calf DSSI plugins\nSyntax: %s [--help] [--version] <osc-url> <so-file> <plugin-label> <instance-name>\n", argv[0]);
+    if (!graphs.count(index))
+        return false;
+    param_line_graphs &g = graphs[index];
+    if (subindex < (int)g.graphs.size())
+    {
+        float *sdata = g.graphs[subindex]->data;
+        for (int i = 0; i < points; i++) {
+            float pos = i * 127.0 / points;
+            int ipos = i * 127 / points;
+            data[i] = sdata[ipos] + (sdata[ipos + 1] - sdata[ipos]) * (pos-ipos);
+        }
+        return true;
+    }
+    return false;
 }
 
-static struct option long_options[] = {
-    {"help", 0, 0, 'h'},
-    {"version", 0, 0, 'v'},
-    {"debug", 0, 0, 'd'},
-    {0,0,0,0},
-};
+bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+{
+    if (!graphs.count(index))
+        return false;
+    param_line_graphs &g = graphs[index];
+    if (subindex < (int)g.dots.size())
+    {
+        x = g.dots[subindex]->x;
+        y = g.dots[subindex]->y;
+        size = g.dots[subindex]->size;
+        return true;
+    }
+    return false;
+}
+
+bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    if (!graphs.count(index))
+        return false;
+    param_line_graphs &g = graphs[index];
+    if (subindex < (int)g.gridlines.size())
+    {
+        pos = g.gridlines[subindex]->pos;
+        vertical = g.gridlines[subindex]->vertical != 0;
+        legend = g.gridlines[subindex]->text;
+        return true;
+    }
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GMainLoop *mainloop;
 
-static bool osc_debug = true;
+static bool osc_debug = false;
 
 struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
 {
@@ -167,6 +235,8 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     osc_client cli;
     bool in_program, enable_dump;
     vector<plugin_preset> presets;
+    /// Timeout callback source ID
+    int source_id;
     
     dssi_osc_server()
     : plugin(NULL)
@@ -174,6 +244,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     , window(new plugin_gui_window(main_win))
     {
         sink = this;
+        source_id = 0;
     }
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
@@ -207,6 +278,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         plugin->client = &cli;
         plugin->send_osc = true;
         ((main_window *)window->main)->conditions.insert("dssi");
+        ((main_window *)window->main)->conditions.insert("directlink");
         window->create(plugin, title.c_str(), effect_name.c_str());
         plugin->gui = window->gui;
         gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);
@@ -214,6 +286,13 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         get_builtin_presets().get_for_plugin(presets, effect_name.c_str());
         get_user_presets().get_for_plugin(tmp_presets, effect_name.c_str());
         presets.insert(presets.end(), tmp_presets.begin(), tmp_presets.end());
+        source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL);
+    }
+    
+    static gboolean on_idle(void *self)
+    {
+        ((dssi_osc_server *)(self))->send_osc_update();
+        return TRUE;
     }
     
     void set_osc_update(bool enabled)
@@ -223,98 +302,188 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         data << (enabled ? get_uri() : "");
         cli.send("/configure", data);
     }
-    
-    virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
+    void send_osc_update()
     {
-        if (osc_debug)
-            dump.receive_osc_message(address, args, buffer);
-        if (address == prefix + "/update" && args == "s")
-        {
-            string str;
-            buffer >> str;
-            debug_printf("UPDATE: %s\n", str.c_str());
-            return;
-        }
-        else if (address == prefix + "/quit")
-        {
-            set_osc_update(false);
-            debug_printf("QUIT\n");
-            g_main_loop_quit(mainloop);
-            return;
-        }
-        else if (address == prefix + "/configure"&& args == "ss")
-        {
-            string key, value;
-            buffer >> key >> value;
-            plugin->cfg_vars[key] = value;
-            // XXXKF perhaps this should be queued !
-            window->gui->refresh();
-            return;
-        }
-        else if (address == prefix + "/program"&& args == "ii")
-        {
-            uint32_t bank, program;
-            
-            buffer >> bank >> program;
-            
-            unsigned int nr = bank * 128 + program;
-            debug_printf("PROGRAM %d\n", nr);
-            if (nr == 0)
-            {
-                bool sosc = plugin->send_osc;
-                plugin->send_osc = false;
-                int count = plugin->get_param_count();
-                for (int i =0 ; i < count; i++)
-                    plugin->set_param_value(i, plugin->get_param_props(i)->def_value);
-                plugin->send_osc = sosc;
-                window->gui->refresh();
-                // special handling for default preset
-                return;
-            }
-            nr--;
-            if (nr >= presets.size())
-                return;
-            bool sosc = plugin->send_osc;
-            plugin->send_osc = false;
-            presets[nr].activate(plugin);
-            plugin->send_osc = sosc;
-            window->gui->refresh();
-            
-            // cli.send("/update", data);
-            return;
-        }
-        else if (address == prefix + "/control" && args == "if")
-        {
-            uint32_t port;
-            float val;
-            
-            buffer >> port >> val;
-            
-            int idx = port - plugin->get_param_port_offset();
-            debug_printf("CONTROL %d %f\n", idx, val);
-            bool sosc = plugin->send_osc;
-            plugin->send_osc = false;
-            window->gui->set_param_value(idx, val);
-            plugin->send_osc = sosc;
-            return;
-        }
-        else if (address == prefix + "/show")
-        {
-            set_osc_update(true);
+        static int serial_no = 0;
+        osc_inline_typed_strstream data;
+        data << "OSC:UPDATE";
+        data << calf_utils::i2s(serial_no++);
+        cli.send("/configure", data);
+    }
+    
+    virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer);
+    void unmarshal_line_graph(osc_strstream &buffer);
+};
 
-            gtk_widget_show_all(GTK_WIDGET(window->toplevel));
-            return;
-        }
-        else if (address == prefix + "/hide")
+void dssi_osc_server::unmarshal_line_graph(osc_strstream &buffer)
+{
+    uint32_t cmd;
+    
+    do {
+        buffer >> cmd;
+        if (cmd == LGI_GRAPH)
         {
-            set_osc_update(false);
+            uint32_t param;
+            buffer >> param;
+            param_line_graphs &graphs = plugin->graphs[param];
 
-            gtk_widget_hide(GTK_WIDGET(window->toplevel));
-            return;
+            for (size_t i = 0; i < graphs.graphs.size(); i++)
+                delete graphs.graphs[i];
+            graphs.graphs.clear();
+
+            for (size_t i = 0; i < graphs.dots.size(); i++)
+                delete graphs.dots[i];
+            graphs.dots.clear();
+
+            for (size_t i = 0; i < graphs.gridlines.size(); i++)
+                delete graphs.gridlines[i];
+            graphs.gridlines.clear();
+
+            do {
+                buffer >> cmd;
+                if (cmd == LGI_SUBGRAPH)
+                {
+                    buffer >> param; // ignore number of points
+                    graph_item *gi = new graph_item;
+                    for (int i = 0; i < 128; i++)
+                        buffer >> gi->data[i];
+                    graphs.graphs.push_back(gi);
+                }
+                else
+                if (cmd == LGI_DOT)
+                {
+                    dot_item *di = new dot_item;
+                    buffer >> di->x >> di->y >> di->size;
+                    graphs.dots.push_back(di);
+                }
+                else
+                if (cmd == LGI_LEGEND)
+                {
+                    gridline_item *li = new gridline_item;
+                    buffer >> li->pos >> li->vertical >> li->text;
+                    graphs.gridlines.push_back(li);
+                }
+                else
+                    break;
+            } while(1);
+            
         }
         else
-            printf("Unknown OSC address: %s\n", address.c_str());
+            break;
+    } while(1);
+}
+
+void dssi_osc_server::receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
+{
+    if (osc_debug)
+        dump.receive_osc_message(address, args, buffer);
+    if (address == prefix + "/update" && args == "s")
+    {
+        string str;
+        buffer >> str;
+        debug_printf("UPDATE: %s\n", str.c_str());
+        return;
     }
+    else if (address == prefix + "/quit")
+    {
+        set_osc_update(false);
+        debug_printf("QUIT\n");
+        g_main_loop_quit(mainloop);
+        return;
+    }
+    else if (address == prefix + "/configure"&& args == "ss")
+    {
+        string key, value;
+        buffer >> key >> value;
+        plugin->cfg_vars[key] = value;
+        // XXXKF perhaps this should be queued !
+        window->gui->refresh();
+        return;
+    }
+    else if (address == prefix + "/program"&& args == "ii")
+    {
+        uint32_t bank, program;
+        
+        buffer >> bank >> program;
+        
+        unsigned int nr = bank * 128 + program;
+        debug_printf("PROGRAM %d\n", nr);
+        if (nr == 0)
+        {
+            bool sosc = plugin->send_osc;
+            plugin->send_osc = false;
+            int count = plugin->get_param_count();
+            for (int i =0 ; i < count; i++)
+                plugin->set_param_value(i, plugin->get_param_props(i)->def_value);
+            plugin->send_osc = sosc;
+            window->gui->refresh();
+            // special handling for default preset
+            return;
+        }
+        nr--;
+        if (nr >= presets.size())
+            return;
+        bool sosc = plugin->send_osc;
+        plugin->send_osc = false;
+        presets[nr].activate(plugin);
+        plugin->send_osc = sosc;
+        window->gui->refresh();
+        
+        // cli.send("/update", data);
+        return;
+    }
+    else if (address == prefix + "/control" && args == "if")
+    {
+        uint32_t port;
+        float val;
+        
+        buffer >> port >> val;
+        
+        int idx = port - plugin->get_param_port_offset();
+        debug_printf("CONTROL %d %f\n", idx, val);
+        bool sosc = plugin->send_osc;
+        plugin->send_osc = false;
+        window->gui->set_param_value(idx, val);
+        plugin->send_osc = sosc;
+        set_osc_update(false);
+        set_osc_update(true);
+        return;
+    }
+    else if (address == prefix + "/show")
+    {
+        set_osc_update(true);
+
+        gtk_widget_show_all(GTK_WIDGET(window->toplevel));
+        return;
+    }
+    else if (address == prefix + "/hide")
+    {
+        set_osc_update(false);
+
+        gtk_widget_hide(GTK_WIDGET(window->toplevel));
+        return;
+    }
+    else if (address == prefix + "/lineGraph")
+    {
+        unmarshal_line_graph(buffer);
+        return;
+    }
+    else
+        printf("Unknown OSC address: %s\n", address.c_str());
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+void help(char *argv[])
+{
+    printf("GTK+ user interface for Calf DSSI plugins\nSyntax: %s [--help] [--version] <osc-url> <so-file> <plugin-label> <instance-name>\n", argv[0]);
+}
+
+static struct option long_options[] = {
+    {"help", 0, 0, 'h'},
+    {"version", 0, 0, 'v'},
+    {"debug", 0, 0, 'd'},
+    {0,0,0,0},
 };
 
 int main(int argc, char *argv[])
@@ -384,6 +553,8 @@ int main(int argc, char *argv[])
     }
     
     g_main_loop_run(mainloop);
+    if (srv.source_id)
+        g_source_remove(srv.source_id);
 
     srv.set_osc_update(false);
     debug_printf("exited\n");

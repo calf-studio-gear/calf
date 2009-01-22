@@ -380,8 +380,11 @@ struct dssi_feedback_sender
     bool quit;
     /// Indices of graphs to send
     std::vector<int> indices;
+    /// Source for the graph data (interface to marshal)
+    calf_plugins::line_graph_iface *graph;
     
-    dssi_feedback_sender(const char *URI, line_graph_iface *graph, calf_plugins::parameter_properties *props, int num_params);
+    dssi_feedback_sender(const char *URI, line_graph_iface *_graph, calf_plugins::parameter_properties *props, int num_params);
+    void update();
     ~dssi_feedback_sender();
 };
 #endif
