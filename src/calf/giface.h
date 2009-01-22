@@ -367,6 +367,8 @@ enum line_graph_item
     LGI_LEGEND,
     LGI_DOT,
     LGI_END_ITEM,
+    LGI_SET_RGBA,
+    LGI_SET_WIDTH,
 };
 
 /// A class to send status updates via OSC

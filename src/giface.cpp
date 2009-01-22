@@ -242,11 +242,11 @@ struct osc_cairo_control: public cairo_iface
     osc_cairo_control(osctl::osc_inline_typed_strstream &_os) : os(_os) {}
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f)
     {
-        // os << some control stuff
+        os << (uint32_t)LGI_SET_RGBA << r << g << b << a;
     }
     virtual void set_line_width(float width)
     {
-        // os << some control stuff
+        os << (uint32_t)LGI_SET_WIDTH << width;
     }
 };
 
