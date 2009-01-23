@@ -241,7 +241,7 @@ bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool
 
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
-    if (!is_active) {
+    if (!is_active || index != par_mode) {
         return false;
     }
     if (!subindex) {

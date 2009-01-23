@@ -127,7 +127,7 @@ CALF_PORT_PROPS(filterclavier) = {
     { biquad_filter_module::mode_6db_bp, 
       biquad_filter_module::mode_12db_lp,
       biquad_filter_module::mode_count - 1,
-                                1, PF_ENUM  | PF_CTL_COMBO, filter_choices, "mode", "Mode" },
+                                1, PF_ENUM  | PF_CTL_COMBO | PF_PROP_GRAPH, filter_choices, "mode", "Mode" },
     { 20,         1,  2000,    20, PF_FLOAT | PF_SCALE_LOG    | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Portamento time"}
 };
 
