@@ -23,7 +23,7 @@
     </hbox>
     <if cond="directlink">
         <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="0" attach-y="2">
-            <line-graph refresh="1" width="160" height="160"/>
+            <line-graph param="mode" refresh="1" width="160" height="160"/>
         </frame>
     </if>
 </table>
