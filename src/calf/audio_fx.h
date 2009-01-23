@@ -618,7 +618,7 @@ public:
     
     enum { mode_12db_lp = 0, mode_24db_lp = 1, mode_36db_lp = 2, 
            mode_12db_hp = 3, mode_24db_hp = 4, mode_36db_hp = 5,
-           mode_12db_bp = 6, mode_24db_bp = 7, mode_36db_bp = 8,
+           mode_6db_bp  = 6, mode_12db_bp = 7, mode_18db_bp = 8,
            mode_count = 9
     };
     

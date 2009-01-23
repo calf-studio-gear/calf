@@ -85,14 +85,14 @@ class filterclavier_audio_module:
             
             int   mode = dsp::fastf2i_drm(*params[par_mode]);
             // for bandpasses: boost gain for velocities > 0
-            if ( (mode_12db_bp <= mode) && (mode <= mode_36db_bp) ) {
+            if ( (mode_6db_bp <= mode) && (mode <= mode_18db_bp) ) {
                 // gain for velocity 0:   1.0
                 // gain for velocity 127: 32.0
                 float mode_max_gain = max_gain;
-                // max_gain is right for mode_12db_bp
-                if (mode == mode_24db_bp)
+                // max_gain is right for mode_6db_bp
+                if (mode == mode_12db_bp)
                     mode_max_gain /= 6.0;
-                if (mode == mode_36db_bp)
+                if (mode == mode_18db_bp)
                     mode_max_gain /= 10.5;
                 
                 inertia_filter_module::inertia_gain.set_inertia(
