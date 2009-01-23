@@ -102,6 +102,9 @@ const char *filter_choices[] = {
     "6dB/oct Bandpass",
     "12dB/oct Bandpass",
     "18dB/oct Bandpass",
+    "6dB/oct Bandreject",
+    "12dB/oct Bandreject",
+    "18dB/oct Bandreject",
 };
 
 CALF_PORT_PROPS(filter) = {

@@ -619,7 +619,8 @@ public:
     enum { mode_12db_lp = 0, mode_24db_lp = 1, mode_36db_lp = 2, 
            mode_12db_hp = 3, mode_24db_hp = 4, mode_36db_hp = 5,
            mode_6db_bp  = 6, mode_12db_bp = 7, mode_18db_bp = 8,
-           mode_count = 9
+           mode_6db_br  = 9, mode_12db_br = 10, mode_18db_br = 11,
+           mode_count
     };
     
 public:
@@ -631,11 +632,14 @@ public:
             order = mode + 1;
             left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate, gain);
         } else if ( mode_12db_hp <= mode && mode <= mode_36db_hp ) {
-            order = mode - 2;
+            order = mode - mode_12db_hp + 1;
             left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else { // mode_12db_bp <= mode <= mode_36db_bp
-            order = mode - 5;
+        } else if ( mode_6db_bp <= mode && mode <= mode_18db_bp ) {
+            order = mode - mode_6db_bp + 1;
             left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+        } else { // mode_6db_br <= mode <= mode_18db_br
+            order = mode - mode_6db_br + 1;
+            left[0].set_br_rbj(freq, pow(q, 1.0 / order), srate, gain);
         }
         
         right[0].copy_coeffs(left[0]);
