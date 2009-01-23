@@ -639,7 +639,7 @@ public:
             left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
         } else { // mode_6db_br <= mode <= mode_18db_br
             order = mode - mode_6db_br + 1;
-            left[0].set_br_rbj(freq, pow(q, 1.0 / order), srate, gain);
+            left[0].set_br_rbj(freq, order * 0.25 * q, srate, gain);
         }
         
         right[0].copy_coeffs(left[0]);
