@@ -289,7 +289,8 @@ struct ladspa_wrapper
         dssi_descriptor.configure = cb_configure;
         dssi_descriptor.get_program = cb_get_program;
         dssi_descriptor.select_program = cb_select_program;
-        dssi_descriptor.run_synth = cb_run_synth;
+        if (Module::support_midi)
+            dssi_descriptor.run_synth = cb_run_synth;
         
         presets = new std::vector<plugin_preset>;
         preset_descs = new std::vector<DSSI_Program_Descriptor>;

@@ -251,13 +251,13 @@ const char *monosynth_filter_choices[] = {
 CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
 
 CALF_PORT_PROPS(monosynth) = {
-    { monosynth_metadata::wave_saw,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
-    { monosynth_metadata::wave_sqr,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO, monosynth_waveform_names, "o2_wave", "Osc2 Wave" },
+    { monosynth_metadata::wave_saw,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
+    { monosynth_metadata::wave_sqr,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_waveform_names, "o2_wave", "Osc2 Wave" },
     { 10,         0,  100,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "o12_detune", "O1<>2 Detune" },
     { 12,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o2_xpose", "Osc 2 transpose" },
     { 0,          0,    5,    0, PF_ENUM | PF_CTL_COMBO, monosynth_mode_names, "phase_mode", "Phase mode" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "o12_mix", "O1<>2 Mix" },
-    { 1,          0,    7,    0, PF_ENUM | PF_CTL_COMBO, monosynth_filter_choices, "filter", "Filter" },
+    { 1,          0,    7,    0, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_filter_choices, "filter", "Filter" },
     { 33,        10,16000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "cutoff", "Cutoff" },
     { 2,        0.7,    8,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL, "res", "Resonance" },
     { 0,      -2400, 2400,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "filter_sep", "Separation" },
@@ -412,7 +412,7 @@ CALF_PORT_PROPS(organ) = {
     { 90,      0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "perc_stereo", "P: Stereo Phase" },
 
     { 0,         0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "filter_chain", "Filter 1 To 2" },
-    { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
+    { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN | PF_PROP_GRAPH, NULL, "master", "Volume" },
     
     { 2000,   20, 20000, 100, PF_FLOAT | PF_SCALE_LOG | PF_UNIT_HZ | PF_CTL_KNOB, NULL, "f1_cutoff", "F1 Cutoff" },
     { 2,        0.7,    8,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB, NULL, "f1_res", "F1 Res" },

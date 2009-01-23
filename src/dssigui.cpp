@@ -69,18 +69,36 @@ void osctl_test()
 }
 #endif
 
-struct graph_item
+struct cairo_params
+{
+    enum { HAS_COLOR = 1, HAS_WIDTH = 2 };
+    uint32_t flags;
+    float r, g, b, a;
+    float line_width;
+    
+    cairo_params()
+    : flags(0)
+    , r(0.f)
+    , g(0.f)
+    , b(0.f)
+    , a(1.f)
+    , line_width(1)
+    {
+    }
+};
+
+struct graph_item: public cairo_params
 {
     float data[128];
 };
 
-struct dot_item
+struct dot_item: public cairo_params
 {
     float x, y;
     int32_t size;
 };
 
-struct gridline_item
+struct gridline_item: public cairo_params
 {
     float pos;
     int32_t vertical;
@@ -92,7 +110,25 @@ struct param_line_graphs
     vector<graph_item *> graphs;
     vector<dot_item *> dots;
     vector<gridline_item *> gridlines;
+    
+    void clear();
 };
+
+void param_line_graphs::clear()
+{
+    for (size_t i = 0; i < graphs.size(); i++)
+        delete graphs[i];
+    graphs.clear();
+
+    for (size_t i = 0; i < dots.size(); i++)
+        delete dots[i];
+    dots.clear();
+
+    for (size_t i = 0; i < gridlines.size(); i++)
+        delete gridlines[i];
+    gridlines.clear();
+
+}
 
 struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public line_graph_iface
 {
@@ -103,12 +139,14 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     int param_count;
     float *params;
     map<int, param_line_graphs> graphs;
+    bool update_graphs;
 
     plugin_proxy(plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         client = NULL;
         send_osc = false;
+        update_graphs = true;
         gui = NULL;
         param_count = md->get_param_count();
         params = new float[param_count];
@@ -123,6 +161,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
+        update_graphs = true;
         params[param_no] = value;
         if (send_osc)
         {
@@ -170,6 +209,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    void update_cairo_context(cairo_iface *context, cairo_params &item);
 };
 
 bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
@@ -185,6 +225,7 @@ bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, c
             int ipos = i * 127 / points;
             data[i] = sdata[ipos] + (sdata[ipos + 1] - sdata[ipos]) * (pos-ipos);
         }
+        update_cairo_context(context, *g.graphs[subindex]);
         return true;
     }
     return false;
@@ -197,9 +238,11 @@ bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &siz
     param_line_graphs &g = graphs[index];
     if (subindex < (int)g.dots.size())
     {
-        x = g.dots[subindex]->x;
-        y = g.dots[subindex]->y;
-        size = g.dots[subindex]->size;
+        dot_item &item = *g.dots[subindex];
+        x = item.x;
+        y = item.y;
+        size = item.size;
+        update_cairo_context(context, item);
         return true;
     }
     return false;
@@ -212,12 +255,22 @@ bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &verti
     param_line_graphs &g = graphs[index];
     if (subindex < (int)g.gridlines.size())
     {
-        pos = g.gridlines[subindex]->pos;
-        vertical = g.gridlines[subindex]->vertical != 0;
-        legend = g.gridlines[subindex]->text;
+        gridline_item &item = *g.gridlines[subindex];
+        pos = item.pos;
+        vertical = item.vertical != 0;
+        legend = item.text;
+        update_cairo_context(context, item);
         return true;
     }
     return false;
+}
+
+void plugin_proxy::update_cairo_context(cairo_iface *context, cairo_params &item)
+{
+    if (item.flags & cairo_params::HAS_COLOR)
+        context->set_source_rgba(item.r, item.g, item.b, item.a);
+    if (item.flags & cairo_params::HAS_WIDTH)
+        context->set_line_width(item.line_width);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +290,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     vector<plugin_preset> presets;
     /// Timeout callback source ID
     int source_id;
+    bool osc_link_active;
     
     dssi_osc_server()
     : plugin(NULL)
@@ -245,6 +299,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     {
         sink = this;
         source_id = 0;
+        osc_link_active = false;
     }
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
@@ -297,6 +352,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     void set_osc_update(bool enabled)
     {
+        osc_link_active = enabled;
         osc_inline_typed_strstream data;
         data << "OSC:FEEDBACK_URI";
         data << (enabled ? get_uri() : "");
@@ -326,42 +382,51 @@ void dssi_osc_server::unmarshal_line_graph(osc_strstream &buffer)
             uint32_t param;
             buffer >> param;
             param_line_graphs &graphs = plugin->graphs[param];
-
-            for (size_t i = 0; i < graphs.graphs.size(); i++)
-                delete graphs.graphs[i];
-            graphs.graphs.clear();
-
-            for (size_t i = 0; i < graphs.dots.size(); i++)
-                delete graphs.dots[i];
-            graphs.dots.clear();
-
-            for (size_t i = 0; i < graphs.gridlines.size(); i++)
-                delete graphs.gridlines[i];
-            graphs.gridlines.clear();
+            
+            graphs.clear();
+            cairo_params params;
 
             do {
                 buffer >> cmd;
+                if (cmd == LGI_SET_RGBA)
+                {
+                    params.flags |= cairo_params::HAS_COLOR;
+                    buffer >> params.r >> params.g >> params.b >> params.a;
+                }
+                else
+                if (cmd == LGI_SET_WIDTH)
+                {
+                    params.flags |= cairo_params::HAS_WIDTH;
+                    buffer >> params.line_width;
+                }
+                else
                 if (cmd == LGI_SUBGRAPH)
                 {
                     buffer >> param; // ignore number of points
                     graph_item *gi = new graph_item;
+                    (cairo_params &)*gi = params;
                     for (int i = 0; i < 128; i++)
                         buffer >> gi->data[i];
                     graphs.graphs.push_back(gi);
+                    params.flags = 0;
                 }
                 else
                 if (cmd == LGI_DOT)
                 {
                     dot_item *di = new dot_item;
+                    (cairo_params &)*di = params;
                     buffer >> di->x >> di->y >> di->size;
                     graphs.dots.push_back(di);
+                    params.flags = 0;
                 }
                 else
                 if (cmd == LGI_LEGEND)
                 {
                     gridline_item *li = new gridline_item;
+                    (cairo_params &)*li = params;
                     buffer >> li->pos >> li->vertical >> li->text;
                     graphs.gridlines.push_back(li);
+                    params.flags = 0;
                 }
                 else
                     break;
@@ -382,6 +447,8 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         string str;
         buffer >> str;
         debug_printf("UPDATE: %s\n", str.c_str());
+        set_osc_update(true);
+        send_osc_update();
         return;
     }
     else if (address == prefix + "/quit")
@@ -445,8 +512,8 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         plugin->send_osc = false;
         window->gui->set_param_value(idx, val);
         plugin->send_osc = sosc;
-        set_osc_update(false);
-        set_osc_update(true);
+        if (plugin->get_param_props(idx)->flags & PF_PROP_GRAPH)
+            plugin->update_graphs = true;
         return;
     }
     else if (address == prefix + "/show")
@@ -466,6 +533,13 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     else if (address == prefix + "/lineGraph")
     {
         unmarshal_line_graph(buffer);
+        if (plugin->update_graphs) {
+            // updates graphs that are only redrawn on startup and parameter changes
+            // (the OSC message may come a while after the parameter has been changed,
+            // so the redraw triggered by parameter change usually shows stale values)
+            window->gui->refresh();
+            plugin->update_graphs = false;
+        }
         return;
     }
     else
