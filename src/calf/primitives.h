@@ -463,9 +463,9 @@ inline int fastf2i_drm(float f)
 }
 
 /// Convert MIDI note to frequency in Hz.
-inline float note_to_hz(double note)
+inline float note_to_hz(double note, double detune_cents = 0.0)
 {
-    return 440 * pow(2.0, (note - 69) / 12.0);
+    return 440 * pow(2.0, (note - 69 + detune_cents/100.0) / 12.0);
 }
 
 /// Hermite interpolation between two points and slopes in normalized range (written after Wikipedia article)

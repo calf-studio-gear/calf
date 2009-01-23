@@ -585,13 +585,14 @@ public:
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
 
-    inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
+    inertia<exponential_ramp> inertia_cutoff, inertia_resonance, inertia_gain;
     once_per_n timer;
     bool is_active;    
     
     filter_module_with_inertia()
     : inertia_cutoff(exponential_ramp(128), 20)
     , inertia_resonance(exponential_ramp(128), 20)
+    , inertia_gain(exponential_ramp(128), 1.0)
     , timer(128)
     {
         is_active = false;
@@ -610,15 +611,14 @@ public:
         if (inertia != inertia_cutoff.ramp.length()) {
             inertia_cutoff.ramp.set_length(inertia);
             inertia_resonance.ramp.set_length(inertia);
+            inertia_gain.ramp.set_length(inertia);
         }
         
-        FilterClass::calculate_filter(freq, q, mode);
+        FilterClass::calculate_filter(freq, q, mode, inertia_gain.get_last());
     }
     
-    void params_changed()
+    virtual void params_changed()
     {
-        inertia_cutoff.set_inertia(*params[Metadata::par_cutoff]);
-        inertia_resonance.set_inertia(*params[Metadata::par_resonance]);
         calculate_filter();
     }
     
@@ -626,6 +626,7 @@ public:
     {
         inertia_cutoff.step();
         inertia_resonance.step();
+        inertia_gain.step();
         calculate_filter();
     }
     
@@ -675,6 +676,7 @@ public:
     }
 };
 
+/// biquad filter module
 class filter_audio_module: 
     public audio_module<filter_metadata>, 
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
@@ -683,6 +685,8 @@ class filter_audio_module:
 public:    
     void params_changed()
     { 
+        inertia_cutoff.set_inertia(*params[par_cutoff]);
+        inertia_resonance.set_inertia(*params[par_resonance]);
         inertia_filter_module::params_changed(); 
     }
         
@@ -701,7 +705,6 @@ public:
     {
         inertia_filter_module::deactivate();
     }
-    
     
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
