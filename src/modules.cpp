@@ -121,25 +121,13 @@ CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman
 #if ENABLE_EXPERIMENTAL
 CALF_PORT_NAMES(filterclavier) = {"In L", "In R", "Out L", "Out R"};
 
-const char *filterclavier_choices[] = {
-    "12dB/oct Lowpass",
-    "24dB/oct Lowpass",
-    "36dB/oct Lowpass",
-    "12dB/oct Highpass",
-    "24dB/oct Highpass",
-    "36dB/oct Highpass",
-    "6dB/oct Bandpass",
-    "12dB/oct Bandpass",
-    "18dB/oct Bandpass",
-};
-
 CALF_PORT_PROPS(filterclavier) = {
     { 0,        -48,   48, 48*2+1, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,      0, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
     { biquad_filter_module::mode_6db_bp, 
       biquad_filter_module::mode_12db_lp,
       biquad_filter_module::mode_count - 1,
-                                1, PF_ENUM  | PF_CTL_COMBO, filterclavier_choices, "mode", "Mode" },
+                                1, PF_ENUM  | PF_CTL_COMBO, filter_choices, "mode", "Mode" },
     { 20,         1,  2000,    20, PF_FLOAT | PF_SCALE_LOG    | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "inertia", "Portamento time"}
 };
 
