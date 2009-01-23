@@ -599,11 +599,13 @@ public:
 class filter_module_iface
 {
 public:
-    virtual void  calculate_filter(float freq, float q, int mode) = 0;
+    virtual void  calculate_filter(float freq, float q, int mode, float gain = 1.0) = 0;
     virtual void  filter_activate() = 0;
+    virtual void  sanitize() = 0;
     virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
     virtual float freq_gain(int subindex, float freq, float srate) = 0;
 };
+
 
 class biquad_filter_module: public filter_module_iface
 {
@@ -614,17 +616,26 @@ private:
 public:    
     uint32_t srate;
     
+    enum { mode_12db_lp = 0, mode_24db_lp = 1, mode_36db_lp = 2, 
+           mode_12db_hp = 3, mode_24db_hp = 4, mode_36db_hp = 5,
+           mode_6db_bp  = 6, mode_12db_bp = 7, mode_18db_bp = 8,
+           mode_count = 9
+    };
+    
 public:
     biquad_filter_module() : order(0) {}
     
-    void calculate_filter(float freq, float q, int mode)
+    void calculate_filter(float freq, float q, int mode, float gain = 1.0)
     {
-        if (mode < 3) {
+        if (mode <= mode_36db_lp) {
             order = mode + 1;
-            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate);
-        } else {
+            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+        } else if ( mode_12db_hp <= mode && mode <= mode_36db_hp ) {
             order = mode - 2;
-            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate);
+            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+        } else { // mode_12db_bp <= mode <= mode_36db_bp
+            order = mode - 5;
+            left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
         }
         
         right[0].copy_coeffs(left[0]);
@@ -639,6 +650,14 @@ public:
         for (int i=0; i < order; i++) {
             left[i].reset();
             right[i].reset();
+        }
+    }
+    
+    void  sanitize()
+    {
+        for (int i=0; i < order; i++) {
+            left[i].sanitize();
+            right[i].sanitize();
         }
     }
     
@@ -708,7 +727,7 @@ public:
     {
         float level = 1.0;
         for (int j = 0; j < order; j++)
-            level *= left[j].freq_gain(freq, srate);                
+            level *= left[j].freq_gain(freq, srate);
         return level;
     }
 };
