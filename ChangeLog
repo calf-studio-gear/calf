@@ -1,5 +1,10 @@
 Version 0.0.18 (ongoing)
 
++ Filterclavier: new plugin (a MIDI controlled filter) by Hans Baier
++ DSSI: added a basic implementation of live graphs. The graphs have a
+  limited resolution (128 data points), and are rather inefficient
+  (as the graph data need to be transmitted via OSC to a different
+  process), but it's better than nothing
 + Phaser: added frequency response graph
 + JACK host: discontinue the broken option -p; allow giving preset names
   after a colon sign (reverb:DiscoVerb instead of -p DiscoVerb reverb)
