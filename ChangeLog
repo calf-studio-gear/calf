@@ -22,6 +22,8 @@ Version 0.0.18 (ongoing)
 + Organ, Monosynth: better memory usage
 + LV2: attempt at supporting configure-like parameters (key mapping curve
   in Organ) by the new String Port extension
++ AutoHell: header files are not installed anymore (they are of little
+  use anyway)
 + AutoHell: configure script prints if --enable-experimental was specified
 
 Version 0.0.17
