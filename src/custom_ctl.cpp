@@ -46,15 +46,21 @@ static calf_ui_type_module type_module;
 */
 
 static void
-calf_line_graph_paint_cache( CalfLineGraph *lg, cairo_t *c ) {
+calf_line_graph_copy_cache_to_window( CalfLineGraph *lg, cairo_t *c ) {
 	cairo_save( c );
 	cairo_set_source_surface( c, lg->cache_surface, 0,0 );
 	cairo_paint( c );
 	cairo_restore( c );
 }
 
-	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
-	//cairo_paint( cache_cr );
+static void
+calf_line_graph_copy_window_to_cache( CalfLineGraph *lg, cairo_t *c ) {
+       cairo_t *cache_cr = cairo_create( lg->cache_surface );
+	cairo_surface_t *window_surface = cairo_get_target( c );
+	cairo_set_source_surface( cache_cr, window_surface, 0,0 );
+	cairo_paint( cache_cr );
+	cairo_destroy( cache_cr );
+}
 
 static void
 calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float pos, int phase, int sx, int sy )
@@ -125,22 +131,26 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
     
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    cairo_surface_t *window_surface = cairo_get_target( c );
 
     GdkColor sc = { 0, 0, 0, 0 };
+
+    bool cache_dirty = 0;
+
+
 
     if( lg->cache_surface == NULL ) {
 	// looks like its either first call or the widget has been resized.
 	// create the cache_surface.
+	cairo_surface_t *window_surface = cairo_get_target( c );
 	lg->cache_surface = cairo_surface_create_similar( window_surface, 
 							  CAIRO_CONTENT_COLOR,
 							  widget->allocation.width,
 							  widget->allocation.height );
 	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
 	//cairo_paint( cache_cr );
+	
+	cache_dirty = 1;
     }
-
-    cairo_t *cache_cr = cairo_create( lg->cache_surface );
 
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
@@ -152,37 +162,86 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_font_size(c, 9);
 
     if (lg->source) {
+
         float pos = 0;
         bool vertical = false;
-        cairo_set_line_width(c, 1);
         std::string legend;
+        float *data = new float[2 * sx];
+        GdkColor sc2 = { 0, 0, 65535, 0 };
+        float x, y;
+        int size = 0;
+        GdkColor sc3 = { 0, 32767, 65535, 0 };
+
+	int graph_n, grid_n, dot_n, grid_n_save;
+
+	int cache_graph_index, cache_dot_index, cache_grid_index;
+	int gen_index = lg->source->get_changed_offsets( lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
+
+	if( cache_dirty || (gen_index != lg->last_generation) ) {
+	    lg->source->get_changed_offsets( gen_index, cache_graph_index, cache_dot_index, cache_grid_index );
+	    lg->last_generation = gen_index;
+
+	    cairo_set_line_width(c, 1);
+	    for(int phase = 1; phase <= 2; phase++)
+	    {
+		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cimpl); grid_n++)
+		{
+		    calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
+		}
+	    }
+	    grid_n_save = grid_n;
+
+	    gdk_cairo_set_source_color(c, &sc2);
+	    cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
+	    cairo_set_line_width(c, 1);
+	    for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, 2 * sx, &cimpl); graph_n++)
+	    {
+		calf_line_graph_draw_graph( c, data, sx, sy );
+	    }
+	    gdk_cairo_set_source_color(c, &sc3);
+	    for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cimpl); dot_n++)
+	    {
+		int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
+		cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);
+		cairo_fill(c);
+	    }
+
+	    // copy window to cache.
+	    calf_line_graph_copy_window_to_cache( lg, c );
+	} else {
+	    grid_n_save = cache_grid_index;
+	    graph_n = cache_graph_index;
+	    dot_n = cache_dot_index;
+	    calf_line_graph_copy_cache_to_window( lg, c );
+	    printf( "cache_paint\n" );
+	}
+
+
+        cairo_set_line_width(c, 1);
         for(int phase = 1; phase <= 2; phase++)
         {
-            for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
+            for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
 		calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
             }
         }
-        float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0, 65535, 0 };
+
         gdk_cairo_set_source_color(c, &sc2);
         cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(c, 1);
-        for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
+        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
+	    printf( "uncached graph draw = %d\n", gn );
 	    calf_line_graph_draw_graph( c, data, sx, sy );
         }
-        delete []data;
-        float x, y;
-        int size = 0;
-        GdkColor sc3 = { 0, 32767, 65535, 0 };
         gdk_cairo_set_source_color(c, &sc3);
-        for(int gn = 0; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cimpl); gn++)
+        for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cimpl); gn++)
         {
             int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
             cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);
             cairo_fill(c);
         }
+        delete []data;
     }
     
     cairo_destroy(c);

@@ -41,6 +41,7 @@ struct CalfLineGraph
     bool is_square;
     cairo_surface_t *cache_surface;
     //GdkPixmap *cache_pixmap;
+    int last_generation;
 };
 
 struct CalfLineGraphClass
