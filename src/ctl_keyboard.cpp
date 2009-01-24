@@ -176,7 +176,7 @@ calf_keyboard_button_press (GtkWidget *widget, GdkEventButton *event)
         return FALSE;
     gtk_widget_grab_focus(widget);
     int vel = 127;
-    self->last_key = calf_keyboard_pos_to_note(self, event->x, event->y, &vel);
+    self->last_key = calf_keyboard_pos_to_note(self, (int)event->x, (int)event->y, &vel);
     if (self->last_key != -1)
         self->sink->note_on(self->last_key, vel);
     return FALSE;
@@ -202,7 +202,7 @@ calf_keyboard_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     if (!self->interactive)
         return FALSE;
     int vel = 127;
-    int key = calf_keyboard_pos_to_note(self, event->x, event->y, &vel);
+    int key = calf_keyboard_pos_to_note(self, (int)event->x, (int)event->y, &vel);
     if (key != self->last_key)
     {
         if (self->last_key != -1)

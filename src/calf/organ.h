@@ -156,8 +156,8 @@ public:
     void update_pitch()
     {
         float phase = dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
-        dpphase.set(phase * parameters->percussion_harmonic * parameters->pitch_bend);
-        moddphase.set(phase * parameters->percussion_fm_harmonic * parameters->pitch_bend);
+        dpphase.set((long int) (phase * parameters->percussion_harmonic * parameters->pitch_bend));
+        moddphase.set((long int) (phase * parameters->percussion_fm_harmonic * parameters->pitch_bend));
     }
     // this doesn't really have a voice interface
     void render_percussion_to(float (*buf)[2], int nsamples);

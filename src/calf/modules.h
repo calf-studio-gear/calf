@@ -212,7 +212,7 @@ public:
         left_hi.set_hp(dsp::clip(*params[par_basscut], 20.f, (float)(srate * 0.49f)), srate);
         right_lo.copy_coeffs(left_lo);
         right_hi.copy_coeffs(left_hi);
-        predelay_amt = srate * (*params[par_predelay]) * (1.0f / 1000.0f) + 1;
+        predelay_amt = (int) (srate * (*params[par_predelay]) * (1.0f / 1000.0f) + 1);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         numsamples += offset;
@@ -432,7 +432,7 @@ public:
     {
         // premature optimization is a root of all evil; it can be done with integers only - but later :)
         double v = counter * (1.0 / (65536.0 * 32768.0));
-        return 32768 + 32768 * (v - v*v*v) * (1.0 / 0.3849);
+        return (int) (32768 + 32768 * (v - v*v*v) * (1.0 / 0.3849));
     }
     /// Increase or decrease aspeed towards raspeed, with required negative and positive rate
     inline bool incr_towards(float &aspeed, float raspeed, float delta_decc, float delta_acc)
