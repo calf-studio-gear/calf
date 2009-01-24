@@ -54,7 +54,7 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
 /// Filterclavier - metadata
 struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
 {
-    enum { par_transpose, par_detune, par_mode, par_inertia,  param_count };
+    enum { par_transpose, par_detune, par_max_resonance, par_mode, par_inertia,  param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = true, support_midi = true };
     PLUGIN_NAME_ID_LABEL("filterclavier", "filterclavier", "Filterclavier")
     /// do not export mode and inertia as CVs, as those are settings and not parameters

@@ -127,6 +127,7 @@ CALF_PORT_NAMES(filterclavier) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(filterclavier) = {
     { 0,        -48,   48, 48*2+1, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "transpose", "Transpose" },
     { 0,       -100,  100,      0, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "detune", "Detune" },
+    { 32,     0.707,   32,      0, PF_FLOAT | PF_SCALE_GAIN   | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "maxres", "Max. Resonance" },    
     { biquad_filter_module::mode_6db_bp, 
       biquad_filter_module::mode_12db_lp,
       biquad_filter_module::mode_count - 1,

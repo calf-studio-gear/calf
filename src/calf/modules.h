@@ -657,7 +657,7 @@ public:
         while(offset < numsamples) {
             uint32_t numnow = numsamples - offset;
             // if inertia's inactive, we can calculate the whole buffer at once
-            if (inertia_cutoff.active() || inertia_resonance.active())
+            if (inertia_cutoff.active() || inertia_resonance.active() || inertia_gain.active())
                 numnow = timer.get(numnow);
             
             if (outputs_mask & 1) {

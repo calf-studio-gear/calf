@@ -16,6 +16,11 @@
             <value param="detune" />
         </vbox>
         <vbox border="10">
+            <label param="maxres" />
+            <knob param="maxres" />
+            <value param="maxres" />
+        </vbox>
+        <vbox border="10">
             <label param="inertia" />
             <knob param="inertia"/>
             <value param="inertia" />
