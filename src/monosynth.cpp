@@ -248,6 +248,7 @@ void monosynth_audio_module::calculate_buffer_stereo()
 
 void monosynth_audio_module::delayed_note_on()
 {
+    force_fadeout = false;
     stop_count = 0;
     porta_time = 0.f;
     start_freq = freq;
@@ -432,7 +433,7 @@ void monosynth_audio_module::calculate_step()
         calculate_buffer_stereo();
         break;
     }
-    if (envelope.state == adsr::STOP)
+    if (envelope.state == adsr::STOP || force_fadeout)
     {
         enum { ramp = step_size * 4 };
         for (int i = 0; i < step_size; i++)
@@ -446,16 +447,59 @@ void monosynth_audio_module::calculate_step()
     }
 }
 
+void monosynth_audio_module::note_on(int note, int vel)
+{
+    queue_note_on = note;
+    last_key = note;
+    queue_vel = vel / 127.f;
+    stack.push(note);
+}
+
+void monosynth_audio_module::note_off(int note, int vel)
+{
+    stack.pop(note);
+    // If releasing the currently played note, try to get another one from note stack.
+    if (note == last_key) {
+        if (stack.count())
+        {
+            last_key = note = stack.nth(stack.count() - 1);
+            start_freq = freq;
+            target_freq = freq = dsp::note_to_hz(note);
+            set_frequency();
+            if (!(legato & 1)) {
+                envelope.note_on();
+                stopping = false;
+                running = true;
+            }
+            return;
+        }
+        gate = false;
+        envelope.note_off();
+    }
+}
+
+
 void monosynth_audio_module::control_change(int controller, int value)
 {
     switch(controller)
     {
         case 120: // all sounds off
+            force_fadeout = true;
+            // fall through
         case 123: // all notes off
             gate = false;
+            queue_note_on = -1;
             envelope.note_off();
             stack.clear();
             break;
     }
 }
 
+void monosynth_audio_module::deactivate()
+{
+    gate = false;
+    running = false;
+    stopping = false;
+    envelope.reset();
+    stack.clear();
+}

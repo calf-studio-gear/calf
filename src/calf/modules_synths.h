@@ -46,7 +46,7 @@ public:
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
-    bool running, stopping, gate;
+    bool running, stopping, gate, force_fadeout;
     int last_key;
     
     float buffer[step_size], buffer2[step_size];
@@ -69,36 +69,9 @@ public:
     void delayed_note_on();
     /// Handle MIDI Note On message (does not immediately trigger a note, as it must start on
     /// boundary of step_size samples).
-    void note_on(int note, int vel)
-    {
-        queue_note_on = note;
-        last_key = note;
-        queue_vel = vel / 127.f;
-        stack.push(note);
-    }
+    void note_on(int note, int vel);
     /// Handle MIDI Note Off message
-    void note_off(int note, int vel)
-    {
-        stack.pop(note);
-        // If releasing the currently played note, try to get another one from note stack.
-        if (note == last_key) {
-            if (stack.count())
-            {
-                last_key = note = stack.nth(stack.count() - 1);
-                start_freq = freq;
-                target_freq = freq = dsp::note_to_hz(note);
-                set_frequency();
-                if (!(legato & 1)) {
-                    envelope.note_on();
-                    stopping = false;
-                    running = true;
-                }
-                return;
-            }
-            gate = false;
-            envelope.note_off();
-        }
-    }
+    void note_off(int note, int vel);
     /// Handle pitch bend message.
     inline void pitch_bend(int value)
     {
@@ -129,7 +102,7 @@ public:
         set_frequency();
     }
     void activate();
-    void deactivate() {}
+    void deactivate();
     /// Run oscillators and two filters in series to produce mono output samples.
     void calculate_buffer_ser();
     /// Run oscillators and just one filter to produce mono output samples.
@@ -237,8 +210,7 @@ public:
         setup(srate);
         panic_flag = false;
     }
-    void deactivate() {
-    }
+    void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
         float *o[2] = { outs[0] + offset, outs[1] + offset };
         if (panic_flag)

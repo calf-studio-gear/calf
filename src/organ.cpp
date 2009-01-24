@@ -811,3 +811,7 @@ void organ_audio_module::send_configures(send_configure_iface *sci)
     sci->send_configure("map_curve", var_map_curve.c_str());
 }
 
+void organ_audio_module::deactivate()
+{
+    
+}

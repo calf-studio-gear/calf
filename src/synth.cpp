@@ -182,7 +182,10 @@ void basic_synth::control_change(int ctl, int val)
         }
         for_all_voices(i)
         {
-            (*i)->note_off(127);
+            if (ctl == 123)
+                (*i)->note_off(127);
+            else
+                (*i)->steal();
         }
     }
     if (ctl == 121) { 
