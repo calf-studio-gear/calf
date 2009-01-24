@@ -235,6 +235,7 @@ bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int 
     return false;
 }
 
+#if USE_DSSI
 struct osc_cairo_control: public cairo_iface
 {
     osctl::osc_inline_typed_strstream &os;
@@ -250,7 +251,6 @@ struct osc_cairo_control: public cairo_iface
     }
 };
 
-#if USE_DSSI
 static void send_graph_via_osc(osctl::osc_client &client, const std::string &address, line_graph_iface *graph, std::vector<int> &params)
 {
     osctl::osc_inline_typed_strstream os;

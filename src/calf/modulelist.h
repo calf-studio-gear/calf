@@ -1,5 +1,6 @@
 #ifdef PER_MODULE_ITEM
     PER_MODULE_ITEM(filter, false, "filter")
+    PER_MODULE_ITEM(filterclavier, false, "filterclavier")
     PER_MODULE_ITEM(flanger, false, "flanger")
     PER_MODULE_ITEM(reverb, false, "reverb")
     PER_MODULE_ITEM(monosynth, true, "monosynth")
@@ -9,8 +10,6 @@
     PER_MODULE_ITEM(phaser, false, "phaser")
     PER_MODULE_ITEM(multichorus, false, "multichorus")
     PER_MODULE_ITEM(compressor, false, "compressor")
-#ifdef ENABLE_EXPERIMENTAL
-#endif
 #undef PER_MODULE_ITEM
 #endif
 #ifdef PER_SMALL_MODULE_ITEM

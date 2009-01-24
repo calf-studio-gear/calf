@@ -51,6 +51,16 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
     bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
 };
 
+/// Filterclavier - metadata
+struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
+{
+    enum { par_transpose, par_detune, par_max_resonance, par_mode, par_inertia,  param_count };
+    enum { in_count = 2, out_count = 2, rt_capable = true, require_midi = true, support_midi = true };
+    PLUGIN_NAME_ID_LABEL("filterclavier", "filterclavier", "Filterclavier")
+    /// do not export mode and inertia as CVs, as those are settings and not parameters
+    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
+};
+
 struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
     enum { par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, param_count };
@@ -92,14 +102,6 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum { step_size = 64 };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
 };
-
-/*
-/// Filterclavier - metadata
-struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
-{
-	
-};
-*/
     
 /// Thor's compressor - metadata
 struct compressor_metadata: public plugin_metadata<compressor_metadata>

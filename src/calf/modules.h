@@ -585,13 +585,14 @@ public:
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
 
-    inertia<exponential_ramp> inertia_cutoff, inertia_resonance;
+    inertia<exponential_ramp> inertia_cutoff, inertia_resonance, inertia_gain;
     once_per_n timer;
     bool is_active;    
     
     filter_module_with_inertia()
     : inertia_cutoff(exponential_ramp(128), 20)
     , inertia_resonance(exponential_ramp(128), 20)
+    , inertia_gain(exponential_ramp(128), 1.0)
     , timer(128)
     {
         is_active = false;
@@ -610,15 +611,14 @@ public:
         if (inertia != inertia_cutoff.ramp.length()) {
             inertia_cutoff.ramp.set_length(inertia);
             inertia_resonance.ramp.set_length(inertia);
+            inertia_gain.ramp.set_length(inertia);
         }
         
-        FilterClass::calculate_filter(freq, q, mode);
+        FilterClass::calculate_filter(freq, q, mode, inertia_gain.get_last());
     }
     
-    void params_changed()
+    virtual void params_changed()
     {
-        inertia_cutoff.set_inertia(*params[Metadata::par_cutoff]);
-        inertia_resonance.set_inertia(*params[Metadata::par_resonance]);
         calculate_filter();
     }
     
@@ -626,6 +626,7 @@ public:
     {
         inertia_cutoff.step();
         inertia_resonance.step();
+        inertia_gain.step();
         calculate_filter();
     }
     
@@ -656,7 +657,7 @@ public:
         while(offset < numsamples) {
             uint32_t numnow = numsamples - offset;
             // if inertia's inactive, we can calculate the whole buffer at once
-            if (inertia_cutoff.active() || inertia_resonance.active())
+            if (inertia_cutoff.active() || inertia_resonance.active() || inertia_gain.active())
                 numnow = timer.get(numnow);
             
             if (outputs_mask & 1) {
@@ -675,6 +676,7 @@ public:
     }
 };
 
+/// biquad filter module
 class filter_audio_module: 
     public audio_module<filter_metadata>, 
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
@@ -683,6 +685,8 @@ class filter_audio_module:
 public:    
     void params_changed()
     { 
+        inertia_cutoff.set_inertia(*params[par_cutoff]);
+        inertia_resonance.set_inertia(*params[par_resonance]);
         inertia_filter_module::params_changed(); 
     }
         
@@ -701,7 +705,6 @@ public:
     {
         inertia_filter_module::deactivate();
     }
-    
     
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
@@ -818,6 +821,117 @@ public:
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+};
+
+/// Filterclavier --- MIDI controlled filter by Hans Baier
+class filterclavier_audio_module: 
+        public audio_module<filterclavier_metadata>, 
+        public filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>, 
+        public line_graph_iface
+{        
+    const float min_gain;
+    const float max_gain;
+    
+    int last_note;
+    int last_velocity;
+        
+public:    
+    filterclavier_audio_module() 
+        : 
+            min_gain(1.0),
+            max_gain(32.0),
+            last_note(-1),
+            last_velocity(-1) {}
+    
+    void params_changed()
+    { 
+        inertia_filter_module::inertia_cutoff.set_inertia(
+            note_to_hz(last_note + *params[par_transpose], *params[par_detune]));
+        
+        float min_resonance = param_props[par_max_resonance].min;
+         inertia_filter_module::inertia_resonance.set_inertia( 
+                 (float(last_velocity) / 127.0)
+                 // 0.001: see below
+                 * (*params[par_max_resonance] - min_resonance + 0.001)
+                 + min_resonance);
+             
+        adjust_gain_according_to_filter_mode(last_velocity);
+        
+        inertia_filter_module::calculate_filter(); 
+    }
+        
+    void activate()
+    {
+        inertia_filter_module::activate();
+    }
+    
+    void set_sample_rate(uint32_t sr)
+    {
+        inertia_filter_module::set_sample_rate(sr);
+    }
+
+    
+    void deactivate()
+    {
+        inertia_filter_module::deactivate();
+    }
+  
+    /// MIDI control
+    virtual void note_on(int note, int vel)
+    {
+        last_note     = note;
+        last_velocity = vel;
+        inertia_filter_module::inertia_cutoff.set_inertia(
+                note_to_hz(note + *params[par_transpose], *params[par_detune]));
+
+        float min_resonance = param_props[par_max_resonance].min;
+        inertia_filter_module::inertia_resonance.set_inertia( 
+                (float(vel) / 127.0) 
+                // 0.001: if the difference is equal to zero (which happens
+                // when the max_resonance knom is at minimum position
+                // then the filter gain doesnt seem to snap to zero on most note offs
+                * (*params[par_max_resonance] - min_resonance + 0.001) 
+                + min_resonance);
+        
+        adjust_gain_according_to_filter_mode(vel);
+        
+        inertia_filter_module::calculate_filter();
+    }
+    
+    virtual void note_off(int note, int vel)
+    {
+        if (note == last_note) {
+            inertia_filter_module::inertia_resonance.set_inertia(param_props[par_max_resonance].min);
+            inertia_filter_module::inertia_gain.set_inertia(min_gain);
+            inertia_filter_module::calculate_filter();
+            last_velocity = 0;
+        }
+    }
+
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    
+private:
+    void adjust_gain_according_to_filter_mode(int velocity) {
+        int   mode = dsp::fastf2i_drm(*params[par_mode]);
+        
+        // for bandpasses: boost gain for velocities > 0
+        if ( (mode_6db_bp <= mode) && (mode <= mode_18db_bp) ) {
+            // gain for velocity 0:   1.0
+            // gain for velocity 127: 32.0
+            float mode_max_gain = max_gain;
+            // max_gain is right for mode_6db_bp
+            if (mode == mode_12db_bp)
+                mode_max_gain /= 6.0;
+            if (mode == mode_18db_bp)
+                mode_max_gain /= 10.5;
+            
+            inertia_filter_module::inertia_gain.set_now(
+                    (float(velocity) / 127.0) * (mode_max_gain - min_gain) + min_gain);
+        } else {
+            inertia_filter_module::inertia_gain.set_now(min_gain);
+        }
+    }
 };
 
 extern std::string get_builtin_modules_rdf();

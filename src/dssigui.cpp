@@ -346,30 +346,36 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     static gboolean on_idle(void *self)
     {
-        ((dssi_osc_server *)(self))->send_osc_update();
+        dssi_osc_server *self_ptr = (dssi_osc_server *)(self);
+        if (self_ptr->osc_link_active)
+            self_ptr->send_osc_update();
         return TRUE;
     }
     
-    void set_osc_update(bool enabled)
-    {
-        osc_link_active = enabled;
-        osc_inline_typed_strstream data;
-        data << "OSC:FEEDBACK_URI";
-        data << (enabled ? get_uri() : "");
-        cli.send("/configure", data);
-    }
-    void send_osc_update()
-    {
-        static int serial_no = 0;
-        osc_inline_typed_strstream data;
-        data << "OSC:UPDATE";
-        data << calf_utils::i2s(serial_no++);
-        cli.send("/configure", data);
-    }
+    void set_osc_update(bool enabled);
+    void send_osc_update();
     
     virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer);
     void unmarshal_line_graph(osc_strstream &buffer);
 };
+
+void dssi_osc_server::set_osc_update(bool enabled)
+{
+    osc_link_active = enabled;
+    osc_inline_typed_strstream data;
+    data << "OSC:FEEDBACK_URI";
+    data << (enabled ? get_uri() : "");
+    cli.send("/configure", data);
+}
+
+void dssi_osc_server::send_osc_update()
+{
+    static int serial_no = 0;
+    osc_inline_typed_strstream data;
+    data << "OSC:UPDATE";
+    data << calf_utils::i2s(serial_no++);
+    cli.send("/configure", data);
+}
 
 void dssi_osc_server::unmarshal_line_graph(osc_strstream &buffer)
 {

@@ -21,10 +21,12 @@
 #ifndef __CALF_MODULES_DEV_H
 #define __CALF_MODULES_DEV_H
 
+#include <calf/metadata.h>
+#include <calf/modules.h>
+
 namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
-
 
 #endif
     

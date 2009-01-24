@@ -189,6 +189,14 @@ struct line_graph_iface
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context) { return false; }
     
+    /// Return which graphs need to be redrawn and which can be cached for later reuse
+    /// @param generation 0 (at start) or the last value returned by the function (corresponds to a set of input values)
+    /// @param subindex_graph First graph that has to be redrawn (because it depends on values that might have changed)
+    /// @param subindex_dot First dot that has to be redrawn
+    /// @param subindex_gridline First gridline/legend that has to be redrawn
+    /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
+    virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
+    
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
 };
@@ -200,6 +208,7 @@ struct send_configure_iface
     /// @param key variable name
     /// @param value variable content
     virtual void send_configure(const char *key, const char *value) = 0;
+    
     virtual ~send_configure_iface() {}
 };
 
