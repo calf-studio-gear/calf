@@ -1,4 +1,4 @@
-Version 0.0.18 (ongoing)
+Version 0.0.18 (feature freeze)
 
 + Filterclavier: new plugin (a MIDI controlled filter) by Hans Baier
 + DSSI: added a basic implementation of live graphs. The graphs have a
