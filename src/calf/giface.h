@@ -200,6 +200,7 @@ struct send_configure_iface
     /// @param key variable name
     /// @param value variable content
     virtual void send_configure(const char *key, const char *value) = 0;
+    virtual ~send_configure_iface() {}
 };
 
 struct plugin_command_info;
