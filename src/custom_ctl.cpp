@@ -46,20 +46,22 @@ static calf_ui_type_module type_module;
 */
 
 static void
-calf_line_graph_copy_cache_to_window( CalfLineGraph *lg, cairo_t *c ) {
-	cairo_save( c );
-	cairo_set_source_surface( c, lg->cache_surface, 0,0 );
-	cairo_paint( c );
-	cairo_restore( c );
+calf_line_graph_copy_cache_to_window( CalfLineGraph *lg, cairo_t *c )
+{
+    cairo_save( c );
+    cairo_set_source_surface( c, lg->cache_surface, 0,0 );
+    cairo_paint( c );
+    cairo_restore( c );
 }
 
 static void
-calf_line_graph_copy_window_to_cache( CalfLineGraph *lg, cairo_t *c ) {
-       cairo_t *cache_cr = cairo_create( lg->cache_surface );
-	cairo_surface_t *window_surface = cairo_get_target( c );
-	cairo_set_source_surface( cache_cr, window_surface, 0,0 );
-	cairo_paint( cache_cr );
-	cairo_destroy( cache_cr );
+calf_line_graph_copy_window_to_cache( CalfLineGraph *lg, cairo_t *c )
+{
+    cairo_t *cache_cr = cairo_create( lg->cache_surface );
+    cairo_surface_t *window_surface = cairo_get_target( c );
+    cairo_set_source_surface( cache_cr, window_surface, 0,0 );
+    cairo_paint( cache_cr );
+    cairo_destroy( cache_cr );
 }
 
 static void
@@ -181,15 +183,18 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 	    lg->source->get_changed_offsets( gen_index, cache_graph_index, cache_dot_index, cache_grid_index );
 	    lg->last_generation = gen_index;
 
+	    printf( "oki... cache_graph_index = %d\n", cache_graph_index );
+
 	    cairo_set_line_width(c, 1);
 	    for(int phase = 1; phase <= 2; phase++)
 	    {
 		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cimpl); grid_n++)
 		{
+		    printf( "draw gridline %d\n", grid_n );
 		    calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
 		}
 	    }
-	    grid_n_save = grid_n;
+	    grid_n_save = grid_n-1;
 
 	    gdk_cairo_set_source_color(c, &sc2);
 	    cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
@@ -213,7 +218,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 	    graph_n = cache_graph_index;
 	    dot_n = cache_dot_index;
 	    calf_line_graph_copy_cache_to_window( lg, c );
-	    printf( "cache_paint\n" );
+
+	    printf( "cache paint ... cache_graph_index = %d\n", cache_graph_index );
 	}
 
 
@@ -222,6 +228,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         {
             for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
+		    printf( "after cache:draw gridline %d\n", gn );
 		calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
             }
         }
@@ -231,7 +238,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1);
         for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
-	    printf( "uncached graph draw = %d\n", gn );
+	    //printf( "uncached graph draw = %d\n", gn );
 	    calf_line_graph_draw_graph( c, data, sx, sy );
         }
         gdk_cairo_set_source_color(c, &sc3);
