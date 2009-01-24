@@ -67,6 +67,8 @@ static void set_channel_color(cairo_iface *context, int channel)
 
 static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies = true)
 {
+    if (subindex < 0 )
+	return false;
     if (use_frequencies)
     {
         if (subindex < 28)
