@@ -61,7 +61,13 @@ public:
 };
 #endif
 
-class flanger_audio_module: public audio_module<flanger_metadata>, public line_graph_iface
+class frequency_response_line_graph: public line_graph_iface 
+{
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline);
+};
+
+class flanger_audio_module: public audio_module<flanger_metadata>, public frequency_response_line_graph
 {
 public:
     dsp::simple_flanger<float, 2048> left, right;
@@ -119,11 +125,11 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
     float freq_gain(int subindex, float freq, float srate);
+    virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
 };
 
-class phaser_audio_module: public audio_module<phaser_metadata>, public line_graph_iface
+class phaser_audio_module: public audio_module<phaser_metadata>, public frequency_response_line_graph
 {
 public:
     float *ins[in_count]; 
@@ -680,7 +686,7 @@ public:
 class filter_audio_module: 
     public audio_module<filter_metadata>, 
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
-    public line_graph_iface
+    public frequency_response_line_graph
 {
 public:    
     void params_changed()
@@ -707,7 +713,6 @@ public:
     }
     
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
 };
 
 /// A multitap stereo chorus thing - processing
@@ -827,7 +832,7 @@ public:
 class filterclavier_audio_module: 
         public audio_module<filterclavier_metadata>, 
         public filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>, 
-        public line_graph_iface
+        public frequency_response_line_graph
 {        
     const float min_gain;
     const float max_gain;
@@ -909,7 +914,6 @@ public:
     }
 
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
     
 private:
     void adjust_gain_according_to_filter_mode(int velocity) {

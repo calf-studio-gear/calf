@@ -20,6 +20,7 @@
  */
 #include <config.h>
 #include <assert.h>
+#include <limits.h>
 #include <memory.h>
 #if USE_JACK
 #include <jack/jack.h>
@@ -108,6 +109,22 @@ static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::str
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool frequency_response_line_graph::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{ 
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+int frequency_response_line_graph::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+{
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+    return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void flanger_audio_module::activate() {
     left.reset();
@@ -143,13 +160,6 @@ bool flanger_audio_module::get_graph(int index, int subindex, float *data, int p
 float flanger_audio_module::freq_gain(int subindex, float freq, float srate)
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
-}
-
-bool flanger_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
-{
-    if (index == par_delay)
-        return get_freq_gridline(subindex, pos, vertical, legend, context);
-    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,14 +239,6 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
     return false;
 }
 
-bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
-{
-    if (index == par_cutoff) {
-        return get_freq_gridline(subindex, pos, vertical, legend, context);
-    }
-    return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
@@ -249,11 +251,6 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
         return ::get_graph(*this, subindex, data, points);
     }
     return false;
-}
-
-bool filterclavier_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
-{
-    return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
