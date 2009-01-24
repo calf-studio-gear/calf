@@ -55,35 +55,24 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int ox = 1, oy = 1;
     int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
     
-    cairo_t *c;
+    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
     GdkColor sc = { 0, 0, 0, 0 };
-    cairo_impl cimpl;
 
-    if (lg->source) {
-        float pos = 0;
-        bool vertical = false;
-        std::string legend;
-
-	if( lg->cache_pixmap == NULL ) {
-    c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-	    //cairo_surface_t *window_surface = cairo_get_target( c );
-//	    lg->cache_surface = cairo_surface_create_similar( window_surface, 
-//							      CAIRO_CONTENT_COLOR,
-//							      widget->allocation.width,
-//							      widget->allocation.height );
-//	    cairo_t *cache_cr = cairo_create( lg->cache_surface );
-	    lg->cache_pixmap = gdk_pixmap_new( GDK_DRAWABLE(widget->window),  widget->allocation.width,  widget->allocation.height, -1 );
-	    //cairo_t *cache_cr = gdk_cairo_create(GDK_DRAWABLE(lg->cache_pixmap));
-        cairo_set_line_width(c, 1);
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_clip_preserve(c);
     cairo_fill(c);
+    cairo_impl cimpl;
     cimpl.context = c;
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(c, 9);
 
+    if (lg->source) {
+        float pos = 0;
+        bool vertical = false;
+        cairo_set_line_width(c, 1);
+        std::string legend;
         for(int phase = 1; phase <= 2; phase++)
         {
             for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
@@ -124,33 +113,13 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 }
             }
         }
-	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
-	//cairo_paint( cache_cr );
-
-	//GdkGC *gc = gdk_gc_new( GDK_DRAWABLE( lg->cache_pixmap ) );
-	//gdk_draw_drawable( GDK_DRAWABLE( lg->cache_pixmap ), gc, GDK_DRAWABLE( widget->window ), 0,0,0,0,-1,-1 );
-	//gdk_gc_destroy(gc);
-
-	} else {
-	    //printf( "cached.... \n" );
-	//cairo_save( c );
-	//cairo_set_source_surface( c, lg->cache_surface, 0,0 );
-	//cairo_paint( c );
-	//cairo_restore( c );
-	GdkGC *gc = gdk_gc_new( GDK_DRAWABLE( widget->window ) );
-	gdk_draw_drawable( GDK_DRAWABLE( widget->window ), gc, GDK_DRAWABLE( lg->cache_pixmap ), 0,0,0,0,-1,-1 );
-	gdk_gc_destroy(gc);
-	c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-	}
-	if(0) {
         float *data = new float[2 * sx];
         GdkColor sc2 = { 0, 0, 65535, 0 };
         gdk_cairo_set_source_color(c, &sc2);
-        //cairo_set_line_join(c, CAIRO_LINE_JOIN_ROUND);
+        cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(c, 1);
         for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
-	    printf( "bla: %d\n", gn );
             for (int i = 0; i < 2 * sx; i++)
             {
                 int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
@@ -164,7 +133,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_stroke(c);
         }
         delete []data;
-	}
         float x, y;
         int size = 0;
         GdkColor sc3 = { 0, 32767, 65535, 0 };
@@ -175,9 +143,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);
             cairo_fill(c);
         }
-    cairo_destroy(c);
     }
     
+    cairo_destroy(c);
     
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
