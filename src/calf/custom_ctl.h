@@ -26,23 +26,26 @@
 
 G_BEGIN_DECLS
 
-#define CALF_TYPE_LINE_GRAPH          (calf_line_graph_get_type())
-#define CALF_LINE_GRAPH(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_LINE_GRAPH, CalfLineGraph))
-#define CALF_IS_LINE_GRAPH(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_LINE_GRAPH))
-#define CALF_LINE_GRAPH_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_LINE_GRAPH, CalfLineGraphClass))
-#define CALF_IS_LINE_GRAPH_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_LINE_GRAPH))
+#define CALF_TYPE_LINE_GRAPH           (calf_line_graph_get_type())
+#define CALF_LINE_GRAPH(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_LINE_GRAPH, CalfLineGraph))
+#define CALF_IS_LINE_GRAPH(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_LINE_GRAPH))
+#define CALF_LINE_GRAPH_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_LINE_GRAPH, CalfLineGraphClass))
+#define CALF_IS_LINE_GRAPH_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_LINE_GRAPH))
+#define CALF_LINE_GRAPH_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_LINE_GRAPH, CalfLineGraphClass))
 
 struct CalfLineGraph
 {
-    GtkWidget parent;
+    GtkDrawingArea parent;
     calf_plugins::line_graph_iface *source;
     int source_id;
     bool is_square;
+    //cairo_surface_t *cache_surface;
+    GdkPixmap *cache_pixmap;
 };
 
 struct CalfLineGraphClass
 {
-    GtkWidgetClass parent_class;
+    GtkDrawingAreaClass parent_class;
 };
 
 extern GtkWidget *calf_line_graph_new();
@@ -66,14 +69,14 @@ enum CalfVUMeterMode
 
 struct CalfVUMeter
 {
-    GtkWidget parent;
+    GtkDrawingArea parent;
     CalfVUMeterMode mode;
     float value;
 };
 
 struct CalfVUMeterClass
 {
-    GtkWidgetClass parent_class;
+    GtkDrawingAreaClass parent_class;
 };
 
 extern GtkWidget *calf_vumeter_new();
