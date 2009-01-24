@@ -39,8 +39,8 @@ struct CalfLineGraph
     calf_plugins::line_graph_iface *source;
     int source_id;
     bool is_square;
-    //cairo_surface_t *cache_surface;
-    GdkPixmap *cache_pixmap;
+    cairo_surface_t *cache_surface;
+    //GdkPixmap *cache_pixmap;
 };
 
 struct CalfLineGraphClass

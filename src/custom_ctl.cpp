@@ -45,6 +45,75 @@ struct calf_ui_type_module
 static calf_ui_type_module type_module;
 */
 
+static void
+calf_line_graph_paint_cache( CalfLineGraph *lg, cairo_t *c ) {
+	cairo_save( c );
+	cairo_set_source_surface( c, lg->cache_surface, 0,0 );
+	cairo_paint( c );
+	cairo_restore( c );
+}
+
+	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
+	//cairo_paint( cache_cr );
+
+static void
+calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float pos, int phase, int sx, int sy )
+{
+    int ox=1, oy=1;
+    cairo_text_extents_t tx;
+    if (!legend.empty())
+	cairo_text_extents(c, legend.c_str(), &tx);
+    if (vertical)
+    {
+	float x = floor(ox + pos * sx) + 0.5;
+	if (phase == 1)
+	{
+	    cairo_move_to(c, x, oy);
+	    cairo_line_to(c, x, oy + sy);
+	    cairo_stroke(c);
+	}
+	if (phase == 2 && !legend.empty()) {
+
+	    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+	    cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
+	    cairo_show_text(c, legend.c_str());
+	}
+    }
+    else
+    {
+	float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
+	if (phase == 1)
+	{
+	    cairo_move_to(c, ox, y);
+	    cairo_line_to(c, ox + sx, y);
+	    cairo_stroke(c);
+	}
+	if (phase == 2 && !legend.empty()) {
+	    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
+	    cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
+	    cairo_show_text(c, legend.c_str());
+	}
+    }
+}
+
+static void
+calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy )
+{
+    int ox=1, oy=1;
+
+    for (int i = 0; i < 2 * sx; i++)
+    {
+	int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
+	//if (y < oy) y = oy;
+	//if (y >= oy + sy) y = oy + sy - 1;
+	if (i)
+	    cairo_line_to(c, ox + i * 0.5, y);
+	else
+	    cairo_move_to(c, ox, y);
+    }
+    cairo_stroke(c);
+}
+
 static gboolean
 calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -56,8 +125,22 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
     
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_surface_t *window_surface = cairo_get_target( c );
 
     GdkColor sc = { 0, 0, 0, 0 };
+
+    if( lg->cache_surface == NULL ) {
+	// looks like its either first call or the widget has been resized.
+	// create the cache_surface.
+	lg->cache_surface = cairo_surface_create_similar( window_surface, 
+							  CAIRO_CONTENT_COLOR,
+							  widget->allocation.width,
+							  widget->allocation.height );
+	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
+	//cairo_paint( cache_cr );
+    }
+
+    cairo_t *cache_cr = cairo_create( lg->cache_surface );
 
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
@@ -77,40 +160,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         {
             for(int gn = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
-                cairo_text_extents_t tx;
-                if (!legend.empty())
-                    cairo_text_extents(c, legend.c_str(), &tx);
-                if (vertical)
-                {
-                    float x = floor(ox + pos * sx) + 0.5;
-                    if (phase == 1)
-                    {
-                        cairo_move_to(c, x, oy);
-                        cairo_line_to(c, x, oy + sy);
-                        cairo_stroke(c);
-                    }
-                    if (phase == 2 && !legend.empty()) {
-                        
-                        cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                        cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
-                        cairo_show_text(c, legend.c_str());
-                    }
-                }
-                else
-                {
-                    float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
-                    if (phase == 1)
-                    {
-                        cairo_move_to(c, ox, y);
-                        cairo_line_to(c, ox + sx, y);
-                        cairo_stroke(c);
-                    }
-                    if (phase == 2 && !legend.empty()) {
-                        cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-                        cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
-                        cairo_show_text(c, legend.c_str());
-                    }
-                }
+		calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
             }
         }
         float *data = new float[2 * sx];
@@ -120,17 +170,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1);
         for(int gn = 0; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
-            for (int i = 0; i < 2 * sx; i++)
-            {
-                int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
-                //if (y < oy) y = oy;
-                //if (y >= oy + sy) y = oy + sy - 1;
-                if (i)
-                    cairo_line_to(c, ox + i * 0.5, y);
-                else
-                    cairo_move_to(c, ox, y);
-            }
-            cairo_stroke(c);
+	    calf_line_graph_draw_graph( c, data, sx, sy );
         }
         delete []data;
         float x, y;
@@ -179,12 +219,9 @@ calf_line_graph_size_allocate (GtkWidget *widget,
     
     GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_LINE_GRAPH_GET_CLASS( lg ) );
 
-//    if( lg->cache_surface )
-//	cairo_surface_destroy( lg->cache_surface );
-//    lg->cache_surface = NULL;
-    if( lg->cache_pixmap )
-	g_object_unref( G_OBJECT( lg->cache_pixmap ) );
-    lg->cache_pixmap = NULL;
+    if( lg->cache_surface )
+	cairo_surface_destroy( lg->cache_surface );
+    lg->cache_surface = NULL;
     
     widget->allocation = *allocation;
     GtkAllocation &a = widget->allocation;
@@ -222,7 +259,7 @@ calf_line_graph_init (CalfLineGraph *self)
     //widget->requisition.width = 40;
     //widget->requisition.height = 40;
     gtk_widget_set_size_request( widget, 40, 40 );
-    self->cache_pixmap = NULL;
+    self->cache_surface = NULL;
 }
 
 GtkWidget *
