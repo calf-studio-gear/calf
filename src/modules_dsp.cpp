@@ -239,8 +239,6 @@ bool filter_audio_module::get_gridline(int index, int subindex, float &pos, bool
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#if ENABLE_EXPERIMENTAL
-
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (!is_active || index != par_mode) {
@@ -257,8 +255,6 @@ bool filterclavier_audio_module::get_gridline(int index, int subindex, float &po
 {
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

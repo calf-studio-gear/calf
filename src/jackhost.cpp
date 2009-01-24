@@ -264,9 +264,6 @@ void host_session::add_plugin(string name, string preset, string instance_name)
         instance_name = get_next_instance_name(name);
     jack_host_base *jh = create_jack_host(name.c_str(), instance_name, this);
     if (!jh) {
-#ifdef ENABLE_EXPERIMENTAL
-#else
-#endif
         string s = 
         #define PER_MODULE_ITEM(name, isSynth, jackname) jackname ", "
         #include <calf/modulelist.h>

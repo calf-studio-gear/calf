@@ -1,8 +1,6 @@
 #ifdef PER_MODULE_ITEM
     PER_MODULE_ITEM(filter, false, "filter")
-#ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(filterclavier, false, "filterclavier")
-#endif
     PER_MODULE_ITEM(flanger, false, "flanger")
     PER_MODULE_ITEM(reverb, false, "reverb")
     PER_MODULE_ITEM(monosynth, true, "monosynth")

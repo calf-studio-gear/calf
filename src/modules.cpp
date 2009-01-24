@@ -121,7 +121,6 @@ CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Krzysztof Foltman
 
 ////////////////////////////////////////////////////////////////////////////
 
-#if ENABLE_EXPERIMENTAL
 CALF_PORT_NAMES(filterclavier) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(filterclavier) = {
@@ -136,7 +135,7 @@ CALF_PORT_PROPS(filterclavier) = {
 };
 
 CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Krzysztof Foltman / Hans Baier", calf_plugins::calf_copyright_info, "FilterclavierPlugin" };
-#endif
+
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(vintage_delay) = {"In L", "In R", "Out L", "Out R"};
