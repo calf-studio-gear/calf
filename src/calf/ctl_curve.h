@@ -50,6 +50,7 @@ struct CalfCurve
         virtual void curve_changed(CalfCurve *src, const point_vector &data) = 0;
         /// Called to clip/snap/otherwise adjust candidate point coordinates
         virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide) = 0;
+	virtual ~EventSink() {}
     };
 
     /// Null implementation of EventSink

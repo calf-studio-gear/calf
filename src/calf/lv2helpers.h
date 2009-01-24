@@ -54,6 +54,7 @@ public:
     virtual void map_uris()
     {
     }
+    virtual ~uri_map_access() {}
 };
     
 /// A mixin for adding the event feature and URI map to the small plugin

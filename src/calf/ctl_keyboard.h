@@ -66,6 +66,8 @@ struct CalfKeyboard
         virtual void note_on(int note, int vel) = 0;
         /// key was released
         virtual void note_off(int note) = 0;
+
+	virtual ~EventSink() {}
     };
 
     /// Null implementation of CalfKeyboard::EventSink

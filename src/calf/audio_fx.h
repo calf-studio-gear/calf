@@ -604,6 +604,8 @@ public:
     virtual void  sanitize() = 0;
     virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
     virtual float freq_gain(int subindex, float freq, float srate) = 0;
+
+    virtual ~filter_module_iface() {}
 };
 
 
