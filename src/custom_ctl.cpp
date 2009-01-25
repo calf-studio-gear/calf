@@ -427,7 +427,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 	    cairo_line_to(cache_cr, x, oy );
 	    cairo_stroke(cache_cr);
 	}
-	cairo_destroy( cache_cr );
+        cairo_destroy( cache_cr );
     }
 
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
@@ -435,9 +435,9 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source_rgba( c, 0,0,0, 0.5 );
 
     if( vu->mode == VU_MONOCHROME_REVERSE )
-	cairo_rectangle( c, ox,oy, vu->value * (sx-ox), sy-oy );
+        cairo_rectangle( c, ox,oy, vu->value * (sx-ox) + 1, sy-oy+1 );
     else
-	cairo_rectangle( c, vu->value * (sx-ox),oy, sx-ox, sy-oy );
+        cairo_rectangle( c, ox + vu->value * (sx-ox), oy, sx-ox+1, sy-oy+1 );
 
     cairo_fill( c );
 
