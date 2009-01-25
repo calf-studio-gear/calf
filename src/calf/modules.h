@@ -63,6 +63,7 @@ public:
 
 class frequency_response_line_graph: public line_graph_iface 
 {
+public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
     virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline);
 };
@@ -688,7 +689,13 @@ class filter_audio_module:
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
     public frequency_response_line_graph
 {
+    int last_generation;
+    float old_cutoff, old_resonance, old_mode;
 public:    
+    filter_audio_module()
+    {
+        last_generation = 0;
+    }
     void params_changed()
     { 
         inertia_cutoff.set_inertia(*params[par_cutoff]);
@@ -713,6 +720,20 @@ public:
     }
     
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+    {
+        if (fabs(inertia_cutoff.get_last() - old_cutoff) + 100 * fabs(inertia_resonance.get_last() - old_resonance) + fabs(*params[par_mode] - old_mode) > 0.1f)
+        {
+            old_cutoff = inertia_cutoff.get_last();
+            old_resonance = inertia_resonance.get_last();
+            old_mode = *params[par_mode];
+            last_generation++;
+        }
+        frequency_response_line_graph::get_changed_offsets(generation, subindex_graph, subindex_dot, subindex_gridline);
+        if (generation == last_generation)
+            subindex_graph = 2;
+        return last_generation;
+    }
 };
 
 /// A multitap stereo chorus thing - processing
