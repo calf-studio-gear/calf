@@ -787,7 +787,7 @@ public:
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
     float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, threshold, ratio, knee, makeup, compressedKneeStop, adjKneeStart;
-    float old_threshold, old_ratio, old_knee, old_makeup;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass;
     int last_generation;
     uint32_t clip;
     aweighter awL, awR;
@@ -843,12 +843,13 @@ public:
 	subindex_dot = 0;
 	subindex_gridline = generation ? INT_MAX : 0;
 
-        if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs( makeup - old_makeup) > 0.1f)
+        if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs( makeup - old_makeup) + fabs( *params[param_bypass] - old_bypass) > 0.01f)
         {
 	    old_threshold = threshold;
 	    old_ratio = ratio;
 	    old_knee = knee;
 	    old_makeup = makeup;
+            old_bypass = *params[param_bypass];
             last_generation++;
         }
 
