@@ -320,6 +320,7 @@ GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)
         widget  = gtk_spin_button_new_with_range (props.min, props.max, props.step);
     else
         widget  = gtk_spin_button_new_with_range (props.min, props.max, 1);
+    gtk_spin_button_set_digits (GTK_SPIN_BUTTON(widget), get_int("digits", 0));
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (value_changed), (gpointer)this);
     return widget;
 }
