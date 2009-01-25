@@ -95,6 +95,8 @@ static bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::str
         }
         subindex -= 28;
     }
+    if (subindex >= 32)
+        return false;
     float gain = 16.0 / (1 << subindex);
     pos = dB_grid(gain);
     if (pos < -1)
