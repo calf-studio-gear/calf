@@ -525,7 +525,7 @@ void line_graph_param_control::set()
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
-        gtk_widget_queue_draw(widget);
+        calf_line_graph_update_if(CALF_LINE_GRAPH(widget));
     }
 }
 

@@ -258,6 +258,20 @@ void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square)
     graph->is_square = is_square;
 }
 
+void calf_line_graph_update_if(CalfLineGraph *graph)
+{
+    g_assert(CALF_IS_LINE_GRAPH(graph));
+    int generation = 0;
+    if (graph->source)
+    {
+        int subgraph, dot, gridline;
+        generation = graph->source->get_changed_offsets(graph->last_generation, subgraph, dot, gridline);
+        if (subgraph == INT_MAX && dot == INT_MAX && gridline == INT_MAX)
+            return;
+        gtk_widget_queue_draw(GTK_WIDGET(graph));
+    }
+}
+
 static void
 calf_line_graph_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)

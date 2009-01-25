@@ -55,6 +55,8 @@ extern GType calf_line_graph_get_type();
 
 extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
+extern void calf_line_graph_update_if(CalfLineGraph *graph);
+
 #define CALF_TYPE_VUMETER          (calf_vumeter_get_type())
 #define CALF_VUMETER(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_VUMETER, CalfVUMeter))
 #define CALF_IS_VUMETER(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_VUMETER))

@@ -22,6 +22,7 @@
 #define __CALF_MODULES_H
 
 #include <assert.h>
+#include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
 #include "audio_fx.h"
@@ -728,10 +729,16 @@ public:
             old_resonance = inertia_resonance.get_last();
             old_mode = *params[par_mode];
             last_generation++;
+            subindex_graph = 0;
+            subindex_dot = INT_MAX;
+            subindex_gridline = INT_MAX;
         }
-        frequency_response_line_graph::get_changed_offsets(generation, subindex_graph, subindex_dot, subindex_gridline);
+        else {
+            subindex_graph = 0;
+            subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
+        }
         if (generation == last_generation)
-            subindex_graph = 2;
+            subindex_graph = INT_MAX;
         return last_generation;
     }
 };
