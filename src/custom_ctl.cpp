@@ -272,8 +272,8 @@ calf_line_graph_size_request (GtkWidget *widget,
     g_assert(CALF_IS_LINE_GRAPH(widget));
     
     // CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-    requisition->width = 40;
-    requisition->height = 40;
+    //requisition->width = 40;
+    //requisition->height = 40;
 }
 
 static void
@@ -304,7 +304,7 @@ calf_line_graph_size_allocate (GtkWidget *widget,
             a.height = a.width;
         }
     }
-    parent_class->size_allocate( widget, allocation );
+    parent_class->size_allocate( widget, &a );
 }
 
 static void
@@ -324,8 +324,8 @@ calf_line_graph_init (CalfLineGraph *self)
     //GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
     //widget->requisition.width = 40;
     //widget->requisition.height = 40;
-    gtk_widget_set_size_request( widget, 40, 40 );
     self->cache_surface = NULL;
+    self->last_generation = 0;
 }
 
 GtkWidget *
