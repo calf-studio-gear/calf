@@ -228,7 +228,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         {
             for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
-		    printf( "after cache:draw gridline %d\n", gn );
+                printf( "after cache:draw gridline %d\n", gn );
 		calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
             }
         }
@@ -272,8 +272,6 @@ calf_line_graph_size_request (GtkWidget *widget,
     g_assert(CALF_IS_LINE_GRAPH(widget));
     
     // CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-    requisition->width = 40;
-    requisition->height = 40;
 }
 
 static void
@@ -304,7 +302,7 @@ calf_line_graph_size_allocate (GtkWidget *widget,
             a.height = a.width;
         }
     }
-    parent_class->size_allocate( widget, allocation );
+    parent_class->size_allocate( widget, &a );
 }
 
 static void
@@ -321,10 +319,8 @@ static void
 calf_line_graph_init (CalfLineGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
-    //GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
-    //widget->requisition.width = 40;
-    //widget->requisition.height = 40;
-    gtk_widget_set_size_request( widget, 40, 40 );
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
     self->cache_surface = NULL;
 }
 
