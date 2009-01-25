@@ -788,6 +788,8 @@ public:
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface {
 private:
     float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, threshold, ratio, knee, makeup, compressedKneeStop, adjKneeStart;
+    float old_threshold, old_ratio, old_knee, old_makeup;
+    int last_generation;
     uint32_t clip;
     aweighter awL, awR;
 public:
@@ -800,7 +802,7 @@ public:
     void activate();
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-
+    
     inline float output_level(float slope) {
         return slope * output_gain(slope, false) * makeup;
     }
@@ -835,6 +837,26 @@ public:
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+
+    virtual int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+    {
+	subindex_graph = 0;
+	subindex_dot = 0;
+	subindex_gridline = generation ? INT_MAX : 0;
+
+        if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs( makeup - old_makeup) > 0.1f)
+        {
+	    old_threshold = threshold;
+	    old_ratio = ratio;
+	    old_knee = knee;
+	    old_makeup = makeup;
+            last_generation++;
+        }
+
+        if (generation == last_generation)
+            subindex_graph = 2;
+        return last_generation;
+    }
 };
 
 /// Filterclavier --- MIDI controlled filter by Hans Baier

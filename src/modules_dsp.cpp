@@ -420,6 +420,7 @@ compressor_audio_module::compressor_audio_module()
 {
     is_active = false;
     srate = 0;
+    last_generation = 0;
 }
 
 void compressor_audio_module::activate()
