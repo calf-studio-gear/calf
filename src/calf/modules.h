@@ -22,6 +22,7 @@
 #define __CALF_MODULES_H
 
 #include <assert.h>
+#include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
 #include "audio_fx.h"
