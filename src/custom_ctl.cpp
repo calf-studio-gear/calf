@@ -188,7 +188,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 	    {
 		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cimpl); grid_n++)
 		{
-		    printf( "draw gridline %d\n", grid_n );
 		    calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
 		}
 	    }
@@ -422,7 +421,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_destroy(c);
     
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
-    printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
+    //printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
     
     return TRUE;
 }
