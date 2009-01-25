@@ -5,6 +5,7 @@ Version 0.0.18 (feature freeze)
   limited resolution (128 data points), and are rather inefficient
   (as the graph data need to be transmitted via OSC to a different
   process), but it's better than nothing
++ GUI: Torben Hohn's drawing optimizations for Intel graphics cards
 + Phaser: added frequency response graph
 + JACK host: discontinue the broken option -p; allow giving preset names
   after a colon sign (reverb:DiscoVerb instead of -p DiscoVerb reverb)
