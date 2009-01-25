@@ -128,7 +128,6 @@ public:
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     float freq_gain(int subindex, float freq, float srate);
-    virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
 };
 
 class phaser_audio_module: public audio_module<phaser_metadata>, public frequency_response_line_graph
@@ -725,7 +724,7 @@ public:
 };
 
 /// A multitap stereo chorus thing - processing
-class multichorus_audio_module: public audio_module<multichorus_metadata>, public line_graph_iface
+class multichorus_audio_module: public audio_module<multichorus_metadata>, public frequency_response_line_graph
 {
 public:
     float *ins[in_count]; 
