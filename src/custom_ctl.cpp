@@ -191,7 +191,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 		    calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
 		}
 	    }
-	    grid_n_save = grid_n-1;
+	    grid_n_save = grid_n;
 
 	    gdk_cairo_set_source_color(c, &sc2);
 	    cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
