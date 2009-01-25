@@ -383,48 +383,51 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 							  CAIRO_CONTENT_COLOR,
 							  widget->allocation.width,
 							  widget->allocation.height );
-    cairo_t *cache_cr = cairo_create( vu->cache_surface );
-    GdkColor sc = { 0, 0, 0, 0 };
-    gdk_cairo_set_source_color(cache_cr, &sc);
-    cairo_rectangle(cache_cr, ox, oy, sx, sy);
-    cairo_fill(cache_cr);
-    cairo_set_line_width(cache_cr, 1);
+
+	// And render the meterstuff again.
     
-    for (int x = ox; x <= ox + sx; x += 3)
-    {
-        float ts = (x - ox) * 1.0 / sx;
-        float r = 0.f, g = 0.f, b = 0.f;
-        switch(vu->mode)
-        {
-            case VU_STANDARD:
-            default:
-                if (ts < 0.75)
-                    r = ts / 0.75, g = 1, b = 0;
-                else
-                    r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
-//                if (vu->value < ts || vu->value <= 0)
-//                    r *= 0.5, g *= 0.5, b *= 0.5;
-                break;
-            case VU_MONOCHROME_REVERSE:
-                r = 1, g = 1, b = 0;
-//                if (!(vu->value < ts) || vu->value >= 1.0)
-//                    r *= 0.5, g *= 0.5, b *= 0.5;
-                break;
-            case VU_MONOCHROME:
-                r = 1, g = 1, b = 0;
-//                if (vu->value < ts || vu->value <= 0)
-//                    r *= 0.5, g *= 0.5, b *= 0.5;
-                break;
-        }
-        GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
-        gdk_cairo_set_source_color(cache_cr, &sc2);
-        cairo_move_to(cache_cr, x, oy);
-        cairo_line_to(cache_cr, x, oy + sy + 1);
-        cairo_move_to(cache_cr, x, oy + sy);
-        cairo_line_to(cache_cr, x, oy );
-        cairo_stroke(cache_cr);
-    }
-    cairo_destroy( cache_cr );
+	cairo_t *cache_cr = cairo_create( vu->cache_surface );
+	GdkColor sc = { 0, 0, 0, 0 };
+	gdk_cairo_set_source_color(cache_cr, &sc);
+	cairo_rectangle(cache_cr, ox, oy, sx, sy);
+	cairo_fill(cache_cr);
+	cairo_set_line_width(cache_cr, 1);
+
+	for (int x = ox; x <= ox + sx; x += 3)
+	{
+	    float ts = (x - ox) * 1.0 / sx;
+	    float r = 0.f, g = 0.f, b = 0.f;
+	    switch(vu->mode)
+	    {
+		case VU_STANDARD:
+		default:
+		    if (ts < 0.75)
+			r = ts / 0.75, g = 1, b = 0;
+		    else
+			r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+		    //                if (vu->value < ts || vu->value <= 0)
+		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
+		    break;
+		case VU_MONOCHROME_REVERSE:
+		    r = 1, g = 1, b = 0;
+		    //                if (!(vu->value < ts) || vu->value >= 1.0)
+		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
+		    break;
+		case VU_MONOCHROME:
+		    r = 1, g = 1, b = 0;
+		    //                if (vu->value < ts || vu->value <= 0)
+		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
+		    break;
+	    }
+	    GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
+	    gdk_cairo_set_source_color(cache_cr, &sc2);
+	    cairo_move_to(cache_cr, x, oy);
+	    cairo_line_to(cache_cr, x, oy + sy + 1);
+	    cairo_move_to(cache_cr, x, oy + sy);
+	    cairo_line_to(cache_cr, x, oy );
+	    cairo_stroke(cache_cr);
+	}
+	cairo_destroy( cache_cr );
     }
 
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
@@ -432,9 +435,9 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source_rgba( c, 0,0,0, 0.5 );
 
     if( vu->mode == VU_MONOCHROME_REVERSE )
-	cairo_rectangle( c, vu->value * (sx-ox),oy, sx-ox, sy-oy );
-    else
 	cairo_rectangle( c, ox,oy, vu->value * (sx-ox), sy-oy );
+    else
+	cairo_rectangle( c, vu->value * (sx-ox),oy, sx-ox, sy-oy );
 
     cairo_fill( c );
 
