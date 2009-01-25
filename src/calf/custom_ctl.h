@@ -55,11 +55,12 @@ extern GType calf_line_graph_get_type();
 
 extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
-#define CALF_TYPE_VUMETER          (calf_vumeter_get_type())
-#define CALF_VUMETER(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_VUMETER, CalfVUMeter))
-#define CALF_IS_VUMETER(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_VUMETER))
-#define CALF_VUMETER_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_VUMETER, CalfVUMeterClass))
-#define CALF_IS_VUMETER_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_VUMETER))
+#define CALF_TYPE_VUMETER           (calf_vumeter_get_type())
+#define CALF_VUMETER(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_VUMETER, CalfVUMeter))
+#define CALF_IS_VUMETER(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_VUMETER))
+#define CALF_VUMETER_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_VUMETER, CalfVUMeterClass))
+#define CALF_IS_VUMETER_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_VUMETER))
+#define CALF_VUMETER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_VUMETER, CalfVUMeterClass))
 
 enum CalfVUMeterMode
 {
@@ -73,6 +74,7 @@ struct CalfVUMeter
     GtkDrawingArea parent;
     CalfVUMeterMode mode;
     float value;
+    cairo_surface_t *cache_surface;
 };
 
 struct CalfVUMeterClass

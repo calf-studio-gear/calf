@@ -375,19 +375,26 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
+    if( vu->cache_surface == NULL ) {
+	// looks like its either first call or the widget has been resized.
+	// create the cache_surface.
+	cairo_surface_t *window_surface = cairo_get_target( c );
+	vu->cache_surface = cairo_surface_create_similar( window_surface, 
+							  CAIRO_CONTENT_COLOR,
+							  widget->allocation.width,
+							  widget->allocation.height );
+    cairo_t *cache_cr = cairo_create( vu->cache_surface );
     GdkColor sc = { 0, 0, 0, 0 };
-    gdk_cairo_set_source_color(c, &sc);
-    cairo_rectangle(c, ox, oy, sx, sy);
-    cairo_fill(c);
-    cairo_set_line_width(c, 1);
-    
-    CalfVUMeterMode mode = vu->mode;
+    gdk_cairo_set_source_color(cache_cr, &sc);
+    cairo_rectangle(cache_cr, ox, oy, sx, sy);
+    cairo_fill(cache_cr);
+    cairo_set_line_width(cache_cr, 1);
     
     for (int x = ox; x <= ox + sx; x += 3)
     {
         float ts = (x - ox) * 1.0 / sx;
         float r = 0.f, g = 0.f, b = 0.f;
-        switch(mode)
+        switch(vu->mode)
         {
             case VU_STANDARD:
             default:
@@ -395,28 +402,43 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                     r = ts / 0.75, g = 1, b = 0;
                 else
                     r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
-                if (vu->value < ts || vu->value <= 0)
-                    r *= 0.5, g *= 0.5, b *= 0.5;
+//                if (vu->value < ts || vu->value <= 0)
+//                    r *= 0.5, g *= 0.5, b *= 0.5;
                 break;
             case VU_MONOCHROME_REVERSE:
                 r = 1, g = 1, b = 0;
-                if (!(vu->value < ts) || vu->value >= 1.0)
-                    r *= 0.5, g *= 0.5, b *= 0.5;
+//                if (!(vu->value < ts) || vu->value >= 1.0)
+//                    r *= 0.5, g *= 0.5, b *= 0.5;
                 break;
             case VU_MONOCHROME:
                 r = 1, g = 1, b = 0;
-                if (vu->value < ts || vu->value <= 0)
-                    r *= 0.5, g *= 0.5, b *= 0.5;
+//                if (vu->value < ts || vu->value <= 0)
+//                    r *= 0.5, g *= 0.5, b *= 0.5;
                 break;
         }
         GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
-        gdk_cairo_set_source_color(c, &sc2);
-        cairo_move_to(c, x, oy);
-        cairo_line_to(c, x, oy + sy + 1);
-        cairo_move_to(c, x, oy + sy);
-        cairo_line_to(c, x, oy );
-        cairo_stroke(c);
+        gdk_cairo_set_source_color(cache_cr, &sc2);
+        cairo_move_to(cache_cr, x, oy);
+        cairo_line_to(cache_cr, x, oy + sy + 1);
+        cairo_move_to(cache_cr, x, oy + sy);
+        cairo_line_to(cache_cr, x, oy );
+        cairo_stroke(cache_cr);
     }
+    cairo_destroy( cache_cr );
+    }
+
+    cairo_set_source_surface( c, vu->cache_surface, 0,0 );
+    cairo_paint( c );
+    cairo_set_source_rgba( c, 0,0,0, 0.5 );
+
+    if( vu->mode == VU_MONOCHROME_REVERSE )
+	cairo_rectangle( c, vu->value * (sx-ox),oy, sx-ox, sy-oy );
+    else
+	cairo_rectangle( c, ox,oy, vu->value * (sx-ox), sy-oy );
+
+    cairo_fill( c );
+
+
 
     cairo_destroy(c);
     
@@ -441,8 +463,15 @@ calf_vumeter_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
     g_assert(CALF_IS_VUMETER(widget));
+    CalfVUMeter *vu = CALF_VUMETER(widget);
     
-    widget->allocation = *allocation;
+    GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_VUMETER_GET_CLASS( vu ) );
+
+    parent_class->size_allocate( widget, allocation );
+
+    if( vu->cache_surface )
+	cairo_surface_destroy( vu->cache_surface );
+    vu->cache_surface = NULL;
 }
 
 static void
@@ -451,7 +480,7 @@ calf_vumeter_class_init (CalfVUMeterClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->expose_event = calf_vumeter_expose;
     widget_class->size_request = calf_vumeter_size_request;
-    //widget_class->size_allocate = calf_vumeter_size_allocate;
+    widget_class->size_allocate = calf_vumeter_size_allocate;
 }
 
 static void
@@ -462,6 +491,7 @@ calf_vumeter_init (CalfVUMeter *self)
     widget->requisition.width = 50;
     widget->requisition.height = 15;
     self->value = 0.5;
+    self->cache_surface = NULL;
 }
 
 GtkWidget *
