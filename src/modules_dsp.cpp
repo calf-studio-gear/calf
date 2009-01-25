@@ -243,6 +243,28 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
     return false;
 }
 
+int filter_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+{
+    if (fabs(inertia_cutoff.get_last() - old_cutoff) + 100 * fabs(inertia_resonance.get_last() - old_resonance) + fabs(*params[par_mode] - old_mode) > 0.1f)
+    {
+        old_cutoff = inertia_cutoff.get_last();
+        old_resonance = inertia_resonance.get_last();
+        old_mode = *params[par_mode];
+        last_generation++;
+        subindex_graph = 0;
+        subindex_dot = INT_MAX;
+        subindex_gridline = INT_MAX;
+    }
+    else {
+        subindex_graph = 0;
+        subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
+    }
+    if (generation == last_generation)
+        subindex_graph = INT_MAX;
+    return last_generation;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
