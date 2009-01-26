@@ -634,16 +634,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         if (diff < -0.0001)
             phase = (phase + 63) % 64;
     }
-    static GdkPixmap *pixmap = NULL;
-    if (!pixmap)
-    {
-        GdkPixbuf *pbuf = CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image;
-        pixmap = gdk_pixmap_new(GDK_DRAWABLE(widget->window), gdk_pixbuf_get_width(pbuf), gdk_pixbuf_get_height(pbuf), -1);
-        gdk_draw_rectangle(GDK_DRAWABLE(pixmap), widget->style->bg_gc[0], TRUE, 0, 0, gdk_pixbuf_get_width(pbuf), gdk_pixbuf_get_height(pbuf));
-        // gdk_drawable_set_colormap(GDK_DRAWABLE(pixmap), gdk_colormap_get_system());
-        gdk_draw_pixbuf(GDK_DRAWABLE(pixmap), NULL, pbuf, 0, 0, 0, 0, gdk_pixbuf_get_width(pbuf), gdk_pixbuf_get_height(pbuf), GDK_RGB_DITHER_NORMAL, 0, 0);
-    }
-    gdk_draw_drawable(GDK_DRAWABLE(widget->window), widget->style->bg_gc[0], pixmap, phase * 40, self->knob_type * 40, ox, oy, 40, 40);
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image, phase * 40, self->knob_type * 40, ox, oy, 40, 40, GDK_RGB_DITHER_NORMAL, 0, 0);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
     if (gtk_widget_is_focus(widget))
     {
