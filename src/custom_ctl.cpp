@@ -154,16 +154,17 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 	cache_dirty = 1;
     }
 
-    gdk_cairo_set_source_color(c, &sc);
-    cairo_rectangle(c, ox, oy, sx, sy);
-    cairo_clip_preserve(c);
-    cairo_fill(c);
-    cairo_impl cimpl;
-    cimpl.context = c;
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(c, 9);
 
+    gdk_cairo_set_source_color(c, &sc);
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_clip(c);
+    cairo_impl cimpl;
+    cimpl.context = c;
+
     if (lg->source) {
+
 
         float pos = 0;
         bool vertical = false;
@@ -180,36 +181,50 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 	int gen_index = lg->source->get_changed_offsets( lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
 
 	if( cache_dirty || (gen_index != lg->last_generation) ) {
+
+	    cairo_t *cache_cr = cairo_create( lg->cache_surface );
+	    cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+	    cairo_set_font_size(cache_cr, 9);
+
+	    gdk_cairo_set_source_color(cache_cr, &sc);
+	    cairo_rectangle(cache_cr, ox, oy, sx, sy);
+	    cairo_clip_preserve(cache_cr);
+	    cairo_fill(cache_cr);
+
+	    cairo_impl cache_cimpl;
+	    cache_cimpl.context = cache_cr;
+
 	    lg->source->get_changed_offsets( gen_index, cache_graph_index, cache_dot_index, cache_grid_index );
 	    lg->last_generation = gen_index;
 
-	    cairo_set_line_width(c, 1);
+	    cairo_set_line_width(cache_cr, 1);
 	    for(int phase = 1; phase <= 2; phase++)
 	    {
-		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cimpl); grid_n++)
+		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(cache_cr, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cache_cimpl); grid_n++)
 		{
-		    calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
+		    calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
 		}
 	    }
 	    grid_n_save = grid_n;
 
-	    gdk_cairo_set_source_color(c, &sc2);
-	    cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
-	    cairo_set_line_width(c, 1);
-	    for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, 2 * sx, &cimpl); graph_n++)
+	    gdk_cairo_set_source_color(cache_cr, &sc2);
+	    cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
+	    cairo_set_line_width(cache_cr, 1);
+	    for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, 2 * sx, &cache_cimpl); graph_n++)
 	    {
-		calf_line_graph_draw_graph( c, data, sx, sy );
+		calf_line_graph_draw_graph( cache_cr, data, sx, sy );
 	    }
-	    gdk_cairo_set_source_color(c, &sc3);
-	    for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cimpl); dot_n++)
+	    gdk_cairo_set_source_color(cache_cr, &sc3);
+	    for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
 	    {
 		int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
-		cairo_arc(c, ox + x * sx, yv, size, 0, 2 * M_PI);
-		cairo_fill(c);
+		cairo_arc(cache_cr, ox + x * sx, yv, size, 0, 2 * M_PI);
+		cairo_fill(cache_cr);
 	    }
 
 	    // copy window to cache.
-	    calf_line_graph_copy_window_to_cache( lg, c );
+	    cairo_destroy( cache_cr );
+	    calf_line_graph_copy_cache_to_window( lg, c );
 	} else {
 	    grid_n_save = cache_grid_index;
 	    graph_n = cache_graph_index;
