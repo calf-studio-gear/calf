@@ -280,7 +280,7 @@ int calf_line_graph_update_if(CalfLineGraph *graph, int last_drawn_generation)
     if (graph->source)
     {
         int subgraph, dot, gridline;
-        generation = graph->source->get_changed_offsets(graph->last_generation, subgraph, dot, gridline);
+        generation = graph->source->get_changed_offsets(generation, subgraph, dot, gridline);
         if (subgraph == INT_MAX && dot == INT_MAX && gridline == INT_MAX && generation == last_drawn_generation)
             return generation;
         gtk_widget_queue_draw(GTK_WIDGET(graph));
