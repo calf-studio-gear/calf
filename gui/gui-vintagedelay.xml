@@ -4,7 +4,7 @@
             <table rows="4" cols="3">
                 <label attach-x="0" attach-y="0" param="bpm" />
                 <align attach-x="1" attach-y="0" scale-x="0"><knob param="bpm" /></align>
-                <spin attach-x="2" attach-y="0" param="bpm" />
+                <spin attach-x="2" attach-y="0" param="bpm" digits="2"/>
                 <label attach-x="0" attach-y="1" param="subdiv" />
                 <hscale attach-x="1" attach-y="1" param="subdiv" />
                 <spin attach-x="2" attach-y="1" param="subdiv" />
