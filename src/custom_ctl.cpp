@@ -262,7 +262,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_destroy(c);
     
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
-    // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
+    // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
     
     return TRUE;
 }
@@ -273,18 +273,19 @@ void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square)
     graph->is_square = is_square;
 }
 
-void calf_line_graph_update_if(CalfLineGraph *graph)
+int calf_line_graph_update_if(CalfLineGraph *graph, int last_drawn_generation)
 {
     g_assert(CALF_IS_LINE_GRAPH(graph));
-    int generation = 0;
+    int generation = last_drawn_generation;
     if (graph->source)
     {
         int subgraph, dot, gridline;
         generation = graph->source->get_changed_offsets(graph->last_generation, subgraph, dot, gridline);
-        if (subgraph == INT_MAX && dot == INT_MAX && gridline == INT_MAX)
-            return;
+        if (subgraph == INT_MAX && dot == INT_MAX && gridline == INT_MAX && generation == last_drawn_generation)
+            return generation;
         gtk_widget_queue_draw(GTK_WIDGET(graph));
     }
+    return generation;
 }
 
 static void

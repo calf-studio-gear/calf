@@ -505,6 +505,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
+    last_generation = -1;
     // const parameter_properties &props = get_props();
     
     widget = calf_line_graph_new ();
@@ -526,7 +527,7 @@ void line_graph_param_control::set()
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
-        calf_line_graph_update_if(CALF_LINE_GRAPH(widget));
+        last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
     }
 }
 
