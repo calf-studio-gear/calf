@@ -1,3 +1,8 @@
+Version 0.0.18.1
+
++ Filter: fixed subtle redraw bugs
++ Icons: fixed packaging-incompatible paths
+
 Version 0.0.18
 
 + Filterclavier: new plugin (a MIDI controlled filter) by Hans Baier
