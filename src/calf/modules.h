@@ -595,6 +595,7 @@ public:
     inertia<exponential_ramp> inertia_cutoff, inertia_resonance, inertia_gain;
     once_per_n timer;
     bool is_active;    
+    volatile int last_generation, last_calculated_generation;
     
     filter_module_with_inertia()
     : inertia_cutoff(exponential_ramp(128), 20)
@@ -631,10 +632,12 @@ public:
     
     void on_timer()
     {
+        int gen = last_generation;
         inertia_cutoff.step();
         inertia_resonance.step();
         inertia_gain.step();
         calculate_filter();
+        last_calculated_generation = gen;
     }
     
     void activate()
@@ -689,7 +692,6 @@ class filter_audio_module:
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
     public frequency_response_line_graph
 {
-    int last_generation;
     float old_cutoff, old_resonance, old_mode;
 public:    
     filter_audio_module()

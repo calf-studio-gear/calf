@@ -259,7 +259,7 @@ int filter_audio_module::get_changed_offsets(int generation, int &subindex_graph
         subindex_graph = 0;
         subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
     }
-    if (generation == last_generation)
+    if (generation == last_calculated_generation)
         subindex_graph = INT_MAX;
     return last_generation;
 }
