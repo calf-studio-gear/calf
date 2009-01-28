@@ -629,14 +629,25 @@ void organ_voice::render_block() {
             }
         }
     }
+    
+    bool is_quad = parameters->quad_env >= 0.5f;
+    
     expression.set_inertia(parameters->cutoff);
     phase += dphase * BlockSize;
     float escl[EnvCount], eval[EnvCount];
     for (int i = 0; i < EnvCount; i++)
         escl[i] = (1.f + parameters->envs[i].velscale * (velocity - 1.f));
     
-    for (int i = 0; i < EnvCount; i++)
-        eval[i] = envs[i].value * escl[i];
+    if (is_quad)
+    {
+        for (int i = 0; i < EnvCount; i++)
+            eval[i] = envs[i].value * envs[i].value * escl[i];
+    }
+    else
+    {
+        for (int i = 0; i < EnvCount; i++)
+            eval[i] = envs[i].value * escl[i];
+    }
     for (int i = 0; i < FilterCount; i++)
     {
         float mod = parameters->filters[i].envmod[0] * eval[0] ;
@@ -666,7 +677,7 @@ void organ_voice::render_block() {
             any_running = true;
         if (mode == ampctl_none)
             continue;
-        float post = envs[i].value * escl[i];
+        float post = (is_quad ? envs[i].value : 1) * envs[i].value * escl[i];
         amp_pre[mode - 1] *= pre;
         amp_post[mode - 1] *= post;
     }

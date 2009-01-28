@@ -137,6 +137,7 @@ struct organ_enums
         par_lforate, par_lfoamt, par_lfowet, par_lfophase, par_lfomode,
         par_transpose, par_detune,
         par_polyphony,
+        par_quadenv,
         par_var_mapcurve,
         param_count
     };

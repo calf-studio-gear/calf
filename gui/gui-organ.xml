@@ -259,20 +259,31 @@
           </vbox>
         </frame>
         <frame label="Amplifier">
-          <vbox>
-            <hbox>
-              <label param="eg1_amp_ctl"/>
-              <combo param="eg1_amp_ctl"/>
-            </hbox>
-            <hbox>
-              <label param="eg2_amp_ctl"/>
-              <combo param="eg2_amp_ctl"/>
-            </hbox>
-            <hbox>
-              <label param="eg3_amp_ctl"/>
-              <combo param="eg3_amp_ctl"/>
-            </hbox>
-          </vbox>
+          <hbox>
+            <vbox>
+              <hbox>
+                <label param="eg1_amp_ctl"/>
+                <combo param="eg1_amp_ctl"/>
+              </hbox>
+              <hbox>
+                <label param="eg2_amp_ctl"/>
+                <combo param="eg2_amp_ctl"/>
+              </hbox>
+              <hbox>
+                <label param="eg3_amp_ctl"/>
+                <combo param="eg3_amp_ctl"/>
+              </hbox>
+            </vbox>
+            <align>
+              <vbox >
+                <label param="quad_env" />
+                <align>
+                  <toggle param="quad_env" />
+                </align>
+                <label />
+              </vbox>
+            </align>
+          </hbox>
         </frame>
       </vbox>
       <vbox>
@@ -402,152 +413,138 @@
       </vbox>
     </hbox>
     <vbox page="Advanced">
-      <align scale-x="1.0" scale-y="0.3">
-        <frame label="Percussive section">
-          <vbox>
-            <align scale-x="0.0" scale-y="1.0">
-              <vbox>
-                <keyboard octaves="10"/>
-                <curve key="map_curve" maxpoints="4"/>
+      <frame label="Percussive section">
+        <vbox>
+          <align scale-x="0.0" scale-y="1.0">
+            <vbox>
+              <keyboard octaves="10"/>
+              <curve key="map_curve" maxpoints="4"/>
+            </vbox>
+          </align>
+          <hbox>
+            <table rows="2" cols="5">
+              <vbox attach-x="0" attach-y="0">
+                <label param="perc_waveform"/>
+                <align>
+                  <combo param="perc_waveform"/>
+                </align>
+                <label/>
               </vbox>
-            </align>
-            <hbox>
-              <table rows="2" cols="5">
-                <vbox attach-x="0" attach-y="0">
-                  <label param="perc_waveform"/>
-                  <align>
-                    <combo param="perc_waveform"/>
-                  </align>
-                </vbox>
-                <vbox attach-x="1" attach-y="0">
-                  <label param="perc_harmonic"/>
-                  <knob param="perc_harmonic" expand="0" fill="0"/>
-                  <value param="perc_harmonic"/>
-                </vbox>
-                <vbox attach-x="2" attach-y="0">
-                  <label param="perc_level"/>
-                  <knob param="perc_level" expand="0" fill="0"/>
-                  <value param="perc_level"/>
-                </vbox>
-                <vbox attach-x="3" attach-y="0">
-                  <label param="perc_decay"/>
-                  <knob param="perc_decay" expand="0" fill="0"/>
-                  <value param="perc_decay"/>
-                </vbox>
-                <vbox attach-x="4" attach-y="0">
-                  <label param="perc_vel2amp"/>
-                  <knob param="perc_vel2amp" expand="0" fill="0"/>
-                  <value param="perc_vel2amp"/>
-                </vbox>
-                <vbox attach-x="0" attach-y="1">
-                  <label param="perc_fm_waveform"/>
-                  <align>
-                    <combo param="perc_fm_waveform"/>
-                  </align>
-                </vbox>
-                <vbox attach-x="1" attach-y="1">
-                  <label param="perc_fm_harmonic"/>
-                  <knob param="perc_fm_harmonic" expand="0" fill="0"/>
-                  <value param="perc_fm_harmonic"/>
-                </vbox>
-                <vbox attach-x="2" attach-y="1">
-                  <label param="perc_fm_depth"/>
-                  <knob param="perc_fm_depth" expand="0" fill="0"/>
-                  <value param="perc_fm_depth"/>
-                </vbox>
-                <vbox attach-x="3" attach-y="1">
-                  <label param="perc_fm_decay"/>
-                  <knob param="perc_fm_decay" expand="0" fill="0"/>
-                  <value param="perc_fm_decay"/>
-                </vbox>
-                <vbox attach-x="4" attach-y="1">
-                  <label param="perc_vel2fm"/>
-                  <knob param="perc_vel2fm" expand="0" fill="0"/>
-                  <value param="perc_vel2fm"/>
-                </vbox>
-              </table>
-              <vbox>
-                <hbox>
-                  <align>
-                    <vbox>
-                      <label param="perc_stereo"/>
-                      <knob param="perc_stereo" expand="0" fill="0" type="3"/>
-                      <value param="perc_stereo"/>
-                    </vbox>
-                  </align>
-                  <align>
-                    <vbox>
-                      <label param="perc_trigger"/>
-                      <align>
-                        <combo param="perc_trigger"/>
-                      </align>
-                    </vbox>
-                  </align>
-                </hbox>
+              <vbox attach-x="1" attach-y="0">
+                <label param="perc_harmonic"/>
+                <knob param="perc_harmonic" />
+                <value param="perc_harmonic"/>
               </vbox>
-            </hbox>
-          </vbox>
-        </frame>
-      </align>
-      <frame label="Vibrato">
+              <vbox attach-x="2" attach-y="0">
+                <label param="perc_level"/>
+                <knob param="perc_level" />
+                <value param="perc_level"/>
+              </vbox>
+              <vbox attach-x="3" attach-y="0">
+                <label param="perc_decay"/>
+                <knob param="perc_decay" />
+                <value param="perc_decay"/>
+              </vbox>
+              <vbox attach-x="4" attach-y="0">
+                <label param="perc_vel2amp"/>
+                <knob param="perc_vel2amp" />
+                <value param="perc_vel2amp"/>
+              </vbox>
+              <hbox attach-x="0" attach-y="1" attach-w="5" attach-h="1" />
+              <vbox attach-x="0" attach-y="2">
+                <label param="perc_fm_waveform"/>
+                <align>
+                  <combo param="perc_fm_waveform"/>
+                </align>
+                <label/>
+              </vbox>
+              <vbox attach-x="1" attach-y="2">
+                <label param="perc_fm_harmonic"/>
+                <knob param="perc_fm_harmonic" />
+                <value param="perc_fm_harmonic"/>
+              </vbox>
+              <vbox attach-x="2" attach-y="2">
+                <label param="perc_fm_depth"/>
+                <knob param="perc_fm_depth" />
+                <value param="perc_fm_depth"/>
+              </vbox>
+              <vbox attach-x="3" attach-y="2">
+                <label param="perc_fm_decay"/>
+                <knob param="perc_fm_decay" />
+                <value param="perc_fm_decay"/>
+              </vbox>
+              <vbox attach-x="4" attach-y="2">
+                <label param="perc_vel2fm"/>
+                <knob param="perc_vel2fm" />
+                <value param="perc_vel2fm"/>
+              </vbox>
+            </table>
+            <vbox>
+              <hbox>
+                <align>
+                  <vbox>
+                    <label param="perc_stereo"/>
+                    <knob param="perc_stereo" expand="0" fill="0" type="3"/>
+                    <value param="perc_stereo"/>
+                  </vbox>
+                </align>
+                <align>
+                  <vbox>
+                    <label param="perc_trigger"/>
+                    <align>
+                      <combo param="perc_trigger"/>
+                    </align>
+                  </vbox>
+                </align>
+              </hbox>
+            </vbox>
+          </hbox>
+        </vbox>
+      </frame>
+      <frame label="Vibrato" >
         <hbox>
-          <vbox expand="0" fill="0">
+          <vbox >
             <label param="vib_rate"/>
-            <align>
-              <knob param="vib_rate" expand="0" fill="0"/>
-            </align>
+            <knob param="vib_rate" />
             <value param="vib_rate"/>
           </vbox>
-          <vbox expand="0" fill="0">
+          <vbox >
             <label param="vib_amt"/>
-            <align>
-              <knob param="vib_amt" expand="0" fill="0"/>
-            </align>
+            <knob param="vib_amt" />
             <value param="vib_amt"/>
           </vbox>
-          <vbox expand="0" fill="0">
+          <vbox >
             <label param="vib_wet"/>
-            <align>
-              <knob param="vib_wet" expand="0" fill="0"/>
-            </align>
+            <knob param="vib_wet" />
             <value param="vib_wet"/>
           </vbox>
-          <vbox expand="0" fill="0">
+          <vbox >
             <label param="vib_phase"/>
-            <align>
-              <knob param="vib_phase" expand="0" fill="0" type="3"/>
-            </align>
+            <knob param="vib_phase" type="3"/>
             <value param="vib_phase"/>
           </vbox>
-          <vbox expand="0" fill="0">
+          <vbox >
             <label param="vib_mode"/>
-            <align>
-              <combo param="vib_mode" expand="0" fill="0"/>
-            </align>
+            <combo param="vib_mode" />
+            <label />
           </vbox>
         </hbox>
       </frame>
-      <frame label="Additional settings">
+      <frame label="Additional settings" >
         <hbox>
           <vbox>
             <label param="transpose"/>
-            <align>
-              <knob param="transpose" type="1"/>
-            </align>
+            <knob param="transpose" type="1"/>
             <value param="transpose"/>
           </vbox>
           <vbox>
             <label param="detune"/>
-            <align>
-              <knob param="detune" type="1"/>
-            </align>
+            <knob param="detune" type="1"/>
             <value param="detune"/>
           </vbox>
           <vbox>
             <label param="foldnote"/>
-            <align>
-              <knob param="foldnote"/>
-            </align>
+            <knob param="foldnote"/>
             <value param="foldnote"/>
           </vbox>
         </hbox>

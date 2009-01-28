@@ -83,6 +83,10 @@ struct organ_parameters {
     float global_transpose;
     float global_detune;
     
+    float polyphony;
+    
+    float quad_env;
+    
     float dummy_mapcurve;
     
     //////////////////////////////////////////////////////////////////////////

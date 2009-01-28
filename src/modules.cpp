@@ -468,6 +468,8 @@ CALF_PORT_PROPS(organ) = {
 
     { 16,         1,   32,   32, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "polyphony", "Polyphony" },
     
+    { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "quad_env", "Quadratic AmpEnv" },
+
     { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &organ_init_map_curve, "map_curve", "Key mapping curve" },
 };
 
