@@ -3763,4 +3763,126 @@
 1 1
 </var>
 </preset>
+<preset plugin="monosynth" name="Goa Bass">
+  <param name="o1_wave" value="5" />
+  <param name="o2_wave" value="5" />
+  <param name="o12_detune" value="7" />
+  <param name="o2_xpose" value="0" />
+  <param name="phase_mode" value="5" />
+  <param name="o12_mix" value="0.497" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="38.2469" />
+  <param name="res" value="3.41813" />
+  <param name="filter_sep" value="1920" />
+  <param name="env2cutoff" value="10800" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="693.682" />
+  <param name="adsr_s" value="0.2" />
+  <param name="adsr_r" value="156.36" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="2" />
+  <param name="portamento" value="12.284" />
+  <param name="vel2filter" value="0.5" />
+  <param name="vel2amp" value="0.47" />
+  <param name="master" value="0.5" />
+</preset>
+<preset plugin="monosynth" name="Square Worm">
+  <param name="o1_wave" value="1" />
+  <param name="o2_wave" value="1" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="12" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.497" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="10277.2" />
+  <param name="res" value="3.16995" />
+  <param name="filter_sep" value="-240" />
+  <param name="env2cutoff" value="-4968" />
+  <param name="env2res" value="0.34" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="43.0915" />
+  <param name="adsr_d" value="1094.52" />
+  <param name="adsr_s" value="0.26" />
+  <param name="adsr_r" value="228.653" />
+  <param name="key_follow" value="0" />
+  <param name="legato" value="1" />
+  <param name="portamento" value="17.9635" />
+  <param name="vel2filter" value="1" />
+  <param name="vel2amp" value="0.47" />
+  <param name="master" value="0.5" />
+</preset>
+<preset plugin="monosynth" name="OctaWorm">
+  <param name="o1_wave" value="3" />
+  <param name="o2_wave" value="3" />
+  <param name="o12_detune" value="0" />
+  <param name="o2_xpose" value="24" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.497" />
+  <param name="filter" value="1" />
+  <param name="cutoff" value="777.018" />
+  <param name="res" value="1.03366" />
+  <param name="filter_sep" value="0" />
+  <param name="env2cutoff" value="5616" />
+  <param name="env2res" value="0" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="43.0915" />
+  <param name="adsr_d" value="11.4447" />
+  <param name="adsr_s" value="1" />
+  <param name="adsr_r" value="106.924" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="1" />
+  <param name="portamento" value="17.9635" />
+  <param name="vel2filter" value="1" />
+  <param name="vel2amp" value="0.47" />
+  <param name="master" value="0.5" />
+</preset>
+<preset plugin="monosynth" name="Pulsating Orange">
+  <param name="o1_wave" value="1" />
+  <param name="o2_wave" value="0" />
+  <param name="o12_detune" value="2.60614" />
+  <param name="o2_xpose" value="12" />
+  <param name="phase_mode" value="0" />
+  <param name="o12_mix" value="0.5" />
+  <param name="filter" value="0" />
+  <param name="cutoff" value="448.514" />
+  <param name="res" value="0.7" />
+  <param name="filter_sep" value="-777.368" />
+  <param name="env2cutoff" value="5653.2" />
+  <param name="env2res" value="1" />
+  <param name="env2amp" value="1" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="232.777" />
+  <param name="adsr_s" value="0.0176431" />
+  <param name="adsr_r" value="91.6363" />
+  <param name="key_follow" value="1" />
+  <param name="legato" value="0" />
+  <param name="portamento" value="1" />
+  <param name="vel2filter" value="0.225724" />
+  <param name="vel2amp" value="1" />
+  <param name="master" value="0.5" />
+</preset>
+<preset plugin="reverb" name="Empty walls">
+  <param name="decay_time" value="0.505687" />
+  <param name="hf_damp" value="3971.64" />
+  <param name="room_size" value="4" />
+  <param name="diffusion" value="0.17" />
+  <param name="amount" value="0.198884" />
+  <param name="dry" value="1" />
+  <param name="predelay" value="13" />
+  <param name="bass_cut" value="240.453" />
+  <param name="treble_cut" value="3303.47" />
+</preset>
+<preset plugin="reverb" name="Ambience">
+  <param name="decay_time" value="1.10354" />
+  <param name="hf_damp" value="2182.58" />
+  <param name="room_size" value="4" />
+  <param name="diffusion" value="0.69" />
+  <param name="amount" value="0.291183" />
+  <param name="dry" value="1" />
+  <param name="predelay" value="6.5" />
+  <param name="bass_cut" value="514.079" />
+  <param name="treble_cut" value="4064.15" />
+</preset>
 </presets>
