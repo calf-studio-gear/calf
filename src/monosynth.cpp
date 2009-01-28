@@ -472,6 +472,7 @@ void monosynth_audio_module::note_off(int note, int vel)
             last_key = note = stack.nth(stack.count() - 1);
             start_freq = freq;
             target_freq = freq = dsp::note_to_hz(note);
+            porta_time = 0;
             set_frequency();
             if (!(legato & 1)) {
                 envelope.note_on();
