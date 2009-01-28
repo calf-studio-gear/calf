@@ -253,6 +253,8 @@ public:
         for (int i = 0; i < EnvCount; i++)
             envs[i].note_off();
     }
+
+    virtual float get_priority() { return stolen ? 20000 : (perc_released ? 1 : (sostenuto ? 200 : 100)); }
     
     virtual void steal() {
         perc_released = true;
