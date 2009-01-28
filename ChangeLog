@@ -1,3 +1,12 @@
+Version 0.0.18.2
+
++ Organ: fix voice stealing of released notes, sort out GUI, add quadratic
+  mode for amplitude envelope (enabled by default) - sounds more natural
++ Monosynth: fix the bug that caused JACK to kick the client out due
+  to precalculating waves in a completely wrong place, fix portamento
+  for off-stack notes
++ Presets: 3 new presets for Organ, 4 for Monosynth, 2 for Reverb
+
 Version 0.0.18.1
 
 + Filter: fixed subtle redraw bugs
