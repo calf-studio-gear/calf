@@ -64,7 +64,7 @@ public:
     dsp::keystack stack;
     dsp::gain_smoothing master;
     
-    static void generate_waves();
+    static void precalculate_waves(progress_report_iface *reporter);
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
     /// Handle MIDI Note On message (does not immediately trigger a note, as it must start on
@@ -103,6 +103,10 @@ public:
     }
     void activate();
     void deactivate();
+    void post_instantiate()
+    {
+        precalculate_waves(progress_report);
+    }
     /// Run oscillators and two filters in series to produce mono output samples.
     void calculate_buffer_ser();
     /// Run oscillators and just one filter to produce mono output samples.

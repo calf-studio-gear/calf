@@ -35,7 +35,6 @@ using namespace std;
 float silence[4097];
 
 void monosynth_audio_module::activate() {
-    monosynth_audio_module::generate_waves();
     running = false;
     output_pos = 0;
     queue_note_on = -1;
@@ -48,7 +47,7 @@ void monosynth_audio_module::activate() {
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;
 
-void monosynth_audio_module::generate_waves()
+void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
 {
     float data[1 << MONOSYNTH_WAVE_BITS];
     bandlimiter<MONOSYNTH_WAVE_BITS> bl;
@@ -62,7 +61,9 @@ void monosynth_audio_module::generate_waves()
     enum { S = 1 << MONOSYNTH_WAVE_BITS, HS = S / 2, QS = S / 4, QS3 = 3 * QS };
     float iQS = 1.0 / QS;
     
-
+    if (reporter)
+        reporter->report_progress(0, "Precalculating waveforms");
+    
     // yes these waves don't have really perfect 1/x spectrum because of aliasing
     // (so what?)
     for (int i = 0 ; i < HS; i++)
@@ -107,6 +108,9 @@ void monosynth_audio_module::generate_waves()
     }
     waves[wave_skewsqr].make(bl, data);
 
+    if (reporter)
+        reporter->report_progress(50, "Precalculating waveforms");
+    
     for (int i = 0; i < S; i++) {
         if (i < QS3) {
             float p = i * 1.0 / QS3;
@@ -159,11 +163,14 @@ void monosynth_audio_module::generate_waves()
         data[i] = -1 + 0.66 * (3 & ((j >> 8) ^ (j >> 10) ^ (j >> 6)));
     }
     waves[wave_test8].make(bl, data);
+    if (reporter)
+        reporter->report_progress(100, "");
+    
 }
 
 bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context)
 {
-    monosynth_audio_module::generate_waves();
+    monosynth_audio_module::precalculate_waves(NULL);
     if (index == par_wave1 || index == par_wave2) {
         if (subindex)
             return false;
@@ -180,7 +187,7 @@ bool monosynth_audio_module::get_static_graph(int index, int subindex, float val
 
 bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
-    monosynth_audio_module::generate_waves();
+    monosynth_audio_module::precalculate_waves(NULL);
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
     if (index == par_filtertype) {
         if (!running)
