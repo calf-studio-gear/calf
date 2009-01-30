@@ -248,10 +248,14 @@ class LV2DB:
             world = SimpleRDFModel()
             world.copyFrom(self.manifests)
             seeAlso = self.manifests.bySubject[uri]["http://www.w3.org/2000/01/rdf-schema#seeAlso"]
-            for doc in seeAlso:
-                # print "Loading " + doc + " for plugin " + uri
-                parseTTL(doc, file(doc).read(), world, self.debug)
-            self.plugin_info[uri] = world                
+            try:
+                for doc in seeAlso:
+                    # print "Loading " + doc + " for plugin " + uri
+                    parseTTL(doc, file(doc).read(), world, self.debug)
+                self.plugin_info[uri] = world                
+            except Exception, e:
+                print "ERROR %s: %s" % (uri, str(e))
+                return None
         info = self.plugin_info[uri]
         dest = LV2Plugin()
         dest.uri = uri

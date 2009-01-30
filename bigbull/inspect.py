@@ -12,6 +12,8 @@ plugins = db.getPluginList()
 
 for uri in plugins:
     plugin = db.getPluginInfo(uri)
+    if plugin == None:
+        continue
     print "Plugin: %s" % plugin.name
     if plugin.microname != None: print "Tiny name: %s" % plugin.microname
     print "License: %s" % plugin.license
