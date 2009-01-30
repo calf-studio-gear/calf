@@ -134,7 +134,10 @@ def parseTTL(uri, content, model, debug):
             elif prnot[0] == "_":
                 spo[item] = uri + "#" + prnot[1]
             else:
-                spo[item] = prefixes[prnot[0]] + prnot[1]
+                if prnot[0] not in prefixes:
+                    raise Exception, "Prefix %s not defined" % prnot[0]
+                else:
+                    spo[item] = prefixes[prnot[0]] + prnot[1]
             item += 1
         elif (x[0] == 'URI' or x[0] == "string" or x[0] == "number" or (x[0] == "symbol" and x[1] == "a" and item == 1)) and (item < 3):
             if x[0] == "URI" and x[1] == "":
