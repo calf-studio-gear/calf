@@ -16,6 +16,8 @@ To compile and install Calf, you need:
 - POSIX-compliant operating system
 - G++ version 4.0 or higher (tested with 4.1.3)
 - GTK+2 headers and libraries (glib 2.10, gtk+ 2.12)
+- Cairo headers and libraries
+- Glade 2 headers and libraries
 
 Optional but recommended:
 - JACK header and libraries (tested with 0.109.0)
