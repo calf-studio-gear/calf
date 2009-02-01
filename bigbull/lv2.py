@@ -13,6 +13,10 @@ epi = "http://lv2plug.in/ns/dev/extportinfo#"
 rdf_type = rdf + "type"
 tinyname_uri = "http://lv2plug.in/ns/dev/tiny-name"
 
+event_type_names = {
+    "http://lv2plug.in/ns/ext/midi#MidiEvent" : "MIDI"
+}
+
 class DumpRDFModel:
     def addTriple(self, s, p, o):
         print "%s [%s] %s" % (s, p, repr(o))
@@ -314,6 +318,7 @@ class LV2DB:
             pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
             pdata.microname = info.getProperty(psubj, [tinyname_uri], optional = True, single = True)
             pdata.properties = set(info.getProperty(psubj, [lv2 + "portProperty"], optional = True))
+            pdata.events = set(info.getProperty(psubj, [lv2evt + "supportsEvent"], optional = True))
             ports.append(pdata)
             portDict[pdata.uri] = pdata
         ports.sort(lambda x, y: cmp(x.index, y.index))
