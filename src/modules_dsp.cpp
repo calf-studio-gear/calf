@@ -527,7 +527,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
 
     bool rms = *params[param_detection] == 0;
     bool average = *params[param_stereo_link] == 0;
-    bool aweighting = *params[param_aweighting] > 0.5f;
+    int aweighting = fastf2i_drm(*params[param_aweighting]);
     float linThreshold = *params[param_threshold];
     ratio = *params[param_ratio];
     float attack = *params[param_attack];
@@ -546,6 +546,14 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
     kneeStart = log(linKneeStart);
     kneeStop = log(linKneeStop);
     compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
+    
+    if (aweighting >= 2)
+    {
+        bpL.set_highshelf_rbj(5000, 0.707, 8 + 7 * (aweighting - 2), srate);
+        bpR.copy_coeffs(bpL);
+        bpL.sanitize();
+        bpR.sanitize();
+    }
 
     numsamples += offset;
     
@@ -559,9 +567,13 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         float left = ins[0][offset];
         float right = ins[1][offset];
         
-        if(aweighting) {
+        if(aweighting == 1) {
             left = awL.process(left);
             right = awR.process(right);
+        }
+        else if(aweighting >= 2) {
+            left = bpL.process(left);
+            right = bpR.process(right);
         }
         
         float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));

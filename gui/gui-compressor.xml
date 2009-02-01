@@ -14,7 +14,7 @@
         </vbox>
     	<vbox expand="0">
              <label param="aweighting"/>
-             <align><toggle param="aweighting"/></align>
+             <combo param="aweighting"/>
         </vbox>
     </hbox>
     <if cond="directlink">

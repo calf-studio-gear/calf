@@ -793,6 +793,7 @@ private:
     int last_generation;
     uint32_t clip;
     aweighter awL, awR;
+    biquad_d2<float> bpL, bpR;
 public:
     float *ins[in_count];
     float *outs[out_count];
