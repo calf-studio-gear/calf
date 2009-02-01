@@ -23,7 +23,7 @@ TRIPLEQUOTE \"\"\"
 {TRIPLEQUOTE} { LEXER_DATA->strctx.clear(); BEGIN(C_LONGSTRING); }
 \" { LEXER_DATA->strctx.clear(); BEGIN(C_STRING); }
 \<[^>]*\> { LEXER_DATA->add("URI", std::string(yytext + 1, strlen(yytext) - 2)); }
-[+-]?[0-9]+\.[0-9]*([eE][-+]?[0-9]+)? { std::stringstream ss(yytext); double value; ss >> value; LEXER_DATA->add("number", PyFloat_FromDouble(value)); }
+[+-]?([0-9]+\.[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)? { std::stringstream ss(yytext); double value; ss >> value; LEXER_DATA->add("number", PyFloat_FromDouble(value)); }
 [+-]?[0-9]+ { LEXER_DATA->add("number", PyInt_FromLong(atol(yytext))); }
 {SYMBOL}?:{SYMBOL}? { LEXER_DATA->add("prnot", yytext); } 
 {SYMBOL} { LEXER_DATA->add("symbol", yytext); } 
