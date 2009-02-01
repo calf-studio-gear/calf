@@ -6,6 +6,7 @@ import calfpytools
 
 lv2 = "http://lv2plug.in/ns/lv2core#"
 lv2evt = "http://lv2plug.in/ns/ext/event#"
+lv2str = "http://lv2plug.in/ns/dev/string-port#"
 rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 rdfs = "http://www.w3.org/2000/01/rdf-schema#"
 epi = "http://lv2plug.in/ns/dev/extportinfo#"
@@ -275,6 +276,7 @@ class LV2DB:
             "isAudio" : lv2 + "AudioPort",
             "isControl" : lv2 + "ControlPort",
             "isEvent" : lv2evt + "EventPort",
+            "isString" : lv2str + "StringPort",
             "isInput" : lv2 + "InputPort",
             "isOutput" : lv2 + "OutputPort",
         }
@@ -302,7 +304,12 @@ class LV2DB:
                 pdata.scalePoints = splist
             else:
                 pdata.scalePoints = []
-            pdata.defaultValue = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
+            if pdata.isControl:
+                pdata.defaultValue = info.getProperty(psubj, [lv2 + "default"], optional = True, single = True)
+            elif pdata.isString:
+                pdata.defaultValue = info.getProperty(psubj, [lv2str + "default"], optional = True, single = True)
+            else:
+                pdata.defaultValue = None
             pdata.minimum = info.getProperty(psubj, [lv2 + "minimum"], optional = True, single = True)
             pdata.maximum = info.getProperty(psubj, [lv2 + "maximum"], optional = True, single = True)
             pdata.microname = info.getProperty(psubj, [tinyname_uri], optional = True, single = True)
