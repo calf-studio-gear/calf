@@ -549,7 +549,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
     
     if (aweighting >= 2)
     {
-        bpL.set_highshelf_rbj(5000, 0.707, 8 + 7 * (aweighting - 2), srate);
+        bpL.set_highshelf_rbj(5000, 0.707, 10 << (aweighting - 2), srate);
         bpR.copy_coeffs(bpL);
         bpL.sanitize();
         bpR.sanitize();
