@@ -97,10 +97,17 @@ std::string i2s(int value)
 
 std::string f2s(double value)
 {
-    // XXXKF might not work with some locale settings
     stringstream ss;
     ss << value;
     return ss.str();
+}
+
+std::string ff2s(double value)
+{
+    string s = f2s(value);
+    if (s.find('.') == string::npos)
+        s += ".0";
+    return s;
 }
 
 std::string indent(const std::string &src, const std::string &indent)

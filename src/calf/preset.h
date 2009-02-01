@@ -58,6 +58,8 @@ struct plugin_preset
     void activate(plugin_ctl_iface *plugin);
     /// "Download" preset content from the plugin
     void get_from(plugin_ctl_iface *plugin);
+        
+    std::string get_safe_name();
 };
 
 /// Exception thrown by preset system

@@ -498,6 +498,8 @@ void make_ttl(string path_prefix)
     }
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
         
+    string plugin_uri_prefix = "http://calf.sourceforge.net/plugins/";
+
     string gui_header;
     
 #if USE_LV2_GUI
@@ -520,7 +522,7 @@ void make_ttl(string path_prefix)
     for (unsigned int i = 0; i < plugins.size(); i++) {
         plugin_metadata_iface *pi = plugins[i];
         const ladspa_plugin_info &lpi = pi->get_plugin_info();
-        string uri = string("<http://calf.sourceforge.net/plugins/")  + string(lpi.label) + ">";
+        string uri = string("<" + plugin_uri_prefix)  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
         
@@ -637,6 +639,7 @@ void make_ttl(string path_prefix)
     
     string ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
+        "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
         "\n"
@@ -646,8 +649,16 @@ void make_ttl(string path_prefix)
         "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
     ;
     
+    string presets_ttl =
+        "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
+        "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
+        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+        "@prefix dc: <http://dublincore.org/documents/dcmi-namespace/> .\n"
+        "\n"
+    ;
+
     for (unsigned int i = 0; i < plugins.size(); i++)
-        ttl += string("<http://calf.sourceforge.net/plugins/") 
+        ttl += string("<" + plugin_uri_prefix) 
             + string(plugins[i]->get_plugin_info().label)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> .\n";
 
@@ -656,15 +667,50 @@ void make_ttl(string path_prefix)
             + string(lpl[i]->id)
             + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
 
+    calf_plugins::get_builtin_presets().load_defaults(true);
+    calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
+
+    ttl += "\n";
+
+    for (unsigned int i = 0; i < factory_presets.size(); i++)
+    {
+        plugin_preset &pr = factory_presets[i];
+        string uri = "<http://calf.sourceforge.net/factory_presets#"
+            + pr.plugin + "_" + pr.get_safe_name()
+            + ">";
+        ttl += string(uri + " a lv2p:Preset ; rdfs:seeAlso <presets.ttl> .\n");
+        
+        presets_ttl += uri + 
+            " a lv2p:Preset ;\n"
+            "    dc:title \"" + pr.name + "\" ;\n"
+            "    lv2p:appliesTo <" + plugin_uri_prefix + pr.plugin + "> ;\n"
+            "    lv2p:port \n"
+        ;
+        
+        unsigned int count = min(pr.param_names.size(), pr.values.size());
+        for (unsigned int j = 0; j < count; j++)
+        {
+            presets_ttl += "        [ lv2p:symbol \"" + pr.param_names[j] + "\" ; lv2p:value " + ff2s(pr.values[j]) + "] ";
+            if (j < count - 1)
+                presets_ttl += ',';
+            presets_ttl += '\n';
+        }
+        presets_ttl += ".\n\n";
+    }
     FILE *f = fopen((path_prefix+"manifest.ttl").c_str(), "w");
     fprintf(f, "%s\n", ttl.c_str());
     fclose(f);
+    f = fopen((path_prefix+"presets.ttl").c_str(), "w");
+    fprintf(f, "%s\n", presets_ttl.c_str());
+    fclose(f);
 }
+
 #else
 void make_ttl(string tmp)
 {
     fprintf(stderr, "LV2 not supported.\n");
 }
+
 #endif
 
 void make_gui(string path_prefix)

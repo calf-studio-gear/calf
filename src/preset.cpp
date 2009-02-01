@@ -65,6 +65,17 @@ std::string plugin_preset::to_xml()
     return ss.str();
 }
 
+string plugin_preset::get_safe_name()
+{
+    stringstream ss;
+    for (size_t i = 0; i < name.length(); i++)
+    {
+        if (isdigit(name[i]) || isalpha(name[i]))
+            ss << name[i];
+    }
+    return ss.str();
+}
+
 void plugin_preset::activate(plugin_ctl_iface *plugin)
 {
     // First, clear everything to default values (in case some parameters or variables are missing)
