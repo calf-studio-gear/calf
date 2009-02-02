@@ -235,6 +235,25 @@ struct waveform_oscillator: public simple_oscillator
     }
 };
 
+/**
+ * Simple triangle LFO without any smoothing or anything of this sort. 
+ */
+struct triangle_lfo: public simple_oscillator
+{
+    inline float get()
+    {
+        uint32_t phase2 = phase;
+        // start at 90 degrees point of the "/\" wave (-1 to +1)
+        phase2 += 1<<30; 
+        // if in second half, invert the wave (so it falls back into 0..0x7FFFFFFF)
+        phase2 ^= ((int32_t)phase2)>>31;
+        
+        float value = (phase2 >> 6) / 16777216.0 - 1.0;
+        phase += phasedelta;
+        return value;
+    }
+};
+
 /// Simple stupid inline function to normalize a waveform (by removing DC offset and ensuring max absolute value of 1).
 static inline void normalize_waveform(float *table, unsigned int size)
 {

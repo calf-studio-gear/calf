@@ -46,6 +46,7 @@ public:
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
+    dsp::triangle_lfo lfo;
     bool running, stopping, gate, force_fadeout;
     int last_key;
     
@@ -57,7 +58,7 @@ public:
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
-    float odcr, porta_time;
+    float odcr, porta_time, lfo_bend, lfo_clock;
     int queue_note_on, stop_count;
     int legato;
     dsp::adsr envelope;
@@ -80,8 +81,8 @@ public:
     /// Update oscillator frequency based on base frequency, detune amount, pitch bend scaling factor and sample rate.
     inline void set_frequency()
     {
-        osc1.set_freq(freq * (2 - detune) * pitchbend, srate);
-        osc2.set_freq(freq * (detune)  * pitchbend * xpose, srate);
+        osc1.set_freq(freq * (2 - detune) * pitchbend * lfo_bend, srate);
+        osc2.set_freq(freq * (detune)  * pitchbend * lfo_bend * xpose, srate);
     }
     /// Handle control change messages.
     void control_change(int controller, int value);

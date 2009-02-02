@@ -72,6 +72,30 @@
       </vbox>
     </frame>
   </hbox>
+  <frame label="LFO">
+    <hbox spacing="10">
+      <vbox>
+        <label param="lfo_rate"/>
+        <knob param="lfo_rate"/>
+        <value param="lfo_rate"/>
+      </vbox>
+      <vbox>
+        <label param="lfo_delay"/>
+        <knob param="lfo_delay"/>
+        <value param="lfo_delay"/>
+      </vbox>
+      <vbox>
+        <label param="lfo_filter"/>
+        <knob param="lfo_filter" type="1"/>
+        <value param="lfo_filter"/>
+      </vbox>
+      <vbox>
+        <label param="lfo_pitch"/>
+        <knob param="lfo_pitch"/>
+        <value param="lfo_pitch"/>
+      </vbox>
+    </hbox>
+  </frame>
   <hbox spacing="10">
     <frame label="Envelope">
       <vbox border="10" spacing="10">
@@ -127,6 +151,7 @@
           <vbox>
             <label param="legato" expand="0"/>
             <combo param="legato" expand="0" fill="0"/>
+            <label />
           </vbox>
           <vbox>
             <label param="master"/>

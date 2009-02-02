@@ -40,6 +40,7 @@ void monosynth_audio_module::activate() {
     queue_note_on = -1;
     stop_count = 0;
     pitchbend = 1.f;
+    lfo_bend = 1.0;
     filter.reset();
     filter2.reset();
     stack.clear();
@@ -267,7 +268,8 @@ void monosynth_audio_module::delayed_note_on()
     osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
     if (!osc1.waveform) osc1.waveform = silence;
     if (!osc2.waveform) osc2.waveform = silence;
-    
+    lfo_clock = 0.f;
+
     if (!running)
     {
         if (legato >= 2)
@@ -276,6 +278,7 @@ void monosynth_audio_module::delayed_note_on()
         osc2.reset();
         filter.reset();
         filter2.reset();
+        lfo.reset();
         switch((int)*params[par_oscmode])
         {
         case 1:
@@ -335,6 +338,7 @@ void monosynth_audio_module::calculate_step()
         envelope.advance();
         return;
     }
+    lfo.set_freq(*params[par_lforate], crate);
     float porta_total_time = *params[par_portamento] * 0.001f;
     
     if (porta_total_time >= 0.00101f && porta_time >= 0) {
@@ -349,10 +353,14 @@ void monosynth_audio_module::calculate_step()
             porta_time += odcr;
         }
     }
+    float lfov = lfo.get() * std::min(1.0f, lfo_clock / *params[par_lfodelay]);
+    lfo_clock += odcr;
+    if (fabs(*params[par_lfopitch]) > small_value<float>())
+        lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov * (1.f / 1200.0f));
     set_frequency();
     envelope.advance();
     float env = envelope.value;
-    cutoff = *params[par_cutoff] * pow(2.0f, env * fltctl * *params[par_envmod] * (1.f / 1200.f));
+    cutoff = *params[par_cutoff] * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
