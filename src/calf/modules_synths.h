@@ -131,16 +131,21 @@ public:
     void calculate_step();
     /// Main processing function
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        if (!running && queue_note_on == -1)
+        if (!running && queue_note_on == -1) {
+            for (uint32_t i = 0; i < nsamples / step_size; i++)
+                envelope.advance();
             return 0;
+        }
         uint32_t op = offset;
         uint32_t op_end = offset + nsamples;
         while(op < op_end) {
             if (output_pos == 0) {
                 if (running || queue_note_on != -1)
                     calculate_step();
-                else 
+                else {
+                    envelope.advance();
                     dsp::zero(buffer, step_size);
+                }
             }
             if(op < op_end) {
                 uint32_t ip = output_pos;

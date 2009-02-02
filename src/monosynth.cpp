@@ -332,6 +332,7 @@ void monosynth_audio_module::calculate_step()
         dsp::zero(buffer, step_size);
         if (is_stereo_filter())
             dsp::zero(buffer2, step_size);
+        envelope.advance();
         return;
     }
     float porta_total_time = *params[par_portamento] * 0.001f;
@@ -411,17 +412,8 @@ void monosynth_audio_module::calculate_step()
         break;
     }
     float aenv = env;
-    /* isn't as good as expected
-    if (e2a > 1.0) { // extra-steep release on amplitude envelope only
-        if (envelope.state == adsr::RELEASE && env < envelope.sustain) {
-            aenv -= (envelope.sustain - env) * (e2a - 1.0);
-            if (aenv < 0.f) aenv = 0.f;
-            printf("aenv = %f\n", aenv);
-        }
-        e2a = 1.0;
-    }
-    */
-    newfgain *= 1.0 - (1.0 - aenv) * e2a;
+    if (*params[par_envtoamp] > 0.f)
+        newfgain *= 1.0 - (1.0 - aenv) * e2a;
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
     switch(filter_type)
     {
@@ -440,7 +432,7 @@ void monosynth_audio_module::calculate_step()
         calculate_buffer_stereo();
         break;
     }
-    if (envelope.state == adsr::STOP || force_fadeout)
+    if ((envelope.state == adsr::STOP && !gate) || force_fadeout || (envelope.state == adsr::RELEASE && *params[par_envtoamp] <= 0.f))
     {
         enum { ramp = step_size * 4 };
         for (int i = 0; i < step_size; i++)
