@@ -85,14 +85,19 @@
         <value param="lfo_delay"/>
       </vbox>
       <vbox>
-        <label param="lfo_filter"/>
-        <knob param="lfo_filter" type="1"/>
-        <value param="lfo_filter"/>
+        <label param="lfo2filter"/>
+        <knob param="lfo2filter" type="1"/>
+        <value param="lfo2filter"/>
       </vbox>
       <vbox>
-        <label param="lfo_pitch"/>
-        <knob param="lfo_pitch"/>
-        <value param="lfo_pitch"/>
+        <label param="lfo2pitch"/>
+        <knob param="lfo2pitch"/>
+        <value param="lfo2pitch"/>
+      </vbox>
+      <vbox>
+        <label param="lfo2pw"/>
+        <knob param="lfo2pw"/>
+        <value param="lfo2pw"/>
       </vbox>
     </hbox>
   </frame>

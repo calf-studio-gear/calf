@@ -72,9 +72,10 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
         data[i + HS] = (float)(i * 1.0 / HS - 1.0f);
     waves[wave_saw].make(bl, data);
 
+    // this one is dummy, fake and sham, we're using a difference of two sawtooths for square wave due to PWM
     for (int i = 0 ; i < S; i++)
         data[i] = (float)(i < HS ? -1.f : 1.f);
-    waves[wave_sqr].make(bl, data);
+    waves[wave_sqr].make(bl, data, 4);
 
     for (int i = 0 ; i < S; i++)
         data[i] = (float)(i < (64 * S / 2048)? -1.f : 1.f);
@@ -213,13 +214,34 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
     return get_static_graph(index, subindex, *params[index], data, points, context);
 }
 
+void monosynth_audio_module::calculate_buffer_oscs(float lfo)
+{
+    uint32_t shift = (int32_t)(0x70000000 * last_lfov * *params[par_lfopw]);
+    int flag1 = (wave1 == wave_sqr);
+    int flag2 = (wave2 == wave_sqr);
+    uint32_t shift_delta = (int32_t)(0x70000000 * (lfo - last_lfov) * *params[par_lfopw] * (1.0 / step_size));
+    
+    uint32_t shift1 = (flag1 << 31) + shift;
+    uint32_t shift2 = (flag2 << 31) + shift;
+    float mix1 = 1 - 2 * flag1, mix2 = 1 - 2 * flag2;
+    
+    for (uint32_t i = 0; i < step_size; i++) 
+    {
+        float osc1val = osc1.get_phaseshifted(shift1, mix1);
+        float osc2val = osc2.get_phaseshifted(shift2, mix2);
+        float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
+        buffer[i] = wave;
+        shift1 += shift_delta;
+        shift2 += shift_delta;
+    }
+    last_lfov = lfo;
+}
+
 void monosynth_audio_module::calculate_buffer_ser()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float osc1val = osc1.get();
-        float osc2val = osc2.get();
-        float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
+        float wave = buffer[i];
         wave = filter.process(wave);
         wave = filter2.process(wave);
         buffer[i] = wave;
@@ -231,9 +253,7 @@ void monosynth_audio_module::calculate_buffer_single()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float osc1val = osc1.get();
-        float osc2val = osc2.get();
-        float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
+        float wave = buffer[i];
         wave = filter.process(wave);
         buffer[i] = wave;
         fgain += fgain_delta;
@@ -244,9 +264,7 @@ void monosynth_audio_module::calculate_buffer_stereo()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float osc1val = osc1.get();
-        float osc2val = osc2.get();
-        float wave1 = osc1val + (osc2val - osc1val) * xfade;
+        float wave1 = buffer[i];
         float wave2 = phaseshifter.process_ap(wave1);
         buffer[i] = fgain * filter.process(wave1);
         buffer2[i] = fgain * filter2.process(wave2);
@@ -264,8 +282,8 @@ void monosynth_audio_module::delayed_note_on()
     ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
     fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
     set_frequency();
-    osc1.waveform = waves[wave1].get_level(osc1.phasedelta);
-    osc2.waveform = waves[wave2].get_level(osc2.phasedelta);
+    osc1.waveform = waves[wave1 == wave_sqr ? wave_saw : wave1].get_level(osc1.phasedelta);
+    osc2.waveform = waves[wave2 == wave_sqr ? wave_saw : wave2].get_level(osc2.phasedelta);
     if (!osc1.waveform) osc1.waveform = silence;
     if (!osc2.waveform) osc2.waveform = silence;
     lfo_clock = 0.f;
@@ -423,6 +441,7 @@ void monosynth_audio_module::calculate_step()
     if (*params[par_envtoamp] > 0.f)
         newfgain *= 1.0 - (1.0 - aenv) * e2a;
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
+    calculate_buffer_oscs(lfov);
     switch(filter_type)
     {
     case flt_lp24:

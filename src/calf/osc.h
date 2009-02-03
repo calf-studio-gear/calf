@@ -183,11 +183,19 @@ struct waveform_family: public std::map<uint32_t, float *>
         for (unsigned int i = 0; i < cutoff; i++)
             vmax = std::max(vmax, abs(bl.spectrum[i]));
         float vthres = vmax / 1024.0;  // -60dB
+        float cumul = 0.f;
         while(cutoff > (SIZE / limit)) {
             if (!foldover)
             {
-                while(cutoff > 1 && abs(bl.spectrum[cutoff - 1]) < vthres)
+                // skip harmonics too quiet to be heard, but measure their loudness cumulatively,
+                // because even if a single harmonic is too quiet, a whole bunch of them may add up 
+                // to considerable amount of space
+                cumul = 0.f;
+                while(cutoff > 1 && cumul + abs(bl.spectrum[cutoff - 1]) < vthres)
+                {
+                    cumul += abs(bl.spectrum[cutoff - 1]);
                     cutoff--;
+                }
             }
             float *wf = new float[SIZE+1];
             bl.make_waveform(wf, cutoff, foldover);
@@ -230,6 +238,17 @@ struct waveform_oscillator: public simple_oscillator
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
         float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        phase += phasedelta;
+        return value;
+    }
+    /// Add/substract two phase-shifted values
+    inline float get_phaseshifted(uint32_t shift, float mix)
+    {
+        uint32_t wpos = phase >> (32 - SIZE_BITS);
+        float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        wpos = (phase + shift) >> (32 - SIZE_BITS);
+        float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SIZE - 1)) * (1.0f / SIZE));
+        float value = value1 + mix * value2;
         phase += phasedelta;
         return value;
     }
