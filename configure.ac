@@ -58,6 +58,7 @@ AC_SUBST(JACK_DEPS_LIBS)
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
+PKG_CHECK_MODULES(SLV2_HACK, slv2 <= 0.6.1, SLV2_UNSUPPORTED="yes", SLV2_UNSUPPORTED="no")
 
 if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
   PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
@@ -233,4 +234,17 @@ AC_MSG_RESULT([
     
     Installation prefix:    $prefix
 ])
+
+if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
+    AC_MSG_RESULT([
+WARNING:
+An incompatible version of slv2 library has been found on this system.
+
+Some features of Calf LV2 plugins (and other LV2 plugins) may not work
+as expected in hosts that use currently installed version of libslv2.
+
+Please upgrade to slv2 0.6.2 or newer version.
+])
+fi
+
 AC_OUTPUT
