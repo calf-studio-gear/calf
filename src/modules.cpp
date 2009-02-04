@@ -484,7 +484,7 @@ CALF_PORT_PROPS(organ) = {
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *fluidsynth_init_soundfont = "/home/kfoltman/sf2/HS R8 Drums.sf2";
+const char *fluidsynth_init_soundfont = "";
 
 CALF_PORT_NAMES(fluidsynth) = {
     "Out L", "Out R", 

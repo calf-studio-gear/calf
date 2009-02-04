@@ -1,0 +1,11 @@
+<table rows="2" cols="3">
+    <!--
+    <align attach-x="0" attach-y="0"   align-x="1"><label param="master"  /></align>
+    <knob attach-x="1" attach-w="1" attach-y="0" shrink-x="1" param="master"  />
+    <value param="master"  attach-x="2" attach-y="0" pad-x="10" />
+    -->
+
+    <align attach-x="0" attach-y="1"   align-x="1"><label param="soundfont"  /></align>
+    <filechooser attach-x="1" attach-w="2" attach-y="1" key="soundfont" title="Select a soundfont" width_chars="30"/>
+</table>
+
