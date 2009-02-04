@@ -457,9 +457,13 @@ T sine_table<T,N,Multiplier>::data[N+1];
 /// fast float to int conversion using default rounding mode
 inline int fastf2i_drm(float f)
 {
-	volatile int v;
-	__asm ( "flds %1; fistpl %0" : "=m"(v) : "m"(f));
-	return v;
+#ifdef __X86__
+    volatile int v;
+    __asm ( "flds %1; fistpl %0" : "=m"(v) : "m"(f));
+    return v;
+#else
+    return (int)nearbyintf(f);
+#endif
 }
 
 /// Convert MIDI note to frequency in Hz.
