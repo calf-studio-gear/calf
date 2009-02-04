@@ -64,7 +64,9 @@ public:
     dsp::adsr envelope;
     dsp::keystack stack;
     dsp::gain_smoothing master;
+    dsp::inertia<dsp::exponential_ramp> inertia_cutoff;
     
+    monosynth_audio_module();
     static void precalculate_waves(progress_report_iface *reporter);
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();

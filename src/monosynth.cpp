@@ -34,6 +34,11 @@ using namespace std;
 
 float silence[4097];
 
+monosynth_audio_module::monosynth_audio_module()
+: inertia_cutoff(exponential_ramp(1))
+{
+}
+
 void monosynth_audio_module::activate() {
     running = false;
     output_pos = 0;
@@ -229,7 +234,7 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     {
         float osc1val = osc1.get_phaseshifted(shift1, mix1);
         float osc2val = osc2.get_phaseshifted(shift2, mix2);
-        float wave = fgain * (osc1val + (osc2val - osc1val) * xfade);
+        float wave = osc1val + (osc2val - osc1val) * xfade;
         buffer[i] = wave;
         shift1 += shift_delta;
         shift2 += shift_delta;
@@ -241,7 +246,7 @@ void monosynth_audio_module::calculate_buffer_ser()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float wave = buffer[i];
+        float wave = buffer[i] * fgain;
         wave = filter.process(wave);
         wave = filter2.process(wave);
         buffer[i] = wave;
@@ -253,7 +258,7 @@ void monosynth_audio_module::calculate_buffer_single()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float wave = buffer[i];
+        float wave = buffer[i] * fgain;
         wave = filter.process(wave);
         buffer[i] = wave;
         fgain += fgain_delta;
@@ -264,7 +269,7 @@ void monosynth_audio_module::calculate_buffer_stereo()
 {
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float wave1 = buffer[i];
+        float wave1 = buffer[i] * fgain;
         float wave2 = phaseshifter.process_ap(wave1);
         buffer[i] = fgain * filter.process(wave1);
         buffer2[i] = fgain * filter2.process(wave2);
@@ -341,6 +346,7 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     phaseshifter.set_ap(1000.f, sr);
     fgain = 0.f;
     fgain_delta = 0.f;
+    inertia_cutoff.ramp.set_length(crate / 30); // 1/30s
 }
 
 void monosynth_audio_module::calculate_step()
@@ -378,7 +384,8 @@ void monosynth_audio_module::calculate_step()
     set_frequency();
     envelope.advance();
     float env = envelope.value;
-    cutoff = *params[par_cutoff] * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod]) * (1.f / 1200.f));
+    inertia_cutoff.set_inertia(*params[par_cutoff]);
+    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
