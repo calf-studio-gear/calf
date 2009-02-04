@@ -131,7 +131,7 @@ public:
     /// No CV inputs for now
     bool is_cv(int param_no) { return false; }
     /// Practically all the stuff here is noisy
-    bool is_noisy(int param_no) { return true; }
+    bool is_noisy(int param_no) { return param_no != par_cutoff; }
     /// Calculate control signals and produce step_size samples of output.
     void calculate_step();
     /// Main processing function
