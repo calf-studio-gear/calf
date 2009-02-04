@@ -24,10 +24,67 @@
 #include <calf/metadata.h>
 #include <calf/modules.h>
 
+#if ENABLE_EXPERIMENTAL
+#include <fluidsynth.h>
+#endif
+
 namespace calf_plugins {
 
 #if ENABLE_EXPERIMENTAL
+    
+/// Tiny wrapper for fluidsynth
+class fluidsynth_audio_module: public audio_module<fluidsynth_metadata>
+{
+public:
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    fluid_settings_t *settings;
+    fluid_synth_t *synth;
+    std::string soundfont;
+    int sfid;
 
+    /// Constructor to initialize handles to NULL
+    fluidsynth_audio_module();
+
+    /// Create a fluidsynth object and load the current soundfont
+    fluid_synth_t *create_synth(int &new_sfid);
+
+    void post_instantiate();
+    void set_sample_rate(uint32_t sr) {}
+    /// Handle MIDI Note On message (by sending it to fluidsynth)
+    void note_on(int note, int vel);
+    /// Handle MIDI Note Off message (by sending it to fluidsynth)
+    void note_off(int note, int vel);
+    /// Handle pitch bend message.
+    /*
+    inline void pitch_bend(int value)
+    {
+        pitchbend = pow(2.0, value / 8192.0);
+    }
+    */
+    /// Handle control change messages.
+    // void control_change(int controller, int value);
+    /// Update variables from control ports.
+    void params_changed() {
+    }
+    void activate();
+    void deactivate();
+    /// No CV inputs for now
+    bool is_cv(int param_no) { return false; }
+    /// Practically all the stuff here is noisy... for now
+    bool is_noisy(int param_no) { return true; }
+    /// Main processing function
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    /// DSSI-style configure function for handling string port data
+    char *configure(const char *key, const char *value);
+    void send_configures(send_configure_iface *sci);
+    ~fluidsynth_audio_module();
+};
+
+
+    
 #endif
     
 };

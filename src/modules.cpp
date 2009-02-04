@@ -484,6 +484,21 @@ CALF_PORT_PROPS(organ) = {
 
 ////////////////////////////////////////////////////////////////////////////
 
+const char *fluidsynth_init_soundfont = "/home/kfoltman/sf2/HS R8 Drums.sf2";
+
+CALF_PORT_NAMES(fluidsynth) = {
+    "Out L", "Out R", 
+};
+
+CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "FluidSynth Team / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
+
+CALF_PORT_PROPS(fluidsynth) = {
+    { 0.5,         0,   1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
+    { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &fluidsynth_init_soundfont, "soundfont", "Soundfont" },
+};
+
+////////////////////////////////////////////////////////////////////////////
+
 void calf_plugins::get_all_plugins(std::vector<plugin_metadata_iface *> &plugins)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back(new name##_metadata);

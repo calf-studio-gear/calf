@@ -36,6 +36,7 @@ AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found])
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
 
 PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
+PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
 
 if test "$have_jack_header" = "yes"; then
   PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
@@ -55,6 +56,8 @@ AC_SUBST(GUI_DEPS_CFLAGS)
 AC_SUBST(GUI_DEPS_LIBS)
 AC_SUBST(JACK_DEPS_CFLAGS)
 AC_SUBST(JACK_DEPS_LIBS)
+AC_SUBST(FLUIDSYNTH_DEPS_CFLAGS)
+AC_SUBST(FLUIDSYNTH_DEPS_LIBS)
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")

@@ -10,6 +10,9 @@
     PER_MODULE_ITEM(phaser, false, "phaser")
     PER_MODULE_ITEM(multichorus, false, "multichorus")
     PER_MODULE_ITEM(compressor, false, "compressor")
+#ifdef ENABLE_EXPERIMENTAL
+    PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
+#endif
 #undef PER_MODULE_ITEM
 #endif
 #ifdef PER_SMALL_MODULE_ITEM
