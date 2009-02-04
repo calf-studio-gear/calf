@@ -272,6 +272,28 @@ struct curve_param_control: public param_control, public send_configure_iface
     virtual void send_configure(const char *key, const char *value);
 };
 
+struct entry_param_control: public param_control, public send_configure_iface
+{
+    GtkEntry *entry;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
+    virtual void send_configure(const char *key, const char *value);
+    static void entry_value_changed(GtkWidget *widget, gpointer value);
+};
+
+struct filechooser_param_control: public param_control, public send_configure_iface
+{
+    GtkFileChooserButton *filechooser;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
+    virtual void send_configure(const char *key, const char *value);
+    static void filechooser_value_changed(GtkWidget *widget, gpointer value);
+};
+
 class plugin_gui_window;
 
 class plugin_gui: public send_configure_iface

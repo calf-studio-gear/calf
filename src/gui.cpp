@@ -493,6 +493,71 @@ void curve_param_control::send_configure(const char *key, const char *value)
     }
 }
 
+// entry
+
+GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    require_attribute("key");
+    
+    widget = gtk_entry_new();
+    entry = GTK_ENTRY(widget);
+    gtk_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
+    gtk_editable_set_editable(GTK_EDITABLE(entry), get_int("editable", 1));
+    return widget;
+}
+
+void entry_param_control::send_configure(const char *key, const char *value)
+{
+    // cout << "send conf " << key << endl;
+    if (attribs["key"] == key)
+    {
+        gtk_entry_set_text(entry, value);
+    }
+}
+
+void entry_param_control::entry_value_changed(GtkWidget *widget, gpointer value)
+{
+    entry_param_control *ctl = (entry_param_control *)value;
+    ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), gtk_entry_get_text(ctl->entry));
+}
+
+// filechooser
+
+GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    require_attribute("key");
+    require_attribute("title");
+    
+    widget = gtk_file_chooser_button_new(attribs["title"].c_str(), GTK_FILE_CHOOSER_ACTION_OPEN);
+    filechooser = GTK_FILE_CHOOSER_BUTTON(widget);
+    // XXXKF this is GTK+ 2.12 function, does any replacement exist?
+    gtk_signal_connect(GTK_OBJECT(widget), "file-set", G_CALLBACK(filechooser_value_changed), (gpointer)this);
+    if (attribs.count("width"))
+        gtk_widget_set_size_request (widget, get_int("width", 200), -1);
+    if (attribs.count("width_chars"))
+         gtk_file_chooser_button_set_width_chars (filechooser, get_int("width_chars"));
+    return widget;
+}
+
+void filechooser_param_control::send_configure(const char *key, const char *value)
+{
+    // cout << "send conf " << key << endl;
+    if (attribs["key"] == key)
+    {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(filechooser), value);
+    }
+}
+
+void filechooser_param_control::filechooser_value_changed(GtkWidget *widget, gpointer value)
+{
+    filechooser_param_control *ctl = (filechooser_param_control *)value;
+    ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ctl->filechooser)));
+}
+
 // line graph
 
 void line_graph_param_control::on_idle()
@@ -729,6 +794,10 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new curve_param_control;
     if (!strcmp(element, "led"))
         return new led_param_control;
+    if (!strcmp(element, "entry"))
+        return new entry_param_control;
+    if (!strcmp(element, "filechooser"))
+        return new filechooser_param_control;
     return NULL;
 }
 
