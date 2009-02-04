@@ -58,14 +58,12 @@ public:
     /// Handle MIDI Note Off message (by sending it to fluidsynth)
     void note_off(int note, int vel);
     /// Handle pitch bend message.
-    /*
     inline void pitch_bend(int value)
     {
-        pitchbend = pow(2.0, value / 8192.0);
+        fluid_synth_pitch_bend(synth, 0, value + 0x2000);
     }
-    */
     /// Handle control change messages.
-    // void control_change(int controller, int value);
+    void control_change(int controller, int value);
     /// Update variables from control ports.
     void params_changed() {
     }
