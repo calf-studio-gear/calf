@@ -757,6 +757,10 @@ void make_gui(string path_prefix)
             {
                 ctl = "    <combo " + attach_x + attach_y + param + expand_x + pad_x + " />\n";
             }
+            else if ((props.flags & PF_TYPEMASK) == PF_STRING)
+            {
+                ctl = "    <entry " + attach_x + attach_y + "key=\"" + props.short_name + "\" " + expand_x + pad_x + " />\n";
+            }
             else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                      (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)
             {
