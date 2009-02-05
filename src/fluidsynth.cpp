@@ -94,6 +94,11 @@ void fluidsynth_audio_module::control_change(int controller, int value)
     fluid_synth_cc(synth, 0, controller, value);
 }
 
+void fluidsynth_audio_module::program_change(int program)
+{
+    fluid_synth_program_change(synth, 0, program);
+}
+
 uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     fluid_synth_write_float(synth, nsamples, outs[0], offset, 1, outs[1], offset, 1);

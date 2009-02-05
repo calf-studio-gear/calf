@@ -64,6 +64,9 @@ public:
     }
     /// Handle control change messages.
     void control_change(int controller, int value);
+    /// Handle program change messages.
+    void program_change(int program);
+
     /// Update variables from control ports.
     void params_changed() {
     }
@@ -78,6 +81,10 @@ public:
     /// DSSI-style configure function for handling string port data
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *sci);
+    uint32_t message_run(const void *valid_inputs, void *output_ports) { 
+        // silence a default printf (which is kind of a warning about unhandled message_run)
+        return 0;
+    }
     ~fluidsynth_audio_module();
 };
 
