@@ -99,6 +99,11 @@
         <knob param="lfo2pw"/>
         <value param="lfo2pw"/>
       </vbox>
+      <vbox>
+        <label param="mwhl2lfo"/>
+        <knob param="mwhl2lfo"/>
+        <value param="mwhl2lfo"/>
+      </vbox>
     </hbox>
   </frame>
   <hbox spacing="10">

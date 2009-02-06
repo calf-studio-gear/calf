@@ -58,8 +58,8 @@ public:
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
-    float odcr, porta_time, lfo_bend, lfo_clock, last_lfov;
-    int queue_note_on, stop_count;
+    float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
+    int queue_note_on, stop_count, modwheel_value_int;
     int legato;
     dsp::adsr envelope;
     dsp::keystack stack;

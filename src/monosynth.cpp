@@ -46,6 +46,8 @@ void monosynth_audio_module::activate() {
     stop_count = 0;
     pitchbend = 1.f;
     lfo_bend = 1.0;
+    modwheel_value = 0.f;
+    modwheel_value_int = 0;
     filter.reset();
     filter2.reset();
     stack.clear();
@@ -378,6 +380,7 @@ void monosynth_audio_module::calculate_step()
         }
     }
     float lfov = lfo.get() * std::min(1.0f, lfo_clock / *params[par_lfodelay]);
+    lfov = lfov * dsp::lerp(1.f, modwheel_value, *params[par_mwhl_lfo]);
     lfo_clock += odcr;
     if (fabs(*params[par_lfopitch]) > small_value<float>())
         lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov * (1.f / 1200.0f));
@@ -517,6 +520,14 @@ void monosynth_audio_module::control_change(int controller, int value)
 {
     switch(controller)
     {
+        case 1:
+            modwheel_value_int = (modwheel_value_int & 127) | (value << 7);
+            modwheel_value = modwheel_value_int / 16383.0;
+            break;
+        case 33:
+            modwheel_value_int = (modwheel_value_int & (127 << 7)) | value;
+            modwheel_value = modwheel_value_int / 16383.0;
+            break;
         case 120: // all sounds off
             force_fadeout = true;
             // fall through
