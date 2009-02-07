@@ -64,14 +64,17 @@ dsp::voice *basic_synth::steal_voice()
 {
     std::list<dsp::voice *>::iterator found = active_voices.end();
     float priority = 10000;
+    //int idx = 0;
     for(std::list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
     {
+        //printf("Voice %d priority %f at %p\n", idx++, (*i)->get_priority(), *i);
         if ((*i)->get_priority() < priority)
         {
             priority = (*i)->get_priority();
             found = i;
         }
     }
+    //printf("Found: %p\n\n", *found);
     if (found == active_voices.end())
         return NULL;
     
