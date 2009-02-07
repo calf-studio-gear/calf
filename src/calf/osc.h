@@ -223,6 +223,13 @@ struct waveform_family: public std::map<uint32_t, float *>
     }
 };
 
+#if 0
+// cubic interpolation
+static inline float cerp(float pm1, float p0, float p1, float p2, float t)
+{
+    return (-t*(t-1)*(t-2) * pm1 + 3*(t+1)*(t-1)*(t-2) * p0 - 3*(t+1)*t*(t-2) * p1 + (t+1)*t*(t-1) * p2) * (1.0 / 6.0);
+}
+#endif
 /**
  * Simple table-based lerping oscillator. Uses waveform of size 2^SIZE_BITS.
  * Combine with waveform_family if bandlimited waveforms are needed. Because
@@ -232,12 +239,12 @@ struct waveform_family: public std::map<uint32_t, float *>
 template<int SIZE_BITS>
 struct waveform_oscillator: public simple_oscillator
 {
-    enum { SIZE = 1 << SIZE_BITS, MASK = SIZE - 1 };
+    enum { SIZE = 1 << SIZE_BITS, MASK = SIZE - 1, SCALE = 1 << (32 - SIZE_BITS) };
     float *waveform;
     inline float get()
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
-        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
         phase += phasedelta;
         return value;
     }
@@ -245,9 +252,9 @@ struct waveform_oscillator: public simple_oscillator
     inline float get_phaseshifted(uint32_t shift, float mix)
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
-        float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
         wpos = (phase + shift) >> (32 - SIZE_BITS);
-        float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SIZE - 1)) * (1.0f / SIZE));
+        float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SCALE - 1)) * (1.0f / SCALE));
         float value = value1 + mix * value2;
         phase += phasedelta;
         return value;
