@@ -468,6 +468,113 @@ struct biquad_d2: public biquad_coeffs<Coeff>
     }
 };
 
+/**
+ * Two-pole two-zero filter, for floating point values.
+ * Uses "traditional" Direct I form (separate FIR and IIR halves).
+ * don't use this for integers because it won't work
+ */
+template<class Coeff = float, class T = float>
+struct biquad_d1_lerp: public biquad_coeffs<Coeff>
+{
+    using biquad_coeffs<Coeff>::a0;
+    using biquad_coeffs<Coeff>::a1;
+    using biquad_coeffs<Coeff>::a2;
+    using biquad_coeffs<Coeff>::b1;
+    using biquad_coeffs<Coeff>::b2;
+    Coeff a0cur, a1cur, a2cur, b1cur, b2cur;
+    Coeff a0delta, a1delta, a2delta, b1delta, b2delta;
+    /// input[n-1]
+    T x1; 
+    /// input[n-2]
+    T x2; 
+    /// output[n-1]
+    T y1; 
+    /// output[n-2]
+    T y2; 
+    /// Constructor (initializes state to all zeros)
+    biquad_d1_lerp()
+    {
+        reset();
+    }
+    #define _DO_COEFF(coeff) coeff##delta = (coeff - coeff##cur) * (frac)
+    void big_step(Coeff frac)
+    {
+        _DO_COEFF(a0);
+        _DO_COEFF(a1);
+        _DO_COEFF(a2);
+        _DO_COEFF(b1);
+        _DO_COEFF(b2);
+    }
+    #undef _DO_COEFF
+    /// direct I form with four state variables
+    inline T process(T in)
+    {
+        T out = in * a0cur + x1 * a1cur + x2 * a2cur - y1 * b1cur - y2 * b2cur;
+        x2 = x1;
+        y2 = y1;
+        x1 = in;
+        y1 = out;
+        a0cur += a0delta;
+        a1cur += a1delta;
+        a2cur += a2delta;
+        b1cur += b1delta;
+        b2cur += b2delta;
+        return out;
+    }
+    
+    /// direct I form with zero input
+    inline T process_zeroin()
+    {
+        T out = - y1 * b1 - y2 * b2;
+        y2 = y1;
+        y1 = out;
+        b1cur += b1delta;
+        b2cur += b2delta;
+        return out;
+    }
+    
+    /// simplified version for lowpass case with two zeros at -1
+    inline T process_lp(T in)
+    {
+        T out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
+        x2 = x1;
+        y2 = y1;
+        x1 = in;
+        y1 = out;
+        return out;
+    }
+    /// Sanitize (set to 0 if potentially denormal) filter state
+    inline void sanitize() 
+    {
+        dsp::sanitize(x1);
+        dsp::sanitize(y1);
+        dsp::sanitize(x2);
+        dsp::sanitize(y2);
+        dsp::sanitize(a0cur);
+        dsp::sanitize(a1cur);
+        dsp::sanitize(a2cur);
+        dsp::sanitize(b1cur);
+        dsp::sanitize(b2cur);
+    }
+    /// Reset state variables
+    inline void reset()
+    {
+        dsp::zero(x1);
+        dsp::zero(y1);
+        dsp::zero(x2);
+        dsp::zero(y2);
+        dsp::zero(a0cur);
+        dsp::zero(a1cur);
+        dsp::zero(a2cur);
+        dsp::zero(b1cur);
+        dsp::zero(b2cur);
+    }
+    inline bool empty() {
+        return (y1 == 0.f && y2 == 0.f);
+    }
+    
+};
+    
 };
 
 #endif

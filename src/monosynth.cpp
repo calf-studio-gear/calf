@@ -199,7 +199,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
             typedef complex<double> cfloat;
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             
-            dsp::biquad_d1<float> &f = subindex ? filter2 : filter;
+            dsp::biquad_d1_lerp<float> &f = subindex ? filter2 : filter;
             float level = f.freq_gain(freq, srate);
             if (!is_stereo_filter())
                 level *= filter2.freq_gain(freq, srate);
@@ -214,6 +214,8 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
 
 void monosynth_audio_module::calculate_buffer_ser()
 {
+    filter.big_step(1.0 / step_size);
+    filter2.big_step(1.0 / step_size);
     for (uint32_t i = 0; i < step_size; i++) 
     {
         float osc1val = osc1.get();
@@ -228,6 +230,7 @@ void monosynth_audio_module::calculate_buffer_ser()
 
 void monosynth_audio_module::calculate_buffer_single()
 {
+    filter.big_step(1.0 / step_size);
     for (uint32_t i = 0; i < step_size; i++) 
     {
         float osc1val = osc1.get();
@@ -241,6 +244,8 @@ void monosynth_audio_module::calculate_buffer_single()
 
 void monosynth_audio_module::calculate_buffer_stereo()
 {
+    filter.big_step(1.0 / step_size);
+    filter2.big_step(1.0 / step_size);
     for (uint32_t i = 0; i < step_size; i++) 
     {
         float osc1val = osc1.get();
