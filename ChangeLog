@@ -1,3 +1,8 @@
+Version 0.0.18.3
+
++ Framework: do not use x86 assembler code on non-x86 platforms
++ Monosynth, Organ: fix serious audio quality issues
+
 Version 0.0.18.2
 
 + Organ: fix voice stealing of released notes, sort out GUI, add quadratic
