@@ -159,9 +159,9 @@
       <vbox border="10" spacing="10">
         <hbox>
           <vbox>
-            <label param="pwhl_range"/>
-            <knob param="pwhl_range"/>
-            <value param="pwhl_range"/>
+            <label param="pbend_range"/>
+            <knob param="pbend_range"/>
+            <value param="pbend_range"/>
           </vbox>
           <vbox>
             <label param="legato" expand="0"/>
