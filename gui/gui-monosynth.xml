@@ -68,6 +68,11 @@
             <knob type="1" param="filter_sep"/>
             <value param="filter_sep"/>
           </vbox>
+          <vbox>
+            <label param="key_follow"/>
+            <knob param="key_follow"/>
+            <value param="key_follow"/>
+          </vbox>
         </hbox>
       </vbox>
     </frame>
@@ -154,9 +159,9 @@
       <vbox border="10" spacing="10">
         <hbox>
           <vbox>
-            <label param="key_follow"/>
-            <knob param="key_follow"/>
-            <value param="key_follow"/>
+            <label param="pwhl_range"/>
+            <knob param="pwhl_range"/>
+            <value param="pwhl_range"/>
           </vbox>
           <vbox>
             <label param="legato" expand="0"/>
