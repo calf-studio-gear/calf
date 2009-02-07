@@ -34,6 +34,11 @@ using namespace std;
 
 float silence[4097];
 
+monosynth_audio_module::monosynth_audio_module()
+: inertia_cutoff(exponential_ramp(1))
+{
+}
+
 void monosynth_audio_module::activate() {
     running = false;
     output_pos = 0;
@@ -325,6 +330,7 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     phaseshifter.set_ap(1000.f, sr);
     fgain = 0.f;
     fgain_delta = 0.f;
+    inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
 }
 
 void monosynth_audio_module::calculate_step()
@@ -356,7 +362,8 @@ void monosynth_audio_module::calculate_step()
     set_frequency();
     envelope.advance();
     float env = envelope.value;
-    cutoff = *params[par_cutoff] * pow(2.0f, env * fltctl * *params[par_envmod] * (1.f / 1200.f));
+    inertia_cutoff.set_inertia(*params[par_cutoff]);
+    cutoff = inertia_cutoff.get() * pow(2.0f, env * fltctl * *params[par_envmod] * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
