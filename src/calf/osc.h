@@ -224,12 +224,12 @@ struct waveform_family: public std::map<uint32_t, float *>
 template<int SIZE_BITS>
 struct waveform_oscillator: public simple_oscillator
 {
-    enum { SIZE = 1 << SIZE_BITS, MASK = SIZE - 1 };
+    enum { SIZE = 1 << SIZE_BITS, MASK = SIZE - 1, SCALE = 1 << (32 - SIZE_BITS) };
     float *waveform;
     inline float get()
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
-        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SIZE - 1)) * (1.0f / SIZE));
+        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
         phase += phasedelta;
         return value;
     }
