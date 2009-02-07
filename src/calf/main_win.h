@@ -57,7 +57,11 @@ namespace calf_plugins {
         GtkWidget *strips_table;
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
+#if USE_JACK
         jack_client *client;
+#else
+        void *client_dummy;
+#endif
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
         std::set<std::string> conditions;
         std::vector<plugin_ctl_iface *> plugin_queue;

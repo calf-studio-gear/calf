@@ -359,8 +359,8 @@ public:
 
 extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
 
-#endif
-
 };
+
+#endif
 
 #endif
