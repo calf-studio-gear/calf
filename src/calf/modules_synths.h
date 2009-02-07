@@ -53,8 +53,8 @@ public:
     float buffer[step_size], buffer2[step_size];
     uint32_t output_pos;
     dsp::onepole<float> phaseshifter;
-    dsp::biquad_d1<float> filter;
-    dsp::biquad_d1<float> filter2;
+    dsp::biquad_d1_lerp<float> filter;
+    dsp::biquad_d1_lerp<float> filter2;
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
@@ -83,8 +83,9 @@ public:
     /// Update oscillator frequency based on base frequency, detune amount, pitch bend scaling factor and sample rate.
     inline void set_frequency()
     {
-        osc1.set_freq(freq * (2 - detune) * pitchbend * lfo_bend, srate);
-        osc2.set_freq(freq * (detune)  * pitchbend * lfo_bend * xpose, srate);
+        float detune_scaled = (detune - 1); // * log(freq / 440);
+        osc1.set_freq(freq * (1 - detune_scaled) * pitchbend * lfo_bend, srate);
+        osc2.set_freq(freq * (1 + detune_scaled)  * pitchbend * lfo_bend * xpose, srate);
     }
     /// Handle control change messages.
     void control_change(int controller, int value);
