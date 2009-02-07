@@ -78,7 +78,7 @@ public:
     /// Handle pitch bend message.
     inline void pitch_bend(int value)
     {
-        inertia_pitchbend.set_inertia(pow(2.0, value / 8192.0));
+        inertia_pitchbend.set_inertia(pow(2.0, (value * *params[par_pwhlrange]) / (1200.0 * 8192.0)));
     }
     /// Update oscillator frequency based on base frequency, detune amount, pitch bend scaling factor and sample rate.
     inline void set_frequency()
