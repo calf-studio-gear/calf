@@ -57,7 +57,7 @@ public:
     dsp::biquad_d1_lerp<float> filter2;
     int wave1, wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
-    float detune, xpose, xfade, pitchbend, ampctl, fltctl, queue_vel;
+    float detune, xpose, xfade, ampctl, fltctl, queue_vel;
     float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
     int queue_note_on, stop_count, modwheel_value_int;
     int legato;
@@ -65,8 +65,9 @@ public:
     dsp::keystack stack;
     dsp::gain_smoothing master;
     dsp::inertia<dsp::exponential_ramp> inertia_cutoff;
-    
-    monosynth_audio_module();
+    dsp::inertia<dsp::exponential_ramp> inertia_pitchbend;
+     
+    monosynth_audio_module();    
     static void precalculate_waves(progress_report_iface *reporter);
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
@@ -78,14 +79,14 @@ public:
     /// Handle pitch bend message.
     inline void pitch_bend(int value)
     {
-        pitchbend = pow(2.0, value / 8192.0);
+        inertia_pitchbend.set_inertia(pow(2.0, value / 8192.0));
     }
     /// Update oscillator frequency based on base frequency, detune amount, pitch bend scaling factor and sample rate.
     inline void set_frequency()
     {
         float detune_scaled = (detune - 1); // * log(freq / 440);
-        osc1.set_freq(freq * (1 - detune_scaled) * pitchbend * lfo_bend, srate);
-        osc2.set_freq(freq * (1 + detune_scaled)  * pitchbend * lfo_bend * xpose, srate);
+        osc1.set_freq(freq * (1 - detune_scaled) * inertia_pitchbend.get_last() * lfo_bend, srate);
+        osc2.set_freq(freq * (1 + detune_scaled)  * inertia_pitchbend.get_last() * lfo_bend * xpose, srate);
     }
     /// Handle control change messages.
     void control_change(int controller, int value);

@@ -36,6 +36,7 @@ float silence[4097];
 
 monosynth_audio_module::monosynth_audio_module()
 : inertia_cutoff(exponential_ramp(1))
+, inertia_pitchbend(exponential_ramp(1))
 {
 }
 
@@ -44,7 +45,7 @@ void monosynth_audio_module::activate() {
     output_pos = 0;
     queue_note_on = -1;
     stop_count = 0;
-    pitchbend = 1.f;
+    inertia_pitchbend.set_now(1.f);
     lfo_bend = 1.0;
     modwheel_value = 0.f;
     modwheel_value_int = 0;
@@ -353,7 +354,8 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     phaseshifter.set_ap(1000.f, sr);
     fgain = 0.f;
     fgain_delta = 0.f;
-    inertia_cutoff.ramp.set_length(crate / 30); // 1/30s
+    inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
+    inertia_pitchbend.ramp.set_length(crate / 30); // 1/30s    
 }
 
 void monosynth_audio_module::calculate_step()
@@ -389,6 +391,7 @@ void monosynth_audio_module::calculate_step()
     lfo_clock += odcr;
     if (fabs(*params[par_lfopitch]) > small_value<float>())
         lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov * (1.f / 1200.0f));
+    inertia_pitchbend.step();
     set_frequency();
     envelope.advance();
     float env = envelope.value;
