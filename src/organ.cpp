@@ -765,7 +765,8 @@ void organ_voice_base::perc_note_on(int note, int vel)
     perc_reset();
     released_ref = false;
     this->note = note;
-    pamp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
+    if (parameters->percussion_level > 0)
+        pamp.set(1.0f + (vel - 127) * parameters->percussion_vel2amp / 127.0);
     update_pitch();
     float (*kt)[2] = parameters->percussion_keytrack;
     // assume last point (will be put there by padding)

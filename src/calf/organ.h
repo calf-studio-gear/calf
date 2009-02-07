@@ -268,12 +268,13 @@ public:
         return note;
     }
     virtual bool get_active() {
+        // printf("note %d getactive %d use_percussion %d pamp active %d\n", note, amp.get_active(), use_percussion(), pamp.get_active());
         return (note != -1) && (amp.get_active() || (use_percussion() && pamp.get_active()));
     }
     void update_pitch();
     inline bool use_percussion()
     {
-        return dsp::fastf2i_drm(parameters->percussion_trigger) == perctrig_polyphonic;
+        return dsp::fastf2i_drm(parameters->percussion_trigger) == perctrig_polyphonic && parameters->percussion_level > 0;
     }
 };
 
