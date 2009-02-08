@@ -46,6 +46,7 @@ void monosynth_audio_module::activate() {
     queue_note_on = -1;
     stop_count = 0;
     inertia_pitchbend.set_now(1.f);
+    inertia_cutoff.set_now(*params[par_cutoff]);
     filter.reset();
     filter2.reset();
     stack.clear();
