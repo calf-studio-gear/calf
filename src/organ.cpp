@@ -571,7 +571,7 @@ void organ_voice::render_block() {
     inertia_pitchbend.step();
     update_pitch();
     dsp::fixed_point<int, 20> tphase, tdphase;
-    unsigned int foldvalue = parameters->foldvalue;
+    unsigned int foldvalue = parameters->foldvalue * inertia_pitchbend.get_last();
     int vibrato_mode = fastf2i_drm(parameters->lfo_mode);
     for (int h = 0; h < 9; h++)
     {
