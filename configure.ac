@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([calf],[0.0.18.3],[wdev@foltman.com])
+AC_INIT([calf],[0.0.18.3.pre1],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
@@ -59,15 +59,6 @@ AC_SUBST(JACK_DEPS_LIBS)
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
 
-if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
-  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
-    GUI_ENABLED="yes",
-    GUI_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
-  )
-else
-  GUI_ENABLED="no"
-fi
-
 if test "$LADSPA_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow LADSPA])
   AC_ARG_WITH(ladspa,
@@ -76,12 +67,29 @@ if test "$LADSPA_FOUND" = "yes"; then
   AC_MSG_RESULT($LADSPA_FOUND)
 fi
 
+if test "$DSSI_FOUND" = "yes"; then
+  AC_MSG_CHECKING([whether to allow DSSI])
+  AC_ARG_WITH(dssi,
+    AC_HELP_STRING([--without-dssi],[disable DSSI interface]),
+      [if test "$withval" = "no"; then DSSI_FOUND="no"; fi],[])
+  AC_MSG_RESULT($DSSI_FOUND)
+fi
+
 if test "$LV2_ENABLED" = "yes"; then
   AC_MSG_CHECKING([whether to allow LV2])
   AC_ARG_WITH(lv2,
     AC_HELP_STRING([--without-lv2],[disable LV2 interface]),
       [if test "$withval" = "no"; then LV2_ENABLED="no"; fi],[])
   AC_MSG_RESULT($LV2_ENABLED)
+fi
+
+if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
+  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
+    GUI_ENABLED="yes",
+    GUI_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
+  )
+else
+  GUI_ENABLED="no"
 fi
 
 if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
