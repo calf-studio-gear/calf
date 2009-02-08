@@ -142,6 +142,7 @@ struct organ_enums
         par_transpose, par_detune,
         par_polyphony,
         par_quadenv,
+        par_pwhlrange,
         par_var_mapcurve,
         param_count
     };

@@ -87,6 +87,8 @@ struct organ_parameters {
     
     float quad_env;
     
+    float pitch_bend_range;
+    
     float dummy_mapcurve;
     
     //////////////////////////////////////////////////////////////////////////

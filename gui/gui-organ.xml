@@ -543,6 +543,11 @@
             <value param="detune"/>
           </vbox>
           <vbox>
+            <label param="pbend_range"/>
+            <knob param="pbend_range"/>
+            <value param="pbend_range"/>
+          </vbox>
+          <vbox>
             <label param="foldnote"/>
             <knob param="foldnote"/>
             <value param="foldnote"/>
