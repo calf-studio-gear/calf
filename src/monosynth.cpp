@@ -49,6 +49,7 @@ void monosynth_audio_module::activate() {
     lfo_bend = 1.0;
     modwheel_value = 0.f;
     modwheel_value_int = 0;
+    inertia_cutoff.set_now(*params[par_cutoff]);
     filter.reset();
     filter2.reset();
     stack.clear();
