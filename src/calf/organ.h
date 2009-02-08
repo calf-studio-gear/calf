@@ -207,14 +207,19 @@ protected:
     bool perc_released;
     /// The envelopes have ended and the voice is in final fadeout stage
     bool finishing;
+    dsp::inertia<dsp::exponential_ramp> inertia_pitchbend;
 
 public:
     organ_voice()
-    : organ_voice_base(NULL, sample_rate, perc_released),
-    expression(dsp::linear_ramp(16)) {
+    : organ_voice_base(NULL, sample_rate, perc_released)
+    , expression(dsp::linear_ramp(16))
+    , inertia_pitchbend(dsp::exponential_ramp(1))
+    {
+        inertia_pitchbend.set_now(1);
     }
 
     void reset() {
+        inertia_pitchbend.ramp.set_length(sample_rate / (BlockSize * 30)); // 1/30s    
         vibrato.reset();
         phase = 0;
         for (int i = 0; i < FilterCount; i++)

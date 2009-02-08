@@ -551,7 +551,7 @@ void organ_vibrato::process(organ_parameters *parameters, float (*data)[2], unsi
 void organ_voice::update_pitch()
 {
     organ_voice_base::update_pitch();
-    dphase.set(dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * parameters->pitch_bend);
+    dphase.set(dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * inertia_pitchbend.get_last());
 }
 
 void organ_voice::render_block() {
@@ -567,6 +567,8 @@ void organ_voice::render_block() {
         return;
     }
 
+    inertia_pitchbend.set_inertia(parameters->pitch_bend);
+    inertia_pitchbend.step();
     update_pitch();
     dsp::fixed_point<int, 20> tphase, tdphase;
     unsigned int foldvalue = parameters->foldvalue;
