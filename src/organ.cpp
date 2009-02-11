@@ -506,6 +506,7 @@ void organ_vibrato::reset()
 {
     for (int i = 0; i < VibratoSize; i++)
         vibrato_x1[i][0] = vibrato_y1[i][0] = vibrato_x1[i][1] = vibrato_y1[i][1] = 0.f;
+    vibrato[0].a0 = vibrato[1].a0 = 0;
     lfo_phase = 0.f;
 }
 
