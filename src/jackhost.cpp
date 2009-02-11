@@ -185,6 +185,7 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
 #if USE_LASH
     lash_client_t *lash_client;
     lash_args_t *lash_args;
+    int lash_source_id;
 #endif
     
     // these are not saved
@@ -193,7 +194,6 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     set<int> chains;
     vector<jack_host_base *> plugins;
     main_window *main_win;
-    int lash_source_id;
     bool restoring_session;
     std::set<std::string> instances;
     GtkWidget *progress_window;
@@ -236,8 +236,8 @@ host_session::host_session()
 #if USE_LASH
     lash_client = NULL;
     lash_args = NULL;
-#endif
     lash_source_id = 0;
+#endif
     restoring_session = false;
     main_win = new main_window;
     main_win->set_owner(this);
@@ -469,8 +469,10 @@ void host_session::connect()
 
 void host_session::close()
 {
+#if USE_LASH
     if (lash_source_id)
         g_source_remove(lash_source_id);
+#endif
     main_win->on_closed();
     main_win->close_guis();
     client.deactivate();
