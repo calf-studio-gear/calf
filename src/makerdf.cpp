@@ -519,9 +519,12 @@ void make_ttl(string path_prefix)
     ;
 #endif
     
+    map<string, string> id_to_label;
+    
     for (unsigned int i = 0; i < plugins.size(); i++) {
         plugin_metadata_iface *pi = plugins[i];
         const ladspa_plugin_info &lpi = pi->get_plugin_info();
+        id_to_label[pi->get_id()] = pi->get_label();
         string uri = string("<" + plugin_uri_prefix)  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
@@ -675,6 +678,9 @@ void make_ttl(string path_prefix)
     for (unsigned int i = 0; i < factory_presets.size(); i++)
     {
         plugin_preset &pr = factory_presets[i];
+        map<string, string>::iterator ilm = id_to_label.find(pr.plugin);
+        if (ilm == id_to_label.end())
+            continue;
         string uri = "<http://calf.sourceforge.net/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
@@ -683,7 +689,7 @@ void make_ttl(string path_prefix)
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
             "    dc:title \"" + pr.name + "\" ;\n"
-            "    lv2p:appliesTo <" + plugin_uri_prefix + pr.plugin + "> ;\n"
+            "    lv2p:appliesTo <" + plugin_uri_prefix + ilm->second + "> ;\n"
             "    lv2p:port \n"
         ;
         
