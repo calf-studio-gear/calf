@@ -680,7 +680,7 @@ public:
         
         default:
             assert(false);
-            break;
+            return 0;
         }
         
         if (inmask) {

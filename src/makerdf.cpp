@@ -646,10 +646,15 @@ void make_ttl(string path_prefix)
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix kf: <http://foltman.com/ns/> .\n"
         "\n"
-        "kf:BooleanPlugin a rdfs:Class ; rdfs:label \"Boolean-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Modules heavily inspired by digital electronics (gates, flip-flops etc.)\"\"\" .\n"
-        "kf:MathOperatorPlugin a rdfs:Class ; rdfs:label \"Math operators\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Mathematical operators and utility functions\"\"\" .\n"
-        "kf:IntegerPlugin a rdfs:Class ; rdfs:label \"Integer-oriented\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations using integer values (counters, multiplexers etc.)\"\"\" .\n"
-        "kf:MIDIPlugin a rdfs:Class ; rdfs:label \"MIDI\" ; rdfs:subClassOf lv2:UtilityPlugin ; rdfs:comment \"\"\"Operations on MIDI streams (filters, transposers, mappers etc.)\"\"\" .\n"
+        "kf:BooleanPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
+        "    rdfs:label \"Boolean-oriented\" ;\n    rdfs:comment \"Modules heavily inspired by digital electronics (gates, flip-flops, etc.)\" .\n"
+        "kf:MathOperatorPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
+        "    rdfs:label \"Math operators\" ;\n    rdfs:comment \"Mathematical operators and utility functions\" .\n"
+        "kf:IntegerPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
+        "    rdfs:label \"Integer-oriented\" ;\n    rdfs:comment \"Operations on integer values (counters, multiplexers, etc.)\" .\n"
+        "kf:MIDIPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
+        "    rdfs:label \"MIDI\" ;\n    rdfs:comment \"Operations on MIDI streams (filters, transposers, mappers, etc.)\" .\n"
+		"\n"
     ;
     
     string presets_ttl =
@@ -663,12 +668,12 @@ void make_ttl(string path_prefix)
     for (unsigned int i = 0; i < plugins.size(); i++)
         ttl += string("<" + plugin_uri_prefix) 
             + string(plugins[i]->get_plugin_info().label)
-            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> .\n";
+            + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> , <presets.ttl> .\n";
 
     for (unsigned int i = 0; i < lpl.size(); i++)
         ttl += string("<http://calf.sourceforge.net/small_plugins/") 
             + string(lpl[i]->id)
-            + "> a lv2:Plugin ; lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
+            + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
 
     calf_plugins::get_builtin_presets().load_defaults(true);
     calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
@@ -684,19 +689,19 @@ void make_ttl(string path_prefix)
         string uri = "<http://calf.sourceforge.net/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
-        ttl += string(uri + " a lv2p:Preset ; rdfs:seeAlso <presets.ttl> .\n");
+        ttl += string("<" + plugin_uri_prefix + ilm->second + "> lv2p:hasPreset\n    " + uri + " .\n");
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
             "    dc:title \"" + pr.name + "\" ;\n"
             "    lv2p:appliesTo <" + plugin_uri_prefix + ilm->second + "> ;\n"
-            "    lv2p:port \n"
+            "    lv2:port \n"
         ;
         
         unsigned int count = min(pr.param_names.size(), pr.values.size());
         for (unsigned int j = 0; j < count; j++)
         {
-            presets_ttl += "        [ lv2p:symbol \"" + pr.param_names[j] + "\" ; lv2p:value " + ff2s(pr.values[j]) + "] ";
+            presets_ttl += "        [ lv2:symbol \"" + pr.param_names[j] + "\" ; lv2p:value " + ff2s(pr.values[j]) + " ] ";
             if (j < count - 1)
                 presets_ttl += ',';
             presets_ttl += '\n';
