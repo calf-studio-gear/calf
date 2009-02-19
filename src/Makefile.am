@@ -12,7 +12,8 @@ bin_PROGRAMS =
 noinst_PROGRAMS = calfbenchmark
 noinst_LTLIBRARIES = calf.la libcalfstatic.la
 if USE_DSSI_GUI
-noinst_PROGRAMS += calfdssigui
+dssidir = $(with_dssi_dir)/calf
+dssi_PROGRAMS = calf_gtk
 endif
 if USE_LV2_GUI
 noinst_LTLIBRARIES += calflv2gui.la
@@ -44,8 +45,8 @@ calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) libcalfstatic.la
 
 if USE_DSSI_GUI
-calfdssigui_SOURCES = dssigui.cpp
-calfdssigui_LDADD = libcalfstatic.la libcalfgui.la $(GLIB_DEPS_LIBS) $(GUI_DEPS_LIBS)
+calf_gtk_SOURCES = dssigui.cpp
+calf_gtk_LDADD = libcalfstatic.la libcalfgui.la $(GLIB_DEPS_LIBS) $(GUI_DEPS_LIBS)
 calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
 calfbenchmark_LDADD += libcalfgui.la
 endif
@@ -97,9 +98,6 @@ if USE_DSSI
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)/calf
 	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
-if USE_DSSI_GUI
-	install -c -m 755 $(top_builddir)/src/calfdssigui $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
-endif
 endif
 if USE_LV2
 	install -d -m 755 $(DESTDIR)$(with_lv2_dir)/calf.lv2
