@@ -555,7 +555,9 @@ void filechooser_param_control::send_configure(const char *key, const char *valu
 void filechooser_param_control::filechooser_value_changed(GtkWidget *widget, gpointer value)
 {
     filechooser_param_control *ctl = (filechooser_param_control *)value;
-    ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ctl->filechooser)));
+    const char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ctl->filechooser));
+    if (filename)
+        ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), filename);
 }
 
 // line graph
