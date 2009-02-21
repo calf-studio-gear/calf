@@ -60,7 +60,12 @@ AC_SUBST(FLUIDSYNTH_DEPS_CFLAGS)
 AC_SUBST(FLUIDSYNTH_DEPS_LIBS)
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
-PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
+PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.6.0, LASH_0_6_ENABLED="yes", LASH_0_6_ENABLED="no")
+if test "$LASH_0_6_ENABLED" = "yes"; then
+  LASH_ENABLED="yes"
+else
+  PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
+fi
 PKG_CHECK_MODULES(SLV2_HACK, slv2 <= 0.6.1, SLV2_UNSUPPORTED="yes", SLV2_UNSUPPORTED="no")
 
 if test "$LADSPA_FOUND" = "yes"; then
@@ -142,6 +147,7 @@ AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
+AM_CONDITIONAL(USE_LASH_0_6, test "$LASH_0_6_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
 if test "$LADSPA_FOUND" = "yes"; then
   AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
@@ -166,6 +172,9 @@ if test "$OLD_JACK" = "yes"; then
 fi
 if test "$LASH_ENABLED" = "yes"; then
   AC_DEFINE(USE_LASH, 1, "LASH Audio Session Handler client functionality is enabled")
+  if test "$LASH_0_6_ENABLED" = "yes"; then
+    AC_DEFINE(USE_LASH_0_6, 1, "Unstable LASH API is enabled")
+  fi
 fi
 if test "$set_enable_experimental" = "yes"; then
   AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
@@ -240,8 +249,11 @@ AC_MSG_RESULT([
     LV2 enabled:            $LV2_ENABLED
     LV2 GUI enabled:        $LV2_GUI_ENABLED
     JACK host enabled:      $JACK_ENABLED
-    LASH enabled:           $LASH_ENABLED
-    Old-style JACK MIDI:    $OLD_JACK
+    LASH enabled:           $LASH_ENABLED])
+if test "$LASH_ENABLED" = "yes"; then
+  AC_MSG_RESULT([    Unstable LASH API:      $LASH_0_6_ENABLED])
+fi
+AC_MSG_RESULT([    Old-style JACK MIDI:    $OLD_JACK
     
     Installation prefix:    $prefix
 ])

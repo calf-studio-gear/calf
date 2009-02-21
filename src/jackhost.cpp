@@ -47,6 +47,12 @@ plugin_gui_window *gui_win;
 
 const char *client_name = "calfhost";
 
+#if USE_LASH_0_6
+static bool save_data_set_cb(lash_config_handle_t *handle, void *user_data);
+static bool load_data_set_cb(lash_config_handle_t *handle, void *user_data);
+static bool quit_cb(void *user_data);
+#endif
+
 jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>(effect_name, instance_name, priface);
@@ -183,9 +189,11 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     vector<string> plugin_names;
     map<int, string> presets;
 #if USE_LASH
-    lash_client_t *lash_client;
-    lash_args_t *lash_args;
     int lash_source_id;
+    lash_client_t *lash_client;
+# if !USE_LASH_0_6
+    lash_args_t *lash_args;
+# endif
 #endif
     
     // these are not saved
@@ -208,9 +216,11 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
 #if USE_LASH
     static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
     void update_lash();
+# if !USE_LASH_0_6
     void send_lash(LASH_Event_Type type, const std::string &data) {
         lash_send_event(lash_client, lash_event_new_with_all(type, data.c_str()));
     }
+# endif
 #endif
     virtual void new_plugin(const char *name);    
     virtual void remove_plugin(plugin_ctl_iface *plugin);
@@ -227,9 +237,11 @@ host_session::host_session()
 {
     client_name = "calf";
 #if USE_LASH
-    lash_client = NULL;
-    lash_args = NULL;
     lash_source_id = 0;
+    lash_client = NULL;
+# if !USE_LASH_0_6
+    lash_args = NULL;
+# endif
 #endif
     restoring_session = false;
     main_win = new main_window;
@@ -403,7 +415,7 @@ bool host_session::activate_preset(int plugin_no, const std::string &preset, boo
 void host_session::connect()
 {
     client.activate();
-#if USE_LASH
+#if USE_LASH && !USE_LASH_0_6
     if (lash_client)
         lash_jack_client_name(lash_client, client.get_name().c_str());
 #endif
@@ -457,7 +469,9 @@ void host_session::connect()
 #if USE_LASH
     if (lash_client)
     {
+# if !USE_LASH_0_6
         send_lash(LASH_Client_Name, "calf-"+client_name);
+# endif
         lash_source_id = g_timeout_add_full(G_PRIORITY_LOW, 250, update_lash, this, NULL); // 4 LASH reads per second... should be enough?
     }
 #endif
@@ -486,6 +500,8 @@ static string stripfmt(string x)
         return x;
     return x.substr(0, x.length() - 2);
 }
+
+# if !USE_LASH_0_6
 
 void host_session::update_lash()
 {
@@ -591,6 +607,100 @@ void host_session::update_lash()
         }
     } while(1);
 }
+
+# else
+
+void host_session::update_lash()
+{
+    lash_dispatch(lash_client);
+}
+
+bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
+{
+    host_session *sess = static_cast<host_session *>(user_data);
+    dictionary tmp;
+    string pstr;
+    const char *str;
+    string i_name = stripfmt(sess->client.input_name);
+    string o_name = stripfmt(sess->client.output_name);
+    string m_name = stripfmt(sess->client.midi_name);
+    tmp["input_prefix"] = i_name;
+    tmp["output_prefix"] = stripfmt(sess->client.output_name);
+    tmp["midi_prefix"] = stripfmt(sess->client.midi_name);
+    pstr = encode_map(tmp);
+    lash_config_write_raw(handle, "global", &(str = pstr.c_str()), pstr.length());
+    for (unsigned int i = 0; i < sess->plugins.size(); i++) {
+        jack_host_base *p = sess->plugins[i];
+        char ss[32];
+        plugin_preset preset;
+        preset.plugin = p->get_id();
+        preset.get_from(p);
+        sprintf(ss, "Plugin%d", i);
+        pstr = preset.to_xml();
+        tmp.clear();
+        tmp["instance_name"] = p->instance_name;
+        if (p->get_input_count())
+        tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
+        if (p->get_output_count())
+        tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
+        if (p->get_midi_port())
+            tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
+        tmp["preset"] = pstr;
+        pstr = encode_map(tmp);
+        lash_config_write_raw(handle, ss, &(str = pstr.c_str()), pstr.length());
+    }
+    return true;
+}
+
+bool load_data_set_cb(lash_config_handle_t *handle, void *user_data)
+{
+    host_session *sess = static_cast<host_session *>(user_data);
+    int size, type;
+    const char *key;
+    const char *value;
+    sess->remove_all_plugins();
+    while((size = lash_config_read(handle, &key, (void *)&value, &type))) {
+        if (size == -1 || type != LASH_TYPE_RAW)
+            continue;
+        string data = string(value, size);
+        if (!strcmp(key, "global"))
+        {
+            dictionary dict;
+            decode_map(dict, data);
+            if (dict.count("input_prefix")) sess->client.input_name = dict["input_prefix"]+"%d";
+            if (dict.count("output_prefix")) sess->client.output_name = dict["output_prefix"]+"%d";
+            if (dict.count("midi_prefix")) sess->client.midi_name = dict["midi_prefix"]+"%d";
+        } else if (!strncmp(key, "Plugin", 6)) {
+            unsigned int nplugin = atoi(key + 6);
+            dictionary dict;
+            decode_map(dict, data);
+            data = dict["preset"];
+            string instance_name;
+            if (dict.count("instance_name")) instance_name = dict["instance_name"];
+            if (dict.count("input_name")) sess->client.input_nr = atoi(dict["input_name"].c_str());
+            if (dict.count("output_name")) sess->client.output_nr = atoi(dict["output_name"].c_str());
+            if (dict.count("midi_name")) sess->client.midi_nr = atoi(dict["midi_name"].c_str());
+            preset_list tmp;
+            tmp.parse("<presets>"+data+"</presets>");
+            if (tmp.presets.size())
+            {
+                printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());
+                sess->add_plugin(tmp.presets[0].plugin, "", instance_name);
+                tmp.presets[0].activate(sess->plugins[nplugin]);
+                sess->main_win->refresh_plugin(sess->plugins[nplugin]);
+            }
+        }
+    }
+    return true;
+}
+
+bool quit_cb(void *user_data)
+{
+    gtk_main_quit();
+    return true;
+}
+
+# endif
 #endif
 
 host_session current_session;
@@ -601,6 +711,7 @@ int main(int argc, char *argv[])
     gtk_init(&argc, &argv);
     
 #if USE_LASH
+# if !USE_LASH_0_6
     for (int i = 1; i < argc; i++)
     {
         if (!strncmp(argv[i], "--lash-project=", 14)) {
@@ -610,6 +721,13 @@ int main(int argc, char *argv[])
     }
     sess.lash_args = lash_extract_args(&argc, &argv);
     sess.lash_client = lash_init(sess.lash_args, PACKAGE_NAME, LASH_Config_Data_Set, LASH_PROTOCOL(2, 0));
+# else
+    sess.lash_client = lash_client_open(PACKAGE_NAME, LASH_Config_Data_Set, argc, argv);
+    sess.restoring_session = lash_client_is_being_restored(sess.lash_client);
+    lash_set_save_data_set_callback(sess.lash_client, save_data_set_cb, &sess);
+    lash_set_load_data_set_callback(sess.lash_client, load_data_set_cb, &sess);
+    lash_set_quit_callback(sess.lash_client, quit_cb, NULL);
+# endif
     if (!sess.lash_client) {
         g_warning("Warning: failed to create a LASH connection");
     }
@@ -682,7 +800,7 @@ int main(int argc, char *argv[])
         gtk_main();
         sess.close();
         
-#if USE_LASH
+#if USE_LASH && !USE_LASH_0_6
         if (sess.lash_args)
             lash_args_destroy(sess.lash_args);
 #endif
