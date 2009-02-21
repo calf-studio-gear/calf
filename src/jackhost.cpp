@@ -204,19 +204,12 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     void create_plugins_from_list();
     void connect();
     void close();
-    static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
-    void update_lash();
     bool activate_preset(int plugin, const std::string &preset, bool builtin);
 #if USE_LASH
+    static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
+    void update_lash();
     void send_lash(LASH_Event_Type type, const std::string &data) {
         lash_send_event(lash_client, lash_event_new_with_all(type, data.c_str()));
-    }
-    void send_config(const char *key, const std::string &data) {
-        char *buffer = new char[data.length()];
-        memcpy(buffer, data.data(), data.length());
-        lash_config_t *cfg = lash_config_new_with_key(strdup(key));
-        lash_config_set_value(cfg, buffer, data.length());
-        lash_send_config(lash_client, cfg);
     }
 #endif
     virtual void new_plugin(const char *name);    
@@ -462,8 +455,11 @@ void host_session::connect()
         }
     }
 #if USE_LASH
-    send_lash(LASH_Client_Name, "calf-"+client_name);
-    lash_source_id = g_timeout_add_full(G_PRIORITY_LOW, 250, update_lash, this, NULL); // 4 LASH reads per second... should be enough?
+    if (lash_client)
+    {
+        send_lash(LASH_Client_Name, "calf-"+client_name);
+        lash_source_id = g_timeout_add_full(G_PRIORITY_LOW, 250, update_lash, this, NULL); // 4 LASH reads per second... should be enough?
+    }
 #endif
 }
 
