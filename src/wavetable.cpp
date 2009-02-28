@@ -35,6 +35,11 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+wavetable_voice::wavetable_voice()
+{
+    sample_rate = -1;
+}
+
 void wavetable_voice::reset()
 {
     note = -1;
@@ -44,13 +49,18 @@ void wavetable_voice::note_on(int note, int vel)
 {
     this->note = note;
     amp.set(1.0);
-    for (int i = 0; i < OscCount; i++)
+    for (int i = 0; i < OscCount; i++) {
         oscs[i].reset();
-    for (int i = 0; i < EnvCount; i++)
+        oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
+    }
+    int cr = sample_rate / BlockSize;
+    for (int i = 0; i < EnvCount; i++) {
+        envs[i].set(0.01, 0.1, 0.5, 1, cr);
         envs[i].note_on();
+    }
 }
 
-void wavetable_voice::note_off(int /* vel */)
+void wavetable_voice::note_off(int vel)
 {
     for (int i = 0; i < EnvCount; i++)
         envs[i].note_off();
@@ -63,7 +73,7 @@ void wavetable_voice::steal()
 void wavetable_voice::render_block()
 {
     for (int i = 0; i < BlockSize; i++)
-        output_buffer[i][0] = output_buffer[i][1] = oscs[0].get() * envs[0].value;
+        output_buffer[i][0] = output_buffer[i][1] = oscs[0].get() * envs[0].value * envs[0].value;
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
 }

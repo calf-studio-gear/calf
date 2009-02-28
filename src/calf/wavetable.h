@@ -26,7 +26,8 @@ protected:
     dsp::simple_oscillator oscs[OscCount];
     dsp::adsr envs[EnvCount];
 public:
-    void set_params_ptr(float **_params) { params = _params; }
+    wavetable_voice();
+    void set_params_ptr(float **_params, int _srate) { params = _params; sample_rate = _srate; }
     void reset();
     void note_on(int note, int vel);
     void note_off(int /* vel */);
@@ -48,7 +49,6 @@ public:
     using dsp::basic_synth::note_off;
     using dsp::basic_synth::control_change;
     using dsp::basic_synth::pitch_bend;
-    uint32_t srate; // XXXKF hack!
 
 protected:
     uint32_t crate;
@@ -67,7 +67,7 @@ public:
 
     dsp::voice *alloc_voice() {
         dsp::block_voice<wavetable_voice> *v = new dsp::block_voice<wavetable_voice>();
-        v->set_params_ptr(params);
+        v->set_params_ptr(params, sample_rate);
         return v;
     }
     
@@ -89,6 +89,11 @@ public:
             o[1][i] = gain*buf[i][1];
         }
         return 3;
+    }
+
+    void set_sample_rate(uint32_t sr) {
+        setup(sr);
+        crate = sample_rate / wavetable_voice::BlockSize;
     }
 };
 
