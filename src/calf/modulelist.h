@@ -12,6 +12,7 @@
     PER_MODULE_ITEM(compressor, false, "compressor")
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
+    PER_MODULE_ITEM(wavetable, true, "wavetable")
 #endif
 #undef PER_MODULE_ITEM
 #endif

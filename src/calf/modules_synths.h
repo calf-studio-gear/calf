@@ -255,4 +255,10 @@ public:
 
 };
 
+#if ENABLE_EXPERIMENTAL
+    
+#include "wavetable.h"
+
+#endif
+
 #endif

@@ -211,6 +211,17 @@ struct fluidsynth_metadata: public plugin_metadata<fluidsynth_metadata>
     const char **get_default_configure_vars();
 };
     
+/// Wavetable - metadata
+struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
+{
+    enum { 
+        par_o1wave, par_o1offset, par_o1transpose, par_o1detune, par_o1level,
+        param_count };
+    enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
+    enum { step_size = 64 };
+    PLUGIN_NAME_ID_LABEL("wavetable", "wavetable", "Wavetable")
+};
+    
 };
 
 #endif
