@@ -49,6 +49,7 @@ protected:
     dsp::decay amp;
     wavetable_oscillator oscs[OscCount];
     dsp::adsr envs[EnvCount];
+    float velocity;
 public:
     wavetable_voice();
     void set_params_ptr(wavetable_audio_module *_parent, int _srate);

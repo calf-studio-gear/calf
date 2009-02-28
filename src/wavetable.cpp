@@ -55,6 +55,7 @@ void wavetable_voice::reset()
 void wavetable_voice::note_on(int note, int vel)
 {
     this->note = note;
+    velocity = vel / 127.0;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
         oscs[i].tables = parent->tables;
@@ -92,7 +93,7 @@ void wavetable_voice::render_block()
     for (int i = 0; i < BlockSize; i++) {        
         float value = 0.f;
         
-        float env = prev_value + (cur_value - prev_value) * i * (1.0 / BlockSize);
+        float env = velocity * (prev_value + (cur_value - prev_value) * i * (1.0 / BlockSize));
         for (int j = 0; j < OscCount; j++)
             value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[wavetable_metadata::par_o1offset + j * spc]) * 127.0), 0, 127)) * *params[wavetable_metadata::par_o1level + j * spc];
         
@@ -114,7 +115,7 @@ wavetable_audio_module::wavetable_audio_module()
             //tables[i][j] = i < j ? -32767 : 32767;
             float ph = j * 2 * M_PI / 256;
             float ii = i / 128.0;
-            float peak = (32 * ii * ii);
+            float peak = (32 * ii);
             float rezo = lerp(sin(floor(peak) * ph), sin(floor(peak+1) * ph), peak - floor(peak));
             tables[i][j] = 32767 * sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo);
         }
