@@ -341,7 +341,7 @@ struct ladspa_wrapper
     static LADSPA_Handle cb_instantiate(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate)
     {
         instance *mod = new instance();
-        mod->srate = sample_rate;
+        mod->set_sample_rate(sample_rate);
         mod->post_instantiate();
         return mod;
     }
@@ -414,7 +414,6 @@ struct ladspa_wrapper
         instance *const mod = (instance *)Instance;
         if (mod->activate_flag)
         {
-            mod->set_sample_rate(mod->srate);
             mod->activate();
             mod->activate_flag = false;
         }
@@ -441,7 +440,6 @@ struct ladspa_wrapper
         instance *const mod = (instance *)Instance;
         if (mod->activate_flag)
         {
-            mod->set_sample_rate(mod->srate);
             mod->activate();
             mod->activate_flag = false;
         }
