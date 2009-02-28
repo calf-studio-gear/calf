@@ -216,6 +216,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
 {
     enum { 
         par_o1wave, par_o1offset, par_o1transpose, par_o1detune, par_o1level,
+        par_o2wave, par_o2offset, par_o2transpose, par_o2detune, par_o2level,
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64 };

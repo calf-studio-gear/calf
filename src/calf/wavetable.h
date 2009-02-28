@@ -40,7 +40,7 @@ struct wavetable_oscillator: public dsp::simple_oscillator
 class wavetable_voice: public dsp::voice
 {
 public:
-    enum { Channels = 2, BlockSize = 64, EnvCount = 3, OscCount = 1 };
+    enum { Channels = 2, BlockSize = 64, EnvCount = 3, OscCount = 2 };
     float output_buffer[BlockSize][Channels];
 protected:
     int note;
@@ -62,7 +62,7 @@ public:
     }
     virtual bool get_active() {
         // printf("note %d getactive %d use_percussion %d pamp active %d\n", note, amp.get_active(), use_percussion(), pamp.get_active());
-        return (note != -1) && (amp.get_active());
+        return (note != -1) && (amp.get_active()) && !envs[0].stopped();
     }
 };    
 
@@ -82,7 +82,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    int16_t tables[256][256];
+    int16_t tables[128][256];
 
 public:
     wavetable_audio_module();

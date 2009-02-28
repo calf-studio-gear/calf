@@ -80,16 +80,22 @@ void wavetable_voice::steal()
 
 void wavetable_voice::render_block()
 {
+    int spc = wavetable_metadata::par_o2level - wavetable_metadata::par_o1level;
+    for (int j = 0; j < OscCount; j++)
+        oscs[j].set_freq(note_to_hz(note, *params[wavetable_metadata::par_o1transpose + j * spc] * 100+ *params[wavetable_metadata::par_o1detune + j * spc]), sample_rate);
     
-    for (int i = 0; i < BlockSize; i++) {
-        int slice = dsp::clip(fastf2i_drm(envs[0].value * 127.0), 0, 127);
+    for (int i = 0; i < BlockSize; i++) {        
+        float value = 0.f;
         
-        float value = oscs[0].get(slice);
+        for (int j = 0; j < OscCount; j++)
+            value += oscs[j].get(dsp::clip(fastf2i_drm((envs[0].value + *params[wavetable_metadata::par_o1offset + j * spc]) * 127.0), 0, 127)) * *params[wavetable_metadata::par_o1level + j * spc];
         
-        output_buffer[i][0] = output_buffer[i][1] = value * envs[0].value * envs[0].value * 0.25;
+        output_buffer[i][0] = output_buffer[i][1] = value * envs[0].value * envs[0].value * value;
     }
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
+    if (envs[0].stopped())
+        released = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +103,7 @@ void wavetable_voice::render_block()
 wavetable_audio_module::wavetable_audio_module()
 {
     panic_flag = false;
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < 128; i++)
     {
         for (int j = 0; j < 256; j++)
         {
