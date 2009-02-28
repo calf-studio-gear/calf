@@ -116,8 +116,11 @@ wavetable_audio_module::wavetable_audio_module()
             float ph = j * 2 * M_PI / 256;
             float ii = i / 128.0;
             float peak = (32 * ii);
-            float rezo = lerp(sin(floor(peak) * ph), sin(floor(peak+1) * ph), peak - floor(peak));
-            tables[i][j] = 32767 * sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo);
+            float rezo1 = sin(floor(peak) * ph);
+            float rezo2 = sin(floor(peak + 1) * ph);
+            float v1 = sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo1);
+            float v2 = sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo2);
+            tables[i][j] = 32767 * lerp(v1, v2, peak - floor(peak));
         }
     }
 }
