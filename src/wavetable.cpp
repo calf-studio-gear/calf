@@ -84,16 +84,20 @@ void wavetable_voice::render_block()
     for (int j = 0; j < OscCount; j++)
         oscs[j].set_freq(note_to_hz(note, *params[wavetable_metadata::par_o1transpose + j * spc] * 100+ *params[wavetable_metadata::par_o1detune + j * spc]), sample_rate);
     
+    float prev_value = envs[0].value;
+    for (int i = 0; i < EnvCount; i++)
+        envs[i].advance();    
+    float cur_value = envs[0].value;
+    
     for (int i = 0; i < BlockSize; i++) {        
         float value = 0.f;
         
+        float env = prev_value + (cur_value - prev_value) * i * (1.0 / BlockSize);
         for (int j = 0; j < OscCount; j++)
-            value += oscs[j].get(dsp::clip(fastf2i_drm((envs[0].value + *params[wavetable_metadata::par_o1offset + j * spc]) * 127.0), 0, 127)) * *params[wavetable_metadata::par_o1level + j * spc];
+            value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[wavetable_metadata::par_o1offset + j * spc]) * 127.0), 0, 127)) * *params[wavetable_metadata::par_o1level + j * spc];
         
-        output_buffer[i][0] = output_buffer[i][1] = value * envs[0].value * envs[0].value * value;
+        output_buffer[i][0] = output_buffer[i][1] = value * env * env;
     }
-    for (int i = 0; i < EnvCount; i++)
-        envs[i].advance();    
     if (envs[0].stopped())
         released = true;
 }
@@ -107,7 +111,12 @@ wavetable_audio_module::wavetable_audio_module()
     {
         for (int j = 0; j < 256; j++)
         {
-            tables[i][j] = i < j ? -32767 : 32767;
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            float peak = (32 * ii * ii);
+            float rezo = lerp(sin(floor(peak) * ph), sin(floor(peak+1) * ph), peak - floor(peak));
+            tables[i][j] = 32767 * sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo);
         }
     }
 }
