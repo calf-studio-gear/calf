@@ -14,6 +14,29 @@ namespace calf_plugins {
 
 #define WAVETABLE_WAVE_BITS 8
 
+class wavetable_audio_module;
+    
+struct wavetable_oscillator: public dsp::simple_oscillator
+{
+    enum { SIZE = 1 << 8, MASK = SIZE - 1, SCALE = 1 << (32 - 8) };
+    int16_t (*tables)[256];
+    inline float get(uint8_t slice)
+    {
+        int16_t *waveform = tables[slice];
+        float value = 0.f;
+        uint32_t cphase = phase, cphasedelta = phasedelta >> 3;
+        for (int j = 0; j < 8; j++)
+        {
+            uint32_t wpos = cphase >> (32 - 8);
+            value += dsp::lerp((float)waveform[wpos], (float)waveform[(wpos + 1) & MASK], (cphase & (SCALE - 1)) * (1.0f / SCALE));
+            cphase += cphasedelta;
+        }
+        value = value * (1.0 / 8.0) * (1.0 / 32768.0);
+        phase += phasedelta;
+        return value;
+    }
+};
+
 class wavetable_voice: public dsp::voice
 {
 public:
@@ -21,13 +44,14 @@ public:
     float output_buffer[BlockSize][Channels];
 protected:
     int note;
+    wavetable_audio_module *parent;
     float **params;
     dsp::decay amp;
-    dsp::simple_oscillator oscs[OscCount];
+    wavetable_oscillator oscs[OscCount];
     dsp::adsr envs[EnvCount];
 public:
     wavetable_voice();
-    void set_params_ptr(float **_params, int _srate) { params = _params; sample_rate = _srate; }
+    void set_params_ptr(wavetable_audio_module *_parent, int _srate);
     void reset();
     void note_on(int note, int vel);
     void note_off(int /* vel */);
@@ -58,16 +82,14 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
+    int16_t tables[256][256];
 
 public:
-    wavetable_audio_module()
-    {
-        panic_flag = false;
-    }
+    wavetable_audio_module();
 
     dsp::voice *alloc_voice() {
         dsp::block_voice<wavetable_voice> *v = new dsp::block_voice<wavetable_voice>();
-        v->set_params_ptr(params, sample_rate);
+        v->set_params_ptr(this, sample_rate);
         return v;
     }
     

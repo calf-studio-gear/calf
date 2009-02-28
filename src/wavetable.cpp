@@ -40,6 +40,13 @@ wavetable_voice::wavetable_voice()
     sample_rate = -1;
 }
 
+void wavetable_voice::set_params_ptr(wavetable_audio_module *_parent, int _srate)
+{
+    parent = _parent;
+    params = parent->params;
+    sample_rate = _srate;
+}
+
 void wavetable_voice::reset()
 {
     note = -1;
@@ -50,6 +57,7 @@ void wavetable_voice::note_on(int note, int vel)
     this->note = note;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
+        oscs[i].tables = parent->tables;
         oscs[i].reset();
         oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
     }
@@ -72,10 +80,32 @@ void wavetable_voice::steal()
 
 void wavetable_voice::render_block()
 {
-    for (int i = 0; i < BlockSize; i++)
-        output_buffer[i][0] = output_buffer[i][1] = oscs[0].get() * envs[0].value * envs[0].value;
+    
+    for (int i = 0; i < BlockSize; i++) {
+        int slice = dsp::clip(fastf2i_drm(envs[0].value * 127.0), 0, 127);
+        
+        float value = oscs[0].get(slice);
+        
+        output_buffer[i][0] = output_buffer[i][1] = value * envs[0].value * envs[0].value * 0.25;
+    }
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+wavetable_audio_module::wavetable_audio_module()
+{
+    panic_flag = false;
+    for (int i = 0; i < 256; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            tables[i][j] = i < j ? -32767 : 32767;
+        }
+    }
+}
+
+
 
 #endif
