@@ -105,6 +105,11 @@ public:
         jack_client_close(client);
     }
     
+    const char **get_ports(const char *name_re, const char *type_re, unsigned long flags)
+    {
+        return jack_get_ports(client, name_re, type_re, flags);
+    }
+    
     static int do_jack_process(jack_nframes_t nframes, void *p);
     static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
 };

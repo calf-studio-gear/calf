@@ -190,6 +190,7 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     // these are not saved
     jack_client client;
     string autoconnect_midi;
+    int autoconnect_midi_index;
     set<int> chains;
     vector<jack_host_base *> plugins;
     main_window *main_win;
@@ -242,6 +243,7 @@ host_session::host_session()
     main_win = new main_window;
     main_win->set_owner(this);
     progress_window = NULL;
+    autoconnect_midi_index = -1;
 }
 
 std::string host_session::get_next_instance_name(const std::string &effect_name)
@@ -460,6 +462,21 @@ void host_session::connect()
                     client.connect(autoconnect_midi, cnp + plugins[i]->get_midi_port()->name);
             }
         }
+        else
+        if (autoconnect_midi_index != -1) {
+            const char **ports = client.get_ports("(system|alsa_pcm):.*", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
+            for (int j = 0; ports[j]; j++)
+            {
+                if (j + 1 == autoconnect_midi_index) {
+                    for (unsigned int i = 0; i < plugins.size(); i++)
+                    {
+                        if (plugins[i]->get_midi())
+                            client.connect(ports[j], cnp + plugins[i]->get_midi_port()->name);
+                    }
+                    break;
+                }
+            }
+        }
     }
 #if USE_LASH
     send_lash(LASH_Client_Name, "calf-"+client_name);
@@ -646,8 +663,9 @@ int main(int argc, char *argv[])
                 sess.midi_name = string(optarg) + "_%d";
                 break;
             case 'M':
-                if (atoi(optarg))
-                    sess.autoconnect_midi = "system:midi_capture_" + string(optarg);
+                if (atoi(optarg)) {
+                    sess.autoconnect_midi_index = atoi(optarg);
+                }
                 else
                     sess.autoconnect_midi = string(optarg);
                 break;
