@@ -214,6 +214,15 @@ struct fluidsynth_metadata: public plugin_metadata<fluidsynth_metadata>
 /// Wavetable - metadata
 struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
 {
+    enum {
+        wt_fmshiny,
+        wt_fmshiny2,
+        wt_rezo,
+        wt_metal,
+        wt_bell,
+        wt_blah,
+        wt_count
+    };
     enum { 
         par_o1wave, par_o1offset, par_o1transpose, par_o1detune, par_o1level,
         par_o2wave, par_o2offset, par_o2transpose, par_o2detune, par_o2level,

@@ -88,7 +88,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    int16_t tables[129][256]; // one dummy level for interpolation
+    int16_t tables[wt_count][129][256]; // one dummy level for interpolation
 
 public:
     wavetable_audio_module();

@@ -58,7 +58,6 @@ void wavetable_voice::note_on(int note, int vel)
     velocity = vel / 127.0;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
-        oscs[i].tables = parent->tables;
         oscs[i].reset();
         oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
     }
@@ -85,8 +84,10 @@ void wavetable_voice::render_block()
     
     int ospc = md::par_o2level - md::par_o1level;
     int espc = md::par_eg2attack - md::par_eg1attack;
-    for (int j = 0; j < OscCount; j++)
+    for (int j = 0; j < OscCount; j++) {
+        oscs[j].tables = parent->tables[(int)*params[md::par_o1wave + j * ospc]];
         oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc]), sample_rate);
+    }
     float s = 0.001;
     for (int j = 0; j < EnvCount; j++) {
         int o = j*espc;
@@ -117,7 +118,7 @@ void wavetable_voice::render_block()
 wavetable_audio_module::wavetable_audio_module()
 {
     panic_flag = false;
-    for (int i = 0; i < 128; i++)
+    for (int i = 0; i < 129; i++)
     {
         for (int j = 0; j < 256; j++)
         {
@@ -130,7 +131,76 @@ wavetable_audio_module::wavetable_audio_module()
             float rezo2 = sin(floor(peak + 1) * ph);
             float v1 = sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo1);
             float v2 = sin (ph + 2 * ii2 * sin(2 * ph) + 2 * ii2 * ii2 * sin(4 * ph) + ii2 * ii2 * rezo2);
-            tables[i][j] = 32767 * lerp(v1, v2, (i & 3) / 4.0);
+            tables[0][i][j] = 32767 * lerp(v1, v2, (i & 3) / 4.0);
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = (i & ~3) / 128.0;
+            float ii2 = ((i & ~3) + 4) / 128.0;
+            float peak = (32 * ii);
+            float rezo1 = sin(floor(peak) * ph);
+            float rezo2 = sin(floor(peak + 1) * ph);
+            float v1 = sin (ph + ii * ii * rezo1);
+            float v2 = sin (ph + ii2 * ii2 * rezo2);
+            tables[1][i][j] = 32767 * lerp(v1, v2, (i & 3) / 4.0);
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = (i & ~3) / 128.0;
+            float ii2 = ((i & ~3) + 4) / 128.0;
+            float peak = (32 * ii);
+            float rezo1 = sin(floor(peak) * ph);
+            float rezo2 = sin(floor(peak + 1) * ph);
+            float widener = (0.5 + 0.3 * sin(ph) + 0.2 * sin (3 * ph));
+            float v1 = 0.5 * sin (ph) + 0.5 * ii * ii * rezo1 * widener;
+            float v2 = 0.5 * sin (ph) + 0.5 * ii2 * ii2 * rezo2 * widener;
+            tables[wavetable_metadata::wt_rezo][i][j] = 32767 * lerp(v1, v2, (i & 3) / 4.0);
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            //float v = (sin(ph) + ii * sin(ph + 2 * ii * sin(ph)) + ii * ii * sin(ph + 3 * ii * ii * sin(3 * ph)) + ii * ii * ii * sin(ph + 5 * ii * ii * ii * sin(5 * ph))) / 4;
+            float v = (sin(ph) + ii * sin(ph + 2 * ii * sin(ph)) + ii * ii * sin(ph + 6 * ii * ii * sin(6 * ph)) + ii * ii * ii * ii * sin(ph + 11 * ii * ii * ii * ii * sin(11 * ph))) / 4;
+            tables[wavetable_metadata::wt_metal][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            //float v = (sin(ph) + ii * sin(ph + 2 * ii * sin(ph)) + ii * ii * sin(ph + 3 * ii * ii * sin(3 * ph)) + ii * ii * ii * sin(ph + 5 * ii * ii * ii * sin(5 * ph))) / 4;
+            float v = (sin(ph) + ii * sin(ph - 3 * ii * sin(ph)) + ii * ii * sin(5 * ph - 5 * ii * ii * ii * ii * sin(11 * ph))) / 3;
+            tables[wavetable_metadata::wt_bell][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            //tables[i][j] = i < j ? -32767 : 32767;
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            //float v = (sin(ph) + ii * sin(ph + 2 * ii * sin(ph)) + ii * ii * sin(ph + 3 * ii * ii * sin(3 * ph)) + ii * ii * ii * sin(ph + 5 * ii * ii * ii * sin(5 * ph))) / 4;
+            float v = (sin(ph) + sin(ph - 3 * sin(ii * 5 - 2) * sin(ph)) + sin(ii * 4 - 1.3) * sin(5 * ph + 3 * ii * ii * sin(6 * ph))) / 3;
+            tables[wavetable_metadata::wt_blah][i][j] = 32767 * v;
         }
     }
 }
