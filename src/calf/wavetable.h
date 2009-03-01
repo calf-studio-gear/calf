@@ -20,20 +20,25 @@ struct wavetable_oscillator: public dsp::simple_oscillator
 {
     enum { SIZE = 1 << 8, MASK = SIZE - 1, SCALE = 1 << (32 - 8) };
     int16_t (*tables)[256];
-    inline float get(uint8_t slice)
+    inline float get(uint16_t slice)
     {
+        float fracslice = (slice & 255) * (1.0 / 256.0);
+        slice = slice >> 8;
         int16_t *waveform = tables[slice];
-        float value = 0.f;
+        int16_t *waveform2 = tables[slice + 1];
+        float value1 = 0.f, value2 = 0.f;
         uint32_t cphase = phase, cphasedelta = phasedelta >> 3;
         for (int j = 0; j < 8; j++)
         {
             uint32_t wpos = cphase >> (32 - 8);
-            value += dsp::lerp((float)waveform[wpos], (float)waveform[(wpos + 1) & MASK], (cphase & (SCALE - 1)) * (1.0f / SCALE));
+            uint32_t wpos2 = (wpos + 1) & MASK;
+            float frac = (cphase & (SCALE - 1)) * (1.0f / SCALE);
+            value1 += dsp::lerp((float)waveform[wpos], (float)waveform[wpos2], frac);
+            value2 += dsp::lerp((float)waveform2[wpos], (float)waveform2[wpos2], frac);
             cphase += cphasedelta;
         }
-        value = value * (1.0 / 8.0) * (1.0 / 32768.0);
         phase += phasedelta;
-        return value;
+        return dsp::lerp(value1, value2, fracslice) * (1.0 / 8.0) * (1.0 / 32768.0);;
     }
 };
 
@@ -83,7 +88,7 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    int16_t tables[128][256];
+    int16_t tables[129][256]; // one dummy level for interpolation
 
 public:
     wavetable_audio_module();

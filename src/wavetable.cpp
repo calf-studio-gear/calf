@@ -81,9 +81,17 @@ void wavetable_voice::steal()
 
 void wavetable_voice::render_block()
 {
-    int spc = wavetable_metadata::par_o2level - wavetable_metadata::par_o1level;
+    typedef wavetable_metadata md;
+    
+    int ospc = md::par_o2level - md::par_o1level;
+    int espc = md::par_eg2attack - md::par_eg1attack;
     for (int j = 0; j < OscCount; j++)
-        oscs[j].set_freq(note_to_hz(note, *params[wavetable_metadata::par_o1transpose + j * spc] * 100+ *params[wavetable_metadata::par_o1detune + j * spc]), sample_rate);
+        oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc]), sample_rate);
+    float s = 0.001;
+    for (int j = 0; j < EnvCount; j++) {
+        int o = j*espc;
+        envs[j].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize); 
+    }
     
     float prev_value = envs[0].value;
     for (int i = 0; i < EnvCount; i++)
@@ -94,8 +102,9 @@ void wavetable_voice::render_block()
         float value = 0.f;
         
         float env = velocity * (prev_value + (cur_value - prev_value) * i * (1.0 / BlockSize));
-        for (int j = 0; j < OscCount; j++)
-            value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[wavetable_metadata::par_o1offset + j * spc]) * 127.0), 0, 127)) * *params[wavetable_metadata::par_o1level + j * spc];
+        for (int j = 0; j < OscCount; j++) {
+            value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[md::par_o1offset + j * ospc]) * 127.0 * 256), 0, 127 * 256)) * *params[md::par_o1level + j * ospc];
+        }
         
         output_buffer[i][0] = output_buffer[i][1] = value * env * env;
     }
@@ -114,13 +123,14 @@ wavetable_audio_module::wavetable_audio_module()
         {
             //tables[i][j] = i < j ? -32767 : 32767;
             float ph = j * 2 * M_PI / 256;
-            float ii = i / 128.0;
+            float ii = (i & ~3) / 128.0;
+            float ii2 = ((i & ~3) + 4) / 128.0;
             float peak = (32 * ii);
             float rezo1 = sin(floor(peak) * ph);
             float rezo2 = sin(floor(peak + 1) * ph);
             float v1 = sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo1);
-            float v2 = sin (ph + 2 * ii * sin(2 * ph) + 2 * ii * ii * sin(4 * ph) + ii * ii * rezo2);
-            tables[i][j] = 32767 * lerp(v1, v2, peak - floor(peak));
+            float v2 = sin (ph + 2 * ii2 * sin(2 * ph) + 2 * ii2 * ii2 * sin(4 * ph) + ii2 * ii2 * rezo2);
+            tables[i][j] = 32767 * lerp(v1, v2, (i & 3) / 4.0);
         }
     }
 }
