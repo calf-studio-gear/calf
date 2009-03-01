@@ -203,6 +203,21 @@ wavetable_audio_module::wavetable_audio_module()
             tables[wavetable_metadata::wt_blah][i][j] = 32767 * v;
         }
     }
+    float r = 0.f;
+    for (int i = 0; i < 256; i++)
+    {
+        tables[wavetable_metadata::wt_pluck][128][i] = (i < 128) ? 32000 * fabs(sin(i / 32.0 * M_PI) * sin(i / 13.0 * M_PI) * sin(i / 19.0 * M_PI)) : 0;
+    }
+    for (int i = 127; i >= 0; i--)
+    {
+        int16_t *parent = tables[wavetable_metadata::wt_pluck][i + 1];
+        //float damp = 0.05 + 0.05 * i * i / (127.0 * 127.0);
+        float damp = 0.05;
+        for (int j = 0; j < 256; j++)
+        {
+            tables[wavetable_metadata::wt_pluck][i][j] = (1 - 2*damp) * parent[j] + damp * parent[(j+1)&255] + damp * parent[(j+2)&255];// + 0.1 * parent[(j-1)&255]+ 0.1 * parent[(j-2)&255];
+        }
+    }
 }
 
 

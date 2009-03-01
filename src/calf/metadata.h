@@ -221,6 +221,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         wt_metal,
         wt_bell,
         wt_blah,
+        wt_pluck,
         wt_count
     };
     enum { 
