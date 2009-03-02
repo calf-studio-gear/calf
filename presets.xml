@@ -3939,4 +3939,31 @@
   <param name="adsr3_r" value="50" />
   <param name="adsr3_v" value="0" />
 </preset>
+<preset plugin="wavetable" name="Jazz Guitar">
+  <param name="o1wave" value="20" />
+  <param name="o1offset" value="0.04" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="1" />
+  <param name="o1level" value="0.133972" />
+  <param name="o2wave" value="16" />
+  <param name="o2offset" value="0.14" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-1" />
+  <param name="o2level" value="0" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="1863.35" />
+  <param name="adsr_s" value="0.03" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
 </presets>

@@ -521,6 +521,11 @@ const char *wavetable_names[] = {
     "Bell 3",
     "Tine",
     "Tine 2",
+    "Clav",
+    "Clav 2",
+    "Gtr",
+    "Gtr 2",
+    "Gtr 3",
 };
 
 const char *wavetable_init_soundfont = "";

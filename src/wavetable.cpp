@@ -309,6 +309,86 @@ wavetable_audio_module::wavetable_audio_module()
             tables[wavetable_metadata::wt_tine2][i][j] = 32767 * v;
         }
     }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float w = sincl(ph2 * (1 + 7 * ii * ii), 4) * pow(sincl(j / 256.0, 1), 2);
+            float v = sin(ph + ii * sin(ph - 2 * ii * w));
+            tables[wavetable_metadata::wt_clav][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float w = sincl(ph2 * (1 + 7 * ii * ii), 6) * sincl(j / 256.0, 1);
+            float v = sin(ph + ii * sin(3 * ph - 2 * ii * w));
+            tables[wavetable_metadata::wt_clav2][i][j] = 32767 * v;
+        }
+    }
+    /*
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float w = sincl(ph2 * (1 + 7 * ii * ii), 6) * pow(sincl(j / 256.0, 1), 1);
+            float v = sin(ph + ii * ii * ii * sin(3 * ph - ii * ii * ii * w));
+            tables[wavetable_metadata::wt_gtr][i][j] = 32767 * v;
+        }
+    }
+    */
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float ii2 = ii;
+            //float w = sincl(ph2 * (1 + 15 * ii2 * ii2), 4) * pow(sincl(j / 256.0, 1), 1);
+            float w = pow(sincl(j / 256.0, 1), 1);
+            float v = sin(ph + ii2 * ii2 * ii2 * sin(3 * ph - ii2 * ii2 * ii2 * w * sin(ph + sin(3 * ph) + ii * sin(11 * ph) + ii * ii * sin(25 * ph))));
+            tables[wavetable_metadata::wt_gtr][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float ii2 = dsp::clip(ii - 0.5, 0.0, 1.0);
+            //float w = sincl(ph2 * (1 + 15 * ii2 * ii2), 4) * pow(sincl(j / 256.0, 1), 1);
+            float w = pow(sincl(j / 256.0, 1), 1);
+            float v = sin(ph + ii * ii * ii * sin(3 * ph - ii * ii * ii * w * sin(ph + sin(3 * ph + ii2 * sin(13 * ph)))));
+            tables[wavetable_metadata::wt_gtr2][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ph2 = j / 128.0 - 1;
+            float ii = i / 128.0;
+            float ii2 = dsp::clip(2 * (ii - 0.5), 0.0, 1.0);
+            //float w = sincl(ph2 * (1 + 15 * ii2 * ii2), 4) * pow(sincl(j / 256.0, 1), 1);
+            float w = pow(sincl(j / 256.0, 1), 1);
+            float v = sin(ph + ii * sin(3 * ph - ii * w * sin(ph + sin(3 * ph + 0.5 * ii2 * sin(13 * ph + 0.5 * sin(4 * ph))))));
+            tables[wavetable_metadata::wt_gtr3][i][j] = 32767 * v;
+        }
+    }
 }
 
 
