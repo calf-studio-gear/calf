@@ -517,6 +517,10 @@ const char *wavetable_names[] = {
     "Hard Sync",
     "Hard Sync 2",
     "Soft Sync",
+    "Bell 2",
+    "Bell 3",
+    "Tine",
+    "Tine 2",
 };
 
 const char *wavetable_init_soundfont = "";

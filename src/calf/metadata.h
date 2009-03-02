@@ -227,6 +227,10 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         wt_hardsync,
         wt_hardsync2,
         wt_softsync,
+        wt_bell2,
+        wt_bell3,
+        wt_tine,
+        wt_tine2,
         wt_count
     };
     enum { 

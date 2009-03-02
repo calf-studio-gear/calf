@@ -3885,4 +3885,58 @@
   <param name="bass_cut" value="514.079" />
   <param name="treble_cut" value="4064.15" />
 </preset>
+<preset plugin="wavetable" name="AmbiDeXtrous">
+  <param name="o1wave" value="13" />
+  <param name="o1offset" value="-0.02" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.03125" />
+  <param name="o2wave" value="15" />
+  <param name="o2offset" value="0.02" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-6" />
+  <param name="o2level" value="0.0412346" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="1274.22" />
+  <param name="adsr_s" value="0.39" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="60.93" />
+  <param name="adsr2_s" value="0" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
+<preset plugin="wavetable" name="The Clav">
+  <param name="o1wave" value="8" />
+  <param name="o1offset" value="-0.64" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.1" />
+  <param name="o2wave" value="6" />
+  <param name="o2offset" value="-2.98023e-09" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-6" />
+  <param name="o2level" value="0.0824692" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
 </presets>
