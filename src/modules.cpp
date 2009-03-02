@@ -512,6 +512,11 @@ const char *wavetable_names[] = {
     "Bell",
     "Blah",
     "Pluck",
+    "Stretch",
+    "Stretch 2",
+    "Hard Sync",
+    "Hard Sync 2",
+    "Soft Sync",
 };
 
 const char *wavetable_init_soundfont = "";
@@ -523,7 +528,7 @@ CALF_PORT_NAMES(wavetable) = {
 CALF_PLUGIN_INFO(wavetable) = { 0x8701, "Wavetable", "Calf Wavetable", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
 
 CALF_PORT_PROPS(wavetable) = {
-    { 6,       0,  wavetable_metadata::wt_count - 1, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, wavetable_names, "o1wave", "Osc1 Wave" },
+    { wavetable_metadata::wt_count - 1,       0,  wavetable_metadata::wt_count - 1, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, wavetable_names, "o1wave", "Osc1 Wave" },
     { 0.2,     -1,      1,  0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "o1offset", "Osc1 Ctl"},
     { 0,        -48,   48, 48*2+1, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o1trans", "Osc1 Transpose" },
     { 6,       -100,  100,      0, PF_INT   | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "o1detune", "Osc1 Detune" },
