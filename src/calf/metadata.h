@@ -236,6 +236,10 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         wt_gtr,
         wt_gtr2,
         wt_gtr3,
+        wt_gtr4,
+        wt_gtr5,
+        wt_reed,
+        wt_reed2,
         wt_count
     };
     enum { 

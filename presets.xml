@@ -3966,4 +3966,123 @@
   <param name="adsr3_r" value="50" />
   <param name="adsr3_v" value="0" />
 </preset>
+<preset plugin="wavetable" name="Reed">
+  <param name="o1wave" value="23" />
+  <param name="o1offset" value="-0.28" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.1" />
+  <param name="o2wave" value="24" />
+  <param name="o2offset" value="0.4" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-6" />
+  <param name="o2level" value="0.0669858" />
+  <param name="adsr_a" value="78.0644" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
+<preset plugin="wavetable" name="Double Reed">
+  <param name="o1wave" value="24" />
+  <param name="o1offset" value="0.02" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.1" />
+  <param name="o2wave" value="23" />
+  <param name="o2offset" value="0.24" />
+  <param name="o2trans" value="-12" />
+  <param name="o2detune" value="-6" />
+  <param name="o2level" value="0.0669858" />
+  <param name="adsr_a" value="78.0644" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
+<preset plugin="wavetable" name="Sharp Sync">
+  <param name="o1wave" value="0" />
+  <param name="o1offset" value="-0.06" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.03125" />
+  <param name="o2wave" value="11" />
+  <param name="o2offset" value="-0.52" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-5" />
+  <param name="o2level" value="0.0441942" />
+  <param name="adsr_a" value="1" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
+<preset plugin="wavetable" name="Swish">
+  <param name="o1wave" value="1" />
+  <param name="o1offset" value="-0.32" />
+  <param name="o1trans" value="0" />
+  <param name="o1detune" value="6" />
+  <param name="o1level" value="0.1" />
+  <param name="o2wave" value="0" />
+  <param name="o2offset" value="0.4" />
+  <param name="o2trans" value="0" />
+  <param name="o2detune" value="-6" />
+  <param name="o2level" value="0" />
+  <param name="adsr_a" value="47.5775" />
+  <param name="adsr_d" value="350" />
+  <param name="adsr_s" value="0.5" />
+  <param name="adsr_r" value="50" />
+  <param name="adsr_v" value="0" />
+  <param name="adsr2_a" value="1" />
+  <param name="adsr2_d" value="350" />
+  <param name="adsr2_s" value="0.5" />
+  <param name="adsr2_r" value="50" />
+  <param name="adsr2_v" value="0" />
+  <param name="adsr3_a" value="1" />
+  <param name="adsr3_d" value="350" />
+  <param name="adsr3_s" value="0.5" />
+  <param name="adsr3_r" value="50" />
+  <param name="adsr3_v" value="0" />
+</preset>
+<preset plugin="reverb" name="Room">
+  <param name="decay_time" value="0.445945" />
+  <param name="hf_damp" value="5508.46" />
+  <param name="room_size" value="4" />
+  <param name="diffusion" value="0.54" />
+  <param name="amount" value="0.469761" />
+  <param name="dry" value="1" />
+  <param name="predelay" value="25" />
+  <param name="bass_cut" value="257.65" />
+  <param name="treble_cut" value="20000" />
+</preset>
 </presets>
