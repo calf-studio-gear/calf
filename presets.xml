@@ -3900,12 +3900,12 @@
   <param name="adsr_d" value="1274.22" />
   <param name="adsr_s" value="0.39" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="1" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="60.93" />
   <param name="adsr2_s" value="0" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />
@@ -3927,12 +3927,12 @@
   <param name="adsr_d" value="350" />
   <param name="adsr_s" value="0.5" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="1" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="350" />
   <param name="adsr2_s" value="0.5" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />
@@ -3954,12 +3954,12 @@
   <param name="adsr_d" value="1863.35" />
   <param name="adsr_s" value="0.03" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="0.5" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="350" />
   <param name="adsr2_s" value="0.5" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />
@@ -3981,12 +3981,12 @@
   <param name="adsr_d" value="350" />
   <param name="adsr_s" value="0.5" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="1" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="350" />
   <param name="adsr2_s" value="0.5" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />
@@ -4008,12 +4008,12 @@
   <param name="adsr_d" value="350" />
   <param name="adsr_s" value="0.5" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="1" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="350" />
   <param name="adsr2_s" value="0.5" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />
@@ -4062,12 +4062,12 @@
   <param name="adsr_d" value="350" />
   <param name="adsr_s" value="0.5" />
   <param name="adsr_r" value="50" />
-  <param name="adsr_v" value="0" />
+  <param name="adsr_v" value="1" />
   <param name="adsr2_a" value="1" />
   <param name="adsr2_d" value="350" />
   <param name="adsr2_s" value="0.5" />
   <param name="adsr2_r" value="50" />
-  <param name="adsr2_v" value="0" />
+  <param name="adsr2_v" value="1" />
   <param name="adsr3_a" value="1" />
   <param name="adsr3_d" value="350" />
   <param name="adsr3_s" value="0.5" />

@@ -55,6 +55,8 @@ public:
     /// Sustain level used for the current note (used to calculate release rate if sustain changed during release stage
     /// of the current note)
     double thiss;
+    /// Value from the time before advance() was called last time
+    double old_value;
     
     adsr()
     {
@@ -64,8 +66,8 @@ public:
     /// Stop (reset) the envelope
     inline void reset()
     {
-        value = 0.f;
-        thiss = 0.f;
+        old_value = value = 0.0;
+        thiss = 0.0;
         state = STOP;
     }
     /// Set the envelope parameters (updates rate member variables based on values passed)
@@ -129,6 +131,7 @@ public:
     /// Calculate next envelope value
     inline void advance()
     {
+        old_value = value;
         // XXXKF This may use a state array instead of a switch some day (at least for phases other than attack and possibly sustain)
         switch(state)
         {
@@ -175,6 +178,12 @@ public:
             value = 0.f;
             break;
         }
+    }
+    /// Return a value between old_value (previous step) and value (current step)
+    /// @param pos between 0 and 1
+    inline double interpolate(double pos)
+    {
+        return old_value + (value - old_value) * pos;
     }
 };
 

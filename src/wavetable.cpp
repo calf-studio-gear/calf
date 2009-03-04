@@ -82,6 +82,8 @@ void wavetable_voice::render_block()
 {
     typedef wavetable_metadata md;
     
+    const float step = 1.f / BlockSize;
+
     int ospc = md::par_o2level - md::par_o1level;
     int espc = md::par_eg2attack - md::par_eg1attack;
     for (int j = 0; j < OscCount; j++) {
@@ -89,20 +91,22 @@ void wavetable_voice::render_block()
         oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc]), sample_rate);
     }
     float s = 0.001;
+    float scl[EnvCount];
     for (int j = 0; j < EnvCount; j++) {
         int o = j*espc;
         envs[j].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize); 
+        scl[j] = dsp::lerp(1.f, velocity, *params[md::par_eg1velscl + o]);; 
     }
     
-    float prev_value = envs[0].value + envs[1].value * 0.2;
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
-    float cur_value = envs[0].value + envs[1].value * 0.2;
     
+    float env_old = envs[0].old_value * scl[0] + 0.2 * envs[1].old_value * scl[1];
+    float env_new = envs[0].value * scl[0] + 0.2 * envs[1].value * scl[1];
     for (int i = 0; i < BlockSize; i++) {        
         float value = 0.f;
-        
-        float env = velocity * (prev_value + (cur_value - prev_value) * i * (1.0 / BlockSize));
+
+        float env = dsp::lerp(env_old, env_new, i * step);
         for (int j = 0; j < OscCount; j++) {
             value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[md::par_o1offset + j * ospc]) * 127.0 * 256), 0, 127 * 256)) * *params[md::par_o1level + j * ospc];
         }
