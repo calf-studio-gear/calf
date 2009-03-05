@@ -179,27 +179,37 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
     
 }
 
-bool monosynth_audio_module::get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context)
-{
-    monosynth_audio_module::precalculate_waves(NULL);
-    if (index == par_wave1 || index == par_wave2) {
-        if (subindex)
-            return false;
-        enum { S = 1 << MONOSYNTH_WAVE_BITS };
-        int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
-
-        float *waveform = waves[wave].original;
-        for (int i = 0; i < points; i++)
-            data[i] = waveform[i * S / points];
-        return true;
-    }
-    return false;
-}
-
 bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     monosynth_audio_module::precalculate_waves(NULL);
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
+    if (index == par_wave1 || index == par_wave2) {
+        if (subindex)
+            return false;
+        enum { S = 1 << MONOSYNTH_WAVE_BITS };
+        float value = *params[index];
+        int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
+
+        uint32_t shift = (int32_t)(0x78000000 * last_lfov * *params[par_lfopw]);
+        int flag = (wave == wave_sqr);
+        
+        if (!running) {
+            float *waveform = waves[wave].original;
+            for (int i = 0; i < points; i++)
+                data[i] = waveform[i * S / points];
+        }
+        else
+        {
+            shift = (flag ? S/2 : 0) + (shift >> (32 - MONOSYNTH_WAVE_BITS));
+            int sign = flag ? -1 : 1;
+            if (wave == wave_sqr)
+                wave = wave_saw;
+            float *waveform = waves[wave].original;
+            for (int i = 0; i < points; i++)
+                data[i] = (sign * waveform[i * S / points] + waveform[(i * S / points + shift) & (S - 1)]) / (sign == -1 ? 1 : 2);
+        }
+        return true;
+    }
     if (index == par_filtertype) {
         if (!running)
             return false;
@@ -225,10 +235,10 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
 
 void monosynth_audio_module::calculate_buffer_oscs(float lfo)
 {
-    uint32_t shift = (int32_t)(0x70000000 * last_lfov * *params[par_lfopw]);
+    uint32_t shift = (int32_t)(0x78000000 * last_lfov * *params[par_lfopw]);
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
-    uint32_t shift_delta = (int32_t)(0x70000000 * (lfo - last_lfov) * *params[par_lfopw] * (1.0 / step_size));
+    uint32_t shift_delta = (int32_t)(0x78000000 * (lfo - last_lfov) * *params[par_lfopw] * (1.0 / step_size));
     
     uint32_t shift1 = (flag1 << 31) + shift;
     uint32_t shift2 = (flag2 << 31) + shift;

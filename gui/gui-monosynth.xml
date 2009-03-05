@@ -11,14 +11,14 @@
         </table>
         <hbox>
           <if cond="directlink">
-            <line-graph param="o1_wave"/>
+            <line-graph param="o1_wave" refresh="1"/>
           </if>
           <vbox>
             <label param="o12_mix"/>
             <hscale param="o12_mix" position="bottom"/>
           </vbox>
           <if cond="directlink">
-            <line-graph param="o2_wave"/>
+            <line-graph param="o2_wave" refresh="1"/>
           </if>
         </hbox>
         <hbox>
