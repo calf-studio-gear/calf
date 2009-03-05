@@ -126,6 +126,13 @@ static inline float sincl(float x, float clip)
     return sin(M_PI * x);
 }
 
+static inline float blip(float x, float center, float range)
+{
+    if (x < center - range || x > center + range)
+        return 0;
+    return 1 - fabs(x - center)/range;
+}
+
 static void interpolate_wt(int16_t table[129][256], int step)
 {
     for (int i = 0; i < 128; i++)
@@ -454,6 +461,51 @@ wavetable_audio_module::wavetable_audio_module()
             float ii3 = dsp::clip((ii - 0.5)/0.5, 0.0, 1.0);
             float v = sin(ph + (ii + 0.05) * sin(ii * sin(2 * ph) - 2 * ii2 * sin(2 * ph + ii2 * sin(3 * ph)) + 3 * ii3 * sin(3 * ph)));
             tables[wavetable_metadata::wt_reed2][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            float mod = 0;
+            for (int k = 0; k < 13; k++)
+            {
+                mod += blip(i, k * 10, 30) * sin (ph * (5 + 3 * k) + ii * cos(ph * (2 + 2 * k)));
+            }
+            float v = sin(ph + ii * mod);
+            tables[wavetable_metadata::wt_silver][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            float mod = 0;
+            for (int k = 0; k < 16; k++)
+            {
+                mod += 2 * blip(i, k * 8, k * 4 + 10) * cos (ph * (k + 1));
+            }
+            float v = sin(ph + ii * mod);
+            tables[wavetable_metadata::wt_multi][i][j] = 32767 * v;
+        }
+    }
+    for (int i = 0; i < 129; i++)
+    {
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float ii = i / 128.0;
+            float mod = 0;
+            for (int k = 0; k < 16; k++)
+            {
+                mod += 2 * blip(i, k * 8, 16) * cos (ph * (2 * k + 1));
+            }
+            float v = (sin(ph + ii * mod) + ii * sin(2 * ph + ii * mod)) / 2;
+            tables[wavetable_metadata::wt_multi][i][j] = 32767 * v;
         }
     }
 }
