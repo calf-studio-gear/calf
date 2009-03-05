@@ -740,7 +740,7 @@ int main(int argc, char *argv[])
     sess.lash_client = lash_init(sess.lash_args, PACKAGE_NAME, LASH_Config_Data_Set, LASH_PROTOCOL(2, 0));
 # else
     sess.lash_client = lash_client_open(PACKAGE_NAME, LASH_Config_Data_Set, argc, argv);
-    sess.restoring_session = lash_client_is_being_restored(sess.lash_client);
+    sess.restoring_session = false; // lash_client_is_being_restored(sess.lash_client);
     lash_set_save_data_set_callback(sess.lash_client, save_data_set_cb, &sess);
     lash_set_load_data_set_callback(sess.lash_client, load_data_set_cb, &sess);
     lash_set_quit_callback(sess.lash_client, quit_cb, NULL);
