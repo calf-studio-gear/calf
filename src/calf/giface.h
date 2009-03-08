@@ -201,6 +201,43 @@ struct line_graph_iface
     virtual ~line_graph_iface() {}
 };
 
+enum table_column_type
+{
+    TCT_UNKNOWN, ///< guard invalid type
+    TCT_FLOAT, ///< float value (encoded as C locale string)
+    TCT_ENUM, ///< enum value (see: 'values' array in table_column_info) - encoded as string base 10 representation of integer
+    TCT_STRING, ///< string value (encoded as C-escaped string)
+};
+
+/// parameters of 
+struct table_column_info
+{
+    const char *name; ///< column label
+    table_column_type type; ///< column data type
+    float min; ///< minimum value (for float)
+    float max; ///< maximum value (for float and enum)
+    float def_value; ///< default value (for float and enum)
+    const char **values; ///< NULL unless a TCT_ENUM, where it represents a NULL-terminated list of choices
+};
+
+/// 'has string parameters containing tabular data' interface
+struct table_edit_iface
+{
+    /// retrieve the table layout for specific parameter
+    virtual const table_column_info *get_table_columns(int param) = 0;
+    
+    /// change parsable string to visible string
+    virtual std::string to_string(int param, int column, const std::string &src, std::string &error) { error.clear(); return src; }
+
+    /// make a parsable string out of user-entered string (including validation)
+    virtual std::string from_string(int param, int column, const std::string &src, std::string &error) { error.clear(); return src; }
+    
+    /// return a line graph interface for a specific parameter/column
+    virtual line_graph_iface *get_graph_iface(int param, int column) { return NULL; }
+    
+    virtual ~table_edit_iface() {}
+};
+
 /// 'may receive configure variables' interface
 struct send_configure_iface
 {
@@ -258,6 +295,8 @@ struct plugin_metadata_iface
     virtual int get_param_port_offset() = 0;
     /// @return line_graph_iface if any
     virtual line_graph_iface *get_line_graph_iface() = 0;
+    /// @return table_edit_iface if any
+    virtual table_edit_iface *get_table_edit_iface() = 0;
     /// @return NULL-terminated list of menu commands
     virtual plugin_command_info *get_commands() { return NULL; }
     /// @return description structure for given parameter
@@ -423,6 +462,7 @@ public:
     bool requires_midi() { return Metadata::require_midi; }
     bool is_rt_capable() { return Metadata::rt_capable; }
     line_graph_iface *get_line_graph_iface() { return dynamic_cast<line_graph_iface *>(this); }    
+    table_edit_iface *get_table_edit_iface() { return dynamic_cast<table_edit_iface *>(this); }    
     int get_param_port_offset()  { return Metadata::in_count + Metadata::out_count; }
     const char *get_gui_xml() { static const char *data_ptr = calf_plugins::load_gui_xml(get_id()); return data_ptr; }
     plugin_command_info *get_commands() { return NULL; }
@@ -461,6 +501,7 @@ public:
     bool requires_midi() { return impl->requires_midi(); }
     bool is_rt_capable() { return impl->is_rt_capable(); }
     line_graph_iface *get_line_graph_iface() { return impl->get_line_graph_iface(); }    
+    table_edit_iface *get_table_edit_iface() { return impl->get_table_edit_iface(); }    
     int get_param_port_offset()  { return impl->get_param_port_offset(); }
     const char *get_gui_xml() { return impl->get_gui_xml(); }
     plugin_command_info *get_commands() { return impl->get_commands(); }
