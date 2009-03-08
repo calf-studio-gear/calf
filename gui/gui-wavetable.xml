@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<vbox border="10">
+  <frame label="Oscillators">
+    <vbox border="10" spacing="10">
+      <table rows="5" cols="6">
+        <label attach-x="0" attach-y="1" text="Osc 1"/>
+        <label attach-x="0" attach-y="3" text="Osc 2"/>
+
+        <label attach-x="1" attach-y="0" text="Wave"/>
+        <label attach-x="2" attach-y="0" text="Offset"/>
+        <label attach-x="3" attach-y="0" text="Transpose"/>
+        <label attach-x="4" attach-y="0" text="Detune"/>
+        <label attach-x="5" attach-y="0" text="Level"/>
+        
+        <combo attach-x="1" attach-y="1" param="o1wave"/>
+        <knob  attach-x="2" attach-y="1" param="o1offset"/>
+        <knob  attach-x="3" attach-y="1" param="o1trans"/>
+        <knob  attach-x="4" attach-y="1" param="o1detune"/>
+        <knob  attach-x="5" attach-y="1" param="o1level"/>
+        
+        <value attach-x="2" attach-y="2" param="o1offset"/>
+        <value attach-x="3" attach-y="2" param="o1trans"/>
+        <value attach-x="4" attach-y="2" param="o1detune"/>
+        <value attach-x="5" attach-y="2" param="o1level"/>
+        
+        <combo attach-x="1" attach-y="3" param="o2wave"/>
+        <knob  attach-x="2" attach-y="3" param="o2offset"/>
+        <knob  attach-x="3" attach-y="3" param="o2trans"/>
+        <knob  attach-x="4" attach-y="3" param="o2detune"/>
+        <knob  attach-x="5" attach-y="3" param="o2level"/>
+
+        <value attach-x="2" attach-y="4" param="o2offset"/>
+        <value attach-x="3" attach-y="4" param="o2trans"/>
+        <value attach-x="4" attach-y="4" param="o2detune"/>
+        <value attach-x="5" attach-y="4" param="o2level"/>
+        
+      </table>
+    </vbox>
+  </frame>
+  <frame label="Envelopes">
+    <vbox>
+      <table rows="7" cols="6">
+        <label attach-x="0" attach-y="1" text="EG1"/>
+        <label attach-x="0" attach-y="3" text="EG2"/>
+        <label attach-x="0" attach-y="5" text="EG3"/>
+        
+        <label attach-x="1" attach-y="0" text="Attack"/>
+        <label attach-x="2" attach-y="0" text="Decay"/>
+        <label attach-x="3" attach-y="0" text="Sustain"/>
+        <label attach-x="4" attach-y="0" text="Release"/>
+        <label attach-x="5" attach-y="0" text="Vel Mod"/>
+
+        <knob  attach-x="1" attach-y="1" param="adsr_a"/>
+        <knob  attach-x="2" attach-y="1" param="adsr_d"/>
+        <knob  attach-x="3" attach-y="1" param="adsr_s"/>
+        <knob  attach-x="4" attach-y="1" param="adsr_r"/>
+        <knob  attach-x="5" attach-y="1" param="adsr_v"/>
+        <value attach-x="1" attach-y="2" param="adsr_a"/>
+        <value attach-x="2" attach-y="2" param="adsr_d"/>
+        <value attach-x="3" attach-y="2" param="adsr_s"/>
+        <value attach-x="4" attach-y="2" param="adsr_r"/>
+        <value attach-x="5" attach-y="2" param="adsr_v"/>
+
+        <knob  attach-x="1" attach-y="3" param="adsr2_a"/>
+        <knob  attach-x="2" attach-y="3" param="adsr2_d"/>
+        <knob  attach-x="3" attach-y="3" param="adsr2_s"/>
+        <knob  attach-x="4" attach-y="3" param="adsr2_r"/>
+        <knob  attach-x="5" attach-y="3" param="adsr2_v"/>
+        <value attach-x="1" attach-y="4" param="adsr2_a"/>
+        <value attach-x="2" attach-y="4" param="adsr2_d"/>
+        <value attach-x="3" attach-y="4" param="adsr2_s"/>
+        <value attach-x="4" attach-y="4" param="adsr2_r"/>
+        <value attach-x="5" attach-y="4" param="adsr2_v"/>
+
+        <knob  attach-x="1" attach-y="5" param="adsr3_a"/>
+        <knob  attach-x="2" attach-y="5" param="adsr3_d"/>
+        <knob  attach-x="3" attach-y="5" param="adsr3_s"/>
+        <knob  attach-x="4" attach-y="5" param="adsr3_r"/>
+        <knob  attach-x="5" attach-y="5" param="adsr3_v"/>
+        <value attach-x="1" attach-y="6" param="adsr3_a"/>
+        <value attach-x="2" attach-y="6" param="adsr3_d"/>
+        <value attach-x="3" attach-y="6" param="adsr3_s"/>
+        <value attach-x="4" attach-y="6" param="adsr3_r"/>
+        <value attach-x="5" attach-y="6" param="adsr3_v"/>
+      </table>
+    </vbox>
+  </frame>
+</vbox>
