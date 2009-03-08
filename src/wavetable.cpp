@@ -490,7 +490,7 @@ wavetable_audio_module::wavetable_audio_module()
                 mod += 2 * blip(i, k * 8, k * 4 + 10) * cos (ph * (k + 1));
             }
             float v = sin(ph + ii * mod);
-            tables[wavetable_metadata::wt_multi][i][j] = 32767 * v;
+            tables[wavetable_metadata::wt_brass][i][j] = 32767 * v;
         }
     }
     for (int i = 0; i < 129; i++)
