@@ -637,7 +637,6 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
     host_session *sess = static_cast<host_session *>(user_data);
     dictionary tmp;
     string pstr;
-    const char *str;
     string i_name = stripfmt(sess->client.input_name);
     string o_name = stripfmt(sess->client.output_name);
     string m_name = stripfmt(sess->client.midi_name);
@@ -645,7 +644,7 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
     tmp["output_prefix"] = stripfmt(sess->client.output_name);
     tmp["midi_prefix"] = stripfmt(sess->client.midi_name);
     pstr = encode_map(tmp);
-    lash_config_write_raw(handle, "global", &(str = pstr.c_str()), pstr.length());
+    lash_config_write_raw(handle, "global", pstr.c_str(), pstr.length());
     for (unsigned int i = 0; i < sess->plugins.size(); i++) {
         jack_host_base *p = sess->plugins[i];
         char ss[32];
@@ -664,7 +663,7 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
             tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
         tmp["preset"] = pstr;
         pstr = encode_map(tmp);
-        lash_config_write_raw(handle, ss, &(str = pstr.c_str()), pstr.length());
+        lash_config_write_raw(handle, ss, pstr.c_str(), pstr.length());
     }
     return true;
 }
