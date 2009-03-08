@@ -656,9 +656,9 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
         tmp.clear();
         tmp["instance_name"] = p->instance_name;
         if (p->get_input_count())
-        tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
+            tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
         if (p->get_output_count())
-        tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
+            tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
         if (p->get_midi_port())
             tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
         tmp["preset"] = pstr;
