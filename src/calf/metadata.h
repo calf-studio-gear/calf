@@ -245,6 +245,26 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         wt_multi,
         wt_count
     };
+    enum {
+        modsrc_none,
+        modsrc_env1,
+        modsrc_env2,
+        modsrc_env3,
+        modsrc_velocity,
+        modsrc_modwheel,
+        modsrc_count,
+    };
+    enum {
+        moddest_none,
+        moddest_o1shift,
+        moddest_o2shift,
+        moddest_o1detune,
+        moddest_o2detune,
+        moddest_o1pitch,
+        moddest_o2pitch,
+        moddest_dca,
+        moddest_count,
+    };
     enum { 
         par_o1wave, par_o1offset, par_o1transpose, par_o1detune, par_o1level,
         par_o2wave, par_o2offset, par_o2transpose, par_o2detune, par_o2level,
