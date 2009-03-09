@@ -39,7 +39,7 @@
   </frame>
   <frame label="Envelopes">
     <vbox>
-      <table rows="7" cols="6">
+      <table rows="7" cols="7">
         <label attach-x="0" attach-y="1" text="EG1"/>
         <label attach-x="0" attach-y="3" text="EG2"/>
         <label attach-x="0" attach-y="5" text="EG3"/>
@@ -47,41 +47,48 @@
         <label attach-x="1" attach-y="0" text="Attack"/>
         <label attach-x="2" attach-y="0" text="Decay"/>
         <label attach-x="3" attach-y="0" text="Sustain"/>
-        <label attach-x="4" attach-y="0" text="Release"/>
-        <label attach-x="5" attach-y="0" text="Vel Mod"/>
+        <label attach-x="4" attach-y="0" text="Fade"/>
+        <label attach-x="5" attach-y="0" text="Release"/>
+        <label attach-x="6" attach-y="0" text="Vel Mod"/>
 
         <knob  attach-x="1" attach-y="1" param="adsr_a"/>
         <knob  attach-x="2" attach-y="1" param="adsr_d"/>
         <knob  attach-x="3" attach-y="1" param="adsr_s"/>
-        <knob  attach-x="4" attach-y="1" param="adsr_r"/>
-        <knob  attach-x="5" attach-y="1" param="adsr_v"/>
+        <knob  attach-x="4" attach-y="1" param="adsr_f"/>
+        <knob  attach-x="5" attach-y="1" param="adsr_r"/>
+        <knob  attach-x="6" attach-y="1" param="adsr_v"/>
         <value attach-x="1" attach-y="2" param="adsr_a"/>
         <value attach-x="2" attach-y="2" param="adsr_d"/>
         <value attach-x="3" attach-y="2" param="adsr_s"/>
-        <value attach-x="4" attach-y="2" param="adsr_r"/>
-        <value attach-x="5" attach-y="2" param="adsr_v"/>
+        <value attach-x="4" attach-y="2" param="adsr_f"/>
+        <value attach-x="5" attach-y="2" param="adsr_r"/>
+        <value attach-x="6" attach-y="2" param="adsr_v"/>
 
         <knob  attach-x="1" attach-y="3" param="adsr2_a"/>
         <knob  attach-x="2" attach-y="3" param="adsr2_d"/>
         <knob  attach-x="3" attach-y="3" param="adsr2_s"/>
-        <knob  attach-x="4" attach-y="3" param="adsr2_r"/>
-        <knob  attach-x="5" attach-y="3" param="adsr2_v"/>
+        <knob  attach-x="4" attach-y="3" param="adsr2_f"/>
+        <knob  attach-x="5" attach-y="3" param="adsr2_r"/>
+        <knob  attach-x="6" attach-y="3" param="adsr2_v"/>
         <value attach-x="1" attach-y="4" param="adsr2_a"/>
         <value attach-x="2" attach-y="4" param="adsr2_d"/>
         <value attach-x="3" attach-y="4" param="adsr2_s"/>
-        <value attach-x="4" attach-y="4" param="adsr2_r"/>
-        <value attach-x="5" attach-y="4" param="adsr2_v"/>
+        <value attach-x="4" attach-y="4" param="adsr2_f"/>
+        <value attach-x="5" attach-y="4" param="adsr2_r"/>
+        <value attach-x="6" attach-y="4" param="adsr2_v"/>
 
         <knob  attach-x="1" attach-y="5" param="adsr3_a"/>
         <knob  attach-x="2" attach-y="5" param="adsr3_d"/>
         <knob  attach-x="3" attach-y="5" param="adsr3_s"/>
-        <knob  attach-x="4" attach-y="5" param="adsr3_r"/>
-        <knob  attach-x="5" attach-y="5" param="adsr3_v"/>
+        <knob  attach-x="4" attach-y="5" param="adsr3_f"/>
+        <knob  attach-x="5" attach-y="5" param="adsr3_r"/>
+        <knob  attach-x="6" attach-y="5" param="adsr3_v"/>
         <value attach-x="1" attach-y="6" param="adsr3_a"/>
         <value attach-x="2" attach-y="6" param="adsr3_d"/>
         <value attach-x="3" attach-y="6" param="adsr3_s"/>
-        <value attach-x="4" attach-y="6" param="adsr3_r"/>
-        <value attach-x="5" attach-y="6" param="adsr3_v"/>
+        <value attach-x="4" attach-y="6" param="adsr3_f"/>
+        <value attach-x="5" attach-y="6" param="adsr3_r"/>
+        <value attach-x="6" attach-y="6" param="adsr3_v"/>
       </table>
     </vbox>
   </frame>

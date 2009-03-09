@@ -94,7 +94,7 @@ void wavetable_voice::render_block()
     float scl[EnvCount];
     for (int j = 0; j < EnvCount; j++) {
         int o = j*espc;
-        envs[j].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize); 
+        envs[j].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize, *params[md::par_eg1fade + o] * s); 
         scl[j] = dsp::lerp(1.f, velocity, *params[md::par_eg1velscl + o]);; 
     }
     

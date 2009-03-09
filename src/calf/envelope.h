@@ -25,7 +25,7 @@
 
 namespace dsp {
 
-/// Rate-based ADSR envelope class. Note that if release rate is slower than decay
+/// Rate-based ADSFR envelope class. Note that if release rate is slower than decay
 /// rate, this envelope won't use release rate until output level falls below sustain level
 /// it's different to what certain hardware synth companies did, but it prevents the very
 /// un-musical (IMHO) behaviour known from (for example) SoundFont 2.
@@ -36,15 +36,15 @@ public:
         STOP, ///< envelope is stopped
         ATTACK, ///< attack - rise from 0 to 1
         DECAY, ///< decay - fall from 1 to sustain level
-        SUSTAIN, ///< sustain - remain at sustain level (unless sustain is 0 - then it gets stopped)
+        SUSTAIN, ///< sustain - remain at sustain level (unless sustain is 0 - then it gets stopped); with fade != 0 it goes towards 0% (positive fade) or 100% (negative fade)
         RELEASE, ///< release - fall from sustain (or pre-sustain) level to 0
-        LOCKDECAY  ///< locked decay 
+        LOCKDECAY,  ///< locked decay 
     };
     
     /// Current envelope stage
     env_state state;
     /// @note these are *rates*, not times
-    double attack, decay, sustain, release;
+    double attack, decay, sustain, release, fade;
     /// Requested release time (not the rate!) in frames, used for recalculating the rate if sustain is changed
     double release_time;
     /// Current envelope (output) level
@@ -76,13 +76,18 @@ public:
     /// @param s sustain level
     /// @param r release time
     /// @param er Envelope (update) rate
-    inline void set(float a, float d, float s, float r, float er)
+    /// @param f fade time (if applicable)
+    inline void set(float a, float d, float s, float r, float er, float f = 0.f)
     {
         attack = 1.0 / (a * er);
         decay = (1 - s) / (d * er);
         sustain = s;
         release_time = r * er;
         release = s / release_time;
+        if (fabs(f) > small_value<float>())
+            fade = 1.0 / (f * er);
+        else
+            fade = 0.0;
         // in release:
         // lock thiss setting (start of release for current note) and unlock thisrelease setting (current note's release rate)
         if (state != RELEASE)
@@ -161,7 +166,14 @@ public:
             }
             break;
         case SUSTAIN:
-            value = sustain;
+            if (fade != 0.f)
+            {
+                value -= fade;
+                if (value > 1.f)
+                    value = 1.f;
+            }
+            else
+                value = sustain;
             if (value < 0.00001f) {
                 value = 0;
                 state = STOP;

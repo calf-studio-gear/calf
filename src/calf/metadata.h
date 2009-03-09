@@ -268,9 +268,9 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
     enum { 
         par_o1wave, par_o1offset, par_o1transpose, par_o1detune, par_o1level,
         par_o2wave, par_o2offset, par_o2transpose, par_o2detune, par_o2level,
-        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1release, par_eg1velscl,
-        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2release, par_eg2velscl,
-        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3release, par_eg3velscl,
+        par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1fade, par_eg1release, par_eg1velscl,
+        par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2fade, par_eg2release, par_eg2velscl,
+        par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3fade, par_eg3release, par_eg3velscl,
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64 };
