@@ -12,6 +12,11 @@
                 <value param="mod_depth" />
             </vbox>
             <vbox border="10">
+                <label param="overlap" />
+                <knob param="overlap" />
+                <value param="overlap" />
+            </vbox>
+            <vbox border="10">
                 <label param="dry" />
                 <knob param="dry" />
                 <value param="dry" />

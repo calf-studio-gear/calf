@@ -87,7 +87,7 @@ public:
 struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 {
 public:    
-    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, param_count };
+    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, par_overlap, param_count };
     enum { in_count = 2, out_count = 2, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };

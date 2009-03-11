@@ -752,6 +752,7 @@ public:
         float rate = *params[par_rate];
         float min_delay = *params[par_delay] / 1000.0;
         float mod_depth = *params[par_depth] / 1000.0;
+        float overlap = *params[par_overlap];
         left.set_dry(dry); right.set_dry(dry);
         left.set_wet(wet); right.set_wet(wet);
         left.set_rate(rate); right.set_rate(rate);
@@ -759,6 +760,7 @@ public:
         left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
         int voices = (int)*params[par_voices];
         left.lfo.set_voices(voices); right.lfo.set_voices(voices);
+        left.lfo.set_overlap(overlap);right.lfo.set_overlap(overlap);
         float vphase = *params[par_vphase] * (1.f / 360.f);
         left.lfo.vphase = right.lfo.vphase = vphase * (4096 / std::max(voices - 1, 1));
         float r_phase = *params[par_stereo] * (1.f / 360.f);

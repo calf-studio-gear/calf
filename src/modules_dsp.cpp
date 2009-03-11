@@ -355,6 +355,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
 {
     if (!is_active)
         return false;
+    int nvoices = (int)*params[par_voices];
     if (index == par_delay && subindex < 3) 
     {
         if (subindex < 2)
@@ -365,9 +366,15 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
         }
         return ::get_graph(*this, subindex, data, points);
     }
-    if (index == par_rate && !subindex) {
-        for (int i = 0; i < points; i++)
-            data[i] = 0.95 * sin(i * 2 * M_PI / points);
+    if (index == par_rate && subindex < nvoices) {
+        sine_multi_lfo<float, 8> &lfo = left.lfo;
+        for (int i = 0; i < points; i++) {
+            float phase = i * 2 * M_PI / points;
+            // original -65536 to 65535 value
+            float orig = subindex * lfo.voice_offset + ((lfo.voice_depth >> (30-13)) * 65536.0 * (0.95 * sin(phase) + 1)/ 8192.0) - 65536;
+            // scale to -1..1
+            data[i] = orig / 65536.0;
+        }
         return true;
     }
     return false;
@@ -375,21 +382,27 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
 
 bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
 {
-    if ((index != par_rate && index != par_depth) || subindex >= 2 * (int)*params[par_voices])
+    int voice = subindex >> 1;
+    int nvoices = (int)*params[par_voices];
+    if ((index != par_rate && index != par_depth) || voice >= nvoices)
         return false;
 
+    float unit = (1 - *params[par_overlap]);
+    float scw = 1 + unit * (nvoices - 1);
     set_channel_color(context, subindex);
     sine_multi_lfo<float, 8> &lfo = (subindex & 1 ? right : left).lfo;
     if (index == par_rate)
     {
-        x = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
+        x = (double)(lfo.phase + lfo.vphase * voice) / 4096.0;
         y = 0.95 * sin(x * 2 * M_PI);
+        y = (voice * unit + (y + 1) / 2) / scw * 2 - 1;
     }
     else
     {
-        double ph = (double)(lfo.phase + lfo.vphase * (subindex >> 1)) / 4096.0;
+        double ph = (double)(lfo.phase + lfo.vphase * voice) / 4096.0;
         x = 0.5 + 0.5 * sin(ph * 2 * M_PI);
         y = subindex & 1 ? -0.75 : 0.75;
+        x = (voice * unit + x) / scw;
     }
     return true;
 }
