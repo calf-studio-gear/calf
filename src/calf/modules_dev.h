@@ -39,20 +39,37 @@ public:
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
-    uint32_t srate;
-    fluid_settings_t *settings;
-    fluid_synth_t *synth;
-    std::string soundfont;
-    int sfid;
 
+protected:
+    /// Current sample rate
+    uint32_t srate;
+    /// FluidSynth Settings object
+    fluid_settings_t *settings;
+    /// FluidSynth Synth object
+    fluid_synth_t *synth;
+    /// Soundfont filename
+    std::string soundfont;
+    /// Soundfont filename (as received from Fluidsynth)
+    std::string soundfont_name;
+    /// TAB-separated preset list (preset+128*bank TAB preset name LF)
+    std::string soundfont_preset_list;
+    /// FluidSynth assigned SoundFont ID
+    int sfid;
+    /// Map of preset+128*bank to preset name
+    std::map<uint32_t, std::string> sf_preset_names;
+    /// Last selected preset+128*bank
+    uint32_t last_selected_preset;
+
+    /// Update last_selected_preset based on synth object state
+    void update_preset_num();
+    /// Create a fluidsynth object and load the current soundfont
+    fluid_synth_t *create_synth(int &new_sfid);
+public:
     /// Constructor to initialize handles to NULL
     fluidsynth_audio_module();
 
-    /// Create a fluidsynth object and load the current soundfont
-    fluid_synth_t *create_synth(int &new_sfid);
-
     void post_instantiate();
-    void set_sample_rate(uint32_t sr) {}
+    void set_sample_rate(uint32_t sr) { srate = sr; }
     /// Handle MIDI Note On message (by sending it to fluidsynth)
     void note_on(int note, int vel);
     /// Handle MIDI Note Off message (by sending it to fluidsynth)
@@ -81,6 +98,7 @@ public:
     /// DSSI-style configure function for handling string port data
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *sci);
+    int send_status_updates(send_updates_iface *sui, int last_serial);
     uint32_t message_run(const void *valid_inputs, void *output_ports) { 
         // silence a default printf (which is kind of a warning about unhandled message_run)
         return 0;
