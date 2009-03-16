@@ -51,6 +51,7 @@ struct control_base
 struct param_control: public control_base
 {    
     int param_no;
+    std::string param_variable;
     GtkWidget *label, *widget;
     int in_change;
     
@@ -140,11 +141,12 @@ struct label_param_control: public param_control
 };
 
 /// Display-only control: value text
-struct value_param_control: public param_control
+struct value_param_control: public param_control, public send_updates_iface
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
+    virtual void send_status(const char *key, const char *value);
 };
 
 /// Display-only control: volume meter
@@ -296,7 +298,7 @@ struct filechooser_param_control: public param_control, public send_configure_if
 
 class plugin_gui_window;
 
-class plugin_gui: public send_configure_iface
+class plugin_gui: public send_configure_iface, public send_updates_iface
 {
 protected:
     int param_count;
@@ -307,6 +309,7 @@ protected:
     control_container *top_container;
     std::map<std::string, int> param_name_map;
     int ignore_stack;
+    int last_status_serial_no;
 public:
     plugin_gui_window *window;
     GtkWidget *container;
@@ -324,7 +327,10 @@ public:
     void refresh(int param_no, param_control *originator = NULL);
     void xml_element_start(const char *element, const char *attributes[]);
     void set_param_value(int param_no, float value, param_control *originator = NULL);
+    /// Called on change of configure variable
     void send_configure(const char *key, const char *value);
+    /// Called on change of status variable
+    void send_status(const char *key, const char *value);
     void on_idle();
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);

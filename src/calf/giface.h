@@ -249,6 +249,17 @@ struct send_configure_iface
     virtual ~send_configure_iface() {}
 };
 
+/// 'may receive new status values' interface
+struct send_updates_iface
+{
+    /// Called to set configure variable
+    /// @param key variable name
+    /// @param value variable content
+    virtual void send_status(const char *key, const char *value) = 0;
+    
+    virtual ~send_updates_iface() {}
+};
+
 struct plugin_command_info;
 
 /// General information about the plugin - @todo XXXKF lacks the "new" id-label-name triple
@@ -339,6 +350,12 @@ struct plugin_ctl_iface: public virtual plugin_metadata_iface
     virtual void send_configures(send_configure_iface *)=0;
     /// Restore all state (parameters and configure vars) to default values - implemented in giface.cpp
     virtual void clear_preset();
+    /// Call a named function in a plugin - this will most likely be redesigned soon - and never used
+    /// @retval false call has failed, result contains an error message
+    virtual bool blobcall(const char *command, const std::string &request, std::string &result) { result = "Call not supported"; return false; }
+    /// Update status variables changed since last_serial
+    /// @return new last_serial
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -389,8 +406,10 @@ public:
     inline void execute(int cmd_no) {}
     /// DSSI configure call
     virtual char *configure(const char *key, const char *value) { return NULL; }
-    /// Send all understood configure vars
+    /// Send all understood configure vars (none by default)
     inline void send_configures(send_configure_iface *sci) {}
+    /// Send all supported status vars (none by default)
+    inline int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     inline void params_reset() {}
     /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)

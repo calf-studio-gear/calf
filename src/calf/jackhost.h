@@ -360,6 +360,9 @@ public:
     virtual void send_configures(send_configure_iface *sci) {
         Module::send_configures(sci);
     }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { 
+        return Module::send_status_updates(sui, last_serial);
+    }
 };
 
 extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);

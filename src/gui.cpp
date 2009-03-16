@@ -221,19 +221,41 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
 
 GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
 {
-    gui = _gui, param_no = _param_no;
-    parameter_properties &props = get_props();
+    gui = _gui;
+    param_no = _param_no;
+    
     widget = gtk_label_new ("");
-    gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
+    if (param_no != -1)
+    {
+        parameter_properties &props = get_props();
+        gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
+    }
+    else
+    {
+        require_attribute("key");
+        require_int_attribute("width");
+        param_variable = attribs["key"];
+        gtk_label_set_width_chars (GTK_LABEL (widget), get_int("width"));        
+    }
     gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
     return widget;
 }
 
 void value_param_control::set()
 {
+    if (param_no == -1)
+        return;
     _GUARD_CHANGE_
     parameter_properties &props = get_props();
     gtk_label_set_text (GTK_LABEL (widget), props.to_string(gui->plugin->get_param_value(param_no)).c_str());    
+}
+
+void value_param_control::send_status(const char *key, const char *value)
+{
+    if (key == param_variable)
+    {
+        gtk_label_set_text (GTK_LABEL (widget), value);    
+    }
 }
 
 // VU meter
@@ -605,9 +627,15 @@ line_graph_param_control::~line_graph_param_control()
 /******************************** GUI proper ********************************/
 
 plugin_gui::plugin_gui(plugin_gui_window *_window)
-: window(_window)
+: last_status_serial_no(0)
+, window(_window)
 {
-    
+    ignore_stack = 0;
+    top_container = NULL;
+    current_control = NULL;
+    param_count = 0;
+    container = NULL;
+    effect_name = NULL;
 }
 
 static void window_destroyed(GtkWidget *window, gpointer data)
@@ -944,6 +972,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     }
     
     XML_ParserFree(parser);
+    last_status_serial_no = plugin->send_status_updates(this, 0);
     return GTK_WIDGET(top_container->container);
 }
 
@@ -959,29 +988,42 @@ void plugin_gui::send_configure(const char *key, const char *value)
     }
 }
 
+void plugin_gui::send_status(const char *key, const char *value)
+{
+    // XXXKF this should really be replaced by a separate list of SUI-capable param controls
+    for (unsigned int i = 0; i < params.size(); i++)
+    {
+        assert(params[i] != NULL);
+        send_updates_iface *sui = dynamic_cast<send_updates_iface *>(params[i]);
+        if (sui)
+            sui->send_status(key, value);
+    }
+}
+
 void plugin_gui::on_idle()
 {
     for (unsigned int i = 0; i < params.size(); i++)
     {
-        parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
-        bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
-        if (is_output) {
-            params[i]->set();
+        if (params[i]->param_no != -1)
+        {
+            parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+            bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
+            if (is_output) {
+                params[i]->set();
+            }
         }
         params[i]->on_idle();
     }    
+    last_status_serial_no = plugin->send_status_updates(this, last_status_serial_no);
     // XXXKF iterate over par2ctl, too...
 }
 
 void plugin_gui::refresh()
 {
     for (unsigned int i = 0; i < params.size(); i++)
-    {
         params[i]->set();
-        send_configure_iface *sci = dynamic_cast<send_configure_iface *>(params[i]);
-        if (sci)
-            plugin->send_configures(sci);
-    }
+    plugin->send_configures(this);
+    last_status_serial_no = plugin->send_status_updates(this, last_status_serial_no);
 }
 
 void plugin_gui::refresh(int param_no, param_control *originator)
