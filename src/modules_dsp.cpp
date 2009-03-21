@@ -35,7 +35,7 @@ using namespace calf_plugins;
 /// convert amplitude value to normalized grid-ish value (0dB = 0.5, 30dB = 1.0, -30 dB = 0.0, -60dB = -0.5, -90dB = -1.0)
 static inline float dB_grid(float amp)
 {
-    return log(amp) / log(256.0) + 0.4;
+    return log(amp) * (1.0 / log(256.0)) + 0.4;
 }
 
 template<class Fx>
@@ -486,8 +486,10 @@ bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &
         return false;
     if (!subindex)
     {
-        x = 0.5 + 0.5 * dB_grid(detected);
-        y = dB_grid(*params[param_bypass] > 0.5f ? detected : output_level(detected));
+        bool rms = *params[param_detection] == 0;
+        float det = rms ? sqrt(detected) : detected;
+        x = 0.5 + 0.5 * dB_grid(det);
+        y = dB_grid(*params[param_bypass] > 0.5f ? det : output_level(det));
         return *params[param_bypass] > 0.5f ? false : true;
     }
     return false;
@@ -620,7 +622,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         }
     }
     
-    detected = rms ? sqrt(linSlope) : linSlope;
+    detected = linSlope;
     
     if(params[param_compression] != NULL) {
         *params[param_compression] = compression;
