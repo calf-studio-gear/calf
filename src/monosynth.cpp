@@ -190,24 +190,17 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         float value = *params[index];
         int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
-        uint32_t shift = (int32_t)(0x78000000 * last_lfov * *params[par_lfopw]);
+        float offset = *params[index == par_wave1 ? par_pw1 : par_pw2];
+        uint32_t shift = (int32_t)(0x78000000 * clip11(offset + (running ? last_lfov : 0) * *params[par_lfopw]));
         int flag = (wave == wave_sqr);
-        
-        if (!running) {
-            float *waveform = waves[wave].original;
-            for (int i = 0; i < points; i++)
-                data[i] = waveform[i * S / points];
-        }
-        else
-        {
-            shift = (flag ? S/2 : 0) + (shift >> (32 - MONOSYNTH_WAVE_BITS));
-            int sign = flag ? -1 : 1;
-            if (wave == wave_sqr)
-                wave = wave_saw;
-            float *waveform = waves[wave].original;
-            for (int i = 0; i < points; i++)
-                data[i] = (sign * waveform[i * S / points] + waveform[(i * S / points + shift) & (S - 1)]) / (sign == -1 ? 1 : 2);
-        }
+                
+        shift = (flag ? S/2 : 0) + (shift >> (32 - MONOSYNTH_WAVE_BITS));
+        int sign = flag ? -1 : 1;
+        if (wave == wave_sqr)
+            wave = wave_saw;
+        float *waveform = waves[wave].original;
+        for (int i = 0; i < points; i++)
+            data[i] = (sign * waveform[i * S / points] + waveform[(i * S / points + shift) & (S - 1)]) / (sign == -1 ? 1 : 2);
         return true;
     }
     if (index == par_filtertype) {
@@ -235,13 +228,17 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
 
 void monosynth_audio_module::calculate_buffer_oscs(float lfo)
 {
-    uint32_t shift = (int32_t)(0x78000000 * last_lfov * *params[par_lfopw]);
+    int32_t shift1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + last_lfov * *params[par_lfopw]));
+    int32_t shift2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + last_lfov * *params[par_lfopw]));
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
-    uint32_t shift_delta = (int32_t)(0x78000000 * (lfo - last_lfov) * *params[par_lfopw] * (1.0 / step_size));
+    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw]));
+    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw]));
+    int32_t shift_delta1 = (shift_target1 - shift1) >> step_shift;
+    int32_t shift_delta2 = (shift_target2 - shift2) >> step_shift;
     
-    uint32_t shift1 = (flag1 << 31) + shift;
-    uint32_t shift2 = (flag2 << 31) + shift;
+    shift1 += (flag1 << 31);
+    shift2 += (flag2 << 31);
     float mix1 = 1 - 2 * flag1, mix2 = 1 - 2 * flag2;
     
     for (uint32_t i = 0; i < step_size; i++) 
@@ -250,8 +247,8 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
         float osc2val = osc2.get_phaseshifted(shift2, mix2);
         float wave = osc1val + (osc2val - osc1val) * xfade;
         buffer[i] = wave;
-        shift1 += shift_delta;
-        shift2 += shift_delta;
+        shift1 += shift_delta1;
+        shift2 += shift_delta2;
     }
     last_lfov = lfo;
 }
@@ -296,6 +293,16 @@ void monosynth_audio_module::calculate_buffer_stereo()
     }
 }
 
+void monosynth_audio_module::lookup_waveforms()
+{
+    osc1.waveform = waves[wave1 == wave_sqr ? wave_saw : wave1].get_level(osc1.phasedelta);
+    osc2.waveform = waves[wave2 == wave_sqr ? wave_saw : wave2].get_level(osc2.phasedelta);    
+    if (!osc1.waveform) osc1.waveform = silence;
+    if (!osc2.waveform) osc2.waveform = silence;
+    prev_wave1 = wave1;
+    prev_wave2 = wave2;
+}
+
 void monosynth_audio_module::delayed_note_on()
 {
     force_fadeout = false;
@@ -306,10 +313,7 @@ void monosynth_audio_module::delayed_note_on()
     ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
     fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
     set_frequency();
-    osc1.waveform = waves[wave1 == wave_sqr ? wave_saw : wave1].get_level(osc1.phasedelta);
-    osc2.waveform = waves[wave2 == wave_sqr ? wave_saw : wave2].get_level(osc2.phasedelta);
-    if (!osc1.waveform) osc1.waveform = silence;
-    if (!osc2.waveform) osc2.waveform = silence;
+    lookup_waveforms();
     lfo_clock = 0.f;
 
     if (!running)

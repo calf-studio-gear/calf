@@ -1,197 +1,213 @@
 <?xml version="1.0"?>
 <vbox border="10">
-  <hbox spacing="10">
-    <frame label="Oscillators">
-      <vbox border="10" spacing="10">
-        <table rows="2" cols="2">
-          <label attach-x="0" attach-y="0" param="o1_wave"/>
-          <label attach-x="1" attach-y="0" param="o2_wave"/>
-          <combo attach-x="0" attach-y="1" param="o1_wave"/>
-          <combo attach-x="1" attach-y="1" param="o2_wave"/>
-        </table>
-        <hbox>
-          <if cond="directlink">
-            <line-graph param="o1_wave" refresh="1"/>
-          </if>
-          <vbox>
-            <label param="o12_mix"/>
-            <hscale param="o12_mix" position="bottom"/>
-          </vbox>
-          <if cond="directlink">
-            <line-graph param="o2_wave" refresh="1"/>
-          </if>
-        </hbox>
-        <hbox>
-          <vbox>
-            <label param="o12_detune"/>
-            <knob param="o12_detune" expand="0" fill="0"/>
-            <value param="o12_detune"/>
-          </vbox>
-          <align>
-            <vbox>
-              <label param="phase_mode"/>
-              <combo param="phase_mode"/>
-            </vbox>
-          </align>
-          <vbox>
-            <label param="o2_xpose"/>
-            <knob type="1" param="o2_xpose"/>
-            <value param="o2_xpose"/>
-          </vbox>
-        </hbox>
-      </vbox>
-    </frame>
-    <frame label="Filter">
-      <vbox border="10">
-        <align>
-          <hbox>
-            <label param="filter"/>
-            <combo param="filter"/>
-            <if cond="directlink">
-              <line-graph param="filter" refresh="1" width="80" height="60"/>
-            </if>
-          </hbox>
-        </align>
-        <hbox>
-          <vbox>
-            <label param="cutoff"/>
-            <knob param="cutoff"/>
-            <value param="cutoff"/>
-          </vbox>
-          <vbox>
-            <label param="res"/>
-            <knob param="res"/>
-            <value param="res"/>
-          </vbox>
-          <vbox>
-            <label param="filter_sep"/>
-            <knob type="1" param="filter_sep"/>
-            <value param="filter_sep"/>
-          </vbox>
-          <vbox>
-            <label param="key_follow"/>
-            <knob param="key_follow"/>
-            <value param="key_follow"/>
-          </vbox>
-        </hbox>
-      </vbox>
-    </frame>
-  </hbox>
-  <frame label="LFO">
-    <hbox spacing="10">
+  <frame label="Global">
+    <hbox border="10" spacing="10">
       <vbox>
-        <label param="lfo_rate"/>
-        <knob param="lfo_rate"/>
-        <value param="lfo_rate"/>
+        <label param="pbend_range"/>
+        <knob param="pbend_range"/>
+        <value param="pbend_range"/>
       </vbox>
       <vbox>
-        <label param="lfo_delay"/>
-        <knob param="lfo_delay"/>
-        <value param="lfo_delay"/>
+        <label param="legato" expand="0"/>
+        <combo param="legato" expand="0" fill="0"/>
+        <label />
       </vbox>
       <vbox>
-        <label param="lfo2filter"/>
-        <knob param="lfo2filter" type="1"/>
-        <value param="lfo2filter"/>
+        <label param="portamento"/>
+        <knob param="portamento"/>
+        <value param="portamento"/>
       </vbox>
       <vbox>
-        <label param="lfo2pitch"/>
-        <knob param="lfo2pitch"/>
-        <value param="lfo2pitch"/>
-      </vbox>
-      <vbox>
-        <label param="lfo2pw"/>
-        <knob param="lfo2pw"/>
-        <value param="lfo2pw"/>
-      </vbox>
-      <vbox>
-        <label param="mwhl2lfo"/>
-        <knob param="mwhl2lfo"/>
-        <value param="mwhl2lfo"/>
+        <label param="master"/>
+        <knob param="master"/>
+        <value param="master"/>
       </vbox>
     </hbox>
   </frame>
-  <hbox spacing="10">
-    <frame label="Envelope">
-      <vbox border="10" spacing="10">
-        <hbox>
+  <notebook>
+    <vbox border="10" page="Audio path">
+      <frame label="Oscillators">
+        <vbox border="10" spacing="10">
+          <table rows="3" cols="4">
+            <label attach-x="0" attach-y="0" param="o1_wave"/>
+            <label attach-x="1" attach-y="0" param="o1_pw"/>
+            <label attach-x="2" attach-y="0" param="o2_pw"/>
+            <label attach-x="3" attach-y="0" param="o2_wave"/>
+            <combo attach-x="0" attach-y="1" param="o1_wave"/>
+            <knob attach-x="1" attach-y="1" param="o1_pw"/>
+            <knob attach-x="2" attach-y="1" param="o2_pw"/>
+            <combo attach-x="3" attach-y="1" param="o2_wave"/>
+            <value attach-x="1" attach-y="2" param="o1_pw"/>
+            <value attach-x="2" attach-y="2" param="o2_pw"/>
+          </table>
+          <hbox>
+            <if cond="directlink">
+              <line-graph param="o1_wave" refresh="1"/>
+            </if>
+            <vbox>
+              <label param="o12_mix"/>
+              <hscale param="o12_mix" position="bottom"/>
+            </vbox>
+            <if cond="directlink">
+              <line-graph param="o2_wave" refresh="1"/>
+            </if>
+          </hbox>
+          <hbox>
+            <vbox>
+              <label param="o12_detune"/>
+              <knob param="o12_detune" expand="0" fill="0"/>
+              <value param="o12_detune"/>
+            </vbox>
+            <align>
+              <vbox>
+                <label param="phase_mode"/>
+                <combo param="phase_mode"/>
+              </vbox>
+            </align>
+            <vbox>
+              <label param="o2_xpose"/>
+              <knob type="1" param="o2_xpose"/>
+              <value param="o2_xpose"/>
+            </vbox>
+          </hbox>
+        </vbox>
+      </frame>
+      <frame label="Filter">
+        <vbox border="10">
+          <align>
+            <hbox>
+              <label param="filter"/>
+              <combo param="filter"/>
+              <if cond="directlink">
+                <line-graph param="filter" refresh="1" width="80" height="60"/>
+              </if>
+            </hbox>
+          </align>
+          <hbox>
+            <vbox>
+              <label param="cutoff"/>
+              <knob param="cutoff"/>
+              <value param="cutoff"/>
+            </vbox>
+            <vbox>
+              <label param="res"/>
+              <knob param="res"/>
+              <value param="res"/>
+            </vbox>
+            <vbox>
+              <label param="filter_sep"/>
+              <knob type="1" param="filter_sep"/>
+              <value param="filter_sep"/>
+            </vbox>
+            <vbox>
+              <label param="key_follow"/>
+              <knob param="key_follow"/>
+              <value param="key_follow"/>
+            </vbox>
+          </hbox>
+        </vbox>
+      </frame>
+    </vbox>
+    
+    <vbox border="10" page="Modulation">
+      <frame label="LFO">
+        <hbox spacing="10">
           <vbox>
-            <label param="adsr_a"/>
-            <knob param="adsr_a"/>
-            <value param="adsr_a"/>
+            <label param="lfo_rate"/>
+            <knob param="lfo_rate"/>
+            <value param="lfo_rate"/>
           </vbox>
           <vbox>
-            <label param="adsr_d"/>
-            <knob param="adsr_d"/>
-            <value param="adsr_d"/>
+            <label param="lfo_delay"/>
+            <knob param="lfo_delay"/>
+            <value param="lfo_delay"/>
           </vbox>
           <vbox>
-            <label param="adsr_s"/>
-            <knob param="adsr_s"/>
-            <value param="adsr_s"/>
+            <label text="To Cutoff"/>
+            <knob param="lfo2filter" type="1"/>
+            <value param="lfo2filter"/>
           </vbox>
           <vbox>
-            <label param="adsr_r"/>
-            <knob param="adsr_r"/>
-            <value param="adsr_r"/>
+            <label text="To Pitch"/>
+            <knob param="lfo2pitch"/>
+            <value param="lfo2pitch"/>
+          </vbox>
+          <vbox>
+            <label text="To Osc PW"/>
+            <knob param="lfo2pw"/>
+            <value param="lfo2pw"/>
+          </vbox>
+          <vbox>
+            <label param="mwhl2lfo"/>
+            <knob param="mwhl2lfo"/>
+            <value param="mwhl2lfo"/>
           </vbox>
         </hbox>
-        <hbox>
-          <vbox>
-            <label param="env2cutoff"/>
-            <knob type="1" param="env2cutoff"/>
-            <value param="env2cutoff"/>
+      </frame>
+      <hbox spacing="10">
+        <frame label="Note velocity">
+          <hbox>
+            <vbox>
+              <label text="To Cutoff"/>
+              <knob param="vel2filter"/>
+              <value param="vel2filter"/>
+            </vbox>
+            <vbox>
+              <label text="To Amp"/>
+              <knob param="vel2amp"/>
+              <value param="vel2amp"/>
+            </vbox>        
+          </hbox>
+        </frame>
+        <frame label="Envelope">
+          <vbox border="10" spacing="10">
+            <hbox>
+              <vbox>
+                <label param="adsr_a"/>
+                <knob param="adsr_a"/>
+                <value param="adsr_a"/>
+              </vbox>
+              <vbox>
+                <label param="adsr_d"/>
+                <knob param="adsr_d"/>
+                <value param="adsr_d"/>
+              </vbox>
+              <vbox>
+                <label param="adsr_s"/>
+                <knob param="adsr_s"/>
+                <value param="adsr_s"/>
+              </vbox>
+              <vbox>
+                <label param="adsr_f"/>
+                <knob param="adsr_f"/>
+                <value param="adsr_f"/>
+              </vbox>
+              <vbox>
+                <label param="adsr_r"/>
+                <knob param="adsr_r"/>
+                <value param="adsr_r"/>
+              </vbox>
+            </hbox>
+            <hbox>
+              <vbox>
+                <label text="To Cutoff"/>
+                <knob type="1" param="env2cutoff"/>
+                <value param="env2cutoff"/>
+              </vbox>
+              <vbox>
+                <label text="To Res"/>
+                <knob param="env2res"/>
+                <value param="env2res"/>
+              </vbox>
+              <vbox>
+                <label text="To Amp"/>
+                <knob param="env2amp"/>
+                <value param="env2amp"/>
+              </vbox>
+            </hbox>
           </vbox>
-          <vbox>
-            <label param="env2res"/>
-            <knob param="env2res"/>
-            <value param="env2res"/>
-          </vbox>
-          <vbox>
-            <label param="env2amp"/>
-            <knob param="env2amp"/>
-            <value param="env2amp"/>
-          </vbox>
-        </hbox>
-      </vbox>
-    </frame>
-    <frame label="Settings">
-      <vbox border="10" spacing="10">
-        <hbox>
-          <vbox>
-            <label param="pbend_range"/>
-            <knob param="pbend_range"/>
-            <value param="pbend_range"/>
-          </vbox>
-          <vbox>
-            <label param="legato" expand="0"/>
-            <combo param="legato" expand="0" fill="0"/>
-            <label />
-          </vbox>
-          <vbox>
-            <label param="master"/>
-            <knob param="master"/>
-            <value param="master"/>
-          </vbox>
-        </hbox>
-        <hbox>
-          <vbox>
-            <label param="portamento"/>
-            <knob param="portamento"/>
-            <value param="portamento"/>
-          </vbox>
-          <vbox>
-            <label param="vel2filter"/>
-            <knob param="vel2filter"/>
-            <value param="vel2filter"/>
-          </vbox>
-          <vbox>
-            <label param="vel2amp"/>
-            <knob param="vel2amp"/>
-            <value param="vel2amp"/>
-          </vbox>
-        </hbox>
-      </vbox>
-    </frame>
-  </hbox>
+        </frame>
+      </hbox>
+    </vbox>
+  </notebook>
 </vbox>

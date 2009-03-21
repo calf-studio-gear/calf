@@ -55,7 +55,7 @@ public:
     dsp::onepole<float> phaseshifter;
     dsp::biquad_d1_lerp<float> filter;
     dsp::biquad_d1_lerp<float> filter2;
-    int wave1, wave2, filter_type, last_filter_type;
+    int wave1, wave2, prev_wave1, prev_wave2, filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, ampctl, fltctl, queue_vel;
     float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
@@ -93,7 +93,7 @@ public:
     /// Update variables from control ports.
     void params_changed() {
         float sf = 0.001f;
-        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, std::min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size);
+        envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, std::min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size, *params[par_fade] * sf);
         filter_type = dsp::fastf2i_drm(*params[par_filtertype]);
         decay_factor = odcr * 1000.0 / *params[par_decay];
         separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
@@ -105,6 +105,8 @@ public:
         legato = dsp::fastf2i_drm(*params[par_legato]);
         master.set_inertia(*params[par_master]);
         set_frequency();
+        if (wave1 != prev_wave1 || wave2 != prev_wave2)
+            lookup_waveforms();
     }
     void activate();
     void deactivate();
@@ -112,6 +114,8 @@ public:
     {
         precalculate_waves(progress_report);
     }
+    /// Set waveform addresses for oscillators
+    void lookup_waveforms();
     /// Run oscillators
     void calculate_buffer_oscs(float lfo);
     /// Run two filters in series to produce mono output samples.
