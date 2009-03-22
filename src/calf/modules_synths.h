@@ -55,11 +55,22 @@ public:
     dsp::onepole<float> phaseshifter;
     dsp::biquad_d1_lerp<float> filter;
     dsp::biquad_d1_lerp<float> filter2;
-    int wave1, wave2, prev_wave1, prev_wave2, filter_type, last_filter_type;
+    /// Waveform number - OSC1
+    int wave1;
+    /// Waveform number - OSC2
+    int wave2;
+    /// Last used waveform number - OSC1
+    int prev_wave1;
+    /// Last used waveform number - OSC2
+    int prev_wave2;
+    int filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
     float detune, xpose, xfade, ampctl, fltctl, queue_vel;
     float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
-    float last_pwoffset1, last_pwoffset2;
+    /// Last value of phase shift for pulse width emulation for OSC1
+    int32_t last_pwshift1;
+    /// Last value of phase shift for pulse width emulation for OSC2
+    int32_t last_pwshift2;
     int queue_note_on, stop_count, modwheel_value_int;
     int legato;
     dsp::adsr envelope;
@@ -86,6 +97,8 @@ public:
     inline void set_frequency()
     {
         float detune_scaled = (detune - 1); // * log(freq / 440);
+        if (*params[par_scaledetune] > 0)
+            detune_scaled *= pow(20.0 / freq, *params[par_scaledetune]);
         osc1.set_freq(freq * (1 - detune_scaled) * inertia_pitchbend.get_last() * lfo_bend, srate);
         osc2.set_freq(freq * (1 + detune_scaled)  * inertia_pitchbend.get_last() * lfo_bend * xpose, srate);
     }

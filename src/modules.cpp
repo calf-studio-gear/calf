@@ -299,6 +299,8 @@ CALF_PORT_PROPS(monosynth) = {
     { 100,        0, 1200,  0, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo2pitch", "LFO->Pitch" },
     { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "lfo2pw", "LFO->PW" },
     { 1,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "mwhl2lfo", "ModWheel->LFO" },
+
+    { 1,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "scale_detune", "Scale Detune" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

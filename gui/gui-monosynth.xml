@@ -55,8 +55,13 @@
           <hbox>
             <vbox>
               <label param="o12_detune"/>
-              <knob param="o12_detune" expand="0" fill="0"/>
+              <knob param="o12_detune"/>
               <value param="o12_detune"/>
+            </vbox>
+            <vbox>
+              <label param="scale_detune"/>
+              <knob param="scale_detune"/>
+              <value param="scale_detune"/>
             </vbox>
             <align>
               <vbox>

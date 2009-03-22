@@ -53,6 +53,7 @@ void monosynth_audio_module::activate() {
     filter.reset();
     filter2.reset();
     stack.clear();
+    last_pwshift1 = last_pwshift2 = 0;
 }
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;
@@ -90,7 +91,6 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
         data[i] = (float)(i < (64 * S / 2048)? -1.f : 1.f);
     waves[wave_pulse].make(bl, data);
 
-    // XXXKF sure this is a waste of space, this will be fixed some day by better bandlimiter
     for (int i = 0 ; i < S; i++)
         data[i] = (float)sin(i * M_PI / HS);
     waves[wave_sine].make(bl, data);
@@ -111,11 +111,11 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
     waves[wave_varistep].make(bl, data);
 
     for (int i = 0; i < S; i++) {
-        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (-1 + fmod (i * i / 262144.0, 2.0));
+        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (-1 + fmod (i * i * 8/ (S * S * 1.0), 2.0));
     }
     waves[wave_skewsaw].make(bl, data);
     for (int i = 0; i < S; i++) {
-        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (fmod (i * i / 262144.0, 2.0) < 1.0 ? -1.0 : +1.0);
+        data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (fmod (i * i * 8/ (S * S * 1.0), 2.0) < 1.0 ? -1.0 : +1.0);
     }
     waves[wave_skewsqr].make(bl, data);
 
@@ -190,8 +190,9 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         float value = *params[index];
         int wave = dsp::clip(dsp::fastf2i_drm(value), 0, (int)wave_count - 1);
 
-        float offset = *params[index == par_wave1 ? par_pw1 : par_pw2];
-        uint32_t shift = (int32_t)(0x78000000 * clip11(offset + (running ? last_lfov : 0) * *params[par_lfopw]));
+        uint32_t shift = index == par_wave1 ? last_pwshift1 : last_pwshift2;
+        if (!running)
+            shift = (int32_t)(0x78000000 * (*params[index == par_wave1 ? par_pw1 : par_pw2]));
         int flag = (wave == wave_sqr);
                 
         shift = (flag ? S/2 : 0) + (shift >> (32 - MONOSYNTH_WAVE_BITS));
@@ -228,17 +229,17 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
 
 void monosynth_audio_module::calculate_buffer_oscs(float lfo)
 {
-    int32_t shift1 = (int32_t)(0x78000000 * dsp::clip11(last_pwoffset1 + last_lfov * *params[par_lfopw]));
-    int32_t shift2 = (int32_t)(0x78000000 * dsp::clip11(last_pwoffset2 + last_lfov * *params[par_lfopw]));
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
+    int32_t shift1 = last_pwshift1;
+    int32_t shift2 = last_pwshift2;
     int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw]));
     int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw]));
-    int32_t shift_delta1 = (shift_target1 - shift1) >> step_shift;
-    int32_t shift_delta2 = (shift_target2 - shift2) >> step_shift;
+    int32_t shift_delta1 = ((shift_target1 >> 1) - (last_pwshift1 >> 1)) >> (step_shift - 1);
+    int32_t shift_delta2 = ((shift_target2 >> 1) - (last_pwshift2 >> 1)) >> (step_shift - 1);
     last_lfov = lfo;
-    last_pwoffset1 = *params[par_pw1];
-    last_pwoffset2 = *params[par_pw2];
+    last_pwshift1 = shift_target1;
+    last_pwshift2 = shift_target2;
     
     shift1 += (flag1 << 31);
     shift2 += (flag2 << 31);
