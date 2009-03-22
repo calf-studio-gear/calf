@@ -228,14 +228,17 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
 
 void monosynth_audio_module::calculate_buffer_oscs(float lfo)
 {
-    int32_t shift1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + last_lfov * *params[par_lfopw]));
-    int32_t shift2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + last_lfov * *params[par_lfopw]));
+    int32_t shift1 = (int32_t)(0x78000000 * dsp::clip11(last_pwoffset1 + last_lfov * *params[par_lfopw]));
+    int32_t shift2 = (int32_t)(0x78000000 * dsp::clip11(last_pwoffset2 + last_lfov * *params[par_lfopw]));
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
     int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw]));
     int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw]));
     int32_t shift_delta1 = (shift_target1 - shift1) >> step_shift;
     int32_t shift_delta2 = (shift_target2 - shift2) >> step_shift;
+    last_lfov = lfo;
+    last_pwoffset1 = *params[par_pw1];
+    last_pwoffset2 = *params[par_pw2];
     
     shift1 += (flag1 << 31);
     shift2 += (flag2 << 31);
@@ -250,7 +253,6 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
         shift1 += shift_delta1;
         shift2 += shift_delta2;
     }
-    last_lfov = lfo;
 }
 
 void monosynth_audio_module::calculate_buffer_ser()
