@@ -54,7 +54,7 @@ endif
 calf_la_SOURCES = modules.cpp modules_dsp.cpp modules_small.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp
 calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
 if USE_DEBUG
-calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static  
+calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS)
 else
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"  $(FLUIDSYNTH_DEPS_LIBS)
 endif
