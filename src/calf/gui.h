@@ -80,6 +80,9 @@ struct param_control: public control_base
     virtual ~param_control();
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+// containers
+
 struct control_container: public control_base
 {
     GtkContainer *container;
@@ -131,6 +134,9 @@ struct scrolled_container: public control_container
     virtual void add(GtkWidget *w, control_base *base);
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// controls
 
 /// Display-only control: static text
 struct label_param_control: public param_control
@@ -195,6 +201,7 @@ struct spin_param_control: public param_control
     static void value_changed(GtkSpinButton *widget, gpointer value);
 };
 
+/// Check box
 struct toggle_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -203,6 +210,7 @@ struct toggle_param_control: public param_control
     static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
 };
 
+/// Push button
 struct button_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -211,6 +219,7 @@ struct button_param_control: public param_control
     static void button_clicked(GtkButton *widget, gpointer value);
 };
 
+/// Combo list box
 struct combo_box_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -219,6 +228,7 @@ struct combo_box_param_control: public param_control
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
 };
 
+/// Line graph
 struct line_graph_param_control: public param_control
 {
     int last_generation;
@@ -230,6 +240,7 @@ struct line_graph_param_control: public param_control
     virtual ~line_graph_param_control();
 };
 
+/// Knob
 struct knob_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
@@ -238,6 +249,7 @@ struct knob_param_control: public param_control
     static void knob_value_changed(GtkWidget *widget, gpointer value);
 };
 
+/// Static keyboard image
 struct keyboard_param_control: public param_control
 {
     CalfKeyboard *kb;
@@ -247,6 +259,7 @@ struct keyboard_param_control: public param_control
     virtual void set() {}
 };
 
+/// Curve editor
 struct curve_param_control: public param_control, public send_configure_iface
 {
     CalfCurve *curve;
@@ -257,6 +270,7 @@ struct curve_param_control: public param_control, public send_configure_iface
     virtual void send_configure(const char *key, const char *value);
 };
 
+/// Text entry
 struct entry_param_control: public param_control, public send_configure_iface
 {
     GtkEntry *entry;
@@ -268,6 +282,7 @@ struct entry_param_control: public param_control, public send_configure_iface
     static void entry_value_changed(GtkWidget *widget, gpointer value);
 };
 
+/// File chooser button
 struct filechooser_param_control: public param_control, public send_configure_iface
 {
     GtkFileChooserButton *filechooser;
@@ -277,6 +292,20 @@ struct filechooser_param_control: public param_control, public send_configure_if
     virtual void set() {}
     virtual void send_configure(const char *key, const char *value);
     static void filechooser_value_changed(GtkWidget *widget, gpointer value);
+};
+
+/// List view used for variable-length tabular data
+struct listview_param_control: public param_control, public send_configure_iface
+{
+    GtkTreeView *tree;
+    GtkListStore *lstore;
+    calf_plugins::table_edit_iface *teif;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
+    virtual void send_configure(const char *key, const char *value);
+    void update_store(const std::string &data);
 };
 
 class plugin_gui_window;

@@ -624,6 +624,55 @@ line_graph_param_control::~line_graph_param_control()
 {
 }
 
+// list view
+
+GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    
+    teif = gui->plugin->get_table_edit_iface();
+    const table_column_info *tci = teif->get_table_columns(param_no);
+    assert(tci);
+    int cols = 0;
+    while (tci[cols].name != NULL)
+        cols++;
+    
+    GType *p = new GType[cols];
+    for (int i = 0; i < cols; i++)
+        p[i] = G_TYPE_STRING;
+    lstore = gtk_list_store_newv(cols, p);
+    update_store("");
+    widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(lstore));
+    delete []p;
+    tree = GTK_TREE_VIEW(widget);
+    assert(teif);
+    
+    for (int i = 0; i < cols; i++)
+    {
+        GtkCellRenderer *cr = gtk_cell_renderer_text_new ();
+        gtk_tree_view_insert_column_with_attributes(tree, i, tci[i].name, cr, "text", i, NULL);
+    }
+    gtk_tree_view_set_headers_visible(tree, TRUE);
+    
+    return widget;
+}
+
+void listview_param_control::update_store(const std::string &data)
+{
+    gtk_list_store_clear(lstore);
+    gtk_list_store_insert_with_values(lstore, NULL, 0, 0, "Foo", 1, "Bar", -1);
+    gtk_list_store_insert_with_values(lstore, NULL, 1, 0, "Kat", 1, "Dogg", -1);
+}
+
+void listview_param_control::send_configure(const char *key, const char *value)
+{
+    if (attribs["key"] == key)
+    {
+        update_store(value);
+    }
+}
+
 /******************************** GUI proper ********************************/
 
 plugin_gui::plugin_gui(plugin_gui_window *_window)
@@ -828,6 +877,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new entry_param_control;
     if (!strcmp(element, "filechooser"))
         return new filechooser_param_control;
+    if (!strcmp(element, "listview"))
+        return new listview_param_control;
     return NULL;
 }
 
@@ -912,6 +963,8 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
                 else
                     param_no = it->second;
             }
+            if (param_no != -1)
+                current_control->param_variable = plugin->get_param_props(param_no)->short_name;
             current_control->create(this, param_no);
             current_control->init_xml(element);
             current_control->set();
@@ -1090,16 +1143,13 @@ static const char *general_preset_pre_xml =
 "    <menu action=\"PresetMenuAction\">\n";
 
 static const char *builtin_preset_pre_xml = 
-// "      <menu action=\"BuiltinPresetMenuAction\">\n"
 "        <placeholder name=\"builtin_presets\">\n";
 
 static const char *user_preset_pre_xml = 
-// "      <menu action=\"UserPresetMenuAction\">\n"
 "        <placeholder name=\"user_presets\">\n";
 
 static const char *preset_post_xml = 
 "        </placeholder>\n"
-// "      </menu>\n"
 "    </menu>\n"
 "  </menubar>\n"
 "</ui>\n"
