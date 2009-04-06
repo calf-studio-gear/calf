@@ -152,8 +152,6 @@ struct value_param_control: public param_control, public send_updates_iface
 /// Display-only control: volume meter
 struct vumeter_param_control: public param_control
 {
-    CalfVUMeter *meter;
-    
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
@@ -162,8 +160,6 @@ struct vumeter_param_control: public param_control
 /// Display-only control: LED
 struct led_param_control: public param_control
 {
-    CalfLed *meter;
-    
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
@@ -172,8 +168,6 @@ struct led_param_control: public param_control
 /// Horizontal slider
 struct hscale_param_control: public param_control
 {
-    GtkHScale *scale;
-
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
@@ -185,8 +179,6 @@ struct hscale_param_control: public param_control
 /// Vertical slider
 struct vscale_param_control: public param_control
 {
-    GtkVScale *scale;
-
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
@@ -205,8 +197,6 @@ struct spin_param_control: public param_control
 
 struct toggle_param_control: public param_control
 {
-    GtkCheckButton *scale;
-
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
@@ -215,8 +205,6 @@ struct toggle_param_control: public param_control
 
 struct button_param_control: public param_control
 {
-    GtkCheckButton *scale;
-
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
@@ -225,8 +213,6 @@ struct button_param_control: public param_control
 
 struct combo_box_param_control: public param_control
 {
-    GtkComboBox *scale;
-
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
