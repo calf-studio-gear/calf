@@ -344,6 +344,10 @@ const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  
 
 const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
+const char *organ_filter_type_names[] = { "12dB/oct LP", "12dB/oct HP" };
+
+const char *organ_filter_send_names[] = { "Output", "Filter 2" };
+
 const char *organ_init_map_curve = "2\n0 1\n1 1\n";
 
 CALF_PORT_PROPS(organ) = {
@@ -434,7 +438,8 @@ CALF_PORT_PROPS(organ) = {
     { 0,         0,  organ_enums::perctrig_count - 1, 0, PF_ENUM | PF_CTL_COMBO, organ_percussion_trigger_names, "perc_trigger", "P: Trigger" },
     { 90,      0,360, 361, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "perc_stereo", "P: Stereo Phase" },
 
-    { 0,         0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "filter_chain", "Filter 1 To 2" },
+    { 0,         0,  1, 0, PF_ENUM | PF_CTL_COMBO, organ_filter_send_names, "filter_chain", "Filter 1 To" },
+    { 0,         0,  1, 0, PF_ENUM | PF_CTL_COMBO, organ_filter_type_names, "filter1_type", "Filter 1 Type" },
     { 0.1,         0,  1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN | PF_PROP_GRAPH, NULL, "master", "Volume" },
     
     { 2000,   20, 20000, 100, PF_FLOAT | PF_SCALE_LOG | PF_UNIT_HZ | PF_CTL_KNOB, NULL, "f1_cutoff", "F1 Cutoff" },

@@ -661,7 +661,10 @@ void organ_voice::render_block() {
         }
         if (i) mod += expression.get() * 1200 * 4;
         float fc = parameters->filters[i].cutoff * pow(2.0f, mod * (1.f / 1200.f));
-        filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
+        if (i == 0 && parameters->filter1_type >= 0.5f)
+            filterL[i].set_hp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
+        else
+            filterL[i].set_lp_rbj(dsp::clip<float>(fc, 10, 18000), parameters->filters[i].resonance, sample_rate);
         filterR[i].copy_coeffs(filterL[i]);
     }
     float amp_pre[ampctl_count - 1], amp_post[ampctl_count - 1];

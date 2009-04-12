@@ -132,6 +132,7 @@ struct organ_enums
         par_percfmdecay, par_percfmdepth, par_percfmwave, par_percfmharm, par_percvel2fm,
         par_perctrigger, par_percstereo,
         par_filterchain,
+        par_filter1type,
         par_master, 
         par_f1cutoff, par_f1res, par_f1env1, par_f1env2, par_f1env3, par_f1keyf,
         par_f2cutoff, par_f2res, par_f2env1, par_f2env2, par_f2env3, par_f2keyf,

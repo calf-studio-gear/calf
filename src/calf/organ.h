@@ -70,6 +70,7 @@ struct organ_parameters {
     float percussion_trigger;
     float percussion_stereo;
     float filter_chain;
+    float filter1_type;
     float master;
 
     organ_filter_parameters filters[organ_parameters::FilterCount];

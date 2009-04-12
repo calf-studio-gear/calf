@@ -200,12 +200,12 @@
                 <value param="f1_env3"/>
               </vbox>
             </hbox>
-            <align>
-              <hbox>
-                <toggle expand="0" fill="0" param="filter_chain"/>
-                <label param="filter_chain"/>
-              </hbox>
-            </align>
+            <hbox>
+              <label param="filter_chain"/>
+              <combo param="filter_chain"/>
+              <label param="filter1_type"/>
+              <combo param="filter1_type"/>
+            </hbox>
           </vbox>
         </frame>
         <frame label="Filter 2">
