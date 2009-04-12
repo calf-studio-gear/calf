@@ -830,3 +830,26 @@ void organ_audio_module::deactivate()
 {
     
 }
+
+void drawbar_organ::render_separate(float *output[], int nsamples)
+{
+    float buf[4096][2];
+    dsp::zero(&buf[0][0], 2 * nsamples);
+    basic_synth::render_to(buf, nsamples);
+    if (dsp::fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
+    {
+        for (int i = 0; i < nsamples; i += 64)
+            global_vibrato.process(parameters, buf + i, std::min(64, nsamples - i), sample_rate);
+    }
+    if (percussion.get_active())
+        percussion.render_percussion_to(buf, nsamples);
+    float gain = parameters->master * (1.0 / 8);
+    eq_l.set(parameters->bass_freq, parameters->bass_gain, parameters->treble_freq, parameters->treble_gain, sample_rate);
+    eq_r.copy_coeffs(eq_l);
+    for (int i=0; i<nsamples; i++) {
+        output[0][i] = gain*eq_l.process(buf[i][0]);
+        output[1][i] = gain*eq_r.process(buf[i][1]);
+    }
+    eq_l.sanitize();
+    eq_r.sanitize();
+}

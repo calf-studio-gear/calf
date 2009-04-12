@@ -89,6 +89,11 @@ struct organ_parameters {
     
     float pitch_bend_range;
     
+    float bass_freq;
+    float bass_gain;
+    float treble_freq;
+    float treble_gain;
+    
     float dummy_mapcurve;
     
     //////////////////////////////////////////////////////////////////////////
@@ -312,29 +317,13 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
     organ_parameters *parameters;
     percussion_voice percussion;
     organ_vibrato global_vibrato;
+    two_band_eq eq_l, eq_r;
     
      drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
     }
-    void render_separate(float *output[], int nsamples)
-    {
-        float buf[4096][2];
-        dsp::zero(&buf[0][0], 2 * nsamples);
-        basic_synth::render_to(buf, nsamples);
-        if (dsp::fastf2i_drm(parameters->lfo_mode) == organ_voice_base::lfomode_global)
-        {
-            for (int i = 0; i < nsamples; i += 64)
-                global_vibrato.process(parameters, buf + i, std::min(64, nsamples - i), sample_rate);
-        }
-        if (percussion.get_active())
-            percussion.render_percussion_to(buf, nsamples);
-        float gain = parameters->master * (1.0 / 8);
-        for (int i=0; i<nsamples; i++) {
-            output[0][i] = gain*buf[i][0];
-            output[1][i] = gain*buf[i][1];
-        }
-    }
+    void render_separate(float *output[], int nsamples);
     dsp::voice *alloc_voice() {
         block_voice<organ_voice> *v = new block_voice<organ_voice>();
         v->parameters = parameters;

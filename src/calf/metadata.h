@@ -143,6 +143,10 @@ struct organ_enums
         par_polyphony,
         par_quadenv,
         par_pwhlrange,
+        par_bassfreq,
+        par_bassgain,
+        par_treblefreq,
+        par_treblegain,
         par_var_mapcurve,
         param_count
     };

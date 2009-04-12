@@ -24,6 +24,7 @@
 #include <complex>
 #include <iostream>
 #include <calf/biquad.h>
+#include <calf/onepole.h>
 #include "primitives.h"
 #include "delay.h"
 #include "fixed_point.h"
@@ -735,6 +736,49 @@ public:
         for (int j = 0; j < order; j++)
             level *= left[j].freq_gain(freq, srate);
         return level;
+    }
+};
+
+class two_band_eq
+{
+private:
+    dsp::onepole<float> lowcut, highcut;
+    float low_gain, high_gain;
+
+public:
+    void reset()
+    {
+        lowcut.reset();
+        highcut.reset();
+    }
+    
+    inline float process(float v)
+    {
+        v = dsp::lerp(lowcut.process_hp(v), v, low_gain);
+        v = dsp::lerp(highcut.process_lp(v), v, high_gain);
+        return v;
+    }
+    
+    inline void copy_coeffs(const two_band_eq &src)
+    {
+        lowcut.copy_coeffs(src.lowcut);
+        highcut.copy_coeffs(src.highcut);
+        low_gain = src.low_gain;
+        high_gain = src.high_gain;
+    }
+    
+    void sanitize()
+    {
+        lowcut.sanitize();
+        highcut.sanitize();
+    }
+    
+    void set(float _low_freq, float _low_gain, float _high_freq, float _high_gain, float sr)
+    {
+        lowcut.set_hp(_low_freq, sr);
+        highcut.set_lp(_high_freq, sr);
+        low_gain = _low_gain;
+        high_gain = _high_gain;
     }
 };
 

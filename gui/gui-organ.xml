@@ -410,6 +410,30 @@
             </hbox>
           </vbox>
         </frame>
+        <frame label="Global EQ">
+          <hbox>
+            <vbox>
+              <label param="bass_freq"/>
+              <knob param="bass_freq"/>
+              <value param="bass_freq"/>
+            </vbox>
+            <vbox>
+              <label param="bass_gain"/>
+              <knob param="bass_gain"/>
+              <value param="bass_gain"/>
+            </vbox>
+            <vbox>
+              <label param="treble_freq"/>
+              <knob param="treble_freq"/>
+              <value param="treble_freq"/>
+            </vbox>
+            <vbox>
+              <label param="treble_gain"/>
+              <knob param="treble_gain"/>
+              <value param="treble_gain"/>
+            </vbox>
+          </hbox>
+        </frame>
       </vbox>
     </hbox>
     <vbox page="Advanced">

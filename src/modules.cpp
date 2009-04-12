@@ -492,6 +492,11 @@ CALF_PORT_PROPS(organ) = {
 
     { 200,        0, 2400,   25, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "pbend_range", "PBend Range" },
     
+    { 80,       20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "bass_freq", "Bass Freq" },
+    { 1,        0.1, 10,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "bass_gain", "Bass Gain" },
+    { 12000,     20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "treble_freq", "Treble Freq" },
+    { 1,        0.1, 10,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "treble_gain", "Treble Gain" },
+
     { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &organ_init_map_curve, "map_curve", "Key mapping curve" },
 };
 
