@@ -465,7 +465,7 @@ void host_session::connect()
         else
         if (autoconnect_midi_index != -1) {
             const char **ports = client.get_ports("(system|alsa_pcm):.*", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
-            for (int j = 0; ports[j]; j++)
+            for (int j = 0; ports && ports[j]; j++)
             {
                 if (j + 1 == autoconnect_midi_index) {
                     for (unsigned int i = 0; i < plugins.size(); i++)
