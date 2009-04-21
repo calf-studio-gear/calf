@@ -634,7 +634,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     teif = gui->plugin->get_table_edit_iface();
     const table_column_info *tci = teif->get_table_columns(param_no);
     assert(tci);
-    int cols = 0;
+    cols = 0;
     while (tci[cols].name != NULL)
         cols++;
     
@@ -650,7 +650,24 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     
     for (int i = 0; i < cols; i++)
     {
-        GtkCellRenderer *cr = gtk_cell_renderer_text_new ();
+        GtkCellRenderer *cr = NULL;
+        
+        if (tci[i].type == TCT_ENUM) {
+            cr = gtk_cell_renderer_combo_new ();
+            GtkListStore *cls = gtk_list_store_new(2, G_TYPE_INT, G_TYPE_STRING);
+            for (int j = 0; tci[i].values[j]; j++)
+                gtk_list_store_insert_with_values(cls, NULL, j, 0, j, 1, tci[i].values[j], -1);
+            g_object_set(cr, "model", cls, "editable", TRUE, "has-entry", FALSE, "text-column", 1, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, NULL);
+        }
+        else {
+            bool editable = tci[i].type != TCT_LABEL;
+            cr = gtk_cell_renderer_text_new ();
+            if (editable)
+                g_object_set(cr, "editable", TRUE, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, NULL);
+        }
+        g_object_set_data (G_OBJECT(cr), "column", (void *)&tci[i]);
+        gtk_signal_connect (GTK_OBJECT (cr), "edited", G_CALLBACK (on_edited), (gpointer)this);
+        gtk_signal_connect (GTK_OBJECT (cr), "editing-canceled", G_CALLBACK (on_editing_canceled), (gpointer)this);
         gtk_tree_view_insert_column_with_attributes(tree, i, tci[i].name, cr, "text", i, NULL);
     }
     gtk_tree_view_set_headers_visible(tree, TRUE);
@@ -661,8 +678,17 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
 void listview_param_control::update_store(const std::string &data)
 {
     gtk_list_store_clear(lstore);
-    gtk_list_store_insert_with_values(lstore, NULL, 0, 0, "Foo", 1, "Bar", -1);
-    gtk_list_store_insert_with_values(lstore, NULL, 1, 0, "Kat", 1, "Dogg", -1);
+    uint32_t rows = teif->get_table_rows(param_no);
+    for (uint32_t i = 0; i < rows; i++)
+    {
+        GtkTreeIter iter;
+        gtk_list_store_insert(lstore, &iter, i);
+        for (int j = 0; j < cols; j++)
+        {
+            gtk_list_store_set(lstore, &iter, j, teif->get_cell(i, j).c_str(), -1);
+        }
+        positions.push_back(iter);
+    }
 }
 
 void listview_param_control::send_configure(const char *key, const char *value)
@@ -671,6 +697,18 @@ void listview_param_control::send_configure(const char *key, const char *value)
     {
         update_store(value);
     }
+}
+
+void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis)
+{
+    const table_column_info *tci = pThis->teif->get_table_columns(pThis->param_no);
+    gtk_list_store_set(pThis->lstore, &pThis->positions[atoi(path)], ((table_column_info *)g_object_get_data(G_OBJECT(renderer), "column")) - tci, new_text, -1);
+    gtk_widget_grab_focus(pThis->widget);
+}
+
+void listview_param_control::on_editing_canceled(GtkCellRenderer *renderer, listview_param_control *pThis)
+{
+    gtk_widget_grab_focus(pThis->widget);
 }
 
 /******************************** GUI proper ********************************/

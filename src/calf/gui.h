@@ -300,12 +300,16 @@ struct listview_param_control: public param_control, public send_configure_iface
     GtkTreeView *tree;
     GtkListStore *lstore;
     calf_plugins::table_edit_iface *teif;
+    int cols;
+    std::vector<GtkTreeIter> positions;
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set() {}
     virtual void send_configure(const char *key, const char *value);
     void update_store(const std::string &data);
+    static void on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis);
+    static void on_editing_canceled(GtkCellRenderer *renderer, listview_param_control *pThis);
 };
 
 class plugin_gui_window;

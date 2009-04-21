@@ -574,3 +574,48 @@ void monosynth_audio_module::deactivate()
     envelope.reset();
     stack.clear();
 }
+
+static const char *monosynth_mod_src_names[] = {
+    "None", 
+    "Velocity",
+    "Pressure",
+    "ModWheel",
+    "Envelope",
+    "LFO",
+    NULL
+};
+
+static const char *monosynth_mod_dest_names[] = {
+    "None",
+    "Amplitude",
+    "Cutoff",
+    "Resonance",
+    "OX: Detune",
+    "O1: Detune",
+    "O2: Detune",
+    "OX: Pitch",
+    "O1: Pitch",
+    "O2: Pitch",
+    "OX: PW",
+    "O1: PW",
+    "O2: PW",
+    NULL
+};
+
+const table_column_info *monosynth_audio_module::get_table_columns(int param)
+{
+
+    static table_column_info tci[] = {
+        { "Source", TCT_ENUM, 0, 0, 0, monosynth_mod_src_names },
+        { "Modulator", TCT_ENUM, 0, 0, 0, monosynth_mod_src_names },
+        { "Amount", TCT_FLOAT, 0, 1, 1, NULL},
+        { "Destination", TCT_ENUM, 0, 0, 0, monosynth_mod_dest_names  },
+        { NULL }
+    };
+    return tci;
+}
+
+uint32_t monosynth_audio_module::get_table_rows(int param)
+{
+    return 2;
+}

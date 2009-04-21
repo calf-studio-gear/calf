@@ -37,7 +37,7 @@ namespace calf_plugins {
     
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
-class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface
+class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface, public table_edit_iface
 {
 public:
     float *ins[in_count]; 
@@ -191,6 +191,9 @@ public:
             
         return 3;
     }
+    
+    virtual const table_column_info *get_table_columns(int param);
+    virtual uint32_t get_table_rows(int param);
 };
 
 struct organ_audio_module: public audio_module<organ_metadata>, public dsp::drawbar_organ, public line_graph_iface

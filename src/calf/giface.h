@@ -207,6 +207,8 @@ enum table_column_type
     TCT_FLOAT, ///< float value (encoded as C locale string)
     TCT_ENUM, ///< enum value (see: 'values' array in table_column_info) - encoded as string base 10 representation of integer
     TCT_STRING, ///< string value (encoded as C-escaped string)
+    TCT_OBJECT, ///< external object, encoded as string
+    TCT_LABEL, ///< string value (encoded as C-escaped string)
 };
 
 /// parameters of 
@@ -225,15 +227,21 @@ struct table_edit_iface
 {
     /// retrieve the table layout for specific parameter
     virtual const table_column_info *get_table_columns(int param) = 0;
-    
-    /// change parsable string to visible string
-    virtual std::string to_string(int param, int column, const std::string &src, std::string &error) { error.clear(); return src; }
 
-    /// make a parsable string out of user-entered string (including validation)
-    virtual std::string from_string(int param, int column, const std::string &src, std::string &error) { error.clear(); return src; }
+    /// return the current number of rows
+    virtual uint32_t get_table_rows(int param) = 0;
     
-    /// return a line graph interface for a specific parameter/column
+    /// retrieve data item from the plugin
+    virtual std::string get_cell(int param, int column) { return calf_utils::i2s(param)+":"+calf_utils::i2s(column); }
+
+    /// set data item to the plugin
+    virtual void set_cell(int param, int column, const std::string &src, std::string &error) { error.clear(); }
+    
+    /// return a line graph interface for a specific parameter/column (unused for now)
     virtual line_graph_iface *get_graph_iface(int param, int column) { return NULL; }
+    
+    /// return an editor name for a specific grid cell (unused for now - I don't even know how editors be implemented)
+    virtual const char *get_cell_editor(int param, int column) { return NULL; }
     
     virtual ~table_edit_iface() {}
 };

@@ -103,6 +103,28 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64, step_shift = 6 };
+    enum {
+        modsrc_none,
+        modsrc_velocity,
+        modsrc_pressure,
+        modsrc_modwheel,
+        modsrc_env1,
+        modsrc_lfo1,
+        modsrc_count,
+    };
+    enum {
+        moddest_none,
+        moddest_amplitude,
+        moddest_cutoff,
+        moddest_resonance,
+        moddest_o1detune,
+        moddest_o2detune,
+        moddest_o1pitch,
+        moddest_o2pitch,
+        moddest_o1pw,
+        moddest_o2pw,
+        moddest_count,
+    };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
 };
     
