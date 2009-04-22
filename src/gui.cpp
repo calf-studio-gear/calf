@@ -72,11 +72,16 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
+    lstore = gtk_list_store_new(1, G_TYPE_STRING);
     
     parameter_properties &props = get_props();
     widget  = gtk_combo_box_new_text ();
-    for (int j = (int)props.min; j <= (int)props.max; j++)
-        gtk_combo_box_append_text (GTK_COMBO_BOX (widget), props.choices[j - (int)props.min]);
+    if (props.choices)
+    {
+        for (int j = (int)props.min; j <= (int)props.max; j++)
+            gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], -1);
+    }
+    gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
     gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
     
     return widget;
@@ -99,6 +104,25 @@ void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer 
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
+}
+
+void combo_box_param_control::send_status(const char *key, const char *value)
+{
+    if (key == attribs["key"])
+    {
+        gtk_list_store_clear (lstore);
+        std::string v = value;
+        int i = 0;
+        size_t pos = 0;
+        while (pos < v.length()) {
+            size_t endpos = v.find("\n", pos);
+            if (endpos == string::npos)
+                break;
+            gtk_list_store_insert_with_values (lstore, NULL, i, 0, v.substr(pos, endpos - pos).c_str(), -1);
+            pos = endpos + 1;
+            i++;
+        }
+    }
 }
 
 // horizontal fader

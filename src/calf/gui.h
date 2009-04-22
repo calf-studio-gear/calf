@@ -220,11 +220,14 @@ struct button_param_control: public param_control
 };
 
 /// Combo list box
-struct combo_box_param_control: public param_control
+struct combo_box_param_control: public param_control, public send_updates_iface
 {
+    GtkListStore *lstore;
+    
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
+    virtual void send_status(const char *key, const char *value);
     static void combo_value_changed(GtkComboBox *widget, gpointer value);
 };
 

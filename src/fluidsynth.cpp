@@ -39,6 +39,7 @@ fluidsynth_audio_module::fluidsynth_audio_module()
 {
     settings = NULL;
     synth = NULL;
+    status_serial = 1;
 }
 
 void fluidsynth_audio_module::post_instantiate()
@@ -129,6 +130,7 @@ void fluidsynth_audio_module::update_preset_num()
         last_selected_preset = p->get_num(p) + 128 * p->get_banknum(p);
     else
         last_selected_preset = 0;
+    status_serial++;
 }
 
 uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -146,7 +148,10 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
 {
     if (!strcmp(key, "soundfont"))
     {
-        printf("Loading %s\n", value);
+        if (*value)
+            printf("Loading %s\n", value);
+        else
+            printf("Creating a blank synth\n");
         soundfont = value;
         int newsfid = -1;
         fluid_synth_t *new_synth = create_synth(newsfid);
@@ -171,15 +176,18 @@ void fluidsynth_audio_module::send_configures(send_configure_iface *sci)
 
 int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int last_serial)
 {
-    sui->send_status("sf_name", soundfont_name.c_str());
-    sui->send_status("preset_list", soundfont_preset_list.c_str());
+    if (status_serial != last_serial)
+    {
+        sui->send_status("sf_name", soundfont_name.c_str());
+        sui->send_status("preset_list", soundfont_preset_list.c_str());
 
-    map<uint32_t, string>::const_iterator i = sf_preset_names.find(last_selected_preset);
-    if (i == sf_preset_names.end())
-        sui->send_status("preset_name", "");
-    else
-        sui->send_status("preset_name", i->second.c_str());
-    return last_serial + 1;
+        map<uint32_t, string>::const_iterator i = sf_preset_names.find(last_selected_preset);
+        if (i == sf_preset_names.end())
+            sui->send_status("preset_name", "");
+        else
+            sui->send_status("preset_name", i->second.c_str());
+    }
+    return status_serial;
 }
 
 fluidsynth_audio_module::~fluidsynth_audio_module()

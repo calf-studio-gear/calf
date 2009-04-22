@@ -59,6 +59,8 @@ protected:
     std::map<uint32_t, std::string> sf_preset_names;
     /// Last selected preset+128*bank
     uint32_t last_selected_preset;
+    /// Serial number of status data
+    int status_serial;
 
     /// Update last_selected_preset based on synth object state
     void update_preset_num();
