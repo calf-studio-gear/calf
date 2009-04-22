@@ -1,11 +1,20 @@
-<table rows="3" cols="3">
+<table rows="6" cols="3">
     <align attach-x="0" attach-y="0"   align-x="1"><label param="master"  /></align>
-    <knob attach-x="1" attach-w="1" attach-y="0" shrink-x="1" param="master"  />
+    <align attach-x="1" attach-w="1" attach-y="0"><knob param="master" /></align>
     <value param="master"  attach-x="2" attach-y="0" pad-x="10" />
 
     <align attach-x="0" attach-y="1"   align-x="1"><label param="soundfont"  /></align>
     <filechooser attach-x="1" attach-w="2" attach-y="1" key="soundfont" title="Select a soundfont" width_chars="30"/>
     <align attach-x="0" attach-y="2"   align-x="1"><label text="SF Name" /></align>
     <value attach-x="1" attach-w="2" attach-y="2" key="preset_name" width="30"/>
+    
+    <align attach-x="0" attach-y="3"   align-x="1"><label param="interpolation" /></align>
+    <align attach-x="1" attach-y="3" attach-w="2" ><combo param="interpolation" /></align>
+    <hbox attach-x="0" attach-y="4" attach-w="3">
+        <label param="reverb" />
+        <toggle param="reverb" />
+        <label param="chorus" />
+        <toggle param="chorus" />
+    </hbox>
 </table>
 

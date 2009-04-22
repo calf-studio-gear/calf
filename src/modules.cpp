@@ -509,6 +509,8 @@ CALF_PORT_PROPS(organ) = {
 
 const char *fluidsynth_init_soundfont = "";
 
+const char *fluidsynth_interpolation_names[] = { "None (zero-hold)", "Linear", "Cubic", "7-point" };
+
 CALF_PORT_NAMES(fluidsynth) = {
     "Out L", "Out R", 
 };
@@ -518,6 +520,9 @@ CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "Fluid
 CALF_PORT_PROPS(fluidsynth) = {
     { 0.5,         0,   1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
     { 0,          0,    0,    0, PF_STRING | PF_PROP_MSGCONTEXT, &fluidsynth_init_soundfont, "soundfont", "Soundfont" },
+    { 2,          0,    3,    0, PF_ENUM | PF_CTL_COMBO, fluidsynth_interpolation_names, "interpolation", "Interpolation" },
+    { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "reverb", "Enable Reverb" },
+    { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "chorus", "Enable Chorus" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

@@ -133,6 +133,10 @@ void fluidsynth_audio_module::update_preset_num()
 
 uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    static const int interp_lens[] = { 0, 1, 4, 7 };
+    fluid_synth_set_interp_method(synth, -1, interp_lens[dsp::clip<int>(fastf2i_drm(*params[par_interpolation]), 0, 3)]);
+    fluid_synth_set_reverb_on(synth, *params[par_reverb] > 0);
+    fluid_synth_set_chorus_on(synth, *params[par_chorus] > 0);
     fluid_synth_set_gain(synth, *params[par_master]);
     fluid_synth_write_float(synth, nsamples, outs[0], offset, 1, outs[1], offset, 1);
     return 3;

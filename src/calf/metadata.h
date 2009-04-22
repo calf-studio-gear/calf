@@ -232,7 +232,7 @@ struct organ_metadata: public organ_enums, public plugin_metadata<organ_metadata
 /// FluidSynth - metadata
 struct fluidsynth_metadata: public plugin_metadata<fluidsynth_metadata>
 {
-    enum { par_master, par_soundfont, param_count };
+    enum { par_master, par_soundfont, par_interpolation, par_reverb, par_chorus, param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = false };
     PLUGIN_NAME_ID_LABEL("fluidsynth", "fluidsynth", "Fluidsynth")
     const char **get_default_configure_vars();
