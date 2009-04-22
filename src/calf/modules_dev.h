@@ -61,6 +61,8 @@ protected:
     uint32_t last_selected_preset;
     /// Serial number of status data
     int status_serial;
+    /// Preset number to set on next process() call
+    volatile int set_preset;
 
     /// Update last_selected_preset based on synth object state
     void update_preset_num();

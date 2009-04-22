@@ -5,8 +5,8 @@
 
     <align attach-x="0" attach-y="1"   align-x="1"><label param="soundfont"  /></align>
     <filechooser attach-x="1" attach-w="2" attach-y="1" key="soundfont" title="Select a soundfont" width_chars="30"/>
-    <align attach-x="0" attach-y="2"   align-x="1"><label text="SF Name" /></align>
-    <combo attach-x="1" attach-w="2" attach-y="2" key="preset_list" width="30"/>
+    <align attach-x="0" attach-y="2"   align-x="1"><label text="Current preset" /></align>
+    <combo attach-x="1" attach-w="2" attach-y="2" key="preset_list" current-key="preset_key" setter-key="preset_key_set"/>
     
     <align attach-x="0" attach-y="3"   align-x="1"><label param="interpolation" /></align>
     <align attach-x="1" attach-y="3" attach-w="2" ><combo param="interpolation" /></align>

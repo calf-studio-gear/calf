@@ -1,5 +1,5 @@
 /* Calf DSP Library
- * Example audio modules - monosynth
+ * Fluidsynth wrapper
  *
  * Copyright (C) 2001-2007 Krzysztof Foltman
  *
@@ -40,6 +40,7 @@ fluidsynth_audio_module::fluidsynth_audio_module()
     settings = NULL;
     synth = NULL;
     status_serial = 1;
+    set_preset = -1;
 }
 
 void fluidsynth_audio_module::post_instantiate()
@@ -58,6 +59,7 @@ void fluidsynth_audio_module::deactivate()
 
 fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
 {
+    set_preset = -1;
     fluid_settings_t *new_settings = new_fluid_settings();
     fluid_synth_t *s = new_fluid_synth(new_settings);
     if (!soundfont.empty())
@@ -71,8 +73,6 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
         assert(sid >= 0);
         printf("sid=%d\n", sid);
         fluid_synth_sfont_select(s, 0, sid);
-        fluid_synth_bank_select(s, 0, 0);
-        fluid_synth_program_change(s, 0, 0);
         new_sfid = sid;
 
         fluid_sfont_t* sfont = fluid_synth_get_sfont(s, 0);
@@ -82,13 +82,22 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
         
         string preset_list;
         fluid_preset_t tmp;
+        int first_preset = -1;
         while(sfont->iteration_next(sfont, &tmp))
         {
             string pname = tmp.get_name(&tmp);
             int bank = tmp.get_banknum(&tmp);
             int num = tmp.get_num(&tmp);
-            sf_preset_names[num + 128 * bank] = pname;
-            preset_list += calf_utils::i2s(num + 128 * bank) + "\t" + pname + "\n";
+            int id = num + 128 * bank;
+            sf_preset_names[id] = pname;
+            preset_list += calf_utils::i2s(id) + "\t" + pname + "\n";
+            if (first_preset == -1)
+                first_preset = id;
+        }
+        if (first_preset != -1)
+        {
+            fluid_synth_bank_select(s, 0, first_preset >> 7);
+            fluid_synth_program_change(s, 0, first_preset & 127);        
         }
         soundfont_preset_list = preset_list;
     }
@@ -129,13 +138,22 @@ void fluidsynth_audio_module::update_preset_num()
     if (p)
         last_selected_preset = p->get_num(p) + 128 * p->get_banknum(p);
     else
-        last_selected_preset = 0;
+        last_selected_preset = -1;
     status_serial++;
 }
 
 uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     static const int interp_lens[] = { 0, 1, 4, 7 };
+    int new_preset = set_preset;
+    if (new_preset != -1)
+    {
+        // XXXKF yeah there's a tiny chance of race here, have to live with it until I write some utility classes for lock-free data passing
+        set_preset = -1;
+        fluid_synth_bank_select(synth, 0, new_preset >> 7);
+        fluid_synth_program_change(synth, 0, new_preset & 127);
+        last_selected_preset = new_preset;
+    }
     fluid_synth_set_interp_method(synth, -1, interp_lens[dsp::clip<int>(fastf2i_drm(*params[par_interpolation]), 0, 3)]);
     fluid_synth_set_reverb_on(synth, *params[par_reverb] > 0);
     fluid_synth_set_chorus_on(synth, *params[par_chorus] > 0);
@@ -146,6 +164,11 @@ uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, ui
 
 char *fluidsynth_audio_module::configure(const char *key, const char *value)
 {
+    if (!strcmp(key, "preset_key_set"))
+    {
+        set_preset = atoi(value);
+        return NULL;
+    }
     if (!strcmp(key, "soundfont"))
     {
         if (*value)
@@ -180,7 +203,7 @@ int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int la
     {
         sui->send_status("sf_name", soundfont_name.c_str());
         sui->send_status("preset_list", soundfont_preset_list.c_str());
-
+        sui->send_status("preset_key", calf_utils::i2s(last_selected_preset).c_str());
         map<uint32_t, string>::const_iterator i = sf_preset_names.find(last_selected_preset);
         if (i == sf_preset_names.end())
             sui->send_status("preset_name", "");

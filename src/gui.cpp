@@ -72,14 +72,14 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    lstore = gtk_list_store_new(1, G_TYPE_STRING);
+    lstore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING); // value, key
     
     parameter_properties &props = get_props();
     widget  = gtk_combo_box_new_text ();
     if (props.choices)
     {
         for (int j = (int)props.min; j <= (int)props.max; j++)
-            gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], -1);
+            gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], 1, calf_utils::i2s(j).c_str(), -1);
     }
     gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
     gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
@@ -102,15 +102,30 @@ void combo_box_param_control::get()
 
 void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer value)
 {
-    param_control *jhp = (param_control *)value;
-    jhp->get();
+    combo_box_param_control *jhp = (combo_box_param_control *)value;
+    if (jhp->attribs.count("setter-key"))
+    {
+        GtkTreeIter iter;
+        gchar *key = NULL;
+        if (gtk_combo_box_get_active_iter (GTK_COMBO_BOX (jhp->widget), &iter))
+        {
+            gtk_tree_model_get (GTK_TREE_MODEL (jhp->lstore), &iter, 1, &key, -1);
+            if (key) {
+                jhp->gui->plugin->configure(jhp->attribs["setter-key"].c_str(), key);
+                free(key);
+            }
+        }
+    }
+    else
+        jhp->get();
 }
 
 void combo_box_param_control::send_status(const char *key, const char *value)
 {
-    if (key == attribs["key"])
+    if (attribs.count("key") && key == attribs["key"])
     {
         gtk_list_store_clear (lstore);
+        key2pos.clear();
         std::string v = value;
         int i = 0;
         size_t pos = 0;
@@ -118,11 +133,40 @@ void combo_box_param_control::send_status(const char *key, const char *value)
             size_t endpos = v.find("\n", pos);
             if (endpos == string::npos)
                 break;
-            gtk_list_store_insert_with_values (lstore, NULL, i, 0, v.substr(pos, endpos - pos).c_str(), -1);
+            string line = v.substr(pos, endpos - pos);
+            string key, label;
+            size_t tabpos = line.find('\t');
+            if (tabpos == string::npos)
+                key = label = line;
+            else {
+                key = line.substr(0, tabpos);
+                label = line.substr(tabpos + 1);
+            }
+            GtkTreeIter gti;
+            gtk_list_store_insert_with_values (lstore, &gti, i, 0, label.c_str(), 1, key.c_str(), -1);
+            key2pos[key] = gti;
             pos = endpos + 1;
             i++;
         }
+        set_to_last_key();
     }
+    if (attribs.count("current-key") && key == attribs["current-key"])
+    {
+        last_key = value;
+        set_to_last_key();
+    }
+}
+
+void combo_box_param_control::set_to_last_key()
+{
+    map<string, GtkTreeIter>::iterator i = key2pos.find(last_key);
+    if (i != key2pos.end())
+    {
+        gtk_combo_box_set_active_iter (GTK_COMBO_BOX (widget), &i->second);
+        
+    }
+    else
+        gtk_combo_box_set_active (GTK_COMBO_BOX (widget), -1);
 }
 
 // horizontal fader
