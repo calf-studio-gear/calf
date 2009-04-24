@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <stdlib.h>
 #include <sstream>
-
+#include <stdio.h>
 using namespace osctl;
 using namespace std;
 

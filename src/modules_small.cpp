@@ -31,7 +31,7 @@
 #include <calf/osc.h>
 #include <calf/modules_small.h>
 #include <calf/lv2helpers.h>
-
+#include <stdio.h>
 #ifdef ENABLE_EXPERIMENTAL
 
 #if USE_LV2
