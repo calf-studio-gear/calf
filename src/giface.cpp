@@ -23,7 +23,7 @@
 #include <memory.h>
 #include <calf/giface.h>
 #include <calf/osctlnet.h>
-
+#include <stdio.h>
 using namespace std;
 using namespace calf_utils;
 using namespace calf_plugins;

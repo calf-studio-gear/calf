@@ -37,7 +37,7 @@
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
 #include <calf/utils.h>
-
+#include <stdio.h>
 using namespace std;
 using namespace calf_utils;
 using namespace calf_plugins;
