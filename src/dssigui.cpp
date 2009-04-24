@@ -195,7 +195,9 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         }
     }
     char *configure(const char *key, const char *value) { 
-        cfg_vars[key] = value;
+        // do not store temporary vars in presets
+        if (strncmp(key, "OSC:", 4))
+            cfg_vars[key] = value;
         osc_inline_typed_strstream str;
         str << key << value;
         client->send("/configure", str);
@@ -468,7 +470,9 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     {
         string key, value;
         buffer >> key >> value;
-        plugin->cfg_vars[key] = value;
+        // do not store temporary vars in presets
+        if (strncmp(key.c_str(), "OSC:", 4))
+            plugin->cfg_vars[key] = value;
         // XXXKF perhaps this should be queued !
         window->gui->refresh();
         return;
