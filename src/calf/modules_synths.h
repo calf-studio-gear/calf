@@ -35,11 +35,19 @@ namespace calf_plugins {
 
 #define MONOSYNTH_WAVE_BITS 12
     
+struct modulation_entry
+{
+    int src1, src2;
+    float amount;
+    int dest;
+};
+
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
 class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface, public table_edit_iface
 {
 public:
+    enum { mod_matrix_slots = 10 };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
@@ -76,8 +84,18 @@ public:
     dsp::adsr envelope;
     dsp::keystack stack;
     dsp::gain_smoothing master;
+    /// Smoothed cutoff value
     dsp::inertia<dsp::exponential_ramp> inertia_cutoff;
+    /// Smoothed pitch bend value
     dsp::inertia<dsp::exponential_ramp> inertia_pitchbend;
+    /// Smoothed channel pressure value
+    dsp::inertia<dsp::linear_ramp> inertia_pressure;
+    /// Rows of the modulation matrix
+    modulation_entry mod_matrix[mod_matrix_slots];
+    /// Currently used velocity
+    float velocity;
+    /// Current calculated mod matrix outputs
+    float moddest[moddest_count];
      
     monosynth_audio_module();    
     static void precalculate_waves(progress_report_iface *reporter);
@@ -88,6 +106,8 @@ public:
     void note_on(int note, int vel);
     /// Handle MIDI Note Off message
     void note_off(int note, int vel);
+    /// Handle MIDI Channel Pressure
+    void channel_pressure(int value);
     /// Handle pitch bend message.
     inline void pitch_bend(int value)
     {
@@ -99,8 +119,13 @@ public:
         float detune_scaled = (detune - 1); // * log(freq / 440);
         if (*params[par_scaledetune] > 0)
             detune_scaled *= pow(20.0 / freq, *params[par_scaledetune]);
-        osc1.set_freq(freq * (1 - detune_scaled) * inertia_pitchbend.get_last() * lfo_bend, srate);
-        osc2.set_freq(freq * (1 + detune_scaled)  * inertia_pitchbend.get_last() * lfo_bend * xpose, srate);
+        float p1 = 1, p2 = 1;
+        if (moddest[moddest_o1detune] != 0)
+            p1 = pow(2.0, moddest[moddest_o1detune] * (1.0 / 1200.0));
+        if (moddest[moddest_o2detune] != 0)
+            p2 = pow(2.0, moddest[moddest_o2detune] * (1.0 / 1200.0));
+        osc1.set_freq(freq * (1 - detune_scaled) * p1 * inertia_pitchbend.get_last() * lfo_bend, srate);
+        osc2.set_freq(freq * (1 + detune_scaled) * p2 * inertia_pitchbend.get_last() * lfo_bend * xpose, srate);
     }
     /// Handle control change messages.
     void control_change(int controller, int value);
@@ -152,48 +177,15 @@ public:
     bool is_noisy(int param_no) { return param_no != par_cutoff; }
     /// Calculate control signals and produce step_size samples of output.
     void calculate_step();
+    /// Process modulation matrix
+    void calculate_modmatrix(float *modsrc);
     /// Main processing function
-    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        if (!running && queue_note_on == -1) {
-            for (uint32_t i = 0; i < nsamples / step_size; i++)
-                envelope.advance();
-            return 0;
-        }
-        uint32_t op = offset;
-        uint32_t op_end = offset + nsamples;
-        while(op < op_end) {
-            if (output_pos == 0) {
-                if (running || queue_note_on != -1)
-                    calculate_step();
-                else {
-                    envelope.advance();
-                    dsp::zero(buffer, step_size);
-                }
-            }
-            if(op < op_end) {
-                uint32_t ip = output_pos;
-                uint32_t len = std::min(step_size - output_pos, op_end - op);
-                if (is_stereo_filter())
-                    for(uint32_t i = 0 ; i < len; i++) {
-                        float vol = master.get();
-                        outs[0][op + i] = buffer[ip + i] * vol,
-                        outs[1][op + i] = buffer2[ip + i] * vol;
-                    }
-                else
-                    for(uint32_t i = 0 ; i < len; i++)
-                        outs[0][op + i] = outs[1][op + i] = buffer[ip + i] * master.get();
-                op += len;
-                output_pos += len;
-                if (output_pos == step_size)
-                    output_pos = 0;
-            }
-        }
-            
-        return 3;
-    }
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     
     virtual const table_column_info *get_table_columns(int param);
     virtual uint32_t get_table_rows(int param);
+    virtual std::string get_cell(int param, int row, int column);
+    virtual void set_cell(int param, int row, int column, const std::string &src, std::string &error);
 };
 
 struct organ_audio_module: public audio_module<organ_metadata>, public dsp::drawbar_organ, public line_graph_iface

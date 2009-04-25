@@ -710,7 +710,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     for (int i = 0; i < cols; i++)
         p[i] = G_TYPE_STRING;
     lstore = gtk_list_store_newv(cols, p);
-    update_store("");
+    update_store();
     widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(lstore));
     delete []p;
     tree = GTK_TREE_VIEW(widget);
@@ -743,7 +743,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
-void listview_param_control::update_store(const std::string &data)
+void listview_param_control::update_store()
 {
     gtk_list_store_clear(lstore);
     uint32_t rows = teif->get_table_rows(param_no);
@@ -753,7 +753,7 @@ void listview_param_control::update_store(const std::string &data)
         gtk_list_store_insert(lstore, &iter, i);
         for (int j = 0; j < cols; j++)
         {
-            gtk_list_store_set(lstore, &iter, j, teif->get_cell(i, j).c_str(), -1);
+            gtk_list_store_set(lstore, &iter, j, teif->get_cell(param_no, i, j).c_str(), -1);
         }
         positions.push_back(iter);
     }
@@ -763,15 +763,28 @@ void listview_param_control::send_configure(const char *key, const char *value)
 {
     if (attribs["key"] == key)
     {
-        update_store(value);
+        update_store();
     }
 }
 
 void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis)
 {
     const table_column_info *tci = pThis->teif->get_table_columns(pThis->param_no);
-    gtk_list_store_set(pThis->lstore, &pThis->positions[atoi(path)], ((table_column_info *)g_object_get_data(G_OBJECT(renderer), "column")) - tci, new_text, -1);
-    gtk_widget_grab_focus(pThis->widget);
+    int column = ((table_column_info *)g_object_get_data(G_OBJECT(renderer), "column")) - tci;
+    string error;
+    pThis->teif->set_cell(pThis->param_no, atoi(path), column, new_text, error);
+    if (error.empty()) {
+        pThis->update_store();
+        gtk_widget_grab_focus(pThis->widget);
+    }
+    else
+    {
+        GtkWidget *dialog = gtk_message_dialog_new(pThis->gui->window->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
+            "%s", error.c_str());
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        gtk_widget_grab_focus(pThis->widget);
+    }
 }
 
 void listview_param_control::on_editing_canceled(GtkCellRenderer *renderer, listview_param_control *pThis)

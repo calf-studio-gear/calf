@@ -248,6 +248,9 @@ public:
         case 12:
             Module::program_change(buffer[1]);
             break;
+        case 13:
+            Module::channel_pressure(buffer[1]);
+            break;
         case 14:
             value = buffer[1] + 128 * buffer[2] - 8192;
             Module::pitch_bend(value);

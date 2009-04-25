@@ -114,13 +114,11 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     };
     enum {
         moddest_none,
-        moddest_amplitude,
+        moddest_attenuation,
         moddest_cutoff,
         moddest_resonance,
         moddest_o1detune,
         moddest_o2detune,
-        moddest_o1pitch,
-        moddest_o2pitch,
         moddest_o1pw,
         moddest_o2pw,
         moddest_count,

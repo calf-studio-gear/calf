@@ -35,9 +35,17 @@ using namespace std;
 float silence[4097];
 
 monosynth_audio_module::monosynth_audio_module()
-: inertia_cutoff(exponential_ramp(1))
-, inertia_pitchbend(exponential_ramp(1))
+: inertia_cutoff(1)
+, inertia_pitchbend(1)
+, inertia_pressure(64)
 {
+    for (int i = 0; i < mod_matrix_slots; i++)
+    {
+        mod_matrix[i].src1 = modsrc_none;
+        mod_matrix[i].src2 = modsrc_none;
+        mod_matrix[i].amount = 0.f;
+        mod_matrix[i].dest = moddest_none;
+    }
 }
 
 void monosynth_audio_module::activate() {
@@ -50,6 +58,7 @@ void monosynth_audio_module::activate() {
     modwheel_value = 0.f;
     modwheel_value_int = 0;
     inertia_cutoff.set_now(*params[par_cutoff]);
+    inertia_pressure.set_now(0);
     filter.reset();
     filter2.reset();
     stack.clear();
@@ -233,8 +242,8 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     int flag2 = (wave2 == wave_sqr);
     int32_t shift1 = last_pwshift1;
     int32_t shift2 = last_pwshift2;
-    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw]));
-    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw]));
+    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw] + moddest[moddest_o1pw]));
+    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw] + moddest[moddest_o2pw]));
     int32_t shift_delta1 = ((shift_target1 >> 1) - (last_pwshift1 >> 1)) >> (step_shift - 1);
     int32_t shift_delta2 = ((shift_target2 >> 1) - (last_pwshift2 >> 1)) >> (step_shift - 1);
     last_lfov = lfo;
@@ -313,6 +322,7 @@ void monosynth_audio_module::delayed_note_on()
     porta_time = 0.f;
     start_freq = freq;
     target_freq = freq = 440 * pow(2.0, (queue_note_on - 69) / 12.0);
+    velocity = queue_vel;
     ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
     fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
     set_frequency();
@@ -363,6 +373,8 @@ void monosynth_audio_module::delayed_note_on()
     }
     envelope.advance();
     queue_note_on = -1;
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, last_lfov};
+    calculate_modmatrix(modsrc);
 }
 
 void monosynth_audio_module::set_sample_rate(uint32_t sr) {
@@ -374,6 +386,18 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     fgain_delta = 0.f;
     inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
     inertia_pitchbend.ramp.set_length(crate / 30); // 1/30s    
+}
+
+void monosynth_audio_module::calculate_modmatrix(float *modsrc)
+{
+    for (int i = 0; i < moddest_count; i++)
+        moddest[i] = 0;
+    for (int i = 0; i < mod_matrix_slots; i++)
+    {
+        modulation_entry &slot = mod_matrix[i];
+        if (slot.dest)
+            moddest[slot.dest] += modsrc[slot.src1] * modsrc[slot.src2] * slot.amount;
+    }
 }
 
 void monosynth_audio_module::calculate_step()
@@ -413,15 +437,21 @@ void monosynth_audio_module::calculate_step()
     set_frequency();
     envelope.advance();
     float env = envelope.value;
+    
+    // mod matrix
+    // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env, lfov};
+    calculate_modmatrix(modsrc);
+    
     inertia_cutoff.set_inertia(*params[par_cutoff]);
-    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod]) * (1.f / 1200.f));
+    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod] + moddest[moddest_cutoff]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
     float resonance = *params[par_resonance];
     float e2r = *params[par_envtores];
     float e2a = *params[par_envtoamp];
-    resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r;
+    resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r + moddest[moddest_resonance];
     float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
     float newfgain = 0.f;
     if (filter_type != last_filter_type)
@@ -476,6 +506,8 @@ void monosynth_audio_module::calculate_step()
     float aenv = env;
     if (*params[par_envtoamp] > 0.f)
         newfgain *= 1.0 - (1.0 - aenv) * e2a;
+    if (moddest[moddest_attenuation] != 0.f)
+        newfgain *= dsp::clip<float>(1 - moddest[moddest_attenuation] * moddest[moddest_attenuation], 0.f, 1.f);
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
     calculate_buffer_oscs(lfov);
     switch(filter_type)
@@ -541,6 +573,10 @@ void monosynth_audio_module::note_off(int note, int vel)
     }
 }
 
+void monosynth_audio_module::channel_pressure(int value)
+{
+    inertia_pressure.set_inertia(value * (1.0 / 127.0));
+}
 
 void monosynth_audio_module::control_change(int controller, int value)
 {
@@ -575,6 +611,45 @@ void monosynth_audio_module::deactivate()
     stack.clear();
 }
 
+uint32_t monosynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    if (!running && queue_note_on == -1) {
+        for (uint32_t i = 0; i < nsamples / step_size; i++)
+            envelope.advance();
+        return 0;
+    }
+    uint32_t op = offset;
+    uint32_t op_end = offset + nsamples;
+    while(op < op_end) {
+        if (output_pos == 0) {
+            if (running || queue_note_on != -1)
+                calculate_step();
+            else {
+                envelope.advance();
+                dsp::zero(buffer, step_size);
+            }
+        }
+        if(op < op_end) {
+            uint32_t ip = output_pos;
+            uint32_t len = std::min(step_size - output_pos, op_end - op);
+            if (is_stereo_filter())
+                for(uint32_t i = 0 ; i < len; i++) {
+                    float vol = master.get();
+                    outs[0][op + i] = buffer[ip + i] * vol,
+                    outs[1][op + i] = buffer2[ip + i] * vol;
+                }
+            else
+                for(uint32_t i = 0 ; i < len; i++)
+                    outs[0][op + i] = outs[1][op + i] = buffer[ip + i] * master.get();
+            op += len;
+            output_pos += len;
+            if (output_pos == step_size)
+                output_pos = 0;
+        }
+    }
+        
+    return 3;
+}
+
 static const char *monosynth_mod_src_names[] = {
     "None", 
     "Velocity",
@@ -587,16 +662,11 @@ static const char *monosynth_mod_src_names[] = {
 
 static const char *monosynth_mod_dest_names[] = {
     "None",
-    "Amplitude",
+    "Attenuation",
     "Cutoff",
     "Resonance",
-    "OX: Detune",
     "O1: Detune",
     "O2: Detune",
-    "OX: Pitch",
-    "O1: Pitch",
-    "O2: Pitch",
-    "OX: PW",
     "O1: PW",
     "O2: PW",
     NULL
@@ -617,5 +687,73 @@ const table_column_info *monosynth_audio_module::get_table_columns(int param)
 
 uint32_t monosynth_audio_module::get_table_rows(int param)
 {
-    return 2;
+    return mod_matrix_slots;
 }
+
+std::string monosynth_audio_module::get_cell(int param, int row, int column)
+{
+    assert(row >= 0 && row < mod_matrix_slots);
+    modulation_entry &slot = mod_matrix[row];
+    switch(column) {
+        case 0: // source 1
+            return monosynth_mod_src_names[slot.src1];
+        case 1: // source 2
+            return monosynth_mod_src_names[slot.src2];
+        case 2: // amount
+            return calf_utils::f2s(slot.amount);
+        case 3: // destination
+            return monosynth_mod_dest_names[slot.dest];
+        default: 
+            assert(0);
+            return "";
+    }
+}
+    
+void monosynth_audio_module::set_cell(int param, int row, int column, const std::string &src, std::string &error)
+{
+    assert(row >= 0 && row < mod_matrix_slots);
+    modulation_entry &slot = mod_matrix[row];
+    switch(column) {
+        case 0:
+        case 1:
+        {
+            for (int i = 0; monosynth_mod_src_names[i]; i++)
+            {
+                if (src == monosynth_mod_src_names[i])
+                {
+                    if (column == 0)
+                        slot.src1 = i;
+                    else
+                        slot.src2 = i;
+                    error.clear();
+                    return;
+                }
+            }
+            error = "Invalid source name";
+            return;
+        }
+        case 2:
+        {
+            stringstream ss(src);
+            ss >> slot.amount;
+            error.clear();
+            return;
+        }
+        case 3:
+        {
+            for (int i = 0; monosynth_mod_dest_names[i]; i++)
+            {
+                if (src == monosynth_mod_dest_names[i])
+                {
+                    slot.dest = i;
+                    error.clear();
+                    return;
+                }
+            }
+            error = "Invalid destination name";
+            return;
+        }
+        
+    }
+}
+

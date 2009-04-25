@@ -232,10 +232,10 @@ struct table_edit_iface
     virtual uint32_t get_table_rows(int param) = 0;
     
     /// retrieve data item from the plugin
-    virtual std::string get_cell(int param, int column) { return calf_utils::i2s(param)+":"+calf_utils::i2s(column); }
+    virtual std::string get_cell(int param, int row, int column) { return calf_utils::i2s(row)+":"+calf_utils::i2s(column); }
 
     /// set data item to the plugin
-    virtual void set_cell(int param, int column, const std::string &src, std::string &error) { error.clear(); }
+    virtual void set_cell(int param, int row, int column, const std::string &src, std::string &error) { error.clear(); }
     
     /// return a line graph interface for a specific parameter/column (unused for now)
     virtual line_graph_iface *get_graph_iface(int param, int column) { return NULL; }
@@ -402,6 +402,9 @@ public:
     /// Handle MIDI Pitch Bend
     /// @param value pitch bend value (-8192 to 8191, defined as in MIDI ie. 8191 = 200 ct by default)
     inline void pitch_bend(int value) {}
+    /// Handle MIDI Channel Pressure
+    /// @param value channel pressure (0 to 127)
+    inline void channel_pressure(int value) {}
     /// Called when params are changed (before processing)
     inline void params_changed() {}
     /// LADSPA-esque activate function, except it is called after ports are connected, not before

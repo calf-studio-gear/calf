@@ -214,5 +214,8 @@
         </frame>
       </hbox>
     </vbox>
+    <vbox border="10" page="Modulation Matrix">
+        <listview param="scale_detune" />
+    </vbox>
   </notebook>
 </vbox>
