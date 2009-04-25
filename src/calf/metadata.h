@@ -270,6 +270,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         wt_silver,
         wt_brass,
         wt_multi,
+        wt_multi2,
         wt_count
     };
     enum {

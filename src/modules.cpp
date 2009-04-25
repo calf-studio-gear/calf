@@ -556,6 +556,7 @@ const char *wavetable_names[] = {
     "Silver",
     "Brass",
     "Multi",
+    "Multi 2",
 };
 
 const char *wavetable_init_soundfont = "";

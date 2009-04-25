@@ -508,6 +508,21 @@ wavetable_audio_module::wavetable_audio_module()
             tables[wavetable_metadata::wt_multi][i][j] = 32767 * v;
         }
     }
+    for (int i = 0; i < 129; i ++)
+    {
+        float h = 1 + i / 16.0;
+        for (int j = 0; j < 256; j++)
+        {
+            float ph = j * 2 * M_PI / 256;
+            float v = sin(ph), tv = 1;
+            for (int k = 1; k < 24; k++) {
+                float amp = blip(i, k * 6, 20) / k;
+                v += amp * sin((k + 1) * ph + h * sin(ph));
+                tv += amp;
+            }
+            tables[wavetable_metadata::wt_multi2][i][j] = 32767 * v / tv;
+        }
+    }
 }
 
 #endif
