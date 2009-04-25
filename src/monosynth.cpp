@@ -242,8 +242,8 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     int flag2 = (wave2 == wave_sqr);
     int32_t shift1 = last_pwshift1;
     int32_t shift2 = last_pwshift2;
-    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw] + moddest[moddest_o1pw]));
-    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw] + moddest[moddest_o2pw]));
+    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o1pw]));
+    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o2pw]));
     int32_t shift_delta1 = ((shift_target1 >> 1) - (last_pwshift1 >> 1)) >> (step_shift - 1);
     int32_t shift_delta2 = ((shift_target2 >> 1) - (last_pwshift2 >> 1)) >> (step_shift - 1);
     last_lfov = lfo;
@@ -254,15 +254,21 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     shift2 += (flag2 << 31);
     float mix1 = 1 - 2 * flag1, mix2 = 1 - 2 * flag2;
     
+    float new_xfade = dsp::clip<float>(xfade + 0.01f * moddest[moddest_oscmix], 0.f, 1.f);
+    float cur_xfade = last_xfade;
+    float xfade_step = (new_xfade - cur_xfade) * (1.0 / step_size);
+    
     for (uint32_t i = 0; i < step_size; i++) 
     {
         float osc1val = osc1.get_phaseshifted(shift1, mix1);
         float osc2val = osc2.get_phaseshifted(shift2, mix2);
-        float wave = osc1val + (osc2val - osc1val) * xfade;
+        float wave = osc1val + (osc2val - osc1val) * cur_xfade;
         buffer[i] = wave;
         shift1 += shift_delta1;
         shift2 += shift_delta2;
+        cur_xfade += xfade_step;
     }
+    last_xfade = new_xfade;
 }
 
 void monosynth_audio_module::calculate_buffer_ser()
@@ -333,6 +339,7 @@ void monosynth_audio_module::delayed_note_on()
     {
         if (legato >= 2)
             porta_time = -1.f;
+        last_xfade = xfade;
         osc1.reset();
         osc2.reset();
         filter.reset();
@@ -663,12 +670,13 @@ static const char *monosynth_mod_src_names[] = {
 static const char *monosynth_mod_dest_names[] = {
     "None",
     "Attenuation",
-    "Cutoff",
+    "Osc Mix Ratio (%)",
+    "Cutoff [ct]",
     "Resonance",
-    "O1: Detune",
-    "O2: Detune",
-    "O1: PW",
-    "O2: PW",
+    "O1: Detune [ct]",
+    "O2: Detune [ct]",
+    "O1: PW (%)",
+    "O2: PW (%)",
     NULL
 };
 

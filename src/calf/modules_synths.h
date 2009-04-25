@@ -94,6 +94,8 @@ public:
     modulation_entry mod_matrix[mod_matrix_slots];
     /// Currently used velocity
     float velocity;
+    /// Last value of oscillator mix ratio
+    float last_xfade;
     /// Current calculated mod matrix outputs
     float moddest[moddest_count];
      

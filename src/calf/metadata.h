@@ -115,6 +115,7 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     enum {
         moddest_none,
         moddest_attenuation,
+        moddest_oscmix,
         moddest_cutoff,
         moddest_resonance,
         moddest_o1detune,
