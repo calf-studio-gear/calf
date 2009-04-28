@@ -302,7 +302,6 @@ void rotary_speaker_audio_module::setup()
     crossover1r.set_lp_rbj(800.f, 0.7, (float)srate);
     crossover2l.set_hp_rbj(800.f, 0.7, (float)srate);
     crossover2r.set_hp_rbj(800.f, 0.7, (float)srate);
-    set_vibrato();
 }
 
 void rotary_speaker_audio_module::activate()

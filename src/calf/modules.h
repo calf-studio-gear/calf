@@ -302,7 +302,6 @@ public:
         old_medium = -1;
         amt_left.set_sample_rate(sr); amt_right.set_sample_rate(sr);
         fb_left.set_sample_rate(sr); fb_right.set_sample_rate(sr);
-        params_changed();
     }
     void calc_filters()
     {
