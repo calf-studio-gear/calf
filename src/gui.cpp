@@ -713,8 +713,9 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     update_store();
     widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(lstore));
     delete []p;
-    tree = GTK_TREE_VIEW(widget);
+    tree = GTK_TREE_VIEW (widget);
     assert(teif);
+    g_object_set (G_OBJECT (tree), "enable-search", FALSE, "rules-hint", TRUE, "enable-grid-lines", TRUE, NULL);
     
     for (int i = 0; i < cols; i++)
     {
@@ -776,6 +777,12 @@ void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, g
     if (error.empty()) {
         pThis->update_store();
         gtk_widget_grab_focus(pThis->widget);
+        if (atoi(path) < (int)pThis->teif->get_table_rows(pThis->param_no))
+        {
+            GtkTreePath *gpath = gtk_tree_path_new_from_string (path);
+            gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (pThis->widget), gpath, NULL, NULL, FALSE);
+            gtk_tree_path_free (gpath);
+        }
     }
     else
     {
