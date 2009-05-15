@@ -34,17 +34,42 @@ using namespace std;
 
 float silence[4097];
 
+static const char *monosynth_mod_src_names[] = {
+    "None", 
+    "Velocity",
+    "Pressure",
+    "ModWheel",
+    "Envelope",
+    "LFO",
+    NULL
+};
+
+static const char *monosynth_mod_dest_names[] = {
+    "None",
+    "Attenuation",
+    "Osc Mix Ratio (%)",
+    "Cutoff [ct]",
+    "Resonance",
+    "O1: Detune [ct]",
+    "O2: Detune [ct]",
+    "O1: PW (%)",
+    "O2: PW (%)",
+    NULL
+};
+
 monosynth_audio_module::monosynth_audio_module()
-: inertia_cutoff(1)
+: mod_matrix(mod_matrix_data, mod_matrix_slots, monosynth_mod_src_names, monosynth_mod_dest_names)
+, inertia_cutoff(1)
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
     for (int i = 0; i < mod_matrix_slots; i++)
     {
-        mod_matrix[i].src1 = modsrc_none;
-        mod_matrix[i].src2 = modsrc_none;
-        mod_matrix[i].amount = 0.f;
-        mod_matrix[i].dest = moddest_none;
+        dsp::modulation_entry &slot = mod_matrix_data[i];
+        slot.src1 = modsrc_none;
+        slot.src2 = modsrc_none;
+        slot.amount = 0.f;
+        slot.dest = moddest_none;
     }
 }
 
@@ -381,7 +406,7 @@ void monosynth_audio_module::delayed_note_on()
     envelope.advance();
     queue_note_on = -1;
     float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, last_lfov};
-    calculate_modmatrix(modsrc);
+    calculate_modmatrix(moddest, moddest_count, modsrc);
 }
 
 void monosynth_audio_module::set_sample_rate(uint32_t sr) {
@@ -393,18 +418,6 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     fgain_delta = 0.f;
     inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
     inertia_pitchbend.ramp.set_length(crate / 30); // 1/30s    
-}
-
-void monosynth_audio_module::calculate_modmatrix(float *modsrc)
-{
-    for (int i = 0; i < moddest_count; i++)
-        moddest[i] = 0;
-    for (int i = 0; i < mod_matrix_slots; i++)
-    {
-        modulation_entry &slot = mod_matrix[i];
-        if (slot.dest)
-            moddest[slot.dest] += modsrc[slot.src1] * modsrc[slot.src2] * slot.amount;
-    }
 }
 
 void monosynth_audio_module::calculate_step()
@@ -448,7 +461,7 @@ void monosynth_audio_module::calculate_step()
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
     float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env, lfov};
-    calculate_modmatrix(modsrc);
+    calculate_modmatrix(moddest, moddest_count, modsrc);
     
     inertia_cutoff.set_inertia(*params[par_cutoff]);
     cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod] + moddest[moddest_cutoff]) * (1.f / 1200.f));
@@ -655,113 +668,5 @@ uint32_t monosynth_audio_module::process(uint32_t offset, uint32_t nsamples, uin
     }
         
     return 3;
-}
-
-static const char *monosynth_mod_src_names[] = {
-    "None", 
-    "Velocity",
-    "Pressure",
-    "ModWheel",
-    "Envelope",
-    "LFO",
-    NULL
-};
-
-static const char *monosynth_mod_dest_names[] = {
-    "None",
-    "Attenuation",
-    "Osc Mix Ratio (%)",
-    "Cutoff [ct]",
-    "Resonance",
-    "O1: Detune [ct]",
-    "O2: Detune [ct]",
-    "O1: PW (%)",
-    "O2: PW (%)",
-    NULL
-};
-
-const table_column_info *monosynth_audio_module::get_table_columns(int param)
-{
-
-    static table_column_info tci[] = {
-        { "Source", TCT_ENUM, 0, 0, 0, monosynth_mod_src_names },
-        { "Modulator", TCT_ENUM, 0, 0, 0, monosynth_mod_src_names },
-        { "Amount", TCT_FLOAT, 0, 1, 1, NULL},
-        { "Destination", TCT_ENUM, 0, 0, 0, monosynth_mod_dest_names  },
-        { NULL }
-    };
-    return tci;
-}
-
-uint32_t monosynth_audio_module::get_table_rows(int param)
-{
-    return mod_matrix_slots;
-}
-
-std::string monosynth_audio_module::get_cell(int param, int row, int column)
-{
-    assert(row >= 0 && row < mod_matrix_slots);
-    modulation_entry &slot = mod_matrix[row];
-    switch(column) {
-        case 0: // source 1
-            return monosynth_mod_src_names[slot.src1];
-        case 1: // source 2
-            return monosynth_mod_src_names[slot.src2];
-        case 2: // amount
-            return calf_utils::f2s(slot.amount);
-        case 3: // destination
-            return monosynth_mod_dest_names[slot.dest];
-        default: 
-            assert(0);
-            return "";
-    }
-}
-    
-void monosynth_audio_module::set_cell(int param, int row, int column, const std::string &src, std::string &error)
-{
-    assert(row >= 0 && row < mod_matrix_slots);
-    modulation_entry &slot = mod_matrix[row];
-    switch(column) {
-        case 0:
-        case 1:
-        {
-            for (int i = 0; monosynth_mod_src_names[i]; i++)
-            {
-                if (src == monosynth_mod_src_names[i])
-                {
-                    if (column == 0)
-                        slot.src1 = i;
-                    else
-                        slot.src2 = i;
-                    error.clear();
-                    return;
-                }
-            }
-            error = "Invalid source name";
-            return;
-        }
-        case 2:
-        {
-            stringstream ss(src);
-            ss >> slot.amount;
-            error.clear();
-            return;
-        }
-        case 3:
-        {
-            for (int i = 0; monosynth_mod_dest_names[i]; i++)
-            {
-                if (src == monosynth_mod_dest_names[i])
-                {
-                    slot.dest = i;
-                    error.clear();
-                    return;
-                }
-            }
-            error = "Invalid destination name";
-            return;
-        }
-        
-    }
 }
 

@@ -30,21 +30,15 @@
 #include "synth.h"
 #include "envelope.h"
 #include "organ.h"
+#include "modmatrix.h"
 
 namespace calf_plugins {
 
 #define MONOSYNTH_WAVE_BITS 12
     
-struct modulation_entry
-{
-    int src1, src2;
-    float amount;
-    int dest;
-};
-
 /// Monosynth-in-making. Parameters may change at any point, so don't make songs with it!
 /// It lacks inertia for parameters, even for those that really need it.
-class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface, public table_edit_iface
+class monosynth_audio_module: public audio_module<monosynth_metadata>, public line_graph_iface, public mod_matrix
 {
 public:
     enum { mod_matrix_slots = 10 };
@@ -91,7 +85,7 @@ public:
     /// Smoothed channel pressure value
     dsp::inertia<dsp::linear_ramp> inertia_pressure;
     /// Rows of the modulation matrix
-    modulation_entry mod_matrix[mod_matrix_slots];
+    dsp::modulation_entry mod_matrix_data[mod_matrix_slots];
     /// Currently used velocity
     float velocity;
     /// Last value of oscillator mix ratio
@@ -179,15 +173,8 @@ public:
     bool is_noisy(int param_no) { return param_no != par_cutoff; }
     /// Calculate control signals and produce step_size samples of output.
     void calculate_step();
-    /// Process modulation matrix
-    void calculate_modmatrix(float *modsrc);
     /// Main processing function
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    
-    virtual const table_column_info *get_table_columns(int param);
-    virtual uint32_t get_table_rows(int param);
-    virtual std::string get_cell(int param, int row, int column);
-    virtual void set_cell(int param, int row, int column, const std::string &src, std::string &error);
 };
 
 struct organ_audio_module: public audio_module<organ_metadata>, public dsp::drawbar_organ, public line_graph_iface

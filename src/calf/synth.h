@@ -223,7 +223,6 @@ public:
     virtual ~basic_synth();
 };
 
-
 }
 
 #endif
