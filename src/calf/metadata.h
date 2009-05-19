@@ -274,22 +274,24 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
     };
     enum {
         modsrc_none,
+        modsrc_velocity,
+        modsrc_pressure,
+        modsrc_modwheel,
         modsrc_env1,
         modsrc_env2,
         modsrc_env3,
-        modsrc_velocity,
-        modsrc_modwheel,
         modsrc_count,
     };
     enum {
         moddest_none,
+        moddest_attenuation,
+        moddest_oscmix,
+        moddest_cutoff,
+        moddest_resonance,
         moddest_o1shift,
         moddest_o2shift,
         moddest_o1detune,
         moddest_o2detune,
-        moddest_o1pitch,
-        moddest_o2pitch,
-        moddest_dca,
         moddest_count,
     };
     enum { 
@@ -298,6 +300,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         par_eg1attack, par_eg1decay, par_eg1sustain, par_eg1fade, par_eg1release, par_eg1velscl,
         par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2fade, par_eg2release, par_eg2velscl,
         par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3fade, par_eg3release, par_eg3velscl,
+        par_pwhlrange, 
         param_count };
     enum { in_count = 0, out_count = 2, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64 };

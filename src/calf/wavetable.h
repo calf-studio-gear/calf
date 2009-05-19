@@ -9,6 +9,7 @@
 #include "osc.h"
 #include "synth.h"
 #include "envelope.h"
+#include "modmatrix.h"
 
 namespace calf_plugins {
 
@@ -54,13 +55,23 @@ protected:
     dsp::decay amp;
     wavetable_oscillator oscs[OscCount];
     dsp::adsr envs[EnvCount];
+    /// Current MIDI velocity
     float velocity;
+    /// Current calculated mod matrix outputs
+    float moddest[wavetable_metadata::moddest_count];
+    /// Last oscillator shift (wavetable index) of each oscillator
+    float last_oscshift[OscCount];
+    /// Last oscillator amplitude of each oscillator
+    float last_oscamp[OscCount];
+    /// Current osc amplitude
+    float cur_oscamp[OscCount];
 public:
     wavetable_voice();
     void set_params_ptr(wavetable_audio_module *_parent, int _srate);
     void reset();
     void note_on(int note, int vel);
     void note_off(int /* vel */);
+    void channel_pressure(int value);
     void steal();
     void render_block();
     virtual int get_current_note() {
@@ -70,9 +81,14 @@ public:
         // printf("note %d getactive %d use_percussion %d pamp active %d\n", note, amp.get_active(), use_percussion(), pamp.get_active());
         return (note != -1) && (amp.get_active()) && !envs[0].stopped();
     }
+    inline void calc_derived_dests() {
+        float cv = dsp::clip<float>(0.5f + moddest[wavetable_metadata::moddest_oscmix], 0.f, 1.f);
+        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level];
+        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level];
+    }
 };    
 
-class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth
+class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public mod_matrix
 {
 public:
     using dsp::basic_synth::note_on;
@@ -85,10 +101,21 @@ protected:
     bool panic_flag;
 
 public:
+    enum { mod_matrix_slots = 10 };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
     int16_t tables[wt_count][129][256]; // one dummy level for interpolation
+    /// Rows of the modulation matrix
+    dsp::modulation_entry mod_matrix_data[mod_matrix_slots];
+    /// Smoothed cutoff value
+    dsp::inertia<dsp::exponential_ramp> inertia_cutoff;
+    /// Smoothed pitch bend value
+    dsp::inertia<dsp::exponential_ramp> inertia_pitchbend;
+    /// Smoothed channel pressure value
+    dsp::inertia<dsp::linear_ramp> inertia_pressure;
+    /// Unsmoothed mod wheel value
+    float modwheel_value;
 
 public:
     wavetable_audio_module();
@@ -122,6 +149,16 @@ public:
     void set_sample_rate(uint32_t sr) {
         setup(sr);
         crate = sample_rate / wavetable_voice::BlockSize;
+        inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
+        inertia_pitchbend.ramp.set_length(crate / 30); // 1/30s    
+        inertia_pressure.ramp.set_length(crate / 30); // 1/30s - XXXKF monosynth needs that too
+    }
+    /// Handle MIDI Channel Pressure
+    void channel_pressure(int value);
+    /// Handle pitch bend message.
+    inline void pitch_bend(int value)
+    {
+        inertia_pitchbend.set_inertia(pow(2.0, (value * *params[par_pwhlrange]) / (1200.0 * 8192.0)));
     }
 };
 

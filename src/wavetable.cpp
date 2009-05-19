@@ -35,6 +35,30 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+static const char *mod_src_names[] = {
+    "None", 
+    "Velocity",
+    "Pressure",
+    "ModWheel",
+    "Env 1",
+    "Env 2",
+    "Env 3",
+    NULL
+};
+
+static const char *mod_dest_names[] = {
+    "None",
+    "Attenuation",
+    "Osc Mix Ratio (%)",
+    "Cutoff [ct]",
+    "Resonance",
+    "O1: Shift (%)",
+    "O2: Shift (%)",
+    "O1: Detune [ct]",
+    "O2: Detune [ct]",
+    NULL
+};
+
 wavetable_voice::wavetable_voice()
 {
     sample_rate = -1;
@@ -54,18 +78,27 @@ void wavetable_voice::reset()
 
 void wavetable_voice::note_on(int note, int vel)
 {
+    typedef wavetable_metadata md;
     this->note = note;
     velocity = vel / 127.0;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
         oscs[i].reset();
         oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
+        last_oscshift[i] = 0;
     }
     int cr = sample_rate / BlockSize;
     for (int i = 0; i < EnvCount; i++) {
         envs[i].set(0.01, 0.1, 0.5, 1, cr);
         envs[i].note_on();
     }
+    float modsrc[wavetable_metadata::modsrc_count] = { 1, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, envs[0].value, envs[1].value, envs[2].value};
+    parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
+    calc_derived_dests();
+
+    float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
+    memcpy(last_oscshift, oscshift, sizeof(oscshift));
+    memcpy(last_oscamp, cur_oscamp, sizeof(cur_oscamp));
 }
 
 void wavetable_voice::note_off(int vel)
@@ -84,14 +117,9 @@ void wavetable_voice::render_block()
     
     const float step = 1.f / BlockSize;
 
-    int ospc = md::par_o2level - md::par_o1level;
-    int espc = md::par_eg2attack - md::par_eg1attack;
-    for (int j = 0; j < OscCount; j++) {
-        oscs[j].tables = parent->tables[(int)*params[md::par_o1wave + j * ospc]];
-        oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc]), sample_rate);
-    }
     float s = 0.001;
     float scl[EnvCount];
+    int espc = md::par_eg2attack - md::par_eg1attack;
     for (int j = 0; j < EnvCount; j++) {
         int o = j*espc;
         envs[j].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize, *params[md::par_eg1fade + o] * s); 
@@ -101,20 +129,35 @@ void wavetable_voice::render_block()
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
     
-    float env_old = envs[0].old_value * scl[0] + 0.2 * envs[1].old_value * scl[1];
-    float env_new = envs[0].value * scl[0] + 0.2 * envs[1].value * scl[1];
+    float modsrc[wavetable_metadata::modsrc_count] = { 1, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, envs[0].value, envs[1].value, envs[2].value};
+    parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
+    calc_derived_dests();
+
+    int ospc = md::par_o2level - md::par_o1level;
+    for (int j = 0; j < OscCount; j++) {
+        oscs[j].tables = parent->tables[(int)*params[md::par_o1wave + j * ospc]];
+        oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc] + moddest[md::moddest_o1detune]), sample_rate);
+    }
+        
+    float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
+    float osstep[2] = { (oscshift[0] - last_oscshift[0]) * step, (oscshift[1] - last_oscshift[1]) * step };
+    float oastep[2] = { (cur_oscamp[0] - last_oscamp[0]) * step, (cur_oscamp[1] - last_oscamp[1]) * step };
     for (int i = 0; i < BlockSize; i++) {        
         float value = 0.f;
 
-        float env = dsp::lerp(env_old, env_new, i * step);
         for (int j = 0; j < OscCount; j++) {
-            value += oscs[j].get(dsp::clip(fastf2i_drm((env + *params[md::par_o1offset + j * ospc]) * 127.0 * 256), 0, 127 * 256)) * *params[md::par_o1level + j * ospc];
+            float o = last_oscshift[j] * 0.01;
+            value += last_oscamp[j] * oscs[j].get(dsp::clip(fastf2i_drm((o + *params[md::par_o1offset + j * ospc]) * 127.0 * 256), 0, 127 * 256));
+            last_oscshift[j] += osstep[j];
+            last_oscamp[j] += oastep[j];
         }
         
-        output_buffer[i][0] = output_buffer[i][1] = value * env * env;
+        output_buffer[i][0] = output_buffer[i][1] = value;
     }
     if (envs[0].stopped())
         released = true;
+    memcpy(last_oscshift, oscshift, sizeof(oscshift));
+    memcpy(last_oscamp, cur_oscamp, sizeof(cur_oscamp));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +192,13 @@ static void interpolate_wt(int16_t table[129][256], int step)
 }
 
 wavetable_audio_module::wavetable_audio_module()
+: mod_matrix(mod_matrix_data, mod_matrix_slots, ::mod_src_names, ::mod_dest_names)
+, inertia_cutoff(1)
+, inertia_pitchbend(1)
+, inertia_pressure(64)
 {
     panic_flag = false;
+    modwheel_value = 0.;
     for (int i = 0; i < 129; i += 8)
     {
         for (int j = 0; j < 256; j++)
@@ -523,6 +571,11 @@ wavetable_audio_module::wavetable_audio_module()
             tables[wavetable_metadata::wt_multi2][i][j] = 32767 * v / tv;
         }
     }
+}
+
+void wavetable_audio_module::channel_pressure(int value)
+{
+    inertia_pressure.set_inertia(value * (1.0 / 127.0));
 }
 
 #endif

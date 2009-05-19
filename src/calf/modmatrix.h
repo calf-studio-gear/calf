@@ -18,6 +18,9 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02111-1307, USA.
  */
+#ifndef __CALF_MODMATRIX_H
+#define __CALF_MODMATRIX_H
+ 
 #include "giface.h"
 
 namespace dsp {
@@ -63,3 +66,5 @@ public:
 };
     
 };
+
+#endif

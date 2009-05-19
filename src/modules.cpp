@@ -601,6 +601,7 @@ CALF_PORT_PROPS(wavetable) = {
     { 50,       10, 20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "adsr3_r", "EG3 Release" },
     { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr3_v", "EG3 VelMod" },
 
+    { 200,        0, 2400,   25, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "pbend_range", "PBend Range" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

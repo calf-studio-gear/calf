@@ -90,6 +90,7 @@
         <value attach-x="5" attach-y="6" param="adsr3_r"/>
         <value attach-x="6" attach-y="6" param="adsr3_v"/>
       </table>
+      <listview param="adsr_s" />
     </vbox>
   </frame>
 </vbox>
