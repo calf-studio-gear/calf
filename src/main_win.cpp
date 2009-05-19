@@ -49,9 +49,9 @@ static void exit_action(GtkWidget *widget, main_window *main)
 }
 
 static const GtkActionEntry actions[] = {
-    { "HostMenuAction", "", "_Host", NULL, "Host-related operations", NULL },
-    { "AddPluginMenuAction", "", "_Add plugin", NULL, "Add a plugin to the rack", NULL },
-    { "exit", "", "_Exit", NULL, "Exit application", (GCallback)exit_action },
+    { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
+    { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
+    { "exit", "exit", "_Exit", NULL, "Exit application", (GCallback)exit_action },
 };
 
 main_window::main_window()
