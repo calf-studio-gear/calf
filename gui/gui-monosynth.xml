@@ -214,8 +214,10 @@
         </frame>
       </hbox>
     </vbox>
-    <vbox border="10" page="Modulation Matrix">
+    <if cond="jackhost">
+      <vbox border="10" page="Modulation Matrix">
         <listview param="scale_detune" />
-    </vbox>
+      </vbox>
+    </if>
   </notebook>
 </vbox>
