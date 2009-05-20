@@ -1239,11 +1239,11 @@ static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
 }
 
 static const GtkActionEntry actions[] = {
-    { "PresetMenuAction", "", "_Preset", NULL, "Preset operations", NULL },
-    { "BuiltinPresetMenuAction", "", "_Built-in", NULL, "Built-in (factory) presets", NULL },
-    { "UserPresetMenuAction", "", "_User", NULL, "User (your) presets", NULL },
-    { "CommandMenuAction", "", "_Command", NULL, "Plugin-related commands", NULL },
-    { "store-preset", "", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
+    { "PresetMenuAction", NULL, "_Preset", NULL, "Preset operations", NULL },
+    { "BuiltinPresetMenuAction", NULL, "_Built-in", NULL, "Built-in (factory) presets", NULL },
+    { "UserPresetMenuAction", NULL, "_User", NULL, "User (your) presets", NULL },
+    { "CommandMenuAction", NULL, "_Command", NULL, "Plugin-related commands", NULL },
+    { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
 };
 
 /***************************** GUI window ********************************************/
