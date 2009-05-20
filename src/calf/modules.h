@@ -259,6 +259,9 @@ public:
     float *params[param_count];
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
+    /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
+    int age;
+    
     gain_smoothing amt_left, amt_right, fb_left, fb_right;
     float dry;
     
@@ -269,6 +272,10 @@ public:
     vintage_delay_audio_module()
     {
         old_medium = -1;
+        for (int i = 0; i < MAX_DELAY; i++) {
+            buffers[0][i] = 0.f;
+            buffers[1][i] = 0.f;
+        }
     }
     
     void params_changed()
@@ -294,6 +301,7 @@ public:
     }
     void activate() {
         bufptr = 0;
+        age = 0;
     }
     void deactivate() {
     }
@@ -319,17 +327,42 @@ public:
         int orig_bufptr = bufptr;
         for(uint32_t i = offset; i < end; i++)
         {
-            float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK], in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_left, out_right, del_left, del_right;
-            dsp::sanitize(in_left), dsp::sanitize(in_right);
+            float out_left, out_right, del_left, del_right;
+            // if the buffer hasn't been cleared yet (after activation), pretend we've read zeros
 
-            out_left = dry * ins[0][i] + in_left * amt_left.get();
-            out_right = dry * ins[1][i] + in_right * amt_right.get();
-            del_left = ins[0][i] + in_left * fb_left.get();
-            del_right = ins[1][i] + in_right * fb_right.get();
+            if (deltime_l >= age) {
+                del_left = ins[0][i];
+                out_left = dry * del_left;
+                amt_left.step();
+                fb_left.step();
+            }
+            else
+            {
+                float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK];
+                dsp::sanitize(in_left);
+                out_left = dry * ins[0][i] + in_left * amt_left.get();
+                del_left = ins[0][i] + in_left * fb_left.get();
+            }
+            if (deltime_r >= age) {
+                del_right = ins[1][i];
+                out_right = dry * del_right;
+                amt_right.step();
+                fb_right.step();
+            }
+            else
+            {
+                float in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK];
+                dsp::sanitize(in_right);
+                out_right = dry * ins[1][i] + in_right * amt_right.get();
+                del_right = ins[1][i] + in_right * fb_right.get();
+            }
             
+            age++;
             outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
             bufptr = (bufptr + 1) & (MAX_DELAY - 1);
         }
+        if (age >= MAX_DELAY)
+            age = MAX_DELAY;
         if (medium > 0) {
             bufptr = orig_bufptr;
             if (medium == 2)
