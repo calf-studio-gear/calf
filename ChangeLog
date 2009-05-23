@@ -2,6 +2,8 @@ Version 0.0.18.5
 
 + Vintage Delay: clear buffer on startup and reactivation
 + GUI: fix dodgy icons
++ JACK host: fix a problem with numeric variant of -M option and the new
+  versions of JACK
 
 Version 0.0.18.4
 
