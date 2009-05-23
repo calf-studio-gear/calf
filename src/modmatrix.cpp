@@ -26,15 +26,29 @@ using namespace std;
 using namespace dsp;
 using namespace calf_plugins;
 
+const char *mod_mapping_names[] = { "0..1", "-1..1", "-1..0", "x^2", "2x^2-1", "ASqr", "ASqrBip", "Para", NULL };
+
+const float mod_matrix::scaling_coeffs[mod_matrix::mod_type_count][3] = {
+    { 0, 1, 0 },
+    { -1, 2, 0 },
+    { -1, 1, 0 },
+    { 0, 0, 1 },
+    { -1, 0, 1 },
+    { 0, 2, -1 },
+    { -1, 4, -2 },
+    { 0, 4, -4 },
+};
+
 mod_matrix::mod_matrix(modulation_entry *_matrix, unsigned int _rows, const char **_src_names, const char **_dest_names)
 : matrix(_matrix)
 , matrix_rows(_rows)
 , mod_src_names(_src_names)
 , mod_dest_names(_dest_names)
 {
-    table_column_info tci[5] = {
+    table_column_info tci[6] = {
         { "Source", TCT_ENUM, 0, 0, 0, mod_src_names },
         { "Modulator", TCT_ENUM, 0, 0, 0, mod_src_names },
+        { "Mapping", TCT_ENUM, 0, 0, 0, mod_mapping_names },
         { "Amount", TCT_FLOAT, 0, 1, 1, NULL},
         { "Destination", TCT_ENUM, 0, 0, 0, mod_dest_names  },
         { NULL }
@@ -62,9 +76,11 @@ std::string mod_matrix::get_cell(int param, int row, int column)
             return mod_src_names[slot.src1];
         case 1: // source 2
             return mod_src_names[slot.src2];
-        case 2: // amount
+        case 2: // mapping mode
+            return mod_mapping_names[slot.mapping];
+        case 3: // amount
             return calf_utils::f2s(slot.amount);
-        case 3: // destination
+        case 4: // destination
             return mod_dest_names[slot.dest];
         default: 
             assert(0);
@@ -76,47 +92,43 @@ void mod_matrix::set_cell(int param, int row, int column, const std::string &src
 {
     assert(row >= 0 && row < (int)matrix_rows);
     modulation_entry &slot = matrix[row];
+    const char **arr = mod_src_names;
+    if (column == 2) 
+        arr = mod_mapping_names;
+    if (column == 4) 
+        arr = mod_dest_names;
     switch(column) {
         case 0:
         case 1:
+        case 2:
+        case 4:
         {
-            for (int i = 0; mod_src_names[i]; i++)
+            for (int i = 0; arr[i]; i++)
             {
-                if (src == mod_src_names[i])
+                if (src == arr[i])
                 {
                     if (column == 0)
                         slot.src1 = i;
-                    else
+                    else if (column == 1)
                         slot.src2 = i;
+                    else if (column == 2)
+                        slot.mapping = i;
+                    else if (column == 4)
+                        slot.dest = i;
                     error.clear();
                     return;
                 }
             }
-            error = "Invalid source name";
+            error = "Invalid name: " + src;
             return;
         }
-        case 2:
+        case 3:
         {
             stringstream ss(src);
             ss >> slot.amount;
             error.clear();
             return;
         }
-        case 3:
-        {
-            for (int i = 0; mod_dest_names[i]; i++)
-            {
-                if (src == mod_dest_names[i])
-                {
-                    slot.dest = i;
-                    error.clear();
-                    return;
-                }
-            }
-            error = "Invalid destination name";
-            return;
-        }
-        
     }
 }
 

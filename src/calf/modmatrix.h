@@ -28,6 +28,7 @@ namespace dsp {
 struct modulation_entry
 {
     int src1, src2;
+    int mapping;
     float amount;
     int dest;
 };
@@ -39,7 +40,12 @@ namespace calf_plugins {
 class mod_matrix: public table_edit_iface
 {
 protected:
-    table_column_info table_columns[5];
+    enum modulation_mode { mod_positive, mod_bipolar, mod_negative, mod_squared, mod_squared_bipolar, mod_antisquared, mod_antisquared_bipolar, mod_parabola, mod_type_count };
+    /// Polynomials for different scaling modes (1, x, x^2)
+    static const float scaling_coeffs[mod_type_count][3];
+    /// Column descriptions for table widget
+    table_column_info table_columns[6];
+    
     dsp::modulation_entry *matrix;
     unsigned int matrix_rows;
     const char **mod_src_names, **mod_dest_names;
@@ -59,8 +65,13 @@ public:
         for (unsigned int i = 0; i < matrix_rows; i++)
         {
             dsp::modulation_entry &slot = matrix[i];
-            if (slot.dest)
-                moddest[slot.dest] += modsrc[slot.src1] * modsrc[slot.src2] * slot.amount;
+            if (slot.dest) {
+                float value = modsrc[slot.src1] * modsrc[slot.src2];
+                value = dsp::clip<float>(value, 0, 1);
+                const float *c = scaling_coeffs[slot.mapping];
+                value = c[0] + c[1] * value + c[2] * value * value;
+                moddest[slot.dest] += value * slot.amount;
+            }
         }
     }
 };

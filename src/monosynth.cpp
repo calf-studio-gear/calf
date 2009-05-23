@@ -68,6 +68,7 @@ monosynth_audio_module::monosynth_audio_module()
         dsp::modulation_entry &slot = mod_matrix_data[i];
         slot.src1 = modsrc_none;
         slot.src2 = modsrc_none;
+        slot.mapping = mod_matrix::mod_positive;
         slot.amount = 0.f;
         slot.dest = moddest_none;
     }
@@ -405,7 +406,7 @@ void monosynth_audio_module::delayed_note_on()
     }
     envelope.advance();
     queue_note_on = -1;
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, last_lfov};
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, 0.5+0.5*last_lfov};
     calculate_modmatrix(moddest, moddest_count, modsrc);
 }
 
@@ -460,7 +461,7 @@ void monosynth_audio_module::calculate_step()
     
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env, lfov};
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env, 0.5+0.5*lfov};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     
     inertia_cutoff.set_inertia(*params[par_cutoff]);
