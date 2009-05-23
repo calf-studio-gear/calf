@@ -28,7 +28,7 @@ using namespace calf_plugins;
 
 const char *mod_mapping_names[] = { "0..1", "-1..1", "-1..0", "x^2", "2x^2-1", "ASqr", "ASqrBip", "Para", NULL };
 
-const float mod_matrix::scaling_coeffs[dsp::mod_type_count][3] = {
+const float mod_matrix::scaling_coeffs[dsp::map_type_count][3] = {
     { 0, 1, 0 },
     { -1, 2, 0 },
     { -1, 1, 0 },
@@ -47,8 +47,8 @@ mod_matrix::mod_matrix(modulation_entry *_matrix, unsigned int _rows, const char
 {
     table_column_info tci[6] = {
         { "Source", TCT_ENUM, 0, 0, 0, mod_src_names },
-        { "Modulator", TCT_ENUM, 0, 0, 0, mod_src_names },
         { "Mapping", TCT_ENUM, 0, 0, 0, mod_mapping_names },
+        { "Modulator", TCT_ENUM, 0, 0, 0, mod_src_names },
         { "Amount", TCT_FLOAT, 0, 1, 1, NULL},
         { "Destination", TCT_ENUM, 0, 0, 0, mod_dest_names  },
         { NULL }
@@ -76,10 +76,10 @@ std::string mod_matrix::get_cell(int param, int row, int column)
     switch(column) {
         case 0: // source 1
             return mod_src_names[slot.src1];
-        case 1: // source 2
-            return mod_src_names[slot.src2];
-        case 2: // mapping mode
+        case 1: // mapping mode
             return mod_mapping_names[slot.mapping];
+        case 2: // source 2
+            return mod_src_names[slot.src2];
         case 3: // amount
             return calf_utils::f2s(slot.amount);
         case 4: // destination
@@ -95,7 +95,7 @@ void mod_matrix::set_cell(int param, int row, int column, const std::string &src
     assert(row >= 0 && row < (int)matrix_rows);
     modulation_entry &slot = matrix[row];
     const char **arr = mod_src_names;
-    if (column == 2) 
+    if (column == 1) 
         arr = mod_mapping_names;
     if (column == 4) 
         arr = mod_dest_names;
@@ -112,9 +112,9 @@ void mod_matrix::set_cell(int param, int row, int column, const std::string &src
                     if (column == 0)
                         slot.src1 = i;
                     else if (column == 1)
-                        slot.src2 = i;
+                        slot.mapping = (mapping_mode)i;
                     else if (column == 2)
-                        slot.mapping = (modulation_mode)i;
+                        slot.src2 = i;
                     else if (column == 4)
                         slot.dest = i;
                     error.clear();

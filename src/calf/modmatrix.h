@@ -25,31 +25,42 @@
 
 namespace dsp {
 
-/// Modulation modes
-enum modulation_mode {
-    mod_positive, ///< 0..100%
-    mod_bipolar, ///< -100%..100%
-    mod_negative, ///< -100%..0%
-    mod_squared, ///< x^2
-    mod_squared_bipolar, ///< x^2 scaled to -100%..100%
-    mod_antisquared, ///< 1-(1-x)^2 scaled to 0..100%
-    mod_antisquared_bipolar, ///< 1-(1-x)^2 scaled to -100..100%
-    mod_parabola, ///< inverted parabola (peaks at 0.5, then decreases to 0)
-    mod_type_count
+/// Mapping modes
+enum mapping_mode {
+    map_positive, ///< 0..100%
+    map_bipolar, ///< -100%..100%
+    map_negative, ///< -100%..0%
+    map_squared, ///< x^2
+    map_squared_bipolar, ///< x^2 scaled to -100%..100%
+    map_antisquared, ///< 1-(1-x)^2 scaled to 0..100%
+    map_antisquared_bipolar, ///< 1-(1-x)^2 scaled to -100..100%
+    map_parabola, ///< inverted parabola (peaks at 0.5, then decreases to 0)
+    map_type_count
 };
 
+/// Single entry in modulation matrix
 struct modulation_entry
 {
-    /// Sources
-    int src1, src2;
-    modulation_mode mapping;
+    /// Mapped source
+    int src1;
+    /// Source mapping mode
+    mapping_mode mapping;
+    /// Unmapped modulating source
+    int src2;
+    /// Modulation amount
     float amount;
+    /// Modulation destination
     int dest;
     
+    modulation_entry() {
+        reset();
+    }
+    
+    /// Reset the row to default
     void reset() {
         src1 = 0;
         src2 = 0;
-        mapping = mod_positive;
+        mapping = map_positive;
         amount = 0.f;
         dest = 0;
     }
@@ -63,7 +74,7 @@ class mod_matrix: public table_edit_iface
 {
 protected:
     /// Polynomials for different scaling modes (1, x, x^2)
-    static const float scaling_coeffs[dsp::mod_type_count][3];
+    static const float scaling_coeffs[dsp::map_type_count][3];
     /// Column descriptions for table widget
     table_column_info table_columns[6];
     
@@ -87,11 +98,10 @@ public:
         {
             dsp::modulation_entry &slot = matrix[i];
             if (slot.dest) {
-                float value = modsrc[slot.src1] * modsrc[slot.src2];
-                value = dsp::clip<float>(value, 0, 1);
+                float value = modsrc[slot.src1];
                 const float *c = scaling_coeffs[slot.mapping];
                 value = c[0] + c[1] * value + c[2] * value * value;
-                moddest[slot.dest] += value * slot.amount;
+                moddest[slot.dest] += value * modsrc[slot.src2] * slot.amount;
             }
         }
     }
