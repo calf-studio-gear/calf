@@ -66,11 +66,7 @@ monosynth_audio_module::monosynth_audio_module()
     for (int i = 0; i < mod_matrix_slots; i++)
     {
         dsp::modulation_entry &slot = mod_matrix_data[i];
-        slot.src1 = modsrc_none;
-        slot.src2 = modsrc_none;
-        slot.mapping = mod_matrix::mod_positive;
-        slot.amount = 0.f;
-        slot.dest = moddest_none;
+        slot.reset();
     }
 }
 

@@ -25,12 +25,34 @@
 
 namespace dsp {
 
+/// Modulation modes
+enum modulation_mode {
+    mod_positive, ///< 0..100%
+    mod_bipolar, ///< -100%..100%
+    mod_negative, ///< -100%..0%
+    mod_squared, ///< x^2
+    mod_squared_bipolar, ///< x^2 scaled to -100%..100%
+    mod_antisquared, ///< 1-(1-x)^2 scaled to 0..100%
+    mod_antisquared_bipolar, ///< 1-(1-x)^2 scaled to -100..100%
+    mod_parabola, ///< inverted parabola (peaks at 0.5, then decreases to 0)
+    mod_type_count
+};
+
 struct modulation_entry
 {
+    /// Sources
     int src1, src2;
-    int mapping;
+    modulation_mode mapping;
     float amount;
     int dest;
+    
+    void reset() {
+        src1 = 0;
+        src2 = 0;
+        mapping = mod_positive;
+        amount = 0.f;
+        dest = 0;
+    }
 };
 
 };
@@ -40,9 +62,8 @@ namespace calf_plugins {
 class mod_matrix: public table_edit_iface
 {
 protected:
-    enum modulation_mode { mod_positive, mod_bipolar, mod_negative, mod_squared, mod_squared_bipolar, mod_antisquared, mod_antisquared_bipolar, mod_parabola, mod_type_count };
     /// Polynomials for different scaling modes (1, x, x^2)
-    static const float scaling_coeffs[mod_type_count][3];
+    static const float scaling_coeffs[dsp::mod_type_count][3];
     /// Column descriptions for table widget
     table_column_info table_columns[6];
     

@@ -28,7 +28,7 @@ using namespace calf_plugins;
 
 const char *mod_mapping_names[] = { "0..1", "-1..1", "-1..0", "x^2", "2x^2-1", "ASqr", "ASqrBip", "Para", NULL };
 
-const float mod_matrix::scaling_coeffs[mod_matrix::mod_type_count][3] = {
+const float mod_matrix::scaling_coeffs[dsp::mod_type_count][3] = {
     { 0, 1, 0 },
     { -1, 2, 0 },
     { -1, 1, 0 },
@@ -55,6 +55,8 @@ mod_matrix::mod_matrix(modulation_entry *_matrix, unsigned int _rows, const char
     };
     assert(sizeof(table_columns) == sizeof(tci));
     memcpy(table_columns, tci, sizeof(table_columns));
+    for (unsigned int i = 0; i < matrix_rows; i++)
+        matrix[i].reset();
 }
 
 const table_column_info *mod_matrix::get_table_columns(int param)
@@ -112,7 +114,7 @@ void mod_matrix::set_cell(int param, int row, int column, const std::string &src
                     else if (column == 1)
                         slot.src2 = i;
                     else if (column == 2)
-                        slot.mapping = i;
+                        slot.mapping = (modulation_mode)i;
                     else if (column == 4)
                         slot.dest = i;
                     error.clear();
