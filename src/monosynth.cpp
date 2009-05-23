@@ -63,11 +63,6 @@ monosynth_audio_module::monosynth_audio_module()
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
-    for (int i = 0; i < mod_matrix_slots; i++)
-    {
-        dsp::modulation_entry &slot = mod_matrix_data[i];
-        slot.reset();
-    }
 }
 
 void monosynth_audio_module::activate() {
