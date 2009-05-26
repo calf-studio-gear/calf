@@ -254,7 +254,8 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
     ss << showpoint;
     if (type != PF_STRING)
     {
-        ss << ind << "lv2:default " << pp.def_value << " ;\n";
+        if (!(pp.flags & PF_PROP_OUTPUT))
+            ss << ind << "lv2:default " << pp.def_value << " ;\n";
         ss << ind << "lv2:minimum " << pp.min << " ;\n";
         ss << ind << "lv2:maximum " << pp.max << " ;\n";
         if (pp.step > 1)
