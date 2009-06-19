@@ -555,7 +555,7 @@ void make_ttl(string path_prefix)
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
-        ttl += "    dc:replaces <ladspa:" + i2s(lpi.unique_id) + "> ;\n";
+        ttl += "    dc:replaces <urn:ladspa:" + i2s(lpi.unique_id) + "> ;\n";
         // XXXKF not really optional for now, to be honest
         ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
         if (pi->is_rt_capable())
