@@ -307,7 +307,7 @@ public:
     : fb(0) {}
     void reset() {
         delay.reset();
-        last_delay_pos = 0;
+        last_delay_pos = last_actual_delay_pos = ramp_delay_pos = 0;
         ramp_pos = 1024;
     }
     virtual void setup(int sample_rate) {
