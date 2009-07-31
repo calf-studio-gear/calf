@@ -774,6 +774,7 @@ public:
     multichorus_audio_module()
     {
         is_active = false;
+        last_r_phase = -1;
     }
     
     void params_changed()
