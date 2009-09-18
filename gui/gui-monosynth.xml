@@ -118,12 +118,12 @@
       <frame label="LFO">
         <hbox spacing="10">
           <vbox>
-            <label param="lfo_rate"/>
+            <label text="Rate"/>
             <knob param="lfo_rate"/>
             <value param="lfo_rate"/>
           </vbox>
           <vbox>
-            <label param="lfo_delay"/>
+            <label text="Delay"/>
             <knob param="lfo_delay"/>
             <value param="lfo_delay"/>
           </vbox>
@@ -143,7 +143,7 @@
             <value param="lfo2pw"/>
           </vbox>
           <vbox>
-            <label param="mwhl2lfo"/>
+            <label text="ModWheel"/>
             <knob param="mwhl2lfo"/>
             <value param="mwhl2lfo"/>
           </vbox>
