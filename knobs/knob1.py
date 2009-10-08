@@ -3,9 +3,9 @@
 import cairo
 from math import pi, cos, sin
 
-WIDTH, HEIGHT = 40, 40
-background = "knob2_bg.png"
-output = "knob2.png"
+WIDTH, HEIGHT = 20, 20
+background = "knob1_bg.png"
+output = "knob1.png"
 x, y = WIDTH / 2, HEIGHT / 2
 lwidth = WIDTH / 10
 radius = WIDTH / 2 - lwidth
@@ -30,7 +30,7 @@ for variant in range(0, 4):
     y = HEIGHT * (variant + 0.5)
     for phase in range(0, phases):
         # Draw background image
-        bgimage = cairo.ImageSurface.create_from_png(background)
+        bgimage = cairo.ImageSurface.create_from_png(background) 
         ctx.set_source_surface(bgimage, x - WIDTH / 2, y - HEIGHT / 2);
         ctx.rectangle(phase * WIDTH, variant * HEIGHT, WIDTH, HEIGHT)
         ctx.fill ();
@@ -102,16 +102,16 @@ for variant in range(0, 4):
                     ctx.set_source_rgb(0, 1, 1)
                 else:
                     ctx.set_source_rgb(0, 0.5, 1)
-            ctx.set_line_width(3)
+            ctx.set_line_width(2)
             if hilite:
-                ctx.set_line_width(4)
+                ctx.set_line_width(3)
             ctx.arc(x, y, radius, sangle + adelta * led, sangle + adelta * led + spacing)
             ctx.stroke()
 
-        ctx.set_source_rgba(1, 1, 1, 1)
+        ctx.set_source_rgba(0, 0, 0, 0.8)
         ctx.set_line_width(1)
         mtx = ctx.get_matrix()
-        ctx.translate(x + radiusminus * c, y + radiusminus * s)
+        ctx.translate(x + radiusminus2 * c, y + radiusminus2 * s)
         ctx.rotate(vangle)
         ctx.move_to(0, 0)
         ctx.line_to(-radius/5, 0)

@@ -1,1 +1,2 @@
-EXTRA_DIST = $(wildcard gui-*.xml)
+EXTRA_DIST = $(wildcard gui-*.xml) $(wildcard *.png)
+
