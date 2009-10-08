@@ -26,3 +26,5 @@ autom4te.cache
 bigbull/build
 bigbull/ttl.cpp
 bigbull/ttl.h
+doc/*
+dist/*
