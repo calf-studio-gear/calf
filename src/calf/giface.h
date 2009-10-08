@@ -195,7 +195,7 @@ struct line_graph_iface
     /// @param subindex_dot First dot that has to be redrawn
     /// @param subindex_gridline First gridline/legend that has to be redrawn
     /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
-    virtual int get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
+    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
     
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}

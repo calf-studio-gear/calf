@@ -17,6 +17,8 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
+
+    
 #include "config.h"
 #include <calf/custom_ctl.h>
 #include <gdk/gdkkeysyms.h>
@@ -70,37 +72,37 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
     int ox=1, oy=1;
     cairo_text_extents_t tx;
     if (!legend.empty())
-	cairo_text_extents(c, legend.c_str(), &tx);
+        cairo_text_extents(c, legend.c_str(), &tx);
     if (vertical)
     {
-	float x = floor(ox + pos * sx) + 0.5;
-	if (phase == 1)
-	{
-	    cairo_move_to(c, x, oy);
-	    cairo_line_to(c, x, oy + sy);
-	    cairo_stroke(c);
-	}
-	if (phase == 2 && !legend.empty()) {
+        float x = floor(ox + pos * sx) + 0.5;
+        if (phase == 1)
+        {
+            cairo_move_to(c, x, oy);
+            cairo_line_to(c, x, oy + sy);
+            cairo_stroke(c);
+        }
+        if (phase == 2 && !legend.empty()) {
 
-	    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-	    cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0), oy + sy - 2);
-	    cairo_show_text(c, legend.c_str());
-	}
+            cairo_set_source_rgba(c, 0.0, 0.0, 0.0, 0.7);
+            cairo_move_to(c, x - (tx.x_bearing + tx.width / 2.0) - 2, oy + sy - 2);
+            cairo_show_text(c, legend.c_str());
+        }
     }
     else
     {
-	float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
-	if (phase == 1)
-	{
-	    cairo_move_to(c, ox, y);
-	    cairo_line_to(c, ox + sx, y);
-	    cairo_stroke(c);
-	}
-	if (phase == 2 && !legend.empty()) {
-	    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 0.75);
-	    cairo_move_to(c, ox + sx - 2 - tx.width, y + tx.height/2 - 1);
-	    cairo_show_text(c, legend.c_str());
-	}
+        float y = floor(oy + sy / 2 - (sy / 2 - 1) * pos) + 0.5;
+        if (phase == 1)
+        {
+            cairo_move_to(c, ox, y);
+            cairo_line_to(c, ox + sx, y);
+            cairo_stroke(c);
+        }
+        if (phase == 2 && !legend.empty()) {
+            cairo_set_source_rgba(c, 0.0, 0.0, 0.0, 0.7);
+            cairo_move_to(c, ox + sx - 4 - tx.width, y + tx.height/2);
+            cairo_show_text(c, legend.c_str());
+        }
     }
 }
 
@@ -111,13 +113,13 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy )
 
     for (int i = 0; i < 2 * sx; i++)
     {
-	int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
-	//if (y < oy) y = oy;
-	//if (y >= oy + sy) y = oy + sy - 1;
-	if (i)
-	    cairo_line_to(c, ox + i * 0.5, y);
-	else
-	    cairo_move_to(c, ox, y);
+        int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
+        //if (y < oy) y = oy;
+        //if (y >= oy + sy) y = oy + sy - 1;
+        if (i)
+            cairo_line_to(c, ox + i * 0.5, y);
+        else
+            cairo_move_to(c, ox, y);
     }
     cairo_stroke(c);
 }
@@ -126,37 +128,35 @@ static gboolean
 calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
-    
+
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
     int ox = 1, oy = 1;
     int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
-    
-    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
+    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    GtkStyle	*style;
+    style = gtk_widget_get_style(widget);
     GdkColor sc = { 0, 0, 0, 0 };
 
     bool cache_dirty = 0;
 
-
-
     if( lg->cache_surface == NULL ) {
-	// looks like its either first call or the widget has been resized.
-	// create the cache_surface.
-	cairo_surface_t *window_surface = cairo_get_target( c );
-	lg->cache_surface = cairo_surface_create_similar( window_surface, 
-							  CAIRO_CONTENT_COLOR,
-							  widget->allocation.width,
-							  widget->allocation.height );
-	//cairo_set_source_surface( cache_cr, window_surface, 0,0 );
-	//cairo_paint( cache_cr );
-	
-	cache_dirty = 1;
+        // looks like its either first call or the widget has been resized.
+        // create the cache_surface.
+        cairo_surface_t *window_surface = cairo_get_target( c );
+        lg->cache_surface = cairo_surface_create_similar( window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
+        //cairo_set_source_surface( cache_cr, window_surface, 0,0 );
+        //cairo_paint( cache_cr );
+        
+        cache_dirty = 1;
     }
 
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(c, 9);
-
     gdk_cairo_set_source_color(c, &sc);
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_clip(c);
@@ -170,75 +170,83 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         bool vertical = false;
         std::string legend;
         float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0, 65535, 0 };
+        GdkColor sc2 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
         float x, y;
         int size = 0;
-        GdkColor sc3 = { 0, 32767, 65535, 0 };
+        GdkColor sc3 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
 
-	int graph_n, grid_n, dot_n, grid_n_save;
+        int graph_n, grid_n, dot_n, grid_n_save;
 
-	int cache_graph_index, cache_dot_index, cache_grid_index;
-	int gen_index = lg->source->get_changed_offsets( lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
+        int cache_graph_index, cache_dot_index, cache_grid_index;
+        int gen_index = lg->source->get_changed_offsets( lg->source_id, lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
 
-	if( cache_dirty || (gen_index != lg->last_generation) ) {
+        if( cache_dirty || (gen_index != lg->last_generation) ) {
+            
+            cairo_t *cache_cr = cairo_create( lg->cache_surface );
+            cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+            cairo_set_font_size(cache_cr, 9);
+            
+            cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.85,    0.95,    0.45);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5,     0.8,     0.9,     0.4);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.85,    0.95,    0.45);
+            //gdk_cairo_set_source_color(cache_cr, &sc);
+            cairo_set_source (cache_cr, pt);
+            cairo_rectangle(cache_cr, ox, oy, sx, sy);
+            cairo_clip_preserve(cache_cr);
+            cairo_fill_preserve(cache_cr);
+//            cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
+//            cairo_set_line_width(cache_cr, 1);
+//            cairo_stroke(cache_cr);
 
-	    cairo_t *cache_cr = cairo_create( lg->cache_surface );
-	    cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-	    cairo_set_font_size(cache_cr, 9);
+            cairo_impl cache_cimpl;
+            cache_cimpl.context = cache_cr;
 
-	    gdk_cairo_set_source_color(cache_cr, &sc);
-	    cairo_rectangle(cache_cr, ox, oy, sx, sy);
-	    cairo_clip_preserve(cache_cr);
-	    cairo_fill(cache_cr);
+            lg->source->get_changed_offsets( lg->source_id, gen_index, cache_graph_index, cache_dot_index, cache_grid_index );
+            lg->last_generation = gen_index;
 
-	    cairo_impl cache_cimpl;
-	    cache_cimpl.context = cache_cr;
+            cairo_set_line_width(cache_cr, 1);
+            for(int phase = 1; phase <= 2; phase++)
+            {
+                for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.6), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cache_cimpl); grid_n++)
+                {
+                    calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
+                }
+            }
+            grid_n_save = grid_n;
 
-	    lg->source->get_changed_offsets( gen_index, cache_graph_index, cache_dot_index, cache_grid_index );
-	    lg->last_generation = gen_index;
+            gdk_cairo_set_source_color(cache_cr, &sc2);
+            cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
+            cairo_set_line_width(cache_cr, 1);
+            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, 2 * sx, &cache_cimpl); graph_n++)
+            {
+                calf_line_graph_draw_graph( cache_cr, data, sx, sy );
+            }
+            gdk_cairo_set_source_color(cache_cr, &sc3);
+            for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
+            {
+                int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
+                cairo_arc(cache_cr, ox + x * sx, yv, size, 0, 2 * M_PI);
+                cairo_fill(cache_cr);
+            }
 
-	    cairo_set_line_width(cache_cr, 1);
-	    for(int phase = 1; phase <= 2; phase++)
-	    {
-		for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(cache_cr, 1, 1, 1, 0.5), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cache_cimpl); grid_n++)
-		{
-		    calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
-		}
-	    }
-	    grid_n_save = grid_n;
-
-	    gdk_cairo_set_source_color(cache_cr, &sc2);
-	    cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
-	    cairo_set_line_width(cache_cr, 1);
-	    for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, 2 * sx, &cache_cimpl); graph_n++)
-	    {
-		calf_line_graph_draw_graph( cache_cr, data, sx, sy );
-	    }
-	    gdk_cairo_set_source_color(cache_cr, &sc3);
-	    for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
-	    {
-		int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
-		cairo_arc(cache_cr, ox + x * sx, yv, size, 0, 2 * M_PI);
-		cairo_fill(cache_cr);
-	    }
-
-	    // copy window to cache.
-	    cairo_destroy( cache_cr );
-	    calf_line_graph_copy_cache_to_window( lg, c );
-	} else {
-	    grid_n_save = cache_grid_index;
-	    graph_n = cache_graph_index;
-	    dot_n = cache_dot_index;
-	    calf_line_graph_copy_cache_to_window( lg, c );
-	}
+            // copy window to cache.
+            cairo_destroy( cache_cr );
+            calf_line_graph_copy_cache_to_window( lg, c );
+        } else {
+            grid_n_save = cache_grid_index;
+            graph_n = cache_graph_index;
+            dot_n = cache_dot_index;
+            calf_line_graph_copy_cache_to_window( lg, c );
+        }
 
 
         cairo_set_line_width(c, 1);
         for(int phase = 1; phase <= 2; phase++)
         {
-            for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 1, 1, 1, 0.5), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
+            for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 0, 0, 0, 0.6), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
             {
-		calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
+                calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
             }
         }
 
@@ -247,7 +255,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1);
         for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
         {
-	    calf_line_graph_draw_graph( c, data, sx, sy );
+            calf_line_graph_draw_graph( c, data, sx, sy );
         }
         gdk_cairo_set_source_color(c, &sc3);
         for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cimpl); gn++)
@@ -258,12 +266,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         delete []data;
     }
-    
+
     cairo_destroy(c);
-    
+
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
-    
+
     return TRUE;
 }
 
@@ -280,7 +288,7 @@ int calf_line_graph_update_if(CalfLineGraph *graph, int last_drawn_generation)
     if (graph->source)
     {
         int subgraph, dot, gridline;
-        generation = graph->source->get_changed_offsets(generation, subgraph, dot, gridline);
+        generation = graph->source->get_changed_offsets(graph->source_id, generation, subgraph, dot, gridline);
         if (subgraph == INT_MAX && dot == INT_MAX && gridline == INT_MAX && generation == last_drawn_generation)
             return generation;
         gtk_widget_queue_draw(GTK_WIDGET(graph));
@@ -303,11 +311,11 @@ calf_line_graph_size_allocate (GtkWidget *widget,
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-    
+
     GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_LINE_GRAPH_GET_CLASS( lg ) );
 
     if( lg->cache_surface )
-	cairo_surface_destroy( lg->cache_surface );
+        cairo_surface_destroy( lg->cache_surface );
     lg->cache_surface = NULL;
     
     widget->allocation = *allocation;
@@ -397,87 +405,93 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_VUMETER(widget));
 
-    
+
     CalfVUMeter *vu = CALF_VUMETER(widget);
+    GtkStyle	*style;
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
     int ox = 1, oy = 1;
-    int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
-    
+    int sx = widget->allocation.width - 1 - ((widget->allocation.width - 2) % 3), sy = widget->allocation.height - 2;
+    style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
     if( vu->cache_surface == NULL ) {
-	// looks like its either first call or the widget has been resized.
-	// create the cache_surface.
-	cairo_surface_t *window_surface = cairo_get_target( c );
-	vu->cache_surface = cairo_surface_create_similar( window_surface, 
-							  CAIRO_CONTENT_COLOR,
-							  widget->allocation.width,
-							  widget->allocation.height );
+    // looks like its either first call or the widget has been resized.
+    // create the cache_surface.
+    cairo_surface_t *window_surface = cairo_get_target( c );
+    vu->cache_surface = cairo_surface_create_similar( window_surface, 
+                              CAIRO_CONTENT_COLOR,
+                              widget->allocation.width,
+                              widget->allocation.height );
 
-	// And render the meterstuff again.
-    
-	cairo_t *cache_cr = cairo_create( vu->cache_surface );
-	GdkColor sc = { 0, 0, 0, 0 };
-	gdk_cairo_set_source_color(cache_cr, &sc);
-	cairo_rectangle(cache_cr, ox, oy, sx, sy);
-	cairo_fill(cache_cr);
-	cairo_set_line_width(cache_cr, 1);
+    // And render the meterstuff again.
 
-	for (int x = ox; x <= ox + sx; x += 3)
-	{
-	    float ts = (x - ox) * 1.0 / sx;
-	    float r = 0.f, g = 0.f, b = 0.f;
-	    switch(vu->mode)
-	    {
-		case VU_STANDARD:
-		default:
-		    if (ts < 0.75)
-			r = ts / 0.75, g = 1, b = 0;
-		    else
-			r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
-		    //                if (vu->value < ts || vu->value <= 0)
-		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
-		    break;
-		case VU_MONOCHROME_REVERSE:
-		    r = 1, g = 1, b = 0;
-		    //                if (!(vu->value < ts) || vu->value >= 1.0)
-		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
-		    break;
-		case VU_MONOCHROME:
-		    r = 1, g = 1, b = 0;
-		    //                if (vu->value < ts || vu->value <= 0)
-		    //                    r *= 0.5, g *= 0.5, b *= 0.5;
-		    break;
-	    }
-	    GdkColor sc2 = { 0, (guint16)(65535 * r), (guint16)(65535 * g), (guint16)(65535 * b) };
-	    gdk_cairo_set_source_color(cache_cr, &sc2);
-	    cairo_move_to(cache_cr, x, oy);
-	    cairo_line_to(cache_cr, x, oy + sy + 1);
-	    cairo_move_to(cache_cr, x, oy + sy);
-	    cairo_line_to(cache_cr, x, oy );
-	    cairo_stroke(cache_cr);
-	}
+    cairo_t *cache_cr = cairo_create( vu->cache_surface );
+    GdkColor sc = { 0, 0, 0, 0 };
+    gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+    cairo_paint(cache_cr);
+    gdk_cairo_set_source_color(cache_cr, &sc);
+    cairo_rectangle(cache_cr, ox, oy, sx, sy);
+    cairo_fill(cache_cr);
+    cairo_set_line_width(cache_cr, 1);
+
+    for (int x = ox + 1; x <= ox + sx - 3; x += 3)
+    {
+        float ts = (x - ox) * 1.0 / sx;
+        float r = 0.f, g = 0.f, b = 0.f;
+        switch(vu->mode)
+        {
+        case VU_STANDARD:
+        default:
+            if (ts < 0.75)
+            r = ts / 0.75, g = 0.5 + ts * 0.66, b = 1 - ts / 0.75;
+            else
+            r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+            //                if (vu->value < ts || vu->value <= 0)
+            //                    r *= 0.5, g *= 0.5, b *= 0.5;
+            break;
+        case VU_MONOCHROME_REVERSE:
+            r = 0, g = 170.0 / 255.0, b = 1;
+            //                if (!(vu->value < ts) || vu->value >= 1.0)
+            //                    r *= 0.5, g *= 0.5, b *= 0.5;
+            break;
+        case VU_MONOCHROME:
+            r = 0, g = 170.0 / 255.0, b = 1;
+            //                if (vu->value < ts || vu->value <= 0)
+            //                    r *= 0.5, g *= 0.5, b *= 0.5;
+            break;
+        }
+        GdkColor sc2 = { 0, (guint16)(65535 * r + 0.2), (guint16)(65535 * g), (guint16)(65535 * b) };
+        GdkColor sc3 = { 0, (guint16)(65535 * r * 0.7), (guint16)(65535 * g * 0.7), (guint16)(65535 * b * 0.7) };
+        gdk_cairo_set_source_color(cache_cr, &sc2);
+        cairo_move_to(cache_cr, x + 0.5, oy + 1);
+        cairo_line_to(cache_cr, x + 0.5, oy + sy - 1);
+        cairo_stroke(cache_cr);
+        gdk_cairo_set_source_color(cache_cr, &sc3);
+        cairo_move_to(cache_cr, x + 1.5, oy + sy - 1);
+        cairo_line_to(cache_cr, x + 1.5, oy + 1);
+        cairo_stroke(cache_cr);
+    }
         cairo_destroy( cache_cr );
     }
 
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
     cairo_paint( c );
-    cairo_set_source_rgba( c, 0,0,0, 0.5 );
+    cairo_set_source_rgba( c, 0,0,0, 0.6 );
 
     if( vu->mode == VU_MONOCHROME_REVERSE )
-        cairo_rectangle( c, ox,oy, vu->value * (sx-ox) + 1, sy-oy+1 );
+        cairo_rectangle( c, ox,oy, vu->value * sx, sy );
     else
-        cairo_rectangle( c, ox + vu->value * (sx-ox), oy, sx-ox+1, sy-oy+1 );
+        cairo_rectangle( c, ox + vu->value * sx, oy, sx * (1 - vu->value), sy );
 
     cairo_fill( c );
 
 
 
     cairo_destroy(c);
-    
+
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
     //printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
-    
+
     return TRUE;
 }
 
@@ -486,7 +500,7 @@ calf_vumeter_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_VUMETER(widget));
-    
+
     requisition->width = 50;
     requisition->height = 14;
 }
@@ -503,7 +517,7 @@ calf_vumeter_size_allocate (GtkWidget *widget,
     parent_class->size_allocate( widget, allocation );
 
     if( vu->cache_surface )
-	cairo_surface_destroy( vu->cache_surface );
+    cairo_surface_destroy( vu->cache_surface );
     vu->cache_surface = NULL;
 }
 
@@ -610,10 +624,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 
     // printf("adjustment = %p value = %f\n", adj, adj->value);
     int ox = widget->allocation.x, oy = widget->allocation.y;
-    
-    ox += (widget->allocation.width - 40) / 2;
-    oy += (widget->allocation.height - 40) / 2;
-    
+
+    ox += (widget->allocation.width - self->knob_size * 20) / 2;
+    oy += (widget->allocation.height - self->knob_size * 20) / 2;
+
     int phase = (int)((adj->value - adj->lower) * 64 / (adj->upper - adj->lower));
     // skip middle phase except for true middle value
     if (self->knob_type == 1 && phase == 32) {
@@ -634,13 +648,13 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         if (diff < -0.0001)
             phase = (phase + 63) % 64;
     }
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image, phase * 40, self->knob_type * 40, ox, oy, 40, 40, GDK_RGB_DITHER_NORMAL, 0, 0);
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1], phase * self->knob_size * 20, self->knob_type * self->knob_size * 20, ox, oy, self->knob_size * 20, self->knob_size * 20, GDK_RGB_DITHER_NORMAL, 0, 0);
     // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
     if (gtk_widget_is_focus(widget))
     {
-        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, 40, 40);
+        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, self->knob_size * 20, self->knob_size * 20);
     }
-    
+
     return TRUE;
 }
 
@@ -649,10 +663,13 @@ calf_knob_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_KNOB(widget));
-    
+
+    CalfKnob *self = CALF_KNOB(widget);
+
     // width/height is hardwired at 40px now
-    requisition->width = 40;
-    requisition->height = 40;
+    // is now chooseable by "size" value in XML (1-4)
+    requisition->width  = 20 * self->knob_size;
+    requisition->height = 20 * self->knob_size;
 }
 
 static void
@@ -661,7 +678,7 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-    
+
     int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
     int step;
     int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
@@ -673,7 +690,7 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
         step %= nsteps;
     if (self->knob_type == 3 && step < 0)
         step = nsteps - (nsteps - step) % nsteps;
-    
+
     // trying to reduce error cumulation here, by counting from lowest or from highest
     float value = adj->lower + step * double(adj->upper - adj->lower) / nsteps;
     gtk_range_set_value(GTK_RANGE(widget), value);
@@ -711,7 +728,7 @@ calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
             self->start_y = self->last_y;
             return TRUE;
     }
-    
+
     return FALSE;
 }
 
@@ -772,9 +789,9 @@ static inline float deadzone(float value, float incr, float scale)
         value += dzw;
     if (value < 0.499)
         value -= dzw;
-    
+
     value += incr;
-    
+
     if (value >= (0.5 - dzw) && value <= (0.5 + dzw))
         return 0.5;
     if (value < 0.5)
@@ -788,27 +805,29 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
 
-    float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
+    float scale = (event->state & GDK_SHIFT_MASK) ? 10 : 1;
     gboolean moved = FALSE;
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
+        float sens=1/(75*(1+fabs((self->start_x - event->x)/10)));
         if (self->knob_type == 3)
         {
-            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / scale));
+            gtk_range_set_value(GTK_RANGE(widget), endless(gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / scale * sens));
         }
+//        else
+//        if (self->knob_type == 1)
+//        {
+//            gtk_range_set_value(GTK_RANGE(widget), deadzone(gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / scale * sens, scale * sens));
+//        }
         else
-        if (self->knob_type == 1)
         {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(self->start_value, -(event->y - self->start_y) / scale, scale));
-        }
-        else
-        {
-            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / scale);
+            gtk_range_set_value(GTK_RANGE(widget), gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / scale * sens);
         }
         moved = TRUE;
     }
     self->last_y = event->y;
+    self->last_x = event->x;
     return moved;
 }
 
@@ -833,7 +852,10 @@ calf_knob_class_init (CalfKnobClass *klass)
     widget_class->key_release_event = calf_knob_key_release;
     widget_class->scroll_event = calf_knob_scroll;
     GError *error = NULL;
-    klass->knob_image = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob.png", &error);
+    klass->knob_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob1.png", &error);
+    klass->knob_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob2.png", &error);
+    klass->knob_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob3.png", &error);
+    klass->knob_image[3] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob4.png", &error);
     g_assert(klass->knob_image != NULL);
 }
 
@@ -905,4 +927,3 @@ calf_knob_get_type (void)
     }
     return type;
 }
-
