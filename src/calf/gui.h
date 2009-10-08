@@ -207,6 +207,13 @@ struct toggle_param_control: public param_control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
+    static const int sizes = 2;
+    GdkPixbuf *pb;
+    GdkPixmap *pm_on;
+    GdkPixmap *pm_off;
+    GdkPixbuf *pb_on;
+    GdkPixbuf *pb_off;
+    
     static void toggle_value_changed(GtkCheckButton *widget, gpointer value);
 };
 

@@ -101,13 +101,15 @@ struct CalfKnob
 {
     GtkRange parent;
     int knob_type;
-    double start_x, start_y, start_value, last_y;
+    int knob_size;
+    double start_x, start_y, start_value, last_y, last_x;
+    double last_dz;
 };
 
 struct CalfKnobClass
 {
     GtkRangeClass parent_class;
-    GdkPixbuf *knob_image;
+    GdkPixbuf *knob_image[4];
 };
 
 extern GtkWidget *calf_knob_new();

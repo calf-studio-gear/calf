@@ -28,6 +28,7 @@
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
+#include <gdk/gdk.h>
 
 #include <iostream>
 
@@ -480,6 +481,12 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     float increment = props.get_increment();
     gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
     CALF_KNOB(widget)->knob_type = get_int("type");
+    CALF_KNOB(widget)->knob_size = get_int("size", 2);
+    if(CALF_KNOB(widget)->knob_size > 4) {
+        CALF_KNOB(widget)->knob_size = 4;
+    } else if (CALF_KNOB(widget)->knob_size < 1) {
+        CALF_KNOB(widget)->knob_size = 1;
+    }
     gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     return widget;
 }
@@ -869,7 +876,11 @@ GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_at
 {
     require_int_attribute("rows");
     require_int_attribute("cols");
+    int homog = get_int("homogeneous", 0);
     GtkWidget *table = gtk_table_new(get_int("rows", 1), get_int("cols", 1), false);
+    if(homog > 0) {
+        gtk_table_set_homogeneous(GTK_TABLE(table), TRUE);
+    }
     container = GTK_CONTAINER(table);
     return table;
 }
