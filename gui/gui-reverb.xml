@@ -1,8 +1,13 @@
 <vbox border="10">
     <hbox>
         <vbox border="5">
+            <label param="predelay" />
+            <knob param="predelay" />
+            <value param="predelay" />
+        </vbox>
+        <vbox border="5">
             <label param="decay_time" />
-            <knob param="decay_time" />
+            <knob param="decay_time" size="4" />
             <value param="decay_time" />
         </vbox>
         <vbox border="5">
@@ -10,39 +15,34 @@
             <knob param="hf_damp" />
             <value param="hf_damp" />
         </vbox>
-        <vbox border="5">
-            <label param="dry" />
-            <knob param="dry" />
-            <value param="dry" />
-        </vbox>
-        <vbox border="5">
-            <label param="amount" />
-            <knob param="amount" />
-            <value param="amount" />
-        </vbox>
     </hbox>
-    <hbox>
-        <vbox border="5">
+    <table homogeneous="1" spacing="5" rows="1" cols="5">
+        <vbox attach-x="0" attach-y="0">
             <label param="diffusion" />
-            <knob param="diffusion" />
+            <knob param="diffusion" size="1"/>
             <value param="diffusion" />
         </vbox>
-        <vbox border="5">
-            <label param="predelay" />
-            <knob param="predelay" />
-            <value param="predelay" />
-        </vbox>
-        <vbox border="5">
+        <vbox attach-x="1" attach-y="0">
             <label param="bass_cut" />
-            <knob param="bass_cut" />
+            <knob param="bass_cut" size="1" />
             <value param="bass_cut" />
         </vbox>
-        <vbox border="5">
+        <vbox attach-x="2" attach-y="0">
             <label param="treble_cut" />
-            <knob param="treble_cut" />
+            <knob param="treble_cut" size="1" />
             <value param="treble_cut" />
         </vbox>
-    </hbox>
+        <vbox attach-x="3" attach-y="0">
+            <label param="dry" />
+            <knob param="dry" size="1" />
+            <value param="dry" />
+        </vbox>
+        <vbox attach-x="4" attach-y="0">
+            <label param="amount" />
+            <knob param="amount" size="1" />
+            <value param="amount" />
+        </vbox>
+    </table>
     <vbox border="5">
         <label param="room_size"  />
         <combo param="room_size" />

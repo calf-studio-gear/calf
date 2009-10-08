@@ -6,14 +6,14 @@
     </table>
     <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
         <vbox border="10">
-            <label param="freq" />
-            <knob param="freq" />
-            <value param="freq" />
-        </vbox>
-        <vbox border="10">
             <label param="res" />
             <knob param="res" />
             <value param="res" />
+        </vbox>
+        <vbox border="10">
+            <label param="freq" />
+            <knob param="freq" size="4" />
+            <value param="freq" />
         </vbox>
         <vbox border="10">
             <label param="inertia" />

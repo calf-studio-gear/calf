@@ -34,36 +34,36 @@
             <vumeter param="peak" mode="0" shrink-y="0" />
         </vbox>
     </table>
-    <hbox attach-x="0" attach-y="3" expand-y="0">
-        <vbox border="10" expand="0">
+    <table attach-x="0" attach-y="3" expand-y="0" rows="1" cols="6" homogeneous="1" spacing="10">
+        <vbox expand="0" attach-x="0" attach-y="0">
             <label param="attack" />
             <knob param="attack" />
             <value param="attack" />
         </vbox>
-        <vbox border="10" expand="0">
+        <vbox expand="0" attach-x="1" attach-y="0">
             <label param="release" />
             <knob param="release" />
             <value param="release" />
         </vbox>
-        <vbox border="10" expand="0">
+        <vbox expand="0" attach-x="2" attach-y="0">
             <label param="threshold" />
             <knob param="threshold"/>
             <value param="threshold" />
         </vbox>
-        <vbox border="10" expand="0">
+        <vbox expand="0" attach-x="3" attach-y="0">
             <label param="ratio" />
             <knob param="ratio" />
             <value param="ratio" />
         </vbox>
-        <vbox border="10" expand="0">
+        <vbox expand="0" attach-x="4" attach-y="0">
             <label param="makeup" />
             <knob param="makeup" />
             <value param="makeup" />
         </vbox>
-        <vbox border="10" expand="0">
+        <vbox expand="0" attach-x="5" attach-y="0">
             <label param="knee" />
             <knob param="knee" />
             <value param="knee" />
         </vbox>
-    </hbox>
+    </table>
 </table>

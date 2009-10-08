@@ -1,75 +1,75 @@
 <table rows="3" cols="2" border="10">
     <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
-        <hbox>
-            <vbox border="10">
+        <table rows="1" cols="5" homogeneous="1" spacing="10">
+            <vbox attach-x="0" attach-y="0">
                 <label param="min_delay" />
                 <knob param="min_delay" />
                 <value param="min_delay" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="1" attach-y="0">
                 <label param="mod_depth" />
                 <knob param="mod_depth" />
                 <value param="mod_depth" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="2" attach-y="0">
                 <label param="overlap" />
                 <knob param="overlap" />
                 <value param="overlap" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="3" attach-y="0">
                 <label param="dry" />
                 <knob param="dry" />
                 <value param="dry" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="4" attach-y="0">
                 <label param="amount" />
                 <knob param="amount" />
                 <value param="amount" />
             </vbox>
-        </hbox>
+        </table>
     </frame>
     <frame label="LFO" attach-x="0" attach-y="1" shrink-y="1">
-        <hbox>
-            <vbox border="10">
+        <table rows="1" cols="3" homogeneous="1" spacing="10">
+            <vbox attach-x="0" attach-y="0">
                 <label param="mod_rate" />
                 <knob param="mod_rate" />
                 <value param="mod_rate" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="1" attach-y="0">
                 <label param="voices" />
                 <knob param="voices" />
                 <value param="voices" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="2" attach-y="0">
                 <label param="stereo" />
                 <knob param="stereo" type="3" />
                 <value param="stereo" />
             </vbox>
-            <vbox border="10">
+            <vbox attach-x="3" attach-y="0">
                 <label param="vphase" />
                 <knob param="vphase" type="3" />
                 <value param="vphase" />
             </vbox>
-        </hbox>
+        </table>
     </frame>
     <frame label="Post Filter" attach-x="0" attach-y="2" shrink-y="1">
-        <hbox>
-            <vbox border="10">
+        <table rows="1" cols="3" homogeneous="1" spacing="10">
+            <vbox attach-x="0" attach-y="0">
                 <label param="freq" />
-                <knob param="freq" />
+                <knob param="freq" size="3" />
                 <value param="freq" />
             </vbox>
-            <vbox border="10">
-                <label param="freq2" />
-                <knob param="freq2" />
-                <value param="freq2" />
-            </vbox>
-            <vbox border="10">
+            <vbox attach-x="1" attach-y="0">
                 <label param="q" />
                 <knob param="q" />
                 <value param="q" />
             </vbox>
-        </hbox>
+            <vbox attach-x="2" attach-y="0">
+                <label param="freq2" />
+                <knob param="freq2" size="3" />
+                <value param="freq2" />
+            </vbox>
+        </table>
     </frame>
     <if cond="directlink">
         <hbox attach-x="0" attach-y="3" fill-y="1" expand-y="1">

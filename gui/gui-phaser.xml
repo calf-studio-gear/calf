@@ -1,33 +1,33 @@
 <table border="10" cols="1" rows="2">
     <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
         <vbox>
-            <table rows="2" cols="3">
-                <vbox border="10" attach-x="0" attach-y="0">
+            <table rows="2" cols="3" homogeneous="1" spacing="10">
+                <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="base_freq" />
                     <knob param="base_freq" />
                     <value param="base_freq" />
                 </vbox>
-                <vbox border="10" attach-x="1" attach-y="0">
+                <vbox expand="0" attach-x="1" attach-y="0">
                     <label param="mod_depth" />
                     <knob param="mod_depth" />
                     <value param="mod_depth" />
                 </vbox>
-                <vbox border="10" attach-x="2" attach-y="0">
+                <vbox expand="0" attach-x="2" attach-y="0">
                     <label param="amount" />
                     <knob param="amount" />
                     <value param="amount" />
                 </vbox>
-                <vbox border="10" attach-x="0" attach-y="1">
+                <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="stages" />
                     <knob param="stages" />
                     <value param="stages" />
                 </vbox>
-                <vbox border="10" attach-x="1" attach-y="1">
+                <vbox expand="0" attach-x="1" attach-y="1">
                     <label param="feedback" />
-                    <knob param="feedback" type="1"/>
+                    <knob param="feedback" type="1" size="3" />
                     <value param="feedback" />
                 </vbox>
-                <vbox border="10" attach-x="2" attach-y="1">
+                <vbox expand="0" attach-x="2" attach-y="1">
                     <label param="dry" />
                     <knob param="dry" />
                     <value param="dry" />
@@ -39,13 +39,13 @@
         <hbox>
             <vbox border="10">
                 <label param="mod_rate" />
-                <knob param="mod_rate" />
+                <knob param="mod_rate" size="4" />
                 <value param="mod_rate" />
             </vbox>
             <align><button param="reset" /></align>
             <vbox border="10">
                 <label param="stereo" />
-                <knob param="stereo" type="3" />
+                <knob param="stereo" type="3" size="4" />
                 <value param="stereo" />
             </vbox>
         </hbox>
