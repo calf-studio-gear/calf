@@ -34,7 +34,7 @@ static gboolean
 calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_LED(widget));
-    
+
     CalfLed *self = CALF_LED(widget);
     GdkWindow *window = widget->window;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -43,27 +43,30 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(c, 0, 0, widget->allocation.width, widget->allocation.height);
     cairo_fill(c);
 
+    int ox = 1;
+    int oy = 1;
+    int sx = widget->allocation.width - 2;
+    int sy = widget->allocation.height - 2;
     int xc = widget->allocation.width / 2;
     int yc = widget->allocation.height / 2;
     
-    int diameter = (widget->allocation.width < widget->allocation.height ? widget->allocation.width : widget->allocation.height) - 1;
+    cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, xc > yc ? xc : yc);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 0.2 : 0.0, self->led_state ? 0.7 : 0.25, self->led_state ? 1.0 : 0.5);
+    cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.1 : 0.0, self->led_state ? 0.5 : 0.15, self->led_state ? 0.75 : 0.3);
+    cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                         self->led_state ? 0.3 : 0.1,  self->led_state ? 0.5 : 0.2);
 
-    cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc + diameter / 4, 0, xc, yc, diameter / 2);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.25, self->led_state ? 0.5 : 0.125, 0.0);
-    cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.75 : 0.2, 0.0, 0.0);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0, self->led_state ? 0.25 : 0.1, 0.0, 0.0);
-
-    cairo_arc(c, xc, yc, diameter / 2, 0, 2 * M_PI);
-    cairo_set_line_join(c, CAIRO_LINE_JOIN_BEVEL);
+    cairo_rectangle(c, ox, oy, sx, sy);
     cairo_set_source (c, pt);
     cairo_fill(c);
     cairo_pattern_destroy(pt);
-    
-    cairo_arc(c, xc, yc, diameter / 2, 0, 2 * M_PI);
-    cairo_set_line_width(c, 0.5);
-    cairo_set_source_rgba (c, self->led_state ? 1.0 : 0.3, 0, 0, 0.5);
+
+    cairo_rectangle(c, ox + 0.5, oy + 0.5, sx - 1, sy - 1);
+    cairo_set_source_rgb(c, 0, 0, 0);
+    cairo_set_line_width(c, 1);
     cairo_stroke(c);
-    
+
+    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
+
     cairo_destroy(c);
 
     return TRUE;
@@ -94,9 +97,9 @@ calf_led_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_LED(widget));
-    
-    requisition->width = 12;
-    requisition->height = 12;
+
+    requisition->width = 22;
+    requisition->height = 14;
 }
 
 static void
@@ -104,9 +107,9 @@ calf_led_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
     g_assert(CALF_IS_LED(widget));
-    
+
     widget->allocation = *allocation;
-    
+
     if (GTK_WIDGET_REALIZED(widget))
         gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
 }
@@ -157,7 +160,6 @@ calf_led_get_type (void)
 {
     static GType type = 0;
     if (!type) {
-        
         static const GTypeInfo type_info = {
             sizeof(CalfLedClass),
             NULL, /* base_init */
@@ -169,7 +171,7 @@ calf_led_get_type (void)
             0,    /* n_preallocs */
             (GInstanceInitFunc)calf_led_init
         };
-        
+
         for (int i = 0; ; i++) {
             char *name = g_strdup_printf("CalfLed%u%d", 
                 ((unsigned int)(intptr_t)calf_led_class_init) >> 16, i);
