@@ -69,7 +69,7 @@ calf_line_graph_copy_window_to_cache( CalfLineGraph *lg, cairo_t *c )
 static void
 calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float pos, int phase, int sx, int sy )
 {
-    int ox=1, oy=1;
+    int ox=2, oy=2;
     cairo_text_extents_t tx;
     if (!legend.empty())
         cairo_text_extents(c, legend.c_str(), &tx);
@@ -109,7 +109,7 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 static void
 calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy )
 {
-    int ox=1, oy=1;
+    int ox=2, oy=2;
 
     for (int i = 0; i < 2 * sx; i++)
     {
@@ -131,11 +131,11 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
-    int ox = 1, oy = 1;
+    int ox = 2, oy = 2;
     int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
 
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    GtkStyle	*style;
+    GtkStyle *style;
     style = gtk_widget_get_style(widget);
     GdkColor sc = { 0, 0, 0, 0 };
 
@@ -187,14 +187,17 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_set_font_size(cache_cr, 9);
             
             cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
-            cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.85,    0.95,    0.45);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5,     0.8,     0.9,     0.4);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.85,    0.95,    0.45);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.69,    0.79,    0.35);
+            cairo_pattern_add_color_stop_rgb(pt, 0.025,   0.84,    0.94,    0.49);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5,     0.78,    0.89,    0.45);
+            cairo_pattern_add_color_stop_rgb(pt, 0.500001,0.76,    0.87,    0.38);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89,    1.00,    0.45);
             //gdk_cairo_set_source_color(cache_cr, &sc);
             cairo_set_source (cache_cr, pt);
             cairo_rectangle(cache_cr, ox, oy, sx, sy);
             cairo_clip_preserve(cache_cr);
             cairo_fill_preserve(cache_cr);
+            
 //            cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
 //            cairo_set_line_width(cache_cr, 1);
 //            cairo_stroke(cache_cr);
@@ -269,7 +272,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     cairo_destroy(c);
 
-    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
+    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
 
     return TRUE;
@@ -409,68 +412,70 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfVUMeter *vu = CALF_VUMETER(widget);
     GtkStyle	*style;
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
-    int ox = 1, oy = 1;
-    int sx = widget->allocation.width - 1 - ((widget->allocation.width - 2) % 3), sy = widget->allocation.height - 2;
+    int ox = 2, oy = 2;
+    // if only 1 px border:
+    // int sx = widget->allocation.width - 1 - ((widget->allocation.width - 2) % 3), sy = widget->allocation.height - 2;
+    int sx = widget->allocation.width - 4 - ((widget->allocation.width - 2) % 3), sy = widget->allocation.height - 4;
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
 
     if( vu->cache_surface == NULL ) {
-    // looks like its either first call or the widget has been resized.
-    // create the cache_surface.
-    cairo_surface_t *window_surface = cairo_get_target( c );
-    vu->cache_surface = cairo_surface_create_similar( window_surface, 
-                              CAIRO_CONTENT_COLOR,
-                              widget->allocation.width,
-                              widget->allocation.height );
+        // looks like its either first call or the widget has been resized.
+        // create the cache_surface.
+        cairo_surface_t *window_surface = cairo_get_target( c );
+        vu->cache_surface = cairo_surface_create_similar( window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
 
-    // And render the meterstuff again.
+        // And render the meterstuff again.
 
-    cairo_t *cache_cr = cairo_create( vu->cache_surface );
-    GdkColor sc = { 0, 0, 0, 0 };
-    gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
-    cairo_paint(cache_cr);
-    gdk_cairo_set_source_color(cache_cr, &sc);
-    cairo_rectangle(cache_cr, ox, oy, sx, sy);
-    cairo_fill(cache_cr);
-    cairo_set_line_width(cache_cr, 1);
+        cairo_t *cache_cr = cairo_create( vu->cache_surface );
+        GdkColor sc = { 0, 0, 0, 0 };
+        gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+        cairo_paint(cache_cr);
+        gdk_cairo_set_source_color(cache_cr, &sc);
+        cairo_rectangle(cache_cr, ox, oy, sx, sy);
+        cairo_fill(cache_cr);
+        cairo_set_line_width(cache_cr, 1);
 
-    for (int x = ox + 1; x <= ox + sx - 3; x += 3)
-    {
-        float ts = (x - ox) * 1.0 / sx;
-        float r = 0.f, g = 0.f, b = 0.f;
-        switch(vu->mode)
+        for (int x = ox + 1; x <= ox + sx - 3; x += 3)
         {
-        case VU_STANDARD:
-        default:
-            if (ts < 0.75)
-            r = ts / 0.75, g = 0.5 + ts * 0.66, b = 1 - ts / 0.75;
-            else
-            r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
-            //                if (vu->value < ts || vu->value <= 0)
-            //                    r *= 0.5, g *= 0.5, b *= 0.5;
-            break;
-        case VU_MONOCHROME_REVERSE:
-            r = 0, g = 170.0 / 255.0, b = 1;
-            //                if (!(vu->value < ts) || vu->value >= 1.0)
-            //                    r *= 0.5, g *= 0.5, b *= 0.5;
-            break;
-        case VU_MONOCHROME:
-            r = 0, g = 170.0 / 255.0, b = 1;
-            //                if (vu->value < ts || vu->value <= 0)
-            //                    r *= 0.5, g *= 0.5, b *= 0.5;
-            break;
+            float ts = (x - ox) * 1.0 / sx;
+            float r = 0.f, g = 0.f, b = 0.f;
+            switch(vu->mode)
+            {
+            case VU_STANDARD:
+            default:
+                if (ts < 0.75)
+                r = ts / 0.75, g = 0.5 + ts * 0.66, b = 1 - ts / 0.75;
+                else
+                r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+                //                if (vu->value < ts || vu->value <= 0)
+                //                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
+            case VU_MONOCHROME_REVERSE:
+                r = 0, g = 170.0 / 255.0, b = 1;
+                //                if (!(vu->value < ts) || vu->value >= 1.0)
+                //                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
+            case VU_MONOCHROME:
+                r = 0, g = 170.0 / 255.0, b = 1;
+                //                if (vu->value < ts || vu->value <= 0)
+                //                    r *= 0.5, g *= 0.5, b *= 0.5;
+                break;
+            }
+            GdkColor sc2 = { 0, (guint16)(65535 * r + 0.2), (guint16)(65535 * g), (guint16)(65535 * b) };
+            GdkColor sc3 = { 0, (guint16)(65535 * r * 0.7), (guint16)(65535 * g * 0.7), (guint16)(65535 * b * 0.7) };
+            gdk_cairo_set_source_color(cache_cr, &sc2);
+            cairo_move_to(cache_cr, x + 0.5, oy + 1);
+            cairo_line_to(cache_cr, x + 0.5, oy + sy - 1);
+            cairo_stroke(cache_cr);
+            gdk_cairo_set_source_color(cache_cr, &sc3);
+            cairo_move_to(cache_cr, x + 1.5, oy + sy - 1);
+            cairo_line_to(cache_cr, x + 1.5, oy + 1);
+            cairo_stroke(cache_cr);
         }
-        GdkColor sc2 = { 0, (guint16)(65535 * r + 0.2), (guint16)(65535 * g), (guint16)(65535 * b) };
-        GdkColor sc3 = { 0, (guint16)(65535 * r * 0.7), (guint16)(65535 * g * 0.7), (guint16)(65535 * b * 0.7) };
-        gdk_cairo_set_source_color(cache_cr, &sc2);
-        cairo_move_to(cache_cr, x + 0.5, oy + 1);
-        cairo_line_to(cache_cr, x + 0.5, oy + sy - 1);
-        cairo_stroke(cache_cr);
-        gdk_cairo_set_source_color(cache_cr, &sc3);
-        cairo_move_to(cache_cr, x + 1.5, oy + sy - 1);
-        cairo_line_to(cache_cr, x + 1.5, oy + 1);
-        cairo_stroke(cache_cr);
-    }
         cairo_destroy( cache_cr );
     }
 
@@ -478,18 +483,17 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_paint( c );
     cairo_set_source_rgba( c, 0,0,0, 0.6 );
 
+    float value = vu->value > 1.f ? 1.f : vu->value;
     if( vu->mode == VU_MONOCHROME_REVERSE )
-        cairo_rectangle( c, ox,oy, vu->value * sx, sy );
+        cairo_rectangle( c, ox + 1,oy + 1, value * (sx - 2), sy - 2);
     else
-        cairo_rectangle( c, ox + vu->value * sx, oy, sx * (1 - vu->value), sy );
-
+        cairo_rectangle( c, ox + 1 + value * (sx - 2), oy + 1, (sx - 2) * (1 - value), sy - 2 );
+    
     cairo_fill( c );
-
-
-
+    
     cairo_destroy(c);
 
-    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
+    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
     //printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
 
     return TRUE;
@@ -502,7 +506,7 @@ calf_vumeter_size_request (GtkWidget *widget,
     g_assert(CALF_IS_VUMETER(widget));
 
     requisition->width = 50;
-    requisition->height = 14;
+    requisition->height = 16;
 }
 
 static void
@@ -517,7 +521,7 @@ calf_vumeter_size_allocate (GtkWidget *widget,
     parent_class->size_allocate( widget, allocation );
 
     if( vu->cache_surface )
-    cairo_surface_destroy( vu->cache_surface );
+        cairo_surface_destroy( vu->cache_surface );
     vu->cache_surface = NULL;
 }
 
@@ -536,7 +540,7 @@ calf_vumeter_init (CalfVUMeter *self)
     GtkWidget *widget = GTK_WIDGET(self);
     //GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
     widget->requisition.width = 50;
-    widget->requisition.height = 15;
+    widget->requisition.height = 16;
     self->value = 0.5;
     self->cache_surface = NULL;
 }
@@ -921,6 +925,152 @@ calf_knob_get_type (void)
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+///////////////////////////////////////// toggle ///////////////////////////////////////////////
+
+static gboolean
+calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_TOGGLE(widget));
+    
+    CalfToggle *self = CALF_TOGGLE(widget);
+    GdkWindow *window = widget->window;
+
+    int ox = widget->allocation.x, oy = widget->allocation.y;
+    int width = self->size * 30, height = self->size * 20;
+
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1], 0, height * gtk_range_get_value(GTK_RANGE(widget)), ox, oy, width, height, GDK_RGB_DITHER_NORMAL, 0, 0);
+    if (gtk_widget_is_focus(widget))
+    {
+        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, width, height);
+    }
+
+    return TRUE;
+}
+
+static void
+calf_toggle_size_request (GtkWidget *widget,
+                           GtkRequisition *requisition)
+{
+    g_assert(CALF_IS_TOGGLE(widget));
+
+    CalfToggle *self = CALF_TOGGLE(widget);
+
+    requisition->width  = 30 * self->size;
+    requisition->height = 20 * self->size;
+}
+
+static gboolean
+calf_toggle_button_press (GtkWidget *widget, GdkEventButton *event)
+{
+    g_assert(CALF_IS_TOGGLE(widget));
+    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+    if (gtk_range_get_value(GTK_RANGE(widget)) == adj->lower)
+    {
+        gtk_range_set_value(GTK_RANGE(widget), adj->upper);
+    } else {
+        gtk_range_set_value(GTK_RANGE(widget), adj->lower);
+    }
+    return TRUE;
+}
+
+static gboolean
+calf_toggle_key_press (GtkWidget *widget, GdkEventKey *event)
+{
+    switch(event->keyval)
+    {
+        case GDK_Return:
+        case GDK_KP_Enter:
+        case GDK_space:
+            return calf_toggle_button_press(widget, NULL);
+    }
+    return FALSE;
+}
+
+static void
+calf_toggle_class_init (CalfToggleClass *klass)
+{
+    // GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_toggle_expose;
+    widget_class->size_request = calf_toggle_size_request;
+    widget_class->button_press_event = calf_toggle_button_press;
+    widget_class->key_press_event = calf_toggle_key_press;
+    GError *error = NULL;
+    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1.png", &error);
+    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2.png", &error);
+    g_assert(klass->toggle_image != NULL);
+}
+
+static void
+calf_toggle_init (CalfToggle *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
+    widget->requisition.width = 30;
+    widget->requisition.height = 20;
+    self->size = 1;
+}
+
+GtkWidget *
+calf_toggle_new()
+{
+    GtkAdjustment *adj = (GtkAdjustment *)gtk_adjustment_new(0, 0, 1, 1, 0, 0);
+    return calf_toggle_new_with_adjustment(adj);
+}
+
+static gboolean calf_toggle_value_changed(gpointer obj)
+{
+    GtkWidget *widget = (GtkWidget *)obj;
+    gtk_widget_queue_draw(widget);
+    return FALSE;
+}
+
+GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment)
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE, NULL ));
+    if (widget) {
+        gtk_range_set_adjustment(GTK_RANGE(widget), _adjustment);
+        gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_toggle_value_changed), widget);
+    }
+    return widget;
+}
+
+GType
+calf_toggle_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        
+        static const GTypeInfo type_info = {
+            sizeof(CalfToggleClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_toggle_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfToggle),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_toggle_init
+        };
+        
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfToggle%u%d", 
+                ((unsigned int)(intptr_t)calf_toggle_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static( GTK_TYPE_RANGE,
+                                           name,
+                                           &type_info,
+                                           (GTypeFlags)0);
             free(name);
             break;
         }

@@ -117,6 +117,29 @@ extern GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment);
 
 extern GType calf_knob_get_type();
 
+#define CALF_TYPE_TOGGLE          (calf_toggle_get_type())
+#define CALF_TOGGLE(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TOGGLE, CalfToggle))
+#define CALF_IS_TOGGLE(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TOGGLE))
+#define CALF_TOGGLE_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_TOGGLE, CalfToggleClass))
+#define CALF_IS_TOGGLE_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_TOGGLE))
+
+struct CalfToggle
+{
+    GtkRange parent;
+    int size;
+};
+
+struct CalfToggleClass
+{
+    GtkRangeClass parent_class;
+    GdkPixbuf *toggle_image[2];
+};
+
+extern GtkWidget *calf_toggle_new();
+extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
+
+extern GType calf_toggle_get_type();
+
 G_END_DECLS
 
 class cairo_impl: public calf_plugins::cairo_iface

@@ -368,29 +368,29 @@ void led_param_control::set()
 
 // check box
 
-GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
+GtkWidget *check_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
     
     widget  = gtk_check_button_new ();
-    gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (toggle_value_changed), (gpointer)this);
+    gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (check_value_changed), (gpointer)this);
     return widget;
 }
 
-void toggle_param_control::toggle_value_changed(GtkCheckButton *widget, gpointer value)
+void check_param_control::check_value_changed(GtkCheckButton *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
 }
 
-void toggle_param_control::get()
+void check_param_control::get()
 {
     const parameter_properties &props = get_props();
     gui->set_param_value(param_no, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget)) + props.min, this);
 }
 
-void toggle_param_control::set()
+void check_param_control::set()
 {
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
@@ -510,6 +510,49 @@ void knob_param_control::set()
 }
 
 void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    jhp->get();
+}
+
+// Toggle Button
+
+GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    widget  = calf_toggle_new ();
+    
+    CALF_TOGGLE(widget)->size = get_int("size", 2);
+    if(CALF_TOGGLE(widget)->size > 2) {
+        CALF_TOGGLE(widget)->size = 2;
+    } else if (CALF_TOGGLE(widget)->size < 1) {
+        CALF_TOGGLE(widget)->size = 1;
+    }
+    
+    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
+    return widget;
+}
+
+void toggle_param_control::get()
+{
+    const parameter_properties &props = get_props();
+    float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
+    gui->set_param_value(param_no, value, this);
+    if (label)
+        update_label();
+}
+
+void toggle_param_control::set()
+{
+    _GUARD_CHANGE_
+    const parameter_properties &props = get_props();
+    gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+    if (label)
+        update_label();
+}
+
+void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
@@ -990,6 +1033,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new vscale_param_control;
     if (!strcmp(element, "combo"))
         return new combo_box_param_control;
+    if (!strcmp(element, "check"))
+        return new check_param_control;
     if (!strcmp(element, "toggle"))
         return new toggle_param_control;
     if (!strcmp(element, "spin"))

@@ -43,10 +43,10 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(c, 0, 0, widget->allocation.width, widget->allocation.height);
     cairo_fill(c);
 
-    int ox = 1;
-    int oy = 1;
-    int sx = widget->allocation.width - 2;
-    int sy = widget->allocation.height - 2;
+    int ox = 2;
+    int oy = 2;
+    int sx = widget->allocation.width - 4;
+    int sy = widget->allocation.height - 4;
     int xc = widget->allocation.width / 2;
     int yc = widget->allocation.height / 2;
     
@@ -65,7 +65,7 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_line_width(c, 1);
     cairo_stroke(c);
 
-    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 1, oy - 1, sx + 2, sy + 2);
+    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
 
     cairo_destroy(c);
 
@@ -99,7 +99,7 @@ calf_led_size_request (GtkWidget *widget,
     g_assert(CALF_IS_LED(widget));
 
     requisition->width = 22;
-    requisition->height = 14;
+    requisition->height = 16;
 }
 
 static void

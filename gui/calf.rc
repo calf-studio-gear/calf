@@ -1,0 +1,16 @@
+style "calf"
+{
+  fg[NORMAL] = { 0.2, 0.2, 0.2 }
+  fg[ACTIVE] = { 0.2, 0.2, 0.2 }
+  fg[PRELIGHT] = { 0.2, 0.2, 0.2 }
+  fg[SELECTED] = { 0.2, 0.2, 0.2 }
+  fg[INSENSITIVE] = { 0.2, 0.2, 0.2 }
+
+  bg[NORMAL] = { 0.86, 0.86, 0.87 }
+  bg[ACTIVE] = { 0.86, 0.86, 0.87 }
+  bg[PRELIGHT] = { 0.86, 0.86, 0.87 }
+  bg[SELECTED] = { 0.86, 0.86, 0.87 }
+  bg[INSENSITIVE] = { 0.86, 0.86, 0.87 }
+}
+
+class "GtkWidget" style "calf"

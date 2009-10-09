@@ -1,2 +1,2 @@
-EXTRA_DIST = $(wildcard gui-*.xml) $(wildcard *.png)
+EXTRA_DIST = $(wildcard gui-*.xml) $(wildcard *.png) calf.rc
 
