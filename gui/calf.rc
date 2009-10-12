@@ -1,4 +1,4 @@
-style "calf"
+style "calf_default"
 {
   fg[NORMAL] = { 0.2, 0.2, 0.2 }
   fg[ACTIVE] = { 0.2, 0.2, 0.2 }
@@ -18,4 +18,28 @@ style "calf"
   }
 }
 
-class "GtkWidget" style "calf"
+style "frame" = "calf_default"
+{
+  xthickness = 10
+  ythickness = 15
+}
+
+style "inverse" = "calf_default"
+{
+  fg[NORMAL] = { 0.86, 0.86, 0.87 }
+  fg[ACTIVE] = { 0.86, 0.86, 0.87 }
+  fg[PRELIGHT] = { 0.86, 0.86, 0.87 }
+  fg[SELECTED] = { 0.86, 0.86, 0.87 }
+  fg[INSENSITIVE] = { 0.86, 0.86, 0.87 }
+
+  bg[NORMAL] = { 0.2, 0.2, 0.2 }
+  bg[ACTIVE] = { 0.2, 0.2, 0.2 }
+  bg[PRELIGHT] = { 0.2, 0.2, 0.2 }
+  bg[SELECTED] = { 0.2, 0.2, 0.2 }
+  bg[INSENSITIVE] = { 0.2, 0.2, 0.2 }
+}
+
+widget "calf-plugin*inverted*" style "inverse"
+widget "calf-plugin*frame*" style "frame"
+widget "calf-plugin*" style "calf_default"
+widget "calf-rack*" style "calf_default"

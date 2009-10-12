@@ -1,10 +1,10 @@
-<table border="10" rows="3" cols="1">
+<table border="10" rows="3" cols="1" >
     <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
-        <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
-        <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10"/>
-        <combo param="mode" attach-x="2" attach-y="0"/>
+        <label param="mode" attach-x="0" attach-y="0" shrink-x="1" widget-name="inverted"/>
+        <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10" />
+        <combo param="mode" attach-x="2" attach-y="0" />
     </table>
-    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
+    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1" widget-name="default">
         <vbox border="10">
             <label param="res" />
             <knob param="res" />
@@ -22,7 +22,7 @@
         </vbox>
     </hbox>
     <if cond="directlink">
-        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="0" attach-y="2">
+        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="0" attach-y="2" widget-name="frame">
             <line-graph refresh="1" width="160" height="160" param="freq"/>
         </frame>
     </if>

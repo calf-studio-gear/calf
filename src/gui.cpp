@@ -35,6 +35,28 @@ using namespace std;
 
 /******************************** control base classes **********************/
 
+void control_container::set_std_properties()
+{
+    if (attribs.find("widget-name") != attribs.end())
+    {
+        string name = attribs["widget-name"];
+        if (container) {
+            gtk_widget_set_name(GTK_WIDGET(container), name.c_str());
+        }
+    }
+}
+
+void param_control::set_std_properties()
+{
+    if (attribs.find("widget-name") != attribs.end())
+    {
+        string name = attribs["widget-name"];
+        if (widget) {
+            gtk_widget_set_name(widget, name.c_str());
+        }
+    }
+}
+
 GtkWidget *param_control::create_label()
 {
     label = gtk_label_new ("");
@@ -127,114 +149,6 @@ float control_base::get_float(const char *name, float def_value)
     float value;
     ss >> value;
     return value;
-}
-
-/******************************** GtkTable container ********************************/
-
-GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    require_int_attribute("rows");
-    require_int_attribute("cols");
-    int homog = get_int("homogeneous", 0);
-    GtkWidget *table = gtk_table_new(get_int("rows", 1), get_int("cols", 1), false);
-    if(homog > 0) {
-        gtk_table_set_homogeneous(GTK_TABLE(table), TRUE);
-    }
-    container = GTK_CONTAINER(table);
-    return table;
-}
-
-void table_container::add(GtkWidget *widget, control_base *base)
-{
-    base->require_int_attribute("attach-x");
-    base->require_int_attribute("attach-y");
-    int x = base->get_int("attach-x"), y = base->get_int("attach-y");
-    int w = base->get_int("attach-w", 1), h = base->get_int("attach-h", 1);
-    int shrinkx = base->get_int("shrink-x", 0);
-    int shrinky = base->get_int("shrink-y", 0);
-    int fillx = (base->get_int("fill-x", !shrinkx) ? GTK_FILL : 0) | (base->get_int("expand-x", !shrinkx) ? GTK_EXPAND : 0) | (shrinkx ? GTK_SHRINK : 0);
-    int filly = (base->get_int("fill-y", !shrinky) ? GTK_FILL : 0) | (base->get_int("expand-y", !shrinky) ? GTK_EXPAND : 0) | (base->get_int("shrink-y", 0) ? GTK_SHRINK : 0);
-    int padx = base->get_int("pad-x", 2);
-    int pady = base->get_int("pad-y", 2);
-    gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
-} 
-
-/******************************** alignment contaner ********************************/
-
-GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *align = gtk_alignment_new(get_float("align-x", 0.5), get_float("align-y", 0.5), get_float("scale-x", 0), get_float("scale-y", 0));
-    container = GTK_CONTAINER(align);
-    return align;
-}
-
-/******************************** GtkFrame contaner ********************************/
-
-GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *frame = gtk_frame_new(attribs["label"].c_str());
-    container = GTK_CONTAINER(frame);
-    return frame;
-}
-
-/******************************** GtkBox type of containers ********************************/
-
-void box_container::add(GtkWidget *w, control_base *base)
-{
-    gtk_container_add_with_properties(container, w, "expand", get_int("expand", 1), "fill", get_int("fill", 1), NULL);
-}
-
-/******************************** GtkHBox container ********************************/
-
-GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *hbox = gtk_hbox_new(false, get_int("spacing", 2));
-    container = GTK_CONTAINER(hbox);
-    return hbox;
-}
-
-/******************************** GtkVBox container ********************************/
-
-GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *vbox = gtk_vbox_new(false, get_int("spacing", 2));
-    container = GTK_CONTAINER(vbox);
-    return vbox;
-}
-
-/******************************** GtkNotebook container ********************************/
-
-GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *nb = gtk_notebook_new();
-    container = GTK_CONTAINER(nb);
-    return nb;
-}
-
-void notebook_container::add(GtkWidget *w, control_base *base)
-{
-    gtk_notebook_append_page(GTK_NOTEBOOK(container), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
-}
-
-/******************************** GtkNotebook container ********************************/
-
-GtkWidget *scrolled_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkAdjustment *horiz = NULL, *vert = NULL;
-    int width = get_int("width", 0), height = get_int("height", 0);
-    if (width)
-        horiz = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("x", 0), 0, width, get_int("step-x", 1), get_int("page-x", width / 10), 100));
-    if (height)
-        vert = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("y", 0), 0, width, get_int("step-y", 1), get_int("page-y", height / 10), 10));
-    GtkWidget *sw = gtk_scrolled_window_new(horiz, vert);
-    gtk_widget_set_size_request(sw, get_int("req-x", -1), get_int("req-y", -1));
-    container = GTK_CONTAINER(sw);
-    return sw;
-}
-
-void scrolled_container::add(GtkWidget *w, control_base *base)
-{
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(container), w);
 }
 
 /******************************** GUI proper ********************************/
@@ -340,6 +254,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
     {
         cc->attribs = xam;
         cc->create(this, element, xam);
+        cc->set_std_properties();
         gtk_container_set_border_width(cc->container, cc->get_int("border"));
 
         container_stack.push_back(cc);
@@ -364,6 +279,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             if (param_no != -1)
                 current_control->param_variable = plugin->get_param_props(param_no)->short_name;
             current_control->create(this, param_no);
+            current_control->set_std_properties();
             current_control->init_xml(element);
             current_control->set();
             current_control->hook_params();
@@ -653,6 +569,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_default_icon_name("calf");
+    gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
     

@@ -44,6 +44,8 @@ struct control_base
     void require_int_attribute(const char *name);
     int get_int(const char *name, int def_value = 0);
     float get_float(const char *name, float def_value = 0.f);
+    /// called after creation, so that all standard properties can be set
+    virtual void set_std_properties() = 0;
 };
 
 #define _GUARD_CHANGE_ if (in_change) return; guard_change __gc__(this);
@@ -77,6 +79,7 @@ struct param_control: public control_base
     virtual void configure(const char *key, const char *value) {}
     virtual void hook_params();
     virtual void on_idle() {}
+    virtual void set_std_properties();
     virtual ~param_control();
 };
 
@@ -86,6 +89,7 @@ struct control_container: public control_base
     
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)=0;
     virtual void add(GtkWidget *w, control_base *base) { gtk_container_add(container, w); }
+    virtual void set_std_properties();
     virtual ~control_container() {}
 };
 
