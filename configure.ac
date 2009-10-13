@@ -246,6 +246,7 @@ AC_MSG_RESULT([
     Debug mode:             $set_enable_debug
     Experimental plugins:   $set_enable_experimental
     LADSPA enabled:         $LADSPA_FOUND
+    Common GUI code:        $GUI_ENABLED
     DSSI enabled:           $DSSI_FOUND
     DSSI GUI enabled:       $DSSI_GUI_ENABLED
     LV2 enabled:            $LV2_ENABLED
