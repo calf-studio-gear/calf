@@ -107,6 +107,7 @@ protected:
     std::map<std::string, int> param_name_map;
     int ignore_stack;
     int last_status_serial_no;
+    std::map<int, GSList *> param_radio_groups;
 public:
     plugin_gui_window *window;
     GtkWidget *container;
@@ -129,6 +130,10 @@ public:
     /// Called on change of status variable
     void send_status(const char *key, const char *value);
     void on_idle();
+    /// Get a radio button group (if it exists) for a parameter
+    GSList *get_radio_group(int param);
+    /// Set a radio button group for a parameter
+    void set_radio_group(int param, GSList *group);
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);

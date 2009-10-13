@@ -165,6 +165,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new combo_box_param_control;
     if (!strcmp(element, "check"))
         return new check_param_control;
+    if (!strcmp(element, "radio"))
+        return new radio_param_control;
     if (!strcmp(element, "toggle"))
         return new toggle_param_control;
     if (!strcmp(element, "spin"))
@@ -409,6 +411,23 @@ void plugin_gui::set_param_value(int param_no, float value, param_control *origi
     plugin->set_param_value(param_no, value);
     refresh(param_no);
 }
+
+/// Get a radio button group (if it exists) for a parameter
+GSList *plugin_gui::get_radio_group(int param)
+{
+    map<int, GSList *>::const_iterator i = param_radio_groups.find(param);
+    if (i == param_radio_groups.end())
+        return NULL;
+    else
+        return i->second;
+}
+
+/// Set a radio button group for a parameter
+void plugin_gui::set_radio_group(int param, GSList *group)
+{
+    param_radio_groups[param] = group;
+}
+
 
 plugin_gui::~plugin_gui()
 {

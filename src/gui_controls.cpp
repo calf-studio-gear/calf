@@ -366,6 +366,61 @@ void check_param_control::set()
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
 
+// radio button
+
+GtkWidget *radio_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    require_attribute("value");
+    int value = -1;
+    string value_name = attribs["value"];
+    const parameter_properties &props = get_props();
+    if (props.choices && (value_name < "0" || value_name > "9"))
+    {
+        for (int i = 0; props.choices[i]; i++)
+        {
+            if (value_name == props.choices[i])
+            {
+                value = i + (int)props.min;
+                break;
+            }
+        }
+    }
+    if (value == -1)
+        value = get_int("value");
+    
+    if (attribs.count("label"))
+        widget  = gtk_radio_button_new_with_label (gui->get_radio_group(param_no), attribs["label"].c_str());
+    else
+        widget  = gtk_radio_button_new_with_label (gui->get_radio_group(param_no), props.choices[value - (int)props.min]);
+    gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (widget), FALSE);
+        
+    gui->set_radio_group(param_no, gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget)));
+    gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (radio_clicked), (gpointer)this);
+    return widget;
+}
+
+void radio_param_control::radio_clicked(GtkRadioButton *widget, gpointer value)
+{
+    param_control *jhp = (param_control *)value;
+    jhp->get();
+}
+
+void radio_param_control::get()
+{
+    // const parameter_properties &props = get_props();
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+        gui->set_param_value(param_no, value, this);
+}
+
+void radio_param_control::set()
+{
+    _GUARD_CHANGE_
+    const parameter_properties &props = get_props();
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value == ((int)gui->plugin->get_param_value(param_no) - (int)props.min));
+}
+
 // spin button
 
 GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)

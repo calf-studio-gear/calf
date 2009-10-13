@@ -1,20 +1,32 @@
 <table border="10" rows="4" cols="1">
-    <hbox attach-x="0" attach-y="0" shrink-y="1" expand-y="0">
-    	<vbox expand="0">
+    <hbox attach-x="0" attach-y="0" shrink-y="1" expand-y="0" homogeneous="1">
+    	<vbox expand="1">
              <label param="bypass"/>
-             <align><toggle param="bypass" shrink="1"/></align>
+             <align><toggle param="bypass" shrink="1" size="1"/></align>
         </vbox>
-    	<vbox expand="0">
-             <label param="detection"/>
-             <combo param="detection"/>
+    	<vbox expand="1">
+            <label param="detection"/>
+            <align>
+                <hbox expand="0" >
+                    <radio param="detection" value="RMS" shrink="1"/>
+                    <radio param="detection" value="Peak" shrink="1"/>
+                </hbox>
+            </align>
         </vbox>
-    	<vbox expand="0">
-             <label param="stereo_link"/>
-             <combo param="stereo_link"/>
+    	<vbox expand="1">
+            <label param="stereo_link"/>
+            <align>
+                <hbox expand="0" >
+                    <radio param="stereo_link" value="Average" shrink="1"/>
+                    <radio param="stereo_link" value="Maximum" shrink="1"/>
+                </hbox>
+            </align>
         </vbox>
-    	<vbox expand="0">
-             <label param="aweighting"/>
-             <combo param="aweighting"/>
+    	<vbox expand="1">
+            <label param="aweighting"/>
+            <align>
+                <combo param="aweighting"/>
+            </align>
         </vbox>
     </hbox>
     <if cond="directlink">

@@ -156,6 +156,18 @@ struct toggle_param_control: public param_control
     static void toggle_value_changed(GtkWidget *widget, gpointer value);
 };
 
+/// Radio button
+struct radio_param_control: public param_control
+{
+    int value;
+    
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    
+    static void radio_clicked(GtkRadioButton *widget, gpointer value);
+};
+
 /// Push button
 struct button_param_control: public param_control
 {
