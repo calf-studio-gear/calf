@@ -117,11 +117,11 @@
     <linearGradient
        id="linearGradient4961">
       <stop
-         style="stop-color:#ffffff;stop-opacity:0.51829267;"
+         style="stop-color:#ffffff;stop-opacity:0.40853658;"
          offset="0"
          id="stop4963" />
       <stop
-         style="stop-color:#000000;stop-opacity:0.37804878;"
+         style="stop-color:#000000;stop-opacity:0.32926831;"
          offset="1"
          id="stop4965" />
     </linearGradient>
@@ -130,11 +130,15 @@
       <stop
          id="stop4957"
          offset="0"
-         style="stop-color:#ffffff;stop-opacity:0.86585367;" />
+         style="stop-color:#ffffff;stop-opacity:0.79268295;" />
+      <stop
+         style="stop-color:#7f7f7f;stop-opacity:0.07926829;"
+         offset="0.5"
+         id="stop3353" />
       <stop
          id="stop4959"
          offset="1"
-         style="stop-color:#000000;stop-opacity:0.79268295;" />
+         style="stop-color:#000000;stop-opacity:0.52439022;" />
     </linearGradient>
     <linearGradient
        id="linearGradient4923">
@@ -934,16 +938,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="16.145295"
-     inkscape:cy="69.024395"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="-107.08287"
+     inkscape:cy="126.77161"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1270"
      inkscape:window-height="709"
      inkscape:window-x="0"
-     inkscape:window-y="25" />
+     inkscape:window-y="24" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -968,7 +972,7 @@
        inkscape:tile-h="38.988778"
        inkscape:tile-x0="0.50564882"
        inkscape:tile-y0="1372.8678"
-       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob2.png"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob2_bg.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <path
@@ -1189,7 +1193,7 @@
        inkscape:tile-y0="892.86778"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90"
-       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1.png" />
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1_bg.png" />
     <path
        transform="matrix(5.28842e-2,0,0,5.5151645e-2,-5.776404,867.8347)"
        d="M 431.42857,445.21933 A 124.28571,124.28571 0 1 1 182.85714,445.21933 A 124.28571,124.28571 0 1 1 431.42857,445.21933 z"
@@ -1199,7 +1203,10 @@
        sodipodi:cx="307.14285"
        id="path4090"
        style="opacity:0.43773588;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#2d2d2d;stroke-width:1.26273239;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;filter:url(#filter22731);enable-background:accumulate"
-       sodipodi:type="arc" />
+       sodipodi:type="arc"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:type="arc"
        style="opacity:0.59245282;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#2d2d2d;stroke-width:1.26273239;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;filter:url(#filter22505);enable-background:accumulate"
@@ -1209,7 +1216,10 @@
        sodipodi:rx="124.28571"
        sodipodi:ry="124.28571"
        d="M 431.42857,445.21933 A 124.28571,124.28571 0 1 1 182.85714,445.21933 A 124.28571,124.28571 0 1 1 431.42857,445.21933 z"
-       transform="matrix(5.28842e-2,0,0,5.5151645e-2,-5.776404,867.8347)" />
+       transform="matrix(5.28842e-2,0,0,5.5151645e-2,-5.776404,867.8347)"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:type="arc"
        style="opacity:0.59245282;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#2d2d2d;stroke-width:1.26273239;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;filter:url(#filter22461);enable-background:accumulate"
@@ -1219,11 +1229,14 @@
        sodipodi:rx="124.28571"
        sodipodi:ry="124.28571"
        d="M 431.42857,445.21933 A 124.28571,124.28571 0 1 1 182.85714,445.21933 A 124.28571,124.28571 0 1 1 431.42857,445.21933 z"
-       transform="matrix(4.297828e-2,0,0,4.4821004e-2,-0.993746,874.5683)" />
+       transform="matrix(4.297828e-2,0,0,4.4821004e-2,-0.993746,874.5683)"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <g
        inkscape:export-ydpi="90"
        inkscape:export-xdpi="90"
-       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob3.png"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob3_bg.png"
        inkscape:tile-y0="1372.8678"
        inkscape:tile-x0="0.50564882"
        inkscape:tile-h="38.988778"
@@ -1448,7 +1461,7 @@
        id="path5018"
        style="fill:url(#linearGradient5034);fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient5036);stroke-width:0.3370131;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        sodipodi:type="arc"
-       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob4.png"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob4_bg.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
@@ -1466,7 +1479,10 @@
        sodipodi:cx="-922.90063"
        id="path5058"
        style="opacity:0.74285715;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.33712924;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;filter:url(#filter5140);enable-background:accumulate"
-       sodipodi:type="arc" />
+       sodipodi:type="arc"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob4_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:type="arc"
        style="fill:url(#linearGradient5040);fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient5042);stroke-width:0.33712924;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -1482,7 +1498,10 @@
        inkscape:tile-w="38.988778"
        inkscape:tile-h="38.988778"
        inkscape:tile-x0="0.50564882"
-       inkscape:tile-y0="892.86778" />
+       inkscape:tile-y0="892.86778"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob4_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        inkscape:tile-y0="892.86778"
        inkscape:tile-x0="0.50564882"
@@ -1498,6 +1517,9 @@
        sodipodi:cx="-922.90063"
        id="path5188"
        style="fill:url(#linearGradient5190);fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient5192);stroke-width:0.68824774;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       sodipodi:type="arc" />
+       sodipodi:type="arc"
+       inkscape:export-filename="/home/markus/Programmierung/lv2-plugins/calf/knobs/knob1_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>
