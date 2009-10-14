@@ -6,11 +6,11 @@ style "calf_default"
   fg[SELECTED] = { 0.2, 0.2, 0.2 }
   fg[INSENSITIVE] = { 0.2, 0.2, 0.2 }
 
-  bg[NORMAL] = { 0.86, 0.86, 0.87 }
-  bg[ACTIVE] = { 0.86, 0.86, 0.87 }
-  bg[PRELIGHT] = { 0.86, 0.86, 0.87 }
-  bg[SELECTED] = { 0.86, 0.86, 0.87 }
-  bg[INSENSITIVE] = { 0.86, 0.86, 0.87 }
+  bg[NORMAL] = { #c28fc769cccc }
+  bg[ACTIVE] = { #c28fc769cccc }
+  bg[PRELIGHT] = { #c28fc769cccc }
+  bg[SELECTED] = { #c28fc769cccc }
+  bg[INSENSITIVE] = { #c28fc769cccc }
   font_name = "Sans 8"
   
   engine "clearlooks" {
@@ -26,11 +26,11 @@ style "frame" = "calf_default"
 
 style "inverse" = "calf_default"
 {
-  fg[NORMAL] = { 0.86, 0.86, 0.87 }
-  fg[ACTIVE] = { 0.86, 0.86, 0.87 }
-  fg[PRELIGHT] = { 0.86, 0.86, 0.87 }
-  fg[SELECTED] = { 0.86, 0.86, 0.87 }
-  fg[INSENSITIVE] = { 0.86, 0.86, 0.87 }
+  fg[NORMAL] = { #c28fc769cccc }
+  fg[ACTIVE] = { #c28fc769cccc }
+  fg[PRELIGHT] = { #c28fc769cccc }
+  fg[SELECTED] = { #c28fc769cccc }
+  fg[INSENSITIVE] = { #c28fc769cccc }
 
   bg[NORMAL] = { 0.2, 0.2, 0.2 }
   bg[ACTIVE] = { 0.2, 0.2, 0.2 }
