@@ -36,6 +36,7 @@ G_BEGIN_DECLS
 struct CalfLed
 {
     GtkWidget parent;
+    int led_mode;
     gboolean led_state;
 };
 

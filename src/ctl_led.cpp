@@ -51,9 +51,19 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     int yc = widget->allocation.height / 2;
     
     cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, xc > yc ? xc : yc);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 0.2 : 0.0, self->led_state ? 0.7 : 0.25, self->led_state ? 1.0 : 0.5);
-    cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.1 : 0.0, self->led_state ? 0.5 : 0.15, self->led_state ? 0.75 : 0.3);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                         self->led_state ? 0.3 : 0.1,  self->led_state ? 0.5 : 0.2);
+    switch (self->led_mode) {
+        default:
+        case 0:
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 0.2 : 0.0, self->led_state ? 1.0 : 0.25, self->led_state ? 1.0 : 0.5);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.1 : 0.0, self->led_state ? 0.6 : 0.15, self->led_state ? 0.75 : 0.3);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                         self->led_state ? 0.3 : 0.1,  self->led_state ? 0.5 : 0.2);
+            break;
+        case 1:
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.5, self->led_state ? 0.5 : 0.0, self->led_state ? 0.2 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.75 : 0.3, self->led_state ? 0.2 : 0.0, self->led_state ? 0.1 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, self->led_state ? 0.5 : 0.2, self->led_state ? 0.1 : 0.0, 0.0);
+            break;
+    }
 
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_set_source (c, pt);
