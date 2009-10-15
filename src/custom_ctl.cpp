@@ -132,7 +132,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
     int ox = 2, oy = 2;
-    int sx = widget->allocation.width - 2, sy = widget->allocation.height - 2;
+    int sx = widget->allocation.width - 4, sy = widget->allocation.height - 4;
 
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     GtkStyle *style;

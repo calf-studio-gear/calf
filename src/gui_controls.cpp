@@ -323,6 +323,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // parameter_properties &props = get_props();
     widget = calf_led_new ();
+    CALF_LED(widget)->led_mode = get_int("mode", 0);
     return widget;
 }
 
