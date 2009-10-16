@@ -405,7 +405,7 @@ gboolean main_window::on_idle(void *data)
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[1]), LVL(plugin->get_level(idx++)));
             }
             if (plugin->get_midi()) {
-                calf_led_set_state (CALF_LED (strip->midi_in), plugin->get_level(idx++) > 0.f);
+                calf_led_set_value (CALF_LED (strip->midi_in), plugin->get_level(idx++));
             }
         }
     }

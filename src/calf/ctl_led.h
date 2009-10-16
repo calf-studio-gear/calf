@@ -37,7 +37,7 @@ struct CalfLed
 {
     GtkWidget parent;
     int led_mode;
-    gboolean led_state;
+    float led_value;
 };
 
 /// Class object for CalfLed
@@ -53,10 +53,10 @@ extern GtkWidget *calf_led_new();
 extern GType calf_led_get_type();
 
 /// Set LED state (true - lit, false - unlit)
-extern void calf_led_set_state(CalfLed *led, gboolean state);
+extern void calf_led_set_value(CalfLed *led, float value);
 
 /// Get LED state (true - lit, false - unlit)
-extern gboolean calf_led_get_state(CalfLed *led);
+extern gboolean calf_led_get_value(CalfLed *led);
 
 G_END_DECLS
 

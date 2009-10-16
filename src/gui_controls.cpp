@@ -304,6 +304,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     // parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
     calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
+    CALF_VUMETER(widget)->vumeter_hold = get_int("hold", 0);
     return widget;
 }
 
@@ -331,7 +332,7 @@ void led_param_control::set()
 {
     _GUARD_CHANGE_
     // parameter_properties &props = get_props();
-    calf_led_set_state (CALF_LED (widget), gui->plugin->get_param_value(param_no) > 0);
+    calf_led_set_value (CALF_LED (widget), gui->plugin->get_param_value(param_no));
     if (label)
         update_label();
 }
