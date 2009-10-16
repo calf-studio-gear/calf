@@ -484,15 +484,56 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source_rgba( c, 0,0,0, 0.6 );
 
     float value = vu->value > 1.f ? 1.f : vu->value;
-    if( vu->mode == VU_MONOCHROME_REVERSE )
-        cairo_rectangle( c, ox + 1,oy + 1, value * (sx - 2), sy - 2);
-    else
-        cairo_rectangle( c, ox + 1 + value * (sx - 2), oy + 1, (sx - 2) * (1 - value), sy - 2 );
     
+    if(vu->vumeter_hold > 0) {
+        // peak hold timer
+        time_t t = time(NULL);
+        if((long)t - (long)vu->vumeter_hold > (long)vu->last_hold) {
+            // time's up, reset
+            vu->last_value = value;
+            vu->last_hold = (long)t;
+            vu->holding = false;
+        }
+        
+        if( vu->mode == VU_MONOCHROME_REVERSE ) {
+            if(value < vu->last_value) {
+                // value is above peak hold
+                vu->last_value = value;
+                vu->last_hold = (long)t;
+                vu->holding = true;
+            }
+            int hpx = round(vu->last_value * (sx - 2));
+            hpx = hpx + (1 - (hpx + 1) % 3);
+            int vpx = round((1 - value) * (sx - 2));
+            vpx = vpx + (1 - (vpx + 1) % 3);
+            int widthA = std::min(3 + hpx, (sx - 2));
+            int widthB = std::min(std::max((sx - 2) - vpx - 3 - hpx, 0), (sx - 2));
+            cairo_rectangle( c, ox + 1, oy + 1, hpx, sy - 2);
+            cairo_rectangle( c, ox + 1 + widthA, oy + 1, widthB, sy - 2);
+        } else {
+            if(value > vu->last_value) {
+                // value is above peak hold
+                vu->last_value = value;
+                vu->last_hold = (long)t;
+                vu->holding = true;
+            }
+            int hpx = round((1 - vu->last_value) * (sx - 2));
+            hpx = hpx + (1 - (hpx + 1) % 3);
+            int vpx = round(value * (sx - 2));
+            vpx = vpx + (1 - (vpx + 1) % 3);
+            int width = std::min(std::max((sx - 2) - vpx - 3 - hpx, 0), (sx - 2));
+            cairo_rectangle( c, ox + 1 + vpx, oy + 1, width, sy - 2);
+            cairo_rectangle( c, ox + 1 + (sx - 2) - hpx, oy + 1, hpx, sy - 2);
+        }
+    } else {
+        // darken normally
+        if( vu->mode == VU_MONOCHROME_REVERSE )
+            cairo_rectangle( c, ox + 1,oy + 1, value * (sx - 2), sy - 2);
+        else
+            cairo_rectangle( c, ox + 1 + value * (sx - 2), oy + 1, (sx - 2) * (1 - value), sy - 2 );
+    }
     cairo_fill( c );
-    
     cairo_destroy(c);
-
     gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
     //printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
 
@@ -542,6 +583,9 @@ calf_vumeter_init (CalfVUMeter *self)
     widget->requisition.width = 50;
     widget->requisition.height = 16;
     self->value = 0.5;
+    self->last_hold = 0.f;
+    self->last_value = 0.f;
+    self->holding = false;
     self->cache_surface = NULL;
 }
 
@@ -589,7 +633,7 @@ calf_vumeter_get_type (void)
 
 extern void calf_vumeter_set_value(CalfVUMeter *meter, float value)
 {
-    if (value != meter->value)
+    if (value != meter->value or meter->holding)
     {
         meter->value = value;
         gtk_widget_queue_draw(GTK_WIDGET(meter));

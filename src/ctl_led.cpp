@@ -51,20 +51,72 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     int yc = widget->allocation.height / 2;
     
     cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, xc > yc ? xc : yc);
+    
+    float value = self->led_value;
+    
+    if(self->led_mode >= 4 && self->led_mode <= 5 && value > 1.f) {
+        value = 1.f;
+    }
     switch (self->led_mode) {
         default:
         case 0:
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 0.2 : 0.0, self->led_state ? 1.0 : 0.25, self->led_state ? 1.0 : 0.5);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.1 : 0.0, self->led_state ? 0.6 : 0.15, self->led_state ? 0.75 : 0.3);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                         self->led_state ? 0.3 : 0.1,  self->led_state ? 0.5 : 0.2);
+            // blue-on/off
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 0.2 : 0.0, value > 0.f ? 1.0 : 0.25, value > 0.f ? 1.0 : 0.5);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.1 : 0.0, value > 0.f ? 0.6 : 0.15, value > 0.f ? 0.75 : 0.3);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                     value > 0.f ? 0.3 : 0.1,  value > 0.f ? 0.5 : 0.2);
             break;
         case 1:
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, self->led_state ? 1.0 : 0.5, self->led_state ? 0.5 : 0.0, self->led_state ? 0.2 : 0.0);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, self->led_state ? 0.75 : 0.3, self->led_state ? 0.2 : 0.0, self->led_state ? 0.1 : 0.0);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, self->led_state ? 0.5 : 0.2, self->led_state ? 0.1 : 0.0, 0.0);
+            // red-on/off
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 1.0 : 0.5,  value > 0.f ? 0.5 : 0.0, value > 0.f ? 0.2 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.75 : 0.3, value > 0.f ? 0.2 : 0.0, value > 0.f ? 0.1 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, value > 0.f ? 0.5 : 0.2,  value > 0.f ? 0.1 : 0.0, 0.0);
+            break;
+        case 2:
+        case 4:
+            // blue-dynamic (limited)
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.5 + 0.5);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.45 + 0.3);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.3 + 0.2);
+            break;
+        case 3:
+        case 5:
+            // red-dynamic (limited)
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.5 + 0.5,  value * 0.5, value * 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.45 + 0.3, value * 0.2, value * 0.1);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, value * 0.3 + 0.2,  value * 0.1, 0.0);
+            break;
+        case 6:
+            // blue-dynamic with red peak at >= 1.f
+            if(value < 1.0) {
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.5 + 0.5);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.45 + 0.3);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.3 + 0.2);
+            } else {
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, 1.0,  0.5, 0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.75, 0.2, 0.1);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.5,  0.1, 0.0);
+            }
+            break;
+        case 7:
+            // off @ 0.0, blue < 1.0, red @ 1.0
+            if(value < 1.f and value > 0.f) {
+                // blue
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, 0.2, 1.0, 1.0);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.1, 0.6, 0.75);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0, 0.3, 0.5);
+            } else if(value == 0.f) {
+                // off
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, 0.0, 0.25, 0.5);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.0, 0.15, 0.3);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0, 0.1,  0.2);
+            } else {
+                // red
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, 1.0,  0.5, 0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.75, 0.2, 0.1);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.5,  0.1, 0.0);
+            }
             break;
     }
-
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_set_source (c, pt);
     cairo_fill(c);
@@ -146,23 +198,23 @@ calf_led_init (CalfLed *self)
 {
     // GtkWidget *widget = GTK_WIDGET(self);
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
-    self->led_state = FALSE;
+    self->led_value = 0.f;
 }
 
-void calf_led_set_state(CalfLed *led, gboolean state)
+void calf_led_set_value(CalfLed *led, float value)
 {
-    if (state != led->led_state)
+    if (value != led->led_value)
     {
-        led->led_state = state;
+        led->led_value = value;
         GtkWidget *widget = GTK_WIDGET (led);
         if (GTK_WIDGET_REALIZED(widget))
             gtk_widget_queue_draw (widget);
     }
 }
 
-gboolean calf_led_get_state(CalfLed *led)
+gboolean calf_led_get_value(CalfLed *led)
 {
-    return led->led_state;
+    return led->led_value;
 }
 
 GType

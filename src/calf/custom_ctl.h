@@ -76,6 +76,10 @@ struct CalfVUMeter
     GtkDrawingArea parent;
     CalfVUMeterMode mode;
     float value;
+    int vumeter_hold;
+    bool holding;
+    long last_hold;
+    float last_value;
     cairo_surface_t *cache_surface;
 };
 
