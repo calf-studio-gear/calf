@@ -1,4 +1,4 @@
-<table border="10" rows="3" cols="1">
+<table rows="3" cols="1">
     <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
         <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
         <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10"/>
