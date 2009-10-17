@@ -900,10 +900,10 @@ calf_knob_class_init (CalfKnobClass *klass)
     widget_class->key_release_event = calf_knob_key_release;
     widget_class->scroll_event = calf_knob_scroll;
     GError *error = NULL;
-    klass->knob_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob1.png", &error);
-    klass->knob_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob2.png", &error);
-    klass->knob_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob3.png", &error);
-    klass->knob_image[3] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob4.png", &error);
+    klass->knob_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/knob1.png", &error);
+    klass->knob_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/knob2.png", &error);
+    klass->knob_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/knob3.png", &error);
+    klass->knob_image[3] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/knob4.png", &error);
     g_assert(klass->knob_image != NULL);
 }
 
@@ -1047,8 +1047,8 @@ calf_toggle_class_init (CalfToggleClass *klass)
     widget_class->button_press_event = calf_toggle_button_press;
     widget_class->key_press_event = calf_toggle_key_press;
     GError *error = NULL;
-    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1.png", &error);
-    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2.png", &error);
+    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/toggle1.png", &error);
+    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/gui/pixmaps/toggle2.png", &error);
     g_assert(klass->toggle_image != NULL);
 }
 
