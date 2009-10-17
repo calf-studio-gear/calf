@@ -623,7 +623,29 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     const char *xml = _jh->get_gui_xml();
     assert(xml);
     container = gui->create_from_xml(_jh, xml);
-
+    
+    // decorations
+    GtkWidget *bgImg     = gtk_image_new_from_file(PKGLIBDIR "/gui/pixmaps/background.png");
+    GtkWidget *logoImg   = gtk_image_new_from_file(PKGLIBDIR "/gui/pixmaps/logo.png");
+    GtkWidget *leftImg   = gtk_image_new_from_file(PKGLIBDIR "/gui/pixmaps/grip_left.png");
+    GtkWidget *rightImg  = gtk_image_new_from_file(PKGLIBDIR "/gui/pixmaps/grip_right.png");
+    GtkWidget *bottomImg = gtk_image_new_from_file(PKGLIBDIR "/gui/pixmaps/bottom.png");
+    gchar *titlePath = g_build_filename(PKGLIBDIR, "/gui/titles/", effect, ".png", NULL);
+    printf(effect);
+    GtkWidget *titleImg  = gtk_image_new_from_file(titlePath);
+    
+    GtkWidget *bottomBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bottomBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(bottomBox), GTK_WIDGET(titleImg), FALSE, FALSE, 0);
+    
+    GtkWidget *decoTable = gtk_table_new(3, 2, FALSE);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bgImg),     0, 3, 0, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftImg),   0, 1, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightImg),  2, 3, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bottomImg), 0, 3, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bottomBox), 0, 3, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    
     string command_xml = make_gui_command_list(command_actions);
     gtk_ui_manager_insert_action_group(ui_mgr, command_actions, 0);
     gtk_ui_manager_add_ui_from_string(ui_mgr, command_xml.c_str(), -1, &error);    
@@ -631,12 +653,12 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), container);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
     
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
     gtk_widget_show_all(GTK_WIDGET(sw));
-    gtk_widget_size_request(container, &req);
+    gtk_widget_size_request(GTK_WIDGET(decoTable), &req);
     int wx = max(req.width + 10, req2.width);
     int wy = req.height + req2.height + 10;
     // printf("size request %dx%d\n", req.width, req.height);
