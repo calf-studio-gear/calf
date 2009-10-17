@@ -1,4 +1,4 @@
-<table border="10" cols="1" rows="2">
+<table cols="1" rows="2">
     <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
         <vbox>
             <table rows="2" cols="3" homogeneous="1" spacing="10">

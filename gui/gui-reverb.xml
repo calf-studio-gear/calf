@@ -1,4 +1,4 @@
-<vbox border="10">
+<vbox>
     <hbox>
         <vbox border="5">
             <label param="predelay" />

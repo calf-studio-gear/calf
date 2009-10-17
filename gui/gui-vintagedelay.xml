@@ -1,4 +1,4 @@
-<vbox border="10">
+<vbox>
     <frame label="Delay time">
         <vbox>
             <table rows="4" cols="3" border="5">

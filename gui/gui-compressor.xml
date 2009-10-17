@@ -1,87 +1,91 @@
-<table border="10" rows="4" cols="1">
-    <hbox attach-x="0" attach-y="0" shrink-y="1" expand-y="0" homogeneous="1">
-    	<vbox expand="1">
-             <label param="bypass"/>
-             <align><toggle param="bypass" shrink="1" size="1"/></align>
-        </vbox>
-    	<vbox expand="1">
-            <label param="detection"/>
-            <align>
-                <hbox expand="0" >
-                    <radio param="detection" value="RMS" shrink="1"/>
-                    <radio param="detection" value="Peak" shrink="1"/>
-                </hbox>
-            </align>
-        </vbox>
-    	<vbox expand="1">
-            <label param="stereo_link"/>
-            <align>
-                <hbox expand="0" >
-                    <radio param="stereo_link" value="Average" shrink="1"/>
-                    <radio param="stereo_link" value="Maximum" shrink="1"/>
-                </hbox>
-            </align>
-        </vbox>
-    	<vbox expand="1">
-            <label param="aweighting"/>
-            <align>
-                <combo param="aweighting"/>
-            </align>
-        </vbox>
-    </hbox>
-    <if cond="directlink">
-        <line-graph attach-x="0" attach-y="1" refresh="1" width="384" height="384" param="compression" square="1" expand-y="1" fill-y="1"/>
-    </if>
-    <table attach-x="0" attach-y="2" expand-y="0" expand-x="1" spacing="10" rows="1" cols="3">
-        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="0" attach-y="0">
-            <label param="compression" />
-            <vumeter param="compression" mode="2" hold="2" />
+<table rows="2" cols="4" spacing="10">
+    <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="3" >
+        <label param="bypass" expand="0" fill="0" />
+        <align><toggle param="bypass" shrink="1" size="2"/></align>
+    </vbox>
+    <vbox attach-x="0" attach-y="1" expand="0" fill="0" pad-y="20" pad-x="7">
+        <label param="input" expand="0" fill="0" expand-y="0" fill-y="0" />
+        <knob param="input" size="4" expand="1" fill="1" />
+        <value param="input" />
+    </vbox>
+    
+    <table attach-x="1" attach-y="0" expand-y="0" fill-y="0" expand-x="1" spacing="1" rows="3" cols="2">
+        <vbox expand-x="1" fill-x="1"  expand="0" fill="0" attach-x="0" attach-y="0">
+            <label param="peak" />
+            <vumeter param="peak" mode="0" hold="2" shrink-y="0" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="1" attach-y="0">
             <label param="clip" expand="0" fill="0" />
             <led param="clip" mode="1" expand="0" fill="0" />
         </vbox>
-        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="2" attach-y="0">
-            <label param="peak" />
-            <vumeter param="peak" mode="0" hold="2" shrink-y="0" />
-        </vbox>
+        <vumeter param="compression" mode="2" hold="2" attach-x="0" attach-y="1" attach-w="2" expand="0" fill="0" expand-x="1" fill-x="1"/>
+        <label param="compression" attach-y="2" attach-x="0" expand-x="1" fill-x="1" expand="0" fill="0" />
     </table>
-    <table attach-x="0" attach-y="3" expand-y="0" rows="1" cols="6" homogeneous="1" spacing="10">
+    
+    <table attach-x="1" attach-y="1" expand="1" rows="2" cols="3" homogeneous="1" pad-x="5">
         <vbox expand="0" attach-x="0" attach-y="0">
             <label param="attack" />
             <knob param="attack" />
             <value param="attack" />
-            <led param="peak" mode="2" expand="0" fill="0" />
         </vbox>
         <vbox expand="0" attach-x="1" attach-y="0">
             <label param="release" />
             <knob param="release" />
             <value param="release" />
-            <led param="peak" mode="3" expand="0" fill="0" />
         </vbox>
         <vbox expand="0" attach-x="2" attach-y="0">
-            <label param="threshold" />
-            <knob param="threshold"/>
-            <value param="threshold" />
-            <led param="peak" mode="4" expand="0" fill="0" />
-        </vbox>
-        <vbox expand="0" attach-x="3" attach-y="0">
-            <label param="ratio" />
-            <knob param="ratio" />
-            <value param="ratio" />
-            <led param="peak" mode="5" expand="0" fill="0" />
-        </vbox>
-        <vbox expand="0" attach-x="4" attach-y="0">
-            <label param="makeup" />
-            <knob param="makeup" />
-            <value param="makeup" />
-            <led param="peak" mode="6" expand="0" fill="0" />
-        </vbox>
-        <vbox expand="0" attach-x="5" attach-y="0">
             <label param="knee" />
             <knob param="knee" />
             <value param="knee" />
-            <led param="peak" mode="7" expand="0" fill="0" />
+        </vbox>
+        <vbox expand="0" attach-x="0" attach-y="1">
+            <label param="ratio" />
+            <knob param="ratio" />
+            <value param="ratio" />
+        </vbox>
+        <vbox expand="0" attach-x="1" attach-y="1">
+            <label param="threshold" />
+            <knob param="threshold"/>
+            <value param="threshold" />
+        </vbox>
+        <vbox expand="0" attach-x="2" attach-y="1">
+            <label param="makeup" />
+            <knob param="makeup" />
+            <value param="makeup" />
         </vbox>
     </table>
+    
+    <if cond="directlink">
+        <line-graph attach-x="2" attach-y="0" attach-h="2" refresh="1" width="200" height="200" param="compression" square="1" expand-y="1" fill-y="1" pad-x="7"/>
+    </if>
+    
+    <vbox expand="1" attach-x="3" attach-y="0" pad-x="5">
+        <vbox expand="0">
+            <label param="aweighting"/>
+            <align>
+                <combo param="aweighting"/>
+            </align>
+        </vbox>
+    </vbox>
+    <vbox attach-x="3" attach-y="1" spacing="10" pad-x="5" fill-y="0" expand-y="0">
+    	<vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
+            <label param="stereo_link" expand-y="0" fill-y="0"/>
+            <align>
+                <hbox expand="0" fill-y="0" expand-x="1" fill-x="1">
+                    <radio param="stereo_link" value="Average" expand-x="1" fill-x="1"/>
+                    <radio param="stereo_link" value="Maximum" expand-x="1" fill-x="1"/>
+                </hbox>
+            </align>
+        </vbox>
+        <vbox expand="1" expand-y="0">
+        	<label param="detection" expand-y="0" fill-y="0" expand-x="1" fill-x="1"/>
+            <align>
+                <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" >
+                    <radio param="detection" value="RMS" expand-x="1" fill-x="1"/>
+                    <radio param="detection" value="Peak" expand-x="1" fill-x="1"/>
+                </hbox>
+            </align>
+        </vbox>
+    </vbox>
+    
 </table>
