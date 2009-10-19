@@ -94,14 +94,14 @@ for variant in range(0, 4):
             if variant == 2: lit = pvalue == 0 or pvalue < lvalue
             if not lit:
                 if not glowlit:
-                    ctx.set_source_rgb(0, 0.1, 0.2)
+                    ctx.set_source_rgb(0.0, 0.1, 0.1)
                 else:
-                    ctx.set_source_rgb(0 * glowval, 0.5 * glowval, 1 * glowval)
+                    ctx.set_source_rgb(0.0 * glowval, 0.75 * glowval, 1.0 * glowval)
             else:
                 if hilite:
-                    ctx.set_source_rgb(0, 1, 1)
+                    ctx.set_source_rgb(0.3, 1.0, 1.0)
                 else:
-                    ctx.set_source_rgb(0, 0.5, 1)
+                    ctx.set_source_rgb(0.0, 0.75, 1.0)
             ctx.set_line_width(2)
             if hilite:
                 ctx.set_line_width(3)

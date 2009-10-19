@@ -1,51 +1,61 @@
-<vbox>
-    <hbox>
-        <vbox border="5">
-            <label param="predelay" />
-            <knob param="predelay" />
-            <value param="predelay" />
+<hbox spacing="20">
+    <vbox>
+        <hbox fill-y="0" expand-y="0" spacing="20">
+            <vbox fill="0" expand="0" spacing="3">
+                <label param="predelay" fill="0" expand="0" />
+                <knob param="predelay" size="3" fill="0" expand="0" />
+                <value param="predelay" fill="0" expand="0" />
+            </vbox>
+            <vbox fill="0" expand="0" spacing="3">
+                <label param="decay_time" fill="0" expand="0"/>
+                <knob param="decay_time" size="4" fill="0" expand="0" />
+                <value param="decay_time" fill="0" expand="0" />
+            </vbox>
+            <vbox fill="0" expand="0" spacing="3">
+                <label param="hf_damp" fill="0" expand="0" />
+                <knob param="hf_damp" size="3" fill="0" expand="0" />
+                <value param="hf_damp" fill="0" expand="0" />
+            </vbox>
+        </hbox>
+        <vbox border="10">
+            <label param="room_size"  />
+            <combo param="room_size" />
         </vbox>
-        <vbox border="5">
-            <label param="decay_time" />
-            <knob param="decay_time" size="4" />
-            <value param="decay_time" />
+    </vbox>
+    <table homogeneous="1" spacing="2" rows="2" cols="4" fill="1" expand="1">
+        <vbox attach-x="0" attach-y="0" fill="0" expand="0" spacing="3">
+            <label param="diffusion" fill="0" expand="0" />
+            <knob param="diffusion" fill="0" expand="0"/>
+            <value param="diffusion" fill="0" expand="0" />
         </vbox>
-        <vbox border="5">
-            <label param="hf_damp" />
-            <knob param="hf_damp" />
-            <value param="hf_damp" />
-        </vbox>
-    </hbox>
-    <table homogeneous="1" spacing="5" rows="1" cols="5">
-        <vbox attach-x="0" attach-y="0">
-            <label param="diffusion" />
-            <knob param="diffusion" size="1"/>
-            <value param="diffusion" />
-        </vbox>
-        <vbox attach-x="1" attach-y="0">
+        <vbox attach-x="1" attach-y="0" fill="0" expand="0" spacing="3">
             <label param="bass_cut" />
-            <knob param="bass_cut" size="1" />
+            <knob param="bass_cut" size="2" />
             <value param="bass_cut" />
         </vbox>
-        <vbox attach-x="2" attach-y="0">
+        <vbox attach-x="2" attach-y="0" fill="0" expand="0" spacing="3">
             <label param="treble_cut" />
-            <knob param="treble_cut" size="1" />
+            <knob param="treble_cut" size="2" />
             <value param="treble_cut" />
         </vbox>
-        <vbox attach-x="3" attach-y="0">
+        <vbox attach-x="3" attach-y="0" fill="0" expand="0" spacing="3">
             <label param="dry" />
-            <knob param="dry" size="1" />
+            <knob param="dry" size="2" />
             <value param="dry" />
         </vbox>
-        <vbox attach-x="4" attach-y="0">
+        <vbox attach-x="4" attach-y="0" fill="0" expand="0" spacing="3">
             <label param="amount" />
-            <knob param="amount" size="1" />
+            <knob param="amount" size="2" />
             <value param="amount" />
         </vbox>
+        <table cols="3" rows="3" attach-x="0" attach-y="1" attach-w="5" fill-y="0" expand-y="0">
+            <label attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
+            <label param="meter_wet" attach-x="0" attach-y="1" expand-y="1" fill-y="0" expand-x="0" fill-x="0" />
+            <vumeter param="meter_wet" hold="2" attach-x="1" attach-y="1" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1"/>
+            <label param="meter_out" attach-x="0" attach-y="2" expand-y="1" fill-y="0" expand-x="0" fill-x="0"/>
+            <vumeter param="meter_out" hold="2" attach-x="1" attach-y="2" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1" />
+            <!--<led param="clip" mode="0" attach-x="2" attach-y="2" expand-x="0" fill-x="0"/>-->
+        </table>
     </table>
-    <vbox border="5">
-        <label param="room_size"  />
-        <combo param="room_size" />
-    </vbox>
-</vbox>
+</hbox>
 

@@ -38,17 +38,71 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfLed *self = CALF_LED(widget);
     GdkWindow *window = widget->window;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
-
-    gdk_cairo_set_source_color(c, &widget->style->bg[0]);
-    cairo_rectangle(c, 0, 0, widget->allocation.width, widget->allocation.height);
-    cairo_fill(c);
-
-    int ox = 2;
-    int oy = 2;
-    int sx = widget->allocation.width - 4;
-    int sy = widget->allocation.height - 4;
+    GtkStyle *style = gtk_widget_get_style(widget);
+    
+    int ox = 4;
+    int oy = 3;
+    int sx = widget->allocation.width - ox * 2;
+    int sy = widget->allocation.height - oy * 2;
     int xc = widget->allocation.width / 2;
     int yc = widget->allocation.height / 2;
+    int pad, rad;
+    
+    if( self->cache_surface == NULL ) {
+        // looks like its either first call or the widget has been resized.
+        // create the cache_surface.
+        cairo_surface_t *window_surface = cairo_get_target( c );
+        self->cache_surface = cairo_surface_create_similar( window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
+        cairo_t *cache_cr = cairo_create( self->cache_surface );
+        
+        // theme background for round borders
+        gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+        cairo_paint(cache_cr);
+        
+        // outer (light)
+        pad = 0;
+        rad = 6;
+        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
+        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
+        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
+        cairo_set_source (cache_cr, pat2);
+        cairo_fill(cache_cr);
+        
+        // inner (black)
+        pad = 1;
+        rad = 5;
+        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
+        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
+        pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
+        cairo_set_source (cache_cr, pat2);
+        //cairo_set_source_rgb(cache_cr, 0, 0, 0);
+        cairo_fill(cache_cr);
+        
+        cairo_rectangle(cache_cr, ox, oy, sx, sy);
+        cairo_set_source_rgb (cache_cr, 0, 0, 0);
+        cairo_fill(cache_cr);
+        
+        cairo_destroy( cache_cr );
+    }
+    
+    cairo_set_source_surface( c, self->cache_surface, 0,0 );
+    cairo_paint( c );
+    
     
     cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, xc > yc ? xc : yc);
     
@@ -117,17 +171,18 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             break;
     }
-    cairo_rectangle(c, ox, oy, sx, sy);
+    
+    cairo_rectangle(c, ox + 1, oy + 1, sx - 2, sy - 2);
+    cairo_set_source (c, pt);
+    cairo_fill_preserve(c);
+    pt = cairo_pattern_create_linear (ox, oy, ox, ox + sy);
+    cairo_pattern_add_color_stop_rgba (pt, 0,     1, 1, 1, 0.4);
+    cairo_pattern_add_color_stop_rgba (pt, 0.4,   1, 1, 1, 0.1);
+    cairo_pattern_add_color_stop_rgba (pt, 0.401, 0, 0, 0, 0.0);
+    cairo_pattern_add_color_stop_rgba (pt, 1,     0, 0, 0, 0.2);
     cairo_set_source (c, pt);
     cairo_fill(c);
     cairo_pattern_destroy(pt);
-
-    cairo_rectangle(c, ox + 0.5, oy + 0.5, sx - 1, sy - 1);
-    cairo_set_source_rgb(c, 0, 0, 0);
-    cairo_set_line_width(c, 1);
-    cairo_stroke(c);
-
-    gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
 
     cairo_destroy(c);
 
@@ -160,8 +215,8 @@ calf_led_size_request (GtkWidget *widget,
 {
     g_assert(CALF_IS_LED(widget));
 
-    requisition->width = 22;
-    requisition->height = 16;
+    requisition->width = 24;
+    requisition->height = 18;
 }
 
 static void
@@ -169,9 +224,14 @@ calf_led_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
     g_assert(CALF_IS_LED(widget));
-
+    CalfLed *led = CALF_LED(widget);
+    
     widget->allocation = *allocation;
-
+    
+    if( led->cache_surface )
+        cairo_surface_destroy( led->cache_surface );
+    led->cache_surface = NULL;
+    
     if (GTK_WIDGET_REALIZED(widget))
         gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
 }
@@ -196,9 +256,12 @@ calf_led_class_init (CalfLedClass *klass)
 static void
 calf_led_init (CalfLed *self)
 {
+    GtkWidget *widget = GTK_WIDGET(self);
     // GtkWidget *widget = GTK_WIDGET(self);
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->led_value = 0.f;
+    widget->requisition.width = 24;
+    widget->requisition.height = 18;
 }
 
 void calf_led_set_value(CalfLed *led, float value)

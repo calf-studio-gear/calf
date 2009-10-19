@@ -1,45 +1,133 @@
 style "calf_default"
 {
-  fg[NORMAL] = { 0.2, 0.2, 0.2 }
-  fg[ACTIVE] = { 0.2, 0.2, 0.2 }
-  fg[PRELIGHT] = { 0.2, 0.2, 0.2 }
-  fg[SELECTED] = { 0.2, 0.2, 0.2 }
-  fg[INSENSITIVE] = { 0.2, 0.2, 0.2 }
+  fg[NORMAL] = { 0.1, 0.1, 0.1 }
+  fg[ACTIVE] = { 0.1, 0.1, 0.1 }
+  fg[PRELIGHT] = { 0.1, 0.1, 0.1 }
+  fg[SELECTED] = { 0.1, 0.1, 0.1 }
+  fg[INSENSITIVE] = { 0.1, 0.1, 0.1 }
 
-  bg[NORMAL] = { #c28fc769cccc }
-  bg[ACTIVE] = { #c28fc769cccc }
-  bg[PRELIGHT] = { #c28fc769cccc }
-  bg[SELECTED] = { #c28fc769cccc }
-  bg[INSENSITIVE] = { #c28fc769cccc }
+  bg[NORMAL] = "#d0cfca"
+  bg[ACTIVE] = "#d0cfca"
+  bg[PRELIGHT] = "#d0cfca"
+  bg[SELECTED] = "#d0cfca"
+  bg[INSENSITIVE] = "#d0cfca"
+  
   font_name = "Sans 8"
   
-  engine "clearlooks" {
-    menubarstyle = 0
-  }
+  engine "murrine" 
+	{
+		animation           = TRUE  # FALSE = disabled, TRUE = enabled
+		colorize_scrollbar  = TRUE # FALSE = disabled, TRUE = enabled
+		contrast            = 1.0  # 0.8 for less contrast, more than 1.0 for more contrast on borders
+		glazestyle          = 0     # 0 = flat highlight, 1 = curved highlight, 2 = concave style, 3 = top curved highlight, 4 = beryl highlight
+		gradient_shades     = {1.07,1.05,1.04,1.01} # default: {1.1,1.0,1.0,1.1}
+		gradients           = TRUE  # FALSE = disabled, TRUE = enabled
+		highlight_ratio     = 1.07  # set highlight amount for buttons or widgets
+		lightborder_ratio   = 1.2   # sets lightborder amount for buttons or widgets
+		lightborderstyle    = 0     # 0 = lightborder on top side, 1 = lightborder on all sides
+		listviewheaderstyle = 1     # 0 = flat, 1 = glassy, 2 = raised
+		listviewstyle       = 1     # 0 = nothing, 1 = dotted
+		menubaritemstyle    = 0     # 0 = menuitem look, 1 = button look
+		menubarstyle        = 3     # 0 = flat, 1 = glassy, 2 = gradient, 3 = striped
+		menuitemstyle       = 1     # 0 = flat, 1 = glassy, 2 = striped
+		menustyle           = 1     # 0 = no vertical menu stripe, 1 = display vertical menu stripe
+		reliefstyle	    = 1     # 0 = flat, 1 = inset, 2 = shadow
+		rgba		    = FALSE  # FALSE = disabled, TRUE = enabled
+		roundness           = 6     # 0 = squared, 1 = old default, more will increase roundness
+		scrollbarstyle      = 3     # 0 = nothing, 1 = circles, 2 = handles, 3 = diagonal stripes, 4 = diagonal stripes and handles, 5 = horizontal stripes, 6 = horizontal stripes and handles
+		sliderstyle         = 1     # 0 = nothing added, 1 = handles
+		stepperstyle        = 1     # 0 = standard, 1 = integrated stepper handles, 2 = unknown
+		#profile            = NODOKA # engine profile options: CANDIDO, CLEARLOOKS, MIST, MURRINE, NODOKA
+		toolbarstyle	    = 2     # 0 = flat, 1 = glassy, 2 = gradient
+	}
 }
 
 style "frame" = "calf_default"
 {
-  xthickness = 10
-  ythickness = 15
+  xthickness = 8
+  ythickness = 8
 }
 
 style "inverse" = "calf_default"
 {
-  fg[NORMAL] = { #c28fc769cccc }
-  fg[ACTIVE] = { #c28fc769cccc }
-  fg[PRELIGHT] = { #c28fc769cccc }
-  fg[SELECTED] = { #c28fc769cccc }
-  fg[INSENSITIVE] = { #c28fc769cccc }
+  fg[NORMAL] = "#fff"
+  fg[ACTIVE] = "#fff"
+  fg[PRELIGHT] = "#fff"
+  fg[SELECTED] = "#fff"
+  fg[INSENSITIVE] = "#fff"
 
-  bg[NORMAL] = { 0.2, 0.2, 0.2 }
-  bg[ACTIVE] = { 0.2, 0.2, 0.2 }
-  bg[PRELIGHT] = { 0.2, 0.2, 0.2 }
-  bg[SELECTED] = { 0.2, 0.2, 0.2 }
-  bg[INSENSITIVE] = { 0.2, 0.2, 0.2 }
+  bg[NORMAL] = "#495563"
+  bg[ACTIVE] = "#495563"
+  bg[PRELIGHT] = "#495563"
+  bg[SELECTED] = "#495563"
+  bg[INSENSITIVE] = "#495563"
 }
 
+style "menu" = "calf_default"
+{
+  fg[NORMAL] = "#fff"
+  fg[ACTIVE] = "#fff"
+  fg[PRELIGHT] = "#fff"
+  fg[SELECTED] = "#fff"
+  fg[INSENSITIVE] = "#999"
+
+  bg[NORMAL] = "#000"
+  bg[ACTIVE] = "#000"
+  bg[PRELIGHT] = "#495563"
+  bg[SELECTED] = "#495563"
+  bg[INSENSITIVE] = "#000"
+}
+
+style "button" = "calf_default"
+{
+  fg[NORMAL] = "#fff"
+  fg[ACTIVE] = "#fff"
+  fg[PRELIGHT] = "#fff"
+  fg[SELECTED] = "#fff"
+  fg[INSENSITIVE] = "#999"
+
+  bg[NORMAL] = "#000"
+  bg[ACTIVE] = "#000"
+  bg[PRELIGHT] = "#495563"
+  bg[SELECTED] = "#495563"
+  bg[INSENSITIVE] = "#000"
+}
+
+style "background-light" = "calf_default"
+{
+  bg_pixmap[NORMAL] = "background_light.png"
+  bg_pixmap[ACTIVE] = "background_light.png"
+  bg_pixmap[PRELIGHT] = "background_light.png"
+  bg_pixmap[SELECTED] = "background_light.png"
+  bg_pixmap[INSENSITIVE] = "background_light.png"
+}
+
+style "background-dark" = "inverse"
+{
+  bg_pixmap[NORMAL] = "background_dark.png"
+  bg_pixmap[ACTIVE] = "background_dark.png"
+  bg_pixmap[PRELIGHT] = "background_dark.png"
+  bg_pixmap[SELECTED] = "background_dark.png"
+  bg_pixmap[INSENSITIVE] = "background_dark.png"
+}
+
+class "GtkWidget" style "calf_default"
+
+widget "calf-plugin*inverted" style "background-dark"
 widget "calf-plugin*inverted*" style "inverse"
+
 widget "calf-plugin*frame*" style "frame"
-widget "calf-plugin*" style "calf_default"
+
+#widget "calf-plugin" style "background-dark"
+widget "calf-plugin*" style "inverse"
+
+widget "calf-plugin*calf-container*" style "background-dark"
+#widget "calf-plugin*calf-container*" style "inverse"
+
+widget "calf-rack" style "background-light"
 widget "calf-rack*" style "calf_default"
+
+widget_class "*<GtkButton>"           		    style "button"
+widget_class "*<GtkMenuBar>*"           		style "menu"
+widget_class "*<GtkMenu>*"              		style "menu"
+widget_class "*<GtkMenuItem>*"          		style "menu"

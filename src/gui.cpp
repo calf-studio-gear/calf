@@ -381,10 +381,6 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     
-//    GtkWidget *frame = gtk_frame_new(NULL);
-//    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-//    gtk_container_add(GTK_CONTAINER(frame), GTK_WIDGET(decoTable));
-    
     return GTK_WIDGET(decoTable);
 }
 
@@ -633,7 +629,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_window_set_default_icon_name("calf");
     gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
-    GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 5));
+    GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
     
     GtkRequisition req, req2;
     gtk_window_set_title(GTK_WINDOW (toplevel), title);
@@ -671,6 +667,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(container));
+    
+    gtk_widget_set_name(GTK_WIDGET(sw), "calf-container");
     
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     

@@ -1,13 +1,13 @@
-<table rows="3" cols="1">
-    <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
+<table rows="2" cols="3">
+    <table attach-x="1" attach-y="1" shrink-y="1" expand-x="1" cols="3" rows="1" >
         <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
         <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10"/>
         <combo param="mode" attach-x="2" attach-y="0"/>
     </table>
-    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
+    <vbox attach-x="0" attach-y="0">
         <vbox border="10">
             <label param="transpose" />
-            <knob param="transpose" type="1"/>
+            <knob param="transpose" type="1" size="4"/>
             <value param="transpose" />
         </vbox>
         <vbox border="10">
@@ -15,9 +15,11 @@
             <knob param="detune" type="1"/>
             <value param="detune" />
         </vbox>
+    </vbox>
+    <vbox attach-x="2" attach-y="0">
         <vbox border="10">
             <label param="maxres" />
-            <knob param="maxres" />
+            <knob param="maxres" size="4" />
             <value param="maxres" />
         </vbox>
         <vbox border="10">
@@ -25,10 +27,10 @@
             <knob param="inertia"/>
             <value param="inertia" />
         </vbox>
-    </hbox>
+    </vbox>
     <if cond="directlink">
-        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="0" attach-y="2">
-            <line-graph param="mode" refresh="1" width="160" height="160"/>
-        </frame>
+        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0"><vbox border="5">
+            <line-graph param="mode" refresh="1" width="320" height="160"/>
+        </vbox></frame>
     </if>
 </table>

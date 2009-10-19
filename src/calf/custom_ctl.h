@@ -81,6 +81,7 @@ struct CalfVUMeter
     long last_hold;
     float last_value;
     cairo_surface_t *cache_surface;
+    cairo_pattern_t *pat;
 };
 
 struct CalfVUMeterClass
