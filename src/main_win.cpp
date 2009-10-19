@@ -101,10 +101,10 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
         GtkTableChild *c = (GtkTableChild *)p->data;
         if (c->top_attach >= row && c->top_attach < row + 3)
             to_destroy.push_back(c->widget);
-        if (c->top_attach >= row + 3)
+        if (c->top_attach >= row + 4)
         {
-            c->top_attach -= 3;
-            c->bottom_attach -= 3;
+            c->top_attach -= 4;
+            c->bottom_attach -= 4;
         }
     }
     
@@ -116,7 +116,7 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     plugins.erase(plugin);
     int rows = 0, cols = 0;
     g_object_get(G_OBJECT(strips_table), "n-rows", &rows, "n-columns", &cols, NULL);
-    gtk_table_resize(GTK_TABLE(strips_table), rows - 3, cols);
+    gtk_table_resize(GTK_TABLE(strips_table), rows - 4, cols);
     /*
     // a hack to remove unneeded vertical space from the window
     // not perfect, as it undoes user's vertical resize
@@ -184,58 +184,156 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     
     int row = 0, cols = 0;
     g_object_get(G_OBJECT(strips_table), "n-rows", &row, "n-columns", &cols, NULL);
-    gtk_table_resize(GTK_TABLE(strips_table), row + 3, cols);
-
-    GtkWidget *sep = gtk_hseparator_new();
-    gtk_table_attach(GTK_TABLE(strips_table), sep, 0, 5, row, row + 1, ao, GTK_SHRINK, 0, 0);
-    gtk_widget_show(sep);
-    row++;
+    gtk_table_resize(GTK_TABLE(strips_table), row + 4, cols);
     
-    GtkWidget *label = gtk_toggle_button_new_with_label(plugin->get_label());
-    gtk_table_attach(GTK_TABLE(strips_table), label, 0, 1, row, row + 2, ao, GTK_SHRINK, 0, 0);
+    // images for left side
+    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
+    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
+    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
+    gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
+    
+    // images for right side
+    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
+    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
+    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
+    gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
+    
+    // pack left box
+    GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_widget_show_all(GTK_WIDGET(leftBox));
+    
+     // pack right box
+    GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_widget_show_all(GTK_WIDGET(rightBox));
+    
+    // top light
+    GtkWidget *topImg     = gtk_image_new_from_file(PKGLIBDIR "/light_top.png");
+    gtk_widget_set_size_request(GTK_WIDGET(topImg), 1, 1);
+    gtk_table_attach(GTK_TABLE(strips_table), topImg, 1, 5, row, row + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
+    gtk_widget_show(topImg);
+    row ++;
+    
+    // title @ 1, 1
+    char buf[128];
+    sprintf(buf, "<span size=\"18000\">%s</span>", plugin->get_label());
+    GtkWidget *title = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(title), buf);
+    gtk_table_attach(GTK_TABLE(strips_table), title, 1, 2, row, row + 1, ao, GTK_SHRINK, 20, 10);
+    gtk_widget_show(title);
+    
+    // open button
+    GtkWidget *label = gtk_toggle_button_new_with_label("Open");
     strip->name = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->name);
     
-    if (plugin->get_midi())
-        label = calf_led_new();
-    else
-        label = gtk_label_new("");
-    gtk_table_attach(GTK_TABLE(strips_table), label, 1, 2, row, row + 2, GTK_FILL, GTK_SHRINK, 0, 0);
-    strip->midi_in = label;
-    gtk_widget_show(strip->midi_in);
-
-    for (int i = 0; i < 2; i++)
-        strip->audio_in[i] = strip->audio_out[i] = NULL;
-    
-    if (plugin->get_input_count() == 2) {
-        label = calf_vumeter_new();
-        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row, row + 1, ao, GTK_SHRINK, 0, 0);
-        strip->audio_in[0] = label;
-        label = calf_vumeter_new();
-        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row + 1, row + 2, ao, GTK_SHRINK, 0, 0);
-        strip->audio_in[1] = label;
-        gtk_widget_show(strip->audio_in[0]);
-        gtk_widget_show(strip->audio_in[1]);
-    }
-
-    if (plugin->get_output_count() == 2) {
-        label = calf_vumeter_new();
-        gtk_table_attach(GTK_TABLE(strips_table), label, 3, 4, row, row + 1, ao, GTK_SHRINK, 0, 0);
-        strip->audio_out[0] = label;
-        label = calf_vumeter_new();
-        gtk_table_attach(GTK_TABLE(strips_table), label, 3, 4, row + 1, row + 2, ao, GTK_SHRINK, 0, 0);
-        strip->audio_out[1] = label;
-        gtk_widget_show(strip->audio_out[0]);
-        gtk_widget_show(strip->audio_out[1]);
-    }
+    // delete buton
     GtkWidget *extra = gtk_button_new_with_label("Delete");
-    gtk_table_attach(GTK_TABLE(strips_table), extra, 4, 5, row, row + 2, GTK_SHRINK, GTK_SHRINK, 0, 0);
     strip->extra = extra;
     gtk_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->extra);
+    
+    // button box @ 1, 2
+    GtkWidget *buttonBox = gtk_hbox_new(TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->name), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), TRUE, TRUE, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), GTK_EXPAND, 10, 10);
+    gtk_widget_show(buttonBox);
+    
+    // midi box
+    if (plugin->get_midi()) {
+        label = calf_led_new();
+        GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
+        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), TRUE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), TRUE, TRUE, 0);
+        gtk_table_attach(GTK_TABLE(strips_table), midiBox, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 10, 10);
+        gtk_widget_set_size_request(GTK_WIDGET(label), 40, 36);
+        strip->midi_in = label;
+        gtk_widget_show_all(midiBox);
+    } else {
+        label = gtk_label_new("");
+        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 10, 10);
+        gtk_widget_set_size_request(GTK_WIDGET(label), 40, 36);
+        strip->midi_in = label;
+        gtk_widget_show(strip->midi_in);
+    }
+    strip->midi_in = label;
+    
+
+    for (int i = 0; i < 2; i++)
+        strip->audio_in[i] = strip->audio_out[i] = NULL;
+    
+    
+    if (plugin->get_input_count() == 2) {
+        
+        GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
+        
+        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("audio in"),TRUE, TRUE, 0);
+        
+        label = calf_vumeter_new();
+        gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
+        strip->audio_in[0] = label;
+        
+        label = calf_vumeter_new();
+        gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
+        strip->audio_in[1] = label;
+        
+        gtk_widget_show_all(inBox);
+        gtk_table_attach(GTK_TABLE(strips_table), inBox, 3, 4, row, row + 1, GTK_FILL, GTK_SHRINK, 10, 5);
+        
+        gtk_widget_set_size_request(GTK_WIDGET(inBox), 160, -1);
+    }
+
+    if (plugin->get_output_count() == 2) {
+        
+        GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
+        
+        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("audio out"),TRUE, TRUE, 0);
+        
+        label = calf_vumeter_new();
+        gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
+        strip->audio_out[0] = label;
+        
+        label = calf_vumeter_new();
+        gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
+        strip->audio_out[1] = label;
+        
+        gtk_widget_show_all(outBox);
+        gtk_table_attach(GTK_TABLE(strips_table), outBox, 4, 5, row, row + 1, GTK_FILL, GTK_SHRINK, 10, 5);
+        
+        gtk_widget_set_size_request(GTK_WIDGET(outBox), 160, -1);
+    }
+
+    // other stuff bottom right
+    GtkWidget *paramBox = gtk_hbox_new(TRUE, 10);
+    
+    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
+    
+    GtkWidget *logoImg     = gtk_image_new_from_file(PKGLIBDIR "/logo_button.png");
+    gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
+    
+    gtk_table_attach(GTK_TABLE(strips_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
+    gtk_widget_show_all(GTK_WIDGET(paramBox));
+    
+    row += 2;
+    
+    // bottom light
+    GtkWidget *botImg     = gtk_image_new_from_file(PKGLIBDIR "/light_bottom.png");
+    gtk_widget_set_size_request(GTK_WIDGET(botImg), 1, 1);
+    gtk_table_attach(GTK_TABLE(strips_table), botImg, 1, 5, row, row + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
+    gtk_widget_show(botImg);
     
     return strip;
 }
@@ -321,7 +419,7 @@ void main_window::create()
     gtk_ui_manager_insert_action_group(ui_mgr, std_actions, 0);
     gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
     gtk_box_pack_start(GTK_BOX(all_vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
-
+    
     plugin_actions = gtk_action_group_new("plugins");
     string plugin_xml = make_plugin_list(plugin_actions);
     gtk_ui_manager_insert_action_group(ui_mgr, plugin_actions, 0);    
@@ -329,13 +427,16 @@ void main_window::create()
 
     
     strips_table = gtk_table_new(1, 6, FALSE);
-    gtk_table_set_col_spacings(GTK_TABLE(strips_table), 10);
-    gtk_table_set_row_spacings(GTK_TABLE(strips_table), 5);
+    gtk_table_set_col_spacings(GTK_TABLE(strips_table), 0);
+    gtk_table_set_row_spacings(GTK_TABLE(strips_table), 0);
     
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI In"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Audio In"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Audio Out"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 10, 5);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio in"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio out"), 4, 5, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
+    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 5, 6, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
+    
     for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
     {
         GtkTableChild *c = (GtkTableChild *)p->data;

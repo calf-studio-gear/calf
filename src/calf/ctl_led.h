@@ -36,6 +36,7 @@ G_BEGIN_DECLS
 struct CalfLed
 {
     GtkWidget parent;
+    cairo_surface_t *cache_surface;
     int led_mode;
     float led_value;
 };

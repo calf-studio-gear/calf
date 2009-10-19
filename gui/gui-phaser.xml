@@ -1,60 +1,56 @@
-<table cols="1" rows="2">
-    <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
-        <vbox>
-            <table rows="2" cols="3" homogeneous="1" spacing="10">
-                <vbox expand="0" attach-x="0" attach-y="0">
-                    <label param="base_freq" />
-                    <knob param="base_freq" />
-                    <value param="base_freq" />
-                </vbox>
-                <vbox expand="0" attach-x="1" attach-y="0">
-                    <label param="mod_depth" />
-                    <knob param="mod_depth" />
-                    <value param="mod_depth" />
-                </vbox>
-                <vbox expand="0" attach-x="2" attach-y="0">
-                    <label param="amount" />
-                    <knob param="amount" />
-                    <value param="amount" />
-                </vbox>
-                <vbox expand="0" attach-x="0" attach-y="1">
-                    <label param="stages" />
-                    <knob param="stages" />
-                    <value param="stages" />
-                </vbox>
-                <vbox expand="0" attach-x="1" attach-y="1">
-                    <label param="feedback" />
-                    <knob param="feedback" type="1" size="3" />
-                    <value param="feedback" />
-                </vbox>
-                <vbox expand="0" attach-x="2" attach-y="1">
-                    <label param="dry" />
-                    <knob param="dry" />
-                    <value param="dry" />
-                </vbox>
-            </table>
+<table cols="3" rows="2">
+    <table rows="1" cols="6" homogeneous="1" spacing="2" attach-x="1" attach-y="1" shrink-y="1">
+        <vbox expand="0" attach-x="0" attach-y="0">
+            <label param="base_freq" />
+            <knob param="base_freq" />
+            <value param="base_freq" />
         </vbox>
-    </frame>
-    <frame label="LFO"  attach-x="0" attach-y="1" shrink-y="1">
-        <hbox>
-            <vbox border="10">
-                <label param="mod_rate" />
-                <knob param="mod_rate" size="4" />
-                <value param="mod_rate" />
-            </vbox>
-            <align><button param="reset" /></align>
-            <vbox border="10">
-                <label param="stereo" />
-                <knob param="stereo" type="3" size="4" />
-                <value param="stereo" />
-            </vbox>
-        </hbox>
-    </frame>
+        <vbox expand="0" attach-x="1" attach-y="0">
+            <label param="mod_depth" />
+            <knob param="mod_depth" />
+            <value param="mod_depth" />
+        </vbox>
+        <vbox expand="0" attach-x="2" attach-y="0">
+            <label param="feedback" />
+            <knob param="feedback" type="1" />
+            <value param="feedback" />
+        </vbox>
+        <vbox expand="0" attach-x="3" attach-y="0">
+            <label param="stages" />
+            <knob param="stages" />
+            <value param="stages" />
+        </vbox>
+        <vbox expand="0" attach-x="4" attach-y="0">
+            <label param="amount" />
+            <knob param="amount" />
+            <value param="amount" />
+        </vbox>
+        <vbox expand="0" attach-x="5" attach-y="0">
+            <label param="dry" />
+            <knob param="dry" />
+            <value param="dry" />
+        </vbox>
+    </table>
+    
+    <vbox border="10" attach-x="0" attach-y="0">
+        <label param="mod_rate" align-y="1.0" />
+        <knob param="mod_rate" size="4" />
+        <value param="mod_rate" align-y="0.0" />
+    </vbox>
+    
+    <vbox border="10" attach-x="2" attach-y="0">
+        <label param="stereo" align-y="1.0" />
+        <knob param="stereo" type="3" size="4" />
+        <value param="stereo" align-y="0.0" />
+    </vbox>
+    
+    <align attach-x="2" attach-y="1"><button param="reset" /></align>
+    
     <if cond="directlink">
-        <frame label="Freq. response" attach-x="0" attach-y="2" >
+        <frame label="Freq. response" attach-x="1" attach-y="0" ><vbox border="5">
             <vbox expand-x="1" fill-x="1" >
                 <line-graph refresh="1" width="160" height="160" param="base_freq"/>
             </vbox>
-        </frame>
+        </vbox></frame>
     </if>
 </table>

@@ -1,6 +1,6 @@
-<table rows="3" cols="2">
-    <frame label="Timbre" attach-x="0" attach-y="0" shrink-y="1">
-        <table rows="1" cols="5" homogeneous="1" spacing="10">
+<table rows="2" cols="3">
+    <frame label="Timbre" attach-x="0" attach-y="1" shrink-y="1">
+        <table rows="1" cols="5" homogeneous="1" spacing="10" attach-x="0" attach-y="1">
             <vbox attach-x="0" attach-y="0">
                 <label param="min_delay" />
                 <knob param="min_delay" />
@@ -28,8 +28,8 @@
             </vbox>
         </table>
     </frame>
-    <frame label="LFO" attach-x="0" attach-y="1" shrink-y="1">
-        <table rows="1" cols="3" homogeneous="1" spacing="10">
+    <frame label="LFO" attach-x="1" attach-y="0" shrink-y="1" expand-y="1" fill-y="1">
+        <table rows="2" cols="2" homogeneous="1" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="mod_rate" />
                 <knob param="mod_rate" />
@@ -40,23 +40,23 @@
                 <knob param="voices" />
                 <value param="voices" />
             </vbox>
-            <vbox attach-x="2" attach-y="0">
+            <vbox attach-x="0" attach-y="1">
                 <label param="stereo" />
-                <knob param="stereo" type="3" />
+                <knob param="stereo" type="3" size="3" />
                 <value param="stereo" />
             </vbox>
-            <vbox attach-x="3" attach-y="0">
+            <vbox attach-x="1" attach-y="1">
                 <label param="vphase" />
-                <knob param="vphase" type="3" />
+                <knob param="vphase" type="3" size="3" />
                 <value param="vphase" />
             </vbox>
         </table>
     </frame>
-    <frame label="Post Filter" attach-x="0" attach-y="2" shrink-y="1">
-        <table rows="1" cols="3" homogeneous="1" spacing="10">
+    <frame label="Post Filter" attach-x="1" attach-y="1" shrink-y="1">
+        <table rows="1" cols="3" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="freq" />
-                <knob param="freq" size="3" />
+                <knob param="freq" size="2" />
                 <value param="freq" />
             </vbox>
             <vbox attach-x="1" attach-y="0">
@@ -66,24 +66,24 @@
             </vbox>
             <vbox attach-x="2" attach-y="0">
                 <label param="freq2" />
-                <knob param="freq2" size="3" />
+                <knob param="freq2" size="2" />
                 <value param="freq2" />
             </vbox>
         </table>
     </frame>
     <if cond="directlink">
-        <hbox attach-x="0" attach-y="3" fill-y="1" expand-y="1">
-            <frame label="Freq. response">
+        <hbox attach-x="0" attach-y="0" fill-y="1" expand-y="1">
+            <frame label="Freq. response"><vbox border="5">
                 <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-                    <line-graph refresh="1" width="160" height="160" param="min_delay"/>
+                    <line-graph refresh="1" width="200" height="160" param="min_delay"/>
                 </vbox>
-            </frame>
+            </vbox></frame>
             <frame label="LFO positions">
-                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-                    <line-graph refresh="1" width="160" height="30" param="mod_depth"/>
-                    <line-graph refresh="1" width="160" height="160" param="mod_rate"/>
+                <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7"><vbox border="5">
+                    <line-graph refresh="1" width="200" height="30" param="mod_depth"/>
+                    <line-graph refresh="1" width="200" height="160" param="mod_rate"/>
                 </vbox>
-            </frame>
+            </vbox></frame>
         </hbox>
     </if>
 </table>
