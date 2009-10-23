@@ -3,7 +3,7 @@
   <hbox>
     <if cond="directlink">
       <align scale-x="0.0" scale-y="1.0" align-x="0" align-y="0">
-        <line-graph param="master" refresh="1" width="120" height="40" expand="0" fill="0"/>
+        <line-graph param="master" refresh="1" width="372" height="40" expand="0" fill="0"/>
       </align>
     </if>
     <align scale-x="0.25" scale-y="0.0" align-x="1.0" align-y="0.5">
@@ -15,7 +15,7 @@
         </vbox>
         <vbox>
           <label param="master"/>
-          <knob param="master"/>
+          <knob param="master" size="3"/>
           <value param="master"/>
         </vbox>
       </hbox>
@@ -32,7 +32,7 @@
         <label attach-x="0" attach-y="10" text="Pan"/>
         <label attach-x="0" attach-y="12" text="Send to"/>
         <label attach-x="1" attach-y="0" param="l1"/>
-        <vscale attach-x="1" attach-y="1" param="l1"/>
+        <vscale height="160" attach-x="1" attach-y="1" param="l1"/>
         <value attach-x="1" attach-y="2" param="l1"/>
         <knob attach-x="1" attach-y="3" param="f1"/>
         <value attach-x="1" attach-y="4" param="f1"/>
@@ -45,7 +45,7 @@
         <value attach-x="1" attach-y="11" param="pan1"/>
         <combo attach-x="1" attach-y="12" param="routing1"/>
         <label attach-x="2" attach-y="0" param="l2"/>
-        <vscale attach-x="2" attach-y="1" param="l2"/>
+        <vscale height="160" attach-x="2" attach-y="1" param="l2"/>
         <value attach-x="2" attach-y="2" param="l2"/>
         <knob attach-x="2" attach-y="3" param="f2"/>
         <value attach-x="2" attach-y="4" param="f2"/>
@@ -58,7 +58,7 @@
         <value attach-x="2" attach-y="11" param="pan2"/>
         <combo attach-x="2" attach-y="12" param="routing2"/>
         <label attach-x="3" attach-y="0" param="l3"/>
-        <vscale attach-x="3" attach-y="1" param="l3"/>
+        <vscale height="160" attach-x="3" attach-y="1" param="l3"/>
         <value attach-x="3" attach-y="2" param="l3"/>
         <knob attach-x="3" attach-y="3" param="f3"/>
         <value attach-x="3" attach-y="4" param="f3"/>
@@ -71,7 +71,7 @@
         <value attach-x="3" attach-y="11" param="pan3"/>
         <combo attach-x="3" attach-y="12" param="routing3"/>
         <label attach-x="4" attach-y="0" param="l4"/>
-        <vscale attach-x="4" attach-y="1" param="l4"/>
+        <vscale height="160" attach-x="4" attach-y="1" param="l4"/>
         <value attach-x="4" attach-y="2" param="l4"/>
         <knob attach-x="4" attach-y="3" param="f4"/>
         <value attach-x="4" attach-y="4" param="f4"/>
@@ -84,7 +84,7 @@
         <value attach-x="4" attach-y="11" param="pan4"/>
         <combo attach-x="4" attach-y="12" param="routing4"/>
         <label attach-x="5" attach-y="0" param="l5"/>
-        <vscale attach-x="5" attach-y="1" param="l5"/>
+        <vscale height="160" attach-x="5" attach-y="1" param="l5"/>
         <value attach-x="5" attach-y="2" param="l5"/>
         <knob attach-x="5" attach-y="3" param="f5"/>
         <value attach-x="5" attach-y="4" param="f5"/>
@@ -97,7 +97,7 @@
         <value attach-x="5" attach-y="11" param="pan5"/>
         <combo attach-x="5" attach-y="12" param="routing5"/>
         <label attach-x="6" attach-y="0" param="l6"/>
-        <vscale attach-x="6" attach-y="1" param="l6"/>
+        <vscale height="160" attach-x="6" attach-y="1" param="l6"/>
         <value attach-x="6" attach-y="2" param="l6"/>
         <knob attach-x="6" attach-y="3" param="f6"/>
         <value attach-x="6" attach-y="4" param="f6"/>
@@ -110,7 +110,7 @@
         <value attach-x="6" attach-y="11" param="pan6"/>
         <combo attach-x="6" attach-y="12" param="routing6"/>
         <label attach-x="7" attach-y="0" param="l7"/>
-        <vscale attach-x="7" attach-y="1" param="l7"/>
+        <vscale height="160" attach-x="7" attach-y="1" param="l7"/>
         <value attach-x="7" attach-y="2" param="l7"/>
         <knob attach-x="7" attach-y="3" param="f7"/>
         <value attach-x="7" attach-y="4" param="f7"/>
@@ -123,7 +123,7 @@
         <value attach-x="7" attach-y="11" param="pan7"/>
         <combo attach-x="7" attach-y="12" param="routing7"/>
         <label attach-x="8" attach-y="0" param="l8"/>
-        <vscale attach-x="8" attach-y="1" param="l8"/>
+        <vscale height="160" attach-x="8" attach-y="1" param="l8"/>
         <value attach-x="8" attach-y="2" param="l8"/>
         <knob attach-x="8" attach-y="3" param="f8"/>
         <value attach-x="8" attach-y="4" param="f8"/>
@@ -136,7 +136,7 @@
         <value attach-x="8" attach-y="11" param="pan8"/>
         <combo attach-x="8" attach-y="12" param="routing8"/>
         <label attach-x="9" attach-y="0" param="l9"/>
-        <vscale attach-x="9" attach-y="1" param="l9"/>
+        <vscale height="160" attach-x="9" attach-y="1" param="l9"/>
         <value attach-x="9" attach-y="2" param="l9"/>
         <knob attach-x="9" attach-y="3" param="f9"/>
         <value attach-x="9" attach-y="4" param="f9"/>
@@ -150,7 +150,7 @@
         <combo attach-x="9" attach-y="12" param="routing9"/>
       </table>
     </vbox>
-    <hbox page="Sound processor">
+    <hbox page="Sound processor" spacing="5">
       <vbox>
         <frame label="Filter 1">
           <vbox>

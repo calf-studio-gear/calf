@@ -227,7 +227,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     const char *xml = proxy->get_gui_xml();
     assert(xml);
     *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
-    
+    gtk_rc_parse(PKGLIBDIR "calf.rc");
     if (*(GtkWidget **)(widget))
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
     

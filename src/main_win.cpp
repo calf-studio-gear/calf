@@ -89,7 +89,7 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
         GtkTableChild *c = (GtkTableChild *)p->data;
         if (c->widget == strip->name)
         {
-            row = c->top_attach - 1;
+            row = c->top_attach;
             break;
         }
     }
@@ -99,7 +99,7 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
     {
         GtkTableChild *c = (GtkTableChild *)p->data;
-        if (c->top_attach >= row && c->top_attach < row + 3)
+        if (c->top_attach >= row && c->top_attach < row + 4)
             to_destroy.push_back(c->widget);
         if (c->top_attach >= row + 4)
         {
@@ -136,7 +136,15 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
         return;
     strip->gui_win = gui_win;
     if (!is_closed)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->name), gui_win != NULL);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
+        
+    GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
+    if (strip->gui_win) {
+        gtk_button_set_label(GTK_BUTTON(tb), "Hide");
+    } else {
+        gtk_button_set_label(GTK_BUTTON(tb), "Show");
+    }
+    
 }
 
 void main_window::refresh_all_presets(bool builtin_too)
@@ -160,8 +168,10 @@ gui_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
     if (strip->gui_win) {
         strip->gui_win->close();
         strip->gui_win = NULL;
+        gtk_button_set_label(GTK_BUTTON(tb), "Show");
     } else {
         strip->main_win->open_gui(strip->plugin);
+        gtk_button_set_label(GTK_BUTTON(tb), "Hide");
     }
     return TRUE;
 }
@@ -219,25 +229,26 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_set_size_request(GTK_WIDGET(topImg), 1, 1);
     gtk_table_attach(GTK_TABLE(strips_table), topImg, 1, 5, row, row + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
     gtk_widget_show(topImg);
+    strip->name = topImg;
     row ++;
     
     // title @ 1, 1
     char buf[128];
-    sprintf(buf, "<span size=\"18000\">%s</span>", plugin->get_label());
+    sprintf(buf, "<span size=\"15000\">%s</span>", plugin->get_label());
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title), buf);
     gtk_table_attach(GTK_TABLE(strips_table), title, 1, 2, row, row + 1, ao, GTK_SHRINK, 20, 10);
     gtk_widget_show(title);
     
     // open button
-    GtkWidget *label = gtk_toggle_button_new_with_label("Open");
-    strip->name = label;
+    GtkWidget *label = gtk_toggle_button_new_with_label("Show");
+    strip->button = label;
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
         (plugin_ctl_iface *)strip);
-    gtk_widget_show(strip->name);
-    
+    gtk_widget_show(strip->button);
+
     // delete buton
-    GtkWidget *extra = gtk_button_new_with_label("Delete");
+    GtkWidget *extra = gtk_button_new_with_label("Remove");
     strip->extra = extra;
     gtk_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
@@ -245,7 +256,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     
     // button box @ 1, 2
     GtkWidget *buttonBox = gtk_hbox_new(TRUE, 10);
-    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->name), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->button), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), TRUE, TRUE, 0);
     gtk_table_attach(GTK_TABLE(strips_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), GTK_EXPAND, 10, 10);
     gtk_widget_show(buttonBox);
@@ -256,13 +267,13 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), TRUE, TRUE, 0);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), TRUE, TRUE, 0);
-        gtk_table_attach(GTK_TABLE(strips_table), midiBox, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 10, 10);
+        gtk_table_attach(GTK_TABLE(strips_table), midiBox, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 5, 3);
         gtk_widget_set_size_request(GTK_WIDGET(label), 40, 36);
         strip->midi_in = label;
         gtk_widget_show_all(midiBox);
     } else {
         label = gtk_label_new("");
-        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 10, 10);
+        gtk_table_attach(GTK_TABLE(strips_table), label, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 5, 3);
         gtk_widget_set_size_request(GTK_WIDGET(label), 40, 36);
         strip->midi_in = label;
         gtk_widget_show(strip->midi_in);
@@ -289,7 +300,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         strip->audio_in[1] = label;
         
         gtk_widget_show_all(inBox);
-        gtk_table_attach(GTK_TABLE(strips_table), inBox, 3, 4, row, row + 1, GTK_FILL, GTK_SHRINK, 10, 5);
+        gtk_table_attach(GTK_TABLE(strips_table), inBox, 3, 4, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
         
         gtk_widget_set_size_request(GTK_WIDGET(inBox), 160, -1);
     }
@@ -309,7 +320,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         strip->audio_out[1] = label;
         
         gtk_widget_show_all(outBox);
-        gtk_table_attach(GTK_TABLE(strips_table), outBox, 4, 5, row, row + 1, GTK_FILL, GTK_SHRINK, 10, 5);
+        gtk_table_attach(GTK_TABLE(strips_table), outBox, 4, 5, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
         
         gtk_widget_set_size_request(GTK_WIDGET(outBox), 160, -1);
     }
@@ -411,7 +422,7 @@ void main_window::create()
     gtk_window_set_resizable(toplevel, false);
     
     all_vbox = gtk_vbox_new(0, FALSE);
-
+    
     ui_mgr = gtk_ui_manager_new();
     std_actions = gtk_action_group_new("default");
     gtk_action_group_add_actions(std_actions, actions, sizeof(actions)/sizeof(actions[0]), this);
@@ -420,22 +431,26 @@ void main_window::create()
     gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
     gtk_box_pack_start(GTK_BOX(all_vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
     
+    gtk_widget_set_size_request(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), 640, -1);
+    
+    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "calf-menu");
+    
     plugin_actions = gtk_action_group_new("plugins");
     string plugin_xml = make_plugin_list(plugin_actions);
     gtk_ui_manager_insert_action_group(ui_mgr, plugin_actions, 0);    
     gtk_ui_manager_add_ui_from_string(ui_mgr, plugin_xml.c_str(), -1, &error);
 
     
-    strips_table = gtk_table_new(1, 6, FALSE);
+    strips_table = gtk_table_new(0, 6, FALSE);
     gtk_table_set_col_spacings(GTK_TABLE(strips_table), 0);
     gtk_table_set_row_spacings(GTK_TABLE(strips_table), 0);
     
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 10, 5);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio in"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio out"), 4, 5, 0, 1, GTK_FILL, GTK_SHRINK, 70, 5);
-    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 5, 6, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 15, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio in"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio out"), 4, 5, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
+//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 5, 6, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
     
     for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
     {
@@ -452,6 +467,8 @@ void main_window::create()
 
     gtk_container_add(GTK_CONTAINER(all_vbox), strips_table);
     gtk_container_add(GTK_CONTAINER(toplevel), all_vbox);
+    
+    gtk_widget_set_name(GTK_WIDGET(strips_table), "calf-container");
     
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody

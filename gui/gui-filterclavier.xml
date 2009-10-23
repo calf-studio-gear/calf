@@ -29,8 +29,8 @@
         </vbox>
     </vbox>
     <if cond="directlink">
-        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0"><vbox border="5">
+        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0">
             <line-graph param="mode" refresh="1" width="320" height="160"/>
-        </vbox></frame>
+        </frame>
     </if>
 </table>

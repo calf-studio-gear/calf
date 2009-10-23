@@ -150,7 +150,11 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
     gtk_widget_set_size_request (widget, 200, -1);
-
+    
+    if(get_int("inverted", 0) > 0) {
+        gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
+    }
+    
     return widget;
 }
 
@@ -204,12 +208,15 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-
     widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
     gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
     gtk_widget_set_size_request (widget, -1, 200);
-
+    
+    if(get_int("inverted", 0) > 0) {
+        gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
+    }
+    
     return widget;
 }
 
@@ -303,6 +310,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
+    gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
     calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
     CALF_VUMETER(widget)->vumeter_hold = get_int("hold", 0);
     return widget;
@@ -324,6 +332,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // parameter_properties &props = get_props();
     widget = calf_led_new ();
+    gtk_widget_set_name(GTK_WIDGET(widget), "calf-led");
     CALF_LED(widget)->led_mode = get_int("mode", 0);
     return widget;
 }
@@ -742,6 +751,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     // const parameter_properties &props = get_props();
     
     widget = calf_line_graph_new ();
+    gtk_widget_set_name(GTK_WIDGET(widget), "calf-graph");
     CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
     widget->requisition.width = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
@@ -934,7 +944,7 @@ void box_container::add(GtkWidget *w, control_base *base)
 
 GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
-    GtkWidget *hbox = gtk_hbox_new(false, get_int("spacing", 2));
+    GtkWidget *hbox = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
     container = GTK_CONTAINER(hbox);
     return hbox;
 }
@@ -943,7 +953,7 @@ GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_att
 
 GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
-    GtkWidget *vbox = gtk_vbox_new(false, get_int("spacing", 2));
+    GtkWidget *vbox = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
     container = GTK_CONTAINER(vbox);
     return vbox;
 }

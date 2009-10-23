@@ -1,58 +1,63 @@
 <?xml version="1.0"?>
-<vbox>
+<hbox spacing="5">
   <frame label="Global">
-    <hbox border="10" spacing="10">
-      <vbox>
-        <label param="pbend_range"/>
-        <knob param="pbend_range"/>
-        <value param="pbend_range"/>
-      </vbox>
-      <vbox>
-        <label param="legato" expand="0"/>
-        <combo param="legato" expand="0" fill="0"/>
-        <label />
-      </vbox>
-      <vbox>
-        <label param="portamento"/>
-        <knob param="portamento"/>
-        <value param="portamento"/>
-      </vbox>
-      <vbox>
+    <vbox border="6" spacing="10">
+      <label />
+      <vbox expand="0" fill="0">
         <label param="master"/>
-        <knob param="master"/>
+        <knob param="master" size="4"/>
         <value param="master"/>
       </vbox>
-    </hbox>
+      <label />
+      <hbox spacing="4" expand="0" fill="0">
+        <vbox>
+          <label param="pbend_range"/>
+          <knob param="pbend_range"/>
+          <value param="pbend_range"/>
+        </vbox>
+        <vbox>
+          <label param="portamento"/>
+          <knob param="portamento"/>
+          <value param="portamento"/>
+        </vbox>
+      </hbox>
+      <vbox expand="0" fill="0">
+        <label param="legato" expand="0"/>
+        <combo param="legato" expand="0" fill="0"/>
+      </vbox>
+    </vbox>
   </frame>
   <notebook>
-    <vbox border="10" page="Audio path">
+    <hbox page="Audio path" spacing="4">
       <frame label="Oscillators">
-        <vbox border="10" spacing="10">
-          <table rows="3" cols="4">
+        <vbox spacing="8">
+          <table rows="3" cols="4" expand="1" fill="1">
             <label attach-x="0" attach-y="0" param="o1_wave"/>
             <label attach-x="1" attach-y="0" param="o1_pw"/>
             <label attach-x="2" attach-y="0" param="o2_pw"/>
             <label attach-x="3" attach-y="0" param="o2_wave"/>
-            <combo attach-x="0" attach-y="1" param="o1_wave"/>
+            <combo attach-x="0" attach-y="1" param="o1_wave" fill-y="0"/>
             <knob attach-x="1" attach-y="1" param="o1_pw"/>
             <knob attach-x="2" attach-y="1" param="o2_pw"/>
-            <combo attach-x="3" attach-y="1" param="o2_wave"/>
+            <combo attach-x="3" attach-y="1" param="o2_wave" fill-y="0"/>
             <value attach-x="1" attach-y="2" param="o1_pw"/>
             <value attach-x="2" attach-y="2" param="o2_pw"/>
           </table>
-          <hbox>
+          <align>
+          <hbox expand="0" fill="0">
             <if cond="directlink">
-              <line-graph param="o1_wave" refresh="1"/>
+              <line-graph param="o1_wave" refresh="1" width="80" height="80" expand="0" fill="0"/>
             </if>
             <vbox>
-              <label param="o12_mix"/>
-              <hscale param="o12_mix" position="bottom"/>
+              <label param="o12_mix" expand="0" fill="0"/>
+              <hscale param="o12_mix" position="bottom" expand="0" fill="0"/>
             </vbox>
             <if cond="directlink">
-              <line-graph param="o2_wave" refresh="1"/>
+              <line-graph param="o2_wave" refresh="1" width="80" height="80" expand="0" fill="0"/>
             </if>
           </hbox>
-          <hbox>
+          </align>
+          <hbox expand="1" fill="1">
             <vbox>
               <label param="o12_detune"/>
               <knob param="o12_detune"/>
@@ -78,16 +83,7 @@
         </vbox>
       </frame>
       <frame label="Filter">
-        <vbox border="10">
-          <align>
-            <hbox>
-              <label param="filter"/>
-              <combo param="filter"/>
-              <if cond="directlink">
-                <line-graph param="filter" refresh="1" width="80" height="60"/>
-              </if>
-            </hbox>
-          </align>
+        <vbox spacing="8">
           <hbox>
             <vbox>
               <label param="cutoff"/>
@@ -99,6 +95,17 @@
               <knob param="res"/>
               <value param="res"/>
             </vbox>
+          </hbox>
+          <align>
+            <hbox fill="0" expand="0">
+              <label param="filter" fill="0" expand="0"/>
+              <combo param="filter" fill="0" expand="0"/>
+              <if cond="directlink">
+                <line-graph param="filter" refresh="1" width="80" height="80"/>
+              </if>
+            </hbox>
+          </align>
+          <hbox>
             <vbox>
               <label param="filter_sep"/>
               <knob type="1" param="filter_sep"/>
@@ -112,11 +119,11 @@
           </hbox>
         </vbox>
       </frame>
-    </vbox>
+    </hbox>
     
-    <vbox border="10" page="Modulation">
+    <vbox page="Modulation" spacing="4">
       <frame label="LFO">
-        <hbox spacing="10">
+        <hbox spacing="4">
           <vbox>
             <label text="Rate"/>
             <knob param="lfo_rate"/>
@@ -149,51 +156,51 @@
           </vbox>
         </hbox>
       </frame>
-      <hbox spacing="10">
+      <hbox spacing="4">
         <frame label="Note velocity">
-          <hbox>
+          <vbox spacing="10">
             <vbox>
               <label text="To Cutoff"/>
-              <knob param="vel2filter"/>
+              <knob param="vel2filter" size="3"/>
               <value param="vel2filter"/>
             </vbox>
             <vbox>
               <label text="To Amp"/>
-              <knob param="vel2amp"/>
+              <knob param="vel2amp" size="3"/>
               <value param="vel2amp"/>
             </vbox>        
-          </hbox>
+          </vbox>
         </frame>
         <frame label="Envelope">
-          <vbox border="10" spacing="10">
-            <hbox>
-              <vbox>
+          <hbox spacing="4">
+            <table cols="5" rows="1" homogeneous="1" fill-x="0" expand-x="0">
+              <vbox attach-x="0" attach-y="0">
                 <label param="adsr_a"/>
-                <knob param="adsr_a"/>
-                <value param="adsr_a"/>
+                <vscale param="adsr_a" inverted="1"/>
+                <value param="adsr_a" width="4"/>
               </vbox>
-              <vbox>
+              <vbox attach-x="1" attach-y="0">
                 <label param="adsr_d"/>
-                <knob param="adsr_d"/>
-                <value param="adsr_d"/>
+                <vscale param="adsr_d" inverted="1"/>
+                <value param="adsr_d" width="4"/>
               </vbox>
-              <vbox>
+              <vbox attach-x="2" attach-y="0">
                 <label param="adsr_s"/>
-                <knob param="adsr_s"/>
+                <vscale param="adsr_s" inverted="1"/>
                 <value param="adsr_s"/>
               </vbox>
-              <vbox>
+              <vbox attach-x="3" attach-y="0">
                 <label param="adsr_f"/>
-                <knob param="adsr_f"/>
-                <value param="adsr_f"/>
+                <vscale param="adsr_f" inverted="1"/>
+                <value param="adsr_f" width="4"/>
               </vbox>
-              <vbox>
+              <vbox attach-x="4" attach-y="0">
                 <label param="adsr_r"/>
-                <knob param="adsr_r"/>
-                <value param="adsr_r"/>
+                <vscale param="adsr_r" inverted="1"/>
+                <value param="adsr_r" width="4"/>
               </vbox>
-            </hbox>
-            <hbox>
+            </table>
+            <vbox>
               <vbox>
                 <label text="To Cutoff"/>
                 <knob type="1" param="env2cutoff"/>
@@ -209,15 +216,15 @@
                 <knob param="env2amp"/>
                 <value param="env2amp"/>
               </vbox>
-            </hbox>
-          </vbox>
+            </vbox>
+          </hbox>
         </frame>
       </hbox>
     </vbox>
     <if cond="jackhost">
-      <vbox border="10" page="Modulation Matrix">
+      <vbox page="Modulation Matrix">
         <listview param="scale_detune" />
       </vbox>
     </if>
   </notebook>
-</vbox>
+</hbox>

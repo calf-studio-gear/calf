@@ -58,8 +58,11 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
                                   widget->allocation.height );
         cairo_t *cache_cr = cairo_create( self->cache_surface );
         
-        // theme background for round borders
-        gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//        if(widget->style->bg_pixmap[0] == NULL) {
+            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//        } else {
+//            gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(&style->bg_pixmap[0]), widget->allocation.x, widget->allocation.y + 20);
+//        }
         cairo_paint(cache_cr);
         
         // outer (light)
