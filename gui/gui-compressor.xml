@@ -56,8 +56,8 @@
     </table>
     
     <if cond="directlink">
-      <frame attach-x="2" attach-y="0" attach-h="2" label="Compression">
-        <line-graph refresh="1" width="220" height="220" param="compression" square="1" expand-y="1" fill-y="1" pad-x="7"/>
+      <frame attach-x="2" attach-y="0" attach-h="2" label="Compression" pad-x="10">
+        <line-graph refresh="1" width="220" height="220" param="compression" square="1" expand-y="1" fill-y="1"/>
       </frame>
     </if>
     

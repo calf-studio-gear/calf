@@ -382,14 +382,14 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     
     // create window with viewport
-    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
+//    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+//    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+//    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
+//    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
     
-    gtk_widget_set_name(GTK_WIDGET(sw), "calf-container");
+    gtk_widget_set_name(GTK_WIDGET(decoTable), "calf-container");
     
-    return GTK_WIDGET(sw);
+    return GTK_WIDGET(decoTable);
 }
 
 void plugin_gui::send_configure(const char *key, const char *value)
@@ -672,14 +672,14 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     assert(xml);
     container = gui->create_from_xml(_jh, xml);
     
-//    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-//    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-//    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-//    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(container));
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(container));
     
-    gtk_box_pack_start(GTK_BOX(vbox), container, true, true, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
-    gtk_widget_show_all(GTK_WIDGET(container));
+    gtk_widget_show_all(GTK_WIDGET(sw));
     gtk_widget_size_request(GTK_WIDGET(container), &req);
     int wx = max(req.width + 10, req2.width);
     int wy = req.height + req2.height + 10;

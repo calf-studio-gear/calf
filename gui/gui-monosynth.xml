@@ -28,7 +28,7 @@
     </vbox>
   </frame>
   <notebook>
-    <hbox page="Audio path" spacing="4">
+    <hbox page="Audio path" spacing="8">
       <frame label="Oscillators">
         <vbox spacing="8">
           <table rows="3" cols="4" expand="1" fill="1">
@@ -156,7 +156,7 @@
           </vbox>
         </hbox>
       </frame>
-      <hbox spacing="4">
+      <hbox spacing="8">
         <frame label="Note velocity">
           <vbox spacing="10">
             <vbox>
