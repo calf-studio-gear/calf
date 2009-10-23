@@ -150,7 +150,7 @@
         <combo attach-x="9" attach-y="12" param="routing9"/>
       </table>
     </vbox>
-    <hbox page="Sound processor" spacing="5">
+    <hbox page="Sound processor" spacing="8">
       <vbox>
         <frame label="Filter 1">
           <vbox>

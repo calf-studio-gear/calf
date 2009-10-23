@@ -48,7 +48,8 @@
             <knob param="amount" size="2" />
             <value param="amount" />
         </vbox>
-        <table cols="3" rows="3" attach-x="0" attach-y="1" attach-w="5" fill-y="0" expand-y="0">
+        <frame label="Levels" attach-x="0" attach-y="1"  attach-w="5" fill-y="1" expand-y="1" fill-x="1" expand-x="1">
+        <table cols="3" rows="3" attach-w="5">
             <label attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
             <label param="meter_wet" attach-x="0" attach-y="1" expand-y="1" fill-y="0" expand-x="0" fill-x="0" />
             <vumeter param="meter_wet" hold="2" attach-x="1" attach-y="1" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1"/>
@@ -56,6 +57,7 @@
             <vumeter param="meter_out" hold="2" attach-x="1" attach-y="2" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1" />
             <!--<led param="clip" mode="0" attach-x="2" attach-y="2" expand-x="0" fill-x="0"/>-->
         </table>
+        </frame>
     </table>
 </hbox>
 

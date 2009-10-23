@@ -28,7 +28,7 @@
             </vbox>
         </table>
     </frame>
-    <frame label="LFO" attach-x="1" attach-y="0" shrink-y="1" expand-y="1" fill-y="1">
+    <frame label="LFO" attach-x="1" attach-y="0" shrink-y="1" expand-y="1" fill-y="1" pad-x="8">
         <table rows="2" cols="2" homogeneous="1" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="mod_rate" />
@@ -52,7 +52,7 @@
             </vbox>
         </table>
     </frame>
-    <frame label="Post Filter" attach-x="1" attach-y="1" shrink-y="1">
+    <frame label="Post Filter" attach-x="1" attach-y="1" shrink-y="1" pad-x="8">
         <table rows="1" cols="3" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="freq" />
@@ -72,7 +72,7 @@
         </table>
     </frame>
     <if cond="directlink">
-        <hbox attach-x="0" attach-y="0" fill-y="1" expand-y="1">
+        <hbox attach-x="0" attach-y="0" fill-y="1" expand-y="1" spacing="8">
             <frame label="Freq. response">
                 <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
                     <line-graph refresh="1" width="200" height="160" param="min_delay"/>

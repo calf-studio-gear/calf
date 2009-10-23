@@ -1,4 +1,4 @@
-<table spacing="5" rows="1" cols="3">
+<table rows="1" cols="3">
 	<frame attach-x="2" attach-y="0" label="Manual">
 		<table rows="2" cols="2">
 		    <vbox  attach-x="1" attach-y="0" fill-x="1" fill-y="1" border="10">
@@ -20,7 +20,7 @@
         <knob param="mod_depth" size="4" />
         <value param="mod_depth" align-y="0.0" />
     </vbox>
-    <vbox attach-x="1" attach-y="0">
+    <vbox attach-x="1" attach-y="0" pad-x="8">
 		<frame label="Cabinet">
 			<hbox homogeneous="1">
 				<vbox spacing="3" fill="0">

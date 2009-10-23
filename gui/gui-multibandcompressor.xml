@@ -90,8 +90,8 @@
              <align><toggle param="bypass" shrink="1"/></align>
         </vbox>
     </table>
-    <table attach-x="0" attach-y="1" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" spacing="10" rows="1" cols="4">
-        <frame label="Sub band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="0" attach-y="0" fill="1"><vbox>
+    <table attach-x="0" attach-y="1" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" rows="1" cols="4">
+        <frame label="Sub band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="0" attach-y="0" fill="1" pad-x="4"><vbox>
             <if cond="directlink">
                 <line-graph refresh="1" width="220" height="220" param="compression0" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
@@ -151,7 +151,7 @@
                 </vbox>
             </table>
         </vbox></frame>
-        <frame label="Low band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="1" attach-y="0" fill="1"><vbox>
+        <frame label="Low band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="1" attach-y="0" fill="1" pad-x="4"><vbox>
             <if cond="directlink">
                 <line-graph refresh="1" width="220" height="220" param="compression1" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
@@ -211,7 +211,7 @@
                 </vbox>
             </table>
         </vbox></frame>
-        <frame label="Mid band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="2" attach-y="0" fill="1"><vbox>
+        <frame label="Mid band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="2" attach-y="0" fill="1" pad-x="4"><vbox>
             <if cond="directlink">
                 <line-graph refresh="1" width="220" height="220" param="compression2" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
@@ -271,7 +271,7 @@
                 </vbox>
             </table>
         </vbox></frame>
-        <frame label="High band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="3" attach-y="0" fill="1"><vbox>
+        <frame label="High band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="3" attach-y="0" fill="1" pad-x="4"><vbox>
             <if cond="directlink">
                 <line-graph refresh="1" width="220" height="220" param="compression3" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
