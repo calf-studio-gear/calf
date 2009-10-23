@@ -47,10 +47,10 @@
     <align attach-x="2" attach-y="1"><button param="reset" /></align>
     
     <if cond="directlink">
-        <frame label="Freq. response" attach-x="1" attach-y="0" ><vbox border="5">
+        <frame label="Freq. response" attach-x="1" attach-y="0" >
             <vbox expand-x="1" fill-x="1" >
                 <line-graph refresh="1" width="160" height="160" param="base_freq"/>
             </vbox>
-        </vbox></frame>
+        </frame>
     </if>
 </table>

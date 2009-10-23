@@ -183,9 +183,11 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             cairo_t *cache_cr = cairo_create( lg->cache_surface );
         
-            // theme background for round borders
-            style = gtk_widget_get_style(widget);
-            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//            if(widget->style->bg_pixmap[0] == NULL) {
+                gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//            } else {
+//                gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(&style->bg_pixmap[GTK_STATE_NORMAL]), widget->allocation.x, widget->allocation.y + 20);
+//            }
             cairo_paint(cache_cr);
             
             // outer (light)
@@ -466,7 +468,11 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_t *cache_cr = cairo_create( vu->cache_surface );
         
         // theme background for reduced width and round borders
-        gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//        if(widget->style->bg_pixmap[0] == NULL) {
+            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
+//        } else {
+//            gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(widget->style->bg_pixmap[0]), widget->allocation.x, widget->allocation.y + 20);
+//        }
         cairo_paint(cache_cr);
         
         // outer (light)
@@ -743,10 +749,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfKnob *self = CALF_KNOB(widget);
     GdkWindow *window = widget->window;
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-
+     
     // printf("adjustment = %p value = %f\n", adj, adj->value);
     int ox = widget->allocation.x, oy = widget->allocation.y;
-
     ox += (widget->allocation.width - self->knob_size * 20) / 2;
     oy += (widget->allocation.height - self->knob_size * 20) / 2;
 
@@ -906,10 +911,10 @@ static inline float endless(float value)
 
 static inline float deadzone(float value, float incr, float scale)
 {
-    float dzw = 10 / scale;
-    if (value >= 0.501)
+    float dzw = 2 / scale;
+    if (value >= 0.5 + dzw)
         value += dzw;
-    if (value < 0.499)
+    if (value < 0.5 - dzw)
         value -= dzw;
 
     value += incr;
@@ -927,24 +932,24 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
 
-    float scale = (event->state & GDK_SHIFT_MASK) ? 10 : 1;
+    float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
     gboolean moved = FALSE;
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
-        float sens=1/(75*(1+fabs((self->start_x - event->x)/10)));
+        float sens = 1 + fabs(event->x - self->start_x) / 10;
         if (self->knob_type == 3)
         {
-            gtk_range_set_value(GTK_RANGE(widget), endless(gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / scale * sens));
+            gtk_range_set_value(GTK_RANGE(widget), endless(gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / (scale * sens)));
         }
         else
         if (self->knob_type == 1)
         {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / scale * sens, scale * sens));
+            gtk_range_set_value(GTK_RANGE(widget), deadzone(gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / (scale * sens), (scale * sens)));
         }
         else
         {
-            gtk_range_set_value(GTK_RANGE(widget), gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / scale * sens);
+            gtk_range_set_value(GTK_RANGE(widget), gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / (scale * sens));
         }
         moved = TRUE;
     }

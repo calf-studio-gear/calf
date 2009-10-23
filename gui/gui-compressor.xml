@@ -1,5 +1,5 @@
 <table rows="2" cols="4" spacing="10">
-    <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="3" spacing="3" >
+    <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="7" spacing="3" >
         <label param="bypass" expand="0" fill="0" />
         <align><toggle param="bypass" shrink="1" size="2"/></align>
     </vbox>
@@ -22,7 +22,7 @@
         <label param="compression" attach-y="2" attach-x="0" expand-x="1" fill-x="1" expand="0" fill="0" />
     </table>
     
-    <table attach-x="1" attach-y="1" expand="1" rows="2" cols="3" homogeneous="1" pad-x="5">
+    <table attach-x="1" attach-y="1" expand="1" rows="2" cols="3" homogeneous="1" pad-x="0" pad-y="6">
         <vbox expand="0" attach-x="0" attach-y="0">
             <label param="attack" />
             <knob param="attack" />
@@ -56,19 +56,23 @@
     </table>
     
     <if cond="directlink">
-        <line-graph attach-x="2" attach-y="0" attach-h="2" refresh="1" width="220" height="220" param="compression" square="1" expand-y="1" fill-y="1" pad-x="7"/>
+      <frame attach-x="2" attach-y="0" attach-h="2" label="Compression">
+        <line-graph refresh="1" width="220" height="220" param="compression" square="1" expand-y="1" fill-y="1" pad-x="7"/>
+      </frame>
     </if>
     
-    <vbox expand="1" attach-x="3" attach-y="0" pad-x="5">
-        <vbox expand="0">
-            <label param="aweighting"/>
-            <align>
-                <combo param="aweighting"/>
-            </align>
-        </vbox>
-    </vbox>
-    <vbox attach-x="3" attach-y="1" spacing="10" pad-x="5" fill-y="0" expand-y="0">
-    	<vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
+    <frame attach-x="3" attach-y="0" attach-h="2" label="Options">
+      <vbox>
+      <vbox expand="1" pad-x="5">
+          <vbox expand="0">
+              <label param="aweighting"/>
+              <align>
+                  <combo param="aweighting"/>
+              </align>
+          </vbox>
+      </vbox>
+      <vbox spacing="10" pad-x="5" fill-y="0" expand-y="0">
+    	  <vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
             <label param="stereo_link" expand-y="0" fill-y="0"/>
             <align>
                 <hbox expand="0" fill-y="0" expand-x="1" fill-x="1">
@@ -86,6 +90,8 @@
                 </hbox>
             </align>
         </vbox>
-    </vbox>
+      </vbox>
+      </vbox>
+    </frame>
     
 </table>

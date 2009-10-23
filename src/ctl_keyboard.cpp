@@ -40,9 +40,7 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_KEYBOARD(widget));
     
-    GdkColor scWhiteKey = { 0, 65535, 65535, 65535 };
-    GdkColor scBlackKey = { 0, 0, 0, 0 };
-    GdkColor scOutline = { 0, 0, 0, 0 };
+    cairo_pattern_t *pat;
     CalfKeyboard *self = CALF_KEYBOARD(widget);
     GdkWindow *window = widget->window;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -54,12 +52,19 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
     {
         CalfKeyboard::KeyInfo ki = { 0.5 + 12 * i, 0.5, 12, sy, 12 * (i / 7) + semitones_w[i % 7], false };
         cairo_new_path(c);
-        gdk_cairo_set_source_color(c, &scWhiteKey);
         if (!self->sink->pre_draw(c, ki))
         {
-            cairo_rectangle(c, ki.x, ki.y, ki.width, ki.height);
-            cairo_fill_preserve(c);
-            gdk_cairo_set_source_color(c, &scOutline);
+            cairo_rectangle(c, ki.x, ki.y, ki.width, ki.y + ki.height);
+            
+            pat = cairo_pattern_create_linear (ki.x, ki.y, ki.x, ki.y + ki.height);
+            cairo_pattern_add_color_stop_rgb (pat, 0.0, 0.25, 0.25, 0.2);
+            cairo_pattern_add_color_stop_rgb (pat, 0.1, 0.957, 0.914, 0.925);
+            cairo_pattern_add_color_stop_rgb (pat, 1.0, 0.796, 0.787, 0.662);
+            cairo_set_source(c, pat);
+            cairo_fill(c);
+            
+            cairo_set_source_rgba(c, 0, 0, 0, 0.5);
+            
             if (!self->sink->pre_draw_outline(c, ki))
                 cairo_stroke(c);
             else
@@ -75,14 +80,37 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
             CalfKeyboard::KeyInfo ki = { 8.5 + 12 * i, 0.5, 8, sy * 3 / 5, 12 * (i / 7) + semitones_b[i % 7], true };
             cairo_new_path(c);
             cairo_rectangle(c, ki.x, ki.y, ki.width, ki.height);
-            gdk_cairo_set_source_color(c, &scBlackKey);
+//            gdk_cairo_set_source_color(c, &scBlackKey);
             if (!self->sink->pre_draw(c, ki))
             {
+                pat = cairo_pattern_create_linear (ki.x, ki.y, ki.x, ki.height + ki.y);
+                cairo_pattern_add_color_stop_rgb (pat, 0.0, 0, 0, 0);
+                cairo_pattern_add_color_stop_rgb (pat, 0.1, 0.27, 0.27, 0.27);
+                cairo_pattern_add_color_stop_rgb (pat, 1.0, 0, 0, 0);
+                cairo_set_source(c, pat);
                 cairo_fill(c);
+                
+                pat = cairo_pattern_create_linear (ki.x + 1, ki.y, ki.x + 1, (int)(ki.height * 0.8 + ki.y));
+                cairo_pattern_add_color_stop_rgb (pat, 0.0, 0, 0, 0);
+                cairo_pattern_add_color_stop_rgb (pat, 0.1, 0.55, 0.55, 0.55);
+                cairo_pattern_add_color_stop_rgb (pat, 0.5, 0.45, 0.45, 0.45);
+                cairo_pattern_add_color_stop_rgb (pat, 0.5001, 0.35, 0.35, 0.35);
+                cairo_pattern_add_color_stop_rgb (pat, 1.0, 0.25, 0.25, 0.25);
+                cairo_set_source(c, pat);
+                cairo_rectangle(c, ki.x + 1, ki.y, ki.width - 2, (int)(ki.height * 0.8 + ki.y));
+                cairo_fill(c);
+                
                 self->sink->post_draw(c, ki);
             }
         }
     }
+    
+    pat = cairo_pattern_create_linear (widget->allocation.x, widget->allocation.y, widget->allocation.x, (int)(widget->allocation.height * 0.2 + widget->allocation.y));
+    cairo_pattern_add_color_stop_rgba (pat, 0.0, 0, 0, 0, 0.4);
+    cairo_pattern_add_color_stop_rgba (pat, 1.0, 0, 0, 0, 0);
+    cairo_rectangle(c, widget->allocation.x, widget->allocation.y, widget->allocation.width, (int)(widget->allocation.height * 0.2));
+    cairo_set_source(c, pat);
+    cairo_fill(c);
     
     self->sink->post_all(c);
     
@@ -121,7 +149,7 @@ calf_keyboard_size_request (GtkWidget *widget,
     g_assert(CALF_IS_KEYBOARD(widget));
     
     requisition->width = 12 * self->nkeys + 1;
-    requisition->height = 32;
+    requisition->height = 40;
 }
 
 static void

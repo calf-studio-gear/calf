@@ -40,7 +40,7 @@ namespace calf_plugins {
             main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *name, *midi_in, *audio_in[2], *audio_out[2], *extra;
+            GtkWidget *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra;
         };
         
         struct add_plugin_params
