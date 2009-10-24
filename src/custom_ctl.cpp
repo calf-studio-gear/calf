@@ -25,6 +25,7 @@
 #include <cairo/cairo.h>
 #include <math.h>
 #include <gdk/gdk.h>
+#include <sys/time.h>
 
 /*
 I don't really know how to do it, or if it can be done this way.
@@ -562,16 +563,43 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
     cairo_paint( c );
     cairo_set_source( c, vu->pat );
-
-    float value = vu->value > 1.f ? 1.f : vu->value;
     
-    if(vu->vumeter_hold > 0) {
+    // get microseconds
+    timeval tv;
+    gettimeofday(&tv, 0);
+    long time = (long)tv.tv_sec * 1000 * 1000 + (long)tv.tv_usec;
+    
+    // limit to 1.f
+    float value_orig = vu->value > 1.f ? 1.f : vu->value;
+    value_orig = value_orig < 0.f ? 0.f : value_orig;
+    float value = 0.f;
+    
+    // falloff?
+    if(vu->vumeter_falloff > 0.f and vu->mode != VU_MONOCHROME_REVERSE) {
+        // fall off a bit
+        float s = ((float)(time - vu->last_falltime) / 1000000.0);
+        float m = vu->last_falloff * s * vu->vumeter_falloff;
+        vu->last_falloff -= m;
+        // new max value?
+        if(value_orig > vu->last_falloff) {
+            vu->last_falloff = value_orig;
+        }
+        value = vu->last_falloff;
+        vu->last_falltime = time;
+        vu->falling = vu->last_falloff > 0.000001;
+    } else {
+        // falloff disabled
+        vu->last_falloff = 0.f;
+        vu->last_falltime = 0.f;
+        value = value_orig;
+    }
+    
+    if(vu->vumeter_hold > 0.0) {
         // peak hold timer
-        time_t t = time(NULL);
-        if((long)t - (long)vu->vumeter_hold > (long)vu->last_hold) {
+        if(time - (long)(vu->vumeter_hold * 1000 * 1000) > vu->last_hold) {
             // time's up, reset
             vu->last_value = value;
-            vu->last_hold = (long)t;
+            vu->last_hold = time;
             vu->holding = false;
         }
         
@@ -579,7 +607,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             if(value < vu->last_value) {
                 // value is above peak hold
                 vu->last_value = value;
-                vu->last_hold = (long)t;
+                vu->last_hold = time;
                 vu->holding = true;
             }
             int hpx = round(vu->last_value * (sx - 2 * inner));
@@ -594,7 +622,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             if(value > vu->last_value) {
                 // value is above peak hold
                 vu->last_value = value;
-                vu->last_hold = (long)t;
+                vu->last_hold = time;
                 vu->holding = true;
             }
             int hpx = round((1 - vu->last_value) * (sx - 2 * inner));
@@ -663,10 +691,13 @@ calf_vumeter_init (CalfVUMeter *self)
     widget->requisition.width = 50;
     widget->requisition.height = 18;
     self->value = 0.5;
-    self->last_hold = 0.f;
+    self->last_hold = (long)0;
     self->last_value = 0.f;
     self->holding = false;
     self->cache_surface = NULL;
+    self->vumeter_falloff = 0.f;
+    self->last_falloff = (long)0;
+    self->falling = false;
 }
 
 GtkWidget *
@@ -713,7 +744,7 @@ calf_vumeter_get_type (void)
 
 extern void calf_vumeter_set_value(CalfVUMeter *meter, float value)
 {
-    if (value != meter->value or meter->holding)
+    if (value != meter->value or meter->holding or meter->falling)
     {
         meter->value = value;
         gtk_widget_queue_draw(GTK_WIDGET(meter));
@@ -737,6 +768,34 @@ extern void calf_vumeter_set_mode(CalfVUMeter *meter, CalfVUMeterMode mode)
 extern CalfVUMeterMode calf_vumeter_get_mode(CalfVUMeter *meter)
 {
     return meter->mode;
+}
+
+extern void calf_vumeter_set_falloff(CalfVUMeter *meter, float value)
+{
+    if (value != meter->vumeter_falloff)
+    {
+        meter->vumeter_falloff = value;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern float calf_vumeter_get_falloff(CalfVUMeter *meter)
+{
+    return meter->vumeter_falloff;
+}
+
+extern void calf_vumeter_set_hold(CalfVUMeter *meter, float value)
+{
+    if (value != meter->vumeter_falloff)
+    {
+        meter->vumeter_hold = value;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern float calf_vumeter_get_hold(CalfVUMeter *meter)
+{
+    return meter->vumeter_hold;
 }
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
@@ -983,6 +1042,7 @@ calf_knob_class_init (CalfKnobClass *klass)
     klass->knob_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob2.png", &error);
     klass->knob_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob3.png", &error);
     klass->knob_image[3] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob4.png", &error);
+    klass->knob_image[4] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob5.png", &error);
     g_assert(klass->knob_image != NULL);
 }
 

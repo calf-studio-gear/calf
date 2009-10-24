@@ -312,7 +312,8 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     widget = calf_vumeter_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
     calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
-    CALF_VUMETER(widget)->vumeter_hold = get_int("hold", 0);
+    CALF_VUMETER(widget)->vumeter_hold = get_float("hold", 0);
+    CALF_VUMETER(widget)->vumeter_falloff = get_float("falloff", 0.f);
     return widget;
 }
 
@@ -517,8 +518,8 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
     CALF_KNOB(widget)->knob_type = get_int("type");
     CALF_KNOB(widget)->knob_size = get_int("size", 2);
-    if(CALF_KNOB(widget)->knob_size > 4) {
-        CALF_KNOB(widget)->knob_size = 4;
+    if(CALF_KNOB(widget)->knob_size > 5) {
+        CALF_KNOB(widget)->knob_size = 5;
     } else if (CALF_KNOB(widget)->knob_size < 1) {
         CALF_KNOB(widget)->knob_size = 1;
     }

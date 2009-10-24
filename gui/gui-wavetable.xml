@@ -8,7 +8,7 @@
           <hbox spacing="5" border="5" fill="0">
             <vbox spacing="10" fill="0">
               <label text="Level" fill="0"/>
-              <knob param="o1level" size="4" fill="0"/>
+              <knob param="o1level" size="5" fill="0"/>
               <value param="o1level" fill="0"/>
             </vbox>
             <vbox fill="0" spacing="30">
@@ -43,7 +43,7 @@
           <hbox spacing="5" border="5">
             <vbox spacing="10" fill="0">
               <label text="Level"/>
-              <knob param="o2level" size="4"/>
+              <knob param="o2level" size="5"/>
               <value param="o2level"/>
             </vbox>
             <vbox fill="0" spacing="30">
