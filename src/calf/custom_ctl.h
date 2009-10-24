@@ -76,10 +76,14 @@ struct CalfVUMeter
     GtkDrawingArea parent;
     CalfVUMeterMode mode;
     float value;
-    int vumeter_hold;
+    float vumeter_hold;
     bool holding;
     long last_hold;
     float last_value;
+    float vumeter_falloff;
+    bool falling;
+    float last_falloff;
+    long last_falltime;
     cairo_surface_t *cache_surface;
     cairo_pattern_t *pat;
 };
@@ -95,6 +99,10 @@ extern void calf_vumeter_set_value(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_value(CalfVUMeter *meter);
 extern void calf_vumeter_set_mode(CalfVUMeter *meter, CalfVUMeterMode mode);
 extern CalfVUMeterMode calf_vumeter_get_mode(CalfVUMeter *meter);
+extern void calf_vumeter_set_hold(CalfVUMeter *meter, float value);
+extern float calf_vumeter_get_hold(CalfVUMeter *meter);
+extern void calf_vumeter_set_falloff(CalfVUMeter *meter, float value);
+extern float calf_vumeter_get_falloff(CalfVUMeter *meter);
 
 #define CALF_TYPE_KNOB          (calf_knob_get_type())
 #define CALF_KNOB(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_KNOB, CalfKnob))
@@ -114,7 +122,7 @@ struct CalfKnob
 struct CalfKnobClass
 {
     GtkRangeClass parent_class;
-    GdkPixbuf *knob_image[4];
+    GdkPixbuf *knob_image[5];
 };
 
 extern GtkWidget *calf_knob_new();

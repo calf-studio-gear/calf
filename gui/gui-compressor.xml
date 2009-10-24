@@ -12,13 +12,13 @@
     <table attach-x="1" attach-y="0" expand-y="0" fill-y="0" expand-x="1" spacing="1" rows="3" cols="2">
         <vbox expand-x="1" fill-x="1"  expand="0" fill="0" attach-x="0" attach-y="0">
             <label param="peak" />
-            <vumeter param="peak" mode="0" hold="2" shrink-y="0" />
+            <vumeter param="peak" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand-y="0" fill-y="0" expand="0" fill="0" attach-x="1" attach-y="0">
             <label param="clip" expand="0" fill="0" />
             <led param="clip" mode="1" expand="0" fill="0" />
         </vbox>
-        <vumeter param="compression" mode="2" hold="2" attach-x="0" attach-y="1" attach-w="2" expand="0" fill="0" expand-x="1" fill-x="1"/>
+        <vumeter param="compression" mode="2" hold="1.5" attach-x="0" attach-y="1" attach-w="2" expand="0" fill="0" expand-x="1" fill-x="1"/>
         <label param="compression" attach-y="2" attach-x="0" expand-x="1" fill-x="1" expand="0" fill="0" />
     </table>
     

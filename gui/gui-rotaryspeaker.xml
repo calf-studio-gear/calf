@@ -17,7 +17,7 @@
     </frame>
     <vbox expand-y="0" attach-x="0" attach-y="0" pad-x="20">
         <label param="mod_depth" fill-x="0" expand-x="0" align-y="1.0" />
-        <knob param="mod_depth" size="4" />
+        <knob param="mod_depth" size="5" />
         <value param="mod_depth" align-y="0.0" />
     </vbox>
     <vbox attach-x="1" attach-y="0" pad-x="8">

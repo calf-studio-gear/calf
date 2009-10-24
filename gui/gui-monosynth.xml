@@ -5,7 +5,7 @@
       <label />
       <vbox expand="0" fill="0">
         <label param="master"/>
-        <knob param="master" size="4"/>
+        <knob param="master" size="5"/>
         <value param="master"/>
       </vbox>
       <label />

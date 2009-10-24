@@ -8,7 +8,7 @@
             </vbox>
             <vbox fill="0" expand="0" spacing="3">
                 <label param="decay_time" fill="0" expand="0"/>
-                <knob param="decay_time" size="4" fill="0" expand="0" />
+                <knob param="decay_time" size="5" fill="0" expand="0" />
                 <value param="decay_time" fill="0" expand="0" />
             </vbox>
             <vbox fill="0" expand="0" spacing="3">
@@ -52,9 +52,9 @@
         <table cols="3" rows="3" attach-w="5">
             <label attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
             <label param="meter_wet" attach-x="0" attach-y="1" expand-y="1" fill-y="0" expand-x="0" fill-x="0" />
-            <vumeter param="meter_wet" hold="2" attach-x="1" attach-y="1" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1"/>
+            <vumeter param="meter_wet" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1"/>
             <label param="meter_out" attach-x="0" attach-y="2" expand-y="1" fill-y="0" expand-x="0" fill-x="0"/>
-            <vumeter param="meter_out" hold="2" attach-x="1" attach-y="2" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1" />
+            <vumeter param="meter_out" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" attach-w="2" expand-y="1" fill-y="0" expand-x="1" fill-x="1" />
             <!--<led param="clip" mode="0" attach-x="2" attach-y="2" expand-x="0" fill-x="0"/>-->
         </table>
         </frame>

@@ -83,7 +83,7 @@ style "clearlooks-default"
 	engine "clearlooks" 
 	{
 		colorize_scrollbar = FALSE
-		reliefstyle        = 1
+		reliefstyle        = 0
 		menubarstyle       = 0      # 0 = flat, 1 = sunken, 2 = flat gradient
 		toolbarstyle       = 1      # 0 = flat, 1 = enable effects
 		animation          = TRUE
@@ -756,10 +756,107 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 
 style "clearlooks-scale"
 {
-	engine "clearlooks"
+	GtkVScale::slider_length 			= 46
+	GtkVScale::slider_width 			= 35
+	GtkHScale::slider_length 			= 46
+	GtkHScale::slider_width 			= 35
+	GtkRange::trough_border				= 0
+	
+	engine "pixmap"
 	{
-		hint  = "scale"
-		style = CLASSIC
+		image
+		{
+			function		= BOX
+			recolorable		= TRUE
+			detail			= "trough"
+			file			= "trough-horizontal.png"
+			border			= { 20, 20, 0, 0 }
+			stretch			= TRUE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= BOX
+			recolorable		= TRUE
+			detail			= "trough"
+			file			= "trough-vertical.png"
+			border			= { 0, 0, 20, 20 }
+			stretch			= TRUE
+			orientation		= VERTICAL
+		}
+
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= NORMAL
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-horiz.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= PRELIGHT
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-horiz-prelight.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= INSENSITIVE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-horiz.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= NORMAL
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-vert.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= PRELIGHT
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-vert-prelight.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= TRUE
+			state			= INSENSITIVE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider-vert.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
 	}
 }
 

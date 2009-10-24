@@ -12,7 +12,7 @@
         </vbox>
         <vbox border="10">
             <label param="freq" />
-            <knob param="freq" size="4" />
+            <knob param="freq" size="5" />
             <value param="freq" />
         </vbox>
         <vbox border="10">

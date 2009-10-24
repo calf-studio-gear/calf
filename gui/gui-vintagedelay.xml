@@ -4,8 +4,8 @@
 		    <table rows="4" cols="2">
 		        <vbox attach-x="0" attach-y="0" attach-h="3" spacing="5" pad-x="20">
 		            <label param="bpm" />
-		            <align attach-x="1" attach-y="0" scale-x="0"><knob param="bpm" size="4" /></align>
-		            <spin attach-x="2" attach-y="0" param="bpm" digits="2"/>
+		            <align attach-x="1" attach-y="0" scale-x="0"><knob param="bpm" size="5" /></align>
+		            <spin attach-x="2" attach-y="0" param="bpm" digits="2" fill="0" expand="0"/>
 		        </vbox>
 		        <label attach-x="1" attach-y="0" param="subdiv" />
 		        <hscale attach-x="2" attach-y="0" param="subdiv" />
@@ -21,10 +21,10 @@
 
     <frame label="Mixing">
     	<hbox>
-		    <vbox fill="0" border="10" spacing="5">
-		        <label param="feedback"  />
-		        <knob param="feedback" size="4"/>
-		        <value param="feedback"/>
+		    <vbox fill="0" expand="0" border="10" spacing="5">
+		        <label param="feedback" fill="0" expand="0"  />
+		        <knob param="feedback" fill="0" expand="0"  size="4"/>
+		        <value param="feedback" fill="0" expand="0" />
 		    </vbox>
 		        
 		    <table expand="0" rows="2" cols="2">

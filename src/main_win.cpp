@@ -292,10 +292,14 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("audio in"),TRUE, TRUE, 0);
         
         label = calf_vumeter_new();
+        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
         gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
         strip->audio_in[0] = label;
         
         label = calf_vumeter_new();
+        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
         gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
         strip->audio_in[1] = label;
         
@@ -312,10 +316,14 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("audio out"),TRUE, TRUE, 0);
         
         label = calf_vumeter_new();
+        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
         gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
         strip->audio_out[0] = label;
         
         label = calf_vumeter_new();
+        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
         gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
         strip->audio_out[1] = label;
         
