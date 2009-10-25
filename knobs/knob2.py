@@ -10,7 +10,7 @@ x, y = WIDTH / 2, HEIGHT / 2
 lwidth = WIDTH / 10
 radius = WIDTH / 2 - lwidth
 radiusplus = radius + lwidth / 2
-radiusminus = radius - lwidth / 2
+radiusminus = radius - lwidth / 1.0
 radiusminus2 = radius - lwidth
 radiusminus3 = radius - lwidth * 3 / 2
 radiusint = (radius - lwidth / 2) * 0.25
@@ -108,7 +108,7 @@ for variant in range(0, 4):
             ctx.arc(x, y, radius, sangle + adelta * led, sangle + adelta * led + spacing)
             ctx.stroke()
 
-        ctx.set_source_rgba(1, 1, 1, 1)
+        ctx.set_source_rgba(0, 0, 0, 1)
         ctx.set_line_width(1)
         mtx = ctx.get_matrix()
         ctx.translate(x + radiusminus * c, y + radiusminus * s)
