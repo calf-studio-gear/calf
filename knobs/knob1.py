@@ -108,8 +108,8 @@ for variant in range(0, 4):
             ctx.arc(x, y, radius, sangle + adelta * led, sangle + adelta * led + spacing)
             ctx.stroke()
 
-        ctx.set_source_rgba(0, 0, 0, 0.8)
-        ctx.set_line_width(1)
+        ctx.set_source_rgba(0, 0, 0, 1)
+        ctx.set_line_width(1.5)
         mtx = ctx.get_matrix()
         ctx.translate(x + radiusminus2 * c, y + radiusminus2 * s)
         ctx.rotate(vangle)
