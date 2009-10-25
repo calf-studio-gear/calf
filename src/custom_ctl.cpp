@@ -602,7 +602,6 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             vu->last_hold = time;
             vu->holding = false;
         }
-        
         if( vu->mode == VU_MONOCHROME_REVERSE ) {
             if(value < vu->last_value) {
                 // value is above peak hold
