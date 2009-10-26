@@ -567,7 +567,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     // get microseconds
     timeval tv;
     gettimeofday(&tv, 0);
-    long time = (long)tv.tv_sec * 1000 * 1000 + (long)tv.tv_usec;
+    long time = tv.tv_sec * 1000 * 1000 + tv.tv_usec;
     
     // limit to 1.f
     float value_orig = vu->value > 1.f ? 1.f : vu->value;
@@ -689,14 +689,9 @@ calf_vumeter_init (CalfVUMeter *self)
     //GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
     widget->requisition.width = 50;
     widget->requisition.height = 18;
-    self->value = 0.5;
-    self->last_hold = (long)0;
-    self->last_value = 0.f;
-    self->holding = false;
     self->cache_surface = NULL;
-    self->vumeter_falloff = 0.f;
-    self->last_falloff = (long)0;
     self->falling = false;
+    self->holding = false;
 }
 
 GtkWidget *
@@ -760,6 +755,16 @@ extern void calf_vumeter_set_mode(CalfVUMeter *meter, CalfVUMeterMode mode)
     if (mode != meter->mode)
     {
         meter->mode = mode;
+        if(mode == VU_MONOCHROME_REVERSE) {
+            meter->value = 1.f;
+            meter->last_value = 1.f;
+        } else {
+            meter->value = 0.f;
+            meter->last_value = 0.f;
+        }
+        meter->vumeter_falloff = 0.f;
+        meter->last_falloff = (long)0;
+        meter->last_hold = (long)0;
         gtk_widget_queue_draw(GTK_WIDGET(meter));
     }
 }

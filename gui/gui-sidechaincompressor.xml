@@ -85,8 +85,8 @@
     
     <if cond="directlink">
       <frame label="Compression">
-        <vbox spacing="20">
-            <vbox>
+        <vbox spacing="12">
+            <vbox spacing="8">
                 <label param="compression"/>
                 <vumeter param="compression" mode="2" hold="1.5" attach-w="2" expand="0" fill="0"/>
             </vbox>
@@ -100,16 +100,12 @@
         <if cond="directlink">
             <frame label="Sidechain">
                 <vbox spacing="0">
-                    <hbox spacing="5" expand="0" fill="0">
-                        <vbox expand="0">
-                            <label param="sc_mode" expand="0" fill="0" />
-                            <combo param="sc_mode" />
-                        </vbox>
-                        <vbox expand="0">
-                             <label param="sc_listen" expand="0" fill="0"/>
-                             <toggle param="sc_listen" size="2"/>
-                        </vbox>
-                    </hbox>
+                    <table rows="2" cols="2" expand="0" fill="0">
+                        <label attach-x="0" attach-y="0" param="sc_mode" expand-y="0" fill-y="0" />
+                        <combo attach-x="0" attach-y="1" param="sc_mode" fill-y="0" expand-y="0"/>
+                        <label attach-x="1" attach-y="0" param="sc_listen" expand-y="0" fill-y="0" />
+                        <toggle attach-x="1" attach-y="1" param="sc_listen" size="2" expand-y="0" fill-y="0"/>
+                    </table>
                     <line-graph refresh="1" width="235" height="100" param="f1_freq" expand="1" fill="1" />
                 </vbox>
             </frame>
@@ -117,10 +113,10 @@
         <hbox spacing="5">
             <frame label="Filter 1">
                 <vbox>
-                    <hbox spacing="5">
-                        <label param="f1_active" expand="1" fill="1"/>
-                        <led param="f1_active" mode="7" expand="1" fill="1"/>
-                    </hbox>
+                    <table rows="1" cols="2">
+                        <label attach-x="0" attach-y="0" param="f1_active" expand-x="1" fill-x="1"/>
+                        <led attach-x="1" attach-y="0" param="f1_active" mode="7" fill-x="0" expand-y="0" fill-y="0"/>
+                    </table>
                     
                     <hbox homogeneous="1">
                         <vbox>
@@ -138,10 +134,10 @@
             </frame>
             <frame label="Filter 2">
                 <vbox>
-                    <hbox spacing="5">
-                        <label param="f2_active" expand="1" fill="1"/>
-                        <led param="f2_active" mode="7" expand="1" fill="1"/>
-                    </hbox>
+                    <table rows="1" cols="2">
+                        <label attach-x="0" attach-y="0" param="f2_active" expand-x="1" fill-x="1"/>
+                        <led attach-x="1" attach-y="0" param="f2_active" mode="7" fill-x="0" expand-y="0" fill-y="0"/>
+                    </table>
                     
                     <hbox homogeneous="1">
                         <vbox>
