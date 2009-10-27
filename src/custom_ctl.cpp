@@ -1129,7 +1129,8 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfToggle *self = CALF_TOGGLE(widget);
     GdkWindow *window = widget->window;
 
-    int ox = widget->allocation.x, oy = widget->allocation.y;
+    int ox = widget->allocation.x + widget->allocation.width / 2 - self->size * 15;
+    int oy = widget->allocation.y + widget->allocation.height / 2 - self->size * 10;
     int width = self->size * 30, height = self->size * 20;
 
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1], 0, height * gtk_range_get_value(GTK_RANGE(widget)), ox, oy, width, height, GDK_RGB_DITHER_NORMAL, 0, 0);

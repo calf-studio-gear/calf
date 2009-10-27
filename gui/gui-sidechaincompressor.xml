@@ -83,17 +83,18 @@
         </frame>
     </vbox>
     
-    <if cond="directlink">
+    
       <frame label="Compression">
         <vbox spacing="12">
             <vbox spacing="8">
                 <label param="compression"/>
                 <vumeter param="compression" mode="2" hold="1.5" attach-w="2" expand="0" fill="0"/>
             </vbox>
-            <line-graph refresh="1" width="255" height="255" param="compression" square="1" expand="1" fill="1"/>
+            <if cond="directlink">
+                <line-graph refresh="1" width="255" height="255" param="compression" square="1" expand="1" fill="1"/>
+            </if>
         </vbox>
       </frame>
-    </if>
     
     <vbox spacing="5">
         
