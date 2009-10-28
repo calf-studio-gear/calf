@@ -1,0 +1,92 @@
+<hbox spacing="8">
+    <vbox spacing="8">
+        <table cols="4" rows="4" fill="0" expand="0">
+            <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
+            <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+            
+            <label param="detected" attach-x="1" attach-y="0" />
+            <vumeter param="detected" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" />
+            <vumeter param="compression" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" />
+            <label param="compression" attach-x="1" attach-y="3" />
+            
+            <label param="detected_led" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />
+            <led param="detected_led" attach-x="2" attach-y="1" expand-x="0" fill-x="0" />
+            <led param="clip_out" mode="6" attach-x="2" attach-y="2" expand-x="0" fill-x="0" />
+            <label param="clip_out" attach-x="2" attach-y="3" expand-x="0" fill-x="0" />
+            
+            <label param="sc_listen" attach-x="3" attach-y="0" expand-x="0" fill-x="0" />
+            <toggle param="sc_listen" attach-x="3" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        </table>
+        <frame label="Deesser">
+            <vbox spacing="10">
+                <hbox spacing="15">
+                    <align><vbox fill="0">
+                        <label param="laxity" fill="0" expand="0" />
+                        <knob param="laxity" fill="0" expand="0" />
+                        <value param="laxity" fill="0" expand="0" />
+                    </vbox></align>
+                    <vbox>
+                        <label param="threshold" />
+                        <knob param="threshold" size="5" />
+                        <value param="threshold" />
+                    </vbox>
+                    <vbox>
+                        <label param="ratio" />
+                        <knob param="ratio" size="5" />
+                        <value param="ratio" />
+                    </vbox>
+                    <align><vbox fill="0">
+                        <label param="makeup" fill="0" expand="0" />
+                        <knob param="makeup" fill="0" expand="0" />
+                        <value param="makeup" fill="0" expand="0" />
+                    </vbox></align>
+                </hbox>
+                <hbox spacing="20">
+                    <vbox>
+                        <label param="detection" />
+                        <combo param="detection" />
+                    </vbox>
+                    <vbox>
+                        <label param="mode" />
+                        <combo param="mode" />
+                    </vbox>
+                </hbox>
+            </vbox>
+        </frame>
+    </vbox>
+    <frame label="Sidechain">
+        <vbox spacing="5">
+            <if cond="directlink">
+                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="200" />
+            </if>
+            <hbox homogeneous="1" fill="0" expand="0">
+                <vbox fill="0" expand="0">
+                    <label param="f1_freq" />
+                    <knob param="f1_freq" />
+                    <value param="f1_freq" />
+                </vbox>
+                <vbox fill="0" expand="0">
+                    <label param="f1_level" />
+                    <knob param="f1_level" />
+                    <value param="f1_level" />
+                </vbox>
+                <vbox fill="0" expand="0">
+                    <label param="f2_freq" />
+                    <knob param="f2_freq" />
+                    <value param="f2_freq" />
+                </vbox>
+                <vbox fill="0" expand="0">
+                    <label param="f2_level" />
+                    <knob param="f2_level" />
+                    <value param="f2_level" />
+                </vbox>
+                <vbox fill="0" expand="0">
+                    <label param="f2_q" />
+                    <knob param="f2_q" />
+                    <value param="f2_q" />
+                </vbox>
+            </hbox>
+        </vbox>
+    </frame>
+</hbox>
+                
