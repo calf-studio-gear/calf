@@ -9,10 +9,10 @@
             <vumeter param="compression" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" />
             <label param="compression" attach-x="1" attach-y="3" />
             
-            <label param="detected_led" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />
-            <led param="detected_led" attach-x="2" attach-y="1" expand-x="0" fill-x="0" />
-            <led param="clip_out" mode="6" attach-x="2" attach-y="2" expand-x="0" fill-x="0" />
-            <label param="clip_out" attach-x="2" attach-y="3" expand-x="0" fill-x="0" />
+            <label param="clip_out" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />
+            <led param="clip_out" mode="6" attach-x="2" attach-y="1" expand-x="0" fill-x="0" />
+            <led param="detected_led" attach-x="2" attach-y="2" expand-x="0" fill-x="0" />
+            <label param="detected_led" attach-x="2" attach-y="3" expand-x="0" fill-x="0" />
             
             <label param="sc_listen" attach-x="3" attach-y="0" expand-x="0" fill-x="0" />
             <toggle param="sc_listen" attach-x="3" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />

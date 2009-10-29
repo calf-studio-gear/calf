@@ -106,6 +106,14 @@ struct led_param_control: public param_control
     virtual void set();
 };
 
+/// Display-only control: tube
+struct tube_param_control: public param_control
+{
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set();
+};
+
 /// Horizontal slider
 struct hscale_param_control: public param_control
 {

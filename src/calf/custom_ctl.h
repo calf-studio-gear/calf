@@ -140,6 +140,8 @@ struct CalfToggle
 {
     GtkRange parent;
     int size;
+    int width;
+    int height;
 };
 
 struct CalfToggleClass
@@ -152,6 +154,36 @@ extern GtkWidget *calf_toggle_new();
 extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
 
 extern GType calf_toggle_get_type();
+
+#define CALF_TYPE_TUBE           (calf_tube_get_type())
+#define CALF_TUBE(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TUBE, CalfTube))
+#define CALF_IS_TUBE(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TUBE))
+#define CALF_TUBE_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_TUBE, CalfTubeClass))
+#define CALF_IS_TUBE_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_TUBE))
+#define CALF_TUBE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_TUBE, CalfTubeClass))
+
+struct CalfTube
+{
+    GtkDrawingArea parent;
+    int size;
+    int direction;
+    float value;
+    float last_value;
+    float tube_falloff;
+    bool falling;
+    float last_falloff;
+    long last_falltime;
+    cairo_surface_t *cache_surface;
+};
+
+struct CalfTubeClass
+{
+    GtkDrawingAreaClass parent_class;
+};
+
+extern GtkWidget *calf_tube_new();
+extern GType calf_tube_get_type();
+extern void calf_tube_set_value(CalfTube *tube, float value);
 
 G_END_DECLS
 
