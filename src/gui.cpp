@@ -187,6 +187,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new curve_param_control;
     if (!strcmp(element, "led"))
         return new led_param_control;
+    if (!strcmp(element, "tube"))
+        return new tube_param_control;
     if (!strcmp(element, "entry"))
         return new entry_param_control;
     if (!strcmp(element, "filechooser"))

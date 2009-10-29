@@ -347,6 +347,28 @@ void led_param_control::set()
         update_label();
 }
 
+// tube
+
+GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui, param_no = _param_no;
+    // parameter_properties &props = get_props();
+    widget = calf_tube_new ();
+    gtk_widget_set_name(GTK_WIDGET(widget), "calf-tube");
+    CALF_TUBE(widget)->size = get_int("size", 2);
+    CALF_TUBE(widget)->direction = get_int("direction", 2);
+    return widget;
+}
+
+void tube_param_control::set()
+{
+    _GUARD_CHANGE_
+    // parameter_properties &props = get_props();
+    calf_tube_set_value (CALF_TUBE (widget), gui->plugin->get_param_value(param_no));
+    if (label)
+        update_label();
+}
+
 // check box
 
 GtkWidget *check_param_control::create(plugin_gui *_gui, int _param_no)
