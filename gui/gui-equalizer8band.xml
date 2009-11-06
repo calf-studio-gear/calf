@@ -53,7 +53,7 @@
                 </vbox>
                 <vbox attach-x="0" attach-y="1">
                     <label param="ls_level" />
-                    <knob param="ls_level" />
+                    <knob param="ls_level" type="1" />
                     <value param="ls_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="2">
@@ -87,7 +87,7 @@
                 <value param="p1_freq" />
             </vbox>
             <vbox attach-x="1" attach-y="2">
-                <knob param="p1_level" />
+                <knob param="p1_level" type="1" />
                 <value param="p1_level" />
             </vbox>
             <vbox attach-x="1" attach-y="3">
@@ -102,7 +102,7 @@
                 <value param="p2_freq" />
             </vbox>
             <vbox attach-x="2" attach-y="2">
-                <knob param="p2_level" />
+                <knob param="p2_level" type="1" />
                 <value param="p2_level" />
             </vbox>
             <vbox attach-x="2" attach-y="3">
@@ -117,7 +117,7 @@
                 <value param="p3_freq" />
             </vbox>
             <vbox attach-x="3" attach-y="2">
-                <knob param="p3_level" />
+                <knob param="p3_level" type="1" />
                 <value param="p3_level" />
             </vbox>
             <vbox attach-x="3" attach-y="3">
@@ -132,7 +132,7 @@
                 <value param="p4_freq" />
             </vbox>
             <vbox attach-x="4" attach-y="2">
-                <knob param="p4_level" />
+                <knob param="p4_level" type="1" />
                 <value param="p4_level" />
             </vbox>
             <vbox attach-x="4" attach-y="3">
@@ -194,7 +194,7 @@
                 </vbox>
                 <vbox attach-x="0" attach-y="1">
                     <label param="hs_level" />
-                    <knob param="hs_level" />
+                    <knob param="hs_level" type="1" />
                     <value param="hs_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="2">

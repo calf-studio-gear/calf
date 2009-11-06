@@ -426,218 +426,6 @@ float multichorus_audio_module::freq_gain(int subindex, float freq, float srate)
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-compressor_audio_module::compressor_audio_module()
-{
-    is_active = false;
-    srate = 0;
-    last_generation = 0;
-}
-
-void compressor_audio_module::activate()
-{
-    is_active = true;
-    linSlope = 0.f;
-    peak = 0.f;
-    clip = 0.f;
-}
-
-void compressor_audio_module::deactivate()
-{
-    is_active = false;
-}
-
-void compressor_audio_module::set_sample_rate(uint32_t sr)
-{
-    srate = sr;
-    awL.set(sr);
-    awR.set(sr);
-}
-
-bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
-{ 
-    if (!is_active)
-        return false;
-    if (subindex > 1) // 1
-        return false;
-    for (int i = 0; i < points; i++)
-    {
-        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
-        float output = output_level(input);
-        if (subindex == 0)
-            data[i] = dB_grid(input);
-        else
-            data[i] = dB_grid(output); 
-    }
-    if (subindex == (*params[param_bypass] > 0.5f ? 1 : 0))
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
-    else {
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        context->set_line_width(2);
-    }
-    return true;
-}
-
-bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
-{
-    if (!is_active)
-        return false;
-    if (!subindex)
-    {
-        bool rms = *params[param_detection] == 0;
-        float det = rms ? sqrt(detected) : detected;
-        x = 0.5 + 0.5 * dB_grid(det);
-        y = dB_grid(*params[param_bypass] > 0.5f ? det : output_level(det));
-        return *params[param_bypass] > 0.5f ? false : true;
-    }
-    return false;
-}
-
-bool compressor_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
-{
-    bool tmp;
-    vertical = (subindex & 1) != 0;
-    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
-    if (result && vertical) {
-        if ((subindex & 4) && !legend.empty()) {
-            legend = "";
-        }
-        else {
-            size_t pos = legend.find(" dB");
-            if (pos != std::string::npos)
-                legend.erase(pos);
-        }
-        pos = 0.5 + 0.5 * pos;
-    }
-    return result;
-}
-
-// In case of doubt: this function is written by Thor. I just moved it to this file, damaging
-// the output of "git annotate" in the process.
-uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
-{
-    bool bypass = *params[param_bypass] > 0.5f;
-    
-    if(bypass) {
-        numsamples += offset;
-        while(offset < numsamples) {
-            outs[0][offset] = ins[0][offset];
-            outs[1][offset] = ins[1][offset];
-            ++offset;
-        }
-
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = 1.f;
-        }
-
-        if(params[param_clip] != NULL) {
-            *params[param_clip] = 0.f;
-        }
-
-        if(params[param_peak] != NULL) {
-            *params[param_peak] = 0.f;
-        }
-  
-        return inputs_mask;
-    }
-
-    bool rms = *params[param_detection] == 0;
-    bool average = *params[param_stereo_link] == 0;
-    int aweighting = fastf2i_drm(*params[param_aweighting]);
-    float linThreshold = *params[param_threshold];
-    ratio = *params[param_ratio];
-    float attack = *params[param_attack];
-    float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
-    float release = *params[param_release];
-    float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
-    makeup = *params[param_makeup];
-    knee = *params[param_knee];
-
-    float linKneeSqrt = sqrt(knee);
-    linKneeStart = linThreshold / linKneeSqrt;
-    adjKneeStart = linKneeStart*linKneeStart;
-    float linKneeStop = linThreshold * linKneeSqrt;
-    
-    threshold = log(linThreshold);
-    kneeStart = log(linKneeStart);
-    kneeStop = log(linKneeStop);
-    compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
-    
-    if (aweighting >= 2)
-    {
-        bpL.set_highshelf_rbj(5000, 0.707, 10 << (aweighting - 2), srate);
-        bpR.copy_coeffs(bpL);
-        bpL.sanitize();
-        bpR.sanitize();
-    }
-
-    numsamples += offset;
-    
-    float compression = 1.f;
-    peak = 0.f;
-    clip -= std::min(clip, numsamples);
-
-    while(offset < numsamples) {
-        float left = ins[0][offset] * *params[param_input];
-        float right = ins[1][offset] * *params[param_input];
-        
-        if(aweighting == 1) {
-            left = awL.process(left);
-            right = awR.process(right);
-        }
-        else if(aweighting >= 2) {
-            left = bpL.process(left);
-            right = bpR.process(right);
-        }
-        
-        float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
-        if(rms) absample *= absample;
-        
-        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
-        
-        float gain = 1.f;
-
-        if(linSlope > 0.f) {
-            gain = output_gain(linSlope, rms);
-        }
-
-        compression = gain;
-        gain *= makeup;
-
-        float outL = ins[0][offset] * gain * *params[param_input];
-        float outR = ins[1][offset] * gain * *params[param_input];
-        
-        outs[0][offset] = outL;
-        outs[1][offset] = outR;
-        
-        ++offset;
-        
-        float maxLR = std::max(fabs(outL), fabs(outR));
-        if(maxLR > peak)
-            peak = maxLR;
-        
-        if(peak > 1.f) clip = srate >> 3; /* blink clip LED for 125 ms */
-    }
-    
-    detected = linSlope;
-    
-    if(params[param_compression] != NULL) {
-        *params[param_compression] = compression;
-    }
-
-    if(params[param_clip] != NULL) {
-        *params[param_clip] = clip;
-    }
-
-    if(params[param_peak] != NULL) {
-        *params[param_peak] = peak;
-    }
-
-    return inputs_mask;
-}
-
-
 /// Multibandcompressor by Markus Schmidt
 ///
 /// This module splits the signal in four different bands
@@ -1049,6 +837,161 @@ int multibandcompressor_audio_module::get_changed_offsets(int index, int generat
             break;
     }
     return 0;
+}
+
+/// Compressor originally by Thor
+///
+/// This module provides Thor's original compressor without any sidechain or weighting
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+compressor_audio_module::compressor_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    last_generation = 0;
+}
+
+void compressor_audio_module::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    compressor.activate();
+    params_changed();
+    meter_in = 0.f;
+    meter_out = 0.f;
+    clip_in = 0.f;
+    clip_out = 0.f;
+}
+void compressor_audio_module::deactivate()
+{
+    is_active = false;
+    compressor.deactivate();
+}
+
+void compressor_audio_module::params_changed()
+{
+    compressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f);
+}
+
+void compressor_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    compressor.set_sample_rate(srate);
+}
+
+uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in   = 0.f;
+        meter_out  = 0.f;
+    } else {
+        // process
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out,  numsamples);
+        
+        while(offset < numsamples) {
+            // cycle through samples
+            float outL = 0.f;
+            float outR = 0.f;
+            float inL = ins[0][offset];
+            float inR = ins[1][offset];
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            
+            float leftAC = inL;
+            float rightAC = inR;
+            float leftSC = inL;
+            float rightSC = inR;
+            
+            compressor.process(leftAC, rightAC, leftSC, rightSC);
+            
+            outL = leftAC;
+            outR = rightAC;
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            // clip LED's
+            if(std::max(fabs(inL), fabs(inR)) > 1.f) {
+                clip_in   = srate >> 3;
+            }
+            if(std::max(fabs(outL), fabs(outR)) > 1.f) {
+                clip_out  = srate >> 3;
+            }
+            // rise up out meter
+            meter_in = std::max(fabs(inL), fabs(inR));;
+            meter_out = std::max(fabs(outL), fabs(outR));;
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    // draw strip meter
+    if(bypass > 0.5f) {
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = 1.0f;
+        }
+    } else {
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = compressor.get_comp_level();
+        }
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    return compressor.get_graph(subindex, data, points, context);
+}
+
+bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    return compressor.get_dot(subindex, x, y, size, context);
+}
+
+bool compressor_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    return compressor.get_gridline(subindex, pos, vertical, legend, context);
+}
+
+int compressor_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+{
+    if (!is_active)
+        return false;
+    return compressor.get_changed_offsets(generation, subindex_graph, subindex_dot, subindex_gridline);
 }
 
 /// Sidecain Compressor by Markus Schmidt
@@ -1544,7 +1487,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
             
-            if(std::max(fabs(leftSC), fabs(rightSC)) > 0.1) {
+            if(std::max(fabs(leftSC), fabs(rightSC)) > *params[param_threshold]) {
                 detected_led   = srate >> 3;
             }
             if(std::max(fabs(leftAC), fabs(rightAC)) > 1.f) {
@@ -1641,10 +1584,10 @@ int deesser_audio_module::get_changed_offsets(int index, int generation, int &su
     return false;
 }
 
-/// Gain reduction module implemented by Markus Schmidt
-/// Nearly all functions of this module are originally written
+/// Gain reduction module by Thor
+/// All functions of this module are originally written
 /// by Thor, while some features have been stripped (mainly stereo linking
-/// and frequency correction as implemented in his Compressor above)
+/// and frequency correction as implemented in Sidechain Compressor above)
 /// To save some CPU.
 ////////////////////////////////////////////////////////////////////////////////
 gain_reduction_audio_module::gain_reduction_audio_module()
@@ -2949,4 +2892,564 @@ int equalizer5band_audio_module::get_changed_offsets(int index, int generation, 
         return last_generation;
     }
     return false;
+}
+
+/// Saturator Band by Markus Schmidt
+///
+/// This module is based on Krzysztof's filters and distortion routine.
+/// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+saturator_audio_module::saturator_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_in    = 0.f;
+    clip_out   = 0.f;
+    meter_in  = 0.f;
+    meter_out = 0.f;
+    meter_drive = 0.f;
+}
+
+void saturator_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+}
+void saturator_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void saturator_audio_module::params_changed()
+{
+    // set the params of all filters
+    if(*params[param_lp_pre_freq] != lp_pre_freq_old) {
+        lp[0][0].set_lp_rbj(*params[param_lp_pre_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            lp[1][0].copy_coeffs(lp[0][0]);
+        lp[0][1].copy_coeffs(lp[0][0]);
+        if(in_count > 1 && out_count > 1)
+            lp[1][1].copy_coeffs(lp[0][0]);
+        lp_pre_freq_old = *params[param_lp_pre_freq];
+    }
+    if(*params[param_hp_pre_freq] != hp_pre_freq_old) {
+        hp[0][0].set_hp_rbj(*params[param_hp_pre_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            hp[1][0].copy_coeffs(hp[0][0]);
+        hp[0][1].copy_coeffs(hp[0][0]);
+        if(in_count > 1 && out_count > 1)
+            hp[1][1].copy_coeffs(hp[0][0]);
+        hp_pre_freq_old = *params[param_hp_pre_freq];
+    }
+    if(*params[param_lp_post_freq] != lp_post_freq_old) {
+        lp[0][2].set_lp_rbj(*params[param_lp_post_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            lp[1][2].copy_coeffs(lp[0][2]);
+        lp[0][3].copy_coeffs(lp[0][2]);
+        if(in_count > 1 && out_count > 1)
+            lp[1][3].copy_coeffs(lp[0][2]);
+        lp_post_freq_old = *params[param_lp_post_freq];
+    }
+    if(*params[param_hp_post_freq] != hp_post_freq_old) {
+        hp[0][2].set_hp_rbj(*params[param_hp_post_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            hp[1][2].copy_coeffs(hp[0][2]);
+        hp[0][3].copy_coeffs(hp[0][2]);
+        if(in_count > 1 && out_count > 1)
+            hp[1][3].copy_coeffs(hp[0][2]);
+        hp_post_freq_old = *params[param_hp_post_freq];
+    }
+    if(*params[param_p_freq] != p_freq_old or *params[param_p_level] != p_level_old or *params[param_p_q] != p_q_old) {
+        p[0].set_peakeq_rbj((float)*params[param_p_freq], (float)*params[param_p_q], (float)*params[param_p_level], (float)srate);
+        if(in_count > 1 && out_count > 1)
+            p[1].copy_coeffs(p[0]);
+        p_freq_old = *params[param_p_freq];
+        p_level_old = *params[param_p_level];
+        p_q_old = *params[param_p_q];
+    }
+    // set distortion
+    dist[0].set_params(*params[param_blend], *params[param_drive]);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_params(*params[param_blend], *params[param_drive]);
+}
+
+void saturator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    dist[0].set_sample_rate(sr);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_sample_rate(sr);
+}
+
+uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            if(in_count > 1 && out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[1][offset];
+            } else if(in_count > 1) {
+                outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
+            } else if(out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[0][offset];
+            } else {
+                outs[0][offset] = ins[0][offset];
+            }
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in  = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+    } else {
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out, numsamples);
+        meter_in = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float out[2], in[2] = {0.f, 0.f};
+            float maxIn, maxOut, maxDrive = 0.f;
+            int c = 0;
+            
+            if(in_count > 1 && out_count > 1) {
+                // stereo in/stereo out
+                // handle full stereo
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = ins[1][offset];
+                in[1] *= *params[param_level_in];
+                c = 2;
+            } else {
+                // in and/or out mono
+                // handle mono
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = in[0];
+                c = 1;
+            }
+            
+            float proc[2];
+            proc[0] = in[0];
+            proc[1] = in[1];
+            
+            for (int i = 0; i < c; ++i) {
+                // all pre filters in chain
+                proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
+                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+                
+                // saturate
+                proc[i] = dist[i].process(proc[i]);
+                
+                // tone control
+                proc[i] = p[i].process(proc[i]);
+
+                // all post filters in chain
+                proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
+                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+            }
+            
+            if(in_count > 1 && out_count > 1) {
+                // full stereo
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = ((proc[1] * *params[param_mix]) + in[1] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[1][offset] = out[1];
+                maxIn = std::max(fabs(in[0]), fabs(in[1]));
+                maxOut = std::max(fabs(out[0]), fabs(out[1]));
+                maxDrive = std::max(dist[0].get_distortion_level(), dist[1].get_distortion_level());
+            } else if(out_count > 1) {
+                // mono -> pseudo stereo
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = out[0];
+                outs[1][offset] = out[1];
+                maxOut = fabs(out[0]);
+                maxIn = fabs(in[0]);
+                maxDrive = dist[0].get_distortion_level();
+            } else {
+                // stereo -> mono
+                // or full mono
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                maxIn = fabs(in[0]);
+                maxOut = fabs(out[0]);
+                maxDrive = dist[0].get_distortion_level();
+            }
+            
+            if(maxIn > 1.f) {
+                clip_in  = srate >> 3;
+            }
+            if(maxOut > 1.f) {
+                clip_out = srate >> 3;
+            }
+            // set up in / out meters
+            if(maxIn > meter_in) {
+                meter_in = maxIn;
+            }
+            if(maxOut > meter_out) {
+                meter_out = maxOut;
+            }
+            if(maxDrive > meter_drive) {
+                meter_drive = maxDrive;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        lp[0][0].sanitize();
+        lp[1][0].sanitize();
+        lp[0][1].sanitize();
+        lp[1][1].sanitize();
+        lp[0][2].sanitize();
+        lp[1][2].sanitize();
+        lp[0][3].sanitize();
+        lp[1][3].sanitize();
+        hp[0][0].sanitize();
+        hp[1][0].sanitize();
+        hp[0][1].sanitize();
+        hp[1][1].sanitize();
+        hp[0][2].sanitize();
+        hp[1][2].sanitize();
+        hp[0][3].sanitize();
+        hp[1][3].sanitize();
+        p[0].sanitize();
+        p[1].sanitize();
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    if(params[param_meter_drive] != NULL) {
+        *params[param_meter_drive] = meter_drive;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+/// Enhancer Band by Markus Schmidt
+///
+/// This module is based on Krzysztof's filters and distortion routine.
+/// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+enhancer_audio_module::enhancer_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_in    = 0.f;
+    clip_out   = 0.f;
+    meter_in  = 0.f;
+    meter_out = 0.f;
+    meter_drive = 0.f;
+}
+
+void enhancer_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+}
+void enhancer_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void enhancer_audio_module::params_changed()
+{
+    // set the params of all filters
+    if(*params[param_freq] != freq_old) {
+        hp[0][0].set_hp_rbj(*params[param_freq], 0.707, (float)srate);
+        hp[0][1].copy_coeffs(hp[0][0]);
+        hp[0][2].copy_coeffs(hp[0][0]);
+        hp[0][3].copy_coeffs(hp[0][0]);
+        if(in_count > 1 && out_count > 1) {
+            hp[1][0].copy_coeffs(hp[0][0]);
+            hp[1][1].copy_coeffs(hp[0][0]);
+            hp[1][2].copy_coeffs(hp[0][0]);
+            hp[1][3].copy_coeffs(hp[0][0]);
+        }
+        freq_old = *params[param_freq];
+    }
+    // set distortion
+    dist[0].set_params(*params[param_blend], *params[param_drive]);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_params(*params[param_blend], *params[param_drive]);
+}
+
+void enhancer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    dist[0].set_sample_rate(sr);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_sample_rate(sr);
+}
+
+uint32_t enhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            if(in_count > 1 && out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[1][offset];
+            } else if(in_count > 1) {
+                outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
+            } else if(out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[0][offset];
+            } else {
+                outs[0][offset] = ins[0][offset];
+            }
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in  = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+    } else {
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out, numsamples);
+        meter_in = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float out[2], in[2] = {0.f, 0.f};
+            float maxIn, maxOut, maxDrive = 0.f;
+            int c = 0;
+            
+            if(in_count > 1 && out_count > 1) {
+                // stereo in/stereo out
+                // handle full stereo
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = ins[1][offset];
+                in[1] *= *params[param_level_in];
+                c = 2;
+            } else {
+                // in and/or out mono
+                // handle mono
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = in[0];
+                c = 1;
+            }
+            
+            float proc[2];
+            proc[0] = in[0];
+            proc[1] = in[1];
+            
+            for (int i = 0; i < c; ++i) {
+                // all pre filters in chain
+                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+                
+                // saturate
+                proc[i] = dist[i].process(proc[i]);
+
+                // all post filters in chain
+                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+            }
+            
+            if(in_count > 1 && out_count > 1) {
+                // full stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                if(*params[param_listen] > 0.f)
+                    out[1] = proc[1] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[1] = (proc[1] * *params[param_amount] + in[1]) * *params[param_level_out];
+                outs[1][offset] = out[1];
+                maxIn = std::max(fabs(in[0]), fabs(in[1]));
+                maxOut = std::max(fabs(out[0]), fabs(out[1]));
+                maxDrive = std::max(dist[0].get_distortion_level() * *params[param_amount],
+                                            dist[1].get_distortion_level() * *params[param_amount]);
+            } else if(out_count > 1) {
+                // mono -> pseudo stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = out[0];
+                outs[1][offset] = out[1];
+                maxOut = fabs(out[0]);
+                maxIn = fabs(in[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            } else {
+                // stereo -> mono
+                // or full mono
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                maxIn = fabs(in[0]);
+                maxOut = fabs(out[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            }
+            
+            if(maxIn > 1.f) {
+                clip_in  = srate >> 3;
+            }
+            if(maxOut > 1.f) {
+                clip_out = srate >> 3;
+            }
+            // set up in / out meters
+            if(maxIn > meter_in) {
+                meter_in = maxIn;
+            }
+            if(maxOut > meter_out) {
+                meter_out = maxOut;
+            }
+            if(maxDrive > meter_drive) {
+                meter_drive = maxDrive;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        hp[0][0].sanitize();
+        hp[1][0].sanitize();
+        hp[0][1].sanitize();
+        hp[1][1].sanitize();
+        hp[0][2].sanitize();
+        hp[1][2].sanitize();
+        hp[0][3].sanitize();
+        hp[1][3].sanitize();
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    if(params[param_meter_drive] != NULL) {
+        *params[param_meter_drive] = meter_drive;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+/// Distortion Module by Krzysztof Foltman
+///
+/// This module provides a blendable saturation stage
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+distortion_audio_module::distortion_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    meter = 0.f;
+}
+
+void distortion_audio_module::activate()
+{
+    is_active = true;
+    set_params(0.f, 0.f);
+}
+void distortion_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void distortion_audio_module::set_params(float blend, float drive)
+{
+    // set distortion coeffs
+    // NOTICE!! This routine is implemented for testing purposes only!
+    // It is taken from TAP Plugins and will act as a placeholder until
+    // Krzysztof's distrotion routine is ready!
+    if ((drive_old != drive) || (blend_old != blend)) {
+        rdrive = 12.0f / drive;
+        rbdr = rdrive / (10.5f - blend) * 780.0f / 33.0f;
+        kpa = D(2.0f * (rdrive*rdrive) - 1.0f) + 1.0f;
+        kpb = (2.0f - kpa) / 2.0f;
+        ap = ((rdrive*rdrive) - kpa + 1.0f) / 2.0f;
+        kc = kpa / D(2.0f * D(2.0f * (rdrive*rdrive) - 1.0f) - 2.0f * rdrive*rdrive);
+
+        srct = (0.1f * srate) / (0.1f * srate + 1.0f);
+        sq = kc*kc + 1.0f;
+        knb = -1.0f * rbdr / D(sq);
+        kna = 2.0f * kc * rbdr / D(sq);
+        an = rbdr*rbdr / sq;
+        imr = 2.0f * knb + D(2.0f * kna + 4.0f * an - 1.0f);
+        pwrq = 2.0f / (imr + 1.0f);
+        
+        drive_old = drive;
+        blend_old = blend;
+    }
+}
+
+void distortion_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+float distortion_audio_module::process(float(in))
+{
+    // NOTICE!! This routine is implemented for testing purposes only!
+    // It is taken from TAP Plugins and will act as a placeholder until
+    // Krzysztof's distrotion routine is ready!
+    meter = 0.f;
+    float out = 0.f;
+    float proc = in;
+    float med;
+    if (proc >= 0.0f) {
+        med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
+    } else {
+        med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+    }
+    proc = srct * (med - prev_med + prev_out);
+    prev_med = M(med);
+    prev_out = M(proc);
+    out = proc;
+    meter = proc;
+    return out;
+}
+
+float distortion_audio_module::get_distortion_level()
+{
+    return meter;
 }

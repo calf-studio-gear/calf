@@ -127,7 +127,7 @@
                         </vbox>
                         <vbox>
                             <label param="f1_level" />
-                            <knob param="f1_level" size="2" />
+                            <knob param="f1_level" type="1" size="2" />
                             <value param="f1_level" />
                         </vbox>
                     </hbox>
@@ -148,7 +148,7 @@
                         </vbox>
                         <vbox>
                             <label param="f2_level" />
-                            <knob param="f2_level" size="2" />
+                            <knob param="f2_level" type="1" size="2" />
                             <value param="f2_level" />
                         </vbox>
                     </hbox>

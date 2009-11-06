@@ -156,7 +156,7 @@ style "clearlooks-button"
 		{
 			function		= BOX
 			detail			= "buttondefault"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "button_normal.png"
 			border			= {6, 24, 6, 6}
 			stretch			= TRUE
@@ -165,7 +165,7 @@ style "clearlooks-button"
 		{
 			function		= BOX
 			state			= PRELIGHT
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "button_prelight.png"
 			border			= {6, 24, 6, 6}
 			stretch			= TRUE
@@ -230,7 +230,7 @@ style "clearlooks-button-norm"
 		image
 		{
 			function		= VLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "vline.png"
 			border			= { 1, 1, 0, 0 }
 			stretch			= TRUE
@@ -238,7 +238,7 @@ style "clearlooks-button-norm"
 		image
 		{
 			function		= HLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "hline.png"
 			border			= { 0, 0, 1, 1	}
 			stretch			= TRUE
@@ -277,7 +277,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			file			= "tab_bottom_normal.png"
 			border			= { 24, 24, 0, 19 }
@@ -287,7 +287,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			file			= "tab_top_normal.png"
 			border			= { 24, 24, 19, 0 }
@@ -297,7 +297,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			file			= "tab_left_normal.png"
 			border			= { 19, 0, 24, 24 }
@@ -307,7 +307,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			file			= "tab_right_normal.png"
 			border			= { 0, 19, 24, 24 }
@@ -317,7 +317,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "tab_top_prelight.png"
 			border			= { 24, 24, 19, 0 }
 			stretch			= TRUE
@@ -326,7 +326,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "tab_bottom_prelight.png"
 			border			= { 24, 24, 0, 19 }
 			stretch			= TRUE
@@ -335,7 +335,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "tab_left_prelight.png"
 			border			= { 19, 0, 24, 24 }
 			stretch			= TRUE
@@ -344,7 +344,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= EXTENSION
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "tab_right_prelight.png"
 			border			= { 0, 19, 24, 24 }
 			stretch			= TRUE
@@ -354,7 +354,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= BOX_GAP
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "notebook_top.png"
 			border			= { 21, 21, 21, 21 }
 			stretch			= TRUE
@@ -363,7 +363,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= BOX_GAP
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "notebook_bottom.png"
 			border			= { 21, 21, 21, 21 }
 			stretch			= TRUE
@@ -372,7 +372,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= BOX_GAP
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "notebook_left.png"
 			border			= { 21, 21, 21, 21 }
 			stretch			= TRUE
@@ -381,7 +381,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= BOX_GAP
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "notebook_right.png"
 			border			= { 21, 21, 21, 21 }
 			stretch			= TRUE
@@ -392,7 +392,7 @@ style "clearlooks-notebook"
 		image
 		{
 			function		= BOX_GAP
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "notebook.png"
 			border			= { 21, 21, 21, 21 }
 			stretch			= TRUE
@@ -544,7 +544,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "button_default.png"
 			border			= {8, 24, 6, 6}
@@ -553,7 +553,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "button_default.png"
 			border			= {8, 24, 6, 6}
@@ -563,7 +563,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			file			= "button_default.png"
 			border			= {8, 24, 6, 6}
@@ -572,7 +572,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "button_default.png"
 			border			= {8, 24, 6, 6}
@@ -582,23 +582,23 @@ style "clearlooks-combobox"
 		{
 			function		= TAB
 			state			= INSENSITIVE
-			recolorable		= TRUE
-			overlay_file		= "led.png"
+			recolorable		= FALSE
+			overlay_file		= "led_inactive.png"
 			overlay_stretch		= FALSE
 		}
 		image
 		{
 			function		= TAB
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
-			overlay_file		= "led.png"
+			overlay_file		= "led_normal.png"
 			overlay_border		= { 3, 3, 2, 2 }
 			overlay_stretch		= FALSE
 		}
 		image
 		{
 			function		= TAB
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= ACTIVE
 			overlay_file		= "led_prelight.png"
 			overlay_border		= { 3, 3, 2, 2 }
@@ -607,7 +607,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= TAB
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			overlay_file		= "led_prelight.png"
 			overlay_border		= { 3, 3, 2, 2 }
@@ -616,7 +616,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= VLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "vline.png"
 			border			= { 1, 1, 0, 0 }
 			stretch			= TRUE
@@ -624,7 +624,7 @@ style "clearlooks-combobox"
 		image
 		{
 			function		= HLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "hline.png"
 			border			= { 0, 0, 1, 1	}
 			stretch			= TRUE
@@ -659,7 +659,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= NORMAL
 			detail			= "spinbutton_up"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_up_normal.png"
 			border			= { 6, 4, 4, 3 }
 			stretch			= TRUE
@@ -671,7 +671,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= PRELIGHT
 			detail			= "spinbutton_up"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_up_prelight.png"
 			border			= { 6, 4, 4, 3 }
 			stretch			= TRUE
@@ -683,7 +683,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= INSENSITIVE
 			detail			= "spinbutton_up"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_up_inactive.png"
 			border			= { 6, 4, 4, 3 }
 			stretch			= TRUE
@@ -695,7 +695,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= ACTIVE
 			detail			= "spinbutton_up"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_up_active.png"
 			border			= { 6, 4, 4, 3 }
 			stretch			= TRUE
@@ -708,7 +708,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= NORMAL
 			detail			= "spinbutton_down"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_down_normal.png"
 			border			= { 6, 4, 3, 3 }
 			stretch			= TRUE
@@ -720,7 +720,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= PRELIGHT
 			detail			= "spinbutton_down"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_down_prelight.png"
 			border			= { 6, 4, 3, 3 }
 			stretch			= TRUE
@@ -732,7 +732,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= INSENSITIVE
 			detail			= "spinbutton_down"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_down_inactive.png"
 			border			= { 6, 4, 3, 3 }
 			stretch			= TRUE
@@ -744,7 +744,7 @@ style "clearlooks-spinbutton" = "clearlooks-default"
 			function		= BOX
 			state 			= ACTIVE
 			detail			= "spinbutton_down"
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "spin_down_active.png"
 			border			= { 6, 4, 3, 3 }
 			stretch			= TRUE
@@ -767,7 +767,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-horizontal.png"
 			border			= { 20, 20, 0, 0 }
@@ -777,7 +777,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-vertical.png"
 			border			= { 0, 0, 20, 20 }
@@ -788,7 +788,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -800,7 +800,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -812,7 +812,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -824,7 +824,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -836,7 +836,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -848,7 +848,7 @@ style "clearlooks-scale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -873,7 +873,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-horizontal.png"
 			border			= { 20, 20, 0, 0 }
@@ -883,7 +883,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-vertical.png"
 			border			= { 0, 0, 20, 20 }
@@ -894,7 +894,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -906,7 +906,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -918,7 +918,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -930,7 +930,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -942,7 +942,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -954,7 +954,7 @@ style "clearlooks-hscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -979,7 +979,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-horizontal.png"
 			border			= { 20, 20, 0, 0 }
@@ -989,7 +989,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= BOX
-			recolorable		= TRUE
+			recolorable		= FALSE
 			detail			= "trough"
 			file			= "trough-vertical.png"
 			border			= { 0, 0, 20, 20 }
@@ -1000,7 +1000,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1012,7 +1012,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1024,7 +1024,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1036,7 +1036,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= NORMAL
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1048,7 +1048,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= PRELIGHT
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1060,7 +1060,7 @@ style "clearlooks-vscale"
 		image
 		{
 			function		= SLIDER
-			recolorable		= TRUE
+			recolorable		= FALSE
 			state			= INSENSITIVE
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
@@ -1151,7 +1151,7 @@ style "menu-separator" = "menu"
   	image
 		{
 			function		= VLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "vline.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
@@ -1159,7 +1159,7 @@ style "menu-separator" = "menu"
 		image
 		{
 			function		= HLINE
-			recolorable		= TRUE
+			recolorable		= FALSE
 			file			= "hline.png"
 			border			= { 0, 0, 0, 0	}
 			stretch			= TRUE
@@ -1245,7 +1245,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= BOX
-      recolorable		= TRUE
+      recolorable		= FALSE
       detail			= "trough"
       file				= "background_black.png"
       stretch			= FALSE
@@ -1254,7 +1254,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= BOX
-      recolorable		= TRUE
+      recolorable		= FALSE
       detail			= "trough"
       file				= "background_black.png"
       stretch			= TRUE
@@ -1267,7 +1267,7 @@ style "scrollbar" = "default"
   image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= NORMAL
       file				= "scroller-horiz.png" 
       border			= { 24,29,1,1 }
@@ -1283,7 +1283,7 @@ style "scrollbar" = "default"
   image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= ACTIVE
       shadow			= IN
       file				= "scroller-horiz.png" 
@@ -1299,7 +1299,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= PRELIGHT
       file				= "scroller-horiz-prelight.png" 
       border			= { 24,29,1,1 }
@@ -1313,7 +1313,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= INSENSITIVE
       file				= "scroller-horiz-insens.png"
       border			= { 24,29,1,1 }
@@ -1330,7 +1330,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= NORMAL
       file				= "scroller-vert.png" 
       border			= { 1,1,24,29 }
@@ -1345,7 +1345,7 @@ style "scrollbar" = "default"
    image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= ACTIVE
       shadow			= IN
       file				= "scroller-vert.png" 
@@ -1361,7 +1361,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= PRELIGHT
       file				= "scroller-vert-prelight.png" 
       border			= { 1,1,24,29} 
@@ -1375,7 +1375,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= SLIDER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state           		= INSENSITIVE
       file				= "scroller-vert-insens.png"
       border			= { 1,1,24,29 }
@@ -1395,7 +1395,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= NORMAL
       file				= "screw2.png"
       #border			= { 12, 2, 2, 9 }
@@ -1405,7 +1405,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= PRELIGHT
       file				= "screw2.png"
       #border			= { 12, 2, 2, 9 }
@@ -1415,7 +1415,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= ACTIVE
       file				= "screw2.png"
       #border			= { 12, 2, 2, 9 }
@@ -1425,7 +1425,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= INSENSITIVE
       file				= "screw2.png"
       #border			= { 12, 2, 2, 9 }
@@ -1439,7 +1439,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= NORMAL
       file				= "screw1.png"
       #border			= { 12, 2, 10, 2 }
@@ -1449,7 +1449,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= PRELIGHT
       file				= "screw1.png"
       #border			= { 12, 2, 10, 2 }
@@ -1459,7 +1459,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= ACTIVE
       file				= "screw1.png"
       #border			= { 12, 2, 10, 2 }
@@ -1469,7 +1469,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= INSENSITIVE
       file				= "screw1.png"
       #border			= { 12, 2, 10, 2 }
@@ -1482,7 +1482,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= NORMAL
       file				= "screw2.png"
       #border			= { 2, 9, 2, 13 }
@@ -1492,7 +1492,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= PRELIGHT
       file				= "screw2.png"
       #border			= { 2, 9, 2, 13 }
@@ -1502,7 +1502,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= ACTIVE
       file				= "screw2.png"
       #border			= { 2, 9, 2, 13 }
@@ -1512,7 +1512,7 @@ style "scrollbar" = "default"
  image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= INSENSITIVE
       file				= "screw2.png"
       #border			= { 2, 9, 2, 13 }
@@ -1526,7 +1526,7 @@ style "scrollbar" = "default"
     image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= NORMAL
       file				= "screw1.png"
       #border			= { 2, 9, 2, 13 }
@@ -1536,7 +1536,7 @@ style "scrollbar" = "default"
   image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= PRELIGHT
       file				= "screw1.png"
       #border			= { 2, 9, 2, 13 }
@@ -1546,7 +1546,7 @@ style "scrollbar" = "default"
   image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= ACTIVE
       file				= "screw1.png"
       #border			= { 2, 9, 2, 13 }
@@ -1556,7 +1556,7 @@ style "scrollbar" = "default"
   image 
     {
       function			= STEPPER
-      recolorable		= TRUE
+      recolorable		= FALSE
       state				= INSENSITIVE
       file				= "screw1.png"
       #border			= { 2, 9, 2, 13 }

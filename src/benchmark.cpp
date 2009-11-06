@@ -297,7 +297,6 @@ void get_default_effect_params<calf_plugins::compressor_audio_module>(float para
     params[mod::param_detection] = 0;
     params[mod::param_knee] = 40000;
     params[mod::param_bypass] = 0;
-    params[mod::param_aweighting] = 1;
     sr = 44100;
 }
 
