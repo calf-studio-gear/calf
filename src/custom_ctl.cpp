@@ -972,21 +972,24 @@ static inline float endless(float value)
         return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
 }
 
-static inline float deadzone(float value, float incr, float scale)
+static inline float deadzone(GtkWidget *widget, float value, float incr, float scale)
 {
-    float dzw = 2 / scale;
-    if (value >= 0.5 + dzw)
-        value += dzw;
-    if (value < 0.5 - dzw)
-        value -= dzw;
-
-    value += incr;
-
-    if (value >= (0.5 - dzw) && value <= (0.5 + dzw))
-        return 0.5;
-    if (value < 0.5)
-        return value + dzw;
-    return value - dzw;
+    CalfKnob *self = CALF_KNOB(widget);
+    float dz = 20 / scale;
+    if(self->last_dz < 0.f) {
+        self -> last_dz = value + incr;
+    } else if (self->last_dz > 1.f) {
+        self->last_dz = 1.f;
+    } else {
+        self->last_dz += incr;
+    }
+    if(self->last_dz > 0.5 + dz) {
+        return std::min(0.5 + (self->last_dz - 0.5 - dz) * 0.5 / (0.5 - dz), (double)1);
+    }
+    if(self->last_dz < 0.5 - dz) {
+        return std::max(self->last_dz * 0.5 / (0.5 - dz), (double)0);
+    }
+    return 0.5;
 }
 
 static gboolean
@@ -1008,7 +1011,7 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         else
         if (self->knob_type == 1)
         {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / (scale * sens), (scale * sens)));
+            gtk_range_set_value(GTK_RANGE(widget), deadzone(GTK_WIDGET(widget), gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / (scale * sens), (scale * sens)));
         }
         else
         {
@@ -1057,6 +1060,7 @@ calf_knob_init (CalfKnob *self)
     GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
+    self->last_dz = -1.f;
 }
 
 GtkWidget *
@@ -1398,14 +1402,14 @@ calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
     switch(self->direction) {
         case 1:
             // vertical
-            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.3, sx, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.3, 3, ox + sx * 0.5, oy + sy * 0.3, sx);
+            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.2, sx, 0, 2 * M_PI);
+            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.2, 3, ox + sx * 0.5, oy + sy * 0.2, sx);
             break;
         default:
         case 2:
             // horizontal
-            cairo_arc(c, ox + sx * 0.7, oy + sy * 0.5, sy, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.7, oy + sy * 0.5, 3, ox + sx * 0.7, oy + sy * 0.5, sy);
+            cairo_arc(c, ox + sx * 0.8, oy + sy * 0.5, sy, 0, 2 * M_PI);
+            pat = cairo_pattern_create_radial (ox + sx * 0.8, oy + sy * 0.5, 3, ox + sx * 0.8, oy + sy * 0.5, sy);
             break;
     }
     cairo_pattern_add_color_stop_rgba (pat, 0,    1,    1,    1,    value);
@@ -1418,14 +1422,14 @@ calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
     switch(self->direction) {
         case 1:
             // vertical
-            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.8, sx / 2, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.8, 2, ox + sx * 0.5, oy + sy * 0.8, sx / 2);
+            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.75, sx / 2, 0, 2 * M_PI);
+            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.75, 2, ox + sx * 0.5, oy + sy * 0.75, sx / 2);
             break;
         default:
         case 2:
             // horizontal
-            cairo_arc(c, ox + sx / 5, oy + sy * 0.5, sy / 2, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx / 5, oy + sy * 0.5, 2, ox + sx / 5, oy + sy * 0.5, sy / 2);
+            cairo_arc(c, ox + sx * 0.25, oy + sy * 0.5, sy / 2, 0, 2 * M_PI);
+            pat = cairo_pattern_create_radial (ox + sx * 0.25, oy + sy * 0.5, 2, ox + sx * 0.25, oy + sy * 0.5, sy / 2);
             break;
     }
     cairo_pattern_add_color_stop_rgba (pat, 0,    1,    1,    1,    value);
@@ -1434,7 +1438,7 @@ calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_pattern_add_color_stop_rgba (pat, 1,    0.0, 0.2,  0.7,  0);
     cairo_set_source (c, pat);
     cairo_fill(c);
-    
+    cairo_destroy(c);
     return TRUE;
 }
 
@@ -1449,12 +1453,12 @@ calf_tube_size_request (GtkWidget *widget,
         case 1:
             switch(self->size) {
                 case 1:
-                    widget->requisition.width = 70;
+                    widget->requisition.width = 82;
                     widget->requisition.height = 130;
                     break;
                 default:
                 case 2:
-                    widget->requisition.width = 110;
+                    widget->requisition.width = 130;
                     widget->requisition.height = 210;
                     break;
             }
@@ -1464,12 +1468,12 @@ calf_tube_size_request (GtkWidget *widget,
             switch(self->size) {
                 case 1:
                     widget->requisition.width = 130;
-                    widget->requisition.height = 70;
+                    widget->requisition.height = 82;
                     break;
                 default:
                 case 2:
                     widget->requisition.width = 210;
-                    widget->requisition.height = 110;
+                    widget->requisition.height = 130;
                     break;
             }
             break;
@@ -1511,12 +1515,12 @@ calf_tube_init (CalfTube *self)
         case 1:
             switch(self->size) {
                 case 1:
-                    widget->requisition.width = 70;
+                    widget->requisition.width = 82;
                     widget->requisition.height = 130;
                     break;
                 default:
                 case 2:
-                    widget->requisition.width = 110;
+                    widget->requisition.width = 130;
                     widget->requisition.height = 210;
                     break;
             }
@@ -1526,12 +1530,12 @@ calf_tube_init (CalfTube *self)
             switch(self->size) {
                 case 1:
                     widget->requisition.width = 130;
-                    widget->requisition.height = 70;
+                    widget->requisition.height = 82;
                     break;
                 default:
                 case 2:
                     widget->requisition.width = 210;
-                    widget->requisition.height = 110;
+                    widget->requisition.height = 130;
                     break;
             }
             break;
