@@ -586,9 +586,15 @@ void make_ttl(string path_prefix)
         const char *in_names[] = { "in_l", "in_r" };
         const char *out_names[] = { "out_l", "out_r" };
         for (int i = 0; i < pi->get_input_count(); i++)
-            add_port(ports, in_names[i], in_names[i], "Input", pn++);
+            if(i <= pi->get_input_count() - pi->get_inputs_optional() - 1)
+                add_port(ports, in_names[i], in_names[i], "Input", pn++);
+            else
+                add_port(ports, in_names[i], in_names[i], "Input", pn++, "lv2:AudioPort", true);
         for (int i = 0; i < pi->get_output_count(); i++)
-            add_port(ports, out_names[i], out_names[i], "Output", pn++);
+            if(i <= pi->get_output_count() - pi->get_outputs_optional() - 1)
+                add_port(ports, out_names[i], out_names[i], "Output", pn++);
+            else
+                add_port(ports, out_names[i], out_names[i], "Output", pn++, "lv2:AudioPort", true);
         for (int i = 0; i < pi->get_param_count(); i++)
             add_ctl_port(ports, *pi->get_param_props(i), pn++, pi, i);
         if (pi->get_midi()) {
