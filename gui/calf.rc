@@ -132,8 +132,8 @@ style "clearlooks-button"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-#	GtkButton      ::default-border       = { 6, 6, 5, 5 }
-	GtkButton      ::inner-border         = { 6, 6, 2, 2}
+#	GtkButton      ::default-border       = { 8, 8, 6, 6 }
+	GtkButton      ::inner-border         = { 8, 8, 3, 3}
 	
     xthickness = 5
     ythickness = 2
@@ -191,6 +191,74 @@ style "clearlooks-button"
 			function		= BOX
 			file			= "button_default.png"
 			border			= {6, 6, 6, 6}
+			stretch			= TRUE
+		}
+		
+	}
+}
+style "clearlooks-toggle"
+{
+	GtkButton      ::child-displacement-x = 0
+	GtkButton      ::child-displacement-y = 0
+#	GtkButton      ::default-border       = { 8, 26, 6, 6 }
+	GtkButton      ::inner-border         = { 8, 26, 3, 3}
+	
+    xthickness = 5
+    ythickness = 2
+    
+    fg[NORMAL]			= "#000"
+	fg[PRELIGHT]		= "#000"
+	fg[SELECTED]		= "#000"
+	fg[ACTIVE]			= "#000"
+	fg[INSENSITIVE]		= "#666"
+	
+	text[NORMAL]		= "#000"
+	text[PRELIGHT]		= "#000"
+	text[SELECTED]		= "#000"
+	text[ACTIVE]		= "#000"
+	text[INSENSITIVE]	= "#666"
+	
+	engine "pixmap"
+	{
+		image
+		{
+			function		= BOX
+			detail			= "buttondefault"
+			recolorable		= FALSE
+			file			= "button_normal.png"
+			border			= {6, 24, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			state			= PRELIGHT
+			recolorable		= FALSE
+			file			= "button_prelight.png"
+			border			= {6, 24, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			state			= ACTIVE
+			file			= "button_active.png"
+			border			= {6, 24, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			state			= INSENSITIVE
+			file			= "button_insens.png"
+			border			= {6, 24, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			file			= "button_normal.png"
+			border			= {6, 24, 6, 6}
 			stretch			= TRUE
 		}
 		
@@ -1626,6 +1694,7 @@ widget_class "*<GtkNotebook>*<GtkDrawingArea>"  	style "clearlooks-notebook"
 widget_class "*<GtkNotebook>*<GtkLayout>"       	style "clearlooks-notebook"
 
 widget_class "*<GtkButton>*"      			style "clearlooks-button"
+widget_class "*<GtkToggleButton>*"      	style "clearlooks-toggle"
 widget_class "*<GtkNotebook>"    			style "clearlooks-notebook"
 widget_class "*<GtkStatusbar>*"  			style "clearlooks-statusbar"
 
