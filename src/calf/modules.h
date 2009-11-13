@@ -1321,8 +1321,8 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-/// Enhancer by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
-class enhancer_audio_module: public audio_module<enhancer_metadata> {
+/// Exciter by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+class exciter_audio_module: public audio_module<exciter_metadata> {
 private:
     float freq_old;
     uint32_t clip_in, clip_out;
@@ -1335,7 +1335,29 @@ public:
     float *params[param_count];
     uint32_t srate;
     bool is_active;
-    enhancer_audio_module();
+    exciter_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/// Bass Enhancer by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+class bassenhancer_audio_module: public audio_module<bassenhancer_metadata> {
+private:
+    float freq_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> lp[2][4];
+    distortion_audio_module dist[2];
+public:
+    float *ins[in_count];
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    bool is_active;
+    bassenhancer_audio_module();
     void activate();
     void deactivate();
     void params_changed();

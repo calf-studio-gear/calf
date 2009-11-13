@@ -28,7 +28,7 @@
         <label param="listen" attach-x="6" attach-y="0" expand-x="0" fill-x="0" />
         <toggle param="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
     </table>
-    <frame label="Enhancer">
+    <frame label="Bass Enhancer">
         <hbox spacing="25">
             <vbox>
                 <label param="drive" />

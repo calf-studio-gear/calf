@@ -594,9 +594,9 @@ CALF_PLUGIN_INFO(saturator) = { 0x8502, "Saturator", "Calf Saturator", "Markus S
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(enhancer) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_NAMES(exciter) = {"In L", "In R", "Out L", "Out R"};
 
-CALF_PORT_PROPS(enhancer) = {
+CALF_PORT_PROPS(exciter) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
     { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output" },
@@ -614,10 +614,31 @@ CALF_PORT_PROPS(enhancer) = {
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
 };
 
-CALF_PLUGIN_INFO(enhancer) = { 0x8502, "Enhancer", "Calf Enhancer", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
-
+CALF_PLUGIN_INFO(exciter) = { 0x8502, "Exciter", "Calf Exciter", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(bassenhancer) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(bassenhancer) = {
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
+    { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output" },
+    { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "amount", "Amount" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_in", "Input" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_out", "Output" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_in", "0dB" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_out", "0dB" },
+    
+    { 8.5,         0.1,         10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive", "Harmonics" },
+    { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend", "Blend harmonics" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_drive", "Harmonics level" },
+    
+    { 120,        10,           250,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
+};
+
+CALF_PLUGIN_INFO(bassenhancer) = { 0x8502, "BassEnhancer", "Calf Bass Enhancer", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

@@ -244,14 +244,23 @@ struct saturator_metadata: public plugin_metadata<saturator_metadata>
            param_p_freq, param_p_level, param_p_q, param_count };
     PLUGIN_NAME_ID_LABEL("saturator", "saturator", "Saturator")
 };
-/// Markus's Enhancer - metadata
-struct enhancer_metadata: public plugin_metadata<enhancer_metadata>
+/// Markus's Exciter - metadata
+struct exciter_metadata: public plugin_metadata<exciter_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out, param_amount, param_meter_in,
            param_meter_out, param_clip_in, param_clip_out, param_drive, param_blend, param_meter_drive,
            param_freq, param_listen, param_count };
-    PLUGIN_NAME_ID_LABEL("enhancer", "enhancer", "Enhancer")
+    PLUGIN_NAME_ID_LABEL("exciter", "exciter", "Exciter")
+};
+/// Markus's Bass Enhancer - metadata
+struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, param_amount, param_meter_in,
+           param_meter_out, param_clip_in, param_clip_out, param_drive, param_blend, param_meter_drive,
+           param_freq, param_listen, param_count };
+    PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
 };
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
