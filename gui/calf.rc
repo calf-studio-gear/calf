@@ -132,8 +132,8 @@ style "clearlooks-button"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-#	GtkButton      ::default-border       = { 6, 24, 5, 5 }
-	GtkButton      ::inner-border         = { 6, 25, 2, 2}
+#	GtkButton      ::default-border       = { 6, 6, 5, 5 }
+	GtkButton      ::inner-border         = { 6, 6, 2, 2}
 	
     xthickness = 5
     ythickness = 2
@@ -157,8 +157,8 @@ style "clearlooks-button"
 			function		= BOX
 			detail			= "buttondefault"
 			recolorable		= FALSE
-			file			= "button_normal.png"
-			border			= {6, 24, 6, 6}
+			file			= "button_default.png"
+			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
 		image
@@ -166,31 +166,31 @@ style "clearlooks-button"
 			function		= BOX
 			state			= PRELIGHT
 			recolorable		= FALSE
-			file			= "button_prelight.png"
-			border			= {6, 24, 6, 6}
+			file			= "button_default_prelight.png"
+			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
 		image
 		{
 			function		= BOX
 			state			= ACTIVE
-			file			= "button_prelight.png"
-			border			= {6, 24, 6, 6}
+			file			= "button_default_active.png"
+			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
 		image
 		{
 			function		= BOX
 			state			= INSENSITIVE
-			file			= "button_insens.png"
-			border			= {6, 24, 6, 6}
+			file			= "button_default.png"
+			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
 		image
 		{
 			function		= BOX
-			file			= "button_normal.png"
-			border			= {6, 24, 6, 6}
+			file			= "button_default.png"
+			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
 		
@@ -200,7 +200,7 @@ style "clearlooks-button-norm"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-#	GtkButton      ::default-border       = { 6, 24, 5, 5 }
+#	GtkButton      ::default-border       = { 6, 6, 5, 5 }
 	GtkButton      ::inner-border         = { 6, 6, 3, 3}
 	
     xthickness = 5
@@ -224,6 +224,22 @@ style "clearlooks-button-norm"
 		{
 			function		= BOX
 			file			= "button_default.png"
+			border			= {6, 6, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			state			= PRELIGHT
+			file			= "button_default_prelight.png"
+			border			= {6, 6, 6, 6}
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= BOX
+			state			= ACTIVE
+			file			= "button_default_active.png"
 			border			= {6, 6, 6, 6}
 			stretch			= TRUE
 		}
@@ -546,7 +562,7 @@ style "clearlooks-combobox"
 			function		= BOX
 			recolorable		= FALSE
 			state			= PRELIGHT
-			file			= "button_default.png"
+			file			= "button_default_prelight.png"
 			border			= {8, 24, 6, 6}
 			stretch			= TRUE
 		}
@@ -565,7 +581,7 @@ style "clearlooks-combobox"
 			function		= BOX
 			recolorable		= FALSE
 			state			= ACTIVE
-			file			= "button_default.png"
+			file			= "button_default_active.png"
 			border			= {8, 24, 6, 6}
 			stretch			= TRUE
 		}
