@@ -235,6 +235,34 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
     PLUGIN_NAME_ID_LABEL("equalizer12band", "equalizer12band", "Equalizer 12 Band")
 };
 
+/// Markus's Saturator - metadata
+struct saturator_metadata: public plugin_metadata<saturator_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, param_mix, param_meter_in,
+           param_meter_out, param_clip_in, param_clip_out, param_drive, param_blend, param_meter_drive,
+           param_lp_pre_freq, param_hp_pre_freq, param_lp_post_freq, param_hp_post_freq,
+           param_p_freq, param_p_level, param_p_q, param_count };
+    PLUGIN_NAME_ID_LABEL("saturator", "saturator", "Saturator")
+};
+/// Markus's Exciter - metadata
+struct exciter_metadata: public plugin_metadata<exciter_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, param_amount, param_meter_in,
+           param_meter_out, param_clip_in, param_clip_out, param_drive, param_blend, param_meter_drive,
+           param_freq, param_listen, param_count };
+    PLUGIN_NAME_ID_LABEL("exciter", "exciter", "Exciter")
+};
+/// Markus's Bass Enhancer - metadata
+struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, param_amount, param_meter_in,
+           param_meter_out, param_clip_in, param_clip_out, param_drive, param_blend, param_meter_drive,
+           param_freq, param_listen, param_count };
+    PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
+};
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
 struct organ_enums

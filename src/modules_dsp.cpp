@@ -2893,3 +2893,787 @@ int equalizer5band_audio_module::get_changed_offsets(int index, int generation, 
     }
     return false;
 }
+
+/// Saturator Band by Markus Schmidt
+///
+/// This module is based on Krzysztof's filters and distortion routine.
+/// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+saturator_audio_module::saturator_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_in    = 0.f;
+    clip_out   = 0.f;
+    meter_in  = 0.f;
+    meter_out = 0.f;
+    meter_drive = 0.f;
+}
+
+void saturator_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+}
+void saturator_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void saturator_audio_module::params_changed()
+{
+    // set the params of all filters
+    if(*params[param_lp_pre_freq] != lp_pre_freq_old) {
+        lp[0][0].set_lp_rbj(*params[param_lp_pre_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            lp[1][0].copy_coeffs(lp[0][0]);
+        lp[0][1].copy_coeffs(lp[0][0]);
+        if(in_count > 1 && out_count > 1)
+            lp[1][1].copy_coeffs(lp[0][0]);
+        lp_pre_freq_old = *params[param_lp_pre_freq];
+    }
+    if(*params[param_hp_pre_freq] != hp_pre_freq_old) {
+        hp[0][0].set_hp_rbj(*params[param_hp_pre_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            hp[1][0].copy_coeffs(hp[0][0]);
+        hp[0][1].copy_coeffs(hp[0][0]);
+        if(in_count > 1 && out_count > 1)
+            hp[1][1].copy_coeffs(hp[0][0]);
+        hp_pre_freq_old = *params[param_hp_pre_freq];
+    }
+    if(*params[param_lp_post_freq] != lp_post_freq_old) {
+        lp[0][2].set_lp_rbj(*params[param_lp_post_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            lp[1][2].copy_coeffs(lp[0][2]);
+        lp[0][3].copy_coeffs(lp[0][2]);
+        if(in_count > 1 && out_count > 1)
+            lp[1][3].copy_coeffs(lp[0][2]);
+        lp_post_freq_old = *params[param_lp_post_freq];
+    }
+    if(*params[param_hp_post_freq] != hp_post_freq_old) {
+        hp[0][2].set_hp_rbj(*params[param_hp_post_freq], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            hp[1][2].copy_coeffs(hp[0][2]);
+        hp[0][3].copy_coeffs(hp[0][2]);
+        if(in_count > 1 && out_count > 1)
+            hp[1][3].copy_coeffs(hp[0][2]);
+        hp_post_freq_old = *params[param_hp_post_freq];
+    }
+    if(*params[param_p_freq] != p_freq_old or *params[param_p_level] != p_level_old or *params[param_p_q] != p_q_old) {
+        p[0].set_peakeq_rbj((float)*params[param_p_freq], (float)*params[param_p_q], (float)*params[param_p_level], (float)srate);
+        if(in_count > 1 && out_count > 1)
+            p[1].copy_coeffs(p[0]);
+        p_freq_old = *params[param_p_freq];
+        p_level_old = *params[param_p_level];
+        p_q_old = *params[param_p_q];
+    }
+    // set distortion
+    dist[0].set_params(*params[param_blend], *params[param_drive]);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_params(*params[param_blend], *params[param_drive]);
+}
+
+void saturator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    dist[0].set_sample_rate(sr);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_sample_rate(sr);
+}
+
+uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            if(in_count > 1 && out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[1][offset];
+            } else if(in_count > 1) {
+                outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
+            } else if(out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[0][offset];
+            } else {
+                outs[0][offset] = ins[0][offset];
+            }
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in  = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+    } else {
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out, numsamples);
+        meter_in = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float out[2], in[2] = {0.f, 0.f};
+            float maxIn, maxOut, maxDrive = 0.f;
+            int c = 0;
+            
+            if(in_count > 1 && out_count > 1) {
+                // stereo in/stereo out
+                // handle full stereo
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = ins[1][offset];
+                in[1] *= *params[param_level_in];
+                c = 2;
+            } else {
+                // in and/or out mono
+                // handle mono
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = in[0];
+                c = 1;
+            }
+            
+            float proc[2];
+            proc[0] = in[0];
+            proc[1] = in[1];
+            
+            for (int i = 0; i < c; ++i) {
+                // all pre filters in chain
+                proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
+                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+                
+                // saturate
+                proc[i] = dist[i].process(proc[i]);
+                
+                // tone control
+                proc[i] = p[i].process(proc[i]);
+
+                // all post filters in chain
+                proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
+                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+            }
+            
+            if(in_count > 1 && out_count > 1) {
+                // full stereo
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = ((proc[1] * *params[param_mix]) + in[1] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[1][offset] = out[1];
+                maxIn = std::max(fabs(in[0]), fabs(in[1]));
+                maxOut = std::max(fabs(out[0]), fabs(out[1]));
+                maxDrive = std::max(dist[0].get_distortion_level(), dist[1].get_distortion_level());
+            } else if(out_count > 1) {
+                // mono -> pseudo stereo
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = out[0];
+                outs[1][offset] = out[1];
+                maxOut = fabs(out[0]);
+                maxIn = fabs(in[0]);
+                maxDrive = dist[0].get_distortion_level();
+            } else {
+                // stereo -> mono
+                // or full mono
+                out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                maxIn = fabs(in[0]);
+                maxOut = fabs(out[0]);
+                maxDrive = dist[0].get_distortion_level();
+            }
+            
+            if(maxIn > 1.f) {
+                clip_in  = srate >> 3;
+            }
+            if(maxOut > 1.f) {
+                clip_out = srate >> 3;
+            }
+            // set up in / out meters
+            if(maxIn > meter_in) {
+                meter_in = maxIn;
+            }
+            if(maxOut > meter_out) {
+                meter_out = maxOut;
+            }
+            if(maxDrive > meter_drive) {
+                meter_drive = maxDrive;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        lp[0][0].sanitize();
+        lp[1][0].sanitize();
+        lp[0][1].sanitize();
+        lp[1][1].sanitize();
+        lp[0][2].sanitize();
+        lp[1][2].sanitize();
+        lp[0][3].sanitize();
+        lp[1][3].sanitize();
+        hp[0][0].sanitize();
+        hp[1][0].sanitize();
+        hp[0][1].sanitize();
+        hp[1][1].sanitize();
+        hp[0][2].sanitize();
+        hp[1][2].sanitize();
+        hp[0][3].sanitize();
+        hp[1][3].sanitize();
+        p[0].sanitize();
+        p[1].sanitize();
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    if(params[param_meter_drive] != NULL) {
+        *params[param_meter_drive] = meter_drive;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+/// Exciter by Markus Schmidt
+///
+/// This module is based on Krzysztof's filters and distortion routine.
+/// It sends the signal through a highpass, saturates it and sends it through a highpass again
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+exciter_audio_module::exciter_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_in    = 0.f;
+    clip_out   = 0.f;
+    meter_in  = 0.f;
+    meter_out = 0.f;
+    meter_drive = 0.f;
+}
+
+void exciter_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+}
+void exciter_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void exciter_audio_module::params_changed()
+{
+    // set the params of all filters
+    if(*params[param_freq] != freq_old) {
+        hp[0][0].set_hp_rbj(*params[param_freq], 0.707, (float)srate);
+        hp[0][1].copy_coeffs(hp[0][0]);
+        hp[0][2].copy_coeffs(hp[0][0]);
+        hp[0][3].copy_coeffs(hp[0][0]);
+        if(in_count > 1 && out_count > 1) {
+            hp[1][0].copy_coeffs(hp[0][0]);
+            hp[1][1].copy_coeffs(hp[0][0]);
+            hp[1][2].copy_coeffs(hp[0][0]);
+            hp[1][3].copy_coeffs(hp[0][0]);
+        }
+        freq_old = *params[param_freq];
+    }
+    // set distortion
+    dist[0].set_params(*params[param_blend], *params[param_drive]);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_params(*params[param_blend], *params[param_drive]);
+}
+
+void exciter_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    dist[0].set_sample_rate(sr);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_sample_rate(sr);
+}
+
+uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            if(in_count > 1 && out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[1][offset];
+            } else if(in_count > 1) {
+                outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
+            } else if(out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[0][offset];
+            } else {
+                outs[0][offset] = ins[0][offset];
+            }
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in  = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+    } else {
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out, numsamples);
+        meter_in = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float out[2], in[2] = {0.f, 0.f};
+            float maxIn, maxOut, maxDrive = 0.f;
+            int c = 0;
+            
+            if(in_count > 1 && out_count > 1) {
+                // stereo in/stereo out
+                // handle full stereo
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = ins[1][offset];
+                in[1] *= *params[param_level_in];
+                c = 2;
+            } else {
+                // in and/or out mono
+                // handle mono
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = in[0];
+                c = 1;
+            }
+            
+            float proc[2];
+            proc[0] = in[0];
+            proc[1] = in[1];
+            
+            for (int i = 0; i < c; ++i) {
+                // all pre filters in chain
+                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+                
+                // saturate
+                proc[i] = dist[i].process(proc[i]);
+
+                // all post filters in chain
+                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+            }
+            
+            if(in_count > 1 && out_count > 1) {
+                // full stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                if(*params[param_listen] > 0.f)
+                    out[1] = proc[1] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[1] = (proc[1] * *params[param_amount] + in[1]) * *params[param_level_out];
+                outs[1][offset] = out[1];
+                maxIn = std::max(fabs(in[0]), fabs(in[1]));
+                maxOut = std::max(fabs(out[0]), fabs(out[1]));
+                maxDrive = std::max(dist[0].get_distortion_level() * *params[param_amount],
+                                            dist[1].get_distortion_level() * *params[param_amount]);
+            } else if(out_count > 1) {
+                // mono -> pseudo stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = out[0];
+                outs[1][offset] = out[1];
+                maxOut = fabs(out[0]);
+                maxIn = fabs(in[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            } else {
+                // stereo -> mono
+                // or full mono
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                maxIn = fabs(in[0]);
+                maxOut = fabs(out[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            }
+            
+            if(maxIn > 1.f) {
+                clip_in  = srate >> 3;
+            }
+            if(maxOut > 1.f) {
+                clip_out = srate >> 3;
+            }
+            // set up in / out meters
+            if(maxIn > meter_in) {
+                meter_in = maxIn;
+            }
+            if(maxOut > meter_out) {
+                meter_out = maxOut;
+            }
+            if(maxDrive > meter_drive) {
+                meter_drive = maxDrive;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        hp[0][0].sanitize();
+        hp[1][0].sanitize();
+        hp[0][1].sanitize();
+        hp[1][1].sanitize();
+        hp[0][2].sanitize();
+        hp[1][2].sanitize();
+        hp[0][3].sanitize();
+        hp[1][3].sanitize();
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    if(params[param_meter_drive] != NULL) {
+        *params[param_meter_drive] = meter_drive;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+/// Bass Enhancer by Markus Schmidt
+///
+/// This module is based on Krzysztof's filters and distortion routine.
+/// It sends the signal through a lowpass, saturates it and sends it through a lowpass again
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+bassenhancer_audio_module::bassenhancer_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_in    = 0.f;
+    clip_out   = 0.f;
+    meter_in  = 0.f;
+    meter_out = 0.f;
+    meter_drive = 0.f;
+}
+
+void bassenhancer_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+}
+void bassenhancer_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void bassenhancer_audio_module::params_changed()
+{
+    // set the params of all filters
+    if(*params[param_freq] != freq_old) {
+        lp[0][0].set_lp_rbj(*params[param_freq], 0.707, (float)srate);
+        lp[0][1].copy_coeffs(lp[0][0]);
+        lp[0][2].copy_coeffs(lp[0][0]);
+        lp[0][3].copy_coeffs(lp[0][0]);
+        if(in_count > 1 && out_count > 1) {
+            lp[1][0].copy_coeffs(lp[0][0]);
+            lp[1][1].copy_coeffs(lp[0][0]);
+            lp[1][2].copy_coeffs(lp[0][0]);
+            lp[1][3].copy_coeffs(lp[0][0]);
+        }
+        freq_old = *params[param_freq];
+    }
+    // set distortion
+    dist[0].set_params(*params[param_blend], *params[param_drive]);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_params(*params[param_blend], *params[param_drive]);
+}
+
+void bassenhancer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    dist[0].set_sample_rate(sr);
+    if(in_count > 1 && out_count > 1)
+        dist[1].set_sample_rate(sr);
+}
+
+uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            if(in_count > 1 && out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[1][offset];
+            } else if(in_count > 1) {
+                outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
+            } else if(out_count > 1) {
+                outs[0][offset] = ins[0][offset];
+                outs[1][offset] = ins[0][offset];
+            } else {
+                outs[0][offset] = ins[0][offset];
+            }
+            ++offset;
+        }
+        // displays, too
+        clip_in    = 0.f;
+        clip_out   = 0.f;
+        meter_in  = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+    } else {
+        
+        clip_in    -= std::min(clip_in,  numsamples);
+        clip_out   -= std::min(clip_out, numsamples);
+        meter_in = 0.f;
+        meter_out = 0.f;
+        meter_drive = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float out[2], in[2] = {0.f, 0.f};
+            float maxIn, maxOut, maxDrive = 0.f;
+            int c = 0;
+            
+            if(in_count > 1 && out_count > 1) {
+                // stereo in/stereo out
+                // handle full stereo
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = ins[1][offset];
+                in[1] *= *params[param_level_in];
+                c = 2;
+            } else {
+                // in and/or out mono
+                // handle mono
+                in[0] = ins[0][offset];
+                in[0] *= *params[param_level_in];
+                in[1] = in[0];
+                c = 1;
+            }
+            
+            float proc[2];
+            proc[0] = in[0];
+            proc[1] = in[1];
+            
+            for (int i = 0; i < c; ++i) {
+                // all pre filters in chain
+                proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
+                
+                // saturate
+                proc[i] = dist[i].process(proc[i]);
+
+                // all post filters in chain
+                proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
+            }
+            
+            if(in_count > 1 && out_count > 1) {
+                // full stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                if(*params[param_listen] > 0.f)
+                    out[1] = proc[1] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[1] = (proc[1] * *params[param_amount] + in[1]) * *params[param_level_out];
+                outs[1][offset] = out[1];
+                maxIn = std::max(fabs(in[0]), fabs(in[1]));
+                maxOut = std::max(fabs(out[0]), fabs(out[1]));
+                maxDrive = std::max(dist[0].get_distortion_level() * *params[param_amount],
+                                            dist[1].get_distortion_level() * *params[param_amount]);
+            } else if(out_count > 1) {
+                // mono -> pseudo stereo
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                out[1] = out[0];
+                outs[1][offset] = out[1];
+                maxOut = fabs(out[0]);
+                maxIn = fabs(in[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            } else {
+                // stereo -> mono
+                // or full mono
+                if(*params[param_listen] > 0.f)
+                    out[0] = proc[0] * *params[param_amount] * *params[param_level_out];
+                else
+                    out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
+                outs[0][offset] = out[0];
+                maxIn = fabs(in[0]);
+                maxOut = fabs(out[0]);
+                maxDrive = dist[0].get_distortion_level() * *params[param_amount];
+            }
+            
+            if(maxIn > 1.f) {
+                clip_in  = srate >> 3;
+            }
+            if(maxOut > 1.f) {
+                clip_out = srate >> 3;
+            }
+            // set up in / out meters
+            if(maxIn > meter_in) {
+                meter_in = maxIn;
+            }
+            if(maxOut > meter_out) {
+                meter_out = maxOut;
+            }
+            if(maxDrive > meter_drive) {
+                meter_drive = maxDrive;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        lp[0][0].sanitize();
+        lp[1][0].sanitize();
+        lp[0][1].sanitize();
+        lp[1][1].sanitize();
+        lp[0][2].sanitize();
+        lp[1][2].sanitize();
+        lp[0][3].sanitize();
+        lp[1][3].sanitize();
+    }
+    // draw meters
+    if(params[param_clip_in] != NULL) {
+        *params[param_clip_in] = clip_in;
+    }
+    if(params[param_clip_out] != NULL) {
+        *params[param_clip_out] = clip_out;
+    }
+    
+    if(params[param_meter_in] != NULL) {
+        *params[param_meter_in] = meter_in;
+    }
+    if(params[param_meter_out] != NULL) {
+        *params[param_meter_out] = meter_out;
+    }
+    if(params[param_meter_drive] != NULL) {
+        *params[param_meter_drive] = meter_drive;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+
+/// Distortion Module by Krzysztof Foltman
+///
+/// This module provides a blendable saturation stage
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+distortion_audio_module::distortion_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    meter = 0.f;
+}
+
+void distortion_audio_module::activate()
+{
+    is_active = true;
+    set_params(0.f, 0.f);
+}
+void distortion_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void distortion_audio_module::set_params(float blend, float drive)
+{
+    // set distortion coeffs
+    // NOTICE!! This routine is implemented for testing purposes only!
+    // It is taken from TAP Plugins and will act as a placeholder until
+    // Krzysztof's distrotion routine is ready!
+    if ((drive_old != drive) || (blend_old != blend)) {
+        rdrive = 12.0f / drive;
+        rbdr = rdrive / (10.5f - blend) * 780.0f / 33.0f;
+        kpa = D(2.0f * (rdrive*rdrive) - 1.0f) + 1.0f;
+        kpb = (2.0f - kpa) / 2.0f;
+        ap = ((rdrive*rdrive) - kpa + 1.0f) / 2.0f;
+        kc = kpa / D(2.0f * D(2.0f * (rdrive*rdrive) - 1.0f) - 2.0f * rdrive*rdrive);
+
+        srct = (0.1f * srate) / (0.1f * srate + 1.0f);
+        sq = kc*kc + 1.0f;
+        knb = -1.0f * rbdr / D(sq);
+        kna = 2.0f * kc * rbdr / D(sq);
+        an = rbdr*rbdr / sq;
+        imr = 2.0f * knb + D(2.0f * kna + 4.0f * an - 1.0f);
+        pwrq = 2.0f / (imr + 1.0f);
+        
+        drive_old = drive;
+        blend_old = blend;
+    }
+}
+
+void distortion_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+float distortion_audio_module::process(float(in))
+{
+    // NOTICE!! This routine is implemented for testing purposes only!
+    // It is taken from TAP Plugins and will act as a placeholder until
+    // Krzysztof's distrotion routine is ready!
+    meter = 0.f;
+    float out = 0.f;
+    float proc = in;
+    float med;
+    if (proc >= 0.0f) {
+        med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
+    } else {
+        med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+    }
+    proc = srct * (med - prev_med + prev_out);
+    prev_med = M(med);
+    prev_out = M(proc);
+    out = proc;
+    meter = proc;
+    return out;
+}
+
+float distortion_audio_module::get_distortion_level()
+{
+    return meter;
+}

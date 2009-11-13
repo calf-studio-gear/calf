@@ -1256,6 +1256,115 @@ public:
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline);
 };
 
+class distortion_audio_module {
+private:
+    float blend_old, drive_old;
+    float meter;
+    float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
+    float prev_med, prev_out;
+public:
+    uint32_t srate;
+    bool is_active;
+    distortion_audio_module();
+    void activate();
+    void deactivate();
+    void set_params(float blend, float drive);
+    void set_sample_rate(uint32_t sr);
+    float process(float in);
+    float get_distortion_level();
+    static inline float
+    // NOTICE!! These routines are implemented for testing purposes only!
+    // They're taken from TAP Plugins and will act as a placeholder until
+    // Krzysztof's distrotion routine is ready!
+    M(float x) {
+
+        if ((x > 0.000000001f) || (x < -0.000000001f))
+            return x;
+        else
+            return 0.0f;
+    }
+
+    static inline float
+    D(float x) {
+
+        if (x > 0.000000001f)
+            return sqrt(x);
+        else if (x < -0.000000001f)
+            return sqrt(-x);
+        else
+            return 0.0f;
+    }
+};
+
+/// Saturator by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+class saturator_audio_module: public audio_module<saturator_metadata> {
+private:
+    float hp_pre_freq_old, lp_pre_freq_old;
+    float hp_post_freq_old, lp_post_freq_old;
+    float p_level_old, p_freq_old, p_q_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> lp[2][4], hp[2][4];
+    biquad_d2<float> p[2];
+    distortion_audio_module dist[2];
+public:
+    float *ins[in_count];
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    bool is_active;
+    saturator_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/// Exciter by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+class exciter_audio_module: public audio_module<exciter_metadata> {
+private:
+    float freq_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> hp[2][4];
+    distortion_audio_module dist[2];
+public:
+    float *ins[in_count];
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    bool is_active;
+    exciter_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/// Bass Enhancer by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+class bassenhancer_audio_module: public audio_module<bassenhancer_metadata> {
+private:
+    float freq_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> lp[2][4];
+    distortion_audio_module dist[2];
+public:
+    float *ins[in_count];
+    float *outs[out_count];
+    float *params[param_count];
+    uint32_t srate;
+    bool is_active;
+    bassenhancer_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 /// Filterclavier --- MIDI controlled filter by Hans Baier
 class filterclavier_audio_module: 
         public audio_module<filterclavier_metadata>, 

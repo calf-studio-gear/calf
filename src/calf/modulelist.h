@@ -16,6 +16,9 @@
     PER_MODULE_ITEM(equalizer5band, false, "equalizer5band")
     PER_MODULE_ITEM(equalizer8band, false, "equalizer8band")
     PER_MODULE_ITEM(equalizer12band, false, "equalizer12band")
+    PER_MODULE_ITEM(saturator, false, "saturator")
+    PER_MODULE_ITEM(exciter, false, "exciter")
+    PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
     PER_MODULE_ITEM(wavetable, true, "wavetable")
