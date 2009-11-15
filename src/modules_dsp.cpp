@@ -2893,3 +2893,286 @@ int equalizer5band_audio_module::get_changed_offsets(int index, int generation, 
     }
     return false;
 }
+
+/// LFO module by Markus
+/// This module provides simple LFO's (sine=0, triangle=1, square=2, saw_up=3, saw_down=4)
+/// get_value() returns a value between -1 and 1
+////////////////////////////////////////////////////////////////////////////////
+lfo_audio_module::lfo_audio_module()
+{
+    is_active       = false;
+    phase = 0.f;
+}
+
+void lfo_audio_module::activate()
+{
+    is_active = true;
+    phase = 0.f;
+}
+
+void lfo_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+float lfo_audio_module::get_value()
+{
+    float val = 0.f;
+    float ph = phase + offset;
+    if (ph >= 1.0)
+        ph = fmod(ph, 1.f);
+    switch (mode) {
+        default:
+        case 0:
+            // sine
+            val = sin(ph * 360.f);
+            break;
+        case 1:
+            // triangle
+            if(ph > 0.75)
+                val = (ph - 0.75) * 4 - 1;
+            else if(ph > 0.5)
+                val = (ph - 0.5) * 4 * -1;
+            else if(ph > 0.25)
+                val = 1 - (ph - 0.25) * 4;
+            else
+                val = ph * 4;
+            break;
+        case 2:
+            // square
+            val = (ph < 0.f) ? -1 : +1;
+            break;
+        case 3:
+            // saw up
+                val = ph * 2.f - 1;
+            break;
+        case 4:
+            // saw down
+            val = 1 - ph * 2.f;
+            break;
+    }
+    return val;
+}
+
+void lfo_audio_module::advance(uint32_t count)
+{
+    phase += count * freq * srate;
+    if (phase >= 1.0)
+        phase = fmod(phase, 1.f);
+}
+
+void lfo_audio_module::set_params(float f, int m, float o, uint32_t sr)
+{
+    // freq: a value in Hz
+    // mode: sine=0, triangle=1, square=2, saw_up=3, saw_down=4
+    // offset: value between 0.f and 1.f to offset the lfo in time
+    freq = f;
+    mode = m;
+    offset = o;
+    srate = sr;
+}
+
+bool lfo_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    return true;
+}
+
+bool lfo_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context)
+{
+    if (!is_active)
+        return false;
+    return false;
+}
+
+/// Pulsator by Markus Schmidt
+///
+/// This module provides a couple
+/// of different LFO's for modulating the level of a signal.
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+pulsator_audio_module::pulsator_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    clip_inL    = 0.f;
+    clip_inR    = 0.f;
+    clip_outL   = 0.f;
+    clip_outR   = 0.f;
+    meter_inL  = 0.f;
+    meter_inR  = 0.f;
+    meter_outL = 0.f;
+    meter_outR = 0.f;
+}
+
+void pulsator_audio_module::activate()
+{
+    is_active = true;
+    lfoL.activate();
+    lfoR.activate();
+    params_changed();
+}
+void pulsator_audio_module::deactivate()
+{
+    is_active = false;
+    lfoL.deactivate();
+    lfoR.deactivate();
+}
+
+void pulsator_audio_module::params_changed()
+{
+    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate);
+    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate);
+}
+
+void pulsator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+        // displays, too
+        clip_inL    = 0.f;
+        clip_inR    = 0.f;
+        clip_outL   = 0.f;
+        clip_outR   = 0.f;
+        meter_inL  = 0.f;
+        meter_inR  = 0.f;
+        meter_outL = 0.f;
+        meter_outR = 0.f;
+    } else {
+        
+        clip_inL    -= std::min(clip_inL,  numsamples);
+        clip_inR    -= std::min(clip_inR,  numsamples);
+        clip_outL   -= std::min(clip_outL, numsamples);
+        clip_outR   -= std::min(clip_outR, numsamples);
+        meter_inL = 0.f;
+        meter_inR = 0.f;
+        meter_outL = 0.f;
+        meter_outR = 0.f;
+        
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float outL = 0.f;
+            float outR = 0.f;
+            float inL = ins[0][offset];
+            float inR = ins[1][offset];
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            
+            float procL = inL;
+            float procR = inR;
+            
+            
+            
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            // clip LED's
+            if(inL > 1.f) {
+                clip_inL  = srate >> 3;
+            }
+            if(inR > 1.f) {
+                clip_inR  = srate >> 3;
+            }
+            if(outL > 1.f) {
+                clip_outL = srate >> 3;
+            }
+            if(outR > 1.f) {
+                clip_outR = srate >> 3;
+            }
+            // set up in / out meters
+            if(inL > meter_inL) {
+                meter_inL = inL;
+            }
+            if(inR > meter_inR) {
+                meter_inR = inR;
+            }
+            if(outL > meter_outL) {
+                meter_outL = outL;
+            }
+            if(outR > meter_outR) {
+                meter_outR = outR;
+            }
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+    }
+    // draw meters
+    if(params[param_clip_inL] != NULL) {
+        *params[param_clip_inL] = clip_inL;
+    }
+    if(params[param_clip_inR] != NULL) {
+        *params[param_clip_inR] = clip_inR;
+    }
+    if(params[param_clip_outL] != NULL) {
+        *params[param_clip_outL] = clip_outL;
+    }
+    if(params[param_clip_outR] != NULL) {
+        *params[param_clip_outR] = clip_outR;
+    }
+    
+    if(params[param_meter_inL] != NULL) {
+        *params[param_meter_inL] = meter_inL;
+    }
+    if(params[param_meter_inR] != NULL) {
+        *params[param_meter_inR] = meter_inR;
+    }
+    if(params[param_meter_outL] != NULL) {
+        *params[param_meter_outL] = meter_outL;
+    }
+    if(params[param_meter_outR] != NULL) {
+        *params[param_meter_outR] = meter_outR;
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+bool pulsator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+{
+    if (!is_active) {
+        return false;
+    } else {
+        return false;
+    }
+}
+bool pulsator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+{
+    if (!is_active) {
+        return false;
+    } else {
+        return false;
+    }
+}
+bool pulsator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+{
+    if (!is_active) {
+        return false;
+    } else {
+        return false;
+    }
+}
+
+int pulsator_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
+{
+    if (!is_active) {
+        return false;
+    } else {
+        return false;
+    }
+}
