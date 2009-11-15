@@ -579,10 +579,11 @@ CALF_PORT_PROPS(pulsator) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_inR", "0dB-InR" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outL", "0dB-OutL" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "0dB-OutR" },
-    { 0,      0,  4,    0, PF_ENUM | PF_CTL_COMBO, pulsator_mode_names, "mode", "Mode" },
-    { 1,   0.01,   100, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
-    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "amount", "Modulation" },
-    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "offset", "Offset L/R" },
+    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, pulsator_mode_names, "mode", "Mode" },
+    { 1,           0.01,        100,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
+    { 1,           0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "amount", "Modulation" },
+    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "offset", "Offset L/R" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono-in" },
 };
 
 CALF_PLUGIN_INFO(pulsator) = { 0x8502, "Pulsator", "Calf Pulsator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulationPlugin" };

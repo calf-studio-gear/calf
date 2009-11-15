@@ -2917,38 +2917,43 @@ void lfo_audio_module::deactivate()
 
 float lfo_audio_module::get_value()
 {
+    return get_value_from_phase(phase, offset) * amount;
+}
+
+float lfo_audio_module::get_value_from_phase(float ph, float off)
+{
     float val = 0.f;
-    float ph = phase + offset;
-    if (ph >= 1.0)
-        ph = fmod(ph, 1.f);
+    float phs = ph + off;
+    if (phs >= 1.0)
+        phs = fmod(phs, 1.f);
     switch (mode) {
         default:
         case 0:
             // sine
-            val = sin(ph * 360.f);
+            val = sin((phs * 360.f) * M_PI / 180);
             break;
         case 1:
             // triangle
-            if(ph > 0.75)
-                val = (ph - 0.75) * 4 - 1;
-            else if(ph > 0.5)
-                val = (ph - 0.5) * 4 * -1;
-            else if(ph > 0.25)
-                val = 1 - (ph - 0.25) * 4;
+            if(phs > 0.75)
+                val = (phs - 0.75) * 4 - 1;
+            else if(phs > 0.5)
+                val = (phs - 0.5) * 4 * -1;
+            else if(phs > 0.25)
+                val = 1 - (phs - 0.25) * 4;
             else
-                val = ph * 4;
+                val = phs * 4;
             break;
         case 2:
             // square
-            val = (ph < 0.f) ? -1 : +1;
+            val = (phs < 0.5) ? -1 : +1;
             break;
         case 3:
             // saw up
-                val = ph * 2.f - 1;
+                val = phs * 2.f - 1;
             break;
         case 4:
             // saw down
-            val = 1 - ph * 2.f;
+            val = 1 - phs * 2.f;
             break;
     }
     return val;
@@ -2956,12 +2961,13 @@ float lfo_audio_module::get_value()
 
 void lfo_audio_module::advance(uint32_t count)
 {
-    phase += count * freq * srate;
+    //this function walks from 0.f to 1.f and starts all over again
+    phase += count * freq * (1.0 / srate);
     if (phase >= 1.0)
         phase = fmod(phase, 1.f);
 }
 
-void lfo_audio_module::set_params(float f, int m, float o, uint32_t sr)
+void lfo_audio_module::set_params(float f, int m, float o, uint32_t sr, float a)
 {
     // freq: a value in Hz
     // mode: sine=0, triangle=1, square=2, saw_up=3, saw_down=4
@@ -2970,20 +2976,29 @@ void lfo_audio_module::set_params(float f, int m, float o, uint32_t sr)
     mode = m;
     offset = o;
     srate = sr;
+    amount = a;
 }
 
-bool lfo_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context)
+bool lfo_audio_module::get_graph(float *data, int points, cairo_iface *context)
 {
     if (!is_active)
         return false;
+    for (int i = 0; i < points; i++) {
+        float ph = (float)i / (float)points;
+        data[i] = get_value_from_phase(ph, offset) * amount;
+    }
     return true;
 }
 
-bool lfo_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context)
+bool lfo_audio_module::get_dot(float &x, float &y, int &size, cairo_iface *context)
 {
     if (!is_active)
         return false;
-    return false;
+    float phs = phase + offset;
+    if (phs >= 1.0)
+        phs = fmod(phs, 1.f);
+    x = phase;
+    y = get_value_from_phase(phase, offset) * amount;
 }
 
 /// Pulsator by Markus Schmidt
@@ -2996,6 +3011,7 @@ pulsator_audio_module::pulsator_audio_module()
 {
     is_active = false;
     srate = 0;
+//    last_generation = 0;
     clip_inL    = 0.f;
     clip_inR    = 0.f;
     clip_outL   = 0.f;
@@ -3022,8 +3038,8 @@ void pulsator_audio_module::deactivate()
 
 void pulsator_audio_module::params_changed()
 {
-    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate);
-    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate);
+    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate, *params[param_amount]);
+    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate, *params[param_amount]);
 }
 
 void pulsator_audio_module::set_sample_rate(uint32_t sr)
@@ -3073,11 +3089,21 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
             
+            if(*params[param_mono] > 0.5) {
+                inL = (inL + inR) * 0.5;
+                inR = inL;
+            }
             float procL = inL;
             float procR = inR;
             
+            procL *= (lfoL.get_value() * 0.5 + *params[param_amount] / 2);
+            procR *= (lfoR.get_value() * 0.5 + *params[param_amount] / 2);
             
+            outL = procL + inL * (1 - *params[param_amount]);
+            outR = procR + inR * (1 - *params[param_amount]);
             
+            outL *=  *params[param_level_out];
+            outR *=  *params[param_level_out];
             
             // send to output
             outs[0][offset] = outL;
@@ -3112,6 +3138,10 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             
             // next sample
             ++offset;
+            
+            // advance lfo's
+            lfoL.advance(1);
+            lfoR.advance(1);
         } // cycle trough samples
     }
     // draw meters
@@ -3147,32 +3177,42 @@ bool pulsator_audio_module::get_graph(int index, int subindex, float *data, int 
 {
     if (!is_active) {
         return false;
-    } else {
-        return false;
+    } else if(index == param_freq) {
+        if(subindex == 0) {
+            context->set_source_rgba(0.35, 0.4, 0.2, 1);
+            return lfoL.get_graph(data, points, context);
+        }
+        if(subindex == 1) {
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
+            return lfoR.get_graph(data, points, context);
+        }
     }
+    return false;
 }
 bool pulsator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
 {
     if (!is_active) {
         return false;
-    } else {
+    } else if(index == param_freq) {
+        if(subindex == 0) {
+            context->set_source_rgba(0.35, 0.4, 0.2, 1);
+            return lfoL.get_dot(x, y, size, context);
+        }
+        if(subindex == 1) {
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
+            return lfoR.get_dot(x, y, size, context);
+        }
         return false;
     }
+    return false;
 }
 bool pulsator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
-    if (!is_active) {
-        return false;
-    } else {
-        return false;
+   if (index == param_freq && !subindex)
+    {
+        pos = 0;
+        vertical = false;
+        return true;
     }
-}
-
-int pulsator_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline)
-{
-    if (!is_active) {
-        return false;
-    } else {
-        return false;
-    }
+    return false;
 }

@@ -484,7 +484,7 @@ style "clearlooks-frame"
 style "clearlooks-frame-title"
 {
 	fg[NORMAL] = "#fff"
-	font_name = "Sans 10"
+	font_name = "Sans 8"
 }
 
 style "clearlooks-tooltips" = "clearlooks-wider"

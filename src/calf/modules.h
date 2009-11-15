@@ -1259,19 +1259,20 @@ public:
 /// LFO by Markus
 class lfo_audio_module {
 private:
-    float phase, freq, offset;
+    float phase, freq, offset, amount;
     int mode;
     uint32_t srate;
     bool is_active;
 public:
     lfo_audio_module();
-    void set_params(float f, int m, float o, uint32_t sr);
+    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f);
     float get_value();
     void advance(uint32_t count);
     void activate();
     void deactivate();
-    virtual bool get_graph(int subindex, float *data, int points, cairo_iface *context);
-    virtual bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context);
+    float get_value_from_phase(float ph, float off);
+    virtual bool get_graph(float *data, int points, cairo_iface *context);
+    virtual bool get_dot(float &x, float &y, int &size, cairo_iface *context);
 };
 
 /// Pulsator by Markus Schmidt
@@ -1279,6 +1280,8 @@ class pulsator_audio_module: public audio_module<pulsator_metadata>, public freq
 private:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
+    float offset_old;
+    int mode_old;
     lfo_audio_module lfoL, lfoR;
 public:
     float *ins[in_count];
@@ -1295,7 +1298,6 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
-    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline);
 };
 
 /// Filterclavier --- MIDI controlled filter by Hans Baier
