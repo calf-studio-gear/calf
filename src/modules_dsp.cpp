@@ -3050,10 +3050,10 @@ void pulsator_audio_module::set_sample_rate(uint32_t sr)
 uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypass = *params[param_bypass] > 0.5f;
-    numsamples += offset;
+    uint32_t samples = numsamples + offset;
     if(bypass) {
         // everything bypassed
-        while(offset < numsamples) {
+        while(offset < samples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
             ++offset;
@@ -3067,6 +3067,11 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         meter_inR  = 0.f;
         meter_outL = 0.f;
         meter_outR = 0.f;
+        
+        // LFO's should go on
+        lfoL.advance(numsamples);
+        lfoR.advance(numsamples);
+        
     } else {
         
         clip_inL    -= std::min(clip_inL,  numsamples);
@@ -3079,7 +3084,7 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         meter_outR = 0.f;
         
         // process
-        while(offset < numsamples) {
+        while(offset < samples) {
             // cycle through samples
             float outL = 0.f;
             float outR = 0.f;
