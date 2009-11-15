@@ -27,16 +27,16 @@
         <frame label="Highpass">
             <table cols="2" rows="2">
                 <vbox attach-x="0" attach-y="0" fill-y="0">
-                    <label param="hp_active" expand="0" fill="0"/>
+                    <label param="hp_active" expand="0" fill="0" text="Active"/>
                     <toggle size="1" param="hp_active" expand="0" fill="0"/>
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
-                    <label param="hp_freq" />
+                    <label param="hp_freq" text="Frequency" />
                     <knob param="hp_freq" />
                     <value param="hp_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1" attach-w="2">
-                    <label param="hp_mode" />
+                    <label param="hp_mode" text="Rolloff"/>
                     <combo param="hp_mode" />
                 </vbox>
             </table>
@@ -47,17 +47,17 @@
         <frame label="Lowshelf">
             <table rows="3" cols="1">
                 <vbox attach-x="0" attach-y="0">
-                    <label param="ls_freq" />
+                    <label param="ls_freq" text="Frequency"/>
                     <knob param="ls_freq" />
                     <value param="ls_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1">
-                    <label param="ls_level" />
+                    <label param="ls_level" text="Level"/>
                     <knob param="ls_level" type="1" />
                     <value param="ls_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="2">
-                    <label param="ls_active" />
+                    <label param="ls_active" text="Active"/>
                     <toggle size="1" param="ls_active" />
                 </vbox>
             </table>
@@ -83,7 +83,7 @@
             <label text="IV" attach-x="4" attach-y="0" />
             
             <vbox attach-x="1" attach-y="1">
-                <knob param="p1_freq" />
+                <knob param="p1_freq"/>
                 <value param="p1_freq" />
             </vbox>
             <vbox attach-x="1" attach-y="2">
@@ -95,10 +95,10 @@
                 <value param="p1_q" />
             </vbox>
             <vbox attach-x="1" attach-y="4">
-                <toggle size="1" param="p1_active" />
+                <toggle size="1" param="p1_active" text="Active" />
             </vbox>
             <vbox attach-x="2" attach-y="1">
-                <knob param="p2_freq" />
+                <knob param="p2_freq"/>
                 <value param="p2_freq" />
             </vbox>
             <vbox attach-x="2" attach-y="2">
@@ -110,10 +110,10 @@
                 <value param="p2_q" />
             </vbox>
             <vbox attach-x="2" attach-y="4">
-                <toggle size="1" param="p2_active" />
+                <toggle size="1" param="p2_active" text="Active"/>
             </vbox>
             <vbox attach-x="3" attach-y="1">
-                <knob param="p3_freq" />
+                <knob param="p3_freq" label="Frequency" />
                 <value param="p3_freq" />
             </vbox>
             <vbox attach-x="3" attach-y="2">
@@ -125,10 +125,10 @@
                 <value param="p3_q" />
             </vbox>
             <vbox attach-x="3" attach-y="4">
-                <toggle size="1" param="p3_active" />
+                <toggle size="1" param="p3_active" text="Active"/>
             </vbox>
             <vbox attach-x="4" attach-y="1">
-                <knob param="p4_freq" />
+                <knob param="p4_freq" label="Frequency" />
                 <value param="p4_freq" />
             </vbox>
             <vbox attach-x="4" attach-y="2">
@@ -140,7 +140,7 @@
                 <value param="p4_q" />
             </vbox>
             <vbox  attach-x="4" attach-y="4">
-                <toggle size="1" param="p4_active" />
+                <toggle size="1" param="p4_active" text="Active" />
             </vbox>
         </table>
     </frame>
@@ -149,11 +149,11 @@
         <frame label="Output">
             <vbox spacing="5">
                 <table rows="2" cols="3">
-                    <label param="meter_outL"  attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+                    <label param="meter_outL"  attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" label="Out L"/>
                     <vumeter param="meter_outL" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                     <led param="clip_outL" mode="1" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
                     
-                    <label param="meter_outR"  attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+                    <label param="meter_outR"  attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" label="Out R"/>
                     <vumeter param="meter_outR" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                     <led param="clip_outR" mode="1" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
                 </table>
@@ -168,16 +168,16 @@
         <frame label="Lowpass">
             <table cols="2" rows="2">
                 <vbox attach-x="0" attach-y="0" fill-y="0">
-                    <label param="lp_active" />
+                    <label param="lp_active" text="Active"/>
                     <toggle size="1" param="lp_active" />
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
-                    <label param="lp_freq" />
+                    <label param="lp_freq" text="Frequency"/>
                     <knob param="lp_freq" />
                     <value param="lp_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1" attach-w="2">
-                    <label param="lp_mode" />
+                    <label param="lp_mode" text="Rolloff"/>
                     <combo param="lp_mode" />
                 </vbox>
             </table>
@@ -188,17 +188,17 @@
         <frame label="Highshelf">
             <table rows="3" cols="1">
                 <vbox attach-x="0" attach-y="0">
-                    <label param="hs_freq" />
+                    <label param="hs_freq" text="Frequency"/>
                     <knob param="hs_freq" />
                     <value param="hs_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1">
-                    <label param="hs_level" />
+                    <label param="hs_level" text="Level"/>
                     <knob param="hs_level" type="1" />
                     <value param="hs_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="2">
-                    <label param="hs_active" />
+                    <label param="hs_active" text="Active"/>
                     <toggle size="1" param="hs_active" />
                 </vbox>
             </table>
