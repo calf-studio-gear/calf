@@ -253,7 +253,7 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     string text;
-    if (param_no != -1)
+    if (param_no != -1 && !attribs.count("text"))
         text = get_props().name;
     else
         text = attribs["text"];
