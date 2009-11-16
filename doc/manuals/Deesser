@@ -1,0 +1,31 @@
+Deesser
+
+Functionality
+
+A Deesser is used to dynamically reduce high frequencies. The standard field of use is the reduction of "sssss" and "shhhh" in vocal tracks, that's where it's name came from. A deesser is mainly based on a compressor that reacts not on the full range signal but on a filtered sidechain signal. The signal is split in two different threads. The sidechain thread is sent through a filter, before it acts as a level for reducing the gain of the main thread. A deesser could also be used to reduce some high transients of a snaredrum or to bring some "air" in a sound without killing your tweeter on attack. So it may act as a creative effect just like as a troubleshooter. But never compress a vocal track without adding a deesser afterwards - if you have a heart for your listeners.
+
+Calf Deesser is able to be driven in sidechain mode. It means that not the full range signal will be affected by the gain reduction but only frequencies above the split frequency are manipulated in gain. Normally a wideband deesser sounds much cleaner on a single vocal track. But multitimbral vocals recordings could benefit a lot from this functionality. It also gives a great advantage for processing instrument tracks like strings for example. If you haven't understand it by now, think of a sidechain deesser like of a dynamically processing highshelf equalizer.
+
+A neat special in the sidechain is the additional peak. Normally "sssss" and "shhhh" are dynamically far apart. With this bell filter you can accentuate or reduce significant frequencies to get the most precise control over your highs before they will reduce your main signal. The peak affects the sidechain signal but isn't added to the main signal's high band in split mode.
+
+Main information about dynamic processing is located in the compressor section. Additional information about sidechaining can be found in the sidechain compressor's section.
+
+Controls
+
+Bypass: Don't process anything, just bypass the signal
+Detected: This meter shows the level of the (filtered) signal which is used for detection
+Gain Reduction: the level of reduction on the original signal
+0dB: Flashes, if the signal rises about 0dB in the output stage
+Active: Flashes, if the deesser detects a noticeable signal
+S/C listen: Sends the sidechain (filtered) signal to the output for acoustical control
+Detection: Choose if the deesser should take the exact signal for detection or an RMS like one (it's mainly smoother)
+Mode: Select your operation mode between wideband or split
+Threshold: If a signal rises above this level it will affect the gain reduction
+Ratio: Set a ratio about which the signal is reduced. 1:2 means that if the level rises 4dB above the threshold, it will be only 2dB above after the reduction.
+Laxity: The reaction of the deesser. Higher values won't affect really short peaks.
+Makeup: Amplify your signal after processing. In split mode only the high band will be made up.
+Split: The split frequency. All signals above this frequency will affect the gain reduction (and are affected in split mode, too)
+Gain: It shifts the volume of the higher band. In wideband mode it affects the sidechain, in split mode it also affects the processed high frequencies.
+Peak: Make a more precise selection of the sidechain signal with this bell
+Level: Increase or decrease the chosen frequency
+Peak Q: Set the quality of the bell. Higher values will affect a narrower, higher ones a wider band
