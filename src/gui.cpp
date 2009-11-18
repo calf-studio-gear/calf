@@ -639,6 +639,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_window_set_default_icon_name("calf");
     gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
+    gtk_window_set_role(toplevel, "plugin_ui");
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
     
     GtkRequisition req, req2;
