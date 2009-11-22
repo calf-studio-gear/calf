@@ -726,6 +726,7 @@ host_session current_session;
 int main(int argc, char *argv[])
 {
     host_session &sess = current_session;
+    gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     
 #if USE_LASH

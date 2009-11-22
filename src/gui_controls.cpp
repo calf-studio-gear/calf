@@ -53,7 +53,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     }
     gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
     gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
-    
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Combobox");
     return widget;
 }
 
@@ -154,7 +154,7 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
-    
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-HScale");
     return widget;
 }
 
@@ -216,7 +216,7 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
-    
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VScale");
     return widget;
 }
 
@@ -259,6 +259,7 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
         text = attribs["text"];
     widget = gtk_label_new(text.c_str());
     gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Label");
     return widget;
 }
 
@@ -283,6 +284,7 @@ GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_label_set_width_chars (GTK_LABEL (widget), get_int("width"));        
     }
     gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Value");
     return widget;
 }
 
@@ -314,6 +316,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
     CALF_VUMETER(widget)->vumeter_hold = get_float("hold", 0);
     CALF_VUMETER(widget)->vumeter_falloff = get_float("falloff", 0.f);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VUMeter");
     return widget;
 }
 
@@ -335,6 +338,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
     widget = calf_led_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-led");
     CALF_LED(widget)->led_mode = get_int("mode", 0);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LED");
     return widget;
 }
 
@@ -357,6 +361,7 @@ GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-tube");
     CALF_TUBE(widget)->size = get_int("size", 2);
     CALF_TUBE(widget)->direction = get_int("direction", 2);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Tube");
     return widget;
 }
 
@@ -378,6 +383,7 @@ GtkWidget *check_param_control::create(plugin_gui *_gui, int _param_no)
     
     widget  = gtk_check_button_new ();
     gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (check_value_changed), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Checkbox");
     return widget;
 }
 
@@ -432,6 +438,7 @@ GtkWidget *radio_param_control::create(plugin_gui *_gui, int _param_no)
         
     gui->set_radio_group(param_no, gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget)));
     gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (radio_clicked), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-RadioButton");
     return widget;
 }
 
@@ -471,6 +478,7 @@ GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)
         widget  = gtk_spin_button_new_with_range (props.min, props.max, 1);
     gtk_spin_button_set_digits (GTK_SPIN_BUTTON(widget), get_int("digits", 0));
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (value_changed), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-SpinButton");
     return widget;
 }
 
@@ -502,6 +510,7 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
     
     widget  = gtk_button_new_with_label (get_props().name);
     gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
     return widget;
 }
 
@@ -546,6 +555,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
         CALF_KNOB(widget)->knob_size = 1;
     }
     gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
 }
 
@@ -589,6 +599,7 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     }
     
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
     return widget;
 }
 
@@ -628,6 +639,7 @@ GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
     kb = CALF_KEYBOARD(widget);
     kb->nkeys = get_int("octaves", 4) * 7 + 1;
     kb->sink = new CalfKeyboard::EventAdapter;
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Keyboard");
     return widget;
 }
 
@@ -665,6 +677,7 @@ GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
     curve = CALF_CURVE(widget);
     curve->sink = new curve_param_control_callback(this);
     // gtk_curve_set_curve_type(curve, GTK_CURVE_TYPE_LINEAR);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Curve");
     return widget;
 }
 
@@ -703,6 +716,7 @@ GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
     entry = GTK_ENTRY(widget);
     gtk_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
     gtk_editable_set_editable(GTK_EDITABLE(entry), get_int("editable", 1));
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Entry");
     return widget;
 }
 
@@ -738,6 +752,7 @@ GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);
     if (attribs.count("width_chars"))
          gtk_file_chooser_button_set_width_chars (filechooser, get_int("width_chars"));
+         gtk_widget_set_name(GTK_WIDGET(widget), "Calf-FileButton");
     return widget;
 }
 
@@ -781,7 +796,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     calf_line_graph_set_square(clg, get_int("square", 0));
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
-        
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LineGraph");
     return widget;
 }
 
@@ -849,7 +864,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_tree_view_insert_column_with_attributes(tree, i, tci[i].name, cr, "text", i, NULL);
     }
     gtk_tree_view_set_headers_visible(tree, TRUE);
-    
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ListView");
     return widget;
 }
 
@@ -920,6 +935,7 @@ GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_at
         gtk_table_set_homogeneous(GTK_TABLE(table), TRUE);
     }
     container = GTK_CONTAINER(table);
+    gtk_widget_set_name(GTK_WIDGET(table), "Calf-Table");
     return table;
 }
 
@@ -944,6 +960,7 @@ GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xm
 {
     GtkWidget *align = gtk_alignment_new(get_float("align-x", 0.5), get_float("align-y", 0.5), get_float("scale-x", 0), get_float("scale-y", 0));
     container = GTK_CONTAINER(align);
+    gtk_widget_set_name(GTK_WIDGET(align), "Calf-Align");
     return align;
 }
 
@@ -953,6 +970,7 @@ GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_at
 {
     GtkWidget *frame = gtk_frame_new(attribs["label"].c_str());
     container = GTK_CONTAINER(frame);
+    gtk_widget_set_name(GTK_WIDGET(frame), "Calf-Frame");
     return frame;
 }
 
@@ -969,6 +987,7 @@ GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_att
 {
     GtkWidget *hbox = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
     container = GTK_CONTAINER(hbox);
+    gtk_widget_set_name(GTK_WIDGET(hbox), "Calf-HBox");
     return hbox;
 }
 
@@ -978,6 +997,7 @@ GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_att
 {
     GtkWidget *vbox = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
     container = GTK_CONTAINER(vbox);
+    gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-VBox");
     return vbox;
 }
 
@@ -987,6 +1007,7 @@ GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml
 {
     GtkWidget *nb = gtk_notebook_new();
     container = GTK_CONTAINER(nb);
+    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
     return nb;
 }
 
@@ -1008,6 +1029,7 @@ GtkWidget *scrolled_container::create(plugin_gui *_gui, const char *element, xml
     GtkWidget *sw = gtk_scrolled_window_new(horiz, vert);
     gtk_widget_set_size_request(sw, get_int("req-x", -1), get_int("req-y", -1));
     container = GTK_CONTAINER(sw);
+    gtk_widget_set_name(GTK_WIDGET(sw), "Calf-ScrolledWindow");
     return sw;
 }
 

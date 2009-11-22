@@ -389,8 +389,6 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
 //    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
 //    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
     
-    gtk_widget_set_name(GTK_WIDGET(decoTable), "calf-container");
-    
     return GTK_WIDGET(decoTable);
 }
 
@@ -637,10 +635,10 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_default_icon_name("calf");
-    gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
     gtk_window_set_role(toplevel, "plugin_ui");
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
+    gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Plugin");
     
     GtkRequisition req, req2;
     gtk_window_set_title(GTK_WINDOW (toplevel), title);
@@ -663,7 +661,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     fill_gui_presets(false, ch);
     
     gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar"), false, false, 0);
-    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "calf-menu");
+    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "Calf-Menu");
     
     // determine size without content
     gtk_widget_show_all(GTK_WIDGET(vbox));
@@ -679,7 +677,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(container));
-    
+    gtk_widget_set_name(GTK_WIDGET(sw), "Calf-Container");
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
     gtk_widget_show_all(GTK_WIDGET(sw));

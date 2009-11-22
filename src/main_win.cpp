@@ -424,7 +424,7 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
 void main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
-    gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-rack");
+    gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
     gtk_window_set_default_icon_name("calf");
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
@@ -441,7 +441,7 @@ void main_window::create()
     
     gtk_widget_set_size_request(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), 640, -1);
     
-    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "calf-menu");
+    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "Calf-Menu");
     
     plugin_actions = gtk_action_group_new("plugins");
     string plugin_xml = make_plugin_list(plugin_actions);
@@ -476,7 +476,7 @@ void main_window::create()
     gtk_container_add(GTK_CONTAINER(all_vbox), strips_table);
     gtk_container_add(GTK_CONTAINER(toplevel), all_vbox);
     
-    gtk_widget_set_name(GTK_WIDGET(strips_table), "calf-container");
+    gtk_widget_set_name(GTK_WIDGET(strips_table), "Calf-Container");
     
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
