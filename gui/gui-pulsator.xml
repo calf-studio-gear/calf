@@ -44,13 +44,20 @@
             </frame>
             <hbox>
                 <vbox>
-                    <hscale param="offset" />
-                    <label param="offset" />
-                </vbox>
-                <vbox>
                     <label />
                     <combo param="mode" expand="0" fill="0" />
                     <label param="mode" />
+                </vbox>
+                
+                <vbox>
+                    <hscale param="offset" />
+                    <label param="offset" />
+                </vbox>
+                
+                <vbox>
+                    <label />
+                    <button param="reset" />
+                    <label />
                 </vbox>
             </hbox>
         </vbox>

@@ -7,7 +7,7 @@
     <vbox attach-x="0" attach-y="0">
         <vbox border="10">
             <label param="transpose" />
-            <knob param="transpose" type="1" size="4"/>
+            <knob param="transpose" type="1" size="5"/>
             <value param="transpose" />
         </vbox>
         <vbox border="10">
@@ -19,7 +19,7 @@
     <vbox attach-x="2" attach-y="0">
         <vbox border="10">
             <label param="maxres" />
-            <knob param="maxres" size="4" />
+            <knob param="maxres" size="5" />
             <value param="maxres" />
         </vbox>
         <vbox border="10">

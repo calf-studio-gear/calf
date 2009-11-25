@@ -20,14 +20,18 @@ style "calf-default"
 
 	GtkPaned       ::handle-size          = 6
 
-	GtkRange       ::trough-border        = 0
 	GtkRange       ::slider-width         = 15
 	GtkRange       ::stepper-size         = 15
-
-#	GtkScale       ::slider-length        = 30
-#	GtkScale       ::trough-side-details  = 1	# Restores sliders
+    GtkRange::trough_border				  = 0
+    GtkVScale::slider_length        	  = 46
+	GtkVScale::slider_width 		  	  = 35
+	GtkHScale::slider_length 			  = 46
+	GtkHScale::slider_width 			  = 35
+	
+	GtkScale       ::trough-side-details  = 0	# Restores sliders
+	
 	GtkScrollbar   ::min-slider-length    = 30
-
+    
 	GtkMenuBar     ::internal-padding     = 4
 	GtkExpander    ::expander-size        = 16
 	GtkToolbar     ::internal-padding     = 1
@@ -39,15 +43,14 @@ style "calf-default"
 	
 	GtkSpinButton::shadow-type			= GTK_SHADOW_NONE
 	
-	
 	# Glow the tasklist by changing the color, instead of overlaying it with a rectangle
 	WnckTasklist   ::fade-overlay-rect    = 0
 
 	#GtkWidget      ::link-color           = @fg_color
 	#GtkWidget      ::visited-link-color   = shade (0.2, @fg_color)
 
-	xthickness = 1
-	ythickness = 1
+	xthickness = 0
+	ythickness = 0
 	
 	font_name = "Sans 8"
 	
@@ -80,9 +83,184 @@ style "calf-default"
 	bg_pixmap[ACTIVE]		= "background_black.png"
 	bg_pixmap[INSENSITIVE]	= "background_dark.png"
 	
-	engine "pixmap" 
+	engine "pixmap"
 	{
+	    image
+		{
+			function				= BOX
+			detail					= "buttondefault"
+			recolorable				= TRUE
+			overlay_file			= "button_default.png"
+			overlay_border			= {8, 8, 2, 2}
+			overlay_stretch			= FALSE
+		}
 		
+	    # Focus
+		image
+		{
+			function		= FOCUS
+			recolorable		= TRUE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+		}
+
+		# Arrows
+		image
+		{
+			function		= ARROW
+			state			= INSENSITIVE
+			recolorable		= FALSE
+			overlay_file		= "led_inactive.png"
+			overlay_border		= { 3, 3, 2, 2 }
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= NORMAL
+			overlay_file		= "led_normal.png"
+			overlay_border		= { 3, 3, 2, 2 }
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= ACTIVE
+			overlay_file		= "led_active.png"
+			overlay_border		= { 3, 3, 2, 2 }
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= PRELIGHT
+			overlay_file		= "led_prelight.png"
+			overlay_border		= { 3, 3, 2, 2 }
+			overlay_stretch		= FALSE
+		}
+		
+		# Lines
+		image
+		{
+			function		= VLINE
+			recolorable		= FALSE
+			file			= "vline.png"
+			border			= { 1, 1, 0, 0 }
+			stretch			= TRUE
+		}
+		image
+		{
+			function		= HLINE
+			recolorable		= FALSE
+			file			= "hline.png"
+			border			= { 0, 0, 1, 1	}
+			stretch			= TRUE
+		}
+		
+		# Shadows
+		image
+        {
+            function			= SHADOW
+            shadow			= IN
+            recolorable		= FALSE
+            file				= "frame.png"
+            border			= { 16, 16, 16, 16 }
+            stretch			= TRUE
+        }
+        image
+        {
+            function			= SHADOW
+            shadow			= IN
+            recolorable		= FALSE
+            file				= "frame.png"
+            border			= { 16, 16, 16, 16 }
+            stretch			= TRUE
+        }
+
+        image
+        {
+            function		= SHADOW
+            shadow			= ETCHED_IN
+            recolorable		= TRUE
+            file				= "frame.png"				
+            border			= { 16, 16, 16, 16 }
+            stretch			= TRUE
+        }
+        image
+        {
+            function		= SHADOW
+            shadow			= ETCHED_OUT
+            recolorable		= TRUE
+            file				= "frame.png"
+            border			= { 16, 16, 16, 16 }
+            stretch			= TRUE
+        }
+        image
+        {
+            function			= SHADOW_GAP
+            recolorable			= TRUE
+            file				= "frame_top.png"
+            border				= { 12, 12, 2, 12 }
+            stretch				= TRUE
+            gap_start_file		= "frame_top_start.png"
+            gap_start_border	= { 12, 2, 12, 2 }
+            gap_end_file		= "frame_top_end.png"
+            gap_end_border	    = { 2, 12, 12, 2 }
+            gap_side			= TOP
+        }
+        image
+        {
+            function			= SHADOW_GAP
+            recolorable			= TRUE
+            file				= "frame_left.png"
+            border				= { 2, 12, 12, 12 }
+            stretch				= TRUE
+            gap_start_file		= "frame_left_start.png"
+            gap_start_border	= { 12, 2, 12, 2 }
+            gap_end_file		= "frame_left_end.png"
+            gap_end_border	    = { 12, 2, 2, 12 }
+            gap_side			= LEFT
+        }
+        image
+        {
+            function			= SHADOW_GAP
+            recolorable			= TRUE
+            file				= "frame_right.png"
+            border				= { 12, 2, 12, 12 }
+            stretch				= TRUE
+            gap_start_file		= "frame_right_start.png"
+            gap_start_border	= { 2, 12, 12, 2 }
+            gap_end_file		= "frame_right_end.png"
+            gap_end_border	    = { 2, 12, 2, 12 }
+            gap_side			= RIGHT
+        }
+        image
+        {
+            function			= SHADOW_GAP
+            recolorable			= TRUE
+            file				= "frame_bottom.png"
+            border				= { 12, 12, 12, 2 }
+            stretch				= TRUE
+            gap_start_file		= "frame_bottom_start.png"
+            gap_start_border	= { 12, 2, 2, 12 }
+            gap_end_file		= "frame_bottom_end.png"
+            gap_end_border	    = { 2, 12, 2, 12 }
+            gap_side			= BOTTOM
+        }
+
+		# Clear default box
+		image
+		{
+			function		= BOX
+			recolorable		= TRUE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+		}
 	}
 }
 
@@ -124,7 +302,9 @@ style "calf-rack"
 }
 
 
-
+style "calf-label" {
+    font_name = "Sans 7"
+}
 
 ################################################################################
 #                                   BUTTONS                                    #
@@ -136,7 +316,7 @@ style "calf-button"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::inner-border         = { 8, 8, 3, 3}
+	GtkButton      ::inner-border         = { 8, 8, 2, 2}
 	
     xthickness = 5
     ythickness = 2
@@ -152,6 +332,18 @@ style "calf-button"
 	text[SELECTED]		= "#000"
 	text[ACTIVE]		= "#000"
 	text[INSENSITIVE]	= "#666"
+	
+	bg[NORMAL]        = "#DADADA"
+	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
+	bg[SELECTED]	  = "#DADADA"
+	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+
+	base[NORMAL]        = "#DADADA"
+	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	base[ACTIVE]        = shade (1.4, "#D1D1D1")
+	base[SELECTED]	  = "#DADADA"
+	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
 	
 	engine "pixmap"
 	{
@@ -207,7 +399,7 @@ style "calf-toggle"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::inner-border         = { 8, 26, 3, 3}
+	GtkButton      ::inner-border         = { 8, 26, 2, 2}
 	
     xthickness = 5
     ythickness = 2
@@ -223,6 +415,18 @@ style "calf-toggle"
 	text[SELECTED]		= "#000"
 	text[ACTIVE]		= "#000"
 	text[INSENSITIVE]	= "#666"
+	
+	bg[NORMAL]        = "#DADADA"
+	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
+	bg[SELECTED]	  = "#DADADA"
+	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+
+	base[NORMAL]        = "#DADADA"
+	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	base[ACTIVE]        = shade (1.4, "#D1D1D1")
+	base[SELECTED]	  = "#DADADA"
+	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
 	
 	engine "pixmap"
 	{
@@ -279,7 +483,7 @@ style "calf-button-norm"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::inner-border         = { 6, 6, 3, 3}
+	GtkButton      ::inner-border         = { 8, 8, 2, 2}
 	
     xthickness = 5
     ythickness = 2
@@ -295,6 +499,18 @@ style "calf-button-norm"
 	text[SELECTED]		= "#000"
 	text[ACTIVE]		= "#000"
 	text[INSENSITIVE]	= "#666"
+	
+	bg[NORMAL]        = "#DADADA"
+	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
+	bg[SELECTED]	  = "#DADADA"
+	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+
+	base[NORMAL]        = "#DADADA"
+	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	base[ACTIVE]        = shade (1.4, "#D1D1D1")
+	base[SELECTED]	  = "#DADADA"
+	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
 	
 	engine "pixmap"
 	{
@@ -359,13 +575,25 @@ style "calf-combobox"
 	text[ACTIVE]		= "#000"
 	text[INSENSITIVE]	= "#666"
 	
+	bg[NORMAL]        = "#DADADA"
+	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
+	bg[SELECTED]	  = "#DADADA"
+	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+
+	base[NORMAL]        = "#DADADA"
+	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
+	base[ACTIVE]        = shade (1.4, "#D1D1D1")
+	base[SELECTED]	  = "#DADADA"
+	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+	
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::default-border       = { 6, 24, 5, 5 }
-	GtkButton      ::inner-border         = { 6, 25, 3, 3}
+#	GtkButton      ::default-border       = { 6, 24, 5, 5 }
+	GtkButton      ::inner-border         = { 8, 29, 1, 1}
 	
     xthickness = 5
-    ythickness = 3
+    ythickness = 2
 	
 	engine "pixmap"
 	{
@@ -406,41 +634,13 @@ style "calf-combobox"
 			border			= {8, 24, 6, 6}
 			stretch			= TRUE
 		}
-		image
-		{
-			function		= TAB
-			state			= INSENSITIVE
-			recolorable		= FALSE
-			overlay_file		= "led_inactive.png"
-			overlay_stretch		= FALSE
-		}
-		image
-		{
-			function		= TAB
-			recolorable		= FALSE
-			state			= NORMAL
-			overlay_file		= "led_normal.png"
-			overlay_border		= { 3, 3, 2, 2 }
-			overlay_stretch		= FALSE
-		}
-		image
-		{
-			function		= TAB
-			recolorable		= FALSE
-			state			= ACTIVE
-			overlay_file		= "led_prelight.png"
-			overlay_border		= { 3, 3, 2, 2 }
-			overlay_stretch		= FALSE
-		}
-		image
-		{
-			function		= TAB
-			recolorable		= FALSE
-			state			= PRELIGHT
-			overlay_file		= "led_prelight.png"
-			overlay_border		= { 3, 3, 2, 2 }
-			overlay_stretch		= FALSE
-		}
+#		image
+#		{
+#			function		= ARROW
+#			recolorable		= FALSE
+#			overlay_file		= "null.png"
+#			overlay_stretch		= FALSE
+#		}
 		image
 		{
 			function		= VLINE
@@ -493,36 +693,8 @@ style "calf-entry"
 			stretch			= TRUE
 		}
 		image
-		{
-			function		= SHADOW
-			shadow			= OUT
-			recolorable		= FALSE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-		}
-		image
-		{
-			function		= BOX
-			shadow			= IN
-			recolorable		= FALSE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-		}
-		image
-		{
-			function		= BOX
-			shadow			= OUT
-			recolorable		= FALSE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-		}
-		image
 	    {
 			function        = FLAT_BOX
-			recolorable     = TRUE
 			state           = INSENSITIVE
     		detail          = "entry_bg"
 			file            = "entry_inactive.png"
@@ -532,7 +704,6 @@ style "calf-entry"
 		image
   		{
 			function        = FLAT_BOX
-			recolorable     = TRUE
 			state           = NORMAL
     		detail          = "entry_bg"
 			file            = "entry.png"
@@ -751,22 +922,116 @@ style "calf-menu-separator" = "menu"
 
 ### H/V SCALES ###
 
-style "calf-scale"
+style "calf-scale-small" = "calf-default"
 {
-	GtkVScale::slider_length 			= 46
-	GtkVScale::slider_width 			= 35
-	GtkHScale::slider_length 			= 46
-	GtkHScale::slider_width 			= 35
-	GtkRange::trough_border				= 0
-	
+    GtkVScale::slider_length        	  = 38
+	GtkVScale::slider_width 		  	  = 25
+	GtkHScale::slider_length 			  = 38
+	GtkHScale::slider_width 			  = 25
 	engine "pixmap"
 	{
 		image
 		{
 			function		= BOX
+			file			= "trough1-horizontal.png"
+			border			= { 14, 14, 0, 0 }
+			stretch			= TRUE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= BOX
+			file			= "trough1-vertical.png"
+			border			= { 0, 0, 14, 14 }
+			stretch			= TRUE
+			orientation		= VERTICAL
+		}
+
+		image
+		{
+			function		= SLIDER
 			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-horizontal.png"
+			state			= NORMAL
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-horiz.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= FALSE
+			state			= PRELIGHT
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-horiz-prelight.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= FALSE
+			state			= INSENSITIVE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-horiz.png"
+			overlay_stretch		= FALSE
+			orientation		= HORIZONTAL
+		}
+		
+		image
+		{
+			function		= SLIDER
+			recolorable		= FALSE
+			state			= NORMAL
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-vert.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= FALSE
+			state			= PRELIGHT
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-vert-prelight.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
+		image
+		{
+			function		= SLIDER
+			recolorable		= FALSE
+			state			= INSENSITIVE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+			overlay_file		= "slider1-vert.png"
+			overlay_stretch		= FALSE
+			orientation		= VERTICAL
+		}
+	}
+}
+
+
+style "calf-scale-big" = "calf-default"
+{
+	engine "pixmap"
+	{
+		image
+		{
+			function		= BOX
+			file			= "trough2-horizontal.png"
 			border			= { 20, 20, 0, 0 }
 			stretch			= TRUE
 			orientation		= HORIZONTAL
@@ -774,9 +1039,7 @@ style "calf-scale"
 		image
 		{
 			function		= BOX
-			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-vertical.png"
+			file			= "trough2-vertical.png"
 			border			= { 0, 0, 20, 20 }
 			stretch			= TRUE
 			orientation		= VERTICAL
@@ -790,7 +1053,7 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
+			overlay_file		= "slider2-horiz.png"
 			overlay_stretch		= FALSE
 			orientation		= HORIZONTAL
 		}
@@ -802,7 +1065,7 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-horiz-prelight.png"
+			overlay_file		= "slider2-horiz-prelight.png"
 			overlay_stretch		= FALSE
 			orientation		= HORIZONTAL
 		}
@@ -814,10 +1077,11 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
+			overlay_file		= "slider2-horiz.png"
 			overlay_stretch		= FALSE
 			orientation		= HORIZONTAL
 		}
+		
 		image
 		{
 			function		= SLIDER
@@ -826,7 +1090,7 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
+			overlay_file		= "slider2-vert.png"
 			overlay_stretch		= FALSE
 			orientation		= VERTICAL
 		}
@@ -838,7 +1102,7 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-vert-prelight.png"
+			overlay_file		= "slider2-vert-prelight.png"
 			overlay_stretch		= FALSE
 			orientation		= VERTICAL
 		}
@@ -850,224 +1114,13 @@ style "calf-scale"
 			file			= "null.png"
 			border			= { 0, 0, 0, 0 }
 			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
+			overlay_file		= "slider2-vert.png"
 			overlay_stretch		= FALSE
 			orientation		= VERTICAL
 		}
 	}
 }
 
-style "calf-hscale"
-{
-	GtkVScale::slider_length 			= 46
-	GtkVScale::slider_width 			= 35
-	GtkHScale::slider_length 			= 46
-	GtkHScale::slider_width 			= 35
-	GtkRange::trough_border				= 0
-	
-	engine "pixmap"
-	{
-		image
-		{
-			function		= BOX
-			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-horizontal.png"
-			border			= { 20, 20, 0, 0 }
-			stretch			= TRUE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= BOX
-			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-vertical.png"
-			border			= { 0, 0, 20, 20 }
-			stretch			= TRUE
-			orientation		= VERTICAL
-		}
-
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= NORMAL
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= PRELIGHT
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz-prelight.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= INSENSITIVE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= NORMAL
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= PRELIGHT
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert-prelight.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= INSENSITIVE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-	}
-}
-
-style "calf-vscale"
-{
-	GtkVScale::slider_length 			= 46
-	GtkVScale::slider_width 			= 35
-	GtkHScale::slider_length 			= 46
-	GtkHScale::slider_width 			= 35
-	GtkRange::trough_border				= 0
-	
-	engine "pixmap"
-	{
-		image
-		{
-			function		= BOX
-			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-horizontal.png"
-			border			= { 20, 20, 0, 0 }
-			stretch			= TRUE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= BOX
-			recolorable		= FALSE
-			detail			= "trough"
-			file			= "trough-vertical.png"
-			border			= { 0, 0, 20, 20 }
-			stretch			= TRUE
-			orientation		= VERTICAL
-		}
-
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= NORMAL
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= PRELIGHT
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz-prelight.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= INSENSITIVE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-horiz.png"
-			overlay_stretch		= FALSE
-			orientation		= HORIZONTAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= NORMAL
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= PRELIGHT
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert-prelight.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-		image
-		{
-			function		= SLIDER
-			recolorable		= FALSE
-			state			= INSENSITIVE
-			file			= "null.png"
-			border			= { 0, 0, 0, 0 }
-			stretch			= TRUE
-			overlay_file		= "slider-vert.png"
-			overlay_stretch		= FALSE
-			orientation		= VERTICAL
-		}
-	}
-}
 
 
 
@@ -1374,6 +1427,15 @@ style "calf-scrollbar"
 #                                    LAYOUT                                    #
 ################################################################################
 
+
+### CONTAINER ###
+
+style "calf-container"
+{
+    xthickness=0
+    ythickness=0
+}
+
 ### NOTEBOOK ###
 
 style "calf-notebook"
@@ -1546,11 +1608,11 @@ style "calf-frame"
 {
 	xthickness = 8
 	ythickness = 8
-	bg[NORMAL] = "#fff"
-#	engine "clearlooks" 
-#	{
-#		radius = 7.0
-#	}
+	bg[NORMAL] = "#ddd"
+	engine "clearlooks" 
+	{
+		radius = 7.0
+	}
 }
 
 style "calf-frame-title"
@@ -1569,11 +1631,11 @@ style "calf-frame-title"
 
 style "calf-progressbar"
 {
-	xthickness = 1
-	ythickness = 1
-	bg[NORMAL] = "#000"
-	bg[SELECTED] = "#0af"
-	fg[PRELIGHT] = "#000"
+#	xthickness = 1
+#	ythickness = 1
+#	bg[NORMAL] = "#000"
+#	bg[SELECTED] = "#0af"
+#	fg[PRELIGHT] = "#000"
 
 #	engine "clearlooks"
 #	{
@@ -1609,73 +1671,80 @@ style "calf-tooltips" = "calf-wider"
 ################################################################################
 
 # Theme default style is applied to every widget
-widget "*Calf*GtkWidget"    					style "calf-default"
+widget "*Calf*"    					style : theme "calf-default"
 
 # Rack
-widget "*Calf-Rack*"    					            style "calf-rack"
+widget "*Calf-Rack*"    					            style : theme "calf-rack"
+
+# Labels
+widget "*Calf-Label"    					            style : theme "calf-label"
+
+# Values
+widget "*Calf-Value"    					            style : theme "calf-label"
 
 # Menus
-widget_class "*Calf*<GtkMenuBar>*"           		style "calf-menubar"
-widget "*Calf-Menu*"    								style "calf-menu"
-widget_class "*Calf*<GtkMenuShell>*"              		style "calf-menu"
-widget "*Calf*SeparatorMenuItem*"						style "calf-menu-separator"
-widget_class "*Calf*<GtkMenuItem>*"          		style "calf-menu-item"
+widget_class "*Calf*<GtkMenuBar>*"           		style : rc "calf-menubar"
+widget "*Calf-Menu*"    								style : rc "calf-menu"
+widget_class "*Calf*<GtkMenuShell>*"              		style : rc "calf-menu"
+widget "*Calf*SeparatorMenuItem*"						style : rc "calf-menu-separator"
+widget_class "*Calf*<GtkMenuItem>*"          		style : rc "calf-menu-item"
 
 # Notebook
-widget_class "*<GtkNotebook>"    			style "calf-notebook"
+widget_class "*<GtkNotebook>"    			style : highest "calf-notebook"
 
 # Frame
-widget "*Calf*GtkFrame" 					style "calf-frame"
-widget "*Calf*GtkFrame.GtkLabel" 			style "calf-frame-title"
+widget "*Calf*Frame" 					style : rc "calf-frame"
+widget "*Calf*Frame.GtkLabel" 			style : rc "calf-frame-title"
+
+# Scrolled window
+widget "*Calf-Container" 					style : highest "calf-container"
 
 # Treeview
-widget_class "*Calf*.<GtkTreeView>*"        			style "calf-treeview"
-widget_class "*Calf*.<GtkTreeView>.<GtkButton>*" 		style "calf-treeview-header"
-widget_class "*Calf*.<GtkCTree>.<GtkButton>*"    		style "calf-treeview-header"
-widget_class "*Calf*.<GtkList>.<GtkButton>*"     		style "calf-treeview-header"
-widget_class "*Calf*.<GtkCList>.<GtkButton>*"    		style "calf-treeview-header"
+widget_class "*Calf*.<GtkTreeView>*"        			style : theme "calf-treeview"
+widget_class "*Calf*.<GtkTreeView>.<GtkButton>*" 		style : rc "calf-treeview-header"
+widget_class "*Calf*.<GtkCTree>.<GtkButton>*"    		style : rc "calf-treeview-header"
+widget_class "*Calf*.<GtkList>.<GtkButton>*"     		style : rc "calf-treeview-header"
+widget_class "*Calf*.<GtkCList>.<GtkButton>*"    		style : rc "calf-treeview-header"
 
 # Buttons
-widget "*Calf*Button*"                    style "calf-button"
-widget "*Calf*GtkToggleButton*"                    style "calf-toggle"
+widget "*Calf*Button*"                    style : theme "calf-button"
+widget "*Calf*Toggle*"                    style : rc "calf-toggle"
+widget "*Calf-Button"                    style : highest "calf-button"
+widget "*Calf-Toggle"                    style : highest "calf-toggle"
+widget "*Calf*CheckButton"      			style : highest "calf-toggle"
+widget "*Calf*RadioButton"      			style : highest "calf-toggle"
+widget "*Calf*GtkLinkButton*"								style : rc "calf-button"
+widget "*Calf*GtkScaleButton*"								style : rc "calf-button"
+widget "*Calf*GtkColorButton*"								style : rc "calf-button"
+widget "*Calf*FileChooserButton*"								style : rc "calf-button"
+widget "*Calf*GtkFontButton*"								style : rc "calf-button"
 
-widget "*Calf-Button*"      			style "calf-button"
-widget "*Calf-Toggle*"      	style "calf-toggle"
-
-widget "*Calf*GtkLinkButton*"								style "calf-button"
-widget "*Calf*GtkScaleButton*"								style "calf-button"
-widget "*Calf*GtkColorButton*"								style "calf-button"
-widget "*Calf*FileChooserButton*"								style "calf-button"
-widget "*Calf*GtkFontButton*"								style "calf-button"
-
-widget "*Calf-Combobox*"         			style "calf-combobox"
-widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"			style "calf-comboboxentry"
-widget "*Calf*GtkOptionMenu*"						style "calf-combobox"
+widget "*Calf-Combobox*"         			style : theme "calf-combobox"
+widget "*Calf*Combo*"         			style : rc "calf-combobox"
+widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"			style : theme "calf-comboboxentry"
+widget "*Calf*GtkOptionMenu*"						style : theme "calf-combobox"
 
 # Entries
-widget "*Calf-SpinButton"  					style "calf-spinbutton"
-widget "*Calf-Entry*"     					style "calf-entry"
-widget "*Calf*Entry*"     					style "calf-entry"
+widget "*Calf*SpinButton*"  					style : rc "calf-spinbutton"
+widget "*Calf-Entry*"     					style : highest "calf-entry"
+widget "*Calf*Entry*"     					style : highest "calf-entry"
 
 # Miscellaneous
 widget_class "*Calf*<GtkStatusbar>"  			style "calf-statusbar"
 widget_class "*Calf*<GtkProgressBar>"       			style "calf-progressbar"
 
 # Scrollbars/Scales
-widget_class "*Calf*<GtkScale>"       					style "calf-scale"
-widget_class "*Calf*<GtkRange>"       					style "calf-scale"
-widget "*Calf-VScale"      					style "calf-vscale"
-widget "*Calf-HScale"      					style "calf-hscale"
-widget_class "*Calf*<GtkScrollbar>"   					style "calf-scrollbar"
-widget_class "*Calf*<GtkVScrollbar>"  					style "calf-scrollbar"
-widget_class "*Calf*<GtkHScrollbar>"  					style "calf-scrollbar"
+widget "*Calf*Range"       					style : highest "calf-scale-small"
+widget "*Calf*Scale1"       					style : highest "calf-scale-small"
+widget "*Calf*Scale2"       					style : highest "calf-scale-big"
+widget "*Calf*Scrollbar*"   					style : highest "calf-scrollbar"
 
 
 # Increase the x/ythickness in some widgets
-class "GtkToolbar"   					style "calf-default" 
-class "GtkRange"     					style "calf-wide"
-class "GtkFrame"     					style "calf-wide"
-class "GtkSeparator" 					style "calf-wide"
+#class "GtkToolbar"   					style "calf-default" 
+#class "GtkRange"     					style "calf-wide"
+#class "GtkFrame"     					style "calf-wide"
+#class "GtkSeparator" 					style "calf-wide"
 
 
 

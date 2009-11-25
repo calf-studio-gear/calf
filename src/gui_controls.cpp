@@ -149,12 +149,19 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_hscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
-    gtk_widget_set_size_request (widget, 200, -1);
     
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-HScale");
+    int size = get_int("size", 2);
+    if(size < 1)
+        size = 1;
+    if(size > 2)
+        size = 2;
+    char *name = g_strdup_printf("Calf-HScale%i", size);
+    gtk_widget_set_name(GTK_WIDGET(widget), name);
+    gtk_widget_set_size_request (widget, size * 100, -1);
+    g_free(name);
     return widget;
 }
 
@@ -211,12 +218,19 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
     gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
-    gtk_widget_set_size_request (widget, -1, 200);
     
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VScale");
+    int size = get_int("size", 2);
+    if(size < 1)
+        size = 1;
+    if(size > 2)
+        size = 2;
+    char *name = g_strdup_printf("Calf-VScale%i", size);
+    gtk_widget_set_size_request (widget, -1, size * 100);
+    gtk_widget_set_name(GTK_WIDGET(widget), name);
+    g_free(name);
     return widget;
 }
 
