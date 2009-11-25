@@ -717,7 +717,7 @@ style "calf-entry"
 
 ### SPIN BUTTON ###
 
-style "calf-spinbutton" = "calf-default"
+style "calf-spinbutton" = "calf-entry"
 {
 	xthickness = 0
 	ythickness = 0
@@ -728,7 +728,33 @@ style "calf-spinbutton" = "calf-default"
 		{
 			function		= ARROW
 		}
-
+        image
+		{
+			function		= SHADOW
+			shadow			= IN
+			recolorable		= FALSE
+			file			= "null.png"
+			border			= { 0, 0, 0, 0 }
+			stretch			= TRUE
+		}
+		image
+	    {
+			function        = FLAT_BOX
+			state           = INSENSITIVE
+    		detail          = "entry_bg"
+			file            = "entry_inactive.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
+		image
+  		{
+			function        = FLAT_BOX
+			state           = NORMAL
+    		detail          = "entry_bg"
+			file            = "entry.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
 		image
 		{
 			function		= BOX
@@ -1725,9 +1751,8 @@ widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"			style : theme "calf-combobox
 widget "*Calf*GtkOptionMenu*"						style : theme "calf-combobox"
 
 # Entries
-widget "*Calf*SpinButton*"  					style : rc "calf-spinbutton"
-widget "*Calf-Entry*"     					style : highest "calf-entry"
-widget "*Calf*Entry*"     					style : highest "calf-entry"
+widget "*Calf*Entry*"     					style : rc "calf-entry"
+widget "*Calf*SpinButton*"  					style : highest "calf-spinbutton"
 
 # Miscellaneous
 widget_class "*Calf*<GtkStatusbar>"  			style "calf-statusbar"
