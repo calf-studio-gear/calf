@@ -27,6 +27,7 @@
 #include <jack/midiport.h>
 #include "gui.h"
 #include "utils.h"
+#include "vumeter.h"
 #include <pthread.h>
 
 namespace calf_plugins {
@@ -161,31 +162,6 @@ public:
     void close();
     
     virtual ~jack_host_base() {
-    }
-};
-
-struct vumeter
-{
-    float level, falloff;
-    
-    vumeter()
-    {
-        falloff = 0.999f;
-        level = 0;
-    }
-    
-    inline void update(float *src, unsigned int len)
-    {
-        double tmp = level;
-        for (unsigned int i = 0; i < len; i++)
-            tmp = std::max(tmp * falloff, (double)fabs(src[i]));
-        level = tmp;
-        dsp::sanitize(level);
-    }
-    inline void update_zeros(unsigned int len)
-    {
-        level *= pow((double)falloff, (double)len);
-        dsp::sanitize(level);
     }
 };
 
