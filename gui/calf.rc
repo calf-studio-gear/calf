@@ -65,6 +65,12 @@ style "calf-default"
 	bg[ACTIVE]        = shade (0.9, "#465160")
 	bg[SELECTED]	  = "#000" # Gnome Appearances Preferences workaround
 	bg[INSENSITIVE]   = shade (0.7, "#465160")
+#dark: 465160
+#blue: 29394c
+#light-green: afcbb5
+#light-alu: d7d8dd
+#light-metal: e8e7e2
+
 
 	base[NORMAL]      = "#eee"
 	base[PRELIGHT]    = "#fff"
@@ -295,10 +301,10 @@ style "calf-rack"
 	bg[SELECTED]	  = shade (1.2, "#e8e7e2") # Gnome Appearances Preferences workaround
 	bg[INSENSITIVE]   = shade (0.7, "#e8e7e2")
 	
-	bg_pixmap[NORMAL]		= "background_light_calf.png"
-	bg_pixmap[SELECTED]		= "background_light_calf.png"
-	bg_pixmap[ACTIVE]		= "background_light_calf.png"
-	bg_pixmap[INSENSITIVE]	= "background_light_calf.png"
+	bg_pixmap[NORMAL]		= "background_fur_white.png"
+	bg_pixmap[SELECTED]		= "background_fur_white.png"
+	bg_pixmap[ACTIVE]		= "background_fur_white.png"
+	bg_pixmap[INSENSITIVE]	= "background_fur_white.png"
 }
 
 
@@ -1690,8 +1696,6 @@ style "calf-tooltips" = "calf-wider"
 }
 
 
-
-
 ################################################################################
 #                                    MATCHES                                   #
 ################################################################################
@@ -1794,7 +1798,7 @@ style "calf-combobox-text-color-workaround"
 	text[INSENSITIVE] = "#999"
 }
 
-widget_class "*.<GtkComboBox>.<GtkCellView>"		style "calf-combobox-text-color-workaround"
+widget_class "*Calf*.<GtkComboBox>.<GtkCellView>"		style "calf-combobox-text-color-workaround"
 
 style "calf-menuitem-text-is-fg-color-workaround"
 {
@@ -1804,7 +1808,7 @@ style "calf-menuitem-text-is-fg-color-workaround"
 	text[SELECTED]    = "#fff"
 	text[INSENSITIVE] = "#999"
 }
-widget "*.gtk-combobox-popup-menu.*"   			style "calf-menuitem-text-is-fg-color-workaround"
+widget "*Calf*.gtk-combobox-popup-menu.*"   			style "calf-menuitem-text-is-fg-color-workaround"
 
 # Work around the usage of GtkLabel inside GtkListItems to display text.
 # This breaks because the label is shown on a background that is based on the
@@ -1819,8 +1823,8 @@ style "calf-fg-is-text-color-workaround"
 	fg[INSENSITIVE] = darker (@bg_color)
 }
 
-widget_class "*<GtkListItem>*" 				style "calf-fg-is-text-color-workaround"
+widget_class "*Calf*<GtkListItem>*" 				style "calf-fg-is-text-color-workaround"
 # The same problem also exists for GtkCList and GtkCTree
 # Only match GtkCList and not the parent widgets, because that would also change the headers.
 
-widget_class "*<GtkCList>" 				style "calf-fg-is-text-color-workaround"
+widget_class "*Calf*<GtkCList>" 				style "calf-fg-is-text-color-workaround"
