@@ -140,12 +140,7 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
         
     GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
-    if (strip->gui_win) {
-        gtk_button_set_label(GTK_BUTTON(tb), "Hide");
-    } else {
-        gtk_button_set_label(GTK_BUTTON(tb), "Show");
-    }
-    
+    gtk_button_set_label(GTK_BUTTON(tb), "Edit");
 }
 
 void main_window::refresh_all_presets(bool builtin_too)
@@ -169,10 +164,8 @@ gui_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
     if (strip->gui_win) {
         strip->gui_win->close();
         strip->gui_win = NULL;
-        gtk_button_set_label(GTK_BUTTON(tb), "Show");
     } else {
         strip->main_win->open_gui(strip->plugin);
-        gtk_button_set_label(GTK_BUTTON(tb), "Hide");
     }
     return TRUE;
 }
@@ -244,7 +237,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_show(title);
     
     // open button
-    GtkWidget *label = gtk_toggle_button_new_with_label("Show");
+    GtkWidget *label = gtk_toggle_button_new_with_label("Edit");
     strip->button = label;
     gtk_widget_set_size_request(GTK_WIDGET(label), 110, -1);
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 

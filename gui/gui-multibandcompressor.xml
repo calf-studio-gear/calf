@@ -12,10 +12,10 @@
             <label param="meter_inR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0" pad-y="24">
-            <label param="clip_inL" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
             <led param="clip_inL" expand="0" fill="0" />
             <led param="clip_inR" expand="0" fill="0" />
-            <label param="clip_inR" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
         </vbox>z
         <table rows="3" cols="2" attach-x="4" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
             <knob param="freq0" attach-x="0" attach-y="0" border="0" expand="0" fill="0" expand-x="0" fill-x="0" />
@@ -75,10 +75,10 @@
             <label param="meter_outR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="8" attach-y="0" pad-y="24">
-            <label param="clip_outL" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
             <led param="clip_outL" expand="0" mode="1" fill="0" />
             <led param="clip_outR" expand="0" mode="1" fill="0" />
-            <label param="clip_outR" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="9" attach-y="0">
             <label param="level_out" />

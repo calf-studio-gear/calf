@@ -209,8 +209,8 @@ style "calf-default"
         {
             function			= SHADOW_GAP
             recolorable			= TRUE
-            file				= "frame_top.png"
-            border				= { 12, 12, 2, 12 }
+            file				= "frame.png"
+            border				= { 12, 12, 12, 12 }
             stretch				= TRUE
             gap_start_file		= "frame_top_start.png"
             gap_start_border	= { 12, 2, 12, 2 }
@@ -222,8 +222,8 @@ style "calf-default"
         {
             function			= SHADOW_GAP
             recolorable			= TRUE
-            file				= "frame_left.png"
-            border				= { 2, 12, 12, 12 }
+            file				= "frame.png"
+            border				= { 12, 12, 12, 12 }
             stretch				= TRUE
             gap_start_file		= "frame_left_start.png"
             gap_start_border	= { 12, 2, 12, 2 }
@@ -235,8 +235,8 @@ style "calf-default"
         {
             function			= SHADOW_GAP
             recolorable			= TRUE
-            file				= "frame_right.png"
-            border				= { 12, 2, 12, 12 }
+            file				= "frame.png"
+            border				= { 12, 12, 12, 12 }
             stretch				= TRUE
             gap_start_file		= "frame_right_start.png"
             gap_start_border	= { 2, 12, 12, 2 }
@@ -248,8 +248,8 @@ style "calf-default"
         {
             function			= SHADOW_GAP
             recolorable			= TRUE
-            file				= "frame_bottom.png"
-            border				= { 12, 12, 12, 2 }
+            file				= "frame.png"
+            border				= { 12, 12, 12, 12 }
             stretch				= TRUE
             gap_start_file		= "frame_bottom_start.png"
             gap_start_border	= { 12, 2, 2, 12 }
@@ -1641,10 +1641,6 @@ style "calf-frame"
 	xthickness = 8
 	ythickness = 8
 	bg[NORMAL] = "#ddd"
-	engine "clearlooks" 
-	{
-		radius = 7.0
-	}
 }
 
 style "calf-frame-title"
@@ -1701,66 +1697,67 @@ style "calf-tooltips" = "calf-wider"
 ################################################################################
 
 # Theme default style is applied to every widget
-widget "*Calf*"    					style : theme "calf-default"
+widget "*Calf*"    					style : highest "calf-default"
 
 # Rack
-widget "*Calf-Rack*"    					            style : theme "calf-rack"
+widget "*Calf-Rack*"    					            style : highest "calf-rack"
 
 # Labels
-widget "*Calf-Label"    					            style : theme "calf-label"
+widget "*Calf-Label"    					            style : highest "calf-label"
 
 # Values
-widget "*Calf-Value"    					            style : theme "calf-label"
+widget "*Calf-Value"    					            style : highest "calf-label"
 
 # Menus
-widget_class "*Calf*<GtkMenuBar>*"           		style : rc "calf-menubar"
-widget "*Calf-Menu*"    								style : rc "calf-menu"
-widget_class "*Calf*<GtkMenuShell>*"              		style : rc "calf-menu"
-widget "*Calf*SeparatorMenuItem*"						style : rc "calf-menu-separator"
-widget_class "*Calf*<GtkMenuItem>*"          		style : rc "calf-menu-item"
+widget_class "*Calf*<GtkMenuBar>*"           		style : highest "calf-menubar"
+widget "*Calf-Menu*"    								style : highest "calf-menu"
+widget_class "*Calf*<GtkMenuShell>*"              		style : highest "calf-menu"
+widget "*Calf*SeparatorMenuItem*"						style : highest "calf-menu-separator"
+widget_class "*Calf*<GtkMenuItem>*"          		style : highest "calf-menu-item"
 
 # Notebook
-widget_class "*<GtkNotebook>"    			style : highest "calf-notebook"
+widget "*Calf*Notebook"    			style : highest "calf-notebook"
+widget_class "*Calf*Notebook.<GtkWidget>"    			style : highest "calf-notebook"
 
 # Frame
-widget "*Calf*Frame" 					style : rc "calf-frame"
-widget "*Calf*Frame.GtkLabel" 			style : rc "calf-frame-title"
+widget "*Calf*Frame" 					style : highest "calf-frame"
+widget "*Calf*Frame.GtkLabel" 			style : highest "calf-frame-title"
 
 # Scrolled window
 widget "*Calf-Container" 					style : highest "calf-container"
 
 # Treeview
-widget_class "*Calf*.<GtkTreeView>*"        			style : theme "calf-treeview"
-widget_class "*Calf*.<GtkTreeView>.<GtkButton>*" 		style : rc "calf-treeview-header"
-widget_class "*Calf*.<GtkCTree>.<GtkButton>*"    		style : rc "calf-treeview-header"
-widget_class "*Calf*.<GtkList>.<GtkButton>*"     		style : rc "calf-treeview-header"
-widget_class "*Calf*.<GtkCList>.<GtkButton>*"    		style : rc "calf-treeview-header"
+widget_class "*Calf*.<GtkTreeView>*"        			style : highest "calf-treeview"
+widget_class "*Calf*.<GtkTreeView>.<GtkButton>*" 		style : highest "calf-treeview-header"
+widget_class "*Calf*.<GtkCTree>.<GtkButton>*"    		style : highest "calf-treeview-header"
+widget_class "*Calf*.<GtkList>.<GtkButton>*"     		style : highest "calf-treeview-header"
+widget_class "*Calf*.<GtkCList>.<GtkButton>*"    		style : highest "calf-treeview-header"
 
 # Buttons
-widget "*Calf*Button*"                    style : theme "calf-button"
-widget "*Calf*Toggle*"                    style : rc "calf-toggle"
+widget "*Calf*Button*"                    style : highest "calf-button"
+widget "*Calf*Toggle*"                    style : highest "calf-toggle"
 widget "*Calf-Button"                    style : highest "calf-button"
 widget "*Calf-Toggle"                    style : highest "calf-toggle"
 widget "*Calf*CheckButton"      			style : highest "calf-toggle"
 widget "*Calf*RadioButton"      			style : highest "calf-toggle"
-widget "*Calf*GtkLinkButton*"								style : rc "calf-button"
-widget "*Calf*GtkScaleButton*"								style : rc "calf-button"
-widget "*Calf*GtkColorButton*"								style : rc "calf-button"
-widget "*Calf*FileChooserButton*"								style : rc "calf-button"
-widget "*Calf*GtkFontButton*"								style : rc "calf-button"
+widget "*Calf*GtkLinkButton*"								style : highest "calf-button"
+widget "*Calf*GtkScaleButton*"								style : highest "calf-button"
+widget "*Calf*GtkColorButton*"								style : highest "calf-button"
+widget "*Calf*FileChooserButton*"								style : highest "calf-button"
+widget "*Calf*GtkFontButton*"								style : highest "calf-button"
 
-widget "*Calf-Combobox*"         			style : theme "calf-combobox"
-widget "*Calf*Combo*"         			style : rc "calf-combobox"
-widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"			style : theme "calf-comboboxentry"
-widget "*Calf*GtkOptionMenu*"						style : theme "calf-combobox"
+widget "*Calf-Combobox*"         			style : highest "calf-combobox"
+widget "*Calf*Combo*"         			style : highest "calf-combobox"
+widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"			style : highest "calf-comboboxentry"
+widget "*Calf*GtkOptionMenu*"						style : highest "calf-combobox"
 
 # Entries
-widget "*Calf*Entry*"     					style : rc "calf-entry"
+widget "*Calf*Entry*"     					style : highest "calf-entry"
 widget "*Calf*SpinButton*"  					style : highest "calf-spinbutton"
 
 # Miscellaneous
-widget_class "*Calf*<GtkStatusbar>"  			style "calf-statusbar"
-widget_class "*Calf*<GtkProgressBar>"       			style "calf-progressbar"
+widget_class "*Calf*<GtkStatusbar>"  			style : highest "calf-statusbar"
+widget_class "*Calf*<GtkProgressBar>"       			style : highest "calf-progressbar"
 
 # Scrollbars/Scales
 widget "*Calf*Range"       					style : highest "calf-scale-small"
