@@ -67,6 +67,7 @@ namespace calf_plugins {
         std::vector<plugin_ctl_iface *> plugin_queue;
         std::string prefix;
         bool is_closed;
+        bool draw_rackmounts;
         int source_id;
         main_window_owner_iface *owner;
 

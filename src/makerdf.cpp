@@ -17,6 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
+#include <assert.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,6 +30,7 @@
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #endif
+#include <set>
 
 using namespace std;
 using namespace calf_utils;
@@ -131,11 +133,21 @@ void make_rdf()
 
     vector<calf_plugins::plugin_metadata_iface *> plugins;
     calf_plugins::get_all_plugins(plugins);
+    set<int> used_ids;
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
         plugin_metadata_iface *p = plugins[i];
+        const ladspa_plugin_info &info = p->get_plugin_info();
+        
+        if(used_ids.count(info.unique_id))
+        {
+            fprintf(stderr, "ERROR: Duplicate ID %d in plugin %s\n", info.unique_id, info.name);
+            assert(0);
+        }
+        used_ids.insert(info.unique_id);
+
         if (!p->requires_midi()) {
-            rdf += generate_ladspa_rdf(p->get_plugin_info(), p->get_param_props(0), p->get_port_names(), p->get_param_count(), p->get_param_port_offset());
+            rdf += generate_ladspa_rdf(info, p->get_param_props(0), p->get_port_names(), p->get_param_count(), p->get_param_port_offset());
         }
         delete p;
     }    

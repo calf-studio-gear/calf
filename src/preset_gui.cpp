@@ -49,6 +49,7 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
     store_preset_xml = glade_xml_new(PKGLIBDIR "/calf.glade", NULL, NULL);
     store_preset_dlg = glade_xml_get_widget(store_preset_xml, "store_preset");
     gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(store_preset_dlg_destroy), NULL);
+//    gtk_widget_set_name(GTK_WIDGET(store_preset_dlg), "Calf-Preset");
     GtkWidget *preset_name_combo = glade_xml_get_widget(store_preset_xml, "preset_name");    
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
     gtk_combo_box_set_model(GTK_COMBO_BOX(preset_name_combo), model);
