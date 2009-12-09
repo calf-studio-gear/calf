@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Pulsator</h1>
+            <a href="images/Calf - Pulsator.png" title="Calf - Pulsator" class="thickbox"><img class="thumbnail" src="images/Calf - Pulsator.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                Calf Pulsator is something between an autopanner and a tremolo. But it can produce funny stereo effects as well. Pulsator changes the volume of left and right channel based on a LFO (low frequency oscillator) with different waveforms and shifted phases.
+            </p>
+            <h2>Offset</h2>
+            <p>
+                The kicker of Pulsator is the ability to define an offset between left and right channel. An offset of 0% means that both LFO shapes match each other. Left and right channel are altered equally - a conventional tremolo. An offset of 50% means that the shape of the right channel is exactly shifted in phase (or moved backwards about half of the frequency) - Pulsator acts as an autopanner. At 100% both curves match again. Every setting inbetween moves the phaseshift gapless between all stages and produces some "bypassing" sounds with sine and triangle waveform. The more you push the fader to the right (starting from the middle) the faster the signal passes from left to right speaker.
+            </p>
+            <h2>Input</h2>
+            <p>
+                A mono switch forces Pulsator to use autopanner input stage, where both left and right channels are merged and redistributed to the amplifier stage again. Otherwise it has to be called "autobalancer" since a panoramic fader needs a mono signal at input. Leaving "Mono-in" switch untouched doesn't affect the input signal at all.
+            </p>
+            <h2>Tipps</h2>
+            <p>
+                Strange effects can be achieved with square or saw waveforms. Try it with a setting matching your bpm on a crushed drum track or on a synth pad with delay. You will get your frequency if you divide your bpm by 60. So 120 bpm will result in 2Hz which matches the quarters. If it should wobble on the eighths, halve the frequency. If you want a triplet feeling, divide the quarter freqency by 4 and multiply it with 3 afterwards.
+            </p><p>
+                If you want to fix Pulsator on a beat you can automate the "Reset" switch in your sequencer to restart the LFO on every bar for example.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input:</strong> Control the input level before the signal is processed. In this effect it can be useful if you feed Pulsator with a true mono signal only on the left channel. If you toggle "Mono-in" switch active, the signal is decreased by 6dB due to merging. Add those 6dB with input knob again.</li>
+                <li><strong>In L/In R:</strong> The level after the input knob</li>
+                <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                <li><strong>Mono-in:</strong> Merge left and right channel to mono and split again (for using Pulsator as true autopanner)</li>
+                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
+                <li><strong>0dB:</strong> Flashes if output level rises above 0dB</li>
+                <li><strong>Output:</strong> Control the output of the effect - clipping could destroy your signal</li>
+                <li><strong>Frequency:</strong> The speed of the LFO in Hz (1Hz means one wavelength in a second)</li>
+                <li><strong>Offset L/R:</strong> Delay the right channel in comparison with the left one to shift the phase between them</li>
+                <li><strong>Mode:</strong> Select a waveform the LFO will use</li>
+                <li><strong>Modulation:</strong> Define how much your original signal is affected by the LFO</li>
+                <li><strong>Reset:</strong> Restart the LFO</li>
+            </ul>
+        </div>
+    </body>
+</html>
