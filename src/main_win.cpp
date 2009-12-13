@@ -59,6 +59,7 @@ main_window::main_window()
     toplevel = NULL;
     owner = NULL;
     is_closed = true;
+    draw_rackmounts = true;
 }
 
 void main_window::add_plugin(plugin_ctl_iface *plugin)
@@ -196,33 +197,35 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     g_object_get(G_OBJECT(strips_table), "n-rows", &row, "n-columns", &cols, NULL);
     gtk_table_resize(GTK_TABLE(strips_table), row + 4, cols);
     
-    // images for left side
-    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
-    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
-    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
-    gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
-    
-    // images for right side
-    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
-    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
-    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
-    gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
-    
-    // pack left box
-    GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
-    gtk_table_attach(GTK_TABLE(strips_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-    gtk_widget_show_all(GTK_WIDGET(leftBox));
-    
-     // pack right box
-    GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
-    gtk_table_attach(GTK_TABLE(strips_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-    gtk_widget_show_all(GTK_WIDGET(rightBox));
+    if(draw_rackmounts) {
+        // images for left side
+        GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
+        GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
+        GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
+        gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
+        
+        // images for right side
+        GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
+        GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
+        GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
+        gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
+        
+        // pack left box
+        GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
+        gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
+        gtk_table_attach(GTK_TABLE(strips_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+        gtk_widget_show_all(GTK_WIDGET(leftBox));
+        
+         // pack right box
+        GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
+        gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
+        gtk_table_attach(GTK_TABLE(strips_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+        gtk_widget_show_all(GTK_WIDGET(rightBox));
+    }
     
     // top light
     GtkWidget *topImg     = gtk_image_new_from_file(PKGLIBDIR "/light_top.png");
@@ -243,6 +246,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     // open button
     GtkWidget *label = gtk_toggle_button_new_with_label("Show");
     strip->button = label;
+    gtk_widget_set_size_request(GTK_WIDGET(label), 110, -1);
     gtk_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->button);
@@ -250,6 +254,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     // delete buton
     GtkWidget *extra = gtk_button_new_with_label("Remove");
     strip->extra = extra;
+    gtk_widget_set_size_request(GTK_WIDGET(extra), 110, -1);
     gtk_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->extra);
@@ -424,7 +429,7 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
 void main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
-    gtk_widget_set_name(GTK_WIDGET(toplevel), "calf-rack");
+    gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
     gtk_window_set_default_icon_name("calf");
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
@@ -441,7 +446,7 @@ void main_window::create()
     
     gtk_widget_set_size_request(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), 640, -1);
     
-    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "calf-menu");
+    gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "Calf-Menu");
     
     plugin_actions = gtk_action_group_new("plugins");
     string plugin_xml = make_plugin_list(plugin_actions);
@@ -476,7 +481,7 @@ void main_window::create()
     gtk_container_add(GTK_CONTAINER(all_vbox), strips_table);
     gtk_container_add(GTK_CONTAINER(toplevel), all_vbox);
     
-    gtk_widget_set_name(GTK_WIDGET(strips_table), "calf-container");
+    gtk_widget_set_name(GTK_WIDGET(strips_table), "Calf-Container");
     
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody

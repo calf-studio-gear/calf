@@ -64,7 +64,7 @@
                 <vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
                     <label param="stereo_link" expand-y="0" fill-y="0"/>
                     <align>
-                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1">
+                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" spacing="5">
                             <radio param="stereo_link" value="Average" expand-x="1" fill-x="1"/>
                             <radio param="stereo_link" value="Maximum" expand-x="1" fill-x="1"/>
                         </hbox>
@@ -73,7 +73,7 @@
                 <vbox expand="1" expand-y="0">
                     <label param="detection" expand-y="0" fill-y="0" expand-x="1" fill-x="1"/>
                     <align>
-                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" >
+                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" spacing="5">
                             <radio param="detection" value="RMS" expand-x="1" fill-x="1"/>
                             <radio param="detection" value="Peak" expand-x="1" fill-x="1"/>
                         </hbox>
@@ -85,14 +85,14 @@
     
     
       <frame label="Compression">
-        <vbox spacing="12">
-            <vbox spacing="8">
-                <label param="compression"/>
-                <vumeter param="compression" mode="2" hold="1.5" attach-w="2" expand="0" fill="0"/>
-            </vbox>
+        <vbox spacing="6">
             <if cond="directlink">
                 <line-graph refresh="1" width="255" height="255" param="compression" square="1" expand="1" fill="1"/>
             </if>
+            <vbox spacing="3">
+                <label param="compression"/>
+                <vumeter param="compression" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>
+            </vbox>
         </vbox>
       </frame>
     
@@ -100,14 +100,14 @@
         
         <if cond="directlink">
             <frame label="Sidechain">
-                <vbox spacing="0">
+                <vbox spacing="6">
+                    <line-graph refresh="1" width="235" height="112" param="f1_freq" expand="1" fill="1" />
                     <table rows="2" cols="2" expand="0" fill="0">
                         <label attach-x="0" attach-y="0" param="sc_mode" expand-y="0" fill-y="0" />
-                        <combo attach-x="0" attach-y="1" param="sc_mode" fill-y="0" expand-y="0"/>
+                        <combo attach-x="0" attach-y="1" param="sc_mode" fill-y="1" expand-y="0"/>
                         <label attach-x="1" attach-y="0" param="sc_listen" expand-y="0" fill-y="0" />
                         <toggle attach-x="1" attach-y="1" param="sc_listen" size="2" expand-y="0" fill-y="0"/>
                     </table>
-                    <line-graph refresh="1" width="235" height="100" param="f1_freq" expand="1" fill="1" />
                 </vbox>
             </frame>
         </if>
@@ -119,7 +119,7 @@
                         <led attach-x="1" attach-y="0" param="f1_active" mode="7" fill-x="0" expand-y="0" fill-y="0"/>
                     </table>
                     
-                    <hbox homogeneous="1">
+                    <hbox homogeneous="0">
                         <vbox>
                             <label param="f1_freq" />
                             <knob param="f1_freq" size="2" />
@@ -140,7 +140,7 @@
                         <led attach-x="1" attach-y="0" param="f2_active" mode="7" fill-x="0" expand-y="0" fill-y="0"/>
                     </table>
                     
-                    <hbox homogeneous="1">
+                    <hbox homogeneous="0">
                         <vbox>
                             <label param="f2_freq" />
                             <knob param="f2_freq" size="2" />

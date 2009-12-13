@@ -29,12 +29,12 @@
     
     <vbox border="10" attach-x="0" attach-y="0">
         <label param="mod_rate" align-y="1.0" />
-        <knob param="mod_rate" size="4" expand="0" fill="0" />
+        <knob param="mod_rate" size="5" expand="0" fill="0" />
         <value param="mod_rate" align-y="0.0" />
     </vbox>
     <vbox border="10" attach-x="2" attach-y="0">
         <label param="stereo" align-y="1.0" />
-        <knob param="stereo" type="3" size="4" expand="0" fill="0" />
+        <knob param="stereo" type="3" size="5" expand="0" fill="0" />
         <value param="stereo" align-y="0.0" />
     </vbox>
     

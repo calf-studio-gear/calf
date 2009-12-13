@@ -114,6 +114,7 @@ public:
     const char *effect_name;
     plugin_ctl_iface *plugin;
     std::vector<param_control *> params;
+    bool draw_rackmounts;
 
     plugin_gui(plugin_gui_window *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
