@@ -3,7 +3,8 @@ $(document).ready(function () {
         [
             "Basics",
             [
-                ["Index", "index.html", false],
+                ["Index", "index.html", "images/Index.png"],
+                ["About", "About.html", "images/About.png"],
                 ["Controls", "Controls.html", "images/Calf - Controls.png"],
                 ["Calf Rack", "Calf.html", "images/Calf.png"]
             ]
@@ -11,7 +12,8 @@ $(document).ready(function () {
         [
             "Synthesizer",
             [
-                
+                ["(Organ)", "Organ.html", "images/Calf - Organ - Tone generator.png"],
+                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio path.png"],
             ]
         ],
         [
@@ -21,7 +23,7 @@ $(document).ready(function () {
                 ["(Reverb)", "Reverb.html", "images/Calf - Reverb.png"],
                 ["(Multichorus)", "Multichorus.html", "images/Calf - Multichorus.png"],
                 ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
-                ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"]
+                ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
             ]
         ],
         [
@@ -37,6 +39,7 @@ $(document).ready(function () {
             "Filter",
             [
                 ["Filter", "Filter.html", "images/Calf - Filter.png"],
+                ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.png"],
                 ["Equalizer 5 Band", "Equalizer5band.html", "images/Calf - Equalizer 5 Band.png"],
                 ["Equalizer 8 Band", "Equalizer8band.html", "images/Calf - Equalizer 8 Band.png"],
                 ["Equalizer 12 Band", "Equalizer12band.html", "images/Calf - Equalizer 12 Band.png"],
@@ -46,6 +49,7 @@ $(document).ready(function () {
             "Other",
             [
                 ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.png"],
+                ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
                 ["(Saturator)", "Saturator.html", "images/Calf - Saturator.png"],
                 ["(Exciter)", "Exciter.html", "images/Calf - Exciter.png"],
                 ["(Bass Enhancer)", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"]
@@ -64,7 +68,10 @@ $(document).ready(function () {
                 menu += "<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">";
 //                menu += "</a>";
             }
-            menu += "<a href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a></li>";
+            cl=""
+            if(items[i][1][j][0][0] == "(")
+                cl=" class='inactive'"
+            menu += "<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a></li>";
         }
         menu +="</ul><br clear='all'/></div>";
     }

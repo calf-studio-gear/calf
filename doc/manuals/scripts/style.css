@@ -88,7 +88,7 @@ strong {
     border-bottom: 1px dotted #fff;
 }
 .header .menu ul {
-    margin: 5px;
+    margin: 3px;
     padding: 5px;
     background: none;
     color: #0af;
@@ -132,6 +132,8 @@ strong {
     top: auto;
     left: 25px;
     text-align: center;
+    border: 1px solid black;
+    border-top: 5px solid black;
 }
 .index img {
     width: 100px;
@@ -152,4 +154,17 @@ strong {
 }
 .index li:hover {
     
+}
+
+.inactive {
+    color: #999 !important;
+}
+
+.developers li {
+    clear: left;
+}
+.portrait {
+    width: 100px;
+    float: left;
+    margin: 10px;
 }
