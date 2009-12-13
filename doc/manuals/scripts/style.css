@@ -6,22 +6,23 @@ body {
     font-size: 0.8em;
 }
 a {
-    color: #D5F16A;
+    color: white;
     font-weight: bold;
-    text-decoration: none;
+    text-decoration: underline;
 }
 a:hover {
-    color: white;
+    color: #0af;
+    text-decoration: underline;
 }
 img {
     border: none;
 }
 h1 {
     color: #D5F16A;
+/*    background: url(../images/style_p.png) transparent;*/
     text-align: center;
-    padding: 20px;
-    border: 1px dotted #fff;
-    margin: 0 0 10px 0;
+    margin: 20px;
+    border-bottom: 1px dotted #fff;
 }
 h2 {
     color: #D5F16A;
@@ -31,7 +32,7 @@ h2 {
     padding: 5px 0 10px 0;
 }
 h3 {
-    
+/*    border-bottom: 1px dotted #fff;*/
 }
 p, ul {
     background: url(../images/style_p.png) transparent;
@@ -58,42 +59,97 @@ strong {
 .thumbnail {
     width: 400px;
     float: right;
-    padding: 10px;
+    margin: 10px;
+    border: 2px solid black;
+    border-top: 12px solid black;
 }
 
+.headerbg {
+    background: url(../../../gui/background_black.png);
+    border-bottom: 1px solid #111;
+}
 .header {
     width: 800px;
     margin: auto;
     text-align: left;
+    font-size: 9px;
 }
 .header img {
-    margin: 20px;
+    margin: 8px;
     float: left;
 }
-.header a {
-    margin: 1px;
-    display: block;
-    background: url(../images/style_p.png) transparent;
-    border: 1px solid black;
-    padding: 3px;
+.header .menu {
     float: left;
+}
+.header .menu h3 {
+    margin: 5px;
+    font-weight: normal;
+    font-size: 13px;
+    border-bottom: 1px dotted #fff;
+}
+.header .menu ul {
+    margin: 5px;
+    padding: 5px;
+    background: none;
+    color: #0af;
+    border: none;
+}
+.header .menu ul li {
+    margin: 0 10px;
+    padding: 2px;
+}
+.header .menu ul li:hover {
+    background:black;
+}
+.header .menu a {
     font-weight: normal;
 }
-.header a img {
+.header img {
+    width: 80px;
+}
+.header .menu img {
     display: none;
     margin: 0;
 }
 
 .index {
-    padding-left: 200px;
+    padding: 20px 50px;
+}
+.index h3 {
+    border-bottom: 1px dotted white;
 }
 .index a {
     display: block;
+    text-align: center;
     font-weight: normal;
-    font-size: 20px;
+    position: absolute;
+    top: 100px;
+    width: 150px;
 }
-.index a img {
+.index img {
+    position: absolute;
+    bottom: 55px !important;
+    top: auto;
+    left: 25px;
+    text-align: center;
+}
+.index img {
     width: 100px;
-    vertical-align: middle;
-    padding: 15px;
+}
+.index ul {
+    background: none;
+    color: #0af;
+    border: none;
+}
+.index li {
+    position: relative;
+    display: block;
+    width: 150px;
+    height: 150px;
+    margin: 8px;
+    float: left;
+    text-align: center;
+}
+.index li:hover {
+    
 }
