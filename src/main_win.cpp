@@ -33,12 +33,14 @@ using namespace std;
 static const char *ui_xml = 
 "<ui>\n"
 "  <menubar>\n"
-"    <menu action=\"HostMenuAction\">\n"
-"      <menu action=\"AddPluginMenuAction\">\n"
-"      </menu>\n"
+"    <menu action=\"FileMenuAction\">\n"
+"      <menuitem action=\"FileOpen\"/>\n"
+"      <menuitem action=\"FileSave\"/>\n"
+"      <menuitem action=\"FileSaveAs\"/>\n"
 "      <separator/>\n"
-"      <menuitem action=\"exit\"/>\n"
+"      <menuitem action=\"FileQuit\"/>\n"
 "    </menu>\n"
+"    <menu action=\"AddPluginMenuAction\" />\n"
 "  </menubar>\n"
 "</ui>\n"
 ;
@@ -49,9 +51,13 @@ static void exit_action(GtkWidget *widget, main_window *main)
 }
 
 static const GtkActionEntry actions[] = {
+    { "FileMenuAction", NULL, "_File", NULL, "File-related operations", NULL },
+    { "FileOpen", GTK_STOCK_OPEN, "_Open", "<Ctrl>O", "Open a rack file", NULL },
+    { "FileSave", GTK_STOCK_SAVE, "_Save", "<Ctrl>S", "Save a rack file", NULL },
+    { "FileSaveAs", GTK_STOCK_SAVE_AS, "_Save as...", NULL, "Save a rack file as", NULL },
     { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
     { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
-    { "exit", "exit", "_Exit", NULL, "Exit application", (GCallback)exit_action },
+    { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)exit_action },
 };
 
 main_window::main_window()
@@ -452,7 +458,6 @@ void main_window::create()
     string plugin_xml = make_plugin_list(plugin_actions);
     gtk_ui_manager_insert_action_group(ui_mgr, plugin_actions, 0);    
     gtk_ui_manager_add_ui_from_string(ui_mgr, plugin_xml.c_str(), -1, &error);
-
     
     strips_table = gtk_table_new(0, 6, FALSE);
     gtk_table_set_col_spacings(GTK_TABLE(strips_table), 0);
@@ -483,6 +488,7 @@ void main_window::create()
     
     gtk_widget_set_name(GTK_WIDGET(strips_table), "Calf-Container");
     
+    gtk_window_add_accel_group(toplevel, gtk_ui_manager_get_accel_group(ui_mgr));
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
 }
