@@ -232,6 +232,11 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     GtkWidget *create_progress_window();
     /// Implementation of progress_report_iface function
     void report_progress(float percentage, const std::string &message);
+    
+    /// Implementation of open file functionality (TODO)
+    virtual const char *open_file(const char *name) { return "Not implemented yet"; }
+    /// Implementation of save file functionality (TODO)
+    virtual const char *save_file(const char *name) { return "Not implemented yet"; }
 };
 
 host_session::host_session()
