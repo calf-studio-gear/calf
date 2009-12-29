@@ -235,8 +235,8 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     
     /// Implementation of open file functionality (TODO)
     virtual const char *open_file(const char *name) { return "Not implemented yet"; }
-    /// Implementation of save file functionality (TODO)
-    virtual const char *save_file(const char *name) { return "Not implemented yet"; }
+    /// Implementation of save file functionality
+    virtual const char *save_file(const char *name);
 };
 
 host_session::host_session()
@@ -514,8 +514,6 @@ void host_session::close()
     client.close();
 }
 
-#if USE_LASH
-
 static string stripfmt(string x)
 {
     if (x.length() < 2)
@@ -524,6 +522,48 @@ static string stripfmt(string x)
         return x;
     return x.substr(0, x.length() - 2);
 }
+
+const char *host_session::save_file(const char *name)
+{
+    string i_name = stripfmt(client.input_name);
+    string o_name = stripfmt(client.output_name);
+    string m_name = stripfmt(client.midi_name);
+    string data;
+    data = "<?xml version=\"1.1\" encoding=\"utf-8\">\n";
+    data = "<rack>\n";
+    for (unsigned int i = 0; i < plugins.size(); i++) {
+        jack_host_base *p = plugins[i];
+        plugin_preset preset;
+        preset.plugin = p->get_id();
+        preset.get_from(p);
+        data += "<plugin";
+        data += to_xml_attr("type", preset.plugin);
+        data += to_xml_attr("instance-name", p->instance_name);
+        if (p->get_input_count())
+            data += to_xml_attr("input-index", p->get_inputs()[0].name.substr(i_name.length()));
+        if (p->get_output_count())
+            data += to_xml_attr("output-index", p->get_outputs()[0].name.substr(o_name.length()));
+        if (p->get_midi_port())
+            data += to_xml_attr("midi-index", p->get_midi_port()->name.substr(m_name.length()));
+        data += ">\n";
+        data += preset.to_xml();
+        data += "</plugin>\n";
+    }
+    data += "</rack>\n";
+    FILE *f = fopen(name, "w");
+    if (!f || 1 != fwrite(data.c_str(), data.length(), 1, f))
+    {
+        int e = errno;
+        fclose(f);
+        return strerror(e);
+    }
+    if (fclose(f))
+        return strerror(errno);
+    
+    return NULL;
+}
+
+#if USE_LASH
 
 # if !USE_LASH_0_6
 
