@@ -234,9 +234,9 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     void report_progress(float percentage, const std::string &message);
     
     /// Implementation of open file functionality (TODO)
-    virtual const char *open_file(const char *name) { return "Not implemented yet"; }
+    virtual char *open_file(const char *name);
     /// Implementation of save file functionality
-    virtual const char *save_file(const char *name);
+    virtual char *save_file(const char *name);
 };
 
 host_session::host_session()
@@ -523,7 +523,39 @@ static string stripfmt(string x)
     return x.substr(0, x.length() - 2);
 }
 
-const char *host_session::save_file(const char *name)
+char *host_session::open_file(const char *name)
+{
+    preset_list pl;
+    try {
+        remove_all_plugins();
+        pl.load(name, true);
+        printf("Size %d\n", pl.plugins.size());
+        for (unsigned int i = 0; i < pl.plugins.size(); i++)
+        {
+            preset_list::plugin_snapshot &ps = pl.plugins[i];
+            client.input_nr = ps.input_index;
+            client.output_nr = ps.output_index;
+            client.midi_nr = ps.midi_index;
+            printf("Loading %s\n", ps.type.c_str());
+            if (ps.preset_offset < (int)pl.presets.size())
+            {
+                add_plugin(ps.type, "", ps.instance_name);
+                pl.presets[ps.preset_offset].activate(plugins[i]);
+                main_win->refresh_plugin(plugins[i]);
+            }
+        }
+    }
+    catch(preset_exception &e)
+    {
+        // XXXKF this will leak
+        char *data = strdup(e.what());
+        return data;
+    }
+    
+    return NULL;
+}
+
+char *host_session::save_file(const char *name)
 {
     string i_name = stripfmt(client.input_name);
     string o_name = stripfmt(client.output_name);
@@ -555,10 +587,10 @@ const char *host_session::save_file(const char *name)
     {
         int e = errno;
         fclose(f);
-        return strerror(e);
+        return strdup(strerror(e));
     }
     if (fclose(f))
-        return strerror(errno);
+        return strdup(strerror(errno));
     
     return NULL;
 }
@@ -744,7 +776,7 @@ bool load_data_set_cb(lash_config_handle_t *handle, void *user_data)
             if (dict.count("output_name")) sess->client.output_nr = atoi(dict["output_name"].c_str());
             if (dict.count("midi_name")) sess->client.midi_nr = atoi(dict["midi_name"].c_str());
             preset_list tmp;
-            tmp.parse("<presets>"+data+"</presets>");
+            tmp.parse("<presets>"+data+"</presets>", false);
             if (tmp.presets.size())
             {
                 printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());

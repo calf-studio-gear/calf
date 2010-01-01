@@ -576,12 +576,13 @@ void main_window::open_file()
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
         char *filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-        const char *error = owner->open_file(filename);
+        char *error = owner->open_file(filename);
         if (error) 
             display_error(error, filename);
         else
             current_filename = filename;
         g_free (filename);
+        free (error);
     }
     gtk_widget_destroy (dialog);
 }
@@ -609,12 +610,13 @@ void main_window::save_file_as()
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
         char *filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-        const char *error = owner->save_file(filename);
+        char *error = owner->save_file(filename);
         if (error) 
             display_error(error, filename);
         else
             current_filename = filename;
         g_free (filename);
+        free(error);
     }
     gtk_widget_destroy (dialog);
 }

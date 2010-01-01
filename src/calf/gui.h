@@ -161,8 +161,8 @@ class main_window_owner_iface
 public:
     virtual void new_plugin(const char *name) = 0;
     virtual void remove_plugin(plugin_ctl_iface *plugin) = 0;
-    virtual const char *open_file(const char *name) = 0;
-    virtual const char *save_file(const char *name) = 0;
+    virtual char *open_file(const char *name) = 0;
+    virtual char *save_file(const char *name) = 0;
     virtual ~main_window_owner_iface() {}
 };
 
