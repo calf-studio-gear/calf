@@ -529,7 +529,7 @@ char *host_session::open_file(const char *name)
     try {
         remove_all_plugins();
         pl.load(name, true);
-        printf("Size %d\n", pl.plugins.size());
+        printf("Size %d\n", (int)pl.plugins.size());
         for (unsigned int i = 0; i < pl.plugins.size(); i++)
         {
             preset_list::plugin_snapshot &ps = pl.plugins[i];
@@ -678,7 +678,7 @@ void host_session::update_lash()
                         if (dict.count("output_name")) client.output_nr = atoi(dict["output_name"].c_str());
                         if (dict.count("midi_name")) client.midi_nr = atoi(dict["midi_name"].c_str());
                         preset_list tmp;
-                        tmp.parse("<presets>"+data+"</presets>");
+                        tmp.parse("<presets>"+data+"</presets>", false);
                         if (tmp.presets.size())
                         {
                             printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());
