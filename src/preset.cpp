@@ -141,19 +141,52 @@ string calf_plugins::preset_list::get_preset_filename(bool builtin)
     }
 }
 
+void preset_list::plugin_snapshot::reset()
+{
+    type.clear();
+    instance_name.clear();
+    preset_offset = input_index = output_index = midi_index = 0;
+    
+}
+
 void preset_list::xml_start_element_handler(void *user_data, const char *name, const char *attrs[])
 {
     preset_list &self = *(preset_list *)user_data;
+    bool rack_mode = self.rack_mode;
     parser_state &state = self.state;
     plugin_preset &parser_preset = self.parser_preset;
     switch(state)
     {
     case START:
-        if (!strcmp(name, "presets")) {
+        if (!rack_mode && !strcmp(name, "presets")) {
             state = LIST;
             return;
         }
+        if (rack_mode && !strcmp(name, "rack")) {
+            state = RACK;
+            return;
+        }
         break;
+    case RACK:
+        if (!strcmp(name, "plugin")) {
+            self.parser_plugin.reset();
+            self.parser_plugin.preset_offset = self.presets.size();
+            for(; *attrs; attrs += 2) {
+                if (!strcmp(attrs[0], "type")) self.parser_plugin.type = attrs[1];
+                else
+                if (!strcmp(attrs[0], "instance-name")) self.parser_plugin.instance_name = attrs[1];
+                else
+                if (!strcmp(attrs[0], "input-index")) self.parser_plugin.input_index = atoi(attrs[1]);
+                else
+                if (!strcmp(attrs[0], "output-index")) self.parser_plugin.output_index = atoi(attrs[1]);
+                else
+                if (!strcmp(attrs[0], "midi-index")) self.parser_plugin.midi_index = atoi(attrs[1]);
+            }
+            state = PLUGIN;
+            return;
+        }
+        break;
+    case PLUGIN:
     case LIST:
         if (!strcmp(name, "preset")) {
             
@@ -221,6 +254,7 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
 void preset_list::xml_end_element_handler(void *user_data, const char *name)
 {
     preset_list &self = *(preset_list *)user_data;
+    bool rack_mode = self.rack_mode;
     preset_vector &presets = self.presets;
     parser_state &state = self.state;
     switch(state)
@@ -233,10 +267,23 @@ void preset_list::xml_end_element_handler(void *user_data, const char *name)
             return;
         }
         break;
+    case PLUGIN:
+        if (!strcmp(name, "plugin")) {
+            self.plugins.push_back(self.parser_plugin);
+            state = RACK;
+            return;
+        }
+        break;
+    case RACK:
+        if (!strcmp(name, "rack")) {
+            state = START;
+            return;
+        }
+        break;
     case PRESET:
         if (!strcmp(name, "preset")) {
             presets.push_back(self.parser_preset);
-            state = LIST;
+            state = rack_mode ? PLUGIN : LIST;
             return;
         }
         break;
@@ -273,7 +320,7 @@ bool preset_list::load_defaults(bool builtin)
         struct stat st;
         string name = preset_list::get_preset_filename(builtin);
         if (!stat(name.c_str(), &st)) {
-            load(name.c_str());
+            load(name.c_str(), false);
             if (!presets.empty())
                 return true;
         }
@@ -285,8 +332,9 @@ bool preset_list::load_defaults(bool builtin)
     return false;
 }
 
-void preset_list::parse(const std::string &data)
+void preset_list::parse(const std::string &data, bool in_rack_mode)
 {
+    rack_mode = in_rack_mode;
     state = START;
     XML_Parser parser = XML_ParserCreate("UTF-8");
     XML_SetUserData(parser, this);
@@ -301,8 +349,9 @@ void preset_list::parse(const std::string &data)
     XML_ParserFree(parser);
 }
 
-void preset_list::load(const char *filename)
+void preset_list::load(const char *filename, bool in_rack_mode)
 {
+    rack_mode = in_rack_mode;
     state = START;
     XML_Parser parser = XML_ParserCreate("UTF-8");
     XML_SetUserData(parser, this);
