@@ -74,7 +74,7 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
         sp.get_from(gui->plugin);
         preset_list tmp;
         try {
-            tmp.load(tmp.get_preset_filename(false).c_str());
+            tmp.load(tmp.get_preset_filename(false).c_str(), false);
         }
         catch(...)
         {

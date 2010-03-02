@@ -70,6 +70,7 @@ namespace calf_plugins {
         bool draw_rackmounts;
         int source_id;
         main_window_owner_iface *owner;
+        std::string current_filename;
 
     protected:
         plugin_strip *create_strip(plugin_ctl_iface *plugin);
@@ -77,6 +78,7 @@ namespace calf_plugins {
         static gboolean on_idle(void *data);
         std::string make_plugin_list(GtkActionGroup *actions);
         static void add_plugin_action(GtkWidget *src, gpointer data);
+        void display_error(const char *error, const char *filename);
 
     public:
         main_window();
@@ -95,6 +97,10 @@ namespace calf_plugins {
         }
     
         void create();
+        
+        void open_file();
+        void save_file();
+        void save_file_as();
     };
 };
 
