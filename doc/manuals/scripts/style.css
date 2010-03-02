@@ -1,5 +1,5 @@
 body {
-    background: url(../../../gui/background_blue.png);
+    background: url(../images/background_blue.png);
     color: white;
     text-align: center;
     font-family: sans-serif;
@@ -39,6 +39,8 @@ p, ul {
     margin: 0 0 15px;
     padding: 10px;
     border: 1px solid black;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px;
 }
 ul {
 }
@@ -65,7 +67,7 @@ strong {
 }
 
 .headerbg {
-    background: url(../../../gui/background_black.png);
+    background: url(../images/background_black.png);
     border-bottom: 1px solid #111;
 }
 .header {
