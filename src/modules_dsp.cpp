@@ -2424,7 +2424,7 @@ bool pulsator_audio_module::get_gridline(int index, int subindex, float &pos, bo
 
 /// Saturator Band by Markus Schmidt
 ///
-/// This module is based on Krzysztof's filters and distortion routine.
+/// This module is based on Krzysztof's filters and Tom's distortion routine.
 /// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2537,6 +2537,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
         meter_in  = 0.f;
         meter_out = 0.f;
         meter_drive = 0.f;
+
     } else {
         
         clip_in    -= std::min(clip_in,  numsamples);
@@ -2544,42 +2545,47 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
         meter_in = 0.f;
         meter_out = 0.f;
         meter_drive = 0.f;
-        
+        float in_avg[2] = {0.f, 0.f};
+        float out_avg[2] = {0.f, 0.f};
+        float tube_avg = 0.f;
         // process
         while(offset < numsamples) {
             // cycle through samples
             float out[2], in[2] = {0.f, 0.f};
-            float maxIn, maxOut, maxDrive = 0.f;
+            float maxIn, maxOut = 0.f;
             int c = 0;
             
             if(in_count > 1 && out_count > 1) {
                 // stereo in/stereo out
                 // handle full stereo
                 in[0] = ins[0][offset];
-                in[0] *= *params[param_level_in];
                 in[1] = ins[1][offset];
-                in[1] *= *params[param_level_in];
                 c = 2;
             } else {
                 // in and/or out mono
                 // handle mono
                 in[0] = ins[0][offset];
-                in[0] *= *params[param_level_in];
                 in[1] = in[0];
                 c = 1;
             }
             
             float proc[2];
-            proc[0] = in[0];
-            proc[1] = in[1];
+            proc[0] = in[0] * *params[param_level_in];
+            proc[1] = in[1] * *params[param_level_in];
             
             for (int i = 0; i < c; ++i) {
                 // all pre filters in chain
                 proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
                 proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
                 
-                // saturate
+                // get average for display purposes before...
+                in_avg[i] += fabs(pow(proc[i], 2.f));
+
+                // ...saturate...
                 proc[i] = dist[i].process(proc[i]);
+                
+                // ...and get average after...
+                out_avg[i] += fabs(pow(proc[i], 2.f));
                 
                 // tone control
                 proc[i] = p[i].process(proc[i]);
@@ -2587,6 +2593,9 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 // all post filters in chain
                 proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
                 proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+                
+                //subtract gain
+                 proc[i] /= *params[param_level_in];
             }
             
             if(in_count > 1 && out_count > 1) {
@@ -2597,7 +2606,6 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 outs[1][offset] = out[1];
                 maxIn = std::max(fabs(in[0]), fabs(in[1]));
                 maxOut = std::max(fabs(out[0]), fabs(out[1]));
-                maxDrive = std::max(dist[0].get_distortion_level(), dist[1].get_distortion_level());
             } else if(out_count > 1) {
                 // mono -> pseudo stereo
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
@@ -2606,7 +2614,6 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 outs[1][offset] = out[1];
                 maxOut = fabs(out[0]);
                 maxIn = fabs(in[0]);
-                maxDrive = dist[0].get_distortion_level();
             } else {
                 // stereo -> mono
                 // or full mono
@@ -2614,7 +2621,6 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 outs[0][offset] = out[0];
                 maxIn = fabs(in[0]);
                 maxOut = fabs(out[0]);
-                maxDrive = dist[0].get_distortion_level();
             }
             
             if(maxIn > 1.f) {
@@ -2630,13 +2636,14 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             if(maxOut > meter_out) {
                 meter_out = maxOut;
             }
-            if(maxDrive > meter_drive) {
-                meter_drive = maxDrive;
-            }
             
             // next sample
             ++offset;
         } // cycle trough samples
+        
+        tube_avg = (sqrt(std::max(out_avg[0], out_avg[1])) / numsamples) - (sqrt(std::max(in_avg[0], in_avg[1])) / numsamples);
+        meter_drive = (5.0f * fabs(tube_avg) * (float(*params[param_blend]) + 30.0f));
+        // printf("out:%.6f in: %.6f avg: %.6f drv: %.3f\n", sqrt(std::max(out_avg[0], out_avg[1])) / numsamples, sqrt(std::max(in_avg[0], in_avg[1])) / numsamples, tube_avg, meter_drive);
         // clean up
         lp[0][0].sanitize();
         lp[1][0].sanitize();
@@ -2680,7 +2687,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
 
 /// Exciter by Markus Schmidt
 ///
-/// This module is based on Krzysztof's filters and distortion routine.
+/// This module is based on Krzysztof's filters and Tom's distortion routine.
 /// It sends the signal through a highpass, saturates it and sends it through a highpass again
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2903,7 +2910,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 
 /// Bass Enhancer by Markus Schmidt
 ///
-/// This module is based on Krzysztof's filters and distortion routine.
+/// This module is based on Krzysztof's filters and Tom's distortion routine.
 /// It sends the signal through a lowpass, saturates it and sends it through a lowpass again
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3125,7 +3132,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
 }
 
 
-/// Distortion Module by Krzysztof Foltman
+/// Distortion Module by Tom Szilagyi
 ///
 /// This module provides a blendable saturation stage
 ///////////////////////////////////////////////////////////////////////////////////////////////

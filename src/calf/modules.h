@@ -1184,7 +1184,7 @@ public:
     }
 };
 
-/// Saturator by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+/// Saturator by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
 class saturator_audio_module: public audio_module<saturator_metadata> {
 private:
     float hp_pre_freq_old, lp_pre_freq_old;
@@ -1209,7 +1209,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-/// Exciter by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+/// Exciter by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
 class exciter_audio_module: public audio_module<exciter_metadata> {
 private:
     float freq_old;
@@ -1231,7 +1231,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-/// Bass Enhancer by Markus Schmidt (based on Krzysztof's filters and distortion algorythm)
+/// Bass Enhancer by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
 class bassenhancer_audio_module: public audio_module<bassenhancer_metadata> {
 private:
     float freq_old;
