@@ -61,7 +61,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     map<string, int> params_by_name;
     uint32_t string_port_uri;
     
-    plugin_proxy(plugin_metadata_iface *md)
+    plugin_proxy(const plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         gui = NULL;
@@ -189,7 +189,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const LV2_Feature* const*       features)
 {
     plugin_proxy *proxy = NULL;
-    plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
+    const plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
     if (!md)
         return NULL;
     proxy = new plugin_proxy(md);
