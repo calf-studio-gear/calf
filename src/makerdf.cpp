@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <config.h>
 #include <calf/giface.h>
-#include <calf/plugininfo.h>
 #include <calf/utils.h>
 #if USE_LV2
 #include <calf/lv2_contexts.h>
@@ -283,182 +282,6 @@ static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plug
     ports += ss.str();
 }
 
-struct lv2_port_base {
-    int index;
-    std::string symbol, name, extras, microname;
-    bool is_input;
-
-    virtual std::string to_string() = 0;
-    virtual ~lv2_port_base() {}
-    void to_stream_base(stringstream &ss, string ind, string port_class)
-    {
-        ss << ind << (is_input ? "a lv2:InputPort ;\n" : "a lv2:OutputPort ;\n");
-        ss << ind << "a " << port_class << " ;\n";
-        ss << ind << "lv2:index " << index << " ;\n";
-        ss << ind << "lv2:symbol \"" << symbol << "\" ;\n";
-        ss << ind << "lv2:name \"" << name << "\" ;\n";
-        if (!extras.empty()) {
-            ss << calf_utils::indent(extras, ind);
-        }
-        if (microname != "N/A")
-            ss << ind << "<http://lv2plug.in/ns/dev/tiny-name> \"" << microname << "\" ;\n";
-    }
-};
-
-struct lv2_audio_port_base: public lv2_port_base
-{
-    std::string to_string() {
-        stringstream ss;
-        const char *ind = "        ";
-        ss << "[\n";
-        to_stream_base(ss, ind, "lv2:AudioPort");
-        ss << "    ]\n";
-        
-        return ss.str();
-    }
-};
-
-struct lv2_event_port_base: public lv2_port_base
-{
-    std::string to_string() {
-        stringstream ss;
-        const char *ind = "        ";
-        ss << "[\n";
-        to_stream_base(ss, ind, "lv2ev:EventPort");
-        ss << "    ]\n";
-        
-        return ss.str();
-    }
-};
-
-template<class base_iface, class base_data>
-struct lv2_port_impl: public base_iface, public base_data
-{
-    lv2_port_impl(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
-    {
-        this->index = _index;
-        this->symbol = _symbol;
-        this->name = _name;
-        this->microname = _microname;
-        this->is_input = true;
-    }
-    /// Called if it's an input port
-    virtual base_iface& input() { this->is_input = true; return *this; }
-    /// Called if it's an output port
-    virtual base_iface& output() { this->is_input = false; return *this; }
-    virtual base_iface& lv2_ttl(const std::string &text) { this->extras += text + "\n"; return *this; }
-};
-
-struct lv2_control_port_base: public lv2_port_base
-{
-    bool is_log, is_toggle, is_trigger, is_integer;
-    double min, max, def_value;
-    bool has_min, has_max;
-    
-    lv2_control_port_base()
-    {
-        has_min = has_max = is_log = is_toggle = is_trigger = is_integer = false;
-        def_value = 0.f;
-    }
-};
-
-typedef lv2_port_impl<plain_port_info_iface, lv2_audio_port_base> lv2_audio_port_info;
-typedef lv2_port_impl<plain_port_info_iface, lv2_event_port_base> lv2_event_port_info;
-
-struct lv2_control_port_info: public lv2_port_impl<control_port_info_iface, lv2_control_port_base> 
-{
-    lv2_control_port_info(int _index, const std::string &_symbol, const std::string &_name, const std::string &_microname)
-    : lv2_port_impl<control_port_info_iface, lv2_control_port_base>(_index, _symbol, _name, _microname)
-    {
-    }
-    /// Called to mark the port as using linear range [from, to]
-    virtual control_port_info_iface& lin_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = false; return *this; }
-    /// Called to mark the port as using log range [from, to]
-    virtual control_port_info_iface& log_range(double from, double to) { min = from, max = to, has_min = true, has_max = true, is_log = true; return *this; }
-    virtual control_port_info_iface& toggle() { is_toggle = true; return *this; }
-    virtual control_port_info_iface& trigger() { is_trigger = true; return *this; }
-    virtual control_port_info_iface& integer() { is_integer = true; return *this; }
-    virtual control_port_info_iface& lv2_ttl(const std::string &text) { extras += text + "\n"; return *this; }
-    std::string to_string() {
-        stringstream ss;
-        const char *ind = "        ";
-        ss << "[\n";
-        to_stream_base(ss, ind, "lv2:ControlPort");
-        if (is_toggle)
-            ss << ind << "lv2:portProperty lv2:toggled ;\n";
-        if (is_integer)
-            ss << ind << "lv2:portProperty lv2:integer ;\n";
-        if (is_input)
-            ss << ind << "lv2:default " << def_value << " ;\n";
-        if (has_min)
-            ss << ind << "lv2:minimum " << min << " ;\n";
-        if (has_max)
-            ss << ind << "lv2:maximum " << max << " ;\n";
-        ss << "    ]\n";
-        
-        return ss.str();
-    }
-};
-
-struct lv2_plugin_info: public plugin_info_iface
-{
-    /// Plugin id
-    std::string id;
-    /// Plugin name
-    std::string name;
-    /// Plugin label (short name)
-    std::string label;
-    /// Plugin class (category)
-    std::string category;
-    /// Plugin micro-name
-    std::string microname;
-    /// Extra declarations for LV2
-    std::string extras;
-    /// Vector of ports
-    vector<lv2_port_base *> ports;
-    /// Set plugin names (ID, name and label)
-    virtual void names(const std::string &_name, const std::string &_label, const std::string &_category, const std::string &_microname) {
-        name = _name;
-        label = _label;
-        category = _category;
-        microname = _microname;
-    }
-    /// Add an audio port (returns a sink which accepts further description)
-    virtual plain_port_info_iface &audio_port(const std::string &id, const std::string &name, const std::string &_microname) {
-        lv2_audio_port_info *port = new lv2_audio_port_info(ports.size(), id, name, _microname);
-        ports.push_back(port);
-        return *port;
-    }
-    /// Add an eventport (returns a sink which accepts further description)
-    virtual plain_port_info_iface &event_port(const std::string &id, const std::string &name, const std::string &_microname) {
-        lv2_event_port_info *port = new lv2_event_port_info(ports.size(), id, name, _microname);
-        ports.push_back(port);
-        return *port;
-    }
-    /// Add a control port (returns a sink which accepts further description)
-    virtual control_port_info_iface &control_port(const std::string &id, const std::string &name, double def_value, const std::string &_microname) {
-        lv2_control_port_info *port = new lv2_control_port_info(ports.size(), id, name, _microname);
-        port->def_value = def_value;
-        ports.push_back(port);
-        return *port;
-    }
-    /// Add extra TTL to plugin declaration
-    virtual void lv2_ttl(const std::string &text) { this->extras += "    " + text + "\n";  }
-    /// Called after plugin has reported all the information
-    virtual void finalize() {
-    }
-};
-
-struct lv2_plugin_list: public plugin_list_info_iface, public vector<lv2_plugin_info *>
-{
-    virtual plugin_info_iface &plugin(const std::string &id) {
-        lv2_plugin_info *pi = new lv2_plugin_info;
-        pi->id = id;
-        push_back(pi);
-        return *pi;
-    }
-};
-
 void make_ttl(string path_prefix)
 {
     if (path_prefix.empty())
@@ -519,13 +342,6 @@ void make_ttl(string path_prefix)
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
         "    \n"
-#ifdef ENABLE_EXPERIMENTAL
-    "<http://calf.sourceforge.net/small_plugins/gui/gtk2-gui>\n"
-        "    a uiext:GtkUI ;\n"
-        "    uiext:binary <calflv2gui.so> ;\n"
-        "    uiext:requiredFeature uiext:makeResident .\n"
-        "    \n"
-#endif
     ;
 #endif
     
@@ -617,60 +433,13 @@ void make_ttl(string path_prefix)
         fprintf(f, "%s\n", ttl.c_str());
         fclose(f);
     }
-    lv2_plugin_list lpl;
-    calf_plugins::get_all_small_plugins(&lpl);
-    for (unsigned int i = 0; i < lpl.size(); i++)
-    {
-        lv2_plugin_info *pi = lpl[i];
-        // Copy-pasted code is the root of all evil, I know!
-        string uri = string("<http://calf.sourceforge.net/small_plugins/")  + string(pi->id) + ">";
-        string ttl;
-        ttl = "@prefix : " + uri + " .\n" + header + gui_header;
-        
-        ttl += uri + " a lv2:Plugin ;\n";
-        
-        if (!pi->category.empty())
-            ttl += "    a " + pi->category+" ;\n";
-        
-        ttl += "    doap:name \""+string(pi->label)+"\" ;\n";
-        ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
-        if (!pi->microname.empty())
-            ttl += "    <http://lv2plug.in/ns/dev/tiny-name> \"" + pi->microname + "\" ;\n";
-        ttl += pi->extras;
-
-        if (!pi->ports.empty())
-        {
-            ttl += "    lv2:port ";
-            for (unsigned int i = 0; i < pi->ports.size(); i++)
-            {
-                if (i)
-                    ttl += "    ,\n    ";
-                ttl += pi->ports[i]->to_string();
-            }
-            ttl += ".\n\n";
-        }
-        FILE *f = fopen((path_prefix+string(pi->id)+".ttl").c_str(), "w");
-        fprintf(f, "%s\n", ttl.c_str());
-        fclose(f);
-    }
-    
     // Generate a manifest
     
     string ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        "@prefix kf: <http://foltman.com/ns/> .\n"
         "\n"
-        "kf:BooleanPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
-        "    rdfs:label \"Boolean-oriented\" ;\n    rdfs:comment \"Modules heavily inspired by digital electronics (gates, flip-flops, etc.)\" .\n"
-        "kf:MathOperatorPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
-        "    rdfs:label \"Math operators\" ;\n    rdfs:comment \"Mathematical operators and utility functions\" .\n"
-        "kf:IntegerPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
-        "    rdfs:label \"Integer-oriented\" ;\n    rdfs:comment \"Operations on integer values (counters, multiplexers, etc.)\" .\n"
-        "kf:MIDIPlugin a rdfs:Class ; rdfs:subClassOf lv2:UtilityPlugin ;\n"
-        "    rdfs:label \"MIDI\" ;\n    rdfs:comment \"Operations on MIDI streams (filters, transposers, mappers, etc.)\" .\n"
-		"\n"
     ;
     
     string presets_ttl =
@@ -685,11 +454,6 @@ void make_ttl(string path_prefix)
         ttl += string("<" + plugin_uri_prefix) 
             + string(plugins[i]->get_plugin_info().label)
             + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> , <presets.ttl> .\n";
-
-    for (unsigned int i = 0; i < lpl.size(); i++)
-        ttl += string("<http://calf.sourceforge.net/small_plugins/") 
-            + string(lpl[i]->id)
-            + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + string(lpl[i]->id) + ".ttl> .\n";
 
     calf_plugins::get_builtin_presets().load_defaults(true);
     calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
