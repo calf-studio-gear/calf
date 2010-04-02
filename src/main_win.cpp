@@ -157,14 +157,17 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
     if (!strip)
         return;
     strip->gui_win = gui_win;
-    if (!is_closed)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
+    if (gui_win)
+    {
+        if (!is_closed)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
         
-    GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
-    if (strip->gui_win) {
-        gtk_button_set_label(GTK_BUTTON(tb), "Hide");
-    } else {
-        gtk_button_set_label(GTK_BUTTON(tb), "Show");
+        GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
+        if (strip->gui_win) {
+            gtk_button_set_label(GTK_BUTTON(tb), "Hide");
+        } else {
+            gtk_button_set_label(GTK_BUTTON(tb), "Show");
+        }
     }
     
 }
