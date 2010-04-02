@@ -131,8 +131,7 @@ void make_rdf()
     
     rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
 
-    vector<calf_plugins::plugin_metadata_iface *> plugins;
-    calf_plugins::get_all_plugins(plugins);
+    const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
     set<int> used_ids;
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
@@ -151,7 +150,6 @@ void make_rdf()
         }
         delete p;
     }    
-    plugins.clear();
     rdf += "</rdf:RDF>\n";
     
     printf("%s\n", rdf.c_str());
@@ -491,8 +489,7 @@ void make_ttl(string path_prefix)
         "\n"
     ;
     
-    vector<plugin_metadata_iface *> plugins;
-    calf_plugins::get_all_plugins(plugins);
+    const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
     
     map<string, string> classes;
     
@@ -750,8 +747,7 @@ void make_gui(string path_prefix)
         fprintf(stderr, "Path parameter is required for GUI mode\n");
         exit(1);
     }
-    vector<plugin_metadata_iface *> plugins;
-    calf_plugins::get_all_plugins(plugins);
+    const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
     path_prefix += "/gui-";
     for (unsigned int i = 0; i < plugins.size(); i++)
     {

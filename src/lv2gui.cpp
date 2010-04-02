@@ -29,6 +29,7 @@
 #include <calf/lv2_string_port.h>
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
+#include <calf/lv2_external_ui.h>
 #include <calf/preset_gui.h>
 #include <calf/utils.h>
 #include <calf/lv2helpers.h>
@@ -112,7 +113,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         return false;
     }
     
-    virtual line_graph_iface *get_line_graph_iface() {
+    virtual const line_graph_iface *get_line_graph_iface() const {
         if (instance)
             return instance->get_line_graph_iface();
         return NULL;
@@ -187,18 +188,11 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
-    vector<plugin_metadata_iface *> plugins;
-    get_all_plugins(plugins);
-    const char *label = plugin_uri + sizeof("http://calf.sourceforge.net/plugins/") - 1;
     plugin_proxy *proxy = NULL;
-    for (unsigned int i = 0; i < plugins.size(); i++)
-    {
-        if (!strcmp(plugins[i]->get_plugin_info().label, label))
-        {
-            proxy = new plugin_proxy(plugins[i]);
-            break;
-        }
-    }
+    plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
+    if (!md)
+        return NULL;
+    proxy = new plugin_proxy(md);
     if (!proxy)
         return NULL;
     for (int i = 0; features[i]; i++)
@@ -405,9 +399,69 @@ const void *sgui_extension(const char *uri)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+class ext_plugin_gui: public lv2_external_ui
+{
+public:
+    LV2UI_Write_Function write_function;
+    LV2UI_Controller controller;
+
+    ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c);
+
+    void show_impl() { printf("show\n"); }
+    void hide_impl() { printf("hide\n"); }
+    void run_impl()  { printf("run\n"); }
+
+    virtual ~ext_plugin_gui() {}
+        
+    static void show_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->show_impl(); }
+    static void hide_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->hide_impl(); }
+    static void run_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->run_impl(); }
+    
+};
+
+ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c)
+{
+    write_function = wf;
+    controller = c;
+    
+    show = show_;
+    hide = hide_;
+    run = run_;
+}
+
+LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
+                          const char*                     plugin_uri,
+                          const char*                     bundle_path,
+                          LV2UI_Write_Function            write_function,
+                          LV2UI_Controller                controller,
+                          LV2UI_Widget*                   widget,
+                          const LV2_Feature* const*       features)
+{
+    ext_plugin_gui *ui = new ext_plugin_gui(write_function, controller);
+    *widget = (LV2UI_Widget)ui;
+    return (LV2UI_Handle)ui;
+}
+
+void extgui_cleanup(LV2UI_Handle handle)
+{
+    ext_plugin_gui *gui = (ext_plugin_gui *)handle;
+    delete gui;
+}
+
+void extgui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
+{
+}
+
+const void *extgui_extension(const char *uri)
+{
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-    static LV2UI_Descriptor gui, sgui;
+    static LV2UI_Descriptor gui, sgui, extgui;
     gui.URI = "http://calf.sourceforge.net/plugins/gui/gtk2-gui";
     gui.instantiate = gui_instantiate;
     gui.cleanup = gui_cleanup;
@@ -418,11 +472,18 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
     sgui.cleanup = sgui_cleanup;
     sgui.port_event = sgui_port_event;
     sgui.extension_data = sgui_extension;
+    extgui.URI = "http://calf.sourceforge.net/plugins/gui/ext-gui";
+    extgui.instantiate = extgui_instantiate;
+    extgui.cleanup = extgui_cleanup;
+    extgui.port_event = extgui_port_event;
+    extgui.extension_data = extgui_extension;
     switch(index) {
         case 0:
             return &gui;
         case 1:
             return &sgui;
+        case 2:
+            return &extgui;
         default:
             return NULL;
     }

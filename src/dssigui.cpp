@@ -207,18 +207,18 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
-    virtual line_graph_iface *get_line_graph_iface() { return this; }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
-    void update_cairo_context(cairo_iface *context, cairo_params &item);
+    virtual const line_graph_iface *get_line_graph_iface() const { return this; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    void update_cairo_context(cairo_iface *context, cairo_params &item) const;
 };
 
-bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.graphs.size())
     {
         float *sdata = g.graphs[subindex]->data;
@@ -233,11 +233,11 @@ bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, c
     return false;
 }
 
-bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.dots.size())
     {
         dot_item &item = *g.dots[subindex];
@@ -250,11 +250,11 @@ bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &siz
     return false;
 }
 
-bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.gridlines.size())
     {
         gridline_item &item = *g.gridlines[subindex];
@@ -267,7 +267,7 @@ bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &verti
     return false;
 }
 
-void plugin_proxy::update_cairo_context(cairo_iface *context, cairo_params &item)
+void plugin_proxy::update_cairo_context(cairo_iface *context, cairo_params &item) const
 {
     if (item.flags & cairo_params::HAS_COLOR)
         context->set_source_rgba(item.r, item.g, item.b, item.a);
@@ -317,8 +317,7 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     void create_window()
     {
         plugin = NULL;
-        vector<plugin_metadata_iface *> plugins;
-        get_all_plugins(plugins);
+        const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
         for (unsigned int i = 0; i < plugins.size(); i++)
         {
             if (!strcmp(plugins[i]->get_id(), effect_name.c_str()))
