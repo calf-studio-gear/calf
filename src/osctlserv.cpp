@@ -47,19 +47,23 @@ void osc_server::parse_message(const char *buffer, int len)
 
 void osc_server::read_from_socket()
 {
-    char buf[16384];
-    int len = recv(socket, buf, 16384, MSG_DONTWAIT);
-    if (len > 0)
-    {
-        if (buf[0] == '/')
+    do {
+        char buf[16384];
+        int len = recv(socket, buf, 16384, MSG_DONTWAIT);
+        if (len > 0)
         {
-            parse_message(buf, len);
+            if (buf[0] == '/')
+            {
+                parse_message(buf, len);
+            }
+            if (buf[0] == '#')
+            {
+                // XXXKF bundles are not supported yet
+            }
         }
-        if (buf[0] == '#')
-        {
-            // XXXKF bundles are not supported yet
-        }
-    }
+        else
+            break;
+    } while(1);
 }
 
 osc_server::~osc_server()
