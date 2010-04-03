@@ -354,7 +354,6 @@ void host_session::open()
     if (!output_name.empty()) client.output_name = output_name;
     if (!midi_name.empty()) client.midi_name = midi_name;
     
-    gtk_rc_parse(PKGLIBDIR "calf.rc");
     client.open(client_name.c_str());
     main_win->prefix = client_name + " - ";
     main_win->conditions.insert("jackhost");
