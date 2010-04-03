@@ -305,9 +305,7 @@ void make_ttl(string path_prefix)
         "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
-        "@prefix kf: <http://foltman.com/ns/> .\n"
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
-        "@prefix poly: <http://lv2plug.in/ns/dev/polymorphic-port#> .\n"
 
         "\n"
     ;
