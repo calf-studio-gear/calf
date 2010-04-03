@@ -47,48 +47,96 @@ struct LV2_Calf_Descriptor {
     plugin_ctl_iface *(*get_pci)(LV2_Handle Instance);
 };
 
-struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
+/// Temporary assignment to a slot in vector<bool>
+typedef scope_assign<bool, vector<bool>::reference> TempSendSetter;
+
+/// Common data and functions for GTK+ GUI and External GUI
+struct plugin_proxy_base
 {
+    const plugin_metadata_iface *plugin_metadata;
     LV2UI_Write_Function write_function;
     LV2UI_Controller controller;
     
-    bool send;
-    plugin_gui *gui;
-    float *params;
+    /// If true, a given parameter (not port) may be sent to host - it is blocked when the parameter is written to by the host
+    vector<bool> sends;
+    /// Map of parameter name to parameter index (used for mapping configure values to string ports)
+    map<string, int> params_by_name;
+    /// Values of parameters (float control ports)
+    vector<float> params;
+    /// Number of parameters (non-audio ports)
     int param_count;
+    /// Number of the first parameter port
+    int param_offset;
+    /// Mapped URI to string port
+    uint32_t string_port_uri;
+    
+    plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c);
+    
+    void send_float_to_host(int param_no, float value);
+    
+    /// Enable sending to host for all ports
+    void enable_all_sends();
+};
+
+plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c)
+{
+    plugin_metadata = metadata;
+    write_function = wf;
+    controller = c;
+    string_port_uri = 0;
+    param_count = metadata->get_param_count();
+    param_offset = metadata->get_param_port_offset();
+    /// Block all updates until GUI is ready
+    sends.resize(param_count, false);
+    params.resize(param_count);
+    for (int i = 0; i < param_count; i++)
+    {
+        parameter_properties *pp = metadata->get_param_props(i);
+        params_by_name[pp->short_name] = i;
+        if ((pp->flags & PF_TYPEMASK) < PF_STRING)
+            params[i] = pp->def_value;
+    }
+}
+
+void plugin_proxy_base::send_float_to_host(int param_no, float value)
+{
+    params[param_no] = value;
+    if (sends[param_no]) {
+        TempSendSetter _a_(sends[param_no], false);
+        write_function(controller, param_no + param_offset, sizeof(float), 0, &params[param_no]);
+    }
+}
+
+void plugin_proxy_base::enable_all_sends()
+{
+    sends.clear();
+    sends.resize(param_count, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Plugin controller that uses LV2 host with help of instance/data access to remotely
+/// control a plugin from the GUI
+struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public plugin_proxy_base
+{
+    /// Plugin GTK+ GUI object pointer
+    plugin_gui *gui;
     /// Instance pointer - usually NULL unless the host supports instance-access extension
     plugin_ctl_iface *instance;
+    /// Glib source ID for update timer
     int source_id;
     LV2_Handle instance_handle;
     LV2_Extension_Data_Feature *data_access;
     LV2_URI_Map_Feature *uri_map;
-    map<string, int> params_by_name;
-    uint32_t string_port_uri;
     
-    plugin_proxy(const plugin_metadata_iface *md)
+    lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c)
     : plugin_metadata_proxy(md)
+    , plugin_proxy_base(md, wf, c)
     {
         gui = NULL;
         instance = NULL;
         instance_handle = NULL;
         data_access = NULL;
-        send = true;
-        param_count = get_param_count();
-        params = new float[param_count];
-        string_port_uri = 0;
-        for (int i = 0; i < param_count; i++)
-        {
-            parameter_properties *pp = get_param_props(i);
-            params_by_name[pp->short_name] = i;
-            if ((pp->flags & PF_TYPEMASK) < PF_STRING)
-                params[i] = pp->def_value;
-        }
-    }
-    
-    void setup(LV2UI_Write_Function wfn, LV2UI_Controller ctl)
-    {
-        write_function = wfn;
-        controller = ctl;
     }
     
     virtual float get_param_value(int param_no) {
@@ -105,11 +153,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
             //assert(0);
             return;
         }
-        params[param_no] = value;
-        if (send) {
-            scope_assign<bool> _a_(send, false);
-            write_function(controller, param_no + get_param_port_offset(), sizeof(float), 0, &params[param_no]);
-        }
+        send_float_to_host(param_no, value);
     }
     
     virtual bool activate_preset(int bank, int program)
@@ -125,8 +169,6 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
     
     virtual char *configure(const char *key, const char *value)
     {
-        if (!send)
-            return NULL;
         map<string, int>::iterator i = params_by_name.find(key);
         if (i == params_by_name.end())
         {
@@ -134,6 +176,9 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
             assert(0);
             return NULL;
         }
+        int idx = i->second;
+        if (!sends[idx])
+            return NULL;
         LV2_String_Data data;
         data.data = (char *)value;
         data.len = strlen(value);
@@ -141,7 +186,6 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
         data.flags = 0;
         data.pad = 0;
         
-        int idx = i->second;
         if (string_port_uri) {
             write_function(controller, idx + get_param_port_offset(), sizeof(LV2_String_Data), string_port_uri, &data);
         }
@@ -170,11 +214,6 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy
             return 0;
         return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
     }
-        
-    ~plugin_proxy()
-    {
-        delete []params;
-    }
 };
 
 static gboolean plugin_on_idle(void *data)
@@ -192,13 +231,13 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
-    plugin_proxy *proxy = NULL;
     const plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
     if (!md)
         return NULL;
-    proxy = new plugin_proxy(md);
+    lv2_plugin_proxy *proxy = new lv2_plugin_proxy(md, write_function, controller);
     if (!proxy)
         return NULL;
+    
     for (int i = 0; features[i]; i++)
     {
         if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
@@ -213,8 +252,9 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
         }
     }
     proxy->resolve_instance();
-    scope_assign<bool> _a_(proxy->send, false);
-    proxy->setup(write_function, controller);
+
+    gtk_rc_parse(PKGLIBDIR "calf.rc");
+    
     // dummy window
     main_window *main = new main_window;
     if (proxy->instance)
@@ -225,7 +265,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     const char *xml = proxy->get_gui_xml();
     assert(xml);
     *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
-    gtk_rc_parse(PKGLIBDIR "calf.rc");
+    proxy->enable_all_sends();
     if (*(GtkWidget **)(widget))
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
     
@@ -235,7 +275,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 void gui_cleanup(LV2UI_Handle handle)
 {
     plugin_gui *gui = (plugin_gui *)handle;
-    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
+    lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     if (proxy->source_id)
         g_source_remove(proxy->source_id);
     delete gui;
@@ -244,7 +284,7 @@ void gui_cleanup(LV2UI_Handle handle)
 void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
     plugin_gui *gui = (plugin_gui *)handle;
-    plugin_proxy *proxy = dynamic_cast<plugin_proxy *>(gui->plugin);
+    lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     assert(proxy);
     float v = *(float *)buffer;
     port -= gui->plugin->get_param_port_offset();
@@ -252,14 +292,14 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
         return;
     if ((gui->plugin->get_param_props(port)->flags & PF_TYPEMASK) == PF_STRING)
     {
-        scope_assign<bool> _a_(proxy->send, false);
+        TempSendSetter _a_(proxy->sends[port], false);
         gui->plugin->configure(gui->plugin->get_param_props(port)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
     if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
         return;
     {
-        scope_assign<bool> _a_(proxy->send, false);
+        TempSendSetter _a_(proxy->sends[port], false);
         gui->set_param_value(port, v);
     }
 }
@@ -285,11 +325,9 @@ void store_preset(GtkWindow *toplevel, plugin_gui *gui)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-class ext_plugin_gui: public lv2_external_ui, public osc_message_sink<osc_strstream>
+class ext_plugin_gui: public lv2_external_ui, public plugin_proxy_base, public osc_message_sink<osc_strstream>
 {
 public:
-    LV2UI_Write_Function write_function;
-    LV2UI_Controller controller;
     const LV2_Feature* const* features;
     lv2_external_ui_host *host;
     GPid child_pid;
@@ -298,7 +336,7 @@ public:
     bool confirmed;
     string prefix;
 
-    ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
+    ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
 
     bool initialise();
 
@@ -316,10 +354,9 @@ private:
     static void run_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->run_impl(); }
 };
 
-ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
+ext_plugin_gui::ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
+: plugin_proxy_base(metadata, wf, c)
 {
-    write_function = wf;
-    controller = c;
     features = f;
     host = NULL;
     confirmed = false;
@@ -350,26 +387,28 @@ bool ext_plugin_gui::initialise()
 
 void ext_plugin_gui::show_impl()
 {
-    printf("show\n");
     cli.send("/show");
 }
 
 void ext_plugin_gui::hide_impl()
 {
-    printf("hide\n");
     cli.send("/hide");
 }
 
 void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
     assert(confirmed);
-    osc_inline_typed_strstream data;
-    if (format == 0)
+    assert(port >= (uint32_t)param_offset);
+    if (port >= (uint32_t)param_offset)
     {
-        data << port; 
-        data << *(float *)buffer;
-        cli.send("/control", data);
-        printf("control %d %f\n", port, *(float *)buffer);
+        TempSendSetter _a_(sends[port - param_offset], false);
+        if (format == 0)
+        {
+            osc_inline_typed_strstream data;
+            data << port; 
+            data << *(float *)buffer;
+            cli.send("/control", data);
+        }
     }
 }
 
@@ -392,6 +431,25 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
         cli.set_url(url.c_str());
         confirmed = true;
     }
+    else
+    if (address == "/bridge/control" && args == "if")
+    {
+        int port;
+        float value;
+        buffer >> port >> value;
+        assert(port >= param_offset);
+        send_float_to_host(port - param_offset, value);
+    }
+    else
+    if (address == "/bridge/configure" && args == "ss")
+    {
+        string key, value;
+        buffer >> key >> value;
+        printf("set key %s to value %s\n", key.c_str(), value.c_str());
+        printf("key index %d\n", params_by_name[key] + plugin_metadata->get_param_port_offset());
+    }
+    else
+        srv.dump.receive_osc_message(address, args, buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -404,7 +462,11 @@ LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
-    ext_plugin_gui *ui = new ext_plugin_gui(write_function, controller, features);
+    const plugin_metadata_iface *plugin_metadata = plugin_registry::instance().get_by_uri(plugin_uri);
+    if (!plugin_metadata)
+        return false;
+    
+    ext_plugin_gui *ui = new ext_plugin_gui(plugin_metadata, write_function, controller, features);
     if (!ui->initialise())
         return NULL;
     

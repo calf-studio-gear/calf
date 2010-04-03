@@ -293,6 +293,8 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
     /// Timeout callback source ID
     int source_id;
     bool osc_link_active;
+    /// If we're communicating with the LV2 external UI bridge, use a slightly different protocol
+    bool is_lv2;
     
     dssi_osc_server()
     : plugin(NULL)
@@ -302,13 +304,18 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
         sink = this;
         source_id = 0;
         osc_link_active = false;
+        is_lv2 = false;
     }
     
     void set_plugin(const char *arg)
     {
         const plugin_metadata_iface *pmi = plugin_registry::instance().get_by_id(arg);
         if (!pmi)
+        {
             pmi = plugin_registry::instance().get_by_uri(arg);
+            if (pmi)
+                is_lv2 = true;
+        }
         if (!pmi)
         {
             fprintf(stderr, "Unknown plugin: %s\n", arg);
@@ -361,15 +368,26 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
 
 void dssi_osc_server::set_osc_update(bool enabled)
 {
-    osc_link_active = enabled;
-    osc_inline_typed_strstream data;
-    data << "OSC:FEEDBACK_URI";
-    data << (enabled ? get_url() : "");
-    cli.send("/configure", data);
+    if (is_lv2)
+    {
+        cli.send("/enable_updates");
+    }
+    else
+    {
+        osc_link_active = enabled;
+        osc_inline_typed_strstream data;
+        data << "OSC:FEEDBACK_URI";
+        data << (enabled ? get_url() : "");
+        cli.send("/configure", data);
+    }
 }
 
 void dssi_osc_server::send_osc_update()
 {
+    // LV2 is updating via run() callback in the external UI library, so this is not needed
+    if (is_lv2)
+        return;
+    
     static int serial_no = 0;
     osc_inline_typed_strstream data;
     data << "OSC:UPDATE";
@@ -526,7 +544,6 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     }
     else if (address == prefix + "/show")
     {
-        printf("show received\n");
         set_osc_update(true);
 
         gtk_widget_show_all(GTK_WIDGET(window->toplevel));
@@ -575,6 +592,7 @@ int main(int argc, char *argv[])
     if (debug_var && atoi(debug_var))
         osc_debug = true;
     
+    gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     while(1) {
         int option_index;
