@@ -56,7 +56,20 @@ struct plugin_proxy_base
     const plugin_metadata_iface *plugin_metadata;
     LV2UI_Write_Function write_function;
     LV2UI_Controller controller;
+
+    // Values extracted from the Features array from the host
     
+    /// Handle to the plugin instance
+    LV2_Handle instance_handle;
+    /// Data access feature instance
+    LV2_Extension_Data_Feature *data_access;
+    /// URI map feature
+    LV2_URI_Map_Feature *uri_map;
+    /// External UI host feature (must be set when instantiating external UI plugins)
+    lv2_external_ui_host *ext_ui_host;
+    
+    /// Instance pointer - usually NULL unless the host supports instance-access extension
+    plugin_ctl_iface *instance;
     /// If true, a given parameter (not port) may be sent to host - it is blocked when the parameter is written to by the host
     vector<bool> sends;
     /// Map of parameter name to parameter index (used for mapping configure values to string ports)
@@ -70,22 +83,39 @@ struct plugin_proxy_base
     /// Mapped URI to string port
     uint32_t string_port_uri;
     
-    plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c);
-    
+    plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features);
+
+    /// Send a float value to a control port in the host
     void send_float_to_host(int param_no, float value);
+    
+    /// Send a string value to a string port in the host, by name (configure-like mechanism)
+    char *configure(const char *key, const char *value);
     
     /// Enable sending to host for all ports
     void enable_all_sends();
+    
+    /// Obtain instance pointers
+    void resolve_instance();
+
+    /// Map an URI to an integer value using a given URI map
+    uint32_t map_uri(const char *mapURI, const char *keyURI);
 };
 
-plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c)
+plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features)
 {
     plugin_metadata = metadata;
+    
     write_function = wf;
     controller = c;
+    
+    instance_handle = NULL;
+    data_access = NULL;
+    ext_ui_host = NULL;
     string_port_uri = 0;
+    
     param_count = metadata->get_param_count();
     param_offset = metadata->get_param_port_offset();
+    
     /// Block all updates until GUI is ready
     sends.resize(param_count, false);
     params.resize(param_count);
@@ -96,6 +126,26 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
         if ((pp->flags & PF_TYPEMASK) < PF_STRING)
             params[i] = pp->def_value;
     }
+    for (int i = 0; features[i]; i++)
+    {
+        if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
+        {
+            instance_handle = features[i]->data;
+        }
+        else if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
+        {
+            data_access = (LV2_Extension_Data_Feature *)features[i]->data;
+        }
+        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
+        {
+            uri_map = (LV2_URI_Map_Feature *)features[i]->data;
+            string_port_uri = map_uri("http://lv2plug.in/ns/extensions/ui", LV2_STRING_PORT_URI);
+        }
+        else if (!strcmp(features[i]->URI, LV2_EXTERNAL_UI_URI))
+        {
+            ext_ui_host = (lv2_external_ui_host *)features[i]->data;
+        }
+    }
 }
 
 void plugin_proxy_base::send_float_to_host(int param_no, float value)
@@ -105,6 +155,57 @@ void plugin_proxy_base::send_float_to_host(int param_no, float value)
         TempSendSetter _a_(sends[param_no], false);
         write_function(controller, param_no + param_offset, sizeof(float), 0, &params[param_no]);
     }
+}
+
+void plugin_proxy_base::resolve_instance()
+{
+    fprintf(stderr, "CALF DEBUG: instance %p data %p\n", instance_handle, data_access);
+    if (instance_handle && data_access)
+    {
+        LV2_Calf_Descriptor *calf = (LV2_Calf_Descriptor *)(*data_access->data_access)("http://foltman.com/ns/calf-plugin-instance");
+        fprintf(stderr, "CALF DEBUG: calf %p cpi %p\n", calf, calf ? calf->get_pci : NULL);
+        if (calf && calf->get_pci)
+            instance = calf->get_pci(instance_handle);
+    }
+}
+
+uint32_t plugin_proxy_base::map_uri(const char *mapURI, const char *keyURI)
+{
+    if (!uri_map)
+        return 0;
+    return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
+}
+
+
+char *plugin_proxy_base::configure(const char *key, const char *value)
+{
+    map<string, int>::iterator i = params_by_name.find(key);
+    if (i == params_by_name.end())
+    {
+        g_error("configure called for unknown key %s\n", key);
+        g_assert(FALSE);
+        return NULL;
+    }
+    int idx = i->second;
+    if (!sends[idx])
+        return NULL;
+    LV2_String_Data data;
+    data.data = (char *)value;
+    data.len = strlen(value);
+    data.storage = -1; // host doesn't need that
+    data.flags = 0;
+    data.pad = 0;
+    
+    if (string_port_uri)
+    {
+        write_function(controller, idx + param_offset, sizeof(LV2_String_Data), string_port_uri, &data);
+    }
+    else
+    {
+        g_warning("String port not supported - cannot write configure variable %s", key);
+    }
+    
+    return NULL;
 }
 
 void plugin_proxy_base::enable_all_sends()
@@ -121,22 +222,15 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
 {
     /// Plugin GTK+ GUI object pointer
     plugin_gui *gui;
-    /// Instance pointer - usually NULL unless the host supports instance-access extension
-    plugin_ctl_iface *instance;
     /// Glib source ID for update timer
     int source_id;
-    LV2_Handle instance_handle;
-    LV2_Extension_Data_Feature *data_access;
-    LV2_URI_Map_Feature *uri_map;
     
-    lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c)
+    lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
     : plugin_metadata_proxy(md)
-    , plugin_proxy_base(md, wf, c)
+    , plugin_proxy_base(md, wf, c, f)
     {
         gui = NULL;
         instance = NULL;
-        instance_handle = NULL;
-        data_access = NULL;
     }
     
     virtual float get_param_value(int param_no) {
@@ -169,27 +263,7 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
     
     virtual char *configure(const char *key, const char *value)
     {
-        map<string, int>::iterator i = params_by_name.find(key);
-        if (i == params_by_name.end())
-        {
-            fprintf(stderr, "ERROR: configure called for unknown key %s\n", key);
-            assert(0);
-            return NULL;
-        }
-        int idx = i->second;
-        if (!sends[idx])
-            return NULL;
-        LV2_String_Data data;
-        data.data = (char *)value;
-        data.len = strlen(value);
-        data.storage = -1; // host doesn't need that
-        data.flags = 0;
-        data.pad = 0;
-        
-        if (string_port_uri) {
-            write_function(controller, idx + get_param_port_offset(), sizeof(LV2_String_Data), string_port_uri, &data);
-        }
-        
+        plugin_proxy_base::configure(key, value);
         return NULL;
     }
     
@@ -197,22 +271,6 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
     virtual void execute(int command_no) { assert(0); }
     void send_configures(send_configure_iface *sci) { 
         fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
-    }
-    void resolve_instance() {
-        fprintf(stderr, "CALF DEBUG: instance %p data %p\n", instance_handle, data_access);
-        if (instance_handle && data_access)
-        {
-            LV2_Calf_Descriptor *calf = (LV2_Calf_Descriptor *)(*data_access->data_access)("http://foltman.com/ns/calf-plugin-instance");
-            fprintf(stderr, "CALF DEBUG: calf %p cpi %p\n", calf, calf ? calf->get_pci : NULL);
-            if (calf && calf->get_pci)
-                instance = calf->get_pci(instance_handle);
-        }
-    }
-    uint32_t map_uri(const char *mapURI, const char *keyURI)
-    {
-        if (!uri_map)
-            return 0;
-        return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
     }
 };
 
@@ -234,23 +292,10 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     const plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
     if (!md)
         return NULL;
-    lv2_plugin_proxy *proxy = new lv2_plugin_proxy(md, write_function, controller);
+    lv2_plugin_proxy *proxy = new lv2_plugin_proxy(md, write_function, controller, features);
     if (!proxy)
         return NULL;
     
-    for (int i = 0; features[i]; i++)
-    {
-        if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/instance-access"))
-            proxy->instance_handle = features[i]->data;
-        else if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
-            proxy->data_access = (LV2_Extension_Data_Feature *)features[i]->data;
-        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
-        {
-            proxy->uri_map = (LV2_URI_Map_Feature *)features[i]->data;
-            proxy->string_port_uri = proxy->map_uri("http://lv2plug.in/ns/extensions/ui", 
-                LV2_STRING_PORT_URI);
-        }
-    }
     proxy->resolve_instance();
 
     gtk_rc_parse(PKGLIBDIR "calf.rc");
@@ -328,8 +373,6 @@ void store_preset(GtkWindow *toplevel, plugin_gui *gui)
 class ext_plugin_gui: public lv2_external_ui, public plugin_proxy_base, public osc_message_sink<osc_strstream>
 {
 public:
-    const LV2_Feature* const* features;
-    lv2_external_ui_host *host;
     GPid child_pid;
     osc_server srv;
     osc_client cli;
@@ -355,10 +398,8 @@ private:
 };
 
 ext_plugin_gui::ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
-: plugin_proxy_base(metadata, wf, c)
+: plugin_proxy_base(metadata, wf, c, f)
 {
-    features = f;
-    host = NULL;
     confirmed = false;
     
     show = show_;
@@ -368,15 +409,7 @@ ext_plugin_gui::ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Writ
 
 bool ext_plugin_gui::initialise()
 {
-    for(const LV2_Feature* const* i = features; *i; i++)
-    {
-        if (!strcmp((*i)->URI, LV2_EXTERNAL_UI_URI))
-        {
-            host = (lv2_external_ui_host *)(*i)->data;
-            break;
-        }
-    }
-    if (host == NULL)
+    if (ext_ui_host == NULL)
         return false;
     
     srv.sink = this;
@@ -416,7 +449,7 @@ void ext_plugin_gui::run_impl()
 {
     if (waitpid(child_pid, NULL, WNOHANG) != 0)
     {
-        host->ui_closed(controller);
+        ext_ui_host->ui_closed(controller);
     }
     srv.read_from_socket();
 }
@@ -445,8 +478,7 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
     {
         string key, value;
         buffer >> key >> value;
-        printf("set key %s to value %s\n", key.c_str(), value.c_str());
-        printf("key index %d\n", params_by_name[key] + plugin_metadata->get_param_port_offset());
+        configure(key.c_str(), value.c_str());
     }
     else
         srv.dump.receive_osc_message(address, args, buffer);
@@ -471,7 +503,7 @@ LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
         return NULL;
     
     string url = ui->srv.get_url() + "/bridge";
-    const gchar *argv[] = { "./calf_gtk", url.c_str(), "calf.so", plugin_uri, (ui->host->plugin_human_id ? ui->host->plugin_human_id : "Unknown"), NULL };
+    const gchar *argv[] = { "./calf_gtk", url.c_str(), "calf.so", plugin_uri, (ui->ext_ui_host->plugin_human_id ? ui->ext_ui_host->plugin_human_id : "Unknown"), NULL };
     GError *error = NULL;
     if (g_spawn_async(bundle_path, (gchar **)argv, NULL, (GSpawnFlags)G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &ui->child_pid, &error))
     {
@@ -486,6 +518,7 @@ LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
         if (ui->confirmed)
         {
             *(lv2_external_ui **)widget = ui;
+            ui->enable_all_sends();
             return (LV2UI_Handle)ui;
         }
         else
