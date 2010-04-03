@@ -5,7 +5,7 @@ INCLUDES = -I$(top_srcdir) -I$(srcdir)
 SUBDIRS = calf
 
 ladspadir = $(with_ladspa_dir)
-lv2dir = $(with_lv2_dir)
+lv2dir = $(with_lv2_dir)/calf.lv2
 
 bin_PROGRAMS = 
 
@@ -17,6 +17,7 @@ dssi_PROGRAMS = calf_gtk
 endif
 if USE_LV2_GUI
 noinst_LTLIBRARIES += calflv2gui.la
+lv2_PROGRAMS = calf_gtk
 endif
 
 AM_CXXFLAGS = -ffast-math -finline-limit=80 $(FLUIDSYNTH_DEPS_CFLAGS)
@@ -44,7 +45,7 @@ calfmakerdf_LDADD = libcalfstatic.la
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) libcalfstatic.la
 
-if USE_DSSI_GUI
+if USE_EXEC_GUI
 calf_gtk_SOURCES = dssigui.cpp
 calf_gtk_LDADD = libcalfstatic.la libcalfgui.la $(GLIB_DEPS_LIBS) $(GUI_DEPS_LIBS)
 calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
@@ -97,24 +98,25 @@ if USE_DSSI
 	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
 endif
 if USE_LV2
-	install -d -m 755 $(DESTDIR)$(with_lv2_dir)/calf.lv2
-	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
+	install -d -m 755 $(DESTDIR)$(lv2dir)
+	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(lv2dir)/calf.so
 if USE_LV2_GUI
-	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
+	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(lv2dir)/calflv2gui.so
 endif
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/*.ttl
-	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(with_lv2_dir)/calf.lv2/
+	rm -f $(DESTDIR)$(lv2dir)/*.ttl
+	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share
 uninstall-hook:
 if USE_LV2
 if USE_LV2_GUI
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calflv2gui.so
+	rm -f $(DESTDIR)$(lv2dir)/calflv2gui.so
+	rm -f $(DESTDIR)$(lv2dir)/calf_gtk
 endif
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/calf.so
-	rm -f $(DESTDIR)$(with_lv2_dir)/calf.lv2/*.ttl
-	rmdir -p $(DESTDIR)$(with_lv2_dir)/calf.lv2 || true
+	rm -f $(DESTDIR)$(lv2dir)/calf.so
+	rm -f $(DESTDIR)$(lv2dir)/*.ttl
+	rmdir -p $(DESTDIR)$(lv2dir) || true
 endif
 if USE_JACK
 	rm -f $(DESTDIR)$(pkgdatadir)/calf.glade 

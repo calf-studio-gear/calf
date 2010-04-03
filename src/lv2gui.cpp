@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <config.h>
+#include <sys/wait.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/main_win.h>
@@ -286,30 +287,60 @@ class ext_plugin_gui: public lv2_external_ui
 public:
     LV2UI_Write_Function write_function;
     LV2UI_Controller controller;
+    const LV2_Feature* const* features;
+    lv2_external_ui_host *host;
+    GPid child_pid;
 
-    ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c);
+    ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
+
+    bool initialise();
 
     void show_impl() { printf("show\n"); }
     void hide_impl() { printf("hide\n"); }
-    void run_impl()  { printf("run\n"); }
+    void run_impl();
 
     virtual ~ext_plugin_gui() {}
         
-    static void show_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->show_impl(); }
-    static void hide_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->hide_impl(); }
-    static void run_(lv2_external_ui *h) { (static_cast<ext_plugin_gui *>(h))->run_impl(); }
+    static void show_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->show_impl(); }
+    static void hide_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->hide_impl(); }
+    static void run_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->run_impl(); }
     
 };
 
-ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c)
+ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
 {
     write_function = wf;
     controller = c;
+    features = f;
+    host = NULL;
     
     show = show_;
     hide = hide_;
     run = run_;
 }
+
+bool ext_plugin_gui::initialise()
+{
+    for(const LV2_Feature* const* i = features; *i; i++)
+    {
+        if (!strcmp((*i)->URI, LV2_EXTERNAL_UI_URI))
+        {
+            host = (lv2_external_ui_host *)(*i)->data;
+            break;
+        }
+    }
+    return (host != NULL);
+}
+
+void ext_plugin_gui::run_impl()
+{
+    int status = 0;
+    if (waitpid(child_pid, &status, WNOHANG) != 0)
+    {
+        host->ui_closed(controller);
+    }
+}
+
 
 LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     plugin_uri,
@@ -319,23 +350,39 @@ LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
-    ext_plugin_gui *ui = new ext_plugin_gui(write_function, controller);
-    *widget = (LV2UI_Widget)ui;
-    return (LV2UI_Handle)ui;
+    ext_plugin_gui *ui = new ext_plugin_gui(write_function, controller, features);
+    if (!ui->initialise())
+        return NULL;
+    
+    const gchar *argv[] = { "./calf_gtk", "url", "calf.so", plugin_uri, (ui->host->plugin_human_id ? ui->host->plugin_human_id : "Unknown"), NULL };
+    GError *error = NULL;
+    if (g_spawn_async(bundle_path, (gchar **)argv, NULL, (GSpawnFlags)0, NULL, NULL, &ui->child_pid, &error))
+    {
+        *(lv2_external_ui **)widget = ui;
+        return (LV2UI_Handle)ui;
+    }
+    else
+    {
+        g_warning("%s\n", error->message);
+        return NULL;
+    }
 }
 
 void extgui_cleanup(LV2UI_Handle handle)
 {
     ext_plugin_gui *gui = (ext_plugin_gui *)handle;
     delete gui;
+    printf("cleanup\n");
 }
 
 void extgui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
+    printf("port event %d\n", port);
 }
 
 const void *extgui_extension(const char *uri)
 {
+    printf("extgui_extension %s\n", uri);
     return NULL;
 }
 
