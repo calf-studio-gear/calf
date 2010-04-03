@@ -72,6 +72,8 @@ struct plugin_proxy_base
     plugin_ctl_iface *instance;
     /// If true, a given parameter (not port) may be sent to host - it is blocked when the parameter is written to by the host
     vector<bool> sends;
+    /// If true, a given parameter (not port) is a string port
+    vector<bool> is_string_param;
     /// Map of parameter name to parameter index (used for mapping configure values to string ports)
     map<string, int> params_by_name;
     /// Values of parameters (float control ports)
@@ -118,13 +120,18 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     
     /// Block all updates until GUI is ready
     sends.resize(param_count, false);
+    is_string_param.resize(param_count, false);
     params.resize(param_count);
     for (int i = 0; i < param_count; i++)
     {
         parameter_properties *pp = metadata->get_param_props(i);
         params_by_name[pp->short_name] = i;
-        if ((pp->flags & PF_TYPEMASK) < PF_STRING)
+        unsigned int port_type = pp->flags & PF_TYPEMASK;
+        if (port_type < PF_STRING)
             params[i] = pp->def_value;
+        else
+        if (port_type == PF_STRING)
+            is_string_param[i] = true;
     }
     for (int i = 0; features[i]; i++)
     {
@@ -242,9 +249,9 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
-        if ((get_param_props(param_no)->flags & PF_TYPEMASK) >= PF_STRING)
+        if (is_string_param[param_no])
         {
-            //assert(0);
+            g_warning("Attempt to write a float value to a string port %d", param_no + param_offset);;
             return;
         }
         send_float_to_host(param_no, value);
@@ -332,20 +339,20 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     assert(proxy);
     float v = *(float *)buffer;
-    port -= gui->plugin->get_param_port_offset();
-    if (port >= (uint32_t)gui->plugin->get_param_count())
+    int param = port - gui->plugin->get_param_port_offset();
+    if (param >= gui->plugin->get_param_count())
         return;
-    if ((gui->plugin->get_param_props(port)->flags & PF_TYPEMASK) == PF_STRING)
+    if (proxy->is_string_param[param])
     {
-        TempSendSetter _a_(proxy->sends[port], false);
-        gui->plugin->configure(gui->plugin->get_param_props(port)->short_name, ((LV2_String_Data *)buffer)->data);
+        TempSendSetter _a_(proxy->sends[param], false);
+        gui->plugin->configure(gui->plugin->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
-    if (fabs(gui->plugin->get_param_value(port) - v) < 0.00001)
+    if (fabs(gui->plugin->get_param_value(param) - v) < 0.00001)
         return;
     {
-        TempSendSetter _a_(proxy->sends[port], false);
-        gui->set_param_value(port, v);
+        TempSendSetter _a_(proxy->sends[param], false);
+        gui->set_param_value(param, v);
     }
 }
 
@@ -434,7 +441,16 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
     assert(port >= (uint32_t)param_offset);
     if (port >= (uint32_t)param_offset)
     {
-        TempSendSetter _a_(sends[port - param_offset], false);
+        int param = port - param_offset;
+        TempSendSetter _a_(sends[param], false);
+        if (is_string_param[param])
+        {
+            osc_inline_typed_strstream data;
+            data << plugin_metadata->get_param_props(param)->short_name;
+            data << ((LV2_String_Data *)buffer)->data;
+            cli.send("/configure", data);
+        }
+        else
         if (format == 0)
         {
             osc_inline_typed_strstream data;
