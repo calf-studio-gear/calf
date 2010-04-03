@@ -338,8 +338,7 @@ void make_ttl(string path_prefix)
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
-        "    uiext:requiredFeature uiext:makeResident ;\n"
-        "    uiext:requiredFeature uiext:gimmeACrocodileMyDear .\n"
+        "    uiext:requiredFeature uiext:makeResident .\n"
         "\n"
     ;
     string extgui_uri = "<http://calf.sourceforge.net/plugins/gui/ext-gui>";
