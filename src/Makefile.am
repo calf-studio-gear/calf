@@ -82,10 +82,6 @@ clean-local:
 install-data-hook:
 	install -d -m 755 $(DESTDIR)$(pkgdatadir)    
 	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkgdatadir)
-	install -c -m 644 $(top_srcdir)/gui/*.png $(DESTDIR)$(pkgdatadir)
-	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
-	install -c -m 644 $(top_srcdir)/gui/gui-*.xml $(DESTDIR)$(pkgdatadir)
-	install -c -m 644 $(top_srcdir)/gui/calf.rc $(DESTDIR)$(pkgdatadir)
 if USE_JACK
 	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkgdatadir)
 endif
@@ -123,15 +119,7 @@ endif
 if USE_JACK
 	rm -f $(DESTDIR)$(pkgdatadir)/calf.glade 
 endif
-	rm -f $(DESTDIR)$(pkgdatadir)/gui-*.xml
 	rm -f $(DESTDIR)$(pkgdatadir)/presets.xml
-	rm -f $(DESTDIR)$(pkgdatadir)/calf.rc
-	rm -f $(DESTDIR)$(pkgdatadir)/knob1.png
-	rm -f $(DESTDIR)$(pkgdatadir)/knob2.png
-	rm -f $(DESTDIR)$(pkgdatadir)/knob3.png
-	rm -f $(DESTDIR)$(pkgdatadir)/knob4.png
-	rm -f $(DESTDIR)$(pkgdatadir)/toggle1.png
-	rm -f $(DESTDIR)$(pkgdatadir)/toggle2.png
 	rmdir $(DESTDIR)$(pkgdatadir) || true
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so

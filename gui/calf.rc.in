@@ -8,6 +8,8 @@
 
 gtk_color_scheme = "fg_color:#101010\nbg_color:#EFEBE7\nbase_color:#FFF\ntext_color:#1A1A1A\nselected_bg_color:#FFA443\nselected_fg_color:#1A1A1A\ntooltip_bg_color:#F5F5B5\ntooltip_fg_color:#000"
 
+pixmap_path "@pkgdatadir@"
+
 style "calf-default"
 {
 	########
@@ -87,7 +89,7 @@ style "calf-default"
 	bg_pixmap[NORMAL]		= "background_dark.png"
 	bg_pixmap[SELECTED]		= "background_black.png"
 	bg_pixmap[ACTIVE]		= "background_black.png"
-	bg_pixmap[INSENSITIVE]	= "background_dark.png"
+	bg_pixmap[INSENSITIVE]	        = "background_dark.png"
 	
 	engine "pixmap"
 	{
