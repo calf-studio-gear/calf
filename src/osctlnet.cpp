@@ -44,7 +44,7 @@ void osc_socket::bind(const char *hostaddr, int port)
     on_bind();
 }
 
-std::string osc_socket::get_uri() const
+std::string osc_socket::get_url() const
 {
     sockaddr_in sadr;
     socklen_t len = sizeof(sadr);
@@ -75,6 +75,7 @@ void osc_client::set_addr(const char *hostaddr, int port)
 
 void osc_client::set_url(const char *url)
 {
+    const char *orig_url = url;
     if (strncmp(url, "osc.udp://", 10))
         throw osc_net_bad_address(url);
     url += 10;
@@ -82,11 +83,11 @@ void osc_client::set_url(const char *url)
     const char *pos = strchr(url, ':');
     const char *pos2 = strchr(url, '/');
     if (!pos || !pos2)
-        throw osc_net_bad_address(url);
+        throw osc_net_bad_address(orig_url);
     
     // XXXKF perhaps there is a default port for osc.udp?
     if (pos2 - pos < 0)
-        throw osc_net_bad_address(url);
+        throw osc_net_bad_address(orig_url);
     
     string hostname = string(url, pos - url);
     int port = atoi(pos + 1);

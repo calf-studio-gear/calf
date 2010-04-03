@@ -141,7 +141,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     map<int, param_line_graphs> graphs;
     bool update_graphs;
 
-    plugin_proxy(plugin_metadata_iface *md)
+    plugin_proxy(const plugin_metadata_iface *md)
     : plugin_metadata_proxy(md)
     {
         client = NULL;
@@ -281,7 +281,7 @@ GMainLoop *mainloop;
 
 static bool osc_debug = false;
 
-struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
+struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strstream>
 {
     plugin_proxy *plugin;
     main_window *main_win;
@@ -304,6 +304,20 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
         osc_link_active = false;
     }
     
+    void set_plugin(const char *arg)
+    {
+        const plugin_metadata_iface *pmi = plugin_registry::instance().get_by_id(arg);
+        if (!pmi)
+            pmi = plugin_registry::instance().get_by_uri(arg);
+        if (!pmi)
+        {
+            fprintf(stderr, "Unknown plugin: %s\n", arg);
+            exit(1);
+        }
+        effect_name = pmi->get_id();
+        plugin = new plugin_proxy(pmi);
+    }
+    
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
     {
         debug_printf("on_destroy, have to send \"exiting\"\n");
@@ -316,21 +330,6 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     void create_window()
     {
-        plugin = NULL;
-        const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
-        for (unsigned int i = 0; i < plugins.size(); i++)
-        {
-            if (!strcmp(plugins[i]->get_id(), effect_name.c_str()))
-            {
-                plugin = new plugin_proxy(plugins[i]);
-                break;
-            }
-        }
-        if (!plugin)
-        {
-            fprintf(stderr, "Unknown plugin: %s\n", effect_name.c_str());
-            exit(1);
-        }
         plugin->client = &cli;
         plugin->send_osc = true;
         ((main_window *)window->main)->conditions.insert("dssi");
@@ -365,7 +364,7 @@ void dssi_osc_server::set_osc_update(bool enabled)
     osc_link_active = enabled;
     osc_inline_typed_strstream data;
     data << "OSC:FEEDBACK_URI";
-    data << (enabled ? get_uri() : "");
+    data << (enabled ? get_url() : "");
     cli.send("/configure", data);
 }
 
@@ -527,6 +526,7 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     }
     else if (address == prefix + "/show")
     {
+        printf("show received\n");
         set_osc_update(true);
 
         gtk_widget_show_all(GTK_WIDGET(window->toplevel));
@@ -610,10 +610,8 @@ int main(int argc, char *argv[])
     }
 
     dssi_osc_server srv;
-    srv.prefix = "/dssi/"+string(argv[optind + 1]) + "/" + string(argv[optind + 2]);
-    for (char *p = argv[optind + 2]; *p; p++)
-        *p = tolower(*p);
-    srv.effect_name = argv[optind + 2];
+    srv.set_plugin(argv[optind + 2]);
+    srv.prefix = "/dssi/"+string(argv[optind + 1]) + "/" + srv.effect_name;
     srv.title = argv[optind + 3];
     
     srv.bind();
@@ -624,11 +622,10 @@ int main(int argc, char *argv[])
     srv.cli.bind();
     srv.cli.set_url(argv[optind]);
     
-    debug_printf("URI = %s\n", srv.get_uri().c_str());
+    debug_printf("URI = %s\n", srv.get_url().c_str());
     
-    string data_buf, type_buf;
     osc_inline_typed_strstream data;
-    data << srv.get_uri();
+    data << srv.get_url();
     if (!srv.cli.send("/update", data))
     {
         g_error("Could not send the initial update message via OSC to %s", argv[optind]);

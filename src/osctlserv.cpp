@@ -45,32 +45,41 @@ void osc_server::parse_message(const char *buffer, int len)
     }
 }
 
-void osc_server::on_bind()
-{    
-    ioch = g_io_channel_unix_new(socket);
-    srcid = g_io_add_watch(ioch, G_IO_IN, on_data, this);
-}
-
-gboolean osc_server::on_data(GIOChannel *channel, GIOCondition cond, void *obj)
+void osc_server::read_from_socket()
 {
-    osc_server *self = (osc_server *)obj;
     char buf[16384];
-    int len = recv(self->socket, buf, 16384, 0);
+    int len = recv(socket, buf, 16384, MSG_DONTWAIT);
     if (len > 0)
     {
         if (buf[0] == '/')
         {
-            self->parse_message(buf, len);
+            parse_message(buf, len);
         }
         if (buf[0] == '#')
         {
             // XXXKF bundles are not supported yet
         }
     }
-    return TRUE;
 }
 
 osc_server::~osc_server()
+{
+}
+
+void osc_glib_server::on_bind()
+{    
+    ioch = g_io_channel_unix_new(socket);
+    srcid = g_io_add_watch(ioch, G_IO_IN, on_data, this);
+}
+
+gboolean osc_glib_server::on_data(GIOChannel *channel, GIOCondition cond, void *obj)
+{
+    osc_server *self = (osc_server *)obj;
+    self->read_from_socket();
+    return TRUE;
+}
+
+osc_glib_server::~osc_glib_server()
 {
     if (ioch)
         g_source_remove(srcid);

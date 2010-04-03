@@ -31,6 +31,8 @@
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
+#include <calf/osctlnet.h>
+#include <calf/osctlserv.h>
 #include <calf/preset_gui.h>
 #include <calf/utils.h>
 #include <calf/lv2helpers.h>
@@ -39,6 +41,7 @@ using namespace std;
 using namespace dsp;
 using namespace calf_plugins;
 using namespace calf_utils;
+using namespace osctl;
 
 struct LV2_Calf_Descriptor {
     plugin_ctl_iface *(*get_pci)(LV2_Handle Instance);
@@ -282,7 +285,7 @@ void store_preset(GtkWindow *toplevel, plugin_gui *gui)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-class ext_plugin_gui: public lv2_external_ui
+class ext_plugin_gui: public lv2_external_ui, public osc_message_sink<osc_strstream>
 {
 public:
     LV2UI_Write_Function write_function;
@@ -290,21 +293,27 @@ public:
     const LV2_Feature* const* features;
     lv2_external_ui_host *host;
     GPid child_pid;
+    osc_server srv;
+    osc_client cli;
+    bool confirmed;
+    string prefix;
 
     ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
 
     bool initialise();
 
-    void show_impl() { printf("show\n"); }
-    void hide_impl() { printf("hide\n"); }
+    void show_impl();
+    void hide_impl();
     void run_impl();
+    void port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer);
 
+    virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer);
     virtual ~ext_plugin_gui() {}
         
+private:
     static void show_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->show_impl(); }
     static void hide_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->hide_impl(); }
     static void run_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->run_impl(); }
-    
 };
 
 ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
@@ -313,6 +322,7 @@ ext_plugin_gui::ext_plugin_gui(LV2UI_Write_Function wf, LV2UI_Controller c, cons
     controller = c;
     features = f;
     host = NULL;
+    confirmed = false;
     
     show = show_;
     hide = hide_;
@@ -329,18 +339,62 @@ bool ext_plugin_gui::initialise()
             break;
         }
     }
-    return (host != NULL);
+    if (host == NULL)
+        return false;
+    
+    srv.sink = this;
+    srv.bind("127.0.0.1");
+    
+    return true;
+}
+
+void ext_plugin_gui::show_impl()
+{
+    printf("show\n");
+    cli.send("/show");
+}
+
+void ext_plugin_gui::hide_impl()
+{
+    printf("hide\n");
+    cli.send("/hide");
+}
+
+void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
+{
+    assert(confirmed);
+    osc_inline_typed_strstream data;
+    if (format == 0)
+    {
+        data << port; 
+        data << *(float *)buffer;
+        cli.send("/control", data);
+        printf("control %d %f\n", port, *(float *)buffer);
+    }
 }
 
 void ext_plugin_gui::run_impl()
 {
-    int status = 0;
-    if (waitpid(child_pid, &status, WNOHANG) != 0)
+    if (waitpid(child_pid, NULL, WNOHANG) != 0)
     {
         host->ui_closed(controller);
     }
+    srv.read_from_socket();
 }
 
+void ext_plugin_gui::receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
+{
+    if (address == "/bridge/update" && args == "s")
+    {
+        string url;
+        buffer >> url;
+        cli.bind();
+        cli.set_url(url.c_str());
+        confirmed = true;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     plugin_uri,
@@ -354,16 +408,33 @@ LV2UI_Handle extgui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     if (!ui->initialise())
         return NULL;
     
-    const gchar *argv[] = { "./calf_gtk", "url", "calf.so", plugin_uri, (ui->host->plugin_human_id ? ui->host->plugin_human_id : "Unknown"), NULL };
+    string url = ui->srv.get_url() + "/bridge";
+    const gchar *argv[] = { "./calf_gtk", url.c_str(), "calf.so", plugin_uri, (ui->host->plugin_human_id ? ui->host->plugin_human_id : "Unknown"), NULL };
     GError *error = NULL;
-    if (g_spawn_async(bundle_path, (gchar **)argv, NULL, (GSpawnFlags)0, NULL, NULL, &ui->child_pid, &error))
+    if (g_spawn_async(bundle_path, (gchar **)argv, NULL, (GSpawnFlags)G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL, &ui->child_pid, &error))
     {
-        *(lv2_external_ui **)widget = ui;
-        return (LV2UI_Handle)ui;
+        // wait for the sign of life from the GUI
+        while(!ui->confirmed && waitpid(ui->child_pid, NULL, WNOHANG) == 0)
+        {
+            printf("Waiting for the GUI to open\n");
+            ui->srv.read_from_socket();
+            usleep(500000);
+        }
+        
+        if (ui->confirmed)
+        {
+            *(lv2_external_ui **)widget = ui;
+            return (LV2UI_Handle)ui;
+        }
+        else
+        {
+            g_warning("The GUI exited before establishing contact with the host");
+            return NULL;
+        }
     }
     else
     {
-        g_warning("%s\n", error->message);
+        g_warning("%s", error->message);
         return NULL;
     }
 }
@@ -377,7 +448,7 @@ void extgui_cleanup(LV2UI_Handle handle)
 
 void extgui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
-    printf("port event %d\n", port);
+    ((ext_plugin_gui *)handle)->port_event_impl(port, buffer_size, format, buffer);;
 }
 
 const void *extgui_extension(const char *uri)

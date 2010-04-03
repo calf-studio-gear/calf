@@ -28,19 +28,30 @@
 namespace osctl
 {
     
+
+    
 struct osc_server: public osc_socket
 {
-    GIOChannel *ioch;
     osc_message_dump<osc_strstream, std::ostream> dump;
     osc_message_sink<osc_strstream> *sink;
     
-    osc_server() : ioch(NULL), dump(std::cout), sink(&dump) {}
+    osc_server() : dump(std::cout), sink(&dump) {}
+    
+    void read_from_socket();
+    void parse_message(const char *buffer, int len);    
+    ~osc_server();
+};
+
+struct osc_glib_server: public osc_server
+{
+    GIOChannel *ioch;
+    
+    osc_glib_server() : ioch(NULL) {}
     
     virtual void on_bind();
     
     static gboolean on_data(GIOChannel *channel, GIOCondition cond, void *obj);
-    void parse_message(const char *buffer, int len);    
-    ~osc_server();
+    ~osc_glib_server();
 };
 
 };

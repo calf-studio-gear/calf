@@ -36,7 +36,7 @@ struct osc_socket
 
     osc_socket() : socket(-1), srcid(0) {}
     void bind(const char *hostaddr = "0.0.0.0", int port = 0);
-    std::string get_uri() const;
+    std::string get_url() const;
     virtual void on_bind() {}
     virtual ~osc_socket();
 };

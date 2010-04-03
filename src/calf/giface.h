@@ -393,6 +393,8 @@ public:
     const plugin_vector &get_all() { return plugins; }
     /// Get single plugin metadata object by URI
     const plugin_metadata_iface *get_by_uri(const char *URI);
+    /// Get single plugin metadata object by URI
+    const plugin_metadata_iface *get_by_id(const char *id, bool case_sensitive = false);
 };
 
 /// Load and strdup a text file with GUI definition

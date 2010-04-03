@@ -314,6 +314,17 @@ const plugin_metadata_iface *calf_plugins::plugin_registry::get_by_uri(const cha
     return NULL;
 }
 
+const plugin_metadata_iface *calf_plugins::plugin_registry::get_by_id(const char *id, bool case_sensitive)
+{
+    typedef int (*comparator)(const char *, const char *);
+    comparator comp = case_sensitive ? strcmp : strcasecmp;
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        if (!comp(plugins[i]->get_id(), id))
+            return plugins[i];
+    }
+    return NULL;
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #if USE_DSSI
