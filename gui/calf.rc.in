@@ -1643,10 +1643,10 @@ style "calf-frame"
 	xthickness = 8
 	ythickness = 8
 	bg[NORMAL] = "#ddd"
-	engine "clearlooks" 
-	{
-		radius = 7.0
-	}
+#	engine "clearlooks" 
+#	{
+#		radius = 7.0
+#	}
 }
 
 style "calf-frame-title"
