@@ -99,6 +99,9 @@ struct plugin_proxy_base
     /// Obtain instance pointers
     void resolve_instance();
 
+    /// Find a line graph interface, if available (via instance access/data access extensions)
+    const line_graph_iface *get_line_graph_iface() const;
+    
     /// Map an URI to an integer value using a given URI map
     uint32_t map_uri(const char *mapURI, const char *keyURI);
 };
@@ -153,6 +156,7 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
             ext_ui_host = (lv2_external_ui_host *)features[i]->data;
         }
     }
+    resolve_instance();
 }
 
 void plugin_proxy_base::send_float_to_host(int param_no, float value)
@@ -160,6 +164,7 @@ void plugin_proxy_base::send_float_to_host(int param_no, float value)
     params[param_no] = value;
     if (sends[param_no]) {
         TempSendSetter _a_(sends[param_no], false);
+        assert(!sends[param_no]);
         write_function(controller, param_no + param_offset, sizeof(float), 0, &params[param_no]);
     }
 }
@@ -183,6 +188,12 @@ uint32_t plugin_proxy_base::map_uri(const char *mapURI, const char *keyURI)
     return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
 }
 
+const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
+{
+    if (instance)
+        return instance->get_line_graph_iface();
+    return NULL;
+}
 
 char *plugin_proxy_base::configure(const char *key, const char *value)
 {
@@ -262,16 +273,14 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
         return false;
     }
     
-    virtual const line_graph_iface *get_line_graph_iface() const {
-        if (instance)
-            return instance->get_line_graph_iface();
-        return NULL;
-    }
-    
     virtual char *configure(const char *key, const char *value)
     {
         plugin_proxy_base::configure(key, value);
         return NULL;
+    }
+    
+    virtual const line_graph_iface *get_line_graph_iface() const {
+        return plugin_proxy_base::get_line_graph_iface();
     }
     
     virtual float get_level(unsigned int port) { return 0.f; }
@@ -303,8 +312,6 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     if (!proxy)
         return NULL;
     
-    proxy->resolve_instance();
-
     gtk_rc_parse(PKGLIBDIR "calf.rc");
     
     // dummy window
@@ -345,6 +352,7 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     if (proxy->is_string_param[param])
     {
         TempSendSetter _a_(proxy->sends[param], false);
+        assert(!proxy->sends[param]);
         gui->plugin->configure(gui->plugin->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
@@ -352,6 +360,7 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
         return;
     {
         TempSendSetter _a_(proxy->sends[param], false);
+        assert(!proxy->sends[param]);
         gui->set_param_value(param, v);
     }
 }
@@ -385,6 +394,8 @@ public:
     osc_client cli;
     bool confirmed;
     string prefix;
+    dssi_feedback_sender *feedback_sender;
+    bool enable_graph_updates;
 
     ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
 
@@ -396,7 +407,7 @@ public:
     void port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer);
 
     virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer);
-    virtual ~ext_plugin_gui() {}
+    virtual ~ext_plugin_gui();
         
 private:
     static void show_(lv2_external_ui *h) { ((ext_plugin_gui *)(h))->show_impl(); }
@@ -408,6 +419,7 @@ ext_plugin_gui::ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Writ
 : plugin_proxy_base(metadata, wf, c, f)
 {
     confirmed = false;
+    feedback_sender = NULL;
     
     show = show_;
     hide = hide_;
@@ -443,6 +455,7 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
     {
         int param = port - param_offset;
         TempSendSetter _a_(sends[param], false);
+        assert(!sends[param]);
         if (is_string_param[param])
         {
             osc_inline_typed_strstream data;
@@ -463,21 +476,34 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
 
 void ext_plugin_gui::run_impl()
 {
+    srv.read_from_socket();
     if (waitpid(child_pid, NULL, WNOHANG) != 0)
     {
         ext_ui_host->ui_closed(controller);
+        return;
     }
-    srv.read_from_socket();
+    if (feedback_sender && enable_graph_updates)
+        feedback_sender->update();
 }
 
 void ext_plugin_gui::receive_osc_message(std::string address, std::string args, osc_strstream &buffer)
 {
     if (address == "/bridge/update" && args == "s")
     {
+        if (confirmed)
+        {
+            g_warning("Update message already received, ignoring");
+            return;
+        }
         string url;
         buffer >> url;
         cli.bind();
         cli.set_url(url.c_str());
+        if (get_line_graph_iface())
+        {
+            feedback_sender = new dssi_feedback_sender(&cli, get_line_graph_iface());
+            feedback_sender->add_graphs(plugin_metadata->get_param_props(0), param_count);
+        }
         confirmed = true;
     }
     else
@@ -490,6 +516,15 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
         send_float_to_host(port - param_offset, value);
     }
     else
+    if (address == "/bridge/enable_updates" && args == "i")
+    {
+        int updates;
+        buffer >> updates;
+        enable_graph_updates = updates != 0;
+        if (enable_graph_updates && feedback_sender)
+            feedback_sender->update();
+    }
+    else
     if (address == "/bridge/configure" && args == "ss")
     {
         string key, value;
@@ -498,6 +533,12 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
     }
     else
         srv.dump.receive_osc_message(address, args, buffer);
+}
+
+ext_plugin_gui::~ext_plugin_gui()
+{
+    if (feedback_sender)
+        delete feedback_sender;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

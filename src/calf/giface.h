@@ -459,7 +459,7 @@ public:
 extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
 extern bool check_for_string_ports(parameter_properties *parameters, int count);
 
-#if USE_DSSI
+#if USE_EXEC_GUI || USE_DSSI
 
 enum line_graph_item
 {
@@ -478,16 +478,19 @@ struct dssi_feedback_sender
 {
     /// OSC client object used to send updates
     osctl::osc_client *client;
-    /// Background thread handle
-    pthread_t bg_thread;
+    /// Is client shared with something else?
+    bool is_client_shared;
     /// Quit flag (used to terminate the thread)
     bool quit;
     /// Indices of graphs to send
     std::vector<int> indices;
     /// Source for the graph data (interface to marshal)
-    calf_plugins::line_graph_iface *graph;
+    const calf_plugins::line_graph_iface *graph;
     
-    dssi_feedback_sender(const char *URI, line_graph_iface *_graph, calf_plugins::parameter_properties *props, int num_params);
+    /// Create using a new client
+    dssi_feedback_sender(const char *URI, const line_graph_iface *_graph);
+    dssi_feedback_sender(osctl::osc_client *_client, const line_graph_iface *_graph);
+    void add_graphs(const calf_plugins::parameter_properties *props, int num_params);
     void update();
     ~dssi_feedback_sender();
 };

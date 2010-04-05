@@ -132,7 +132,8 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
                     delete feedback_sender;
                     feedback_sender = NULL;
                 }
-                feedback_sender = new dssi_feedback_sender(value, lgi, get_param_props(0), get_param_count());
+                feedback_sender = new dssi_feedback_sender(value, lgi);
+                feedback_sender->add_graphs(get_param_props(0), get_param_count());
             }
             else
             {

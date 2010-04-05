@@ -370,7 +370,9 @@ void dssi_osc_server::set_osc_update(bool enabled)
 {
     if (is_lv2)
     {
-        cli.send("/enable_updates");
+        osc_inline_typed_strstream data;
+        data << ((uint32_t)(enabled ? 1 : 0));
+        cli.send("/enable_updates", data);
     }
     else
     {
