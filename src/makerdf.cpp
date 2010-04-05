@@ -45,7 +45,7 @@ static struct option long_options[] = {
 
 #if USE_LADSPA
 
-static std::string unit_to_string(parameter_properties &props)
+static std::string unit_to_string(const parameter_properties &props)
 {
     uint32_t flags = props.flags & PF_UNITMASK;
     
@@ -65,7 +65,7 @@ static std::string unit_to_string(parameter_properties &props)
     }
 }
 
-static std::string scale_to_string(parameter_properties &props)
+static std::string scale_to_string(const parameter_properties &props)
 {
     if ((props.flags & PF_TYPEMASK) != PF_ENUM) {
         return "/";
@@ -77,7 +77,7 @@ static std::string scale_to_string(parameter_properties &props)
     return tmp+"        </ladspa:Scale></ladspa:hasScale></ladspa:InputControlPort";
 }
 
-std::string generate_ladspa_rdf(const ladspa_plugin_info &info, parameter_properties *params, const char *param_names[], unsigned int count,
+std::string generate_ladspa_rdf(const ladspa_plugin_info &info, const parameter_properties *params, const char *param_names[], unsigned int count,
                                        unsigned int ctl_ofs)
 {
     string rdf;
@@ -134,7 +134,7 @@ void make_rdf()
     set<int> used_ids;
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
-        plugin_metadata_iface *p = plugins[i];
+        const plugin_metadata_iface *p = plugins[i];
         const ladspa_plugin_info &info = p->get_plugin_info();
         
         if(used_ids.count(info.unique_id))
@@ -207,7 +207,7 @@ static const char *units[] = {
 
 //////////////// To all haters: calm down, I'll rewrite it to use the new interface one day
 
-static void add_ctl_port(string &ports, parameter_properties &pp, int pidx, plugin_metadata_iface *pmi, int param)
+static void add_ctl_port(string &ports, const parameter_properties &pp, int pidx, const plugin_metadata_iface *pmi, int param)
 {
     stringstream ss;
     const char *ind = "        ";
@@ -352,7 +352,7 @@ void make_ttl(string path_prefix)
     map<string, string> id_to_label;
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
-        plugin_metadata_iface *pi = plugins[i];
+        const plugin_metadata_iface *pi = plugins[i];
         const ladspa_plugin_info &lpi = pi->get_plugin_info();
         id_to_label[pi->get_id()] = pi->get_label();
         string uri = string("<" + plugin_uri_prefix)  + string(lpi.label) + ">";
@@ -362,7 +362,7 @@ void make_ttl(string path_prefix)
 #if USE_LV2_GUI
         for (int j = 0; j < pi->get_param_count(); j++)
         {
-            parameter_properties &props = *pi->get_param_props(j);
+            const parameter_properties &props = *pi->get_param_props(j);
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
@@ -524,13 +524,13 @@ void make_gui(string path_prefix)
     path_prefix += "/gui-";
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
-        plugin_metadata_iface *pi = plugins[i];
+        const plugin_metadata_iface *pi = plugins[i];
         
         stringstream xml;
         int graphs = 0;
         for (int j = 0; j < pi->get_param_count(); j++)
         {
-            parameter_properties &props = *pi->get_param_props(j);
+            const parameter_properties &props = *pi->get_param_props(j);
             if (props.flags & PF_PROP_GRAPH)
                 graphs++;
         }
@@ -539,7 +539,7 @@ void make_gui(string path_prefix)
         {
             if (j)
                 xml << "\n    <!-- -->\n\n";
-            parameter_properties &props = *pi->get_param_props(j);
+            const parameter_properties &props = *pi->get_param_props(j);
             string expand_x = "expand-x=\"1\" ";
             string fill_x = "fill-x=\"1\" ";
             string shrink_x = "shrink-x=\"1\" ";
@@ -612,7 +612,7 @@ void make_gui(string path_prefix)
             xml << "        <vbox expand-x=\"1\" fill-x=\"1\" attach-x=\"3\" attach-y=\"0\" attach-h=\"" << pi->get_param_count() << "\">" << endl;
             for (int j = 0; j < pi->get_param_count(); j++)
             {
-                parameter_properties &props = *pi->get_param_props(j);
+                const parameter_properties &props = *pi->get_param_props(j);
                 if (props.flags & PF_PROP_GRAPH)
                 {
                     xml << "            <line-graph refresh=\"1\" width=\"160\" param=\"" << props.short_name << "\"/>\n" << endl;

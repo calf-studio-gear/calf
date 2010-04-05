@@ -127,7 +127,7 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     params.resize(param_count);
     for (int i = 0; i < param_count; i++)
     {
-        parameter_properties *pp = metadata->get_param_props(i);
+        const parameter_properties *pp = metadata->get_param_props(i);
         params_by_name[pp->short_name] = i;
         unsigned int port_type = pp->flags & PF_TYPEMASK;
         if (port_type < PF_STRING)

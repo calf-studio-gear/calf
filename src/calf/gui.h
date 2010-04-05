@@ -64,7 +64,7 @@ struct param_control: public control_base
     };
     
     param_control() { gui = NULL; param_no = -1; label = NULL; in_change = 0;}
-    inline parameter_properties &get_props();
+    inline const parameter_properties &get_props();
     
     virtual void init_xml(const char *element) {}
     virtual GtkWidget *create_label();
@@ -187,7 +187,7 @@ public:
 };
 
 
-inline parameter_properties &param_control::get_props() 
+inline const parameter_properties &param_control::get_props() 
 { 
     return  *gui->plugin->get_param_props(param_no);
 }

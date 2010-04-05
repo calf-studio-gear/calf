@@ -73,7 +73,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface, publ
             Module::progress_report = this;
         Module::post_instantiate();
     }
-    virtual parameter_properties *get_param_props(int param_no)
+    virtual const parameter_properties *get_param_props(int param_no)
     {
         return &Module::param_props[param_no];
     }
@@ -133,7 +133,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface, publ
         for (unsigned int i = 0; i < message_params.size(); i++)
         {
             int pn = message_params[i];
-            parameter_properties &pp = *get_param_props(pn);
+            const parameter_properties &pp = *get_param_props(pn);
             if ((pp.flags & PF_TYPEMASK) == PF_STRING
                 && (((LV2_String_Data *)Module::params[pn])->flags & LV2_STRING_DATA_CHANGED_FLAG)) {
                 printf("Calling configure on %s\n", pp.short_name);

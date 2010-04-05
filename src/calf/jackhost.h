@@ -202,7 +202,7 @@ public:
         Module::params_changed();
     }
 
-    virtual parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
+    virtual const parameter_properties* get_param_props(int param_no) { return Module::param_props + param_no; }
     
     void handle_event(uint8_t *buffer, uint32_t size)
     {

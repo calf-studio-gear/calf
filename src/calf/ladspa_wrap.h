@@ -70,7 +70,7 @@ struct ladspa_instance: public Module, public plugin_ctl_iface
         feedback_sender = NULL;
 #endif
     }
-    virtual parameter_properties *get_param_props(int param_no)
+    virtual const parameter_properties *get_param_props(int param_no)
     {
         return &Module::param_props[param_no];
     }
@@ -223,7 +223,7 @@ struct ladspa_wrapper
         for (; i < ins + outs + params; i++)
         {
             LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
-            parameter_properties &pp = Module::param_props[i - ins - outs];
+            const parameter_properties &pp = Module::param_props[i - ins - outs];
             ((int *)descriptor.PortDescriptors)[i] = 
                 LADSPA_PORT_CONTROL | (pp.flags & PF_PROP_OUTPUT ? LADSPA_PORT_OUTPUT : LADSPA_PORT_INPUT);
             prh.HintDescriptor = LADSPA_HINT_BOUNDED_ABOVE | LADSPA_HINT_BOUNDED_BELOW;

@@ -67,7 +67,7 @@ GtkWidget *param_control::create_label()
 
 void param_control::update_label()
 {
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
 }
 
@@ -424,7 +424,7 @@ void plugin_gui::on_idle()
     {
         if (params[i]->param_no != -1)
         {
-            parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+            const parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
             bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
             if (is_output) {
                 params[i]->set();

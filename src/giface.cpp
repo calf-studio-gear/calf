@@ -192,7 +192,7 @@ void calf_plugins::plugin_ctl_iface::clear_preset() {
     int param_count = get_param_count();
     for (int i=0; i < param_count; i++)
     {
-        parameter_properties &pp = *get_param_props(i);
+        const parameter_properties &pp = *get_param_props(i);
         if ((pp.flags & PF_TYPEMASK) == PF_STRING)
         {
             configure(pp.short_name, pp.choices ? pp.choices[0] : "");
@@ -213,7 +213,7 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     }
 }
 
-bool calf_plugins::check_for_message_context_ports(parameter_properties *parameters, int count)
+bool calf_plugins::check_for_message_context_ports(const parameter_properties *parameters, int count)
 {
     for (int i = count - 1; i >= 0; i--)
     {
@@ -223,7 +223,7 @@ bool calf_plugins::check_for_message_context_ports(parameter_properties *paramet
     return false;
 }
 
-bool calf_plugins::check_for_string_ports(parameter_properties *parameters, int count)
+bool calf_plugins::check_for_string_ports(const parameter_properties *parameters, int count)
 {
     for (int i = count - 1; i >= 0; i--)
     {

@@ -326,7 +326,7 @@ struct plugin_metadata_iface
     /// @return NULL-terminated list of menu commands
     virtual plugin_command_info *get_commands() const { return NULL; }
     /// @return description structure for given parameter
-    virtual parameter_properties *get_param_props(int param_no) const = 0;
+    virtual const parameter_properties *get_param_props(int param_no) const = 0;
     /// @return retrieve names of audio ports (@note control ports are named in parameter_properties, not here)
     virtual const char **get_port_names() const = 0;
     /// @return description structure for the plugin
@@ -381,7 +381,7 @@ struct plugin_list_info_iface;
 class plugin_registry
 {
 public:
-    typedef std::vector<plugin_metadata_iface *> plugin_vector;    
+    typedef std::vector<const plugin_metadata_iface *> plugin_vector;
 private:
     plugin_vector plugins;
     plugin_registry();
@@ -456,8 +456,8 @@ public:
     }
 };
 
-extern bool check_for_message_context_ports(parameter_properties *parameters, int count);
-extern bool check_for_string_ports(parameter_properties *parameters, int count);
+extern bool check_for_message_context_ports(const parameter_properties *parameters, int count);
+extern bool check_for_string_ports(const parameter_properties *parameters, int count);
 
 #if USE_EXEC_GUI || USE_DSSI
 
@@ -524,7 +524,7 @@ public:
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
     const char *get_gui_xml() const { static const char *data_ptr = calf_plugins::load_gui_xml(get_id()); return data_ptr; }
     plugin_command_info *get_commands() const { return NULL; }
-    parameter_properties *get_param_props(int param_no) const { return &param_props[param_no]; }
+    const parameter_properties *get_param_props(int param_no) const { return &param_props[param_no]; }
     const char **get_port_names() const { return port_names; }
     bool is_cv(int param_no) const { return true; }
     bool is_noisy(int param_no) const { return false; }
@@ -537,6 +537,7 @@ public:
                 ports.push_back(i);
         }
     }
+    const plugin_metadata_iface *get_metadata_iface_ptr() const { return static_cast<const Metadata *>(this); }
 };
 
 /// A class for delegating metadata implementation to a "remote" metadata class.
@@ -565,7 +566,7 @@ public:
     int get_param_port_offset() const { return impl->get_param_port_offset(); }
     const char *get_gui_xml() const { return impl->get_gui_xml(); }
     plugin_command_info *get_commands() const { return impl->get_commands(); }
-    parameter_properties *get_param_props(int param_no) const { return impl->get_param_props(param_no); }
+    const parameter_properties *get_param_props(int param_no) const { return impl->get_param_props(param_no); }
     const char **get_port_names() const { return impl->get_port_names(); }
     bool is_cv(int param_no) const { return impl->is_cv(param_no); }
     bool is_noisy(int param_no) const { return impl->is_noisy(param_no); }
