@@ -531,7 +531,7 @@ public:
     virtual void  calculate_filter(float freq, float q, int mode, float gain = 1.0) = 0;
     virtual void  filter_activate() = 0;
     virtual void  sanitize() = 0;
-    virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
+    virtual int   process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask) = 0;
     virtual float freq_gain(int subindex, float freq, float srate) const = 0;
 
     virtual ~filter_module_iface() {}
@@ -556,115 +556,16 @@ public:
     
 public:
     biquad_filter_module() : order(0) {}
-    
-    void calculate_filter(float freq, float q, int mode, float gain = 1.0)
-    {
-        if (mode <= mode_36db_lp) {
-            order = mode + 1;
-            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else if ( mode_12db_hp <= mode && mode <= mode_36db_hp ) {
-            order = mode - mode_12db_hp + 1;
-            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else if ( mode_6db_bp <= mode && mode <= mode_18db_bp ) {
-            order = mode - mode_6db_bp + 1;
-            left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else { // mode_6db_br <= mode <= mode_18db_br
-            order = mode - mode_6db_br + 1;
-            left[0].set_br_rbj(freq, order * 0.1 * q, srate, gain);
-        }
-        
-        right[0].copy_coeffs(left[0]);
-        for (int i = 1; i < order; i++) {
-            left[i].copy_coeffs(left[0]);
-            right[i].copy_coeffs(left[0]);
-        }
-    }
-    
-    void filter_activate()
-    {
-        for (int i=0; i < order; i++) {
-            left[i].reset();
-            right[i].reset();
-        }
-    }
-    
-    void  sanitize()
-    {
-        for (int i=0; i < order; i++) {
-            left[i].sanitize();
-            right[i].sanitize();
-        }
-    }
-    
-    inline int process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) {
-        dsp::biquad_d1<float> *filter;
-        switch (channel_no) {
-        case 0:
-            filter = left;
-            break;
-            
-        case 1:
-            filter = right;
-            break;
-        
-        default:
-            assert(false);
-            return 0;
-        }
-        
-        if (inmask) {
-            switch(order) {
-                case 1:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process(in[i]);
-                    break;
-                case 2:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[1].process(filter[0].process(in[i]));
-                    break;
-                case 3:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
-                    break;
-            }
-        } else {
-            if (filter[order - 1].empty())
-                return 0;
-            switch(order) {
-                case 1:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process_zeroin();
-                    break;
-                case 2:
-                    if (filter[0].empty())
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process_zeroin();
-                    else
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process(filter[0].process_zeroin());
-                    break;
-                case 3:
-                    if (filter[1].empty())
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process_zeroin();
-                    else
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
-                    break;
-            }
-        }
-        for (int i = 0; i < order; i++)
-            filter[i].sanitize();
-        return filter[order - 1].empty() ? 0 : inmask;
-    }
-    
-    float freq_gain(int subindex, float freq, float srate) const
-    {
-        float level = 1.0;
-        for (int j = 0; j < order; j++)
-            level *= left[j].freq_gain(freq, srate);
-        return level;
-    }
+    /// Calculate filter coefficients based on parameters - cutoff/center frequency, q, filter type, output gain
+    void calculate_filter(float freq, float q, int mode, float gain = 1.0);
+    /// Reset filter state
+    void filter_activate();
+    /// Remove denormals
+    void sanitize();
+    /// Process a single channel (float buffer) of data
+    int process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask);
+    /// Determine gain (|H(z)|) for a given frequency
+    float freq_gain(int subindex, float freq, float srate) const;
 };
 
 class two_band_eq

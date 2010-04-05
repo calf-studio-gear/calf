@@ -117,3 +117,114 @@ float simple_phaser::freq_gain(float freq, float sr) const
     p = p / (cfloat(1.0) - cfloat(fb) * p);        
     return std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * p);
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+
+void biquad_filter_module::calculate_filter(float freq, float q, int mode, float gain)
+{
+    if (mode <= mode_36db_lp) {
+        order = mode + 1;
+        left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+    } else if ( mode_12db_hp <= mode && mode <= mode_36db_hp ) {
+        order = mode - mode_12db_hp + 1;
+        left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+    } else if ( mode_6db_bp <= mode && mode <= mode_18db_bp ) {
+        order = mode - mode_6db_bp + 1;
+        left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
+    } else { // mode_6db_br <= mode <= mode_18db_br
+        order = mode - mode_6db_br + 1;
+        left[0].set_br_rbj(freq, order * 0.1 * q, srate, gain);
+    }
+    
+    right[0].copy_coeffs(left[0]);
+    for (int i = 1; i < order; i++) {
+        left[i].copy_coeffs(left[0]);
+        right[i].copy_coeffs(left[0]);
+    }
+}
+
+void biquad_filter_module::filter_activate()
+{
+    for (int i=0; i < order; i++) {
+        left[i].reset();
+        right[i].reset();
+    }
+}
+
+void biquad_filter_module::sanitize()
+{
+    for (int i=0; i < order; i++) {
+        left[i].sanitize();
+        right[i].sanitize();
+    }
+}
+
+int biquad_filter_module::process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask) {
+    dsp::biquad_d1<float> *filter;
+    switch (channel_no) {
+    case 0:
+        filter = left;
+        break;
+        
+    case 1:
+        filter = right;
+        break;
+    
+    default:
+        assert(false);
+        return 0;
+    }
+    
+    if (inmask) {
+        switch(order) {
+            case 1:
+                for (uint32_t i = 0; i < numsamples; i++)
+                    out[i] = filter[0].process(in[i]);
+                break;
+            case 2:
+                for (uint32_t i = 0; i < numsamples; i++)
+                    out[i] = filter[1].process(filter[0].process(in[i]));
+                break;
+            case 3:
+                for (uint32_t i = 0; i < numsamples; i++)
+                    out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
+                break;
+        }
+    } else {
+        if (filter[order - 1].empty())
+            return 0;
+        switch(order) {
+            case 1:
+                for (uint32_t i = 0; i < numsamples; i++)
+                    out[i] = filter[0].process_zeroin();
+                break;
+            case 2:
+                if (filter[0].empty())
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[1].process_zeroin();
+                else
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[1].process(filter[0].process_zeroin());
+                break;
+            case 3:
+                if (filter[1].empty())
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[2].process_zeroin();
+                else
+                    for (uint32_t i = 0; i < numsamples; i++)
+                        out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
+                break;
+        }
+    }
+    for (int i = 0; i < order; i++)
+        filter[i].sanitize();
+    return filter[order - 1].empty() ? 0 : inmask;
+}
+
+float biquad_filter_module::freq_gain(int subindex, float freq, float srate) const
+{
+    float level = 1.0;
+    for (int j = 0; j < order; j++)
+        level *= left[j].freq_gain(freq, srate);
+    return level;
+}
