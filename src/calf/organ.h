@@ -291,9 +291,6 @@ public:
     using drawbar_organ::note_off;
     using drawbar_organ::control_change;
     enum { param_count = drawbar_organ::param_count};
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     dsp::organ_parameters par_values;
     uint32_t srate;
     bool panic_flag;

@@ -189,7 +189,7 @@ public:
 
 inline const parameter_properties &param_control::get_props() 
 { 
-    return  *gui->plugin->get_param_props(param_no);
+    return  *gui->plugin->get_metadata_iface()->get_param_props(param_no);
 }
 
 class null_audio_module;

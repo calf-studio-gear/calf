@@ -80,14 +80,15 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
 {
     // First, clear everything to default values (in case some parameters or variables are missing)
     plugin->clear_preset();
+    const plugin_metadata_iface *metadata = plugin->get_metadata_iface();
 
     map<string, int> names;    
-    int count = plugin->get_param_count();
+    int count = metadata->get_param_count();
     // this is deliberately done in two separate loops - if you wonder why, just think for a while :)
     for (int i = 0; i < count; i++)
-        names[plugin->get_param_props(i)->name] = i;
+        names[metadata->get_param_props(i)->name] = i;
     for (int i = 0; i < count; i++)
-        names[plugin->get_param_props(i)->short_name] = i;
+        names[metadata->get_param_props(i)->short_name] = i;
     // no support for unnamed parameters... tough luck :)
     for (unsigned int i = 0; i < min(param_names.size(), values.size()); i++)
     {
@@ -108,11 +109,12 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
 
 void plugin_preset::get_from(plugin_ctl_iface *plugin)
 {
-    int count = plugin->get_param_count();
+    const plugin_metadata_iface *metadata = plugin->get_metadata_iface();
+    int count = metadata->get_param_count();
     for (int i = 0; i < count; i++) {
-        if ((plugin->get_param_props(i)->flags & PF_TYPEMASK) >= PF_STRING)
+        if ((metadata->get_param_props(i)->flags & PF_TYPEMASK) >= PF_STRING)
             continue;
-        param_names.push_back(plugin->get_param_props(i)->short_name);
+        param_names.push_back(metadata->get_param_props(i)->short_name);
         values.push_back(plugin->get_param_value(i));
     }
     struct store_obj: public send_configure_iface

@@ -555,7 +555,8 @@ public:
     };
     
 public:
-    biquad_filter_module() : order(0) {}
+    biquad_filter_module()
+    : order(0) {}
     /// Calculate filter coefficients based on parameters - cutoff/center frequency, q, filter type, output gain
     void calculate_filter(float freq, float q, int mode, float gain = 1.0);
     /// Reset filter state

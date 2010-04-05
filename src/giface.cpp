@@ -189,10 +189,10 @@ std::string parameter_properties::to_string(float value) const
 }
 
 void calf_plugins::plugin_ctl_iface::clear_preset() {
-    int param_count = get_param_count();
+    int param_count = get_metadata_iface()->get_param_count();
     for (int i=0; i < param_count; i++)
     {
-        const parameter_properties &pp = *get_param_props(i);
+        const parameter_properties &pp = *get_metadata_iface()->get_param_props(i);
         if ((pp.flags & PF_TYPEMASK) == PF_STRING)
         {
             configure(pp.short_name, pp.choices ? pp.choices[0] : "");

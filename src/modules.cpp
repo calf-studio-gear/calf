@@ -892,7 +892,7 @@ CALF_PORT_PROPS(wavetable) = {
 
 calf_plugins::plugin_registry::plugin_registry()
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back((new name##_metadata)->get_metadata_iface_ptr());
+    #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back((new name##_metadata));
     #include <calf/modulelist.h>
 }
 

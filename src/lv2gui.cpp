@@ -104,6 +104,7 @@ struct plugin_proxy_base
     
     /// Map an URI to an integer value using a given URI map
     uint32_t map_uri(const char *mapURI, const char *keyURI);
+
 };
 
 plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features)
@@ -190,7 +191,7 @@ uint32_t plugin_proxy_base::map_uri(const char *mapURI, const char *keyURI)
 const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
 {
     if (instance)
-        return instance->get_line_graph_iface();
+        return instance->get_metadata_iface()->get_line_graph_iface();
     return NULL;
 }
 
@@ -287,6 +288,7 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
     void send_configures(send_configure_iface *sci) { 
         fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
     }
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
 };
 
 static gboolean plugin_on_idle(void *data)
@@ -345,13 +347,13 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     assert(proxy);
     float v = *(float *)buffer;
-    int param = port - gui->plugin->get_param_port_offset();
-    if (param >= gui->plugin->get_param_count())
+    int param = port - proxy->plugin_metadata->get_param_port_offset();
+    if (param >= proxy->plugin_metadata->get_param_count())
         return;
     if (proxy->is_string_param[param])
     {
         TempSendSetter _a_(proxy->sends[param], false);
-        gui->plugin->configure(gui->plugin->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
+        gui->plugin->configure(proxy->plugin_metadata->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
     if (fabs(gui->plugin->get_param_value(param) - v) < 0.00001)

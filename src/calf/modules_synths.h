@@ -42,9 +42,6 @@ class monosynth_audio_module: public audio_module<monosynth_metadata>, public li
 {
 public:
     enum { mod_matrix_slots = 10 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;

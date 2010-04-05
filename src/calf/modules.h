@@ -49,9 +49,6 @@ class flanger_audio_module: public audio_module<flanger_metadata>, public freque
 {
 public:
     dsp::simple_flanger<float, 2048> left, right;
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
@@ -78,9 +75,6 @@ class phaser_audio_module: public audio_module<phaser_metadata>, public frequenc
 {
 public:
     enum { MaxStages = 12 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
@@ -115,9 +109,6 @@ public:
     int predelay_amt;
     float meter_wet, meter_out;
     uint32_t clip;
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     
     void params_changed();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
@@ -131,9 +122,6 @@ class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 public:    
     // 1MB of delay memory per channel... uh, RAM is cheap
     enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
@@ -159,9 +147,6 @@ public:
 class rotary_speaker_audio_module: public audio_module<rotary_speaker_metadata>
 {
 public:
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     /// Current phases and phase deltas for bass and treble rotors
     uint32_t phase_l, dphase_l, phase_h, dphase_h;
     dsp::simple_delay<1024, float> delay;
@@ -206,21 +191,21 @@ public:
 };
 
 template<typename FilterClass, typename Metadata>
-class filter_module_with_inertia: public FilterClass
+class filter_module_with_inertia: public audio_module<Metadata>, public FilterClass
 {
 public:
+    /// These are pointers to the ins, outs, params arrays in the main class
     typedef filter_module_with_inertia inertia_filter_module;
+    using audio_module<Metadata>::ins;
+    using audio_module<Metadata>::outs;
+    using audio_module<Metadata>::params;
     
-    float *ins[Metadata::in_count]; 
-    float *outs[Metadata::out_count];
-    float *params[Metadata::param_count];
-
     inertia<exponential_ramp> inertia_cutoff, inertia_resonance, inertia_gain;
     once_per_n timer;
     bool is_active;    
     mutable volatile int last_generation, last_calculated_generation;
     
-    filter_module_with_inertia()
+    filter_module_with_inertia(float **ins, float **outs, float **params)
     : inertia_cutoff(exponential_ramp(128), 20)
     , inertia_resonance(exponential_ramp(128), 20)
     , inertia_gain(exponential_ramp(128), 1.0)
@@ -311,13 +296,13 @@ public:
 
 /// biquad filter module
 class filter_audio_module: 
-    public audio_module<filter_metadata>, 
     public filter_module_with_inertia<biquad_filter_module, filter_metadata>, 
     public frequency_response_line_graph
 {
     mutable float old_cutoff, old_resonance, old_mode;
 public:    
     filter_audio_module()
+    : filter_module_with_inertia<biquad_filter_module, filter_metadata>(ins, outs, params)
     {
         last_generation = 0;
     }
@@ -328,22 +313,6 @@ public:
         inertia_filter_module::params_changed(); 
     }
         
-    void activate()
-    {
-        inertia_filter_module::activate();
-    }
-    
-    void set_sample_rate(uint32_t sr)
-    {
-        inertia_filter_module::set_sample_rate(sr);
-    }
-
-    
-    void deactivate()
-    {
-        inertia_filter_module::deactivate();
-    }
-    
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
     int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
@@ -352,9 +321,6 @@ public:
 class multichorus_audio_module: public audio_module<multichorus_metadata>, public frequency_response_line_graph
 {
 public:
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     dsp::multichorus<float, sine_multi_lfo<float, 8>, filter_sum<dsp::biquad_d2<>, dsp::biquad_d2<> >, 4096> left, right;
     float last_r_phase;
@@ -413,9 +379,6 @@ private:
     gain_reduction_audio_module compressor;
 public:
     typedef std::complex<double> cfloat;
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     mutable volatile int last_generation, last_calculated_generation;
@@ -458,9 +421,6 @@ private:
     biquad_d2<float> f1L, f1R, f2L, f2R;
 public:
     typedef std::complex<double> cfloat;
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     mutable volatile int last_generation, last_calculated_generation;
@@ -490,9 +450,6 @@ private:
     dsp::biquad_d2<float> lpL0, lpR0, lpL1, lpR1, lpL2, lpR2, hpL0, hpR0, hpL1, hpR1, hpL2, hpR2;
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     multibandcompressor_audio_module();
@@ -523,9 +480,6 @@ private:
     gain_reduction_audio_module compressor;
     biquad_d2<float> hpL, hpR, lpL, lpR, pL, pR;
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     mutable volatile int last_generation, last_calculated_generation;
@@ -549,6 +503,9 @@ template<class BaseClass, bool has_lphp>
 class equalizerNband_audio_module: public audio_module<BaseClass>, public frequency_response_line_graph {
 public:
     typedef audio_module<BaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
     using AM::in_count;
     using AM::out_count;
     using AM::param_count;
@@ -571,9 +528,6 @@ private:
     inline void process_hplp(float &left, float &right);
 public:
     typedef std::complex<double> cfloat;
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     mutable volatile int last_generation, last_calculated_generation;
@@ -628,9 +582,6 @@ private:
     bool clear_reset;
     lfo_audio_module lfoL, lfoR;
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     pulsator_audio_module();
@@ -653,10 +604,13 @@ public:
 
 /// Filterclavier --- MIDI controlled filter by Hans Baier
 class filterclavier_audio_module: 
-        public audio_module<filterclavier_metadata>, 
         public filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>, 
         public frequency_response_line_graph
 {        
+    using audio_module<filterclavier_metadata>::ins;
+    using audio_module<filterclavier_metadata>::outs;
+    using audio_module<filterclavier_metadata>::params;
+
     const float min_gain;
     const float max_gain;
     

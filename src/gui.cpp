@@ -282,7 +282,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
                     param_no = it->second;
             }
             if (param_no != -1)
-                current_control->param_variable = plugin->get_param_props(param_no)->short_name;
+                current_control->param_variable = plugin->get_metadata_iface()->get_param_props(param_no)->short_name;
             current_control->create(this, param_no);
             current_control->set_std_properties();
             current_control->init_xml(element);
@@ -331,9 +331,9 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     ignore_stack = 0;
     
     param_name_map.clear();
-    int size = plugin->get_param_count();
+    int size = plugin->get_metadata_iface()->get_param_count();
     for (int i = 0; i < size; i++)
-        param_name_map[plugin->get_param_props(i)->short_name] = i;
+        param_name_map[plugin->get_metadata_iface()->get_param_props(i)->short_name] = i;
     
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, xml_element_start, xml_element_end);
@@ -424,7 +424,7 @@ void plugin_gui::on_idle()
     {
         if (params[i]->param_no != -1)
         {
-            const parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+            const parameter_properties &props = *plugin->get_metadata_iface()->get_param_props(params[i]->param_no);
             bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
             if (is_output) {
                 params[i]->set();
@@ -592,7 +592,7 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
 string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
 {
     string command_xml = command_pre_xml;
-    plugin_command_info *ci = gui->plugin->get_commands();
+    plugin_command_info *ci = gui->plugin->get_metadata_iface()->get_commands();
     if (!ci)
         return "";
     for(int i = 0; ci->name; i++, ci++)
@@ -671,7 +671,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // printf("size request %dx%d\n", req2.width, req2.height);
     
     GtkWidget *container;
-    const char *xml = _jh->get_gui_xml();
+    const char *xml = _jh->get_metadata_iface()->get_gui_xml();
     assert(xml);
     container = gui->create_from_xml(_jh, xml);
     

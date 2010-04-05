@@ -56,7 +56,7 @@ static bool quit_cb(void *user_data);
 
 jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<name##_audio_module>(effect_name, instance_name, priface);
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<audio_module_iface>(new name##_audio_module, effect_name, instance_name, priface);
     #include <calf/modulelist.h>
     return NULL;
 }
@@ -80,7 +80,7 @@ void jack_host_base::create_ports() {
     static const char *suffixes[] = { "l", "r", "2l", "2r" };
     port *inputs = get_inputs();
     port *outputs = get_outputs();
-    int in_count = get_input_count(), out_count = get_output_count();
+    int in_count = metadata->get_input_count(), out_count = metadata->get_output_count();
     for (int i=0; i<in_count; i++) {
         sprintf(buf, "%s_in_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->input_name.c_str(), client->input_nr++);
@@ -91,7 +91,7 @@ void jack_host_base::create_ports() {
             throw text_exception("Could not create JACK input port");
         jack_port_set_alias(inputs[i].handle, (prefix + buf2).c_str());
     }
-    if (get_midi()) {
+    if (metadata->get_midi()) {
         sprintf(buf, "%s_midi_in", instance_name.c_str());
         sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
         midi_port.name = buf2;
@@ -114,7 +114,7 @@ void jack_host_base::create_ports() {
 
 void jack_host_base::close() {
     port *inputs = get_inputs(), *outputs = get_outputs();
-    int input_count = get_input_count(), output_count = get_output_count();
+    int input_count = metadata->get_input_count(), output_count = metadata->get_output_count();
     for (int i = 0; i < input_count; i++) {
         jack_port_unregister(client->client, inputs[i].handle);
         inputs[i].data = NULL;
@@ -123,7 +123,7 @@ void jack_host_base::close() {
         jack_port_unregister(client->client, outputs[i].handle);
         outputs[i].data = NULL;
     }
-    if (get_midi())
+    if (metadata->get_midi())
         jack_port_unregister(client->client, midi_port.handle);
     client = NULL;
 }
@@ -407,7 +407,7 @@ void host_session::remove_all_plugins()
 
 bool host_session::activate_preset(int plugin_no, const std::string &preset, bool builtin)
 {
-    string cur_plugin = plugins[plugin_no]->get_id();
+    string cur_plugin = plugins[plugin_no]->metadata->get_id();
     preset_vector &pvec = (builtin ? get_builtin_presets() : get_user_presets()).presets;
     for (unsigned int i = 0; i < pvec.size(); i++) {
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
@@ -435,7 +435,7 @@ void host_session::connect()
             if (chains.count(i)) {
                 if (!i)
                 {
-                    if (plugins[0]->get_output_count() < 2)
+                    if (plugins[0]->metadata->get_output_count() < 2)
                     {
                         fprintf(stderr, "Cannot connect input to plugin %s - incompatible ports\n", plugins[0]->name.c_str());
                     } else {
@@ -445,7 +445,7 @@ void host_session::connect()
                 }
                 else
                 {
-                    if (plugins[i - 1]->get_output_count() < 2 || plugins[i]->get_input_count() < 2)
+                    if (plugins[i - 1]->metadata->get_output_count() < 2 || plugins[i]->metadata->get_input_count() < 2)
                     {
                         fprintf(stderr, "Cannot connect plugins %s and %s - incompatible ports\n", plugins[i - 1]->name.c_str(), plugins[i]->name.c_str());
                     }
@@ -459,7 +459,7 @@ void host_session::connect()
         if (chains.count(plugins.size()) && plugins.size())
         {
             int last = plugins.size() - 1;
-            if (plugins[last]->get_output_count() < 2)
+            if (plugins[last]->metadata->get_output_count() < 2)
             {
                 fprintf(stderr, "Cannot connect plugin %s to output - incompatible ports\n", plugins[last]->name.c_str());
             } else {
@@ -470,7 +470,7 @@ void host_session::connect()
         if (autoconnect_midi != "") {
             for (unsigned int i = 0; i < plugins.size(); i++)
             {
-                if (plugins[i]->get_midi())
+                if (plugins[i]->metadata->get_midi())
                     client.connect(autoconnect_midi, cnp + plugins[i]->get_midi_port()->name);
             }
         }
@@ -482,7 +482,7 @@ void host_session::connect()
                 if (j + 1 == autoconnect_midi_index) {
                     for (unsigned int i = 0; i < plugins.size(); i++)
                     {
-                        if (plugins[i]->get_midi())
+                        if (plugins[i]->metadata->get_midi())
                             client.connect(ports[j], cnp + plugins[i]->get_midi_port()->name);
                     }
                     break;
@@ -566,14 +566,14 @@ char *host_session::save_file(const char *name)
     for (unsigned int i = 0; i < plugins.size(); i++) {
         jack_host_base *p = plugins[i];
         plugin_preset preset;
-        preset.plugin = p->get_id();
+        preset.plugin = p->metadata->get_id();
         preset.get_from(p);
         data += "<plugin";
         data += to_xml_attr("type", preset.plugin);
         data += to_xml_attr("instance-name", p->instance_name);
-        if (p->get_input_count())
+        if (p->metadata->get_input_count())
             data += to_xml_attr("input-index", p->get_inputs()[0].name.substr(i_name.length()));
-        if (p->get_output_count())
+        if (p->metadata->get_output_count())
             data += to_xml_attr("output-index", p->get_outputs()[0].name.substr(o_name.length()));
         if (p->get_midi_port())
             data += to_xml_attr("midi-index", p->get_midi_port()->name.substr(m_name.length()));
@@ -728,15 +728,15 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
         jack_host_base *p = sess->plugins[i];
         char ss[32];
         plugin_preset preset;
-        preset.plugin = p->get_id();
+        preset.plugin = p->metadata->get_id();
         preset.get_from(p);
         sprintf(ss, "Plugin%d", i);
         pstr = preset.to_xml();
         tmp.clear();
         tmp["instance_name"] = p->instance_name;
-        if (p->get_input_count())
+        if (p->metadata->get_input_count())
             tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
-        if (p->get_output_count())
+        if (p->metadata->get_output_count())
             tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
         if (p->get_midi_port())
             tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());

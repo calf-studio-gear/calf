@@ -807,7 +807,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     widget->requisition.width = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
     calf_line_graph_set_square(clg, get_int("square", 0));
-    clg->source = gui->plugin->get_line_graph_iface();
+    clg->source = gui->plugin->get_metadata_iface()->get_line_graph_iface();
     clg->source_id = param_no;
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LineGraph");
     return widget;
@@ -836,7 +836,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     
-    teif = gui->plugin->get_table_edit_iface();
+    teif = gui->plugin->get_metadata_iface()->get_table_edit_iface();
     const table_column_info *tci = teif->get_table_columns(param_no);
     assert(tci);
     cols = 0;

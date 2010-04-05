@@ -347,7 +347,7 @@ struct plugin_metadata_iface
 };
 
 /// Interface for host-GUI-plugin interaction (should be really split in two, but ... meh)
-struct plugin_ctl_iface: public virtual plugin_metadata_iface
+struct plugin_ctl_iface
 {
     /// @return value of given parameter
     virtual float get_param_value(int param_no) = 0;
@@ -371,6 +371,8 @@ struct plugin_ctl_iface: public virtual plugin_metadata_iface
     /// Update status variables changed since last_serial
     /// @return new last_serial
     virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
+    /// Return metadata object
+    virtual const plugin_metadata_iface *get_metadata_iface() const = 0;
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -400,59 +402,151 @@ public:
 /// Load and strdup a text file with GUI definition
 extern const char *load_gui_xml(const std::string &plugin_id);
 
-/// Empty implementations for plugin functions. Note, that functions aren't virtual, because they're called via the particular
-/// subclass (flanger_audio_module etc) via template wrappers (ladspa_wrapper<> etc), not via base class pointer/reference
+/// Interface to audio processing plugins (the real things, not only metadata)
+struct audio_module_iface
+{
+    /// Handle MIDI Note On
+    virtual void note_on(int note, int velocity) = 0;
+    /// Handle MIDI Note Off
+    virtual void note_off(int note, int velocity) = 0;
+    /// Handle MIDI Program Change
+    virtual void program_change(int program) = 0;
+    /// Handle MIDI Control Change
+    virtual void control_change(int controller, int value) = 0;
+    /// Handle MIDI Pitch Bend
+    /// @param value pitch bend value (-8192 to 8191, defined as in MIDI ie. 8191 = 200 ct by default)
+    virtual void pitch_bend(int value) = 0;
+    /// Handle MIDI Channel Pressure
+    /// @param value channel pressure (0 to 127)
+    virtual void channel_pressure(int value) = 0;
+    /// Called when params are changed (before processing)
+    virtual void params_changed() = 0;
+    /// LADSPA-esque activate function, except it is called after ports are connected, not before
+    virtual void activate() = 0;
+    /// LADSPA-esque deactivate function
+    virtual void deactivate() = 0;
+    /// Set sample rate for the plugin
+    virtual void set_sample_rate(uint32_t sr) = 0;
+    /// Execute menu command with given number
+    virtual void execute(int cmd_no) = 0;
+    /// DSSI configure call
+    virtual char *configure(const char *key, const char *value) = 0;
+    /// Send all understood configure vars (none by default)
+    virtual void send_configures(send_configure_iface *sci) = 0;
+    /// Send all supported status vars (none by default)
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) = 0;
+    /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
+    virtual void params_reset() = 0;
+    /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)
+    virtual void post_instantiate() = 0;
+    /// Return the arrays of port buffer pointers
+    virtual void get_port_arrays(float **&ins_ptrs, float **&outs_ptrs, float **&params_ptrs) = 0;
+    /// Return metadata object
+    virtual const plugin_metadata_iface *get_metadata_iface() const = 0;
+    /// Set the progress report interface to communicate progress to
+    virtual void set_progress_report_iface(progress_report_iface *iface) = 0;
+    /// Clear a part of output buffers that have 0s at mask
+    virtual void process_slice(uint32_t offset, uint32_t end) = 0;
+    /// The audio processing loop
+    virtual uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) = 0;
+    /// Message port processing function
+    virtual uint32_t message_run(const void *valid_ports, void *output_ports) = 0;
+    virtual ~audio_module_iface() {}
+};
+
+/// Empty implementations for plugin functions.
 template<class Metadata>
-class audio_module: public Metadata
+class audio_module: public Metadata, public audio_module_iface
 {
 public:
     typedef Metadata metadata_type;
+    using Metadata::in_count;
+    using Metadata::out_count;
+    using Metadata::param_count;
+    float *ins[Metadata::in_count]; 
+    float *outs[Metadata::out_count];
+    float *params[Metadata::param_count];
 
     progress_report_iface *progress_report;
 
     audio_module() {
         progress_report = NULL;
+        memset(ins, 0, sizeof(ins));
+        memset(outs, 0, sizeof(outs));
+        memset(params, 0, sizeof(params));
     }
 
     /// Handle MIDI Note On
-    inline void note_on(int note, int velocity) {}
+    void note_on(int note, int velocity) {}
     /// Handle MIDI Note Off
-    inline void note_off(int note, int velocity) {}
+    void note_off(int note, int velocity) {}
     /// Handle MIDI Program Change
-    inline void program_change(int program) {}
+    void program_change(int program) {}
     /// Handle MIDI Control Change
-    inline void control_change(int controller, int value) {}
+    void control_change(int controller, int value) {}
     /// Handle MIDI Pitch Bend
     /// @param value pitch bend value (-8192 to 8191, defined as in MIDI ie. 8191 = 200 ct by default)
-    inline void pitch_bend(int value) {}
+    void pitch_bend(int value) {}
     /// Handle MIDI Channel Pressure
     /// @param value channel pressure (0 to 127)
-    inline void channel_pressure(int value) {}
+    void channel_pressure(int value) {}
     /// Called when params are changed (before processing)
-    inline void params_changed() {}
+    void params_changed() {}
     /// LADSPA-esque activate function, except it is called after ports are connected, not before
-    inline void activate() {}
+    void activate() {}
     /// LADSPA-esque deactivate function
-    inline void deactivate() {}
+    void deactivate() {}
     /// Set sample rate for the plugin
-    inline void set_sample_rate(uint32_t sr) { }
+    void set_sample_rate(uint32_t sr) { }
     /// Execute menu command with given number
-    inline void execute(int cmd_no) {}
+    void execute(int cmd_no) {}
     /// DSSI configure call
     virtual char *configure(const char *key, const char *value) { return NULL; }
     /// Send all understood configure vars (none by default)
-    inline void send_configures(send_configure_iface *sci) {}
+    void send_configures(send_configure_iface *sci) {}
     /// Send all supported status vars (none by default)
-    inline int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
+    int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
-    inline void params_reset() {}
+    void params_reset() {}
     /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)
-    inline void post_instantiate() {}
+    void post_instantiate() {}
     /// Handle 'message context' port message
     /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
-    inline uint32_t message_run(const void *valid_ports, void *output_ports) { 
+    uint32_t message_run(const void *valid_ports, void *output_ports) { 
         fprintf(stderr, "ERROR: message run not implemented\n");
         return 0;
+    }
+    /// Return the array of input port pointers
+    virtual void get_port_arrays(float **&ins_ptrs, float **&outs_ptrs, float **&params_ptrs)
+    {
+        ins_ptrs = ins;
+        outs_ptrs = outs;
+        params_ptrs = params;
+    }
+    /// Return metadata object
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return this; }
+    /// Set the progress report interface to communicate progress to
+    virtual void set_progress_report_iface(progress_report_iface *iface) { progress_report = iface; }
+
+    /// utility function: zero port values if mask is 0
+    inline void zero_by_mask(uint32_t mask, uint32_t offset, uint32_t nsamples)
+    {
+        for (int i=0; i<Metadata::out_count; i++) {
+            if ((mask & (1 << i)) == 0) {
+                dsp::zero(outs[i] + offset, nsamples);
+            }
+        }
+    }
+    /// utility function: call process, and if it returned zeros in output masks, zero out the relevant output port buffers
+    void process_slice(uint32_t offset, uint32_t end)
+    {
+        while(offset < end)
+        {
+            uint32_t newend = std::min(offset + MAX_SAMPLE_RUN, end);
+            uint32_t out_mask = process(offset, newend - offset, -1, -1);
+            zero_by_mask(out_mask, offset, newend - offset);
+            offset = newend;
+        }
     }
 };
 
@@ -498,12 +592,13 @@ struct dssi_feedback_sender
 
 /// Metadata base class template, to provide default versions of interface functions
 template<class Metadata>
-class plugin_metadata: public virtual plugin_metadata_iface
+class plugin_metadata: public plugin_metadata_iface
 {    
 public:
     static const char *port_names[];
     static parameter_properties param_props[];
     static ladspa_plugin_info plugin_info;
+    typedef plugin_metadata<Metadata> metadata_class;
 
     // These below are stock implementations based on enums and static members in Metadata classes
     // they may be overridden to provide more interesting functionality
@@ -537,14 +632,13 @@ public:
                 ports.push_back(i);
         }
     }
-    const plugin_metadata_iface *get_metadata_iface_ptr() const { return static_cast<const Metadata *>(this); }
 };
 
 /// A class for delegating metadata implementation to a "remote" metadata class.
 /// Used for GUI wrappers that cannot have a dependency on actual classes,
 /// and which instead take an "external" metadata object pointer, obtained
 /// through get_all_plugins.
-class plugin_metadata_proxy: public virtual plugin_metadata_iface
+class plugin_metadata_proxy: public plugin_metadata_iface
 {
 public:
     const plugin_metadata_iface *impl;

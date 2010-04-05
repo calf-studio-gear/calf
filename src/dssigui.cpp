@@ -212,6 +212,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     void update_cairo_context(cairo_iface *context, cairo_params &item) const;
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return this; }
 };
 
 bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const

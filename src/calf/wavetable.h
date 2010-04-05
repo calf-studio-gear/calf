@@ -102,9 +102,6 @@ protected:
 
 public:
     enum { mod_matrix_slots = 10 };
-    float *ins[in_count]; 
-    float *outs[out_count];
-    float *params[param_count];
     int16_t tables[wt_count][129][256]; // one dummy level for interpolation
     /// Rows of the modulation matrix
     dsp::modulation_entry mod_matrix_data[mod_matrix_slots];
