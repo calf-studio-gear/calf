@@ -164,7 +164,6 @@ void plugin_proxy_base::send_float_to_host(int param_no, float value)
     params[param_no] = value;
     if (sends[param_no]) {
         TempSendSetter _a_(sends[param_no], false);
-        assert(!sends[param_no]);
         write_function(controller, param_no + param_offset, sizeof(float), 0, &params[param_no]);
     }
 }
@@ -352,7 +351,6 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     if (proxy->is_string_param[param])
     {
         TempSendSetter _a_(proxy->sends[param], false);
-        assert(!proxy->sends[param]);
         gui->plugin->configure(gui->plugin->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
         return;
     }
@@ -360,7 +358,6 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
         return;
     {
         TempSendSetter _a_(proxy->sends[param], false);
-        assert(!proxy->sends[param]);
         gui->set_param_value(param, v);
     }
 }
@@ -455,7 +452,6 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
     {
         int param = port - param_offset;
         TempSendSetter _a_(sends[param], false);
-        assert(!sends[param]);
         if (is_string_param[param])
         {
             osc_inline_typed_strstream data;
