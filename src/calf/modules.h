@@ -38,30 +38,6 @@ using namespace dsp;
 
 struct ladspa_plugin_info;
 
-#if 0
-class amp_audio_module: public null_audio_module
-{
-public:
-    enum { in_count = 2, out_count = 2, param_count = 1, support_midi = false, require_midi = false, rt_capable = true };
-    float *ins[2]; 
-    float *outs[2];
-    float *params[1];
-    uint32_t srate;
-    static parameter_properties param_props[];
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        if (!inputs_mask)
-            return 0;
-        float gain = *params[0];
-        numsamples += offset;
-        for (uint32_t i = offset; i < numsamples; i++) {
-            outs[0][i] = ins[0][i] * gain;
-            outs[1][i] = ins[1][i] * gain;
-        }
-        return inputs_mask;
-    }
-};
-#endif
-
 class frequency_response_line_graph: public line_graph_iface 
 {
 public:
