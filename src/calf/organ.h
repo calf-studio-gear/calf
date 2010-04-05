@@ -133,7 +133,6 @@ protected:
     static small_wave_family (*waves)[wave_count_small];
     static big_wave_family (*big_waves)[wave_count_big];
 
-    // dsp::sine_table<float, ORGAN_WAVE_SIZE, 1> sine_wave;
     int note;
     dsp::decay amp;
     /// percussion FM carrier amplitude envelope
@@ -165,12 +164,7 @@ public:
         return (*big_waves)[wave];
     }
     static void precalculate_waves(calf_plugins::progress_report_iface *reporter);
-    void update_pitch()
-    {
-        float phase = dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
-        dpphase.set((long int) (phase * parameters->percussion_harmonic * parameters->pitch_bend));
-        moddphase.set((long int) (phase * parameters->percussion_fm_harmonic * parameters->pitch_bend));
-    }
+    void update_pitch();
     // this doesn't really have a voice interface
     void render_percussion_to(float (*buf)[2], int nsamples);
     void perc_note_on(int note, int vel);

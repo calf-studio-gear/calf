@@ -36,6 +36,49 @@ using namespace calf_plugins;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+organ_audio_module::organ_audio_module()
+: drawbar_organ(&par_values)
+{
+    var_map_curve = "2\n0 1\n1 1\n"; // XXXKF hacky bugfix
+}
+
+void organ_audio_module::activate()
+{
+    setup(srate);
+    panic_flag = false;
+}
+
+void organ_audio_module::post_instantiate()
+{
+    dsp::organ_voice_base::precalculate_waves(progress_report);
+}
+
+
+uint32_t organ_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    float *o[2] = { outs[0] + offset, outs[1] + offset };
+    if (panic_flag)
+    {
+        control_change(120, 0); // stop all sounds
+        control_change(121, 0); // reset all controllers
+        panic_flag = false;
+    }
+    render_separate(o, nsamples);
+    return 3;
+}
+
+void organ_audio_module::params_changed() {
+    for (int i = 0; i < param_count - var_count; i++)
+        ((float *)&par_values)[i] = *params[i];
+
+    unsigned int old_poly = polyphony_limit;
+    polyphony_limit = dsp::clip(dsp::fastf2i_drm(*params[par_polyphony]), 1, 32);
+    if (polyphony_limit < old_poly)
+        trim_voices();
+    
+    update_params();
+}
+
 bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
 {
     if (index == par_master) {
@@ -74,6 +117,13 @@ bool organ_audio_module::get_graph(int index, int subindex, float *data, int poi
     }
     return false;
 }
+
+uint32_t organ_audio_module::message_run(const void *valid_inputs, void *output_ports)
+{ 
+    // silence a default printf (which is kind of a warning about unhandled message_run)
+    return 0;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -193,6 +243,12 @@ static void padsynth(bandlimiter<ORGAN_WAVE_BITS> blSrc, bandlimiter<ORGAN_BIG_W
 
 #define LARGE_WAVEFORM_PROGRESS() do { if (reporter) { progress += 100; reporter->report_progress(floor(progress / totalwaves), "Precalculating large waveforms"); } } while(0)
 
+void organ_voice_base::update_pitch()
+{
+    float phase = dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate_ref);
+    dpphase.set((long int) (phase * parameters->percussion_harmonic * parameters->pitch_bend));
+    moddphase.set((long int) (phase * parameters->percussion_fm_harmonic * parameters->pitch_bend));
+}
 
 void organ_voice_base::precalculate_waves(progress_report_iface *reporter)
 {

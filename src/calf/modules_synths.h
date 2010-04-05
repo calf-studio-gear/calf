@@ -165,64 +165,30 @@ public:
     /// Value for configure variable map_curve
     std::string var_map_curve;
 
-    organ_audio_module()
-    : drawbar_organ(&par_values)
-    {
-        var_map_curve = "2\n0 1\n1 1\n"; // XXXKF hacky bugfix
-    }
+    organ_audio_module();
     
-    void post_instantiate()
-    {
-        dsp::organ_voice_base::precalculate_waves(progress_report);
-    }
+    void post_instantiate();
 
     void set_sample_rate(uint32_t sr) {
         srate = sr;
     }
-    void params_changed() {
-        for (int i = 0; i < param_count - var_count; i++)
-            ((float *)&par_values)[i] = *params[i];
-
-        unsigned int old_poly = polyphony_limit;
-        polyphony_limit = dsp::clip(dsp::fastf2i_drm(*params[par_polyphony]), 1, 32);
-        if (polyphony_limit < old_poly)
-            trim_voices();
-        
-        update_params();
-    }
+    void params_changed();
     inline void pitch_bend(int amt)
     {
         drawbar_organ::pitch_bend(amt);
     }
-    void activate() {
-        setup(srate);
-        panic_flag = false;
-    }
+    void activate();
     void deactivate();
-    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        float *o[2] = { outs[0] + offset, outs[1] + offset };
-        if (panic_flag)
-        {
-            control_change(120, 0); // stop all sounds
-            control_change(121, 0); // reset all controllers
-            panic_flag = false;
-        }
-        render_separate(o, nsamples);
-        return 3;
-    }
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     /// No CV inputs for now
     bool is_cv(int param_no) { return false; }
     /// Practically all the stuff here is noisy
     bool is_noisy(int param_no) { return true; }
     void execute(int cmd_no);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
-    uint32_t message_run(const void *valid_inputs, void *output_ports) { 
-        // silence a default printf (which is kind of a warning about unhandled message_run)
-        return 0;
-    }
+    uint32_t message_run(const void *valid_inputs, void *output_ports);
 };
 
 };
