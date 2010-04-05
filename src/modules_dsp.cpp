@@ -87,6 +87,43 @@ float flanger_audio_module::freq_gain(int subindex, float freq, float srate) con
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
 
+void flanger_audio_module::params_changed()
+{
+    float dry = *params[par_dryamount];
+    float wet = *params[par_amount];
+    float rate = *params[par_rate]; // 0.01*pow(1000.0f,*params[par_rate]);
+    float min_delay = *params[par_delay] / 1000.0;
+    float mod_depth = *params[par_depth] / 1000.0;
+    float fb = *params[par_fb];
+    left.set_dry(dry); right.set_dry(dry);
+    left.set_wet(wet); right.set_wet(wet);
+    left.set_rate(rate); right.set_rate(rate);
+    left.set_min_delay(min_delay); right.set_min_delay(min_delay);
+    left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+    left.set_fb(fb); right.set_fb(fb);
+    float r_phase = *params[par_stereo] * (1.f / 360.f);
+    clear_reset = false;
+    if (*params[par_reset] >= 0.5) {
+        clear_reset = true;
+        left.reset_phase(0.f);
+        right.reset_phase(r_phase);
+    } else {
+        if (fabs(r_phase - last_r_phase) > 0.0001f) {
+            right.phase = left.phase;
+            right.inc_phase(r_phase);
+            last_r_phase = r_phase;
+        }
+    }
+}
+
+void flanger_audio_module::params_reset()
+{
+    if (clear_reset) {
+        *params[par_reset] = 0.f;
+        clear_reset = false;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void phaser_audio_module::set_sample_rate(uint32_t sr)
@@ -133,6 +170,45 @@ bool phaser_audio_module::get_gridline(int index, int subindex, float &pos, bool
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
+void phaser_audio_module::params_changed()
+{
+    float dry = *params[par_dryamount];
+    float wet = *params[par_amount];
+    float rate = *params[par_rate]; // 0.01*pow(1000.0f,*params[par_rate]);
+    float base_frq = *params[par_freq];
+    float mod_depth = *params[par_depth];
+    float fb = *params[par_fb];
+    int stages = (int)*params[par_stages];
+    left.set_dry(dry); right.set_dry(dry);
+    left.set_wet(wet); right.set_wet(wet);
+    left.set_rate(rate); right.set_rate(rate);
+    left.set_base_frq(base_frq); right.set_base_frq(base_frq);
+    left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+    left.set_fb(fb); right.set_fb(fb);
+    left.set_stages(stages); right.set_stages(stages);
+    float r_phase = *params[par_stereo] * (1.f / 360.f);
+    clear_reset = false;
+    if (*params[par_reset] >= 0.5) {
+        clear_reset = true;
+        left.reset_phase(0.f);
+        right.reset_phase(r_phase);
+    } else {
+        if (fabs(r_phase - last_r_phase) > 0.0001f) {
+            right.phase = left.phase;
+            right.inc_phase(r_phase);
+            last_r_phase = r_phase;
+        }
+    }
+}
+
+void phaser_audio_module::params_reset()
+{
+    if (clear_reset) {
+        *params[par_reset] = 0.f;
+        clear_reset = false;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void reverb_audio_module::activate()
@@ -149,6 +225,189 @@ void reverb_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     reverb.setup(sr);
     amount.set_sample_rate(sr);
+}
+
+void reverb_audio_module::params_changed()
+{
+    reverb.set_type_and_diffusion(fastf2i_drm(*params[par_roomsize]), *params[par_diffusion]);
+    reverb.set_time(*params[par_decay]);
+    reverb.set_cutoff(*params[par_hfdamp]);
+    amount.set_inertia(*params[par_amount]);
+    dryamount.set_inertia(*params[par_dry]);
+    left_lo.set_lp(dsp::clip(*params[par_treblecut], 20.f, (float)(srate * 0.49f)), srate);
+    left_hi.set_hp(dsp::clip(*params[par_basscut], 20.f, (float)(srate * 0.49f)), srate);
+    right_lo.copy_coeffs(left_lo);
+    right_hi.copy_coeffs(left_hi);
+    predelay_amt = (int) (srate * (*params[par_predelay]) * (1.0f / 1000.0f) + 1);
+}
+
+uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    numsamples += offset;
+    clip   -= std::min(clip, numsamples);
+    for (uint32_t i = offset; i < numsamples; i++) {
+        float dry = dryamount.get();
+        float wet = amount.get();
+        stereo_sample<float> s(ins[0][i], ins[1][i]);
+        stereo_sample<float> s2 = pre_delay.process(s, predelay_amt);
+        
+        float rl = s2.left, rr = s2.right;
+        rl = left_lo.process(left_hi.process(rl));
+        rr = right_lo.process(right_hi.process(rr));
+        reverb.process(rl, rr);
+        outs[0][i] = dry*s.left + wet*rl;
+        outs[1][i] = dry*s.right + wet*rr;
+        meter_wet = std::max(fabs(wet*rl), fabs(wet*rr));
+        meter_out = std::max(fabs(outs[0][i]), fabs(outs[1][i]));
+        if(outs[0][i] > 1.f or outs[1][i] > 1.f) {
+            clip = srate >> 3;
+        }
+    }
+    reverb.extra_sanitize();
+    left_lo.sanitize();
+    left_hi.sanitize();
+    right_lo.sanitize();
+    right_hi.sanitize();
+    if(params[par_meter_wet] != NULL) {
+        *params[par_meter_wet] = meter_wet;
+    }
+    if(params[par_meter_out] != NULL) {
+        *params[par_meter_out] = meter_out;
+    }
+    if(params[par_clip] != NULL) {
+        *params[par_clip] = clip;
+    }
+    return outputs_mask;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+vintage_delay_audio_module::vintage_delay_audio_module()
+{
+    old_medium = -1;
+    for (int i = 0; i < MAX_DELAY; i++) {
+        buffers[0][i] = 0.f;
+        buffers[1][i] = 0.f;
+    }
+}
+
+void vintage_delay_audio_module::params_changed()
+{
+    float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
+    deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
+    deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
+    amt_left.set_inertia(*params[par_amount]); amt_right.set_inertia(*params[par_amount]);
+    float fb = *params[par_feedback];
+    dry = *params[par_dryamount];
+    mixmode = dsp::fastf2i_drm(*params[par_mixmode]);
+    medium = dsp::fastf2i_drm(*params[par_medium]);
+    if (mixmode == 0)
+    {
+        fb_left.set_inertia(fb);
+        fb_right.set_inertia(pow(fb, *params[par_time_r] / *params[par_time_l]));
+    } else {
+        fb_left.set_inertia(fb);
+        fb_right.set_inertia(fb);
+    }
+    if (medium != old_medium)
+        calc_filters();
+}
+
+void vintage_delay_audio_module::activate()
+{
+    bufptr = 0;
+    age = 0;
+}
+
+void vintage_delay_audio_module::deactivate()
+{
+}
+
+void vintage_delay_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    old_medium = -1;
+    amt_left.set_sample_rate(sr); amt_right.set_sample_rate(sr);
+    fb_left.set_sample_rate(sr); fb_right.set_sample_rate(sr);
+}
+
+void vintage_delay_audio_module::calc_filters()
+{
+    // parameters are heavily influenced by gordonjcp and his tape delay unit
+    // although, don't blame him if it sounds bad - I've messed with them too :)
+    biquad_left[0].set_lp_rbj(6000, 0.707, srate);
+    biquad_left[1].set_bp_rbj(4500, 0.250, srate);
+    biquad_right[0].copy_coeffs(biquad_left[0]);
+    biquad_right[1].copy_coeffs(biquad_left[1]);
+}
+
+uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    uint32_t ostate = 3; // XXXKF optimize!
+    uint32_t end = offset + numsamples;
+    int v = mixmode ? 1 : 0;
+    int orig_bufptr = bufptr;
+    for(uint32_t i = offset; i < end; i++)
+    {
+        float out_left, out_right, del_left, del_right;
+        // if the buffer hasn't been cleared yet (after activation), pretend we've read zeros
+
+        if (deltime_l >= age) {
+            del_left = ins[0][i];
+            out_left = dry * del_left;
+            amt_left.step();
+            fb_left.step();
+        }
+        else
+        {
+            float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK];
+            dsp::sanitize(in_left);
+            out_left = dry * ins[0][i] + in_left * amt_left.get();
+            del_left = ins[0][i] + in_left * fb_left.get();
+        }
+        if (deltime_r >= age) {
+            del_right = ins[1][i];
+            out_right = dry * del_right;
+            amt_right.step();
+            fb_right.step();
+        }
+        else
+        {
+            float in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK];
+            dsp::sanitize(in_right);
+            out_right = dry * ins[1][i] + in_right * amt_right.get();
+            del_right = ins[1][i] + in_right * fb_right.get();
+        }
+        
+        age++;
+        outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+        bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+    }
+    if (age >= MAX_DELAY)
+        age = MAX_DELAY;
+    if (medium > 0) {
+        bufptr = orig_bufptr;
+        if (medium == 2)
+        {
+            for(uint32_t i = offset; i < end; i++)
+            {
+                buffers[0][bufptr] = biquad_left[0].process_lp(biquad_left[1].process(buffers[0][bufptr]));
+                buffers[1][bufptr] = biquad_right[0].process_lp(biquad_right[1].process(buffers[1][bufptr]));
+                bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+            }
+            biquad_left[0].sanitize();biquad_right[0].sanitize();
+        } else {
+            for(uint32_t i = offset; i < end; i++)
+            {
+                buffers[0][bufptr] = biquad_left[1].process(buffers[0][bufptr]);
+                buffers[1][bufptr] = biquad_right[1].process(buffers[1][bufptr]);
+                bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+            }
+        }
+        biquad_left[1].sanitize();biquad_right[1].sanitize();
+        
+    }
+    return ostate;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +447,100 @@ int filter_audio_module::get_changed_offsets(int index, int generation, int &sub
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+filterclavier_audio_module::filterclavier_audio_module() 
+: min_gain(1.0)
+, max_gain(32.0)
+, last_note(-1)
+, last_velocity(-1)
+{
+}
+    
+void filterclavier_audio_module::params_changed()
+{ 
+    inertia_filter_module::inertia_cutoff.set_inertia(
+        note_to_hz(last_note + *params[par_transpose], *params[par_detune]));
+    
+    float min_resonance = param_props[par_max_resonance].min;
+     inertia_filter_module::inertia_resonance.set_inertia( 
+             (float(last_velocity) / 127.0)
+             // 0.001: see below
+             * (*params[par_max_resonance] - min_resonance + 0.001)
+             + min_resonance);
+         
+    adjust_gain_according_to_filter_mode(last_velocity);
+    
+    inertia_filter_module::calculate_filter(); 
+}
+
+void filterclavier_audio_module::activate()
+{
+    inertia_filter_module::activate();
+}
+
+void filterclavier_audio_module::set_sample_rate(uint32_t sr)
+{
+    inertia_filter_module::set_sample_rate(sr);
+}
+
+void filterclavier_audio_module::deactivate()
+{
+    inertia_filter_module::deactivate();
+}
+
+
+void filterclavier_audio_module::note_on(int note, int vel)
+{
+    last_note     = note;
+    last_velocity = vel;
+    inertia_filter_module::inertia_cutoff.set_inertia(
+            note_to_hz(note + *params[par_transpose], *params[par_detune]));
+
+    float min_resonance = param_props[par_max_resonance].min;
+    inertia_filter_module::inertia_resonance.set_inertia( 
+            (float(vel) / 127.0) 
+            // 0.001: if the difference is equal to zero (which happens
+            // when the max_resonance knom is at minimum position
+            // then the filter gain doesnt seem to snap to zero on most note offs
+            * (*params[par_max_resonance] - min_resonance + 0.001) 
+            + min_resonance);
+    
+    adjust_gain_according_to_filter_mode(vel);
+    
+    inertia_filter_module::calculate_filter();
+}
+
+void filterclavier_audio_module::note_off(int note, int vel)
+{
+    if (note == last_note) {
+        inertia_filter_module::inertia_resonance.set_inertia(param_props[par_max_resonance].min);
+        inertia_filter_module::inertia_gain.set_inertia(min_gain);
+        inertia_filter_module::calculate_filter();
+        last_velocity = 0;
+    }
+}
+
+void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int velocity)
+{
+    int   mode = dsp::fastf2i_drm(*params[par_mode]);
+    
+    // for bandpasses: boost gain for velocities > 0
+    if ( (mode_6db_bp <= mode) && (mode <= mode_18db_bp) ) {
+        // gain for velocity 0:   1.0
+        // gain for velocity 127: 32.0
+        float mode_max_gain = max_gain;
+        // max_gain is right for mode_6db_bp
+        if (mode == mode_12db_bp)
+            mode_max_gain /= 6.0;
+        if (mode == mode_18db_bp)
+            mode_max_gain /= 10.5;
+        
+        inertia_filter_module::inertia_gain.set_now(
+                (float(velocity) / 127.0) * (mode_max_gain - min_gain) + min_gain);
+    } else {
+        inertia_filter_module::inertia_gain.set_now(min_gain);
+    }
+}
+
 bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
 {
     if (!is_active || index != par_mode) {
@@ -199,6 +552,7 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
     }
     return false;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -252,7 +606,150 @@ void rotary_speaker_audio_module::control_change(int ctl, int val)
     }
 }
 
+void rotary_speaker_audio_module::params_changed()
+{
+    set_vibrato();
+}
+
+void rotary_speaker_audio_module::set_vibrato()
+{
+    vibrato_mode = fastf2i_drm(*params[par_speed]);
+    // manual vibrato - do not recalculate speeds as they're not used anyway
+    if (vibrato_mode == 5) 
+        return;
+    if (!vibrato_mode)
+        dspeed = -1;
+    else {
+        float speed = vibrato_mode - 1;
+        if (vibrato_mode == 3)
+            speed = hold_value;
+        if (vibrato_mode == 4)
+            speed = mwhl_value;
+        dspeed = (speed < 0.5f) ? 0 : 1;
+    }
+    update_speed();
+}
+
+/// Convert RPM speed to delta-phase
+uint32_t rotary_speaker_audio_module::rpm2dphase(float rpm)
+{
+    return (uint32_t)((rpm / (60.0 * srate)) * (1 << 30)) << 2;
+}
+
+/// Set delta-phase variables based on current calculated (and interpolated) RPM speed
+void rotary_speaker_audio_module::update_speed()
+{
+    float speed_h = aspeed_h >= 0 ? (48 + (400-48) * aspeed_h) : (48 * (1 + aspeed_h));
+    float speed_l = aspeed_l >= 0 ? 40 + (342-40) * aspeed_l : (40 * (1 + aspeed_l));
+    dphase_h = rpm2dphase(speed_h);
+    dphase_l = rpm2dphase(speed_l);
+}
+
+void rotary_speaker_audio_module::update_speed_manual(float delta)
+{
+    float ts = *params[par_treblespeed];
+    float bs = *params[par_bassspeed];
+    incr_towards(maspeed_h, ts, delta * 200, delta * 200);
+    incr_towards(maspeed_l, bs, delta * 200, delta * 200);
+    dphase_h = rpm2dphase(maspeed_h);
+    dphase_l = rpm2dphase(maspeed_l);
+}
+
+/// map a ramp [int] to a sinusoid-like function [0, 65536]
+static inline int pseudo_sine_scl(int counter)
+{
+    // premature optimization is a root of all evil; it can be done with integers only - but later :)
+    double v = counter * (1.0 / (65536.0 * 32768.0));
+    return (int) (32768 + 32768 * (v - v*v*v) * (1.0 / 0.3849));
+}
+
+/// Increase or decrease aspeed towards raspeed, with required negative and positive rate
+inline bool rotary_speaker_audio_module::incr_towards(float &aspeed, float raspeed, float delta_decc, float delta_acc)
+{
+    if (aspeed < raspeed) {
+        aspeed = std::min(raspeed, aspeed + delta_acc);
+        return true;
+    }
+    else if (aspeed > raspeed) 
+    {
+        aspeed = std::max(raspeed, aspeed - delta_decc);
+        return true;
+    }        
+    return false;
+}
+
+uint32_t rotary_speaker_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    int shift = (int)(300000 * (*params[par_shift])), pdelta = (int)(300000 * (*params[par_spacing]));
+    int md = (int)(100 * (*params[par_moddepth]));
+    float mix = 0.5 * (1.0 - *params[par_micdistance]);
+    float mix2 = *params[par_reflection];
+    float mix3 = mix2 * mix2;
+    for (unsigned int i = 0; i < nsamples; i++) {
+        float in_l = ins[0][i + offset], in_r = ins[1][i + offset];
+        float in_mono = 0.5f * (in_l + in_r);
+        
+        int xl = pseudo_sine_scl(phase_l), yl = pseudo_sine_scl(phase_l + 0x40000000);
+        int xh = pseudo_sine_scl(phase_h), yh = pseudo_sine_scl(phase_h + 0x40000000);
+        // printf("%d %d %d\n", shift, pdelta, shift + pdelta + 20 * xl);
+        meter_l = xl;
+        meter_h = xh;
+        // float out_hi_l = in_mono - delay.get_interp_1616(shift + md * xh) + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) - delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
+        // float out_hi_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - delay.get_interp_1616(shift + pdelta + md * xh) + delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
+        float out_hi_l = in_mono + delay.get_interp_1616(shift + md * xh) - mix2 * delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) + mix3 * delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
+        float out_hi_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - mix2 * delay.get_interp_1616(shift + pdelta + md * xh) + mix3 * delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
+
+        float out_lo_l = in_mono + delay.get_interp_1616(shift + md * xl); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
+        float out_lo_r = in_mono + delay.get_interp_1616(shift + md * yl); // - delay.get_interp_1616(shift + pdelta + md * yl);
+        
+        out_hi_l = crossover2l.process(out_hi_l); // sanitize(out_hi_l);
+        out_hi_r = crossover2r.process(out_hi_r); // sanitize(out_hi_r);
+        out_lo_l = crossover1l.process(out_lo_l); // sanitize(out_lo_l);
+        out_lo_r = crossover1r.process(out_lo_r); // sanitize(out_lo_r);
+        
+        float out_l = out_hi_l + out_lo_l;
+        float out_r = out_hi_r + out_lo_r;
+        
+        float mic_l = out_l + mix * (out_r - out_l);
+        float mic_r = out_r + mix * (out_l - out_r);
+        
+        outs[0][i + offset] = mic_l * 0.5f;
+        outs[1][i + offset] = mic_r * 0.5f;
+        delay.put(in_mono);
+        phase_l += dphase_l;
+        phase_h += dphase_h;
+    }
+    crossover1l.sanitize();
+    crossover1r.sanitize();
+    crossover2l.sanitize();
+    crossover2r.sanitize();
+    float delta = nsamples * 1.0 / srate;
+    if (vibrato_mode == 5)
+        update_speed_manual(delta);
+    else
+    {
+        bool u1 = incr_towards(aspeed_l, dspeed, delta * 0.2, delta * 0.14);
+        bool u2 = incr_towards(aspeed_h, dspeed, delta, delta * 0.5);
+        if (u1 || u2)
+            set_vibrato();
+    }
+    if(params[par_meter_l] != NULL) {
+        *params[par_meter_l] = (float)meter_l / 65536.0;
+    }
+    if(params[par_meter_h] != NULL) {
+        *params[par_meter_h] = (float)meter_h / 65536.0;
+    }
+    return outputs_mask;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+multichorus_audio_module::multichorus_audio_module()
+{
+    is_active = false;
+    last_r_phase = -1;
+}
 
 void multichorus_audio_module::activate()
 {
@@ -346,6 +843,46 @@ float multichorus_audio_module::freq_gain(int subindex, float freq, float srate)
         return *params[par_amount] * left.post.freq_gain(freq, srate);
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
+
+void multichorus_audio_module::params_changed()
+{
+    // delicious copy-pasta from flanger module - it'd be better to keep it common or something
+    float dry = *params[par_dryamount];
+    float wet = *params[par_amount];
+    float rate = *params[par_rate];
+    float min_delay = *params[par_delay] / 1000.0;
+    float mod_depth = *params[par_depth] / 1000.0;
+    float overlap = *params[par_overlap];
+    left.set_dry(dry); right.set_dry(dry);
+    left.set_wet(wet); right.set_wet(wet);
+    left.set_rate(rate); right.set_rate(rate);
+    left.set_min_delay(min_delay); right.set_min_delay(min_delay);
+    left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+    int voices = (int)*params[par_voices];
+    left.lfo.set_voices(voices); right.lfo.set_voices(voices);
+    left.lfo.set_overlap(overlap);right.lfo.set_overlap(overlap);
+    float vphase = *params[par_vphase] * (1.f / 360.f);
+    left.lfo.vphase = right.lfo.vphase = vphase * (4096 / std::max(voices - 1, 1));
+    float r_phase = *params[par_stereo] * (1.f / 360.f);
+    if (fabs(r_phase - last_r_phase) > 0.0001f) {
+        right.lfo.phase = left.lfo.phase;
+        right.lfo.phase += chorus_phase(r_phase * 4096);
+        last_r_phase = r_phase;
+    }
+    left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
+    left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
+    right.post.f1.copy_coeffs(left.post.f1);
+    right.post.f2.copy_coeffs(left.post.f2);
+}
+
+uint32_t multichorus_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    left.process(outs[0] + offset, ins[0] + offset, numsamples);
+    right.process(outs[1] + offset, ins[1] + offset, numsamples);
+    return outputs_mask; // XXXKF allow some delay after input going blank
+}
+
+
 
 /// Multibandcompressor by Markus Schmidt
 ///
@@ -746,10 +1283,8 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             
             float leftAC = inL;
             float rightAC = inR;
-            float leftSC = inL;
-            float rightSC = inR;
             
-            compressor.process(leftAC, rightAC, leftSC, rightSC);
+            compressor.process(leftAC, rightAC);
             
             outL = leftAC;
             outR = rightAC;
@@ -774,18 +1309,10 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         } // cycle trough samples
     }
     // draw meters
-    if(params[param_clip_in] != NULL) {
-        *params[param_clip_in] = clip_in;
-    }
-    if(params[param_clip_out] != NULL) {
-        *params[param_clip_out] = clip_out;
-    }
-    if(params[param_meter_in] != NULL) {
-        *params[param_meter_in] = meter_in;
-    }
-    if(params[param_meter_out] != NULL) {
-        *params[param_meter_out] = meter_out;
-    }
+    SET_IF_CONNECTED(clip_in)
+    SET_IF_CONNECTED(clip_out)
+    SET_IF_CONNECTED(meter_in)
+    SET_IF_CONNECTED(meter_out)
     // draw strip meter
     if(bypass > 0.5f) {
         if(params[param_compression] != NULL) {
@@ -856,6 +1383,40 @@ void sidechaincompressor_audio_module::deactivate()
 {
     is_active = false;
     compressor.deactivate();
+}
+
+sidechaincompressor_audio_module::cfloat sidechaincompressor_audio_module::h_z(const cfloat &z) const
+{
+    switch (sc_mode) {
+        default:
+        case WIDEBAND:
+            return false;
+            break;
+        case DEESSER_WIDE:
+        case DERUMBLER_WIDE:
+        case WEIGHTED_1:
+        case WEIGHTED_2:
+        case WEIGHTED_3:
+        case BANDPASS_2:
+            return f1L.h_z(z) * f2L.h_z(z);
+            break;
+        case DEESSER_SPLIT:
+            return f2L.h_z(z);
+            break;
+        case DERUMBLER_SPLIT:
+        case BANDPASS_1:
+            return f1L.h_z(z);
+            break;
+    }            
+}
+
+float sidechaincompressor_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+{
+    typedef std::complex<double> cfloat;
+    freq *= 2.0 * M_PI / sr;
+    cfloat z = 1.0 / exp(cfloat(0.0, freq));
+    
+    return std::abs(h_z(z));
 }
 
 void sidechaincompressor_audio_module::params_changed()
@@ -1014,7 +1575,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             switch ((int)*params[param_sc_mode]) {
                 default:
                 case WIDEBAND:
-                    compressor.process(leftAC, rightAC, leftSC, rightSC);
+                    compressor.process(leftAC, rightAC);
                     break;
                 case DEESSER_WIDE:
                 case DERUMBLER_WIDE:
@@ -1026,14 +1587,14 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                     rightSC = f2R.process(f1R.process(rightSC));
                     leftMC = leftSC;
                     rightMC = rightSC;
-                    compressor.process(leftAC, rightAC, leftSC, rightSC);
+                    compressor.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
                 case DEESSER_SPLIT:
                     leftSC = f2L.process(leftSC);
                     rightSC = f2R.process(rightSC);
                     leftMC = leftSC;
                     rightMC = rightSC;
-                    compressor.process(leftSC, rightSC, leftSC, rightSC);
+                    compressor.process(leftSC, rightSC, &leftSC, &rightSC);
                     leftAC = f1L.process(leftAC);
                     rightAC = f1R.process(rightAC);
                     leftAC += leftSC;
@@ -1044,7 +1605,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                     rightSC = f1R.process(rightSC);
                     leftMC = leftSC;
                     rightMC = rightSC;
-                    compressor.process(leftSC, rightSC, leftSC, rightSC);
+                    compressor.process(leftSC, rightSC);
                     leftAC = f2L.process(leftAC);
                     rightAC = f2R.process(rightAC);
                     leftAC += leftSC;
@@ -1055,7 +1616,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                     rightSC = f1R.process(rightSC);
                     leftMC = leftSC;
                     rightMC = rightSC;
-                    compressor.process(leftAC, rightAC, leftSC, rightSC);
+                    compressor.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
             }
             
@@ -1092,18 +1653,10 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             
     }
     // draw meters
-    if(params[param_clip_in] != NULL) {
-        *params[param_clip_in] = clip_in;
-    }
-    if(params[param_clip_out] != NULL) {
-        *params[param_clip_out] = clip_out;
-    }
-    if(params[param_meter_in] != NULL) {
-        *params[param_meter_in] = meter_in;
-    }
-    if(params[param_meter_out] != NULL) {
-        *params[param_meter_out] = meter_out;
-    }
+    SET_IF_CONNECTED(clip_in)
+    SET_IF_CONNECTED(clip_out)
+    SET_IF_CONNECTED(meter_in)
+    SET_IF_CONNECTED(meter_out)
     // draw strip meter
     if(bypass > 0.5f) {
         if(params[param_compression] != NULL) {
@@ -1293,14 +1846,14 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             switch ((int)*params[param_mode]) {
                 default:
                 case WIDE:
-                    compressor.process(leftAC, rightAC, leftSC, rightSC);
+                    compressor.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
                 case SPLIT:
                     hpL.sanitize();
                     hpR.sanitize();
                     leftRC = hpL.process(leftRC);
                     rightRC = hpR.process(rightRC);
-                    compressor.process(leftRC, rightRC, leftSC, rightSC);
+                    compressor.process(leftRC, rightRC, &leftSC, &rightSC);
                     leftAC = lpL.process(leftAC);
                     rightAC = lpR.process(rightAC);
                     leftAC += leftRC;
@@ -1461,13 +2014,13 @@ void gain_reduction_audio_module::update_curve()
     compressedKneeStop = (kneeStop - thres) / ratio + thres;
 }
 
-void gain_reduction_audio_module::process(float &left, float &right, float det_left, float det_right)
+void gain_reduction_audio_module::process(float &left, float &right, const float *det_left, const float *det_right)
 {
     if(!det_left) {
-        det_left = left;
+        det_left = &left;
     }
     if(!det_right) {
-        det_right = right;
+        det_right = &right;
     }
     float gain = 1.f;
     if(bypass < 0.5f) {
@@ -1479,7 +2032,7 @@ void gain_reduction_audio_module::process(float &left, float &right, float det_l
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         update_curve();
         
-        float absample = average ? (fabs(det_left) + fabs(det_right)) * 0.5f : std::max(fabs(det_left), fabs(det_right));
+        float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
         if(rms) absample *= absample;
             
         linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
@@ -1903,8 +2456,6 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
     return outputs_mask;
 }
 
-#undef SET_IF_CONNECTED
-
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
 {
@@ -2267,31 +2818,14 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         } // cycle trough samples
     }
     // draw meters
-    if(params[param_clip_inL] != NULL) {
-        *params[param_clip_inL] = clip_inL;
-    }
-    if(params[param_clip_inR] != NULL) {
-        *params[param_clip_inR] = clip_inR;
-    }
-    if(params[param_clip_outL] != NULL) {
-        *params[param_clip_outL] = clip_outL;
-    }
-    if(params[param_clip_outR] != NULL) {
-        *params[param_clip_outR] = clip_outR;
-    }
-    
-    if(params[param_meter_inL] != NULL) {
-        *params[param_meter_inL] = meter_inL;
-    }
-    if(params[param_meter_inR] != NULL) {
-        *params[param_meter_inR] = meter_inR;
-    }
-    if(params[param_meter_outL] != NULL) {
-        *params[param_meter_outL] = meter_outL;
-    }
-    if(params[param_meter_outR] != NULL) {
-        *params[param_meter_outR] = meter_outR;
-    }
+    SET_IF_CONNECTED(clip_inL)
+    SET_IF_CONNECTED(clip_inR)
+    SET_IF_CONNECTED(clip_outL)
+    SET_IF_CONNECTED(clip_outR)
+    SET_IF_CONNECTED(meter_inL)
+    SET_IF_CONNECTED(meter_inR)
+    SET_IF_CONNECTED(meter_outL)
+    SET_IF_CONNECTED(meter_outR)
     // whatever has to be returned x)
     return outputs_mask;
 }
