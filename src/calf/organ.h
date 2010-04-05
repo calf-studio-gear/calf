@@ -22,6 +22,7 @@
 #ifndef __CALF_ORGAN_H
 #define __CALF_ORGAN_H
 
+#include "osc.h"
 #include "synth.h"
 #include "envelope.h"
 #include "metadata.h"
@@ -277,6 +278,52 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
     }
     void pitch_bend(int amt);
     virtual bool check_percussion();
+};
+
+};
+
+namespace calf_plugins {
+
+struct organ_audio_module: public audio_module<organ_metadata>, public dsp::drawbar_organ, public line_graph_iface
+{
+public:
+    using drawbar_organ::note_on;
+    using drawbar_organ::note_off;
+    using drawbar_organ::control_change;
+    enum { param_count = drawbar_organ::param_count};
+    float *ins[in_count]; 
+    float *outs[out_count];
+    float *params[param_count];
+    dsp::organ_parameters par_values;
+    uint32_t srate;
+    bool panic_flag;
+    /// Value for configure variable map_curve
+    std::string var_map_curve;
+
+    organ_audio_module();
+    
+    void post_instantiate();
+
+    void set_sample_rate(uint32_t sr) {
+        srate = sr;
+    }
+    void params_changed();
+    inline void pitch_bend(int amt)
+    {
+        drawbar_organ::pitch_bend(amt);
+    }
+    void activate();
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    /// No CV inputs for now
+    bool is_cv(int param_no) { return false; }
+    /// Practically all the stuff here is noisy
+    bool is_noisy(int param_no) { return true; }
+    void execute(int cmd_no);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    char *configure(const char *key, const char *value);
+    void send_configures(send_configure_iface *);
+    uint32_t message_run(const void *valid_inputs, void *output_ports);
 };
 
 };

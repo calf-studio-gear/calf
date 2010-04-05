@@ -23,6 +23,7 @@
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <calf/organ.h>
 
 using namespace calf_plugins;
 

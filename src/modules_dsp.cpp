@@ -126,6 +126,13 @@ void flanger_audio_module::params_reset()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+phaser_audio_module::phaser_audio_module()
+: left(MaxStages, x1vals[0], y1vals[0])
+, right(MaxStages, x1vals[1], y1vals[1])
+{
+    is_active = false;
+}
+
 void phaser_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;

@@ -77,18 +77,18 @@ public:
 class phaser_audio_module: public audio_module<phaser_metadata>, public frequency_response_line_graph
 {
 public:
+    enum { MaxStages = 12 };
     float *ins[in_count]; 
     float *outs[out_count];
     float *params[param_count];
     uint32_t srate;
     bool clear_reset;
     float last_r_phase;
-    dsp::simple_phaser<12> left, right;
+    dsp::simple_phaser left, right;
+    float x1vals[2][MaxStages], y1vals[2][MaxStages];
     bool is_active;
 public:
-    phaser_audio_module() {
-        is_active = false;
-    }
+    phaser_audio_module();
     void params_changed();
     void params_reset();
     void activate();

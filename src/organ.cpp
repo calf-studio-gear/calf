@@ -27,7 +27,7 @@
 #include <jack/jack.h>
 #endif
 #include <calf/giface.h>
-#include <calf/modules_synths.h>
+#include <calf/organ.h>
 #include <iostream>
 
 using namespace std;

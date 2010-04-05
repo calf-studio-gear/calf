@@ -95,26 +95,17 @@ public:
  * A monophonic phaser. If you want stereo, combine two :)
  * Also, gave up on using template args for signal type.
  */
-template<int MaxStages>
 class simple_phaser: public modulation_effect
 {
 protected:
     float base_frq, mod_depth, fb;
     float state;
-    int cnt, stages;
+    int cnt, stages, max_stages;
     dsp::onepole<float, float> stage1;
-    float x1[MaxStages], y1[MaxStages];
+    float *x1, *y1;
 public:
-    simple_phaser()
-    {
-        set_base_frq(1000);
-        set_mod_depth(1000);
-        set_fb(0);
-        state = 0;
-        cnt = 0;
-        stages = 0;
-        set_stages(6);
-    }
+    simple_phaser(int _max_stages, float *x1vals, float *y1vals);
+
     float get_base_frq() const {
         return base_frq;
     }
@@ -124,93 +115,30 @@ public:
     int get_stages() const {
         return stages;
     }
-    void set_stages(int _stages) {
-        if (_stages > stages)
-        {
-            for (int i = stages; i < _stages; i++)
-            {
-                x1[i] = x1[stages-1];
-                y1[i] = y1[stages-1];
-            }
-        }
-        stages = _stages;
-    }
+    void set_stages(int _stages);
+    
     float get_mod_depth() const {
         return mod_depth;
     }
     void set_mod_depth(float _mod_depth) {
         mod_depth = _mod_depth;
     }
+    
     float get_fb() const {
         return fb;
     }
     void set_fb(float fb) {
         this->fb = fb;
     }
+    
     virtual void setup(int sample_rate) {
         modulation_effect::setup(sample_rate);
         reset();
     }
-    void reset()
-    {
-        cnt = 0;
-        state = 0;
-        phase.set(0);
-        for (int i = 0; i < MaxStages; i++)
-            x1[i] = y1[i] = 0;
-        control_step();
-    }
-    inline void control_step()
-    {
-        cnt = 0;
-        int v = phase.get() + 0x40000000;
-        int sign = v >> 31;
-        v ^= sign;
-        // triangle wave, range from 0 to INT_MAX
-        double vf = (double)((v >> 16) * (1.0 / 16384.0) - 1);
-        
-        float freq = base_frq * pow(2.0, vf * mod_depth / 1200.0);
-        freq = dsp::clip<float>(freq, 10.0, 0.49 * sample_rate);
-        stage1.set_ap_w(freq * (M_PI / 2.0) * odsr);
-        phase += dphase * 32;
-        for (int i = 0; i < stages; i++)
-        {
-            dsp::sanitize(x1[i]);
-            dsp::sanitize(y1[i]);
-        }
-        dsp::sanitize(state);
-    }
-    void process(float *buf_out, float *buf_in, int nsamples) {
-        for (int i=0; i<nsamples; i++) {
-            cnt++;
-            if (cnt == 32)
-                control_step();
-            float in = *buf_in++;
-            float fd = in + state * fb;
-            for (int j = 0; j < stages; j++)
-                fd = stage1.process_ap(fd, x1[j], y1[j]);
-            state = fd;
-            
-            float sdry = in * gs_dry.get();
-            float swet = fd * gs_wet.get();
-            *buf_out++ = sdry + swet;
-        }
-    }
-    float freq_gain(float freq, float sr) const
-    {
-        typedef std::complex<double> cfloat;
-        freq *= 2.0 * M_PI / sr;
-        cfloat z = 1.0 / exp(cfloat(0.0, freq)); // z^-1
-        
-        cfloat p = cfloat(1.0);
-        cfloat stg = stage1.h_z(z);
-        
-        for (int i = 0; i < stages; i++)
-            p = p * stg;
-        
-        p = p / (cfloat(1.0) - cfloat(fb) * p);        
-        return std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * p);
-    }
+    void reset();
+    void control_step();
+    void process(float *buf_out, float *buf_in, int nsamples);
+    float freq_gain(float freq, float sr) const;
 };
 
 /**
