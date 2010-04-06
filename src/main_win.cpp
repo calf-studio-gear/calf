@@ -18,8 +18,6 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <assert.h>
-#include <config.h>
 #include <calf/ctl_led.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
@@ -139,14 +137,6 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     int rows = 0, cols = 0;
     g_object_get(G_OBJECT(strips_table), "n-rows", &rows, "n-columns", &cols, NULL);
     gtk_table_resize(GTK_TABLE(strips_table), rows - 4, cols);
-    /*
-    // a hack to remove unneeded vertical space from the window
-    // not perfect, as it undoes user's vertical resize
-    // only needed when window is resizable though
-    int width, height;
-    gtk_window_get_size(toplevel, &width, &height);
-    gtk_window_resize(toplevel, width, 1);
-    */
 }
 
 void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_win)
@@ -425,13 +415,6 @@ static void action_destroy_notify(gpointer data)
     delete (main_window::add_plugin_params *)data;
 }
 
-/*
-void main_window::new_plugin(const char *plugin)
-{
-    printf("new plugin %s\n", plugin);
-}
-*/
-
 std::string main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
@@ -477,13 +460,6 @@ void main_window::create()
     strips_table = gtk_table_new(0, 6, FALSE);
     gtk_table_set_col_spacings(GTK_TABLE(strips_table), 0);
     gtk_table_set_row_spacings(GTK_TABLE(strips_table), 0);
-    
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 15, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio in"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio out"), 4, 5, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 5, 6, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
     
     for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
     {

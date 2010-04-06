@@ -17,14 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
-#include <config.h>
-#include <map>
-#include <glade/glade.h>
-#include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
-#include <calf/main_win.h>
+#include <glade/glade.h>
 
 using namespace calf_plugins;
 using namespace std;

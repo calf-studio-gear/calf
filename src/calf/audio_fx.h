@@ -21,14 +21,12 @@
 #ifndef __CALF_AUDIOFX_H
 #define __CALF_AUDIOFX_H
 
-#include <complex>
-#include <iostream>
-#include <calf/biquad.h>
-#include <calf/onepole.h>
-#include "primitives.h"
+#include "biquad.h"
 #include "delay.h"
 #include "fixed_point.h"
 #include "inertia.h"
+#include "onepole.h"
+#include <complex>
 
 namespace dsp {
 #if 0

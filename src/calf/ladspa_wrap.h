@@ -28,6 +28,7 @@
 #include <dssi.h>
 #endif
 #include "giface.h"
+#include "preset.h"
 
 namespace calf_plugins {
 

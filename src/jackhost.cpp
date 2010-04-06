@@ -24,6 +24,7 @@
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <calf/organ.h>
+#include <calf/preset.h>
 #include <getopt.h>
 
 using namespace std;

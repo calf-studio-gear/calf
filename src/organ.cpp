@@ -20,12 +20,6 @@
  */
 #include <config.h>
 
-#include <assert.h>
-#include <memory.h>
-#include <complex>
-#if USE_JACK
-#include <jack/jack.h>
-#endif
 #include <calf/giface.h>
 #include <calf/organ.h>
 #include <iostream>

@@ -22,10 +22,10 @@
 #ifndef __CALF_ORGAN_H
 #define __CALF_ORGAN_H
 
-#include "osc.h"
-#include "synth.h"
 #include "envelope.h"
 #include "metadata.h"
+#include "osc.h"
+#include "synth.h"
 
 #define ORGAN_KEYTRACK_POINTS 4
 

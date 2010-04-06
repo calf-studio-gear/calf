@@ -19,17 +19,12 @@
  * Boston, MA  02110-1301  USA
  */
 
-#include <config.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/stat.h>
-
-#include <expat.h>
-#include <calf/preset.h>
 #include <calf/giface.h>
-#include <calf/utils.h>
+#include <calf/preset.h>
+#include <expat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace calf_plugins;

@@ -17,9 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#include <assert.h>
 #include <sys/wait.h>
-#include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/lv2_data_access.h>
 #include <calf/lv2_string_port.h>
@@ -28,6 +26,7 @@
 #include <calf/lv2_external_ui.h>
 #include <calf/osctlnet.h>
 #include <calf/preset_gui.h>
+#include <calf/utils.h>
 #include <calf/lv2helpers.h>
 
 using namespace std;

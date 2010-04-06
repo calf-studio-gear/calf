@@ -22,13 +22,11 @@
 #define CALF_GIFACE_H
 
 #include <config.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "primitives.h"
+#include <complex>
 #include <exception>
 #include <string>
-#include <complex>
-#include "primitives.h"
-#include "preset.h"
+#include <vector>
 
 namespace osctl {
     struct osc_client;
@@ -235,7 +233,7 @@ struct table_edit_iface
     virtual uint32_t get_table_rows(int param) const = 0;
     
     /// retrieve data item from the plugin
-    virtual std::string get_cell(int param, int row, int column) const { return calf_utils::i2s(row)+":"+calf_utils::i2s(column); }
+    virtual std::string get_cell(int param, int row, int column) const;
 
     /// set data item to the plugin
     virtual void set_cell(int param, int row, int column, const std::string &src, std::string &error) const { error.clear(); }

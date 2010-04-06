@@ -21,13 +21,12 @@
 #ifndef __CALF_PRIMITIVES_H
 #define __CALF_PRIMITIVES_H
 
-#include <stack>
-#include <map>
-#include <cmath>
-#include <cstdlib>
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <cmath>
+#include <cstdlib>
+#include <map>
 
 namespace dsp {
 

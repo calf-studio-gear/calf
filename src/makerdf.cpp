@@ -17,18 +17,16 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#include <assert.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
 #include <calf/giface.h>
+#include <calf/preset.h>
 #include <calf/utils.h>
 #if USE_LV2
 #include <calf/lv2_contexts.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_uri_map.h>
 #endif
+#include <getopt.h>
+#include <string.h>
 #include <set>
 
 using namespace std;

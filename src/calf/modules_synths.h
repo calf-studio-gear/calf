@@ -21,7 +21,6 @@
 #ifndef __CALF_MODULES_SYNTHS_H
 #define __CALF_MODULES_SYNTHS_H
 
-#include <assert.h>
 #include "biquad.h"
 #include "onepole.h"
 #include "audio_fx.h"

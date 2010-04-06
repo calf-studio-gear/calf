@@ -23,7 +23,9 @@
 #include <memory.h>
 #include <calf/giface.h>
 #include <calf/osctlnet.h>
+#include <calf/utils.h>
 #include <stdio.h>
+
 using namespace std;
 using namespace calf_utils;
 using namespace calf_plugins;
@@ -325,6 +327,13 @@ const plugin_metadata_iface *calf_plugins::plugin_registry::get_by_id(const char
     }
     return NULL;
 }
+///////////////////////////////////////////////////////////////////////////////////////
+
+std::string table_edit_iface::get_cell(int param, int row, int column) const
+{
+    return calf_utils::i2s(row)+":"+calf_utils::i2s(column);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #if USE_EXEC_GUI

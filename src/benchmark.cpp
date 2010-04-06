@@ -20,22 +20,19 @@
  
 #define BENCHMARK_PLUGINS
 
-#include <assert.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <config.h>
-#include <calf/audio_fx.h>
-
 #ifdef BENCHMARK_PLUGINS
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#else
+#include <config.h>
 #endif
 
+#include <calf/audio_fx.h>
+#include <calf/fft.h>
 #include <calf/loudness.h>
 #include <calf/benchmark.h>
+#include <getopt.h>
 
 // #define TEST_OSC
 

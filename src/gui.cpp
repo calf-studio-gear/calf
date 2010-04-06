@@ -18,14 +18,9 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <config.h>
-#include <assert.h>
-#include <calf/giface.h>
-#include <calf/gui.h>
 #include <calf/gui_controls.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
-#include <calf/main_win.h>
 #include <gdk/gdk.h>
 
 #include <iostream>

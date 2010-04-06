@@ -17,17 +17,11 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#include <assert.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
-#include <calf/main_win.h>
-#include <calf/osctl.h>
-#include <calf/osctlnet.h>
 #include <calf/osctl_glib.h>
+#include <calf/preset.h>
+#include <getopt.h>
 
 using namespace std;
 using namespace dsp;

@@ -1,12 +1,4 @@
 #include <calf/osctl.h>
-#include <assert.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <sstream>
-
-using namespace osctl;
-using namespace std;
 
 const char *osctl::osc_type_name(osc_type type)
 {

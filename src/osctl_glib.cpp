@@ -19,10 +19,7 @@
  * Boston, MA  02110-1301  USA
  */
 
-#include <calf/osctl.h>
 #include <calf/osctl_glib.h>
-#include <assert.h>
-#include <sys/socket.h>
 
 using namespace osctl;
 using namespace std;

@@ -125,8 +125,8 @@ struct file_exception: public std::exception
     const char *text;
     std::string message, filename, container;
 public:
-    file_exception(const std::string &f) : message(strerror(errno)), filename(f), container(filename + ":" + message) { text = container.c_str(); }
-    file_exception(const std::string &f, const std::string &t) : message(t), filename(f), container(filename + ":" + message) { text = container.c_str(); }
+    file_exception(const std::string &f);
+    file_exception(const std::string &f, const std::string &t);
     virtual const char *what() const throw () { return text; }
     virtual ~file_exception() throw () {}
 };
