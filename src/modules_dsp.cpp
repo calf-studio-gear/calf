@@ -1279,6 +1279,8 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         clip_in    -= std::min(clip_in,  numsamples);
         clip_out   -= std::min(clip_out,  numsamples);
         
+        compressor.update_curve();        
+        
         while(offset < numsamples) {
             // cycle through samples
             float outL = 0.f;
@@ -1561,6 +1563,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
         
         clip_in    -= std::min(clip_in,  numsamples);
         clip_out   -= std::min(clip_out,  numsamples);
+        compressor.update_curve();        
         
         while(offset < numsamples) {
             // cycle through samples
@@ -1828,6 +1831,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         
         detected_led -= std::min(detected_led,  numsamples);
         clip_led   -= std::min(clip_led,  numsamples);
+        compressor.update_curve();        
         
         while(offset < numsamples) {
             // cycle through samples
@@ -2038,7 +2042,6 @@ void gain_reduction_audio_module::process(float &left, float &right, const float
         bool average = stereo_link == 0;
         float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
-        update_curve();
         
         float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
         if(rms) absample *= absample;
