@@ -29,7 +29,7 @@ if USE_JACK
 AM_CXXFLAGS += $(JACK_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
-calfjackhost_SOURCES = jackhost.cpp
+calfjackhost_SOURCES = host_session.cpp jack_client.cpp jackhost.cpp
 calfjackhost_LDADD = libcalfgui.la libcalfstatic.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS)
 if USE_LASH
 AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)

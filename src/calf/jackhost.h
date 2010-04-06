@@ -25,6 +25,9 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#if USE_LASH
+#include <lash/lash.h>
+#endif
 #include "gui.h"
 #include "utils.h"
 #include "vumeter.h"
@@ -44,72 +47,17 @@ public:
     std::string name, input_name, output_name, midi_name;
     int sample_rate;
 
-    jack_client()
-    {
-        input_nr = output_nr = midi_nr = 1;
-        input_name = "input_%d";
-        output_name = "output_%d";
-        midi_name = "midi_%d";
-        sample_rate = 0;
-        client = NULL;
-    }
-    
-    void add(jack_host *plugin)
-    {
-        calf_utils::ptlock lock(mutex);
-        plugins.push_back(plugin);
-    }
-    
-    void del(int item)
-    {
-        calf_utils::ptlock lock(mutex);
-        plugins.erase(plugins.begin()+item);
-    }
-    
-    void open(const char *client_name)
-    {
-        jack_status_t status;
-        client = jack_client_open(client_name, JackNullOption, &status);
-        if (!client)
-            throw calf_utils::text_exception("Could not initialize JACK subsystem");
-        sample_rate = jack_get_sample_rate(client);
-        jack_set_process_callback(client, do_jack_process, this);
-        jack_set_buffer_size_callback(client, do_jack_bufsize, this);
-        name = get_name();
-    }
-    
-    std::string get_name()
-    {
-        return std::string(jack_get_client_name(client));
-    }
-    
-    void activate()
-    {
-        jack_activate(client);        
-    }
-
-    void deactivate()
-    {
-        jack_deactivate(client);        
-    }
-    
+    jack_client();
+    void add(jack_host *plugin);
+    void del(int item);
+    void open(const char *client_name);
+    std::string get_name();
+    void activate();
+    void deactivate();
     void delete_plugins();
-    
-    void connect(const std::string &p1, const std::string &p2)
-    {
-        if (jack_connect(client, p1.c_str(), p2.c_str()) != 0)
-            throw calf_utils::text_exception("Could not connect JACK ports "+p1+" and "+p2);
-    }
-    
-    void close()
-    {
-        jack_client_close(client);
-    }
-    
-    const char **get_ports(const char *name_re, const char *type_re, unsigned long flags)
-    {
-        return jack_get_ports(client, name_re, type_re, flags);
-    }
+    void connect(const std::string &p1, const std::string &p2);
+    void close();
+    const char **get_ports(const char *name_re, const char *type_re, unsigned long flags);
     
     static int do_jack_process(jack_nframes_t nframes, void *p);
     static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
@@ -121,13 +69,13 @@ public:
         jack_port_t *handle;
         float *data;
         std::string name;
+        vumeter meter;
         port() : handle(NULL), data(NULL) {}
         ~port() { }
     };
 public:
     float **ins, **outs, **params;
     std::vector<port> inputs, outputs;
-    std::vector<vumeter> input_vus, output_vus;
     float *param_values;
     float midi_meter;
     audio_module_iface *module;
@@ -141,179 +89,35 @@ public:
     std::string instance_name;
     int in_count, out_count;
     const plugin_metadata_iface *metadata;
+    
+public:
+    jack_host(audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface);
+    void create(jack_client *_client);    
+    void create_ports();
+    void init_module();
+    void destroy();
+    ~jack_host();
+    
+    /// Handle JACK MIDI port data
+    void handle_event(uint8_t *buffer, uint32_t size);
+    /// Process audio and update meters
+    void process_part(unsigned int time, unsigned int len);
+    /// Get meter value for the Nth port
+    virtual float get_level(unsigned int port);
+    /// Process audio/MIDI buffers
+    int process(jack_nframes_t nframes);
+    /// Retrieve and cache output port buffers
+    void cache_ports();
+    
+public:
+    // Port access
+    port *get_inputs() { return &inputs[0]; }
+    port *get_outputs() { return &outputs[0]; }
+    float *get_params() { return param_values; }
     port *get_midi_port() { return get_metadata_iface()->get_midi() ? &midi_port : NULL; }
-    
-    void set_params(const float *params) {
-        memcpy(get_params(), params, get_metadata_iface()->get_param_count() * sizeof(float));
-        changed = true;
-    }
-
-    void set_params() {
-        changed = true;
-    }
-    
-    void open(jack_client *_client);
-    
-    virtual void create_ports();
-    
-    void close();
-    
-    jack_host(audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
-    : module(_module)
-    {
-        name = _name;
-        instance_name = _instance_name;
-        
-        client = NULL;
-        changed = true;
-
-        module->get_port_arrays(ins, outs, params);
-        metadata = module->get_metadata_iface();
-        in_count = metadata->get_input_count();
-        out_count = metadata->get_output_count();
-        inputs.resize(in_count);
-        outputs.resize(out_count);
-        input_vus.resize(in_count);
-        output_vus.resize(out_count);
-        param_values = new float[metadata->get_param_count()];
-        for (int i = 0; i < metadata->get_param_count(); i++) {
-            params[i] = &param_values[i];
-        }
-        clear_preset();
-        midi_meter = 0;
-        module->set_progress_report_iface(_priface);
-        module->post_instantiate();
-    }
-    
-    ~jack_host()
-    {
-        delete []param_values;
-        if (client)
-            close();
-    }
-    
-    virtual void init_module() {
-        module->set_sample_rate(client->sample_rate);
-        module->activate();
-        module->params_changed();
-    }
-
-    virtual const parameter_properties* get_param_props(int param_no) { return metadata->get_param_props(param_no); }
-    
-    void handle_event(uint8_t *buffer, uint32_t size)
-    {
-        int value;
-        switch(buffer[0] >> 4)
-        {
-        case 8:
-            module->note_off(buffer[1], buffer[2]);
-            break;
-        case 9:
-            if (!buffer[2])
-                module->note_off(buffer[1], 0);
-            else
-                module->note_on(buffer[1], buffer[2]);
-            break;
-        case 11:
-            module->control_change(buffer[1], buffer[2]);
-            break;
-        case 12:
-            module->program_change(buffer[1]);
-            break;
-        case 13:
-            module->channel_pressure(buffer[1]);
-            break;
-        case 14:
-            value = buffer[1] + 128 * buffer[2] - 8192;
-            module->pitch_bend(value);
-            break;
-        }
-    }
-    void process_part(unsigned int time, unsigned int len)
-    {
-        if (!len)
-            return;
-        for (int i = 0; i < in_count; i++)
-            input_vus[i].update(ins[i] + time, len);
-        unsigned int mask = module->process(time, len, -1, -1);
-        for (int i = 0; i < out_count; i++)
-        {
-            if (!(mask & (1 << i))) {
-                dsp::zero(outs[i] + time, len);
-                output_vus[i].update_zeros(len);
-            } else
-                output_vus[i].update(outs[i] + time, len);
-        }
-        // decay linearly for 0.1s
-        float new_meter = midi_meter - len / (0.1 * client->sample_rate);
-        if (new_meter < 0)
-            new_meter = 0;
-        midi_meter = new_meter;
-    }
-    virtual float get_level(unsigned int port) { 
-        if (port < (unsigned)in_count)
-            return input_vus[port].level;
-        port -= in_count;
-        if (port < (unsigned)out_count)
-            return output_vus[port].level;
-        port -= out_count;
-        if (port == 0 && metadata->get_midi())
-            return midi_meter;
-        return 0.f;
-    }
-    int process(jack_nframes_t nframes)
-    {
-        for (int i=0; i<in_count; i++) {
-            ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, nframes);
-        }
-        if (metadata->get_midi())
-            midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, nframes);
-        if (changed) {
-            module->params_changed();
-            changed = false;
-        }
-
-        unsigned int time = 0;
-        if (metadata->get_midi())
-        {
-            jack_midi_event_t event;
-#ifdef OLD_JACK
-            int count = jack_midi_get_event_count(midi_port.data, nframes);
-#else
-            int count = jack_midi_get_event_count(midi_port.data);
-#endif
-            for (int i = 0; i < count; i++)
-            {
-#ifdef OLD_JACK
-                jack_midi_event_get(&event, midi_port.data, i, nframes);
-#else
-                jack_midi_event_get(&event, midi_port.data, i);
-#endif
-                unsigned int len = event.time - time;
-                process_part(time, len);
-                
-                midi_meter = 1.f;
-                handle_event(event.buffer, event.size);
-                
-                time = event.time;
-            }
-        }
-        process_part(time, nframes - time);
-        module->params_reset();
-        return 0;
-    }
-    
-    void cache_ports()
-    {
-        for (int i=0; i<out_count; i++) {
-            outs[i] = outputs[i].data = (float *)jack_port_get_buffer(outputs[i].handle, 0);
-        }
-    }
-    
-    virtual port *get_inputs() { return &inputs[0]; }
-    virtual port *get_outputs() { return &outputs[0]; }
-    virtual float *get_params() { return param_values; }
-    virtual bool activate_preset(int bank, int program) { return false; }
+public:
+    // Implementations of methods in plugin_ctl_iface 
+    bool activate_preset(int bank, int program) { return false; }
     virtual float get_param_value(int param_no) {
         return param_values[param_no];
     }

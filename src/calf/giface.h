@@ -18,8 +18,8 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02111-1307, USA.
  */
-#ifndef __CALF_GIFACE_H
-#define __CALF_GIFACE_H
+#ifndef CALF_GIFACE_H
+#define CALF_GIFACE_H
 
 #include <stdint.h>
 #include <stdlib.h>
