@@ -101,7 +101,8 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
         tmp.add(sp);
         get_user_presets() = tmp;
         get_user_presets().save(tmp.get_preset_filename(false).c_str());
-        gui->window->main->refresh_all_presets(false);
+        if (gui->window->main)
+            gui->window->main->refresh_all_presets(false);
     }
     //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }

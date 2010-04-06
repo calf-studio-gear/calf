@@ -27,7 +27,7 @@
 #include <calf/main_win.h>
 #include <calf/osctl.h>
 #include <calf/osctlnet.h>
-#include <calf/osctlserv.h>
+#include <calf/osctl_glib.h>
 
 using namespace std;
 using namespace dsp;
@@ -35,39 +35,6 @@ using namespace calf_plugins;
 using namespace osctl;
 
 #define debug_printf(...)
-
-#if 0
-void osctl_test()
-{
-    string sdata = string("\000\000\000\003123\000test\000\000\000\000\000\000\000\001\000\000\000\002", 24);
-    osc_stream is(sdata);
-    vector<osc_data> data;
-    is.read("bsii", data);
-    assert(is.pos == sdata.length());
-    assert(data.size() == 4);
-    assert(data[0].type == osc_blob);
-    assert(data[1].type == osc_string);
-    assert(data[2].type == osc_i32);
-    assert(data[3].type == osc_i32);
-    assert(data[0].strval == "123");
-    assert(data[1].strval == "test");
-    assert(data[2].i32val == 1);
-    assert(data[3].i32val == 2);
-    osc_stream os("");
-    os.write(data);
-    assert(os.buffer == sdata);
-    osc_server srv;
-    srv.bind("0.0.0.0", 4541);
-    
-    osc_client cli;
-    cli.bind("0.0.0.0", 0);
-    cli.set_addr("0.0.0.0", 4541);
-    if (!cli.send("/blah", data))
-        g_error("Could not send the OSC message");
-    
-    g_main_loop_run(g_main_loop_new(NULL, FALSE));
-}
-#endif
 
 struct cairo_params
 {
@@ -283,10 +250,9 @@ GMainLoop *mainloop;
 
 static bool osc_debug = false;
 
-struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strstream>
+struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strstream>, public gui_environment
 {
     plugin_proxy *plugin;
-    main_window *main_win;
     plugin_gui_window *window;
     string effect_name, title;
     osc_client cli;
@@ -300,8 +266,7 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
     
     dssi_osc_server()
     : plugin(NULL)
-    , main_win(new main_window)
-    , window(new plugin_gui_window(main_win))
+    , window(new plugin_gui_window(this, NULL))
     {
         sink = this;
         source_id = 0;
@@ -341,8 +306,8 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
     {
         plugin->client = &cli;
         plugin->send_osc = true;
-        ((main_window *)window->main)->conditions.insert("dssi");
-        ((main_window *)window->main)->conditions.insert("directlink");
+        conditions.insert("dssi");
+        conditions.insert("directlink");
         window->create(plugin, title.c_str(), effect_name.c_str());
         plugin->gui = window->gui;
         gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);

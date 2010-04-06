@@ -19,12 +19,7 @@
  * 02110-1301, USA.
  */
 
-#include <set>
-#include <getopt.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
-#include <glade/glade.h>
 #include <jack/jack.h>
 #include <calf/giface.h>
 #include <calf/jackhost.h>

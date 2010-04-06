@@ -20,55 +20,12 @@
  */
 
 #include <calf/osctl.h>
-#include <calf/osctlserv.h>
+#include <calf/osctl_glib.h>
 #include <assert.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <stdlib.h>
-#include <sstream>
 
 using namespace osctl;
 using namespace std;
-
-void osc_server::parse_message(const char *buffer, int len)
-{
-    osctl::string_buffer buf(string(buffer, len));
-    osc_strstream str(buf);
-    string address, type_tag;
-    str >> address;
-    str >> type_tag;
-    // cout << "Address " << address << " type tag " << type_tag << endl << flush;
-    if (!address.empty() && address[0] == '/'
-      &&!type_tag.empty() && type_tag[0] == ',')
-    {
-        sink->receive_osc_message(address, type_tag.substr(1), str);
-    }
-}
-
-void osc_server::read_from_socket()
-{
-    do {
-        char buf[16384];
-        int len = recv(socket, buf, 16384, MSG_DONTWAIT);
-        if (len > 0)
-        {
-            if (buf[0] == '/')
-            {
-                parse_message(buf, len);
-            }
-            if (buf[0] == '#')
-            {
-                // XXXKF bundles are not supported yet
-            }
-        }
-        else
-            break;
-    } while(1);
-}
-
-osc_server::~osc_server()
-{
-}
 
 void osc_glib_server::on_bind()
 {    

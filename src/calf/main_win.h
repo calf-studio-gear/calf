@@ -31,7 +31,7 @@
 
 namespace calf_plugins {
 
-    class main_window: public main_window_iface
+    class main_window: public main_window_iface, public gui_environment
     {
     public:
         struct plugin_strip
@@ -57,7 +57,6 @@ namespace calf_plugins {
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
-        std::set<std::string> conditions;
         std::vector<plugin_ctl_iface *> plugin_queue;
         std::string prefix;
         bool is_closed;
@@ -85,13 +84,8 @@ namespace calf_plugins {
         void refresh_plugin(plugin_ctl_iface *plugin);
         void on_closed();
         void close_guis();
-        void open_gui(plugin_ctl_iface *plugin);
-        bool check_condition(const char *cond) {
-            return conditions.count(cond) != 0;
-        }
-    
+        void open_gui(plugin_ctl_iface *plugin);    
         void create();
-        
         void open_file();
         void save_file();
         void save_file_as();

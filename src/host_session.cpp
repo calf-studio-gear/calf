@@ -19,24 +19,13 @@
  * 02110-1301, USA.
  */
 
-#include <set>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
-#include <glade/glade.h>
-#include <jack/jack.h>
 #include <calf/giface.h>
 #include <calf/host_session.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
-#include <calf/organ.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
 #include <calf/main_win.h>
-#include <calf/utils.h>
-#include <stdio.h>
+#include <getopt.h>
 
 using namespace std;
 using namespace calf_utils;
@@ -322,6 +311,10 @@ void host_session::close()
     client.deactivate();
     client.delete_plugins();
     client.close();
+#if USE_LASH && !USE_LASH_0_6
+    if (lash_args)
+        lash_args_destroy(lash_args);
+#endif
 }
 
 static string stripfmt(string x)

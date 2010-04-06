@@ -249,7 +249,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             state = false;
             cond.erase(0, 1);
         }
-        if (window->main->check_condition(cond.c_str()) == state)
+        if (window->environment->check_condition(cond.c_str()) == state)
             return;
         ignore_stack = 1;
         return;
@@ -550,7 +550,7 @@ static const char *command_post_xml =
 "</ui>\n"
 ;
 
-plugin_gui_window::plugin_gui_window(main_window_iface *_main)
+plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main)
 {
     toplevel = NULL;
     ui_mgr = NULL;
@@ -558,6 +558,7 @@ plugin_gui_window::plugin_gui_window(main_window_iface *_main)
     builtin_preset_actions = NULL;
     user_preset_actions = NULL;
     command_actions = NULL;
+    environment = _env;
     main = _main;
     assert(main);
 }
@@ -694,7 +695,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
     gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (window_destroyed), (plugin_gui_window *)this);
-    main->set_window(gui->plugin, this);
+    if (main)
+        main->set_window(gui->plugin, this);
 
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     gtk_ui_manager_ensure_update(ui_mgr);
@@ -713,7 +715,8 @@ plugin_gui_window::~plugin_gui_window()
 {
     if (source_id)
         g_source_remove(source_id);
-    main->set_window(gui->plugin, NULL);
+    if (main)
+        main->set_window(gui->plugin, NULL);
     delete gui;
 }
 

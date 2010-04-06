@@ -45,7 +45,7 @@ using namespace dsp;
 #ifdef TEST_OSC
 #include <calf/osctl.h>
 #include <calf/osctlnet.h>
-#include <calf/osctlserv.h>
+#include <calf/osctl_glib.h>
 using namespace osctl;
 #endif
 

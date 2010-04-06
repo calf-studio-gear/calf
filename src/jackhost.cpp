@@ -18,24 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#include <set>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
 #include <glade/glade.h>
-#include <jack/jack.h>
-#include <calf/giface.h>
+#include <jack/midiport.h>
 #include <calf/host_session.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
 #include <calf/organ.h>
-#include <calf/gui.h>
-#include <calf/preset.h>
-#include <calf/preset_gui.h>
-#include <calf/main_win.h>
-#include <calf/utils.h>
-#include <stdio.h>
+#include <getopt.h>
 
 using namespace std;
 using namespace calf_utils;
@@ -369,11 +358,6 @@ int main(int argc, char *argv[])
         sess.client.activate();
         gtk_main();
         sess.close();
-        
-#if USE_LASH && !USE_LASH_0_6
-        if (sess.lash_args)
-            lash_args_destroy(sess.lash_args);
-#endif
         // this is now done on preset add
         // save_presets(get_preset_filename().c_str());
     }

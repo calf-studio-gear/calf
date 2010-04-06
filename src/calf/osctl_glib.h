@@ -19,8 +19,8 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef __CALF_OSCTLSERV_H
-#define __CALF_OSCTLSERV_H
+#ifndef __CALF_OSCTLGLIB_H
+#define __CALF_OSCTLGLIB_H
 
 #include <glib.h>
 #include "osctlnet.h"
@@ -28,20 +28,7 @@
 namespace osctl
 {
     
-
-    
-struct osc_server: public osc_socket
-{
-    osc_message_dump<osc_strstream, std::ostream> dump;
-    osc_message_sink<osc_strstream> *sink;
-    
-    osc_server() : dump(std::cout), sink(&dump) {}
-    
-    void read_from_socket();
-    void parse_message(const char *buffer, int len);    
-    ~osc_server();
-};
-
+/// Glib main loop based implementation of OSC server.
 struct osc_glib_server: public osc_server
 {
     GIOChannel *ioch;

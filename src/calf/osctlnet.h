@@ -51,6 +51,21 @@ struct osc_client: public osc_socket
     bool send(const std::string &address);
 };
 
+/// Base implementation for OSC server - requires the interfacing code
+/// to poll periodically for messages. Alternatively, one can use
+/// osc_glib_server that hooks into glib main loop.
+struct osc_server: public osc_socket
+{
+    osc_message_dump<osc_strstream, std::ostream> dump;
+    osc_message_sink<osc_strstream> *sink;
+    
+    osc_server() : dump(std::cout), sink(&dump) {}
+    
+    void read_from_socket();
+    void parse_message(const char *buffer, int len);    
+    ~osc_server();
+};
+
 };
 
 #endif

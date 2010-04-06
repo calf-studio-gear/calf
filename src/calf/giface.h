@@ -21,9 +21,9 @@
 #ifndef CALF_GIFACE_H
 #define CALF_GIFACE_H
 
+#include <config.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <exception>
 #include <string>
 #include <complex>

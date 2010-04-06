@@ -18,23 +18,16 @@
  * Boston, MA  02110-1301  USA
  */
 #include <assert.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
 #include <sys/wait.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
-#include <calf/main_win.h>
 #include <calf/lv2_data_access.h>
 #include <calf/lv2_string_port.h>
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
 #include <calf/osctlnet.h>
-#include <calf/osctlserv.h>
 #include <calf/preset_gui.h>
-#include <calf/utils.h>
 #include <calf/lv2helpers.h>
 
 using namespace std;
@@ -234,20 +227,26 @@ void plugin_proxy_base::enable_all_sends()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Plugin controller that uses LV2 host with help of instance/data access to remotely
 /// control a plugin from the GUI
-struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base
+struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, public gui_environment
 {
     /// Plugin GTK+ GUI object pointer
     plugin_gui *gui;
     /// Glib source ID for update timer
     int source_id;
+    /// Conditional variables for XML GUI
+    std::set<std::string> conditions;
     
     lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
     : plugin_proxy_base(md, wf, c, f)
     {
         gui = NULL;
-        instance = NULL;
+        if (instance)
+            conditions.insert("directlink");
+        conditions.insert("lv2gui");    
     }
     
     virtual float get_param_value(int param_no) {
@@ -283,7 +282,6 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base
     virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
     /// Override for a method in plugin_ctl_iface - trivial delegation to base class
     virtual const line_graph_iface *get_line_graph_iface() const { return plugin_proxy_base::get_line_graph_iface(); }
-    
 };
 
 static gboolean plugin_on_idle(void *data)
@@ -310,12 +308,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     
     gtk_rc_parse(PKGLIBDIR "calf.rc");
     
-    // dummy window
-    main_window *main = new main_window;
-    if (proxy->instance)
-        main->conditions.insert("directlink");
-    main->conditions.insert("lv2gui");    
-    plugin_gui_window *window = new plugin_gui_window(main);
+    plugin_gui_window *window = new plugin_gui_window(proxy, NULL);
     plugin_gui *gui = new plugin_gui(window);
     const char *xml = proxy->plugin_metadata->get_gui_xml();
     assert(xml);

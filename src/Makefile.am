@@ -61,7 +61,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-st
 endif
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp osctl.cpp osctlnet.cpp osctlserv.cpp utils.cpp
+calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp osctl.cpp osctlnet.cpp utils.cpp
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
 else
@@ -73,7 +73,7 @@ libcalfstatic_la_SOURCES = audio_fx.cpp modules.cpp modules_dsp.cpp fluidsynth.c
 libcalfstatic_la_LDFLAGS = -static -lexpat -disable-shared  $(FLUIDSYNTH_DEPS_LIBS)
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctlserv.cpp main_win.cpp utils.cpp
+libcalfgui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp main_win.cpp utils.cpp
 libcalfgui_la_LDFLAGS = -static -disable-shared
 endif
 

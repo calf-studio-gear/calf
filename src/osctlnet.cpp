@@ -124,3 +124,42 @@ bool osc_client::send(const std::string &address)
     return ::sendto(socket, hdr.data.data(), hdr.data.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)hdr.data.length();
 }
 
+void osc_server::parse_message(const char *buffer, int len)
+{
+    osctl::string_buffer buf(string(buffer, len));
+    osc_strstream str(buf);
+    string address, type_tag;
+    str >> address;
+    str >> type_tag;
+    // cout << "Address " << address << " type tag " << type_tag << endl << flush;
+    if (!address.empty() && address[0] == '/'
+      &&!type_tag.empty() && type_tag[0] == ',')
+    {
+        sink->receive_osc_message(address, type_tag.substr(1), str);
+    }
+}
+
+void osc_server::read_from_socket()
+{
+    do {
+        char buf[16384];
+        int len = recv(socket, buf, 16384, MSG_DONTWAIT);
+        if (len > 0)
+        {
+            if (buf[0] == '/')
+            {
+                parse_message(buf, len);
+            }
+            if (buf[0] == '#')
+            {
+                // XXXKF bundles are not supported yet
+            }
+        }
+        else
+            break;
+    } while(1);
+}
+
+osc_server::~osc_server()
+{
+}

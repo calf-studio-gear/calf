@@ -21,7 +21,13 @@
 #ifndef CALF_HOST_SESSION_H
 #define CALF_HOST_SESSION_H
 
-#include <calf/jackhost.h>
+#include <config.h>
+
+#if USE_LASH
+#include <lash/lash.h>
+#endif
+#include "gui.h"
+#include "jackhost.h"
 
 namespace calf_plugins {
 

@@ -21,17 +21,14 @@
 #ifndef __CALF_JACKHOST_H
 #define __CALF_JACKHOST_H
 
+#include <config.h>
+
 #if USE_JACK
 
-#include <jack/jack.h>
-#include <jack/midiport.h>
-#if USE_LASH
-#include <lash/lash.h>
-#endif
-#include "gui.h"
 #include "utils.h"
 #include "vumeter.h"
 #include <pthread.h>
+#include <jack/jack.h>
 
 namespace calf_plugins {
 
