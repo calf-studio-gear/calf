@@ -32,11 +32,11 @@
 
 namespace calf_plugins {
 
-class jack_host_base;
+class jack_host;
     
 class jack_client {
 protected:
-    std::vector<jack_host_base *> plugins;
+    std::vector<jack_host *> plugins;
     calf_utils::ptmutex mutex;
 public:
     jack_client_t *client;
@@ -54,7 +54,7 @@ public:
         client = NULL;
     }
     
-    void add(jack_host_base *plugin)
+    void add(jack_host *plugin)
     {
         calf_utils::ptlock lock(mutex);
         plugins.push_back(plugin);
@@ -115,9 +115,8 @@ public:
     static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
 };
     
-class jack_host_base: public plugin_ctl_iface {
+class jack_host: public plugin_ctl_iface {
 public:
-    typedef int (*process_func)(jack_nframes_t nframes, void *p);
     struct port {
         jack_port_t *handle;
         float *data;
@@ -125,6 +124,16 @@ public:
         port() : handle(NULL), data(NULL) {}
         ~port() { }
     };
+public:
+    float **ins, **outs, **params;
+    std::vector<port> inputs, outputs;
+    std::vector<vumeter> input_vus, output_vus;
+    float *param_values;
+    float midi_meter;
+    audio_module_iface *module;
+    
+public:
+    typedef int (*process_func)(jack_nframes_t nframes, void *p);
     jack_client *client;
     bool changed;
     port midi_port;
@@ -132,21 +141,7 @@ public:
     std::string instance_name;
     int in_count, out_count;
     const plugin_metadata_iface *metadata;
-    virtual port *get_inputs()=0;
-    virtual port *get_outputs()=0;
-    virtual port *get_midi_port() { return get_metadata_iface()->get_midi() ? &midi_port : NULL; }
-    virtual float *get_params()=0;
-    virtual void init_module()=0;
-    virtual void cache_ports()=0;
-    virtual int process(jack_nframes_t nframes)=0;
-    
-    jack_host_base(const std::string &_name, const std::string &_instance_name) {
-        name = _name;
-        instance_name = _instance_name;
-        
-        client = NULL;
-        changed = true;
-    }
+    port *get_midi_port() { return get_metadata_iface()->get_midi() ? &midi_port : NULL; }
     
     void set_params(const float *params) {
         memcpy(get_params(), params, get_metadata_iface()->get_param_count() * sizeof(float));
@@ -163,25 +158,17 @@ public:
     
     void close();
     
-    virtual ~jack_host_base() {
-    }
-};
-
-template<class Module>
-class jack_host: public jack_host_base {
-public:
-    float **ins, **outs, **params;
-    std::vector<port> inputs, outputs;
-    std::vector<vumeter> input_vus, output_vus;
-    float *param_values;
-    float midi_meter;
-    audio_module_iface *iface;
-    
-    jack_host(audio_module_iface *_iface, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
-    : jack_host_base(_name, _instance_name), iface(_iface)
+    jack_host(audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
+    : module(_module)
     {
-        iface->get_port_arrays(ins, outs, params);
-        metadata = iface->get_metadata_iface();
+        name = _name;
+        instance_name = _instance_name;
+        
+        client = NULL;
+        changed = true;
+
+        module->get_port_arrays(ins, outs, params);
+        metadata = module->get_metadata_iface();
         in_count = metadata->get_input_count();
         out_count = metadata->get_output_count();
         inputs.resize(in_count);
@@ -194,8 +181,8 @@ public:
         }
         clear_preset();
         midi_meter = 0;
-        iface->set_progress_report_iface(_priface);
-        iface->post_instantiate();
+        module->set_progress_report_iface(_priface);
+        module->post_instantiate();
     }
     
     ~jack_host()
@@ -206,9 +193,9 @@ public:
     }
     
     virtual void init_module() {
-        iface->set_sample_rate(client->sample_rate);
-        iface->activate();
-        iface->params_changed();
+        module->set_sample_rate(client->sample_rate);
+        module->activate();
+        module->params_changed();
     }
 
     virtual const parameter_properties* get_param_props(int param_no) { return metadata->get_param_props(param_no); }
@@ -219,26 +206,26 @@ public:
         switch(buffer[0] >> 4)
         {
         case 8:
-            iface->note_off(buffer[1], buffer[2]);
+            module->note_off(buffer[1], buffer[2]);
             break;
         case 9:
             if (!buffer[2])
-                iface->note_off(buffer[1], 0);
+                module->note_off(buffer[1], 0);
             else
-                iface->note_on(buffer[1], buffer[2]);
+                module->note_on(buffer[1], buffer[2]);
             break;
         case 11:
-            iface->control_change(buffer[1], buffer[2]);
+            module->control_change(buffer[1], buffer[2]);
             break;
         case 12:
-            iface->program_change(buffer[1]);
+            module->program_change(buffer[1]);
             break;
         case 13:
-            iface->channel_pressure(buffer[1]);
+            module->channel_pressure(buffer[1]);
             break;
         case 14:
             value = buffer[1] + 128 * buffer[2] - 8192;
-            iface->pitch_bend(value);
+            module->pitch_bend(value);
             break;
         }
     }
@@ -248,7 +235,7 @@ public:
             return;
         for (int i = 0; i < in_count; i++)
             input_vus[i].update(ins[i] + time, len);
-        unsigned int mask = iface->process(time, len, -1, -1);
+        unsigned int mask = module->process(time, len, -1, -1);
         for (int i = 0; i < out_count; i++)
         {
             if (!(mask & (1 << i))) {
@@ -282,7 +269,7 @@ public:
         if (metadata->get_midi())
             midi_port.data = (float *)jack_port_get_buffer(midi_port.handle, nframes);
         if (changed) {
-            iface->params_changed();
+            module->params_changed();
             changed = false;
         }
 
@@ -312,7 +299,7 @@ public:
             }
         }
         process_part(time, nframes - time);
-        iface->params_reset();
+        module->params_reset();
         return 0;
     }
     
@@ -334,25 +321,15 @@ public:
         param_values[param_no] = value;
         changed = true;
     }
-    virtual void execute(int cmd_no) {
-        iface->execute(cmd_no);
-    }
-    virtual char *configure(const char *key, const char *value) { 
-        return iface->configure(key, value);
-    }
-    virtual void send_configures(send_configure_iface *sci) {
-        iface->send_configures(sci);
-    }
-    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { 
-        return iface->send_status_updates(sui, last_serial);
-    }
-    virtual const plugin_metadata_iface *get_metadata_iface() const
-    {
-        return iface->get_metadata_iface();
-    }
+    virtual void execute(int cmd_no) { module->execute(cmd_no); }
+    virtual char *configure(const char *key, const char *value) { return module->configure(key, value); }
+    virtual void send_configures(send_configure_iface *sci) { module->send_configures(sci); }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return module->send_status_updates(sui, last_serial); }
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return module->get_metadata_iface(); }
+    virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
 };
 
-extern jack_host_base *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
+extern jack_host *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
 
 };
 

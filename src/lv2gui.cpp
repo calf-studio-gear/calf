@@ -99,7 +99,7 @@ struct plugin_proxy_base
     /// Obtain instance pointers
     void resolve_instance();
 
-    /// Find a line graph interface, if available (via instance access/data access extensions)
+    /// Obtain line graph interface if available
     const line_graph_iface *get_line_graph_iface() const;
     
     /// Map an URI to an integer value using a given URI map
@@ -191,7 +191,7 @@ uint32_t plugin_proxy_base::map_uri(const char *mapURI, const char *keyURI)
 const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
 {
     if (instance)
-        return instance->get_metadata_iface()->get_line_graph_iface();
+        return instance->get_line_graph_iface();
     return NULL;
 }
 
@@ -236,7 +236,7 @@ void plugin_proxy_base::enable_all_sends()
 
 /// Plugin controller that uses LV2 host with help of instance/data access to remotely
 /// control a plugin from the GUI
-struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public plugin_proxy_base
+struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base
 {
     /// Plugin GTK+ GUI object pointer
     plugin_gui *gui;
@@ -244,8 +244,7 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
     int source_id;
     
     lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
-    : plugin_metadata_proxy(md)
-    , plugin_proxy_base(md, wf, c, f)
+    : plugin_proxy_base(md, wf, c, f)
     {
         gui = NULL;
         instance = NULL;
@@ -273,15 +272,8 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
         return false;
     }
     
-    virtual char *configure(const char *key, const char *value)
-    {
-        plugin_proxy_base::configure(key, value);
-        return NULL;
-    }
-    
-    virtual const line_graph_iface *get_line_graph_iface() const {
-        return plugin_proxy_base::get_line_graph_iface();
-    }
+    /// Override for a method in plugin_ctl_iface - trivial delegation to base class
+    virtual char *configure(const char *key, const char *value) { return plugin_proxy_base::configure(key, value); }
     
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
@@ -289,6 +281,9 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, 
         fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
     }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
+    /// Override for a method in plugin_ctl_iface - trivial delegation to base class
+    virtual const line_graph_iface *get_line_graph_iface() const { return plugin_proxy_base::get_line_graph_iface(); }
+    
 };
 
 static gboolean plugin_on_idle(void *data)
@@ -322,7 +317,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     main->conditions.insert("lv2gui");    
     plugin_gui_window *window = new plugin_gui_window(main);
     plugin_gui *gui = new plugin_gui(window);
-    const char *xml = proxy->get_gui_xml();
+    const char *xml = proxy->plugin_metadata->get_gui_xml();
     assert(xml);
     *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
     proxy->enable_all_sends();

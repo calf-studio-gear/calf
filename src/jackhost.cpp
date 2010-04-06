@@ -54,14 +54,14 @@ static bool load_data_set_cb(lash_config_handle_t *handle, void *user_data);
 static bool quit_cb(void *user_data);
 #endif
 
-jack_host_base *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
+jack_host *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host<audio_module_iface>(new name##_audio_module, effect_name, instance_name, priface);
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host(new name##_audio_module, effect_name, instance_name, priface);
     #include <calf/modulelist.h>
     return NULL;
 }
 
-void jack_host_base::open(jack_client *_client)
+void jack_host::open(jack_client *_client)
 {
     client = _client; //jack_client_open(client_name, JackNullOption, &status);
     
@@ -73,7 +73,7 @@ void jack_host_base::open(jack_client *_client)
     changed = false;
 }
 
-void jack_host_base::create_ports() {
+void jack_host::create_ports() {
     char buf[32];
     char buf2[64];
     string prefix = client->name + ":";
@@ -112,7 +112,7 @@ void jack_host_base::create_ports() {
     }
 }
 
-void jack_host_base::close() {
+void jack_host::close() {
     port *inputs = get_inputs(), *outputs = get_outputs();
     int input_count = metadata->get_input_count(), output_count = metadata->get_output_count();
     for (int i = 0; i < input_count; i++) {
@@ -202,7 +202,7 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     string autoconnect_midi;
     int autoconnect_midi_index;
     set<int> chains;
-    vector<jack_host_base *> plugins;
+    vector<jack_host *> plugins;
     main_window *main_win;
     bool restoring_session;
     std::set<std::string> instances;
@@ -275,7 +275,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
 {
     if (instance_name.empty())
         instance_name = get_next_instance_name(name);
-    jack_host_base *jh = create_jack_host(name.c_str(), instance_name, this);
+    jack_host *jh = create_jack_host(name.c_str(), instance_name, this);
     if (!jh) {
         string s = 
         #define PER_MODULE_ITEM(name, isSynth, jackname) jackname ", "
@@ -367,7 +367,7 @@ void host_session::open()
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host_base *jh = create_jack_host(name, get_next_instance_name(name), this);
+    jack_host *jh = create_jack_host(name, get_next_instance_name(name), this);
     if (!jh)
         return;
     instances.insert(jh->instance_name);
@@ -564,7 +564,7 @@ char *host_session::save_file(const char *name)
     data = "<?xml version=\"1.1\" encoding=\"utf-8\">\n";
     data = "<rack>\n";
     for (unsigned int i = 0; i < plugins.size(); i++) {
-        jack_host_base *p = plugins[i];
+        jack_host *p = plugins[i];
         plugin_preset preset;
         preset.plugin = p->metadata->get_id();
         preset.get_from(p);
@@ -625,7 +625,7 @@ void host_session::update_lash()
                 lash_send_config(lash_client, cfg);
                 
                 for (unsigned int i = 0; i < plugins.size(); i++) {
-                    jack_host_base *p = plugins[i];
+                    jack_host *p = plugins[i];
                     char ss[32];
                     plugin_preset preset;
                     preset.plugin = p->get_id();
@@ -725,7 +725,7 @@ bool save_data_set_cb(lash_config_handle_t *handle, void *user_data)
     pstr = encode_map(tmp);
     lash_config_write_raw(handle, "global", pstr.c_str(), pstr.length());
     for (unsigned int i = 0; i < sess->plugins.size(); i++) {
-        jack_host_base *p = sess->plugins[i];
+        jack_host *p = sess->plugins[i];
         char ss[32];
         plugin_preset preset;
         preset.plugin = p->metadata->get_id();

@@ -319,8 +319,6 @@ struct plugin_metadata_iface
     virtual bool requires_midi() const =0;
     /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
     virtual int get_param_port_offset() const  = 0;
-    /// @return line_graph_iface if any
-    virtual const line_graph_iface *get_line_graph_iface() const = 0;
     /// @return table_edit_iface if any
     virtual const table_edit_iface *get_table_edit_iface() const = 0;
     /// @return NULL-terminated list of menu commands
@@ -373,6 +371,8 @@ struct plugin_ctl_iface
     virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
     /// Return metadata object
     virtual const plugin_metadata_iface *get_metadata_iface() const = 0;
+    /// @return line_graph_iface if any
+    virtual const line_graph_iface *get_line_graph_iface() const = 0;
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -451,6 +451,8 @@ struct audio_module_iface
     virtual uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) = 0;
     /// Message port processing function
     virtual uint32_t message_run(const void *valid_ports, void *output_ports) = 0;
+    /// @return line_graph_iface if any
+    virtual const line_graph_iface *get_line_graph_iface() const = 0;
     virtual ~audio_module_iface() {}
 };
 
@@ -548,6 +550,8 @@ public:
             offset = newend;
         }
     }
+    /// @return line_graph_iface if any
+    virtual const line_graph_iface *get_line_graph_iface() const { return dynamic_cast<const line_graph_iface *>(this); }
 };
 
 extern bool check_for_message_context_ports(const parameter_properties *parameters, int count);
@@ -614,7 +618,6 @@ public:
     bool get_midi() const { return Metadata::support_midi; }
     bool requires_midi() const { return Metadata::require_midi; }
     bool is_rt_capable() const { return Metadata::rt_capable; }
-    const line_graph_iface *get_line_graph_iface() const { return dynamic_cast<const line_graph_iface *>(this); }    
     const table_edit_iface *get_table_edit_iface() const { return dynamic_cast<const table_edit_iface *>(this); }    
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
     const char *get_gui_xml() const { static const char *data_ptr = calf_plugins::load_gui_xml(get_id()); return data_ptr; }
@@ -632,42 +635,6 @@ public:
                 ports.push_back(i);
         }
     }
-};
-
-/// A class for delegating metadata implementation to a "remote" metadata class.
-/// Used for GUI wrappers that cannot have a dependency on actual classes,
-/// and which instead take an "external" metadata object pointer, obtained
-/// through get_all_plugins.
-class plugin_metadata_proxy: public plugin_metadata_iface
-{
-public:
-    const plugin_metadata_iface *impl;
-public:
-    plugin_metadata_proxy(const plugin_metadata_iface *_impl) { impl = _impl; }
-    const char *get_name() const { return impl->get_name(); } 
-    const char *get_id() const { return impl->get_id(); } 
-    const char *get_label() const { return impl->get_label(); } 
-    int get_input_count() const { return impl->get_input_count(); }
-    int get_output_count() const { return impl->get_output_count(); }
-    int get_inputs_optional() const { return impl->get_inputs_optional(); }
-    int get_outputs_optional() const { return impl->get_outputs_optional(); }
-    int get_param_count() const { return impl->get_param_count(); }
-    bool get_midi() const { return impl->get_midi(); }
-    bool requires_midi() const { return impl->requires_midi(); }
-    bool is_rt_capable() const { return impl->is_rt_capable(); }
-    const line_graph_iface *get_line_graph_iface() const { return impl->get_line_graph_iface(); }    
-    const table_edit_iface *get_table_edit_iface() const { return impl->get_table_edit_iface(); }    
-    int get_param_port_offset() const { return impl->get_param_port_offset(); }
-    const char *get_gui_xml() const { return impl->get_gui_xml(); }
-    plugin_command_info *get_commands() const { return impl->get_commands(); }
-    const parameter_properties *get_param_props(int param_no) const { return impl->get_param_props(param_no); }
-    const char **get_port_names() const { return impl->get_port_names(); }
-    bool is_cv(int param_no) const { return impl->is_cv(param_no); }
-    bool is_noisy(int param_no) const { return impl->is_noisy(param_no); }
-    const ladspa_plugin_info &get_plugin_info() const { return impl->get_plugin_info(); }
-    bool requires_message_context() const { return impl->requires_message_context(); }
-    bool requires_string_ports() const { return impl->requires_string_ports(); }
-    void get_message_context_parameters(std::vector<int> &ports) const { impl->get_message_context_parameters(ports); }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]

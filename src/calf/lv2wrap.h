@@ -156,10 +156,8 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
             return;
         *params[param_no] = value;
     }
-    virtual const plugin_metadata_iface *get_metadata_iface() const
-    {
-        return metadata;
-    }
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return metadata; }
+    virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
 };
 
 struct LV2_Calf_Descriptor {

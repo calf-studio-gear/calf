@@ -130,7 +130,7 @@ void param_line_graphs::clear()
 
 }
 
-struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public line_graph_iface
+struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
 {
     osc_client *client;
     bool send_osc;
@@ -140,10 +140,11 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     float *params;
     map<int, param_line_graphs> graphs;
     bool update_graphs;
+    const plugin_metadata_iface *metadata;
 
     plugin_proxy(const plugin_metadata_iface *md)
-    : plugin_metadata_proxy(md)
     {
+        metadata = md;
         client = NULL;
         send_osc = false;
         update_graphs = true;
@@ -151,7 +152,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         param_count = md->get_param_count();
         params = new float[param_count];
         for (int i = 0; i < param_count; i++)
-            params[i] = get_param_props(i)->def_value;
+            params[i] = metadata->get_param_props(i)->def_value;
     }
     virtual float get_param_value(int param_no) {
         if (param_no < 0 || param_no >= param_count)
@@ -166,7 +167,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         if (send_osc)
         {
             osc_inline_typed_strstream str;
-            str << (uint32_t)(param_no + get_param_port_offset()) << value;
+            str << (uint32_t)(param_no + metadata->get_param_port_offset()) << value;
             client->send("/control", str);
         }
     }
@@ -212,7 +213,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     void update_cairo_context(cairo_iface *context, cairo_params &item) const;
-    virtual const plugin_metadata_iface *get_metadata_iface() const { return this; }
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return metadata; }
 };
 
 bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
@@ -508,9 +509,9 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         {
             bool sosc = plugin->send_osc;
             plugin->send_osc = false;
-            int count = plugin->get_param_count();
+            int count = plugin->metadata->get_param_count();
             for (int i =0 ; i < count; i++)
-                plugin->set_param_value(i, plugin->get_param_props(i)->def_value);
+                plugin->set_param_value(i, plugin->metadata->get_param_props(i)->def_value);
             plugin->send_osc = sosc;
             window->gui->refresh();
             // special handling for default preset
@@ -535,13 +536,13 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         
         buffer >> port >> val;
         
-        int idx = port - plugin->get_param_port_offset();
+        int idx = port - plugin->metadata->get_param_port_offset();
         debug_printf("CONTROL %d %f\n", idx, val);
         bool sosc = plugin->send_osc;
         plugin->send_osc = false;
         window->gui->set_param_value(idx, val);
         plugin->send_osc = sosc;
-        if (plugin->get_param_props(idx)->flags & PF_PROP_GRAPH)
+        if (plugin->metadata->get_param_props(idx)->flags & PF_PROP_GRAPH)
             plugin->update_graphs = true;
         return;
     }
