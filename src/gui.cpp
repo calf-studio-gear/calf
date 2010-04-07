@@ -555,7 +555,7 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
     command_actions = NULL;
     environment = _env;
     main = _main;
-    assert(main);
+    assert(environment);
 }
 
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch)
