@@ -431,15 +431,15 @@ void host_session::update_lash()
                     jack_host *p = plugins[i];
                     char ss[32];
                     plugin_preset preset;
-                    preset.plugin = p->get_id();
+                    preset.plugin = p->metadata->get_id();
                     preset.get_from(p);
                     sprintf(ss, "Plugin%d", i);
                     pstr = preset.to_xml();
                     tmp.clear();
                     tmp["instance_name"] = p->instance_name;
-                    if (p->get_input_count())
+                    if (p->metadata->get_input_count())
                         tmp["input_name"] = p->get_inputs()[0].name.substr(i_name.length());
-                    if (p->get_output_count())
+                    if (p->metadata->get_output_count())
                         tmp["output_name"] = p->get_outputs()[0].name.substr(o_name.length());
                     if (p->get_midi_port())
                         tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
