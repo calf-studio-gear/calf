@@ -8,16 +8,16 @@ ladspadir = $(with_ladspa_dir)
 lv2dir = $(with_lv2_dir)/calf.lv2
 
 bin_PROGRAMS = 
+noinst_LTLIBRARIES =
 
 noinst_PROGRAMS = calfbenchmark
-noinst_LTLIBRARIES = calf.la
+pkglib_LTLIBRARIES = calf.la
 if USE_DSSI_GUI
-dssidir = $(with_dssi_dir)/calf
-dssi_PROGRAMS = calf_gtk
+pkglib_PROGRAMS = calf_gtk
 endif
 if USE_LV2_GUI
 noinst_LTLIBRARIES += calflv2gui.la
-lv2_PROGRAMS = calf_gtk
+pkglib_PROGRAMS = calf_gtk
 endif
 
 AM_CXXFLAGS = -ffast-math -finline-limit=80 $(FLUIDSYNTH_DEPS_CFLAGS)
@@ -78,7 +78,7 @@ clean-local:
 	$(RM) -f calfjackhost *~
 
 install-data-hook:
-	install -d -m 755 $(DESTDIR)$(pkgdatadir)    
+	install -d -m 755 $(DESTDIR)$(pkgdatadir) 
 	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkgdatadir)
 if USE_JACK
 	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkgdatadir)
@@ -92,11 +92,13 @@ endif
 if USE_DSSI
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)/calf
-	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
+	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
+	ln -sf $(DESTDIR)$(pkglibdir)/calf_gtk $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
 endif
 if USE_LV2
 	install -d -m 755 $(DESTDIR)$(lv2dir)
-	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(lv2dir)/calf.so
+	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(lv2dir)/calf.so
+	ln -sf $(DESTDIR)$(pkglibdir)/calf_gtk $(DESTDIR)$(lv2dir)/calf_gtk
 if USE_LV2_GUI
 	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(lv2dir)/calflv2gui.so
 endif
@@ -133,5 +135,3 @@ endif
 	rmdir -p $(DESTDIR)$(with_dssi_dir)/calf || true
 endif
 
-#install:
-#	$(INSTALL) calfjackhost $(bindir)
