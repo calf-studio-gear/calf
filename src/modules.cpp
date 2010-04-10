@@ -19,8 +19,6 @@
  * Boston, MA  02110-1301  USA
  */
 #include <config.h>
-#include <assert.h>
-#include <memory.h>
 #include <calf/giface.h>
 #include <calf/metadata.h>
 #include <calf/audio_fx.h>
