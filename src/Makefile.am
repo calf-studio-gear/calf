@@ -86,7 +86,7 @@ endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
 	install -d -m 755 $(DESTDIR)$(with_ladspa_rdf_dir)
-	install -c -m 755 $(top_builddir)/src/.libs/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
+	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(top_builddir)/src/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 endif
 if USE_DSSI
