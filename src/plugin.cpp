@@ -321,7 +321,7 @@ void ladspa_plugin_metadata_set::prepare(const plugin_metadata_iface *md, LADSPA
         prh.HintDescriptor = 0;
         ((const char **)descriptor.PortNames)[i] = md->get_port_names()[i];
     }
-    for (; i < input_count + output_count + param_count; i++)
+    for (; i < input_count + output_count + real_param_count; i++)
     {
         LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
         const parameter_properties &pp = *md->get_param_props(i - input_count - output_count);
