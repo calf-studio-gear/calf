@@ -21,9 +21,6 @@
 #include <glade/glade.h>
 #include <jack/midiport.h>
 #include <calf/host_session.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
-#include <calf/organ.h>
 #include <calf/preset.h>
 #include <getopt.h>
 
@@ -33,10 +30,13 @@ using namespace calf_plugins;
 
 const char *client_name = "calfhost";
 
+extern "C" audio_module_iface *create_calf_plugin_by_name(const char *effect_name);
+
 jack_host *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host(new name##_audio_module, effect_name, instance_name, priface);
-    #include <calf/modulelist.h>
+    audio_module_iface *plugin = create_calf_plugin_by_name(effect_name);
+    if (plugin != NULL)
+        return new jack_host(plugin, effect_name, instance_name, priface);
     return NULL;
 }
 

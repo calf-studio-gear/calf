@@ -493,3 +493,17 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 
 #endif
 
+#if USE_JACK
+
+extern "C" {
+
+audio_module_iface *create_calf_plugin_by_name(const char *effect_name)
+{
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new name##_audio_module;
+    #include <calf/modulelist.h>
+    return NULL;
+}
+
+}
+
+#endif

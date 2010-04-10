@@ -634,8 +634,6 @@ private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
 
-extern std::string get_builtin_modules_rdf();
-
 };
 
 #include "modules_synths.h"
