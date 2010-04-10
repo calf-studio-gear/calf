@@ -29,7 +29,7 @@ if USE_JACK
 AM_CXXFLAGS += $(JACK_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
-calfjackhost_SOURCES = host_session.cpp jack_client.cpp jackhost.cpp
+calfjackhost_SOURCES = host_session.cpp jack_client.cpp jackhost.cpp main_win.cpp
 calfjackhost_LDADD = libcalfgui.la calf.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS)
 if USE_LASH
 AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)
@@ -61,7 +61,7 @@ calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-st
 endif
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp synth.cpp lv2gui.cpp main_win.cpp osctl.cpp osctlnet.cpp utils.cpp
+calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp synth.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
 else
@@ -70,7 +70,7 @@ endif
 endif
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp main_win.cpp utils.cpp
+libcalfgui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp utils.cpp
 libcalfgui_la_LDFLAGS = -static -disable-shared
 endif
 
