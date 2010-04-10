@@ -21,6 +21,7 @@
 #include <calf/giface.h>
 #include <calf/modules_dev.h>
 #include <calf/utils.h>
+#include <string.h>
 
 #if ENABLE_EXPERIMENTAL
 
