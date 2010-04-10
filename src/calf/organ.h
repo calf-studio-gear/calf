@@ -22,6 +22,7 @@
 #ifndef __CALF_ORGAN_H
 #define __CALF_ORGAN_H
 
+#include "audio_fx.h"
 #include "envelope.h"
 #include "metadata.h"
 #include "osc.h"

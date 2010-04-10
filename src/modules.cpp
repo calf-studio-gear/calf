@@ -21,9 +21,6 @@
 #include <config.h>
 #include <assert.h>
 #include <memory.h>
-#if USE_JACK
-#include <jack/jack.h>
-#endif
 #include <calf/giface.h>
 #include <calf/metadata.h>
 #include <calf/audio_fx.h>

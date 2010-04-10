@@ -18,13 +18,8 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#include <config.h>
-#include <assert.h>
 #include <limits.h>
 #include <memory.h>
-#if USE_JACK
-#include <jack/jack.h>
-#endif
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>

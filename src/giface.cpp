@@ -19,12 +19,9 @@
  * Boston, MA  02110-1301  USA
  */
 #include <config.h>
-#include <assert.h>
-#include <memory.h>
 #include <calf/giface.h>
 #include <calf/osctlnet.h>
 #include <calf/utils.h>
-#include <stdio.h>
 
 using namespace std;
 using namespace calf_utils;
