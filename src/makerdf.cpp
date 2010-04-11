@@ -384,7 +384,9 @@ void make_ttl(string path_prefix)
         ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
 
 #if USE_LV2_GUI
+#if USE_LV2_GTK_GUI
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
+#endif
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/ext-gui> ;\n";
         ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n";
         ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n";
