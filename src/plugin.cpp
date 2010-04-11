@@ -177,6 +177,9 @@ void ladspa_instance::process_dssi_event(snd_seq_event_t &event)
         case SND_SEQ_EVENT_PITCHBEND:
             module->pitch_bend(event.data.control.value);
             break;
+        case SND_SEQ_EVENT_CHANPRESS:
+            module->channel_pressure(event.data.control.value);
+            break;
     }
 }
 #endif

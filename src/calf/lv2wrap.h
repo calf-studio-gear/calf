@@ -131,6 +131,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
                 case 9: module->note_on(item->data[1], item->data[2]); break;
                 case 11: module->control_change(item->data[1], item->data[2]); break;
                 case 12: module->program_change(item->data[1]); break;
+                case 13: module->channel_pressure(item->data[1]); break;
                 case 14: module->pitch_bend(item->data[1] + 128 * item->data[2] - 8192); break;
                 }
             }
