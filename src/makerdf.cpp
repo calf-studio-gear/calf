@@ -446,6 +446,7 @@ void make_ttl(string path_prefix)
     }
     // Generate a manifest
     
+    // Prefixes for the manifest TTL
     string ttl = 
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
@@ -453,23 +454,22 @@ void make_ttl(string path_prefix)
         "\n"
     ;
     
-    string presets_ttl =
+    // Prefixes for the preset TTL
+    string presets_ttl_head =
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
         "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix dc: <http://dublincore.org/documents/dcmi-namespace/> .\n"
         "\n"
     ;
-
-    for (unsigned int i = 0; i < plugins.size(); i++)
-        ttl += string("<" + plugin_uri_prefix) 
-            + string(plugins[i]->get_plugin_info().label)
-            + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + string(plugins[i]->get_plugin_info().label) + ".ttl> , <presets.ttl> .\n";
-
+    
     calf_plugins::get_builtin_presets().load_defaults(true);
     calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
 
     ttl += "\n";
+    
+    // We'll collect TTL for presets here, maps plugin label to TTL generated so far
+    map<string, string> preset_data;
 
     for (unsigned int i = 0; i < factory_presets.size(); i++)
     {
@@ -477,6 +477,12 @@ void make_ttl(string path_prefix)
         map<string, string>::iterator ilm = id_to_label.find(pr.plugin);
         if (ilm == id_to_label.end())
             continue;
+        
+        string presets_ttl;
+        // if this is the first preset, add a header
+        if (!preset_data.count(ilm->second))
+            presets_ttl = presets_ttl_head;
+        
         string uri = "<http://calf.sourceforge.net/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
@@ -498,13 +504,31 @@ void make_ttl(string path_prefix)
             presets_ttl += '\n';
         }
         presets_ttl += ".\n\n";
+        
+        preset_data[ilm->second] += presets_ttl;
+    }
+    for (map<string, string>::iterator i = preset_data.begin(); i != preset_data.end(); i++)
+    {
+        FILE *f = fopen((path_prefix + "presets-" + i->first + ".ttl").c_str(), "w");
+        fprintf(f, "%s\n", i->second.c_str());
+        fclose(f);
+    }
+
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        string label = plugins[i]->get_plugin_info().label;
+        ttl += string("<" + plugin_uri_prefix) 
+            + string(plugins[i]->get_plugin_info().label)
+            + "> a lv2:Plugin ;\n    lv2:binary <calf.so> ; rdfs:seeAlso <" + label + ".ttl> ";
+        if (preset_data.count(label))
+            ttl += ", <presets-" + label + ".ttl>";
+        ttl += ".\n";
+        
     }
     FILE *f = fopen((path_prefix+"manifest.ttl").c_str(), "w");
     fprintf(f, "%s\n", ttl.c_str());
     fclose(f);
-    f = fopen((path_prefix+"presets.ttl").c_str(), "w");
-    fprintf(f, "%s\n", presets_ttl.c_str());
-    fclose(f);
+
 }
 
 #else

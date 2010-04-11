@@ -140,7 +140,7 @@ endif
 if USE_JACK
 	rm -f $(DESTDIR)$(pkgdatadir)/calf.glade 
 endif
-	rm -f $(DESTDIR)$(pkgdatadir)/presets.xml
+	rm -f $(DESTDIR)$(pkgdatadir)/presets*.xml
 	rmdir $(DESTDIR)$(pkgdatadir) || true
 if USE_LADSPA
 	$(RM) -f $(DESTDIR)$(with_ladspa_dir)/calf.so
