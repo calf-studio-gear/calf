@@ -282,12 +282,15 @@ static void cb_select_program(LADSPA_Handle Instance, unsigned long Bank, unsign
 
 ladspa_plugin_metadata_set::ladspa_plugin_metadata_set()
 {
-    presets = NULL;
-    preset_descs = NULL;
     metadata = NULL;
     memset(&descriptor, 0, sizeof(descriptor));
+
+#if USE_DSSI
+    presets = NULL;
+    preset_descs = NULL;
     memset(&descriptor_for_dssi, 0, sizeof(descriptor_for_dssi));
     memset(&dssi_descriptor, 0, sizeof(dssi_descriptor));
+#endif
 }
 
 void ladspa_plugin_metadata_set::prepare(const plugin_metadata_iface *md, LADSPA_Handle (*cb_instantiate)(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate))
