@@ -23,13 +23,10 @@
 #include <expat.h>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 #include <gtk/gtk.h>
-#include "custom_ctl.h"
-
-struct CalfCurve;
-struct CalfKeyboard;
-struct CalfLed;
+#include "giface.h"
 
 namespace calf_plugins {
 
@@ -113,6 +110,7 @@ public:
     GtkWidget *container;
     const char *effect_name;
     plugin_ctl_iface *plugin;
+    preset_access_iface *preset_access;
     std::vector<param_control *> params;
     bool draw_rackmounts;
 
@@ -198,6 +196,7 @@ public:
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
     void close();
     static gboolean on_idle(void *data);
+    static void on_window_destroyed(GtkWidget *window, gpointer data);
     ~plugin_gui_window();
 };
 

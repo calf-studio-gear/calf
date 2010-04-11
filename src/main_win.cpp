@@ -19,14 +19,22 @@
  */
  
 #include <calf/ctl_led.h>
+#include <calf/custom_ctl.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
-#include <calf/preset_gui.h>
 #include <calf/main_win.h>
 
 using namespace calf_plugins;
 using namespace std;
+
+main_window::main_window()
+{
+    toplevel = NULL;
+    owner = NULL;
+    is_closed = true;
+    draw_rackmounts = true;
+}
 
 static const char *ui_xml = 
 "<ui>\n"
@@ -43,42 +51,34 @@ static const char *ui_xml =
 "</ui>\n"
 ;
 
-static void open_action(GtkWidget *widget, main_window *main)
+const GtkActionEntry main_window::actions[] = {
+    { "FileMenuAction", NULL, "_File", NULL, "File-related operations", NULL },
+    { "FileOpen", GTK_STOCK_OPEN, "_Open", "<Ctrl>O", "Open a rack file", (GCallback)on_open_action },
+    { "FileSave", GTK_STOCK_SAVE, "_Save", "<Ctrl>S", "Save a rack file", (GCallback)on_save_action },
+    { "FileSaveAs", GTK_STOCK_SAVE_AS, "Save _as...", NULL, "Save a rack file as", (GCallback)on_save_as_action },
+    { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
+    { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
+    { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)on_exit_action },
+};
+
+void main_window::on_open_action(GtkWidget *widget, main_window *main)
 {
     main->open_file();
 }
 
-static void save_action(GtkWidget *widget, main_window *main)
+void main_window::on_save_action(GtkWidget *widget, main_window *main)
 {
     main->save_file();
 }
 
-static void save_as_action(GtkWidget *widget, main_window *main)
+void main_window::on_save_as_action(GtkWidget *widget, main_window *main)
 {
     main->save_file_as();
 }
 
-static void exit_action(GtkWidget *widget, main_window *main)
+void main_window::on_exit_action(GtkWidget *widget, main_window *main)
 {
     gtk_widget_destroy(GTK_WIDGET(main->toplevel));
-}
-
-static const GtkActionEntry actions[] = {
-    { "FileMenuAction", NULL, "_File", NULL, "File-related operations", NULL },
-    { "FileOpen", GTK_STOCK_OPEN, "_Open", "<Ctrl>O", "Open a rack file", (GCallback)open_action },
-    { "FileSave", GTK_STOCK_SAVE, "_Save", "<Ctrl>S", "Save a rack file", (GCallback)save_action },
-    { "FileSaveAs", GTK_STOCK_SAVE_AS, "Save _as...", NULL, "Save a rack file as", (GCallback)save_as_action },
-    { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
-    { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
-    { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)exit_action },
-};
-
-main_window::main_window()
-{
-    toplevel = NULL;
-    owner = NULL;
-    is_closed = true;
-    draw_rackmounts = true;
 }
 
 void main_window::add_plugin(plugin_ctl_iface *plugin)

@@ -21,13 +21,7 @@
 #ifndef __CALF_MAIN_WIN_H
 #define __CALF_MAIN_WIN_H
 
-#include <expat.h>
-#include <map>
-#include <set>
-#include <vector>
-#include <gtk/gtk.h>
-#include <calf/gui.h>
-#include "custom_ctl.h"
+#include "gui.h"
 
 namespace calf_plugins {
 
@@ -89,6 +83,12 @@ namespace calf_plugins {
         void open_file();
         void save_file();
         void save_file_as();
+    private:
+        static const GtkActionEntry actions[];
+        static void on_open_action(GtkWidget *widget, main_window *main);
+        static void on_save_action(GtkWidget *widget, main_window *main);
+        static void on_save_as_action(GtkWidget *widget, main_window *main);
+        static void on_exit_action(GtkWidget *widget, main_window *main);
     };
 };
 

@@ -23,7 +23,6 @@
 #include <calf/host_session.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
-#include <calf/preset_gui.h>
 #include <calf/main_win.h>
 #include <getopt.h>
 

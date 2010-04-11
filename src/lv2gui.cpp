@@ -25,7 +25,6 @@
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
 #include <calf/osctlnet.h>
-#include <calf/preset_gui.h>
 #include <calf/utils.h>
 #include <calf/lv2helpers.h>
 
@@ -355,20 +354,6 @@ const void *gui_extension(const char *uri)
 {
     return NULL;
 }
-
-namespace calf_plugins {
-
-// this function is normally implemented in preset_gui.cpp, but we're not using that file
-void activate_preset(GtkAction *action, activate_preset_params *params)
-{
-}
-
-// so is this function
-void store_preset(GtkWindow *toplevel, plugin_gui *gui)
-{
-}
-
-};
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

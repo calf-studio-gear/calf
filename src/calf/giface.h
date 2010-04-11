@@ -674,6 +674,13 @@ static inline float dB_grid_inv(float pos)
 /// set drawing color based on channel index (0 or 1)
 void set_channel_color(cairo_iface *context, int channel);
 
+struct preset_access_iface
+{
+    virtual void store_preset() = 0;
+    virtual void activate_preset(int preset, bool builtin) = 0;
+    virtual ~preset_access_iface() {} 
+};
+
 };
 
 #endif

@@ -27,15 +27,27 @@ using namespace std;
 
 // this way of filling presets menu is not that great
 
-GladeXML *store_preset_xml = NULL;
-GtkWidget *store_preset_dlg = NULL;
-
-void store_preset_dlg_destroy(GtkWindow *window, gpointer data)
+struct activate_preset_params
 {
+    plugin_gui *gui;
+    int preset;
+    bool builtin;
+    
+    activate_preset_params(plugin_gui *_gui, int _preset, bool _builtin)
+    : gui(_gui), preset(_preset), builtin(_builtin)
+    {
+    }
+};
+
+GladeXML *store_preset_xml = NULL;
+
+gui_preset_access::gui_preset_access(plugin_gui *_gui)
+{
+    gui = _gui;
     store_preset_dlg = NULL;
 }
 
-void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
+void gui_preset_access::store_preset()
 {
     if (store_preset_dlg)
     {
@@ -44,7 +56,7 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
     }
     store_preset_xml = glade_xml_new(PKGLIBDIR "/calf.glade", NULL, NULL);
     store_preset_dlg = glade_xml_get_widget(store_preset_xml, "store_preset");
-    gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(store_preset_dlg_destroy), NULL);
+    gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), NULL);
 //    gtk_widget_set_name(GTK_WIDGET(store_preset_dlg), "Calf-Preset");
     GtkWidget *preset_name_combo = glade_xml_get_widget(store_preset_xml, "preset_name");    
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
@@ -100,17 +112,20 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
         if (gui->window->main)
             gui->window->main->refresh_all_presets(false);
     }
-    //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }
 
-void calf_plugins::activate_preset(GtkAction *action, activate_preset_params *params)
+void gui_preset_access::activate_preset(int preset, bool builtin)
 {
-    plugin_gui *gui = params->gui;
-    plugin_preset &p = (params->builtin ? get_builtin_presets() : get_user_presets()).presets[params->preset];
+    plugin_preset &p = (builtin ? get_builtin_presets() : get_user_presets()).presets[preset];
     if (p.plugin != gui->effect_name)
         return;
     if (!gui->plugin->activate_preset(p.bank, p.program))
         p.activate(gui->plugin);
     gui->refresh();
+}
+
+void gui_preset_access::on_dlg_destroy_window(GtkWindow *window, gpointer data)
+{
+    ((gui_preset_access *)data)->store_preset_dlg = NULL;
 }
 

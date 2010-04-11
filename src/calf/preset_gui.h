@@ -24,21 +24,19 @@
 #include <calf/gui.h>
 
 namespace calf_plugins {
-
-struct activate_preset_params
+    
+struct gui_preset_access: public preset_access_iface
 {
     plugin_gui *gui;
-    int preset;
-    bool builtin;
+    GtkWidget *store_preset_dlg;
     
-    activate_preset_params(plugin_gui *_gui, int _preset, bool _builtin)
-    : gui(_gui), preset(_preset), builtin(_builtin)
-    {
-    }
+    gui_preset_access(plugin_gui *_gui);
+    virtual void store_preset();
+    virtual void activate_preset(int preset, bool builtin);
+    virtual ~gui_preset_access() {} 
+        
+    static void on_dlg_destroy_window(GtkWindow *window, gpointer data);
 };
-
-void store_preset(GtkWindow *toplevel, plugin_gui *gui);
-void activate_preset(GtkAction *action, activate_preset_params *params);
 
 };
 
