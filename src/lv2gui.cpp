@@ -512,6 +512,10 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
 
 ext_plugin_gui::~ext_plugin_gui()
 {
+    if (confirmed)
+    {
+        cli.send("/quit");
+    }
     if (feedback_sender)
         delete feedback_sender;
 }
@@ -570,7 +574,6 @@ void extgui_cleanup(LV2UI_Handle handle)
 {
     ext_plugin_gui *gui = (ext_plugin_gui *)handle;
     delete gui;
-    printf("cleanup\n");
 }
 
 void extgui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
