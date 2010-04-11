@@ -18,18 +18,22 @@
  * Boston, MA  02110-1301  USA
  */
 #include <sys/wait.h>
+#include "config.h"
+#if USE_LV2_GTK_GUI
 #include <calf/gui.h>
+#endif
+#include <calf/giface.h>
 #include <calf/lv2_data_access.h>
 #include <calf/lv2_string_port.h>
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
+#include <calf/lv2helpers.h>
 #include <calf/osctlnet.h>
 #include <calf/utils.h>
-#include <calf/lv2helpers.h>
+#include <glib.h>
 
 using namespace std;
-using namespace dsp;
 using namespace calf_plugins;
 using namespace calf_utils;
 using namespace osctl;
@@ -225,8 +229,7 @@ void plugin_proxy_base::enable_all_sends()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#if USE_LV2_GTK_GUI
 /// Plugin controller that uses LV2 host with help of instance/data access to remotely
 /// control a plugin from the GUI
 struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, public gui_environment
@@ -354,6 +357,8 @@ const void *gui_extension(const char *uri)
 {
     return NULL;
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -583,24 +588,25 @@ const void *extgui_extension(const char *uri)
 
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-    static LV2UI_Descriptor gui, extgui;
-    gui.URI = "http://calf.sourceforge.net/plugins/gui/gtk2-gui";
-    gui.instantiate = gui_instantiate;
-    gui.cleanup = gui_cleanup;
-    gui.port_event = gui_port_event;
-    gui.extension_data = gui_extension;
+#if USE_LV2_GTK_GUI
+    static LV2UI_Descriptor gtkgui;
+    gtkgui.URI = "http://calf.sourceforge.net/plugins/gui/gtk2-gui";
+    gtkgui.instantiate = gui_instantiate;
+    gtkgui.cleanup = gui_cleanup;
+    gtkgui.port_event = gui_port_event;
+    gtkgui.extension_data = gui_extension;
+    if (!index--)
+        return &gtkgui;
+#endif
+    static LV2UI_Descriptor extgui;
     extgui.URI = "http://calf.sourceforge.net/plugins/gui/ext-gui";
     extgui.instantiate = extgui_instantiate;
     extgui.cleanup = extgui_cleanup;
     extgui.port_event = extgui_port_event;
     extgui.extension_data = extgui_extension;
-    switch(index) {
-        case 0:
-            return &gui;
-        case 1:
-            return &extgui;
-        default:
-            return NULL;
-    }
+    if (!index--)
+        return &extgui;
+    
+    return NULL;
 }
 

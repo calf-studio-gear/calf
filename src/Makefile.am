@@ -60,13 +60,33 @@ else
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "(ladspa_|lv2_|dssi_)descriptor"  $(FLUIDSYNTH_DEPS_LIBS)
 endif
 
-if USE_LV2_GUI
+if USE_LV2_GTK_GUI
+
+# Version WITH out-of-process GUI - links GTK+, UI controls etc.
+
 calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
 else
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GUI_DEPS_LIBS) -disable-static
 endif
+
+else
+
+# Version WITHOUT out-of-process GUI - links GLib only
+
+if USE_LV2_GUI
+calflv2gui_la_SOURCES = modules.cpp giface.cpp preset.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+
+if USE_DEBUG
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GLIB_DEPS_LIBS) -disable-static
+else
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2_gui_descriptor" $(GLIB_DEPS_LIBS) -disable-static
+endif
+
+endif
+
 endif
 
 if USE_GUI
