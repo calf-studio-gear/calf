@@ -333,12 +333,14 @@ void make_ttl(string path_prefix)
     
 #if USE_LV2_GUI
     string gtkgui_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>";
+#if USE_LV2_GTK_GUI
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
         "\n"
     ;
+#endif
     string extgui_uri = "<http://calf.sourceforge.net/plugins/gui/ext-gui>";
     gui_header += extgui_uri + "\n"
         "    a uiext:external ;\n"
@@ -364,7 +366,9 @@ void make_ttl(string path_prefix)
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
+#if USE_LV2_GTK_GUI
                 ttl += gtkgui_uri + portnot;
+#endif
                 ttl += extgui_uri + portnot;
             }
         }
