@@ -106,19 +106,19 @@ endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
 	install -d -m 755 $(DESTDIR)$(with_ladspa_rdf_dir)
-	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
+	ln -sf $(pkglibdir)/calf.so $(DESTDIR)$(with_ladspa_dir)/calf.so
 	$(top_builddir)/src/calfmakerdf > $(DESTDIR)$(with_ladspa_rdf_dir)/calf.rdf
 endif
 if USE_DSSI
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)
 	install -d -m 755 $(DESTDIR)$(with_dssi_dir)/calf
-	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
-	ln -sf $(DESTDIR)$(pkglibdir)/calf_gtk $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
+	ln -sf $(pkglibdir)/calf.so $(DESTDIR)$(with_dssi_dir)/calf.so
+	ln -sf $(pkglibdir)/calf_gtk $(DESTDIR)$(with_dssi_dir)/calf/calf_gtk
 endif
 if USE_LV2
 	install -d -m 755 $(DESTDIR)$(lv2dir)
-	ln -sf $(DESTDIR)$(pkglibdir)/calf.so $(DESTDIR)$(lv2dir)/calf.so
-	ln -sf $(DESTDIR)$(pkglibdir)/calf_gtk $(DESTDIR)$(lv2dir)/calf_gtk
+	ln -sf $(pkglibdir)/calf.so $(DESTDIR)$(lv2dir)/calf.so
+	ln -sf $(pkglibdir)/calf_gtk $(DESTDIR)$(lv2dir)/calf_gtk
 if USE_LV2_GUI
 	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(lv2dir)/calflv2gui.so
 endif
