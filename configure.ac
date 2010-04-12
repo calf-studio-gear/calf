@@ -5,6 +5,7 @@ AC_PREREQ(2.61)
 AC_INIT([calf],[0.0.19],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
+LT_INIT([dlopen])
 
 AM_INIT_AUTOMAKE(1.8)
 
@@ -17,7 +18,6 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
 
 ############################################################################################
 # Set initial values of shell variables
