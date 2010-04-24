@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
- * Class for managing calfjackhost's 
+ * Class for managing calfjackhost's session.
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2010 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
