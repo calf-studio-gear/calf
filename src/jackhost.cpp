@@ -290,7 +290,9 @@ int main(int argc, char *argv[])
     gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     
-    sess.connect_to_session_manager(argc, argv);
+#if USE_LASH
+    sess.session_manager = create_lash_session_mgr(&sess, argc, argv);
+#endif
     glade_init();
     while(1) {
         int option_index;
