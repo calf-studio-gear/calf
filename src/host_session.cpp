@@ -32,6 +32,8 @@ using namespace calf_plugins;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+host_session *host_session::instance = NULL;
+
 host_session::host_session()
 {
     client_name = "calf";
@@ -448,3 +450,19 @@ void host_session::save(session_save_iface *stream)
     }
 }
 
+void host_session::sigusr1handler(int signum)
+{
+    instance->main_win->save_file_from_sighandler();
+}
+
+void host_session::set_ladish_handler()
+{
+    instance = this;
+    
+    struct sigaction sa;
+    sa.sa_handler = sigusr1handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGUSR1, &sa, NULL);
+    
+}

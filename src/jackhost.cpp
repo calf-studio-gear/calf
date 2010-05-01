@@ -359,7 +359,9 @@ int main(int argc, char *argv[])
         sess.open();
         sess.connect();
         sess.client.activate();
+        sess.set_ladish_handler();
         gtk_main();
+        
         sess.close();
         // this is now done on preset add
         // save_presets(get_preset_filename().c_str());

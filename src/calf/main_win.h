@@ -60,6 +60,7 @@ namespace calf_plugins {
         std::string current_filename;
 
     protected:
+        volatile bool save_file_on_next_idle_call;
         plugin_strip *create_strip(plugin_ctl_iface *plugin);
         void update_strip(plugin_ctl_iface *plugin);
         static gboolean on_idle(void *data);
@@ -83,6 +84,7 @@ namespace calf_plugins {
         void open_file();
         void save_file();
         void save_file_as();
+        void save_file_from_sighandler();
     private:
         static const GtkActionEntry actions[];
         static void on_open_action(GtkWidget *widget, main_window *main);

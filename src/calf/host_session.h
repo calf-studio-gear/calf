@@ -31,8 +31,11 @@ namespace calf_plugins {
 
 class main_window;
 
-struct host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface, public session_client_iface
+class host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface, public session_client_iface
 {
+private:
+    static host_session *instance;
+public:
     std::string client_name, input_name, output_name, midi_name;
     std::vector<std::string> plugin_names;
     std::map<int, std::string> presets;
@@ -66,6 +69,9 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     /// Implementation of progress_report_iface function
     void report_progress(float percentage, const std::string &message);
     
+    /// Set handler for SIGUSR1 that LADISH uses to invoke Save function
+    void set_ladish_handler();
+    
     /// Implementation of open file functionality (TODO)
     virtual char *open_file(const char *name);
     /// Implementation of save file functionality
@@ -75,6 +81,9 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     virtual void load(session_load_iface *);
     /// Save to session manager
     virtual void save(session_save_iface *);
+    
+    /// SIGUSR1 handler
+    static void sigusr1handler(int signum);
 };
 
 };

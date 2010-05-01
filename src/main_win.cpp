@@ -517,6 +517,11 @@ static inline float LVL(float value)
 gboolean main_window::on_idle(void *data)
 {
     main_window *self = (main_window *)data;
+    if (self->save_file_on_next_idle_call)
+    {
+        self->save_file_on_next_idle_call = false;
+        self->save_file();
+    }
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
     {
         if (i->second)
@@ -538,6 +543,11 @@ gboolean main_window::on_idle(void *data)
         }
     }
     return TRUE;
+}
+
+void main_window::save_file_from_sighandler()
+{
+    save_file_on_next_idle_call = true;
 }
 
 void main_window::open_file()
