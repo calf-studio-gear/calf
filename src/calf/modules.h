@@ -634,6 +634,48 @@ private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
 
+/// Saturator by Markus Schmidt (based on Krzysztof's filters and Tom Szilagyi's distortion algorithm)
+class saturator_audio_module: public audio_module<saturator_metadata> {
+private:
+    float hp_pre_freq_old, lp_pre_freq_old;
+    float hp_post_freq_old, lp_post_freq_old;
+    float p_level_old, p_freq_old, p_q_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> lp[2][4], hp[2][4];
+    biquad_d2<float> p[2];
+    tap_distortion dist[2];
+public:
+    uint32_t srate;
+    bool is_active;
+    saturator_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/// Enhancer by Markus Schmidt (based on Krzysztof's filters and Tom Szilagyi's distortion algorithm)
+class enhancer_audio_module: public audio_module<enhancer_metadata> {
+private:
+    float freq_old;
+    uint32_t clip_in, clip_out;
+    float meter_in, meter_out, meter_drive;
+    biquad_d2<float> hp[2][4];
+    tap_distortion dist[2];
+public:
+    uint32_t srate;
+    bool is_active;
+    enhancer_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+
 };
 
 #include "modules_synths.h"
