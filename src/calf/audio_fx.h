@@ -610,6 +610,37 @@ public:
     }
 };
 
+/// Tom Szilagyi's distortion code, used with permission
+/// KF: I'm not 100% sure how this is supposed to work, but it does.
+/// I'm planning to rewrite it using more modular approach when I have more time.
+class tap_distortion {
+private:
+    float blend_old, drive_old;
+    float meter;
+    float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
+    float prev_med, prev_out;
+public:
+    uint32_t srate;
+    bool is_active;
+    tap_distortion();
+    void activate();
+    void deactivate();
+    void set_params(float blend, float drive);
+    void set_sample_rate(uint32_t sr);
+    float process(float in);
+    float get_distortion_level();
+    static inline float M(float x)
+    {
+        return (fabs(x) > 0.000000001f) ? x : 0.0f;
+    }
+
+    static inline float D(float x)
+    {
+        x = fabs(x);
+        return (x > 0.000000001f) ? sqrtf(x) : 0.0f;
+    }
+};
+
 #if 0
 { to keep editor happy
 #endif
