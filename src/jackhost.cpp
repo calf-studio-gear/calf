@@ -55,10 +55,11 @@ jack_host::jack_host(audio_module_iface *_module, const std::string &_name, cons
     metadata = module->get_metadata_iface();
     in_count = metadata->get_input_count();
     out_count = metadata->get_output_count();
+    param_count = metadata->get_param_count();
     inputs.resize(in_count);
     outputs.resize(out_count);
-    param_values = new float[metadata->get_param_count()];
-    for (int i = 0; i < metadata->get_param_count(); i++) {
+    param_values = new float[param_count];
+    for (int i = 0; i < param_count; i++) {
         params[i] = &param_values[i];
     }
     clear_preset();

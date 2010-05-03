@@ -84,7 +84,7 @@ public:
     port midi_port;
     std::string name;
     std::string instance_name;
-    int in_count, out_count;
+    int in_count, out_count, param_count;
     const plugin_metadata_iface *metadata;
     
 public:
