@@ -298,18 +298,39 @@ void vintage_delay_audio_module::params_changed()
     float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
     deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
     deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
-    amt_left.set_inertia(*params[par_amount]); amt_right.set_inertia(*params[par_amount]);
+    int deltime_fb = deltime_l + deltime_r;
     float fb = *params[par_feedback];
-    dry = *params[par_dryamount];
+    dry.set_inertia(*params[par_dryamount]);
     mixmode = dsp::fastf2i_drm(*params[par_mixmode]);
     medium = dsp::fastf2i_drm(*params[par_medium]);
-    if (mixmode == 0)
+    switch(mixmode)
     {
+    case MIXMODE_STEREO:
         fb_left.set_inertia(fb);
         fb_right.set_inertia(pow(fb, *params[par_time_r] / *params[par_time_l]));
-    } else {
+        amt_left.set_inertia(*params[par_amount]);
+        amt_right.set_inertia(*params[par_amount]);
+        break;
+    case MIXMODE_PINGPONG:
         fb_left.set_inertia(fb);
         fb_right.set_inertia(fb);
+        amt_left.set_inertia(*params[par_amount]);
+        amt_right.set_inertia(*params[par_amount]);
+        break;
+    case MIXMODE_LR:
+        fb_left.set_inertia(fb);
+        fb_right.set_inertia(fb);
+        amt_left.set_inertia(*params[par_amount]);                                          // L is straight 'amount'
+        amt_right.set_inertia(*params[par_amount] * pow(fb, 1.0 * deltime_r / deltime_fb)); // R is amount with feedback based dampening as if it ran through R/FB*100% of delay line's dampening
+        // deltime_l <<< deltime_r -> pow() = fb -> full delay line worth of dampening
+        // deltime_l >>> deltime_r -> pow() = 1 -> no dampening
+        break;
+    case MIXMODE_RL:
+        fb_left.set_inertia(fb);
+        fb_right.set_inertia(fb);
+        amt_left.set_inertia(*params[par_amount] * pow(fb, 1.0 * deltime_l / deltime_fb));
+        amt_right.set_inertia(*params[par_amount]);
+        break;
     }
     if (medium != old_medium)
         calc_filters();
@@ -343,47 +364,86 @@ void vintage_delay_audio_module::calc_filters()
     biquad_right[1].copy_coeffs(biquad_left[1]);
 }
 
+/// Single delay line with feedback at the same tap
+static inline void delayline_impl(int age, int deltime, float dry_value, const float &delayed_value, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb, float dry)
+{
+    // if the buffer hasn't been cleared yet (after activation), pretend we've read zeros
+    if (age <= deltime) {
+        out = dry * dry_value;
+        amt.step();
+        fb.step();
+    }
+    else
+    {
+        float delayed = delayed_value; // avoid dereferencing the pointer in 'then' branch of the if()
+        dsp::sanitize(delayed);
+        out = dry * dry_value + delayed * amt.get();
+        del = dry_value + delayed * fb.get();
+    }
+}
+
+/// Single delay line with tap output
+static inline void delayline2_impl(int age, int deltime, float dry_value, const float &delayed_value, const float &delayed_value_for_fb, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb, float dry)
+{
+    if (age <= deltime) {
+        out = dry * dry_value;
+        amt.step();
+        fb.step();
+    }
+    else
+    {
+        out = dry * dry_value + delayed_value * amt.get();
+        del = dry_value + delayed_value_for_fb * fb.get();
+        dsp::sanitize(out);
+        dsp::sanitize(del);
+    }
+}
+
 uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     uint32_t ostate = 3; // XXXKF optimize!
     uint32_t end = offset + numsamples;
-    int v = mixmode ? 1 : 0;
     int orig_bufptr = bufptr;
-    for(uint32_t i = offset; i < end; i++)
+    float out_left, out_right, del_left, del_right;
+    
+    switch(mixmode)
     {
-        float out_left, out_right, del_left, del_right;
-        // if the buffer hasn't been cleared yet (after activation), pretend we've read zeros
-
-        if (deltime_l >= age) {
-            del_left = ins[0][i];
-            out_left = dry * del_left;
-            amt_left.step();
-            fb_left.step();
-        }
-        else
+        case MIXMODE_STEREO:
+        case MIXMODE_PINGPONG:
         {
-            float in_left = buffers[v][(bufptr - deltime_l) & ADDR_MASK];
-            dsp::sanitize(in_left);
-            out_left = dry * ins[0][i] + in_left * amt_left.get();
-            del_left = ins[0][i] + in_left * fb_left.get();
+            int v = mixmode == MIXMODE_PINGPONG ? 1 : 0;
+            for(uint32_t i = offset; i < end; i++)
+            {                
+                float cur_dry = dry.get();
+                delayline_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l) & ADDR_MASK], out_left, del_left, amt_left, fb_left, cur_dry);
+                delayline_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_right, del_right, amt_right, fb_right, cur_dry);
+                
+                age++;
+                outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+                bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+            }
         }
-        if (deltime_r >= age) {
-            del_right = ins[1][i];
-            out_right = dry * del_right;
-            amt_right.step();
-            fb_right.step();
-        }
-        else
-        {
-            float in_right = buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK];
-            dsp::sanitize(in_right);
-            out_right = dry * ins[1][i] + in_right * amt_right.get();
-            del_right = ins[1][i] + in_right * fb_right.get();
-        }
+        break;
         
-        age++;
-        outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
-        bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+        case MIXMODE_LR:
+        case MIXMODE_RL:
+        {
+            int v = mixmode == MIXMODE_RL ? 1 : 0;
+            int deltime_fb = deltime_l + deltime_r;
+            int deltime_l_corr = mixmode == MIXMODE_RL ? deltime_fb : deltime_l;
+            int deltime_r_corr = mixmode == MIXMODE_LR ? deltime_fb : deltime_r;
+            
+            for(uint32_t i = offset; i < end; i++)
+            {
+                float cur_dry = dry.get();
+                delayline2_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l_corr) & ADDR_MASK], buffers[v][(bufptr - deltime_fb) & ADDR_MASK], out_left, del_left, amt_left, fb_left, cur_dry);
+                delayline2_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r_corr) & ADDR_MASK], buffers[1-v][(bufptr - deltime_fb) & ADDR_MASK], out_right, del_right, amt_right, fb_right, cur_dry);
+                
+                age++;
+                outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+                bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+            }
+        }
     }
     if (age >= MAX_DELAY)
         age = MAX_DELAY;

@@ -122,13 +122,13 @@ class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 public:    
     // 1MB of delay memory per channel... uh, RAM is cheap
     enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
+    enum { MIXMODE_STEREO, MIXMODE_PINGPONG, MIXMODE_LR, MIXMODE_RL }; 
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
     int age;
     
-    gain_smoothing amt_left, amt_right, fb_left, fb_right;
-    float dry;
+    gain_smoothing amt_left, amt_right, fb_left, fb_right, dry;
     
     dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     
