@@ -22,11 +22,11 @@
 #ifndef __CALF_SYNTH_H
 #define __CALF_SYNTH_H
 
+#include "audio_fx.h"
+#include <memory.h>
+#include <bitset>
 #include <list>
 #include <stack>
-#include <bitset>
-#include "primitives.h"
-#include "audio_fx.h"
 
 namespace dsp {
 

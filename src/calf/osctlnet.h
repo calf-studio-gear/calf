@@ -36,7 +36,7 @@ struct osc_socket
 
     osc_socket() : socket(-1), srcid(0) {}
     void bind(const char *hostaddr = "0.0.0.0", int port = 0);
-    std::string get_uri() const;
+    std::string get_url() const;
     virtual void on_bind() {}
     virtual ~osc_socket();
 };
@@ -49,6 +49,21 @@ struct osc_client: public osc_socket
     void set_url(const char *url);
     bool send(const std::string &address, osctl::osc_typed_strstream &stream);
     bool send(const std::string &address);
+};
+
+/// Base implementation for OSC server - requires the interfacing code
+/// to poll periodically for messages. Alternatively, one can use
+/// osc_glib_server that hooks into glib main loop.
+struct osc_server: public osc_socket
+{
+    osc_message_dump<osc_strstream, std::ostream> dump;
+    osc_message_sink<osc_strstream> *sink;
+    
+    osc_server() : dump(std::cout), sink(&dump) {}
+    
+    void read_from_socket();
+    void parse_message(const char *buffer, int len);    
+    ~osc_server();
 };
 
 };

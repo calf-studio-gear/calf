@@ -18,14 +18,9 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <config.h>
-#include <assert.h>
-#include <calf/giface.h>
-#include <calf/gui.h>
 #include <calf/gui_controls.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
-#include <calf/main_win.h>
 #include <gdk/gdk.h>
 
 #include <iostream>
@@ -67,7 +62,7 @@ GtkWidget *param_control::create_label()
 
 void param_control::update_label()
 {
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
 }
 
@@ -249,7 +244,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             state = false;
             cond.erase(0, 1);
         }
-        if (window->main->check_condition(cond.c_str()) == state)
+        if (window->environment->check_condition(cond.c_str()) == state)
             return;
         ignore_stack = 1;
         return;
@@ -282,7 +277,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
                     param_no = it->second;
             }
             if (param_no != -1)
-                current_control->param_variable = plugin->get_param_props(param_no)->short_name;
+                current_control->param_variable = plugin->get_metadata_iface()->get_param_props(param_no)->short_name;
             current_control->create(this, param_no);
             current_control->set_std_properties();
             current_control->init_xml(element);
@@ -331,9 +326,9 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     ignore_stack = 0;
     
     param_name_map.clear();
-    int size = plugin->get_param_count();
+    int size = plugin->get_metadata_iface()->get_param_count();
     for (int i = 0; i < size; i++)
-        param_name_map[plugin->get_param_props(i)->short_name] = i;
+        param_name_map[plugin->get_metadata_iface()->get_param_props(i)->short_name] = i;
     
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, xml_element_start, xml_element_end);
@@ -424,7 +419,7 @@ void plugin_gui::on_idle()
     {
         if (params[i]->param_no != -1)
         {
-            parameter_properties &props = *plugin->get_param_props(params[i]->param_no);
+            const parameter_properties &props = *plugin->get_metadata_iface()->get_param_props(params[i]->param_no);
             bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
             if (is_output) {
                 params[i]->set();
@@ -550,7 +545,7 @@ static const char *command_post_xml =
 "</ui>\n"
 ;
 
-plugin_gui_window::plugin_gui_window(main_window_iface *_main)
+plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main)
 {
     toplevel = NULL;
     ui_mgr = NULL;
@@ -558,6 +553,7 @@ plugin_gui_window::plugin_gui_window(main_window_iface *_main)
     builtin_preset_actions = NULL;
     user_preset_actions = NULL;
     command_actions = NULL;
+    environment = _env;
     main = _main;
     assert(main);
 }
@@ -592,7 +588,7 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
 string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
 {
     string command_xml = command_pre_xml;
-    plugin_command_info *ci = gui->plugin->get_commands();
+    plugin_command_info *ci = gui->plugin->get_metadata_iface()->get_commands();
     if (!ci)
         return "";
     for(int i = 0; ci->name; i++, ci++)
@@ -671,7 +667,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // printf("size request %dx%d\n", req2.width, req2.height);
     
     GtkWidget *container;
-    const char *xml = _jh->get_gui_xml();
+    const char *xml = _jh->get_metadata_iface()->get_gui_xml();
     assert(xml);
     container = gui->create_from_xml(_jh, xml);
     
@@ -694,7 +690,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
     gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (window_destroyed), (plugin_gui_window *)this);
-    main->set_window(gui->plugin, this);
+    if (main)
+        main->set_window(gui->plugin, this);
 
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     gtk_ui_manager_ensure_update(ui_mgr);
@@ -713,7 +710,8 @@ plugin_gui_window::~plugin_gui_window()
 {
     if (source_id)
         g_source_remove(source_id);
-    main->set_window(gui->plugin, NULL);
+    if (main)
+        main->set_window(gui->plugin, NULL);
     delete gui;
 }
 

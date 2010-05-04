@@ -21,14 +21,12 @@
 #ifndef __CALF_AUDIOFX_H
 #define __CALF_AUDIOFX_H
 
-#include <complex>
-#include <iostream>
-#include <calf/biquad.h>
-#include <calf/onepole.h>
-#include "primitives.h"
+#include "biquad.h"
 #include "delay.h"
 #include "fixed_point.h"
 #include "inertia.h"
+#include "onepole.h"
+#include <complex>
 
 namespace dsp {
 #if 0
@@ -53,21 +51,21 @@ protected:
     gain_smoothing gs_wet, gs_dry;
 public:
     fixed_point<unsigned int, 20> phase, dphase;
-    float get_rate() {
+    float get_rate() const {
         return rate;
     }
     void set_rate(float rate) {
         this->rate = rate;
         dphase = rate/sample_rate*4096;        
     }
-    float get_wet() {
+    float get_wet() const {
         return wet;
     }
     void set_wet(float wet) {
         this->wet = wet;
         gs_wet.set_inertia(wet);
     }
-    float get_dry() {
+    float get_dry() const {
         return dry;
     }
     void set_dry(float dry) {
@@ -95,122 +93,50 @@ public:
  * A monophonic phaser. If you want stereo, combine two :)
  * Also, gave up on using template args for signal type.
  */
-template<int MaxStages>
 class simple_phaser: public modulation_effect
 {
 protected:
     float base_frq, mod_depth, fb;
     float state;
-    int cnt, stages;
+    int cnt, stages, max_stages;
     dsp::onepole<float, float> stage1;
-    float x1[MaxStages], y1[MaxStages];
+    float *x1, *y1;
 public:
-    simple_phaser()
-    {
-        set_base_frq(1000);
-        set_mod_depth(1000);
-        set_fb(0);
-        state = 0;
-        cnt = 0;
-        stages = 0;
-        set_stages(6);
-    }
-    float get_base_frq() {
+    simple_phaser(int _max_stages, float *x1vals, float *y1vals);
+
+    float get_base_frq() const {
         return base_frq;
     }
     void set_base_frq(float _base_frq) {
         base_frq = _base_frq;
     }
-    int get_stages() {
+    int get_stages() const {
         return stages;
     }
-    void set_stages(int _stages) {
-        if (_stages > stages)
-        {
-            for (int i = stages; i < _stages; i++)
-            {
-                x1[i] = x1[stages-1];
-                y1[i] = y1[stages-1];
-            }
-        }
-        stages = _stages;
-    }
-    float get_mod_depth() {
+    void set_stages(int _stages);
+    
+    float get_mod_depth() const {
         return mod_depth;
     }
     void set_mod_depth(float _mod_depth) {
         mod_depth = _mod_depth;
     }
-    float get_fb() {
+    
+    float get_fb() const {
         return fb;
     }
     void set_fb(float fb) {
         this->fb = fb;
     }
+    
     virtual void setup(int sample_rate) {
         modulation_effect::setup(sample_rate);
         reset();
     }
-    void reset()
-    {
-        cnt = 0;
-        state = 0;
-        phase.set(0);
-        for (int i = 0; i < MaxStages; i++)
-            x1[i] = y1[i] = 0;
-        control_step();
-    }
-    inline void control_step()
-    {
-        cnt = 0;
-        int v = phase.get() + 0x40000000;
-        int sign = v >> 31;
-        v ^= sign;
-        // triangle wave, range from 0 to INT_MAX
-        double vf = (double)((v >> 16) * (1.0 / 16384.0) - 1);
-        
-        float freq = base_frq * pow(2.0, vf * mod_depth / 1200.0);
-        freq = dsp::clip<float>(freq, 10.0, 0.49 * sample_rate);
-        stage1.set_ap_w(freq * (M_PI / 2.0) * odsr);
-        phase += dphase * 32;
-        for (int i = 0; i < stages; i++)
-        {
-            dsp::sanitize(x1[i]);
-            dsp::sanitize(y1[i]);
-        }
-        dsp::sanitize(state);
-    }
-    void process(float *buf_out, float *buf_in, int nsamples) {
-        for (int i=0; i<nsamples; i++) {
-            cnt++;
-            if (cnt == 32)
-                control_step();
-            float in = *buf_in++;
-            float fd = in + state * fb;
-            for (int j = 0; j < stages; j++)
-                fd = stage1.process_ap(fd, x1[j], y1[j]);
-            state = fd;
-            
-            float sdry = in * gs_dry.get();
-            float swet = fd * gs_wet.get();
-            *buf_out++ = sdry + swet;
-        }
-    }
-    float freq_gain(float freq, float sr)
-    {
-        typedef std::complex<double> cfloat;
-        freq *= 2.0 * M_PI / sr;
-        cfloat z = 1.0 / exp(cfloat(0.0, freq)); // z^-1
-        
-        cfloat p = cfloat(1.0);
-        cfloat stg = stage1.h_z(z);
-        
-        for (int i = 0; i < stages; i++)
-            p = p * stg;
-        
-        p = p / (cfloat(1.0) - cfloat(fb) * p);        
-        return std::abs(cfloat(gs_dry.get_last()) + cfloat(gs_wet.get_last()) * p);
-    }
+    void reset();
+    void control_step();
+    void process(float *buf_out, float *buf_in, int nsamples);
+    float freq_gain(float freq, float sr) const;
 };
 
 /**
@@ -225,14 +151,14 @@ protected:
     float min_delay, mod_depth;
     sine_table<int, 4096, 65536> sine;
 public:
-    float get_min_delay() {
+    float get_min_delay() const {
         return min_delay;
     }
     void set_min_delay(float min_delay) {
         this->min_delay = min_delay;
         this->min_delay_samples = (int)(min_delay * 65536.0 * sample_rate);
     }
-    float get_mod_depth() {
+    float get_mod_depth() const {
         return mod_depth;
     }
     void set_mod_depth(float mod_depth) {
@@ -319,7 +245,7 @@ public:
         set_rate(get_rate());
         set_min_delay(get_min_delay());
     }
-    float get_fb() {
+    float get_fb() const {
         return fb;
     }
     void set_fb(float fb) {
@@ -386,7 +312,7 @@ public:
         }
         last_delay_pos = delay_pos;
     }
-    float freq_gain(float freq, float sr)
+    float freq_gain(float freq, float sr) const
     {
         typedef std::complex<double> cfloat;
         freq *= 2.0 * M_PI / sr;
@@ -504,7 +430,7 @@ public:
             rdec[i]=exp(-float(tr[i] >> 16) / fDec);
         }
     }
-    float get_time() {
+    float get_time() const {
         return time;
     }
     void set_time(float time) {
@@ -512,14 +438,14 @@ public:
         // fb = pow(1.0f/4096.0f, (float)(1700/(time*sr)));
         fb = 1.0 - 0.3 / (time * sr / 44100.0);
     }
-    float get_type() {
+    float get_type() const {
         return type;
     }
     void set_type(int type) {
         this->type = type;
         update_times();
     }
-    float get_diffusion() {
+    float get_diffusion() const {
         return diffusion;
     }
     void set_diffusion(float diffusion) {
@@ -531,7 +457,7 @@ public:
         this->diffusion = diffusion;
         update_times();
     }
-    float get_fb()
+    float get_fb() const
     {
         return this->fb;
     }
@@ -539,7 +465,7 @@ public:
     {
         this->fb = fb;
     }
-    float get_cutoff() {
+    float get_cutoff() const {
         return cutoff;
     }
     void set_cutoff(float cutoff) {
@@ -603,8 +529,8 @@ public:
     virtual void  calculate_filter(float freq, float q, int mode, float gain = 1.0) = 0;
     virtual void  filter_activate() = 0;
     virtual void  sanitize() = 0;
-    virtual int   process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) = 0;
-    virtual float freq_gain(int subindex, float freq, float srate) = 0;
+    virtual int   process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask) = 0;
+    virtual float freq_gain(int subindex, float freq, float srate) const = 0;
 
     virtual ~filter_module_iface() {}
 };
@@ -627,116 +553,18 @@ public:
     };
     
 public:
-    biquad_filter_module() : order(0) {}
-    
-    void calculate_filter(float freq, float q, int mode, float gain = 1.0)
-    {
-        if (mode <= mode_36db_lp) {
-            order = mode + 1;
-            left[0].set_lp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else if ( mode_12db_hp <= mode && mode <= mode_36db_hp ) {
-            order = mode - mode_12db_hp + 1;
-            left[0].set_hp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else if ( mode_6db_bp <= mode && mode <= mode_18db_bp ) {
-            order = mode - mode_6db_bp + 1;
-            left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-        } else { // mode_6db_br <= mode <= mode_18db_br
-            order = mode - mode_6db_br + 1;
-            left[0].set_br_rbj(freq, order * 0.1 * q, srate, gain);
-        }
-        
-        right[0].copy_coeffs(left[0]);
-        for (int i = 1; i < order; i++) {
-            left[i].copy_coeffs(left[0]);
-            right[i].copy_coeffs(left[0]);
-        }
-    }
-    
-    void filter_activate()
-    {
-        for (int i=0; i < order; i++) {
-            left[i].reset();
-            right[i].reset();
-        }
-    }
-    
-    void  sanitize()
-    {
-        for (int i=0; i < order; i++) {
-            left[i].sanitize();
-            right[i].sanitize();
-        }
-    }
-    
-    inline int process_channel(uint16_t channel_no, float *in, float *out, uint32_t numsamples, int inmask) {
-        dsp::biquad_d1<float> *filter;
-        switch (channel_no) {
-        case 0:
-            filter = left;
-            break;
-            
-        case 1:
-            filter = right;
-            break;
-        
-        default:
-            assert(false);
-            return 0;
-        }
-        
-        if (inmask) {
-            switch(order) {
-                case 1:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process(in[i]);
-                    break;
-                case 2:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[1].process(filter[0].process(in[i]));
-                    break;
-                case 3:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
-                    break;
-            }
-        } else {
-            if (filter[order - 1].empty())
-                return 0;
-            switch(order) {
-                case 1:
-                    for (uint32_t i = 0; i < numsamples; i++)
-                        out[i] = filter[0].process_zeroin();
-                    break;
-                case 2:
-                    if (filter[0].empty())
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process_zeroin();
-                    else
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[1].process(filter[0].process_zeroin());
-                    break;
-                case 3:
-                    if (filter[1].empty())
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process_zeroin();
-                    else
-                        for (uint32_t i = 0; i < numsamples; i++)
-                            out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
-                    break;
-            }
-        }
-        for (int i = 0; i < order; i++)
-            filter[i].sanitize();
-        return filter[order - 1].empty() ? 0 : inmask;
-    }
-    
-    float freq_gain(int subindex, float freq, float srate)
-    {
-        float level = 1.0;
-        for (int j = 0; j < order; j++)
-            level *= left[j].freq_gain(freq, srate);
-        return level;
-    }
+    biquad_filter_module()
+    : order(0) {}
+    /// Calculate filter coefficients based on parameters - cutoff/center frequency, q, filter type, output gain
+    void calculate_filter(float freq, float q, int mode, float gain = 1.0);
+    /// Reset filter state
+    void filter_activate();
+    /// Remove denormals
+    void sanitize();
+    /// Process a single channel (float buffer) of data
+    int process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask);
+    /// Determine gain (|H(z)|) for a given frequency
+    float freq_gain(int subindex, float freq, float srate) const;
 };
 
 class two_band_eq

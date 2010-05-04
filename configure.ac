@@ -38,12 +38,17 @@ AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
 PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
 PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
 
+EXEC_GUI_ENABLED="no"
+DSSI_GUI_ENABLED="no"
+LV2_GUI_ENABLED="no"
+JACK_FOUND="no"
+JACK_ENABLED="no"
+OLD_JACK="no"
+GUI_ENABLED="no"
+
 if test "$have_jack_header" = "yes"; then
   PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
-    AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", JACK_FOUND="no"),
-    JACK_FOUND="no")
-else
-  JACK_FOUND="no"
+    AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", ),)
 fi
 
 if test "$JACK_FOUND" = "yes"; then
@@ -70,6 +75,7 @@ else
 fi
 PKG_CHECK_MODULES(SLV2_HACK, slv2 <= 0.6.1, SLV2_UNSUPPORTED="yes", SLV2_UNSUPPORTED="no")
 
+# Look for settings and installed libraries to determine what to compile/install/use
 if test "$LADSPA_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow LADSPA])
   AC_ARG_WITH(ladspa,
@@ -99,26 +105,20 @@ if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"
     GUI_ENABLED="yes",
     GUI_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
   )
-else
-  GUI_ENABLED="no"
 fi
 
 if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
   JACK_ENABLED="yes"
-else
-  JACK_ENABLED="no"
 fi
 
 if test "$GUI_ENABLED" = "yes" -a "$DSSI_FOUND" = "yes"; then
   DSSI_GUI_ENABLED="yes"
-else
-  DSSI_GUI_ENABLED="no"
+  EXEC_GUI_ENABLED="yes"
 fi
 
 if test "$GUI_ENABLED" = "yes" -a "$LV2_ENABLED" = "yes"; then
   LV2_GUI_ENABLED="yes"
-else
-  LV2_GUI_ENABLED="no"
+  EXEC_GUI_ENABLED="yes"
 fi
 
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
@@ -141,30 +141,28 @@ else
   CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
 fi
 
+# Create automake conditional symbols
 AM_CONDITIONAL(USE_DSSI, test "$DSSI_FOUND" = "yes")
 AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
 AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
+AM_CONDITIONAL(USE_EXEC_GUI, test "$EXEC_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH_0_6, test "$LASH_0_6_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
+
+# Create autoconf symbols
 if test "$LADSPA_FOUND" = "yes"; then
   AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
 fi
 if test "$DSSI_FOUND" = "yes"; then
   AC_DEFINE(USE_DSSI, 1, [DSSI wrapper will be built])
 fi
-if test "$DSSI_GUI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_DSSI_GUI, 1, [GTK+ GUI for DSSI  will be built])
-fi
 if test "$LV2_ENABLED" = "yes"; then
   AC_DEFINE(USE_LV2, 1, [LV2 wrapper will be built])
-fi
-if test "$LV2_GUI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_LV2_GUI, 1, [GTK+ GUI for LV2 plugins will be built])
 fi
 if test "$JACK_ENABLED" = "yes"; then
   AC_DEFINE(USE_JACK, 1, [JACK I/O will be used])
@@ -177,6 +175,15 @@ if test "$LASH_ENABLED" = "yes"; then
   if test "$LASH_0_6_ENABLED" = "yes"; then
     AC_DEFINE(USE_LASH_0_6, 1, "Unstable LASH API is enabled")
   fi
+fi
+if test "$EXEC_GUI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_EXEC_GUI, 1, [Out-of-process GTK+ GUI for LV2/DSSI will be built])
+fi
+if test "$DSSI_GUI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_DSSI_GUI, 1, [GTK+ GUI executable will be used for DSSI])
+fi
+if test "$LV2_GUI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_LV2_GUI, 1, [GTK+ GUI executable will be used for LV2])
 fi
 if test "$set_enable_experimental" = "yes"; then
   AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
@@ -243,22 +250,23 @@ AC_CONFIG_FILES([Makefile
 AC_MSG_RESULT([
     Calf configured
 
-    Debug mode:             $set_enable_debug
-    Experimental plugins:   $set_enable_experimental
-    LADSPA enabled:         $LADSPA_FOUND
-    Common GUI code:        $GUI_ENABLED
-    DSSI enabled:           $DSSI_FOUND
-    DSSI GUI enabled:       $DSSI_GUI_ENABLED
-    LV2 enabled:            $LV2_ENABLED
-    LV2 GUI enabled:        $LV2_GUI_ENABLED
-    JACK host enabled:      $JACK_ENABLED
-    LASH enabled:           $LASH_ENABLED])
+    Debug mode:              $set_enable_debug
+    Experimental plugins:    $set_enable_experimental
+    LADSPA enabled:          $LADSPA_FOUND
+    Common GUI code:         $GUI_ENABLED
+    Out-of-process GUI code: $EXEC_GUI_ENABLED
+    DSSI enabled:            $DSSI_FOUND
+    DSSI GUI enabled:        $DSSI_GUI_ENABLED
+    LV2 enabled:             $LV2_ENABLED
+    LV2 GUI enabled:         $LV2_GUI_ENABLED
+    JACK host enabled:       $JACK_ENABLED
+    LASH enabled:            $LASH_ENABLED])
 if test "$LASH_ENABLED" = "yes"; then
-  AC_MSG_RESULT([    Unstable LASH API:      $LASH_0_6_ENABLED])
+  AC_MSG_RESULT([    Unstable LASH API:       $LASH_0_6_ENABLED])
 fi
-AC_MSG_RESULT([    Old-style JACK MIDI:    $OLD_JACK
+AC_MSG_RESULT([    Old-style JACK MIDI:     $OLD_JACK
     
-    Installation prefix:    $prefix
+    Installation prefix:     $prefix
 ])
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 

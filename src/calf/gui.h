@@ -64,7 +64,7 @@ struct param_control: public control_base
     };
     
     param_control() { gui = NULL; param_no = -1; label = NULL; in_change = 0;}
-    inline parameter_properties &get_props();
+    inline const parameter_properties &get_props();
     
     virtual void init_xml(const char *element) {}
     virtual GtkWidget *create_label();
@@ -141,10 +141,26 @@ public:
 };
 
 class main_window_owner_iface;
-    
-class main_window_iface
+
+/// A class used to inform the plugin GUIs about the environment they run in
+/// (currently: what plugin features are accessible)
+struct gui_environment_iface
+{
+    virtual bool check_condition(const char *name)=0;
+    virtual ~gui_environment_iface() {}
+};
+
+/// Trivial implementation of gui_environment_iface
+class gui_environment: public gui_environment_iface
 {
 public:
+    std::set<std::string> conditions;
+    virtual bool check_condition(const char *name) { return conditions.count(name) != 0; }
+};
+
+/// Interface used by the plugin to communicate with the main hosting window
+struct main_window_iface
+{
     virtual void set_owner(main_window_owner_iface *owner)=0;
 
     virtual void add_plugin(plugin_ctl_iface *plugin)=0;
@@ -152,13 +168,11 @@ public:
     
     virtual void set_window(plugin_ctl_iface *plugin, plugin_gui_window *window)=0;
     virtual void refresh_all_presets(bool builtin_too)=0;
-    virtual bool check_condition(const char *name)=0;
     virtual ~main_window_iface() {}
 };
 
-class main_window_owner_iface
+struct main_window_owner_iface
 {
-public:
     virtual void new_plugin(const char *name) = 0;
     virtual void remove_plugin(plugin_ctl_iface *plugin) = 0;
     virtual char *open_file(const char *name) = 0;
@@ -173,10 +187,11 @@ public:
     GtkWindow *toplevel;
     GtkUIManager *ui_mgr;
     GtkActionGroup *std_actions, *builtin_preset_actions, *user_preset_actions, *command_actions;
+    gui_environment_iface *environment;
     main_window_iface *main;
     int source_id;
 
-    plugin_gui_window(main_window_iface *_main);
+    plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch);
     std::string make_gui_command_list(GtkActionGroup *grp);
     void fill_gui_presets(bool builtin, char &ch);
@@ -187,9 +202,9 @@ public:
 };
 
 
-inline parameter_properties &param_control::get_props() 
+inline const parameter_properties &param_control::get_props() 
 { 
-    return  *gui->plugin->get_param_props(param_no);
+    return  *gui->plugin->get_metadata_iface()->get_param_props(param_no);
 }
 
 class null_audio_module;

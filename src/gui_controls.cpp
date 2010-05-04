@@ -44,7 +44,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     lstore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING); // value, key
     
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     widget  = gtk_combo_box_new_text ();
     if (props.choices)
     {
@@ -60,13 +60,13 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 void combo_box_param_control::set()
 {
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
 
 void combo_box_param_control::get()
 {
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gui->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min, this);
 }
 
@@ -180,14 +180,14 @@ void hscale_param_control::init_xml(const char *element)
 void hscale_param_control::set()
 {
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
     // hscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
 }
 
 void hscale_param_control::get()
 {
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
     gui->set_param_value(param_no, cvalue, this);
 }
@@ -243,14 +243,14 @@ void vscale_param_control::init_xml(const char *element)
 void vscale_param_control::set()
 {
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_range_set_value (GTK_RANGE (widget), props.to_01 (gui->plugin->get_param_value(param_no)));
     // vscale_value_changed (GTK_HSCALE (widget), (gpointer)this);
 }
 
 void vscale_param_control::get()
 {
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     float cvalue = props.from_01 (gtk_range_get_value (GTK_RANGE (widget)));
     gui->set_param_value(param_no, cvalue, this);
 }
@@ -287,7 +287,7 @@ GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_label_new ("");
     if (param_no != -1)
     {
-        parameter_properties &props = get_props();
+        const parameter_properties &props = get_props();
         gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
     }
     else
@@ -307,7 +307,7 @@ void value_param_control::set()
     if (param_no == -1)
         return;
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     gtk_label_set_text (GTK_LABEL (widget), props.to_string(gui->plugin->get_param_value(param_no)).c_str());    
 }
 
@@ -324,7 +324,7 @@ void value_param_control::send_status(const char *key, const char *value)
 GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
-    // parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
     calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
@@ -337,7 +337,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 void vumeter_param_control::set()
 {
     _GUARD_CHANGE_
-    parameter_properties &props = get_props();
+    const parameter_properties &props = get_props();
     calf_vumeter_set_value (CALF_VUMETER (widget), props.to_01(gui->plugin->get_param_value(param_no)));
     if (label)
         update_label();
@@ -348,7 +348,7 @@ void vumeter_param_control::set()
 GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
-    // parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     widget = calf_led_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-led");
     CALF_LED(widget)->led_mode = get_int("mode", 0);
@@ -359,7 +359,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
 void led_param_control::set()
 {
     _GUARD_CHANGE_
-    // parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     calf_led_set_value (CALF_LED (widget), gui->plugin->get_param_value(param_no));
     if (label)
         update_label();
@@ -370,7 +370,7 @@ void led_param_control::set()
 GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
-    // parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     widget = calf_tube_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-tube");
     CALF_TUBE(widget)->size = get_int("size", 2);
@@ -382,7 +382,7 @@ GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
 void tube_param_control::set()
 {
     _GUARD_CHANGE_
-    // parameter_properties &props = get_props();
+    // const parameter_properties &props = get_props();
     calf_tube_set_value (CALF_TUBE (widget), gui->plugin->get_param_value(param_no));
     if (label)
         update_label();
@@ -800,7 +800,6 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     last_generation = -1;
-    // const parameter_properties &props = get_props();
     
     widget = calf_line_graph_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-graph");
@@ -837,7 +836,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     
-    teif = gui->plugin->get_table_edit_iface();
+    teif = gui->plugin->get_metadata_iface()->get_table_edit_iface();
     const table_column_info *tci = teif->get_table_columns(param_no);
     assert(tci);
     cols = 0;

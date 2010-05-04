@@ -27,12 +27,11 @@
 #include <vector>
 #include <gtk/gtk.h>
 #include <calf/gui.h>
-#include <calf/jackhost.h>
 #include "custom_ctl.h"
 
 namespace calf_plugins {
 
-    class main_window: public main_window_iface
+    class main_window: public main_window_iface, public gui_environment
     {
     public:
         struct plugin_strip
@@ -57,13 +56,7 @@ namespace calf_plugins {
         GtkWidget *strips_table;
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
-#if USE_JACK
-        jack_client *client;
-#else
-        void *client_dummy;
-#endif
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
-        std::set<std::string> conditions;
         std::vector<plugin_ctl_iface *> plugin_queue;
         std::string prefix;
         bool is_closed;
@@ -91,13 +84,8 @@ namespace calf_plugins {
         void refresh_plugin(plugin_ctl_iface *plugin);
         void on_closed();
         void close_guis();
-        void open_gui(plugin_ctl_iface *plugin);
-        bool check_condition(const char *cond) {
-            return conditions.count(cond) != 0;
-        }
-    
+        void open_gui(plugin_ctl_iface *plugin);    
         void create();
-        
         void open_file();
         void save_file();
         void save_file_as();

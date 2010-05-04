@@ -44,7 +44,7 @@ void osc_socket::bind(const char *hostaddr, int port)
     on_bind();
 }
 
-std::string osc_socket::get_uri() const
+std::string osc_socket::get_url() const
 {
     sockaddr_in sadr;
     socklen_t len = sizeof(sadr);
@@ -75,6 +75,7 @@ void osc_client::set_addr(const char *hostaddr, int port)
 
 void osc_client::set_url(const char *url)
 {
+    const char *orig_url = url;
     if (strncmp(url, "osc.udp://", 10))
         throw osc_net_bad_address(url);
     url += 10;
@@ -82,11 +83,11 @@ void osc_client::set_url(const char *url)
     const char *pos = strchr(url, ':');
     const char *pos2 = strchr(url, '/');
     if (!pos || !pos2)
-        throw osc_net_bad_address(url);
+        throw osc_net_bad_address(orig_url);
     
     // XXXKF perhaps there is a default port for osc.udp?
     if (pos2 - pos < 0)
-        throw osc_net_bad_address(url);
+        throw osc_net_bad_address(orig_url);
     
     string hostname = string(url, pos - url);
     int port = atoi(pos + 1);
@@ -123,3 +124,42 @@ bool osc_client::send(const std::string &address)
     return ::sendto(socket, hdr.data.data(), hdr.data.length(), 0, (sockaddr *)&addr, sizeof(addr)) == (int)hdr.data.length();
 }
 
+void osc_server::parse_message(const char *buffer, int len)
+{
+    osctl::string_buffer buf(string(buffer, len));
+    osc_strstream str(buf);
+    string address, type_tag;
+    str >> address;
+    str >> type_tag;
+    // cout << "Address " << address << " type tag " << type_tag << endl << flush;
+    if (!address.empty() && address[0] == '/'
+      &&!type_tag.empty() && type_tag[0] == ',')
+    {
+        sink->receive_osc_message(address, type_tag.substr(1), str);
+    }
+}
+
+void osc_server::read_from_socket()
+{
+    do {
+        char buf[16384];
+        int len = recv(socket, buf, 16384, MSG_DONTWAIT);
+        if (len > 0)
+        {
+            if (buf[0] == '/')
+            {
+                parse_message(buf, len);
+            }
+            if (buf[0] == '#')
+            {
+                // XXXKF bundles are not supported yet
+            }
+        }
+        else
+            break;
+    } while(1);
+}
+
+osc_server::~osc_server()
+{
+}
