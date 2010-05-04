@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Compressor</h1>
+            <a href="images/Calf - Compressor.png" title="Calf - Compressor" class="thickbox"><img class="thumbnail" src="images/Calf - Compressor.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                A compressor is mainly used to <strong>reduce the dynamic of a signal</strong>. Especially modern music is mostly compressed at a high ratio to improve the overall loudness. It's done to get the highest attention of a listener, "fatten" the sound and bring more "power" to the track. If a signal is compressed too much it may sound dull or "dead" afterwards or it may start to "pump" (which could be a powerful effect but can also destroy a track completely). <strong>The right compression is the key to reach a professional sound</strong> and is the high art of mixing and mastering. Because of it's complex settings it may take a long time to get the right feeling for this kind of effect.
+            </p>
+            <h2>Basics and controls</h2>
+            <p>
+                Compression is done by detecting the volume above a chosen level ("<strong>Threshold</strong>") and divide it by the factor set with "<strong>Ratio</strong>". So if you set the threshold to -12dB and your signal reaches -6dB a ratio of 2:1 will result in a signal at -9dB. Because an exact manipulation of the signal would cause distrotion of the waveform the reduction can be levelled over the time. This is done by setting "Attack" and "Release".
+                <br /><br />
+                "<strong>Attack</strong>" determines how long the signal has to rise above the threshold before any reduction will occur and "<strong>Release</strong>" sets the time the signal has to fall below the threshold to reduce the reduction again. Shorter signals than the chosen attack time will be left untouched.
+                <br /><br />
+                The overall reduction of the signal can be made up afterwards with the "<strong>Makeup</strong>" setting. So compressing the peaks of a signal about 6dB and rising the makeup to this level results in a signal two times louder than the source.
+                <br /><br />
+                To gain a softer entry in the compression the "<strong>Knee</strong>" flattens the hard edge at the threshold in the range of the chosen decibels.
+            </p>
+            <h2>Line graph</h2>
+            <p>
+                The line graph shows exactly what your compressor is doing at the moment. <strong>The x-axis shows the input level and the y-axis</strong> displays the output. <strong>The dot</strong> represents the actual level of the detected signal. Here you can see exactly how much your audio is reduced.
+            </p>
+            <h2>Examples and Tipps</h2>
+            <p>
+                Nearly every signal in modern music can benefit from some kind of compression. Even if you have a signal at a constant level (ex. a bassdrum from a sampler) the right compression could raise the sustain of it (shorter attack and release) or add a harder attack (vice versa) for example. <strong>Mainly a compressor is used to reduce the dynamics of natural sound sources</strong> like vocals, piano, guitars, drums and so on to fit the loudness levels widely used today.
+            </p><p>
+                The <strong>attack and release times</strong> are essential for the sound the compressor produces on different sources. That's the reason why presets are mostly senseless due to the great differences between the dynamics and the waveforms of different signals. Deeper sounds like bass guitars and bassdrums need higher attack and release times (above 50 or 100ms) while mid sounds are compressed with shorter values (about 25 to 50ms). High sounds can be reduced with attack times below 20ms. The release time depends mainly on the sustain of the sound and is mostly two or three times the attack time.
+            </p><p>
+                If you hear your <strong>signal starting to "pump"</strong> increase the release time until it stops. This will reduce the overall loudness of the signal so perhaps decreasing the release time could be the better choice if no audible distortion appears or it doesn't matter.
+            </p><p>
+                If your source contains a <strong>complex waveform</strong> (a piano or a complete mix for example) wideband compression could be the wrong tool to raise the loudness without "flattening" or "killing" your sound. Signals with a wide range of different frequencies are more likely compressed with a <strong><a href="Multiband Compressor.html" title="Multiband Compressor">multiband compressor</a></strong> to keep the loudness of frequencies that doesn't raise above the threshold.
+            </p><p>
+                To reduce the dynamics of a <strong>separated frequency range</strong>, affect a range more than another or to limit
+                a separated band of frequencies use a <strong><a href="Sidechain Compressor.html" title="Sidechain Compressor">sidechain compressor</a></strong> instead.
+            </p><p>
+                If you compressed a vocal track don't forget to <strong><a href="Deesser.html" title="Deesser">deess</a></strong> it afterwards because compression on vocals leaves the "sssss" and "shhhhhhh" sounds untouched due to their low levels at a high volume.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                <li><strong>Input (knob):</strong> Raise the volume before the signal is sent in the compression stage. If you have found some great settings but want to raise the overall loudness of the track simply increase this level.</li>
+                <li><strong>Input (VU-meter):</strong> The level of the original signal</li>
+                <li><strong>Input (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
+                <li><strong>Output (VU-meter):</strong> The level of the compressed and made up signal</li>
+                <li><strong>Output (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Reduction:</strong> The level of reduction on the original signal</li>
+                <li><strong>Attack:</strong> Amount of milliseconds the signal has to rise above the threshold before gain reduction starts</li>
+                <li><strong>Release:</strong> Amount of milliseconds the signal has to fall below the threshold before the reduction is decreased again</li>
+                <li><strong>Knee:</strong> Curve the sharp knee around the threshold to enter gain reduction more softly</li>
+                <li><strong>Ratio:</strong> Set a ratio about which the signal is reduced. 1:2 means that if the level rises 4dB above the threshold, it will be only 2dB above after the reduction.</li>
+                <li><strong>Threshold:</strong> If a signal rises above this level it will affect the gain reduction</li>
+                <li><strong>Makeup:</strong> Amplify your signal after processing</li>
+                <li><strong>Stereo Link:</strong> Choose if the average level between both channels or the louder channel affects the reduction</li>
+                <li><strong>Detection:</strong> Choose if the deesser should take the exact signal for detection or an RMS like one (it's mainly smoother).</li>
+            </ul>
+        </div>
+    </body>
+</html>

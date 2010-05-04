@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Multiband Compressor</h1>
+            <a href="images/Calf - Multiband Compressor.png" title="Calf - Multiband Compressor" class="thickbox"><img class="thumbnail" src="images/Calf - Multiband Compressor.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                Multiband compression is the key for a <strong>maximum of loudness</strong>. Calf Multiband Compressor provides a <strong>quad-band multiband compressor</strong> to provide a great control over the dynamics in a wide frequency range. This kind of compressor splits the signal in four different frequency ranges. These ranges are compressed separately and mixed together afterwards again. Multiband compressors are mainly used to <strong>compress wide range waveforms</strong> like complete mixdowns, classical recordings or complex instruments like pianos.
+            </p>
+            <h2>Basics</h2>
+            <p>
+                To understand compression and sidechaining <strong>please refer to the <a href="Compressor.html" title="Compressor">compressor</a>'s and <a href="Sidechain Compressor.html" title="Sidechain Compressor">sidechain compressor</a>'s manuals</strong>. There you'll find detailed information about those techniques which build the concept of a multiband compressor.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input (knob):</strong> Raise the volume before the signal is sent in the compression stage. If you have found some great settings but want to raise the overall loudness of the track simply increase this level.</li>
+                <li><strong>Input L/R (VU-meter):</strong> The level of the original signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
+                <li><strong>Output L/R (VU-meter):</strong> The level of the compressed and made up signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Output (knob):</strong> Raise the overall volume after the compression stage</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                
+                <li><strong>Split x:</strong> Frequency to split between these strips</li>
+                <li><strong>Sx:</strong> Separate or overlap the frequencies of the neighbour bands</li>
+                <li><strong>Qx:</strong> Raise the center frequency</li>
+                
+                <li><strong>Attack n:</strong> Amount of milliseconds the signal has to rise above the threshold before gain reduction starts</li>
+                <li><strong>Release n:</strong> Amount of milliseconds the signal has to fall below the threshold before the reduction is decreased again</li>
+                <li><strong>Knee n:</strong> Curve the sharp knee around the threshold to enter gain reduction more softly</li>
+                <li><strong>Ratio n:</strong> Set a ratio about which the signal is reduced. 1:2 means that if the level rises 4dB above the threshold, it will be only 2dB above after the reduction.</li>
+                <li><strong>Threshold n:</strong> If a signal rises above this level it will affect the gain reduction</li>
+                <li><strong>Makeup n:</strong> Amplify this frequency range after processing</li>
+                <li><strong>Detection n:</strong> Choose if the strip should take the exact signal for detection or an RMS like one (it's mainly smoother).</li>
+                <li><strong>Gain Reduction n:</strong> The level of reduction in this strip</li>
+                <li><strong>Output n:</strong> The output level of this strip</li>
+                <li><strong>Bypass n:</strong> Don't process anything, just bypass the signal of this strip</li>
+                <li><strong>Mute n:</strong> Don't output anything, just mute the signal of this strip</li>
+            </ul>
+        </div>
+    </body>
+</html>

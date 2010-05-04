@@ -1,0 +1,172 @@
+body {
+    background: url(../images/background_blue.png);
+    color: white;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 0.8em;
+}
+a {
+    color: white;
+    font-weight: bold;
+    text-decoration: underline;
+}
+a:hover {
+    color: #0af;
+    text-decoration: underline;
+}
+img {
+    border: none;
+}
+h1 {
+    color: #D5F16A;
+/*    background: url(../images/style_p.png) transparent;*/
+    text-align: center;
+    margin: 20px;
+    border-bottom: 1px dotted #fff;
+}
+h2 {
+    color: #D5F16A;
+    font-size: 20px;
+    font-weight: normal;
+    
+    padding: 5px 0 10px 0;
+}
+h3 {
+/*    border-bottom: 1px dotted #fff;*/
+}
+p, ul {
+    background: url(../images/style_p.png) transparent;
+    margin: 0 0 15px;
+    padding: 10px;
+    border: 1px solid black;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px;
+}
+ul {
+}
+li {
+    padding: 0;
+    margin: 20;
+}
+strong {
+    color: #D5F16A;
+}
+
+.wrapper {
+    clear: both;
+    width: 800px;
+    margin: auto;
+    text-align: left;
+}
+.thumbnail {
+    width: 400px;
+    float: right;
+    margin: 10px;
+    border: 2px solid black;
+    border-top: 12px solid black;
+}
+
+.headerbg {
+    background: url(../images/background_black.png);
+    border-bottom: 1px solid #111;
+}
+.header {
+    width: 800px;
+    margin: auto;
+    text-align: left;
+    font-size: 9px;
+}
+.header img {
+    margin: 8px;
+    float: left;
+}
+.header .menu {
+    float: left;
+}
+.header .menu h3 {
+    margin: 5px;
+    font-weight: normal;
+    font-size: 13px;
+    border-bottom: 1px dotted #fff;
+}
+.header .menu ul {
+    margin: 3px;
+    padding: 5px;
+    background: none;
+    color: #0af;
+    border: none;
+}
+.header .menu ul li {
+    margin: 0 10px;
+    padding: 2px;
+}
+.header .menu ul li:hover {
+    background:black;
+}
+.header .menu a {
+    font-weight: normal;
+}
+.header img {
+    width: 80px;
+}
+.header .menu img {
+    display: none;
+    margin: 0;
+}
+
+.index {
+    padding: 20px 50px;
+}
+.index h3 {
+    border-bottom: 1px dotted white;
+}
+.index a {
+    display: block;
+    text-align: center;
+    font-weight: normal;
+    position: absolute;
+    top: 100px;
+    width: 150px;
+}
+.index img {
+    position: absolute;
+    bottom: 55px !important;
+    top: auto;
+    left: 25px;
+    text-align: center;
+    border: 1px solid black;
+    border-top: 5px solid black;
+}
+.index img {
+    width: 100px;
+}
+.index ul {
+    background: none;
+    color: #0af;
+    border: none;
+}
+.index li {
+    position: relative;
+    display: block;
+    width: 150px;
+    height: 150px;
+    margin: 8px;
+    float: left;
+    text-align: center;
+}
+.index li:hover {
+    
+}
+
+.inactive {
+    color: #999 !important;
+}
+
+.developers li {
+    clear: left;
+}
+.portrait {
+    width: 100px;
+    float: left;
+    margin: 10px;
+}
