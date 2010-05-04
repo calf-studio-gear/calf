@@ -18,8 +18,6 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <assert.h>
-#include <config.h>
 #include <calf/ctl_led.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
@@ -139,14 +137,6 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     int rows = 0, cols = 0;
     g_object_get(G_OBJECT(strips_table), "n-rows", &rows, "n-columns", &cols, NULL);
     gtk_table_resize(GTK_TABLE(strips_table), rows - 4, cols);
-    /*
-    // a hack to remove unneeded vertical space from the window
-    // not perfect, as it undoes user's vertical resize
-    // only needed when window is resizable though
-    int width, height;
-    gtk_window_get_size(toplevel, &width, &height);
-    gtk_window_resize(toplevel, width, 1);
-    */
 }
 
 void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_win)
@@ -157,11 +147,14 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
     if (!strip)
         return;
     strip->gui_win = gui_win;
-    if (!is_closed)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
+    if (gui_win)
+    {
+        if (!is_closed)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);
         
-    GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
-    gtk_button_set_label(GTK_BUTTON(tb), "Edit");
+        GtkToggleButton *tb = GTK_TOGGLE_BUTTON(strip->button);
+        gtk_button_set_label(GTK_BUTTON(tb), "Edit");
+    }
 }
 
 void main_window::refresh_all_presets(bool builtin_too)
@@ -251,7 +244,8 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     
     // title @ 1, 1
     char buf[128];
-    sprintf(buf, "<span size=\"15000\">%s</span>", plugin->get_label());
+    const plugin_metadata_iface *metadata = plugin->get_metadata_iface();
+    sprintf(buf, "<span size=\"15000\">%s</span>", metadata->get_label());
     GtkWidget *title = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(title), buf);
     gtk_table_attach(GTK_TABLE(strips_table), title, 1, 2, row, row + 1, ao, GTK_SHRINK, 20, 10);
@@ -281,7 +275,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     gtk_widget_show(buttonBox);
     
     // midi box
-    if (plugin->get_midi()) {
+    if (metadata->get_midi()) {
         label = calf_led_new();
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), TRUE, TRUE, 0);
@@ -302,9 +296,8 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
 
     for (int i = 0; i < 2; i++)
         strip->audio_in[i] = strip->audio_out[i] = NULL;
-    
-    
-    if (plugin->get_input_count() == 2) {
+        
+    if (metadata->get_input_count() == 2) {
         
         GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
         
@@ -328,7 +321,7 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
         gtk_widget_set_size_request(GTK_WIDGET(inBox), 160, -1);
     }
 
-    if (plugin->get_output_count() == 2) {
+    if (metadata->get_output_count() == 2) {
         
         GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
         
@@ -385,8 +378,8 @@ void main_window::update_strip(plugin_ctl_iface *plugin)
 
 void main_window::open_gui(plugin_ctl_iface *plugin)
 {
-    plugin_gui_window *gui_win = new plugin_gui_window(this);
-    gui_win->create(plugin, (prefix + plugin->get_label()).c_str(), plugin->get_id());
+    plugin_gui_window *gui_win = new plugin_gui_window(this, this);
+    gui_win->create(plugin, (prefix + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
     gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }
@@ -415,28 +408,18 @@ static void action_destroy_notify(gpointer data)
     delete (main_window::add_plugin_params *)data;
 }
 
-/*
-void main_window::new_plugin(const char *plugin)
-{
-    printf("new plugin %s\n", plugin);
-}
-*/
-
 std::string main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
-    std::vector<plugin_metadata_iface *> plugins;
-    calf_plugins::get_all_plugins(plugins);
+    const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
     for(unsigned int i = 0; i < plugins.size(); i++)
     {
-        plugin_metadata_iface *p = plugins[i];
+        const plugin_metadata_iface *p = plugins[i];
         string action_name = "Add" + string(p->get_id())+"Action";
         s += string("<menuitem action=\"") + action_name + "\" />";
         GtkActionEntry ae = { action_name.c_str(), NULL, p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
         gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_id()), action_destroy_notify);
-        delete p;
     }
-    plugins.clear();
     return s + plugin_post_xml;
 }
 
@@ -470,13 +453,6 @@ void main_window::create()
     strips_table = gtk_table_new(0, 6, FALSE);
     gtk_table_set_col_spacings(GTK_TABLE(strips_table), 0);
     gtk_table_set_row_spacings(GTK_TABLE(strips_table), 0);
-    
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 0, 1, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("Module"), 1, 2, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("MIDI"), 2, 3, 0, 1, GTK_FILL, GTK_SHRINK, 15, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio in"), 3, 4, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new("audio out"), 4, 5, 0, 1, GTK_FILL, GTK_SHRINK, 80, 5);
-//    gtk_table_attach(GTK_TABLE(strips_table), gtk_label_new(""), 5, 6, 0, 1, GTK_FILL, GTK_SHRINK, 28, 5);
     
     for(GList *p = GTK_TABLE(strips_table)->children; p != NULL; p = p->next)
     {
@@ -541,15 +517,15 @@ gboolean main_window::on_idle(void *data)
             plugin_ctl_iface *plugin = i->first;
             plugin_strip *strip = i->second;
             int idx = 0;
-            if (plugin->get_input_count() == 2) {
+            if (plugin->get_metadata_iface()->get_input_count() == 2) {
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[0]), LVL(plugin->get_level(idx++)));
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[1]), LVL(plugin->get_level(idx++)));
             }
-            if (plugin->get_output_count() == 2) {
+            if (plugin->get_metadata_iface()->get_output_count() == 2) {
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[0]), LVL(plugin->get_level(idx++)));
                 calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[1]), LVL(plugin->get_level(idx++)));
             }
-            if (plugin->get_midi()) {
+            if (plugin->get_metadata_iface()->get_midi()) {
                 calf_led_set_value (CALF_LED (strip->midi_in), plugin->get_level(idx++));
             }
         }

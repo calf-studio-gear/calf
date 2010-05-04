@@ -17,17 +17,11 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#include <assert.h>
-#include <getopt.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <config.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
-#include <calf/main_win.h>
-#include <calf/osctl.h>
-#include <calf/osctlnet.h>
-#include <calf/osctlserv.h>
+#include <calf/osctl_glib.h>
+#include <calf/preset.h>
+#include <getopt.h>
 
 using namespace std;
 using namespace dsp;
@@ -35,39 +29,6 @@ using namespace calf_plugins;
 using namespace osctl;
 
 #define debug_printf(...)
-
-#if 0
-void osctl_test()
-{
-    string sdata = string("\000\000\000\003123\000test\000\000\000\000\000\000\000\001\000\000\000\002", 24);
-    osc_stream is(sdata);
-    vector<osc_data> data;
-    is.read("bsii", data);
-    assert(is.pos == sdata.length());
-    assert(data.size() == 4);
-    assert(data[0].type == osc_blob);
-    assert(data[1].type == osc_string);
-    assert(data[2].type == osc_i32);
-    assert(data[3].type == osc_i32);
-    assert(data[0].strval == "123");
-    assert(data[1].strval == "test");
-    assert(data[2].i32val == 1);
-    assert(data[3].i32val == 2);
-    osc_stream os("");
-    os.write(data);
-    assert(os.buffer == sdata);
-    osc_server srv;
-    srv.bind("0.0.0.0", 4541);
-    
-    osc_client cli;
-    cli.bind("0.0.0.0", 0);
-    cli.set_addr("0.0.0.0", 4541);
-    if (!cli.send("/blah", data))
-        g_error("Could not send the OSC message");
-    
-    g_main_loop_run(g_main_loop_new(NULL, FALSE));
-}
-#endif
 
 struct cairo_params
 {
@@ -130,7 +91,7 @@ void param_line_graphs::clear()
 
 }
 
-struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, public line_graph_iface
+struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
 {
     osc_client *client;
     bool send_osc;
@@ -140,10 +101,11 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
     float *params;
     map<int, param_line_graphs> graphs;
     bool update_graphs;
+    const plugin_metadata_iface *metadata;
 
-    plugin_proxy(plugin_metadata_iface *md)
-    : plugin_metadata_proxy(md)
+    plugin_proxy(const plugin_metadata_iface *md)
     {
+        metadata = md;
         client = NULL;
         send_osc = false;
         update_graphs = true;
@@ -151,7 +113,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         param_count = md->get_param_count();
         params = new float[param_count];
         for (int i = 0; i < param_count; i++)
-            params[i] = get_param_props(i)->def_value;
+            params[i] = metadata->get_param_props(i)->def_value;
     }
     virtual float get_param_value(int param_no) {
         if (param_no < 0 || param_no >= param_count)
@@ -166,7 +128,7 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         if (send_osc)
         {
             osc_inline_typed_strstream str;
-            str << (uint32_t)(param_no + get_param_port_offset()) << value;
+            str << (uint32_t)(param_no + metadata->get_param_port_offset()) << value;
             client->send("/control", str);
         }
     }
@@ -207,18 +169,19 @@ struct plugin_proxy: public plugin_ctl_iface, public plugin_metadata_proxy, publ
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
     }
-    virtual line_graph_iface *get_line_graph_iface() { return this; }
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context);
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
-    void update_cairo_context(cairo_iface *context, cairo_params &item);
+    virtual const line_graph_iface *get_line_graph_iface() const { return this; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    void update_cairo_context(cairo_iface *context, cairo_params &item) const;
+    virtual const plugin_metadata_iface *get_metadata_iface() const { return metadata; }
 };
 
-bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context)
+bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.graphs.size())
     {
         float *sdata = g.graphs[subindex]->data;
@@ -233,11 +196,11 @@ bool plugin_proxy::get_graph(int index, int subindex, float *data, int points, c
     return false;
 }
 
-bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context)
+bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.dots.size())
     {
         dot_item &item = *g.dots[subindex];
@@ -250,11 +213,11 @@ bool plugin_proxy::get_dot(int index, int subindex, float &x, float &y, int &siz
     return false;
 }
 
-bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!graphs.count(index))
         return false;
-    param_line_graphs &g = graphs[index];
+    const param_line_graphs &g = graphs.find(index)->second;
     if (subindex < (int)g.gridlines.size())
     {
         gridline_item &item = *g.gridlines[subindex];
@@ -267,7 +230,7 @@ bool plugin_proxy::get_gridline(int index, int subindex, float &pos, bool &verti
     return false;
 }
 
-void plugin_proxy::update_cairo_context(cairo_iface *context, cairo_params &item)
+void plugin_proxy::update_cairo_context(cairo_iface *context, cairo_params &item) const
 {
     if (item.flags & cairo_params::HAS_COLOR)
         context->set_source_rgba(item.r, item.g, item.b, item.a);
@@ -281,10 +244,9 @@ GMainLoop *mainloop;
 
 static bool osc_debug = false;
 
-struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream>
+struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strstream>, public gui_environment
 {
     plugin_proxy *plugin;
-    main_window *main_win;
     plugin_gui_window *window;
     string effect_name, title;
     osc_client cli;
@@ -293,15 +255,35 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     /// Timeout callback source ID
     int source_id;
     bool osc_link_active;
+    /// If we're communicating with the LV2 external UI bridge, use a slightly different protocol
+    bool is_lv2;
     
     dssi_osc_server()
     : plugin(NULL)
-    , main_win(new main_window)
-    , window(new plugin_gui_window(main_win))
+    , window(new plugin_gui_window(this, NULL))
     {
         sink = this;
         source_id = 0;
         osc_link_active = false;
+        is_lv2 = false;
+    }
+    
+    void set_plugin(const char *arg)
+    {
+        const plugin_metadata_iface *pmi = plugin_registry::instance().get_by_id(arg);
+        if (!pmi)
+        {
+            pmi = plugin_registry::instance().get_by_uri(arg);
+            if (pmi)
+                is_lv2 = true;
+        }
+        if (!pmi)
+        {
+            fprintf(stderr, "Unknown plugin: %s\n", arg);
+            exit(1);
+        }
+        effect_name = pmi->get_id();
+        plugin = new plugin_proxy(pmi);
     }
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)
@@ -316,26 +298,10 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
     
     void create_window()
     {
-        plugin = NULL;
-        vector<plugin_metadata_iface *> plugins;
-        get_all_plugins(plugins);
-        for (unsigned int i = 0; i < plugins.size(); i++)
-        {
-            if (!strcmp(plugins[i]->get_id(), effect_name.c_str()))
-            {
-                plugin = new plugin_proxy(plugins[i]);
-                break;
-            }
-        }
-        if (!plugin)
-        {
-            fprintf(stderr, "Unknown plugin: %s\n", effect_name.c_str());
-            exit(1);
-        }
         plugin->client = &cli;
         plugin->send_osc = true;
-        ((main_window *)window->main)->conditions.insert("dssi");
-        ((main_window *)window->main)->conditions.insert("directlink");
+        conditions.insert("dssi");
+        conditions.insert("directlink");
         window->create(plugin, title.c_str(), effect_name.c_str());
         plugin->gui = window->gui;
         gtk_signal_connect(GTK_OBJECT(window->toplevel), "destroy", G_CALLBACK(on_destroy), this);
@@ -363,15 +329,28 @@ struct dssi_osc_server: public osc_server, public osc_message_sink<osc_strstream
 
 void dssi_osc_server::set_osc_update(bool enabled)
 {
-    osc_link_active = enabled;
-    osc_inline_typed_strstream data;
-    data << "OSC:FEEDBACK_URI";
-    data << (enabled ? get_uri() : "");
-    cli.send("/configure", data);
+    if (is_lv2)
+    {
+        osc_inline_typed_strstream data;
+        data << ((uint32_t)(enabled ? 1 : 0));
+        cli.send("/enable_updates", data);
+    }
+    else
+    {
+        osc_link_active = enabled;
+        osc_inline_typed_strstream data;
+        data << "OSC:FEEDBACK_URI";
+        data << (enabled ? get_url() : "");
+        cli.send("/configure", data);
+    }
 }
 
 void dssi_osc_server::send_osc_update()
 {
+    // LV2 is updating via run() callback in the external UI library, so this is not needed
+    if (is_lv2)
+        return;
+    
     static int serial_no = 0;
     osc_inline_typed_strstream data;
     data << "OSC:UPDATE";
@@ -489,9 +468,9 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         {
             bool sosc = plugin->send_osc;
             plugin->send_osc = false;
-            int count = plugin->get_param_count();
+            int count = plugin->metadata->get_param_count();
             for (int i =0 ; i < count; i++)
-                plugin->set_param_value(i, plugin->get_param_props(i)->def_value);
+                plugin->set_param_value(i, plugin->metadata->get_param_props(i)->def_value);
             plugin->send_osc = sosc;
             window->gui->refresh();
             // special handling for default preset
@@ -516,13 +495,13 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
         
         buffer >> port >> val;
         
-        int idx = port - plugin->get_param_port_offset();
+        int idx = port - plugin->metadata->get_param_port_offset();
         debug_printf("CONTROL %d %f\n", idx, val);
         bool sosc = plugin->send_osc;
         plugin->send_osc = false;
         window->gui->set_param_value(idx, val);
         plugin->send_osc = sosc;
-        if (plugin->get_param_props(idx)->flags & PF_PROP_GRAPH)
+        if (plugin->metadata->get_param_props(idx)->flags & PF_PROP_GRAPH)
             plugin->update_graphs = true;
         return;
     }
@@ -576,6 +555,7 @@ int main(int argc, char *argv[])
     if (debug_var && atoi(debug_var))
         osc_debug = true;
     
+    gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     while(1) {
         int option_index;
@@ -611,10 +591,8 @@ int main(int argc, char *argv[])
     }
 
     dssi_osc_server srv;
-    srv.prefix = "/dssi/"+string(argv[optind + 1]) + "/" + string(argv[optind + 2]);
-    for (char *p = argv[optind + 2]; *p; p++)
-        *p = tolower(*p);
-    srv.effect_name = argv[optind + 2];
+    srv.set_plugin(argv[optind + 2]);
+    srv.prefix = "/dssi/"+string(argv[optind + 1]) + "/" + srv.effect_name;
     srv.title = argv[optind + 3];
     
     srv.bind();
@@ -625,11 +603,10 @@ int main(int argc, char *argv[])
     srv.cli.bind();
     srv.cli.set_url(argv[optind]);
     
-    debug_printf("URI = %s\n", srv.get_uri().c_str());
+    debug_printf("URI = %s\n", srv.get_url().c_str());
     
-    string data_buf, type_buf;
     osc_inline_typed_strstream data;
-    data << srv.get_uri();
+    data << srv.get_url();
     if (!srv.cli.send("/update", data))
     {
         g_error("Could not send the initial update message via OSC to %s", argv[optind]);

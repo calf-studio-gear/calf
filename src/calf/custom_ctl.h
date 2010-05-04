@@ -36,7 +36,7 @@ G_BEGIN_DECLS
 struct CalfLineGraph
 {
     GtkDrawingArea parent;
-    calf_plugins::line_graph_iface *source;
+    const calf_plugins::line_graph_iface *source;
     int source_id;
     bool is_square;
     cairo_surface_t *cache_surface;

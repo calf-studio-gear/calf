@@ -17,14 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
-#include <config.h>
-#include <map>
-#include <glade/glade.h>
-#include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
-#include <calf/main_win.h>
+#include <glade/glade.h>
 
 using namespace calf_plugins;
 using namespace std;
@@ -101,7 +97,8 @@ void calf_plugins::store_preset(GtkWindow *toplevel, plugin_gui *gui)
         tmp.add(sp);
         get_user_presets() = tmp;
         get_user_presets().save(tmp.get_preset_filename(false).c_str());
-        gui->window->main->refresh_all_presets(false);
+        if (gui->window->main)
+            gui->window->main->refresh_all_presets(false);
     }
     //gtk_window_set_transient_for(GTK_WINDOW(store_preset_dlg), toplevel);
 }

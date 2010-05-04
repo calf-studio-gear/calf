@@ -1,10 +1,11 @@
 [Desktop Entry]
 Name=Calf Plugin Pack for JACK
 Name[pl]=Zestaw wtyczek Calf
+Version=@VERSION@
 Comment=Process and produce sounds using a set of plugins with JACK interface
 Comment[pl]=Przetwarzaj i generuj dźwięk używając zestawu wtyczek zgodnych z JACK
 Exec=calfjackhost
 Terminal=false
 Type=Application
-Categories=Application;AudioVideo;Audio
+Categories=Application;AudioVideo;Audio;GNOME
 Icon=calf
