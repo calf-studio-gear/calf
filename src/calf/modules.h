@@ -614,9 +614,6 @@ private:
     biquad_d2<float> p[2];
     tap_distortion dist[2];
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     saturator_audio_module();
@@ -655,9 +652,6 @@ private:
     biquad_d2<float> lp[2][4];
     tap_distortion dist[2];
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     bassenhancer_audio_module();
