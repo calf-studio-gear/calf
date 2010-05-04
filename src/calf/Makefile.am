@@ -7,4 +7,4 @@ noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
     lv2_uri_map.h lv2-midiport.h lv2helpers.h lv2wrap.h \
     main_win.h metadata.h modmatrix.h modules.h modules_dev.h modules_synths.h modulelist.h \
     multichorus.h onepole.h organ.h osc.h osctl.h osctlnet.h osctl_glib.h preset.h \
-    preset_gui.h primitives.h synth.h utils.h vumeter.h wave.h waveshaping.h
+    preset_gui.h primitives.h session_mgr.h synth.h utils.h vumeter.h wave.h waveshaping.h

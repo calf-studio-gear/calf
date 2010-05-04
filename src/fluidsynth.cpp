@@ -19,10 +19,9 @@
  * Boston, MA  02110-1301  USA
  */
 #include <calf/giface.h>
-#include <calf/modules_synths.h>
 #include <calf/modules_dev.h>
 #include <calf/utils.h>
-#include <memory.h>
+#include <string.h>
 
 #if ENABLE_EXPERIMENTAL
 

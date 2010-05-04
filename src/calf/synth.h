@@ -22,8 +22,10 @@
 #ifndef __CALF_SYNTH_H
 #define __CALF_SYNTH_H
 
-#include "audio_fx.h"
+#include <assert.h>
+#include <math.h>
 #include <memory.h>
+#include <stdint.h>
 #include <bitset>
 #include <list>
 #include <stack>

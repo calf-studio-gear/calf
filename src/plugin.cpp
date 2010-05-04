@@ -177,6 +177,9 @@ void ladspa_instance::process_dssi_event(snd_seq_event_t &event)
         case SND_SEQ_EVENT_PITCHBEND:
             module->pitch_bend(event.data.control.value);
             break;
+        case SND_SEQ_EVENT_CHANPRESS:
+            module->channel_pressure(event.data.control.value);
+            break;
     }
 }
 #endif
@@ -282,12 +285,15 @@ static void cb_select_program(LADSPA_Handle Instance, unsigned long Bank, unsign
 
 ladspa_plugin_metadata_set::ladspa_plugin_metadata_set()
 {
-    presets = NULL;
-    preset_descs = NULL;
     metadata = NULL;
     memset(&descriptor, 0, sizeof(descriptor));
+
+#if USE_DSSI
+    presets = NULL;
+    preset_descs = NULL;
     memset(&descriptor_for_dssi, 0, sizeof(descriptor_for_dssi));
     memset(&dssi_descriptor, 0, sizeof(dssi_descriptor));
+#endif
 }
 
 void ladspa_plugin_metadata_set::prepare(const plugin_metadata_iface *md, LADSPA_Handle (*cb_instantiate)(const struct _LADSPA_Descriptor * Descriptor, unsigned long sample_rate))
@@ -321,7 +327,7 @@ void ladspa_plugin_metadata_set::prepare(const plugin_metadata_iface *md, LADSPA
         prh.HintDescriptor = 0;
         ((const char **)descriptor.PortNames)[i] = md->get_port_names()[i];
     }
-    for (; i < input_count + output_count + param_count; i++)
+    for (; i < input_count + output_count + real_param_count; i++)
     {
         LADSPA_PortRangeHint &prh = ((LADSPA_PortRangeHint *)descriptor.PortRangeHints)[i];
         const parameter_properties &pp = *md->get_param_props(i - input_count - output_count);
@@ -493,3 +499,17 @@ const DSSI_Descriptor *dssi_descriptor(unsigned long Index)
 
 #endif
 
+#if USE_JACK
+
+extern "C" {
+
+audio_module_iface *create_calf_plugin_by_name(const char *effect_name)
+{
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new name##_audio_module;
+    #include <calf/modulelist.h>
+    return NULL;
+}
+
+}
+
+#endif

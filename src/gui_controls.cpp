@@ -23,16 +23,113 @@
 #include <calf/ctl_curve.h>
 #include <calf/ctl_keyboard.h>
 #include <calf/ctl_led.h>
+#include <calf/custom_ctl.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/gui_controls.h>
-#include <calf/preset.h>
-#include <calf/preset_gui.h>
-#include <calf/main_win.h>
+#include <calf/utils.h>
 #include <gdk/gdk.h>
 
 using namespace calf_plugins;
 using namespace std;
+
+/******************************** control/container base class **********************/
+
+void control_base::require_attribute(const char *name)
+{
+    if (attribs.count(name) == 0) {
+        g_error("Missing attribute: %s", name);
+    }
+}
+
+void control_base::require_int_attribute(const char *name)
+{
+    if (attribs.count(name) == 0) {
+        g_error("Missing attribute: %s", name);
+    }
+    if (attribs[name].empty() || attribs[name].find_first_not_of("0123456789") != string::npos) {
+        g_error("Wrong data type on attribute: %s (required integer)", name);
+    }
+}
+
+int control_base::get_int(const char *name, int def_value)
+{
+    if (attribs.count(name) == 0)
+        return def_value;
+    const std::string &v = attribs[name];
+    if (v.empty() || v.find_first_not_of("-+0123456789") != string::npos)
+        return def_value;
+    return atoi(v.c_str());
+}
+
+float control_base::get_float(const char *name, float def_value)
+{
+    if (attribs.count(name) == 0)
+        return def_value;
+    const std::string &v = attribs[name];
+    if (v.empty() || v.find_first_not_of("-+0123456789.") != string::npos)
+        return def_value;
+    stringstream ss(v);
+    float value;
+    ss >> value;
+    return value;
+}
+
+/******************************** container base class **********************/
+
+void control_container::set_std_properties()
+{
+    if (attribs.find("widget-name") != attribs.end())
+    {
+        string name = attribs["widget-name"];
+        if (container) {
+            gtk_widget_set_name(GTK_WIDGET(container), name.c_str());
+        }
+    }
+}
+
+/************************* param-associated control base class **************/
+
+void param_control::set_std_properties()
+{
+    if (attribs.find("widget-name") != attribs.end())
+    {
+        string name = attribs["widget-name"];
+        if (widget) {
+            gtk_widget_set_name(widget, name.c_str());
+        }
+    }
+}
+
+GtkWidget *param_control::create_label()
+{
+    label = gtk_label_new ("");
+    gtk_label_set_width_chars (GTK_LABEL (label), 12);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+    return label;
+}
+
+void param_control::update_label()
+{
+    const parameter_properties &props = get_props();
+    gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
+}
+
+void param_control::hook_params()
+{
+    if (param_no != -1) {
+        gui->add_param_ctl(param_no, this);
+    }
+    gui->params.push_back(this);
+}
+
+param_control::~param_control()
+{
+    if (label)
+        gtk_widget_destroy(label);
+    if (widget)
+        gtk_widget_destroy(widget);
+}
 
 /******************************** controls ********************************/
 

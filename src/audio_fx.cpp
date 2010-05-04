@@ -228,3 +228,80 @@ float biquad_filter_module::freq_gain(int subindex, float freq, float srate) con
         level *= left[j].freq_gain(freq, srate);
     return level;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Distortion Module by Tom Szilagyi
+///
+/// This module provides a blendable saturation stage
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+tap_distortion::tap_distortion()
+{
+    is_active = false;
+    srate = 0;
+    meter = 0.f;
+}
+
+void tap_distortion::activate()
+{
+    is_active = true;
+    set_params(0.f, 0.f);
+}
+void tap_distortion::deactivate()
+{
+    is_active = false;
+}
+
+void tap_distortion::set_params(float blend, float drive)
+{
+    // set distortion coeffs
+    if ((drive_old != drive) || (blend_old != blend)) {
+        rdrive = 12.0f / drive;
+        rbdr = rdrive / (10.5f - blend) * 780.0f / 33.0f;
+        kpa = D(2.0f * (rdrive*rdrive) - 1.0f) + 1.0f;
+        kpb = (2.0f - kpa) / 2.0f;
+        ap = ((rdrive*rdrive) - kpa + 1.0f) / 2.0f;
+        kc = kpa / D(2.0f * D(2.0f * (rdrive*rdrive) - 1.0f) - 2.0f * rdrive*rdrive);
+
+        srct = (0.1f * srate) / (0.1f * srate + 1.0f);
+        sq = kc*kc + 1.0f;
+        knb = -1.0f * rbdr / D(sq);
+        kna = 2.0f * kc * rbdr / D(sq);
+        an = rbdr*rbdr / sq;
+        imr = 2.0f * knb + D(2.0f * kna + 4.0f * an - 1.0f);
+        pwrq = 2.0f / (imr + 1.0f);
+        
+        drive_old = drive;
+        blend_old = blend;
+    }
+}
+
+void tap_distortion::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+float tap_distortion::process(float in)
+{
+    meter = 0.f;
+    float out = 0.f;
+    float proc = in;
+    float med;
+    if (proc >= 0.0f) {
+        med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
+    } else {
+        med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+    }
+    proc = srct * (med - prev_med + prev_out);
+    prev_med = M(med);
+    prev_out = M(proc);
+    out = proc;
+    meter = proc;
+    return out;
+}
+
+float tap_distortion::get_distortion_level()
+{
+    return meter;
+}

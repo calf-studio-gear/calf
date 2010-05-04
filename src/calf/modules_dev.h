@@ -22,7 +22,6 @@
 #define __CALF_MODULES_DEV_H
 
 #include <calf/metadata.h>
-#include <calf/modules.h>
 
 #if ENABLE_EXPERIMENTAL
 #include <fluidsynth.h>

@@ -5,6 +5,7 @@ AC_PREREQ(2.61)
 AC_INIT([calf],[0.0.19],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
+LT_INIT([dlopen])
 
 AM_INIT_AUTOMAKE(1.8)
 
@@ -17,43 +18,20 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
 
-# Checks for libraries.
-PKG_PROG_PKG_CONFIG
-
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([memory.h stdint.h stdlib.h time.h math.h])
-
-AC_CHECK_HEADER(ladspa.h, LADSPA_FOUND="yes", LADSPA_FOUND="no")
-
-AC_CHECK_HEADER(dssi.h, DSSI_FOUND="yes", DSSI_FOUND="no")
-
-AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
-AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
-
-AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
-
-PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
-PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
-
+############################################################################################
+# Set initial values of shell variables
 EXEC_GUI_ENABLED="no"
 DSSI_GUI_ENABLED="no"
+LV2_GTK_GUI_ENABLED="no"
 LV2_GUI_ENABLED="no"
 JACK_FOUND="no"
 JACK_ENABLED="no"
 OLD_JACK="no"
 GUI_ENABLED="no"
 
-if test "$have_jack_header" = "yes"; then
-  PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
-    AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", ),)
-fi
-
-if test "$JACK_FOUND" = "yes"; then
-  PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
-fi
+############################################################################################
+# Create configure substitutions for dependencies
 
 AC_SUBST(GLIB_DEPS_CFLAGS)
 AC_SUBST(GLIB_DEPS_LIBS)
@@ -63,6 +41,41 @@ AC_SUBST(JACK_DEPS_CFLAGS)
 AC_SUBST(JACK_DEPS_LIBS)
 AC_SUBST(FLUIDSYNTH_DEPS_CFLAGS)
 AC_SUBST(FLUIDSYNTH_DEPS_LIBS)
+
+############################################################################################
+# Detect dependencies
+
+# Checks for libraries.
+PKG_PROG_PKG_CONFIG
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
+
+AC_CHECK_HEADER(ladspa.h, LADSPA_FOUND="yes", LADSPA_FOUND="no")
+
+AC_CHECK_HEADER(dssi.h, DSSI_FOUND="yes", DSSI_FOUND="no")
+
+AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
+AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
+
+# JACK
+AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
+
+# GLib
+PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
+
+# Fluidsynth
+PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
+
+if test "$have_jack_header" = "yes"; then
+  PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
+    AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", ),)
+fi
+
+if test "$JACK_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
+fi
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.6.0,
@@ -107,6 +120,30 @@ if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"
   )
 fi
 
+AC_MSG_CHECKING([whether to enable experimental/unfinished features])
+AC_ARG_ENABLE(experimental,
+  AC_HELP_STRING([--enable-experimental],[enable unfinished features - not recommended!]),
+  [set_enable_experimental="$enableval"],
+  [set_enable_experimental="no"])
+AC_MSG_RESULT($set_enable_experimental)
+
+AC_MSG_CHECKING([whether to enable old-style in-process GTK+ GUI])
+AC_ARG_ENABLE(in-process-lv2-gui,
+  AC_HELP_STRING([--enable-in-process-lv2-gui],[enable old-style in-process GTK+ GUI - not recommended!]),
+  [set_enable_gtk_gui="$enableval"],
+  [set_enable_gtk_gui="no"])
+AC_MSG_RESULT($set_enable_gtk_gui)
+
+AC_MSG_CHECKING([whether to enable debugging mode])
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug],[enable debug mode - slow!]),
+  [set_enable_debug="$enableval"],
+  [set_enable_debug="no"])
+AC_MSG_RESULT($set_enable_debug)
+
+############################################################################################
+# Compute status shell variables
+
 if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
   JACK_ENABLED="yes"
 fi
@@ -121,19 +158,9 @@ if test "$GUI_ENABLED" = "yes" -a "$LV2_ENABLED" = "yes"; then
   EXEC_GUI_ENABLED="yes"
 fi
 
-AC_MSG_CHECKING([whether to enable experimental/unfinished features])
-AC_ARG_ENABLE(experimental,
-  AC_HELP_STRING([--enable-experimental],[enable unfinished features - not recommended!]),
-  [set_enable_experimental="$enableval"],
-  [set_enable_experimental="no"])
-AC_MSG_RESULT($set_enable_experimental)
-
-AC_MSG_CHECKING([whether to enable debugging mode])
-AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],[enable debug mode - slow!]),
-  [set_enable_debug="$enableval"],
-  [set_enable_debug="no"])
-AC_MSG_RESULT($set_enable_debug)
+if test "$set_enable_gtk_gui" = "yes" -a "$LV2_ENABLED" = "yes" -a "$GUI_ENABLED" = "yes"; then
+  LV2_GTK_GUI_ENABLED="yes"
+fi
 
 if test "$set_enable_debug" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O0 -g -Wall"
@@ -141,6 +168,7 @@ else
   CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
 fi
 
+############################################################################################
 # Create automake conditional symbols
 AM_CONDITIONAL(USE_DSSI, test "$DSSI_FOUND" = "yes")
 AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
@@ -150,11 +178,13 @@ AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_EXEC_GUI, test "$EXEC_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
+AM_CONDITIONAL(USE_LV2_GTK_GUI, test "$set_enable_gtk_gui" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH_0_6, test "$LASH_0_6_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
 
-# Create autoconf symbols
+############################################################################################
+# Create autoconf symbols for config.h
 if test "$LADSPA_FOUND" = "yes"; then
   AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
 fi
@@ -188,7 +218,11 @@ fi
 if test "$set_enable_experimental" = "yes"; then
   AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
 fi
+if test "$set_enable_gtk_gui" = "yes"; then
+  AC_DEFINE([USE_LV2_GTK_GUI], [1], "In-process GTK+ LV2 GUI features is enabled")
+fi
 
+############################################################################################
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_CONST
@@ -202,6 +236,8 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
+############################################################################################
+# Output directories
 AC_MSG_CHECKING(where to install LADSPA plugins)
 AC_ARG_WITH(ladspa_dir,
   AC_HELP_STRING([--with-ladspa-dir],[install LADSPA plugins to DIR (default=$prefix/lib/ladspa/)]),
@@ -236,37 +272,43 @@ if test "$LV2_ENABLED" == "yes"; then
   AC_SUBST(with_lv2_dir)
 fi
 
+############################################################################################
+# Other defines
 AC_DEFINE_UNQUOTED(PKGLIBDIR,"$prefix/share/calf/",[Calf shared data directory (bitmaps, GUI XML etc.)])
 
-# Checks for library functions.
-AC_CHECK_FUNCS([floor memset pow])
-
+############################################################################################
+# Output files for configure step
 AC_CONFIG_FILES([Makefile
                  calf.desktop
                  gui/Makefile
+                 gui/calf.rc
                  icons/Makefile
                  src/Makefile
                  src/calf/Makefile])
+
+############################################################################################
+# Configuration message
 AC_MSG_RESULT([
     Calf configured
 
-    Debug mode:              $set_enable_debug
-    Experimental plugins:    $set_enable_experimental
-    LADSPA enabled:          $LADSPA_FOUND
-    Common GUI code:         $GUI_ENABLED
-    Out-of-process GUI code: $EXEC_GUI_ENABLED
-    DSSI enabled:            $DSSI_FOUND
-    DSSI GUI enabled:        $DSSI_GUI_ENABLED
-    LV2 enabled:             $LV2_ENABLED
-    LV2 GUI enabled:         $LV2_GUI_ENABLED
-    JACK host enabled:       $JACK_ENABLED
-    LASH enabled:            $LASH_ENABLED])
+    Debug mode:                  $set_enable_debug
+    Experimental plugins:        $set_enable_experimental
+    LADSPA enabled:              $LADSPA_FOUND
+    Common GUI code:             $GUI_ENABLED
+    Out-of-process GUI code:     $EXEC_GUI_ENABLED
+    DSSI enabled:                $DSSI_FOUND
+    DSSI GUI enabled:            $DSSI_GUI_ENABLED
+    LV2 enabled:                 $LV2_ENABLED
+    LV2 in-process GUI enabled:  $LV2_GTK_GUI_ENABLED
+    LV2 GUI enabled:             $LV2_GUI_ENABLED
+    JACK host enabled:           $JACK_ENABLED
+    LASH enabled:                $LASH_ENABLED])
 if test "$LASH_ENABLED" = "yes"; then
-  AC_MSG_RESULT([    Unstable LASH API:       $LASH_0_6_ENABLED])
+  AC_MSG_RESULT([    Unstable LASH API:           $LASH_0_6_ENABLED])
 fi
-AC_MSG_RESULT([    Old-style JACK MIDI:     $OLD_JACK
+AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     
-    Installation prefix:     $prefix
+    Installation prefix:         $prefix
 ])
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 

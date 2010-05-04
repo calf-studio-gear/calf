@@ -22,6 +22,7 @@
 #ifndef __CALF_ORGAN_H
 #define __CALF_ORGAN_H
 
+#include "audio_fx.h"
 #include "envelope.h"
 #include "metadata.h"
 #include "osc.h"
@@ -305,10 +306,7 @@ public:
         srate = sr;
     }
     void params_changed();
-    inline void pitch_bend(int amt)
-    {
-        drawbar_organ::pitch_bend(amt);
-    }
+
     void activate();
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
@@ -317,10 +315,16 @@ public:
     /// Practically all the stuff here is noisy
     bool is_noisy(int param_no) { return true; }
     void execute(int cmd_no);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
     uint32_t message_run(const void *valid_inputs, void *output_ports);
+public:
+    // overrides
+    virtual void note_on(int note, int velocity) { dsp::drawbar_organ::note_on(note, velocity); }
+    virtual void note_off(int note, int velocity) { dsp::drawbar_organ::note_off(note, velocity); }
+    virtual void control_change(int controller, int value) { dsp::drawbar_organ::control_change(controller, value); }
+    virtual void pitch_bend(int value) { dsp::drawbar_organ::pitch_bend(value); }
 };
 
 };

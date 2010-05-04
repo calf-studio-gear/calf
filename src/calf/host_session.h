@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
- * Class for managing calfjackhost's 
+ * Class for managing calfjackhost's session.
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2010 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,28 +23,23 @@
 
 #include <config.h>
 
-#if USE_LASH
-#include <lash/lash.h>
-#endif
 #include "gui.h"
 #include "jackhost.h"
+#include "session_mgr.h"
 
 namespace calf_plugins {
 
 class main_window;
 
-struct host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface
+class host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface, public session_client_iface
 {
+private:
+    static host_session *instance;
+public:
     std::string client_name, input_name, output_name, midi_name;
     std::vector<std::string> plugin_names;
     std::map<int, std::string> presets;
-#if USE_LASH
-    int lash_source_id;
-    lash_client_t *lash_client;
-# if !USE_LASH_0_6
-    lash_args_t *lash_args;
-# endif
-#endif
+    session_manager_iface *session_manager;
     
     // these are not saved
     jack_client client;
@@ -53,7 +48,6 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     std::set<int> chains;
     std::vector<jack_host *> plugins;
     main_window *main_win;
-    bool restoring_session;
     std::set<std::string> instances;
     GtkWidget *progress_window;
     plugin_gui_window *gui_win;
@@ -65,15 +59,6 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     void connect();
     void close();
     bool activate_preset(int plugin, const std::string &preset, bool builtin);
-#if USE_LASH
-    static gboolean update_lash(void *self) { ((host_session *)self)->update_lash(); return TRUE; }
-    void update_lash();
-# if !USE_LASH_0_6
-    void send_lash(LASH_Event_Type type, const std::string &data) {
-        lash_send_event(lash_client, lash_event_new_with_all(type, data.c_str()));
-    }
-# endif
-#endif
     virtual void new_plugin(const char *name);    
     virtual void remove_plugin(plugin_ctl_iface *plugin);
     void remove_all_plugins();
@@ -84,12 +69,21 @@ struct host_session: public main_window_owner_iface, public calf_plugins::progre
     /// Implementation of progress_report_iface function
     void report_progress(float percentage, const std::string &message);
     
+    /// Set handler for SIGUSR1 that LADISH uses to invoke Save function
+    void set_ladish_handler();
+    
     /// Implementation of open file functionality (TODO)
     virtual char *open_file(const char *name);
     /// Implementation of save file functionality
     virtual char *save_file(const char *name);
-    /// Implementation of connection to LASH (or, in future, other session manager)
-    void connect_to_session_manager(int argc, char *argv[]);
+
+    /// Load from session manager
+    virtual void load(session_load_iface *);
+    /// Save to session manager
+    virtual void save(session_save_iface *);
+    
+    /// SIGUSR1 handler
+    static void sigusr1handler(int signum);
 };
 
 };

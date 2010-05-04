@@ -122,13 +122,13 @@ class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 public:    
     // 1MB of delay memory per channel... uh, RAM is cheap
     enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
+    enum { MIXMODE_STEREO, MIXMODE_PINGPONG, MIXMODE_LR, MIXMODE_RL }; 
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
     /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
     int age;
     
-    gain_smoothing amt_left, amt_right, fb_left, fb_right;
-    float dry;
+    gain_smoothing amt_left, amt_right, fb_left, fb_right, dry;
     
     dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     
@@ -602,46 +602,6 @@ public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
 };
 
-class distortion_audio_module {
-private:
-    float blend_old, drive_old;
-    float meter;
-    float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
-    float prev_med, prev_out;
-public:
-    uint32_t srate;
-    bool is_active;
-    distortion_audio_module();
-    void activate();
-    void deactivate();
-    void set_params(float blend, float drive);
-    void set_sample_rate(uint32_t sr);
-    float process(float in);
-    float get_distortion_level();
-    static inline float
-    // NOTICE!! These routines are implemented for testing purposes only!
-    // They're taken from TAP Plugins and will act as a placeholder until
-    // Krzysztof's distrotion routine is ready!
-    M(float x) {
-
-        if ((x > 0.000000001f) || (x < -0.000000001f))
-            return x;
-        else
-            return 0.0f;
-    }
-
-    static inline float
-    D(float x) {
-
-        if (x > 0.000000001f)
-            return sqrt(x);
-        else if (x < -0.000000001f)
-            return sqrt(-x);
-        else
-            return 0.0f;
-    }
-};
-
 /// Saturator by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
 class saturator_audio_module: public audio_module<saturator_metadata> {
 private:
@@ -652,7 +612,7 @@ private:
     float meter_in, meter_out, meter_drive;
     biquad_d2<float> lp[2][4], hp[2][4];
     biquad_d2<float> p[2];
-    distortion_audio_module dist[2];
+    tap_distortion dist[2];
 public:
     float *ins[in_count];
     float *outs[out_count];
@@ -674,11 +634,8 @@ private:
     uint32_t clip_in, clip_out;
     float meter_in, meter_out, meter_drive;
     biquad_d2<float> hp[2][4];
-    distortion_audio_module dist[2];
+    tap_distortion dist[2];
 public:
-    float *ins[in_count];
-    float *outs[out_count];
-    float *params[param_count];
     uint32_t srate;
     bool is_active;
     exciter_audio_module();
@@ -696,7 +653,7 @@ private:
     uint32_t clip_in, clip_out;
     float meter_in, meter_out, meter_drive;
     biquad_d2<float> lp[2][4];
-    distortion_audio_module dist[2];
+    tap_distortion dist[2];
 public:
     float *ins[in_count];
     float *outs[out_count];
@@ -742,8 +699,6 @@ public:
 private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
-
-extern std::string get_builtin_modules_rdf();
 
 };
 

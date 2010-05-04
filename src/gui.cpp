@@ -28,60 +28,6 @@
 using namespace calf_plugins;
 using namespace std;
 
-/******************************** control base classes **********************/
-
-void control_container::set_std_properties()
-{
-    if (attribs.find("widget-name") != attribs.end())
-    {
-        string name = attribs["widget-name"];
-        if (container) {
-            gtk_widget_set_name(GTK_WIDGET(container), name.c_str());
-        }
-    }
-}
-
-void param_control::set_std_properties()
-{
-    if (attribs.find("widget-name") != attribs.end())
-    {
-        string name = attribs["widget-name"];
-        if (widget) {
-            gtk_widget_set_name(widget, name.c_str());
-        }
-    }
-}
-
-GtkWidget *param_control::create_label()
-{
-    label = gtk_label_new ("");
-    gtk_label_set_width_chars (GTK_LABEL (label), 12);
-    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-    return label;
-}
-
-void param_control::update_label()
-{
-    const parameter_properties &props = get_props();
-    gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
-}
-
-void param_control::hook_params()
-{
-    if (param_no != -1) {
-        gui->add_param_ctl(param_no, this);
-    }
-    gui->params.push_back(this);
-}
-
-param_control::~param_control()
-{
-    if (label)
-        gtk_widget_destroy(label);
-    if (widget)
-        gtk_widget_destroy(widget);
-}
-
 /******************************** GUI proper ********************************/
 
 plugin_gui::plugin_gui(plugin_gui_window *_window)
@@ -95,59 +41,8 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
     container = NULL;
     effect_name = NULL;
     draw_rackmounts = true;
+    preset_access = new gui_preset_access(this);
 }
-
-static void window_destroyed(GtkWidget *window, gpointer data)
-{
-    delete (plugin_gui_window *)data;
-}
-
-static void action_destroy_notify(gpointer data)
-{
-    delete (activate_preset_params *)data;
-}
-
-void control_base::require_attribute(const char *name)
-{
-    if (attribs.count(name) == 0) {
-        g_error("Missing attribute: %s", name);
-    }
-}
-
-void control_base::require_int_attribute(const char *name)
-{
-    if (attribs.count(name) == 0) {
-        g_error("Missing attribute: %s", name);
-    }
-    if (attribs[name].empty() || attribs[name].find_first_not_of("0123456789") != string::npos) {
-        g_error("Wrong data type on attribute: %s (required integer)", name);
-    }
-}
-
-int control_base::get_int(const char *name, int def_value)
-{
-    if (attribs.count(name) == 0)
-        return def_value;
-    const std::string &v = attribs[name];
-    if (v.empty() || v.find_first_not_of("-+0123456789") != string::npos)
-        return def_value;
-    return atoi(v.c_str());
-}
-
-float control_base::get_float(const char *name, float def_value)
-{
-    if (attribs.count(name) == 0)
-        return def_value;
-    const std::string &v = attribs[name];
-    if (v.empty() || v.find_first_not_of("-+0123456789.") != string::npos)
-        return def_value;
-    stringstream ss(v);
-    float value;
-    ss >> value;
-    return value;
-}
-
-/******************************** GUI proper ********************************/
 
 param_control *plugin_gui::create_control_from_xml(const char *element, const char *attributes[])
 {
@@ -475,6 +370,7 @@ void plugin_gui::set_radio_group(int param, GSList *group)
 
 plugin_gui::~plugin_gui()
 {
+    delete preset_access;
     for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); i++)
     {
         delete *i;
@@ -484,10 +380,36 @@ plugin_gui::~plugin_gui()
 
 /******************************* Actions **************************************************/
  
-static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
+namespace {
+    
+void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
 {
-    store_preset(GTK_WINDOW(gui_win->toplevel), gui_win->gui);
+    if (gui_win->gui->preset_access)
+        gui_win->gui->preset_access->store_preset();
 }
+
+struct activate_preset_params
+{
+    preset_access_iface *preset_access;
+    int preset;
+    bool builtin;
+    
+    activate_preset_params(preset_access_iface *_pai, int _preset, bool _builtin)
+    : preset_access(_pai), preset(_preset), builtin(_builtin)
+    {
+    }
+    static void action_destroy_notify(gpointer data)
+    {
+        delete (activate_preset_params *)data;
+    }
+};
+
+void activate_preset(GtkAction *action, activate_preset_params *params)
+{
+    params->preset_access->activate_preset(params->preset, params->builtin);
+}
+
+};
 
 static const GtkActionEntry actions[] = {
     { "PresetMenuAction", NULL, "_Preset", NULL, "Preset operations", NULL },
@@ -555,11 +477,17 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
     command_actions = NULL;
     environment = _env;
     main = _main;
-    assert(main);
+    assert(environment);
+}
+
+void plugin_gui_window::on_window_destroyed(GtkWidget *window, gpointer data)
+{
+    delete (plugin_gui_window *)data;
 }
 
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch)
 {
+    preset_access_iface *pai = gui->preset_access;
     string preset_xml = string(general_preset_pre_xml) + (builtin ? builtin_preset_pre_xml : user_preset_pre_xml);
     preset_vector &pvec = (builtin ? get_builtin_presets() : get_user_presets()).presets;
     GtkActionGroup *preset_actions = builtin ? builtin_preset_actions : user_preset_actions;
@@ -579,7 +507,7 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
         string prefix = ch == ' ' ? string() : string("_")+ch+" ";
         string name = prefix + pvec[i].name;
         GtkActionEntry ae = { sv.c_str(), NULL, name.c_str(), NULL, NULL, (GCallback)activate_preset };
-        gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(gui, i, builtin), action_destroy_notify);
+        gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(pai, i, builtin), activate_preset_params::action_destroy_notify);
     }
     preset_xml += preset_post_xml;
     return preset_xml;
@@ -597,7 +525,7 @@ string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
         ss << "          <menuitem name=\"" << ci->name << "\" action=\"" << ci->label << "\"/>\n";
         
         GtkActionEntry ae = { ci->label, NULL, ci->name, NULL, ci->description, (GCallback)activate_command };
-        gtk_action_group_add_actions_full(command_actions, &ae, 1, (gpointer)new activate_command_params(gui, i), action_destroy_notify);
+        gtk_action_group_add_actions_full(command_actions, &ae, 1, (gpointer)new activate_command_params(gui, i), activate_preset_params::action_destroy_notify);
         command_xml += ss.str();
     }
     command_xml += command_post_xml;
@@ -689,7 +617,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     //gtk_widget_set_size_request(GTK_WIDGET(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-    gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (window_destroyed), (plugin_gui_window *)this);
+    gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_window *)this);
     if (main)
         main->set_window(gui->plugin, this);
 

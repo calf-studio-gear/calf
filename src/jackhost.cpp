@@ -21,9 +21,6 @@
 #include <glade/glade.h>
 #include <jack/midiport.h>
 #include <calf/host_session.h>
-#include <calf/modules.h>
-#include <calf/modules_dev.h>
-#include <calf/organ.h>
 #include <calf/preset.h>
 #include <getopt.h>
 
@@ -33,10 +30,13 @@ using namespace calf_plugins;
 
 const char *client_name = "calfhost";
 
+extern "C" audio_module_iface *create_calf_plugin_by_name(const char *effect_name);
+
 jack_host *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
-    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new jack_host(new name##_audio_module, effect_name, instance_name, priface);
-    #include <calf/modulelist.h>
+    audio_module_iface *plugin = create_calf_plugin_by_name(effect_name);
+    if (plugin != NULL)
+        return new jack_host(plugin, effect_name, instance_name, priface);
     return NULL;
 }
 
@@ -55,10 +55,11 @@ jack_host::jack_host(audio_module_iface *_module, const std::string &_name, cons
     metadata = module->get_metadata_iface();
     in_count = metadata->get_input_count();
     out_count = metadata->get_output_count();
+    param_count = metadata->get_param_count();
     inputs.resize(in_count);
     outputs.resize(out_count);
-    param_values = new float[metadata->get_param_count()];
-    for (int i = 0; i < metadata->get_param_count(); i++) {
+    param_values = new float[param_count];
+    for (int i = 0; i < param_count; i++) {
         params[i] = &param_values[i];
     }
     clear_preset();
@@ -290,7 +291,9 @@ int main(int argc, char *argv[])
     gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     
-    sess.connect_to_session_manager(argc, argv);
+#if USE_LASH
+    sess.session_manager = create_lash_session_mgr(&sess, argc, argv);
+#endif
     glade_init();
     while(1) {
         int option_index;
@@ -357,7 +360,9 @@ int main(int argc, char *argv[])
         sess.open();
         sess.connect();
         sess.client.activate();
+        sess.set_ladish_handler();
         gtk_main();
+        
         sess.close();
         // this is now done on preset add
         // save_presets(get_preset_filename().c_str());
