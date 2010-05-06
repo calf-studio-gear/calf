@@ -33,6 +33,7 @@
 #include <calf/lv2_progress.h>
 #include <calf/lv2_string_port.h>
 #include <calf/lv2_uri_map.h>
+#include <string.h>
 
 namespace calf_plugins {
 

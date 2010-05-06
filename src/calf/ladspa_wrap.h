@@ -23,6 +23,7 @@
 
 #if USE_LADSPA
 
+#include <string.h>
 #include <ladspa.h>
 #if USE_DSSI
 #include <dssi.h>
