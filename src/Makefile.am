@@ -52,7 +52,7 @@ calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
 calfbenchmark_LDADD += libcalfgui.la
 endif
 
-calf_la_SOURCES = audio_fx.cpp modules.cpp modules_comp.cpp modules_dist.cpp modules_dsp.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
+calf_la_SOURCES = audio_fx.cpp metadata.cpp modules.cpp modules_comp.cpp modules_dist.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
 calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS)
@@ -64,7 +64,7 @@ if USE_LV2_GTK_GUI
 
 # Version WITH out-of-process GUI - links GTK+, UI controls etc.
 
-calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp modules.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp metadata.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
 
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
@@ -77,7 +77,7 @@ else
 # Version WITHOUT out-of-process GUI - links GLib only
 
 if USE_LV2_GUI
-calflv2gui_la_SOURCES = modules.cpp giface.cpp preset.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+calflv2gui_la_SOURCES = metadata.cpp giface.cpp preset.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
 
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GLIB_DEPS_LIBS) -disable-static
