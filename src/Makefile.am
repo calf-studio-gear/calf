@@ -52,7 +52,7 @@ calfbenchmark_CXXFLAGS = $(AM_CXXFLAGS) -DTEST_OSC
 calfbenchmark_LDADD += libcalfgui.la
 endif
 
-calf_la_SOURCES = audio_fx.cpp modules.cpp modules_dsp.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
+calf_la_SOURCES = audio_fx.cpp modules.cpp modules_dist.cpp modules_dsp.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
 calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(ladspadir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS)

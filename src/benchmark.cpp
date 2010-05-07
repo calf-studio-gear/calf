@@ -24,6 +24,8 @@
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <calf/modules_eq.h>
+#include <calf/modules_mod.h>
 #else
 #include <config.h>
 #endif
@@ -377,7 +379,7 @@ void reverbir_calc()
     
     for (int t = 1; t < 38; t++)
     {
-        dsp::reverb<float> rvb;
+        dsp::reverb rvb;
         
         memset(data, 0, sizeof(data));
         data[0][0] = 1;

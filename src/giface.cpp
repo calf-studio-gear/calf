@@ -1,7 +1,7 @@
 /* Calf DSP Library
- * Module wrapper methods.
+ * Implementation of various helpers for the plugin interface.
  *
- * Copyright (C) 2001-2007 Krzysztof Foltman
+ * Copyright (C) 2001-2010 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
  * Boston, MA  02110-1301  USA
  */
 #include <config.h>
+#include <limits.h>
 #include <calf/giface.h>
 #include <calf/osctlnet.h>
 #include <calf/utils.h>
@@ -289,6 +290,21 @@ void calf_plugins::set_channel_color(cairo_iface *context, int channel)
     else
         context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
     context->set_line_width(1.5);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool frequency_response_line_graph::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{ 
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+int frequency_response_line_graph::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+    return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
-/* Calf DSP Library
- * Example audio modules - LADSPA/DSSI/LV2 wrapper instantiation
+/* Calf DSP plugin pack
+ * LADSPA/DSSI/LV2 wrapper instantiation for all plugins
  *
- * Copyright (C) 2001-2008 Krzysztof Foltman
+ * Copyright (C) 2001-2010 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,10 @@
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+#include <calf/modules_dist.h>
+#include <calf/modules_eq.h>
+#include <calf/modules_mod.h>
+#include <calf/modules_synths.h>
 #include <calf/organ.h>
 
 using namespace calf_plugins;

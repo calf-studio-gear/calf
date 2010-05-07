@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * Common plugin interface definitions (shared between LADSPA/LV2/DSSI/standalone).
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2010 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -670,6 +670,14 @@ static inline float dB_grid_inv(float pos)
 {
     return pow(256.0, pos - 0.4);
 }
+
+/// Line graph interface implementation for frequency response graphs
+class frequency_response_line_graph: public line_graph_iface 
+{
+public:
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
 
 /// set drawing color based on channel index (0 or 1)
 void set_channel_color(cairo_iface *context, int channel);

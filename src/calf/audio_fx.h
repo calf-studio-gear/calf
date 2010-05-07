@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * Reusable audio effect classes.
  *
- * Copyright (C) 2001-2007 Krzysztof Foltman
+ * Copyright (C) 2001-2010 Krzysztof Foltman, Markus Schmidt, Thor Harald Johansen and others
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
-#ifndef __CALF_AUDIOFX_H
-#define __CALF_AUDIOFX_H
+#ifndef CALF_AUDIOFX_H
+#define CALF_AUDIOFX_H
 
 #include "biquad.h"
 #include "delay.h"
@@ -27,6 +27,10 @@
 #include "inertia.h"
 #include "onepole.h"
 #include <complex>
+
+namespace calf_plugins {
+    struct cairo_iface;
+};
 
 namespace dsp {
 #if 0
@@ -336,15 +340,14 @@ public:
  * Just started implementing it, so there is no control over many
  * parameters.
  */
-template<class T>
 class reverb: public audio_effect
 {
-    simple_delay<2048, T> apL1, apL2, apL3, apL4, apL5, apL6;
-    simple_delay<2048, T> apR1, apR2, apR3, apR4, apR5, apR6;
+    simple_delay<2048, float> apL1, apL2, apL3, apL4, apL5, apL6;
+    simple_delay<2048, float> apR1, apR2, apR3, apR4, apR5, apR6;
     fixed_point<unsigned int, 25> phase, dphase;
     sine_table<int, 128, 10000> sine;
-    onepole<T> lp_left, lp_right;
-    T old_left, old_right;
+    onepole<float> lp_left, lp_right;
+    float old_left, old_right;
     int type;
     float time, fb, cutoff, diffusion;
     int tl[6], tr[6];
@@ -369,67 +372,7 @@ public:
         dphase = 0.5*128/sr;
         update_times();
     }
-    void update_times()
-    {
-        switch(type)
-        {
-        case 0:
-            tl[0] =  397 << 16, tr[0] =  383 << 16;
-            tl[1] =  457 << 16, tr[1] =  429 << 16;
-            tl[2] =  549 << 16, tr[2] =  631 << 16;
-            tl[3] =  649 << 16, tr[3] =  756 << 16;
-            tl[4] =  773 << 16, tr[4] =  803 << 16;
-            tl[5] =  877 << 16, tr[5] =  901 << 16;
-            break;
-        case 1:
-            tl[0] =  697 << 16, tr[0] =  783 << 16;
-            tl[1] =  957 << 16, tr[1] =  929 << 16;
-            tl[2] =  649 << 16, tr[2] =  531 << 16;
-            tl[3] = 1049 << 16, tr[3] = 1177 << 16;
-            tl[4] =  473 << 16, tr[4] =  501 << 16;
-            tl[5] =  587 << 16, tr[5] =  681 << 16;
-            break;
-        case 2:
-        default:
-            tl[0] =  697 << 16, tr[0] =  783 << 16;
-            tl[1] =  957 << 16, tr[1] =  929 << 16;
-            tl[2] =  649 << 16, tr[2] =  531 << 16;
-            tl[3] = 1249 << 16, tr[3] = 1377 << 16;
-            tl[4] = 1573 << 16, tr[4] = 1671 << 16;
-            tl[5] = 1877 << 16, tr[5] = 1781 << 16;
-            break;
-        case 3:
-            tl[0] = 1097 << 16, tr[0] = 1087 << 16;
-            tl[1] = 1057 << 16, tr[1] = 1031 << 16;
-            tl[2] = 1049 << 16, tr[2] = 1039 << 16;
-            tl[3] = 1083 << 16, tr[3] = 1055 << 16;
-            tl[4] = 1075 << 16, tr[4] = 1099 << 16;
-            tl[5] = 1003 << 16, tr[5] = 1073 << 16;
-            break;
-        case 4:
-            tl[0] =  197 << 16, tr[0] =  133 << 16;
-            tl[1] =  357 << 16, tr[1] =  229 << 16;
-            tl[2] =  549 << 16, tr[2] =  431 << 16;
-            tl[3] =  949 << 16, tr[3] = 1277 << 16;
-            tl[4] = 1173 << 16, tr[4] = 1671 << 16;
-            tl[5] = 1477 << 16, tr[5] = 1881 << 16;
-            break;
-        case 5:
-            tl[0] =  197 << 16, tr[0] =  133 << 16;
-            tl[1] =  257 << 16, tr[1] =  179 << 16;
-            tl[2] =  549 << 16, tr[2] =  431 << 16;
-            tl[3] =  619 << 16, tr[3] =  497 << 16;
-            tl[4] = 1173 << 16, tr[4] = 1371 << 16;
-            tl[5] = 1577 << 16, tr[5] = 1881 << 16;
-            break;
-        }
-        
-        float fDec=1000 + 2400.f * diffusion;
-        for (int i = 0 ; i < 6; i++) {
-            ldec[i]=exp(-float(tl[i] >> 16) / fDec), 
-            rdec[i]=exp(-float(tr[i] >> 16) / fDec);
-        }
-    }
+    void update_times();
     float get_time() const {
         return time;
     }
@@ -473,49 +416,8 @@ public:
         lp_left.set_lp(cutoff,sr);
         lp_right.set_lp(cutoff,sr);
     }
-    void reset()
-    {
-        apL1.reset();apR1.reset();
-        apL2.reset();apR2.reset();
-        apL3.reset();apR3.reset();
-        apL4.reset();apR4.reset();
-        apL5.reset();apR5.reset();
-        apL6.reset();apR6.reset();
-        lp_left.reset();lp_right.reset();
-        old_left = 0; old_right = 0;
-    }
-    void process(T &left, T &right)
-    {
-        unsigned int ipart = phase.ipart();
-        
-        // the interpolated LFO might be an overkill here
-        int lfo = phase.lerp_by_fract_int<int, 14, int>(sine.data[ipart], sine.data[ipart+1]) >> 2;
-        phase += dphase;
-        
-        left += old_right;
-        left = apL1.process_allpass_comb_lerp16(left, tl[0] - 45*lfo, ldec[0]);
-        left = apL2.process_allpass_comb_lerp16(left, tl[1] + 47*lfo, ldec[1]);
-        float out_left = left;
-        left = apL3.process_allpass_comb_lerp16(left, tl[2] + 54*lfo, ldec[2]);
-        left = apL4.process_allpass_comb_lerp16(left, tl[3] - 69*lfo, ldec[3]);
-        left = apL5.process_allpass_comb_lerp16(left, tl[4] + 69*lfo, ldec[4]);
-        left = apL6.process_allpass_comb_lerp16(left, tl[5] - 46*lfo, ldec[5]);
-        old_left = lp_left.process(left * fb);
-        sanitize(old_left);
-
-        right += old_left;
-        right = apR1.process_allpass_comb_lerp16(right, tr[0] - 45*lfo, rdec[0]);
-        right = apR2.process_allpass_comb_lerp16(right, tr[1] + 47*lfo, rdec[1]);
-        float out_right = right;
-        right = apR3.process_allpass_comb_lerp16(right, tr[2] + 54*lfo, rdec[2]);
-        right = apR4.process_allpass_comb_lerp16(right, tr[3] - 69*lfo, rdec[3]);
-        right = apR5.process_allpass_comb_lerp16(right, tr[4] + 69*lfo, rdec[4]);
-        right = apR6.process_allpass_comb_lerp16(right, tr[5] - 46*lfo, rdec[5]);
-        old_right = lp_right.process(right * fb);
-        sanitize(old_right);
-        
-        left = out_left, right = out_right;
-    }
+    void reset();
+    void process(float &left, float &right);
     void extra_sanitize()
     {
         lp_left.sanitize();
@@ -639,6 +541,28 @@ public:
         x = fabs(x);
         return (x > 0.000000001f) ? sqrtf(x) : 0.0f;
     }
+};
+
+/// LFO module by Markus
+/// This module provides simple LFO's (sine=0, triangle=1, square=2, saw_up=3, saw_down=4)
+/// get_value() returns a value between -1 and 1
+class simple_lfo {
+private:
+    float phase, freq, offset, amount;
+    int mode;
+    uint32_t srate;
+    bool is_active;
+public:
+    simple_lfo();
+    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f);
+    float get_value();
+    void advance(uint32_t count);
+    void set_phase(float ph);
+    void activate();
+    void deactivate();
+    float get_value_from_phase(float ph, float off) const;
+    bool get_graph(float *data, int points, calf_plugins::cairo_iface *context) const;
+    bool get_dot(float &x, float &y, int &size, calf_plugins::cairo_iface *context) const;
 };
 
 #if 0
