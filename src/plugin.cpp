@@ -22,6 +22,7 @@
 #include <calf/ladspa_wrap.h>
 #include <calf/lv2wrap.h>
 #include <calf/modules.h>
+#include <calf/modules_comp.h>
 #include <calf/modules_dev.h>
 #include <calf/modules_dist.h>
 #include <calf/modules_eq.h>
