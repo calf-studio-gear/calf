@@ -600,7 +600,7 @@ CALF_PORT_NAMES(monosynth) = {
 
 const char *monosynth_waveform_names[] = { "Sawtooth", "Square", "Pulse", "Sine", "Triangle", "Varistep", "Skewed Saw", "Skewed Square", 
     "Smooth Brass", "Bass", "Dark FM", "Multiwave", "Bell FM", "Dark Pad", "DCO Saw", "DCO Maze" };
-const char *monosynth_mode_names[] = { "0 : 0", "0 : 180", "0 : 90", "90 : 90", "90 : 270", "Random" };
+const char *monosynth_mode_names[] = { "0\xC2\xB0 : 0\xC2\xB0", "0\xC2\xB0 : 180\xC2\xB0", "0\xC2\xB0 : 90\xC2\xB0", "90\xC2\xB0 : 90\xC2\xB0", "90\xC2\xB0 : 270\xC2\xB0", "Random" };
 const char *monosynth_legato_names[] = { "Retrig", "Legato", "Fng Retrig", "Fng Legato" };
 
 const char *monosynth_filter_choices[] = {
