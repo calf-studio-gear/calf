@@ -38,17 +38,15 @@ using namespace std;
 void control_base::require_attribute(const char *name)
 {
     if (attribs.count(name) == 0) {
-        g_error("Missing attribute: %s", name);
+        g_error("Missing attribute '%s' in control '%s'", name, control_name.c_str());
     }
 }
 
 void control_base::require_int_attribute(const char *name)
 {
-    if (attribs.count(name) == 0) {
-        g_error("Missing attribute: %s", name);
-    }
+    require_attribute(name);
     if (attribs[name].empty() || attribs[name].find_first_not_of("0123456789") != string::npos) {
-        g_error("Wrong data type on attribute: %s (required integer)", name);
+        g_error("Wrong data type on attribute '%s' in control '%s' (required integer)", name, control_name.c_str());
     }
 }
 

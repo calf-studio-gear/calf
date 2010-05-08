@@ -161,6 +161,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         current_control = create_control_from_xml(element, attributes);
         if (current_control)
         {
+            current_control->control_name = element;
             current_control->attribs = xam;
             int param_no = -1;
             if (xam.count("param"))

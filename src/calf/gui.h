@@ -34,6 +34,7 @@ class plugin_gui;
 
 struct control_base
 {
+    std::string control_name;
     typedef std::map<std::string, std::string> xml_attribute_map;
     xml_attribute_map attribs;
     plugin_gui *gui;
