@@ -56,7 +56,7 @@ void gui_preset_access::store_preset()
     }
     store_preset_xml = glade_xml_new(PKGLIBDIR "/calf.glade", NULL, NULL);
     store_preset_dlg = glade_xml_get_widget(store_preset_xml, "store_preset");
-    gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), NULL);
+    gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), (gui_preset_access *)this);
 //    gtk_widget_set_name(GTK_WIDGET(store_preset_dlg), "Calf-Preset");
     GtkWidget *preset_name_combo = glade_xml_get_widget(store_preset_xml, "preset_name");    
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
