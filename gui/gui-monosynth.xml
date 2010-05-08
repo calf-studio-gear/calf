@@ -45,6 +45,11 @@
             <if cond="directlink">
               <line-graph param="o1_wave" refresh="1" width="80" height="80" expand="0" fill="0"/>
             </if>
+            <vbox>
+              <label param="o1_stretch" text="Stretch"/>
+              <knob param="o1_stretch"/>
+              <value param="o1_stretch"/>
+            </vbox>
           </hbox>
         </frame>
         <frame label="Oscillator 2">

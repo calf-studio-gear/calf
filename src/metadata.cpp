@@ -633,7 +633,7 @@ CALF_PORT_PROPS(monosynth) = {
     { 0,      -2400, 2400,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "filter_sep", "Separation" },
     { 8000,  -10800,10800,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "env2cutoff", "Env->Cutoff" },
     { 1,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "env2res", "Env->Res" },
-    { 0,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "env2amp", "Env->Amp" },
+    { 0,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "env2amp", "Env->Amp" },
     
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr_a", "EG1 Attack" },
     { 350,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr_d", "EG1 Decay" },
@@ -663,13 +663,15 @@ CALF_PORT_PROPS(monosynth) = {
 
     { 0,  -10800,10800,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "adsr2_cutoff", "EG2->Cutoff" },
     { 0.3,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "adsr2_res", "EG2->Res" },
-    { 1,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "adsr2_amp", "EG2->Amp" },
+    { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "adsr2_amp", "EG2->Amp" },
     
     { 1,          1,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr2_a", "EG2 Attack" },
     { 100,       10,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr2_d", "EG2 Decay" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "adsr2_s", "EG2 Sustain" },
     { 0,     -10000,10000,   21, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr2_f", "EG2 Fade" },
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr2_r", "Release" },
+
+    { 1,          1,   16,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "o1_stretch", "Osc1 Stretch" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

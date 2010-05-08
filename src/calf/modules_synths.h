@@ -69,6 +69,8 @@ public:
     int32_t last_pwshift1;
     /// Last value of phase shift for pulse width emulation for OSC2
     int32_t last_pwshift2;
+    /// Last value of stretch for osc sync emulation for OSC1
+    int32_t last_stretch1;
     int queue_note_on, stop_count, modwheel_value_int;
     int legato;
     dsp::adsr envelope1, envelope2;

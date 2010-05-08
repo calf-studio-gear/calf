@@ -245,12 +245,12 @@ struct waveform_oscillator: public simple_oscillator
     {
         waveform = NULL;
     }
+    
+    /// Get the value from single oscillator at current position
     inline float get()
     {
         uint32_t wpos = phase >> (32 - SIZE_BITS);
-        float value = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
-        phase += phasedelta;
-        return value;
+        return dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
     }
     /// Add/substract two phase-shifted values
     inline float get_phaseshifted(uint32_t shift, float mix)
@@ -259,9 +259,23 @@ struct waveform_oscillator: public simple_oscillator
         float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
         wpos = (phase + shift) >> (32 - SIZE_BITS);
         float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SCALE - 1)) * (1.0f / SCALE));
-        float value = value1 + mix * value2;
+        return value1 + mix * value2;
+    }
+    /// Get the value of a hard synced osc (65536 = 1:1 ratio)
+    inline float get_phasedist(uint32_t sync, uint32_t shift, float mix)
+    {
+        uint32_t phase_mod = (uint64_t(phase) * sync >> 16);
+        
+        uint32_t wpos = phase_mod >> (32 - SIZE_BITS);
+        float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
+        wpos = (phase_mod + shift) >> (32 - SIZE_BITS);
+        float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SCALE - 1)) * (1.0f / SCALE));
+        return value1 + mix * value2;
+    }
+    /// One step
+    inline void advance()
+    {
         phase += phasedelta;
-        return value;
     }
 };
 

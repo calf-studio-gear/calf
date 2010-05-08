@@ -32,8 +32,10 @@ static const char *monosynth_mod_src_names[] = {
     "Velocity",
     "Pressure",
     "ModWheel",
-    "Envelope",
-    "LFO",
+    "Envelope 1",
+    "Envelope 2",
+    "LFO 1",
+    "LFO 2",
     NULL
 };
 
@@ -47,6 +49,7 @@ static const char *monosynth_mod_dest_names[] = {
     "O2: Detune [ct]",
     "O1: PW (%)",
     "O2: PW (%)",
+    "O1: Stretch",
     NULL
 };
 
@@ -73,6 +76,7 @@ void monosynth_audio_module::activate() {
     filter2.reset();
     stack.clear();
     last_pwshift1 = last_pwshift2 = 0;
+    last_stretch1 = 65536;
 }
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;
@@ -220,7 +224,12 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
             wave = wave_saw;
         float *waveform = waves[wave].original;
         for (int i = 0; i < points; i++)
-            data[i] = (sign * waveform[i * S / points] + waveform[(i * S / points + shift) & (S - 1)]) / (sign == -1 ? 1 : 2);
+        {
+            int pos = i * S / points;
+            if (index == par_wave1)
+                pos = int(pos * 1.0 * last_stretch1 / 65536.0 ) % S;
+            data[i] = (sign * waveform[pos] + waveform[(pos + shift) & (S - 1)]) / (sign == -1 ? 1 : 2);
+        }
         return true;
     }
     if (index == par_filtertype) {
@@ -250,15 +259,20 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
 {
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
+    
     int32_t shift1 = last_pwshift1;
     int32_t shift2 = last_pwshift2;
+    int32_t stretch1 = last_stretch1;
     int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o1pw]));
     int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o2pw]));
+    int32_t stretch_target1 = (int32_t)(65536 * dsp::clip(*params[par_stretch1] + 0.01f * moddest[moddest_o1stretch], 1.f, 16.f));
     int32_t shift_delta1 = ((shift_target1 >> 1) - (last_pwshift1 >> 1)) >> (step_shift - 1);
     int32_t shift_delta2 = ((shift_target2 >> 1) - (last_pwshift2 >> 1)) >> (step_shift - 1);
+    int32_t stretch_delta1 = ((stretch_target1 >> 1) - (last_stretch1 >> 1)) >> (step_shift - 1);
     last_lfov = lfo;
     last_pwshift1 = shift_target1;
     last_pwshift2 = shift_target2;
+    last_stretch1 = stretch_target1;
     
     shift1 += (flag1 << 31);
     shift2 += (flag2 << 31);
@@ -270,12 +284,13 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     
     for (uint32_t i = 0; i < step_size; i++) 
     {
-        float osc1val = osc1.get_phaseshifted(shift1, mix1);
-        float osc2val = osc2.get_phaseshifted(shift2, mix2);
-        float wave = osc1val + (osc2val - osc1val) * cur_xfade;
-        buffer[i] = wave;
+        //buffer[i] = lerp(osc1.get_phaseshifted(shift1, mix1), osc2.get_phaseshifted(shift2, mix2), cur_xfade);
+        buffer[i] = lerp(osc1.get_phasedist(stretch1, shift1, mix1), osc2.get_phaseshifted(shift2, mix2), cur_xfade);
+        osc1.advance();
+        osc2.advance();
         shift1 += shift_delta1;
         shift2 += shift_delta2;
+        stretch1 += stretch_delta1;
         cur_xfade += xfade_step;
     }
     last_xfade = new_xfade;

@@ -109,6 +109,7 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         par_lforate, par_lfodelay, par_lfofilter, par_lfopitch, par_lfopw, par_mwhl_lfo, par_scaledetune,
         par_env2tocutoff, par_env2tores, par_env2toamp, 
         par_env2attack, par_env2decay, par_env2sustain, par_env2fade, par_env2release, 
+        par_stretch1,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64, step_shift = 6 };
@@ -133,6 +134,7 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         moddest_o2detune,
         moddest_o1pw,
         moddest_o2pw,
+        moddest_o1stretch,
         moddest_count,
     };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
