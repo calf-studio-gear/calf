@@ -542,7 +542,8 @@ void monosynth_audio_module::calculate_step()
         calculate_buffer_stereo();
         break;
     }
-    if ((envelope1.state == adsr::STOP && envelope2.state == adsr::STOP && !gate) || force_fadeout || (envelope1.state == adsr::RELEASE && *params[par_env1toamp] <= 0.f) || (envelope2.state == adsr::RELEASE && *params[par_env2toamp] <= 0.f))
+    bool no_amp_env = *params[par_env1toamp] <= 0.f && *params[par_env2toamp] <= 0.f;
+    if ((envelope1.state == adsr::STOP && envelope2.state == adsr::STOP && !gate) || force_fadeout || (envelope1.state == adsr::RELEASE && no_amp_env) || (envelope2.state == adsr::RELEASE && no_amp_env))
     {
         enum { ramp = step_size * 4 };
         for (int i = 0; i < step_size; i++)
