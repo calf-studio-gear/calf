@@ -252,8 +252,7 @@
                 </vbox>
                 <vbox>
                   <label text="To Amp"/>
-                  <knob param="env2amp"/>
-                  <value param="env2amp"/>
+                  <toggle param="env2amp"/>
                 </vbox>
               </vbox>
             </hbox>
@@ -300,8 +299,7 @@
                 </vbox>
                 <vbox>
                   <label text="To Amp"/>
-                  <knob param="adsr2_amp"/>
-                  <value param="adsr2_amp"/>
+                  <toggle param="adsr2_amp"/>
                 </vbox>
               </vbox>
             </hbox>
