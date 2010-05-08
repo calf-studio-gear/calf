@@ -247,7 +247,7 @@ struct lv2_wrapper
             }
             features++;
         }
-        mod->module->post_instantiate();
+        mod->post_instantiate();
         return mod;
     }
     static plugin_ctl_iface *cb_get_pci(LV2_Handle Instance)
