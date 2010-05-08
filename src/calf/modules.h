@@ -65,7 +65,7 @@ public:
     /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
     int age;
     
-    dsp::gain_smoothing amt_left, amt_right, fb_left, fb_right, dry;
+    dsp::gain_smoothing amt_left, amt_right, fb_left, fb_right, dry, chmix;
     
     dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
     

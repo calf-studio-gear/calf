@@ -150,6 +150,7 @@ void vintage_delay_audio_module::params_changed()
         amt_right.set_inertia(*params[par_amount]);
         break;
     }
+    chmix.set_inertia((1 - *params[par_width]) * 0.5);
     if (medium != old_medium)
         calc_filters();
 }
@@ -183,11 +184,11 @@ void vintage_delay_audio_module::calc_filters()
 }
 
 /// Single delay line with feedback at the same tap
-static inline void delayline_impl(int age, int deltime, float dry_value, const float &delayed_value, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb, float dry)
+static inline void delayline_impl(int age, int deltime, float dry_value, const float &delayed_value, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb)
 {
     // if the buffer hasn't been cleared yet (after activation), pretend we've read zeros
     if (age <= deltime) {
-        out = dry * dry_value;
+        out = 0;
         amt.step();
         fb.step();
     }
@@ -195,26 +196,34 @@ static inline void delayline_impl(int age, int deltime, float dry_value, const f
     {
         float delayed = delayed_value; // avoid dereferencing the pointer in 'then' branch of the if()
         dsp::sanitize(delayed);
-        out = dry * dry_value + delayed * amt.get();
+        out = delayed * amt.get();
         del = dry_value + delayed * fb.get();
     }
 }
 
 /// Single delay line with tap output
-static inline void delayline2_impl(int age, int deltime, float dry_value, const float &delayed_value, const float &delayed_value_for_fb, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb, float dry)
+static inline void delayline2_impl(int age, int deltime, float dry_value, const float &delayed_value, const float &delayed_value_for_fb, float &out, float &del, gain_smoothing &amt, gain_smoothing &fb)
 {
     if (age <= deltime) {
-        out = dry * dry_value;
+        out = 0;
         amt.step();
         fb.step();
     }
     else
     {
-        out = dry * dry_value + delayed_value * amt.get();
+        out = delayed_value * amt.get();
         del = dry_value + delayed_value_for_fb * fb.get();
         dsp::sanitize(out);
         dsp::sanitize(del);
     }
+}
+
+static inline void delay_mix(float dry_left, float dry_right, float &out_left, float &out_right, float dry, float chmix)
+{
+    float tmp_left = lerp(out_left, out_right, chmix);
+    float tmp_right = lerp(out_right, out_left, chmix);
+    out_left = dry_left * dry + tmp_left;
+    out_right = dry_right * dry + tmp_right;
 }
 
 uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -232,9 +241,9 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
             int v = mixmode == MIXMODE_PINGPONG ? 1 : 0;
             for(uint32_t i = offset; i < end; i++)
             {                
-                float cur_dry = dry.get();
-                delayline_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l) & ADDR_MASK], out_left, del_left, amt_left, fb_left, cur_dry);
-                delayline_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_right, del_right, amt_right, fb_right, cur_dry);
+                delayline_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
+                delayline_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
+                delay_mix(ins[0][i], ins[1][i], out_left, out_right, dry.get(), chmix.get());
                 
                 age++;
                 outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
@@ -253,9 +262,9 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
             
             for(uint32_t i = offset; i < end; i++)
             {
-                float cur_dry = dry.get();
-                delayline2_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l_corr) & ADDR_MASK], buffers[v][(bufptr - deltime_fb) & ADDR_MASK], out_left, del_left, amt_left, fb_left, cur_dry);
-                delayline2_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r_corr) & ADDR_MASK], buffers[1-v][(bufptr - deltime_fb) & ADDR_MASK], out_right, del_right, amt_right, fb_right, cur_dry);
+                delayline2_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l_corr) & ADDR_MASK], buffers[v][(bufptr - deltime_fb) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
+                delayline2_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r_corr) & ADDR_MASK], buffers[1-v][(bufptr - deltime_fb) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
+                delay_mix(ins[0][i], ins[1][i], out_left, out_right, dry.get(), chmix.get());
                 
                 age++;
                 outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;

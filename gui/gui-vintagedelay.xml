@@ -21,30 +21,35 @@
 
     <frame label="Mixing">
     	<hbox>
-		    <vbox fill="0" expand="0" border="10" spacing="5">
-		        <label param="feedback" fill="0" expand="0"  />
-		        <knob param="feedback" fill="0" expand="0"  size="4"/>
-		        <value param="feedback" fill="0" expand="0" />
-		    </vbox>
-		        
 		    <table expand="0" rows="2" cols="2">
-		        <vbox fill="0" attach-x="0" attach-y="1" fill-y="0">
-		            <label param="mix_mode" />
-		            <combo param="mix_mode" fill-y="0" />
-		        </vbox>
-		        <vbox fill="0" attach-x="1" attach-y="1" fill-y="0">
-		            <label param="medium" />
-		            <combo param="medium" fill-y="0" />
-		        </vbox>
-		        <vbox fill="0" attach-x="0" attach-y="0" pad-x="10">
+                        <vbox fill="0" attach-x="0" attach-y="0" pad-x="10">
+                            <label param="feedback" fill="0" expand="0"  />
+                            <knob param="feedback" fill="0" expand="0" />
+                            <value param="feedback" fill="0" expand="0" />
+                        </vbox>
+		        <vbox fill="0" attach-x="1" attach-y="0" pad-x="10">
 		            <label param="dry"  />
 		            <knob param="dry"/>
 		            <value param="dry"/>
 		        </vbox>
-		        <vbox fill="0" attach-x="1" attach-y="0" pad-x="10">
+		        <vbox fill="0" attach-x="2" attach-y="0" pad-x="10">
 		            <label param="amount"  />
 		            <knob param="amount"/>
 		            <value param="amount"/>
+		        </vbox>
+                        
+		        <vbox fill="0" attach-x="0" attach-y="1" fill-y="0">
+		            <label param="mix_mode" />
+		            <combo param="mix_mode" fill-y="0" />
+		        </vbox>
+                        <vbox fill="0" attach-x="1" attach-y="1" >
+                            <label param="width" fill="0" expand="0"  />
+                            <knob param="width" fill="0" expand="0" type="1" />
+                            <value param="width" fill="0" expand="0" />
+                        </vbox>
+		        <vbox fill="0" attach-x="2" attach-y="1" fill-y="0">
+		            <label param="medium" />
+		            <combo param="medium" fill-y="0" />
 		        </vbox>
 		    </table>
 		</hbox>
