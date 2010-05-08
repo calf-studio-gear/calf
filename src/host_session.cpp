@@ -226,9 +226,9 @@ void host_session::connect()
             if (chains.count(i)) {
                 if (!i)
                 {
-                    if (plugins[0]->metadata->get_output_count() < 2)
+                    if (plugins[0]->metadata->get_input_count() < 2)
                     {
-                        fprintf(stderr, "Cannot connect input to plugin %s - incompatible ports\n", plugins[0]->name.c_str());
+                        fprintf(stderr, "Cannot connect input to plugin %s - the plugin no input ports\n", plugins[0]->name.c_str());
                     } else {
                         client.connect("system:capture_1", cnp + plugins[0]->get_inputs()[0].name);
                         client.connect("system:capture_2", cnp + plugins[0]->get_inputs()[1].name);
