@@ -446,8 +446,8 @@ void monosynth_audio_module::calculate_step()
     set_frequency();
     envelope1.advance();
     envelope2.advance();
-    float env1 = envelope1.value;
-    float env2 = envelope2.value;
+    float env1 = envelope1.value, env2 = envelope2.value;
+    float aenv1 = envelope1.get_amp_value(), aenv2 = envelope2.get_amp_value();
     
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
@@ -461,10 +461,8 @@ void monosynth_audio_module::calculate_step()
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
     float resonance = *params[par_resonance];
     float e2r1 = *params[par_env1tores];
-    float e2a1 = *params[par_env1toamp];
     resonance = resonance * (1 - e2r1) + (0.7 + (resonance - 0.7) * env1 * env1) * e2r1;
     float e2r2 = *params[par_env2tores];
-    float e2a2 = *params[par_env2toamp];
     resonance = resonance * (1 - e2r2) + (0.7 + (resonance - 0.7) * env2 * env2) * e2r2 + moddest[moddest_resonance];
     float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
     float newfgain = 0.f;
@@ -517,10 +515,12 @@ void monosynth_audio_module::calculate_step()
         newfgain = ampctl;        
         break;
     }
+    float e2a1 = *params[par_env1toamp];
+    float e2a2 = *params[par_env2toamp];
     if (e2a1 > 0.f)
-        newfgain *= 1.0 - (1.0 - env1) * e2a1;
+        newfgain *= 1.0 - (1.0 - aenv1) * e2a1;
     if (e2a2 > 0.f)
-        newfgain *= 1.0 - (1.0 - env2) * e2a2;
+        newfgain *= 1.0 - (1.0 - aenv2) * e2a2;
     if (moddest[moddest_attenuation] != 0.f)
         newfgain *= dsp::clip<float>(1 - moddest[moddest_attenuation] * moddest[moddest_attenuation], 0.f, 1.f);
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
