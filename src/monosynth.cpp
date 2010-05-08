@@ -378,17 +378,20 @@ void monosynth_audio_module::delayed_note_on()
         default:
             break;
         }
-        envelope.note_on();
+        envelope1.note_on();
+        envelope2.note_on();
         running = true;
     }
     if (legato >= 2 && !gate)
         porta_time = -1.f;
     gate = true;
     stopping = false;
-    if (!(legato & 1) || envelope.released()) {
-        envelope.note_on();
+    if (!(legato & 1) || (envelope1.released() && envelope2.released())) {
+        envelope1.note_on();
+        envelope2.note_on();
     }
-    envelope.advance();
+    envelope1.advance();
+    envelope2.advance();
     queue_note_on = -1;
     float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, 0.5+0.5*last_lfov};
     calculate_modmatrix(moddest, moddest_count, modsrc);
@@ -415,7 +418,8 @@ void monosynth_audio_module::calculate_step()
         dsp::zero(buffer, step_size);
         if (is_stereo_filter())
             dsp::zero(buffer2, step_size);
-        envelope.advance();
+        envelope1.advance();
+        envelope2.advance();
         return;
     }
     lfo.set_freq(*params[par_lforate], crate);
@@ -440,23 +444,28 @@ void monosynth_audio_module::calculate_step()
         lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov * (1.f / 1200.0f));
     inertia_pitchbend.step();
     set_frequency();
-    envelope.advance();
-    float env = envelope.value;
+    envelope1.advance();
+    envelope2.advance();
+    float env1 = envelope1.value;
+    float env2 = envelope2.value;
     
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env, 0.5+0.5*lfov};
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5+0.5*lfov, 0.5+0.5*lfov};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     
     inertia_cutoff.set_inertia(*params[par_cutoff]);
-    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env * fltctl * *params[par_envmod] + moddest[moddest_cutoff]) * (1.f / 1200.f));
+    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env1 * fltctl * *params[par_env1tocutoff] + env2 * fltctl * *params[par_env2tocutoff] + moddest[moddest_cutoff]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
     float resonance = *params[par_resonance];
-    float e2r = *params[par_envtores];
-    float e2a = *params[par_envtoamp];
-    resonance = resonance * (1 - e2r) + (0.7 + (resonance - 0.7) * env * env) * e2r + moddest[moddest_resonance];
+    float e2r1 = *params[par_env1tores];
+    float e2a1 = *params[par_env1toamp];
+    resonance = resonance * (1 - e2r1) + (0.7 + (resonance - 0.7) * env1 * env1) * e2r1;
+    float e2r2 = *params[par_env2tores];
+    float e2a2 = *params[par_env2toamp];
+    resonance = resonance * (1 - e2r2) + (0.7 + (resonance - 0.7) * env2 * env2) * e2r2 + moddest[moddest_resonance];
     float cutoff2 = dsp::clip(cutoff * separation, 10.f, 18000.f);
     float newfgain = 0.f;
     if (filter_type != last_filter_type)
@@ -508,9 +517,10 @@ void monosynth_audio_module::calculate_step()
         newfgain = ampctl;        
         break;
     }
-    float aenv = env;
-    if (*params[par_envtoamp] > 0.f)
-        newfgain *= 1.0 - (1.0 - aenv) * e2a;
+    if (e2a1 > 0.f)
+        newfgain *= 1.0 - (1.0 - env1) * e2a1;
+    if (e2a2 > 0.f)
+        newfgain *= 1.0 - (1.0 - env2) * e2a2;
     if (moddest[moddest_attenuation] != 0.f)
         newfgain *= dsp::clip<float>(1 - moddest[moddest_attenuation] * moddest[moddest_attenuation], 0.f, 1.f);
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
@@ -532,7 +542,7 @@ void monosynth_audio_module::calculate_step()
         calculate_buffer_stereo();
         break;
     }
-    if ((envelope.state == adsr::STOP && !gate) || force_fadeout || (envelope.state == adsr::RELEASE && *params[par_envtoamp] <= 0.f))
+    if ((envelope1.state == adsr::STOP && envelope2.state == adsr::STOP && !gate) || force_fadeout || (envelope1.state == adsr::RELEASE && *params[par_env1toamp] <= 0.f) || (envelope2.state == adsr::RELEASE && *params[par_env2toamp] <= 0.f))
     {
         enum { ramp = step_size * 4 };
         for (int i = 0; i < step_size; i++)
@@ -567,14 +577,16 @@ void monosynth_audio_module::note_off(int note, int vel)
             porta_time = 0;
             set_frequency();
             if (!(legato & 1)) {
-                envelope.note_on();
+                envelope1.note_on();
+                envelope2.note_on();
                 stopping = false;
                 running = true;
             }
             return;
         }
         gate = false;
-        envelope.note_off();
+        envelope1.note_off();
+        envelope2.note_off();
     }
 }
 
@@ -601,7 +613,8 @@ void monosynth_audio_module::control_change(int controller, int value)
         case 123: // all notes off
             gate = false;
             queue_note_on = -1;
-            envelope.note_off();
+            envelope1.note_off();
+            envelope2.note_off();
             stack.clear();
             break;
     }
@@ -612,7 +625,8 @@ void monosynth_audio_module::deactivate()
     gate = false;
     running = false;
     stopping = false;
-    envelope.reset();
+    envelope1.reset();
+    envelope2.reset();
     stack.clear();
 }
 
@@ -634,9 +648,9 @@ void monosynth_audio_module::set_frequency()
 void monosynth_audio_module::params_changed()
 {
     float sf = 0.001f;
-    envelope.set(*params[par_attack] * sf, *params[par_decay] * sf, std::min(0.999f, *params[par_sustain]), *params[par_release] * sf, srate / step_size, *params[par_fade] * sf);
+    envelope1.set(*params[par_env1attack] * sf, *params[par_env1decay] * sf, std::min(0.999f, *params[par_env1sustain]), *params[par_env1release] * sf, srate / step_size, *params[par_env1fade] * sf);
+    envelope2.set(*params[par_env2attack] * sf, *params[par_env2decay] * sf, std::min(0.999f, *params[par_env2sustain]), *params[par_env2release] * sf, srate / step_size, *params[par_env2fade] * sf);
     filter_type = dsp::fastf2i_drm(*params[par_filtertype]);
-    decay_factor = odcr * 1000.0 / *params[par_decay];
     separation = pow(2.0, *params[par_cutoffsep] / 1200.0);
     wave1 = dsp::clip(dsp::fastf2i_drm(*params[par_wave1]), 0, (int)wave_count - 1);
     wave2 = dsp::clip(dsp::fastf2i_drm(*params[par_wave2]), 0, (int)wave_count - 1);
@@ -655,7 +669,10 @@ uint32_t monosynth_audio_module::process(uint32_t offset, uint32_t nsamples, uin
 {
     if (!running && queue_note_on == -1) {
         for (uint32_t i = 0; i < nsamples / step_size; i++)
-            envelope.advance();
+        {
+            envelope1.advance();
+            envelope2.advance();
+        }
         return 0;
     }
     uint32_t op = offset;
@@ -665,7 +682,8 @@ uint32_t monosynth_audio_module::process(uint32_t offset, uint32_t nsamples, uin
             if (running || queue_note_on != -1)
                 calculate_step();
             else {
-                envelope.advance();
+                envelope1.advance();
+                envelope2.advance();
                 dsp::zero(buffer, step_size);
             }
         }

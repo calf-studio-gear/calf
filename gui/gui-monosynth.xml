@@ -214,27 +214,27 @@
             <hbox spacing="4">
               <table cols="5" rows="1" homogeneous="1" fill-x="0" expand-x="0">
                 <vbox attach-x="0" attach-y="0">
-                  <label param="adsr_a"/>
+                  <label param="adsr_a" text="Attack"/>
                   <vscale param="adsr_a" inverted="1" size="1"/>
                   <value param="adsr_a" width="4"/>
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
-                  <label param="adsr_d"/>
+                  <label param="adsr_d" text="Decay"/>
                   <vscale param="adsr_d" inverted="1" size="1"/>
                   <value param="adsr_d" width="4"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="0">
-                  <label param="adsr_s"/>
+                  <label param="adsr_s" text="Sustain"/>
                   <vscale param="adsr_s" inverted="1" size="1"/>
                   <value param="adsr_s"/>
                 </vbox>
                 <vbox attach-x="3" attach-y="0">
-                  <label param="adsr_f"/>
+                  <label param="adsr_f" text="Fade"/>
                   <vscale param="adsr_f" inverted="1" size="1"/>
                   <value param="adsr_f" width="4"/>
                 </vbox>
                 <vbox attach-x="4" attach-y="0">
-                  <label param="adsr_r"/>
+                  <label param="adsr_r" text="Release"/>
                   <vscale param="adsr_r" inverted="1" size="1"/>
                   <value param="adsr_r" width="4"/>
                 </vbox>
@@ -262,46 +262,46 @@
             <hbox spacing="4">
               <table cols="5" rows="1" homogeneous="1" fill-x="0" expand-x="0">
                 <vbox attach-x="0" attach-y="0">
-                  <label param="adsr_a"/>
-                  <vscale param="adsr_a" inverted="1" size="1"/>
-                  <value param="adsr_a" width="4"/>
+                  <label param="adsr2_a" text="Attack"/>
+                  <vscale param="adsr2_a" inverted="1" size="1"/>
+                  <value param="adsr2_a" width="4"/>
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
-                  <label param="adsr_d"/>
-                  <vscale param="adsr_d" inverted="1" size="1"/>
-                  <value param="adsr_d" width="4"/>
+                  <label param="adsr2_d" text="Decay"/>
+                  <vscale param="adsr2_d" inverted="1" size="1"/>
+                  <value param="adsr2_d" width="4"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="0">
-                  <label param="adsr_s"/>
-                  <vscale param="adsr_s" inverted="1" size="1"/>
-                  <value param="adsr_s"/>
+                  <label param="adsr2_s" text="Sustain"/>
+                  <vscale param="adsr2_s" inverted="1" size="1"/>
+                  <value param="adsr2_s"/>
                 </vbox>
                 <vbox attach-x="3" attach-y="0">
-                  <label param="adsr_f"/>
-                  <vscale param="adsr_f" inverted="1" size="1"/>
-                  <value param="adsr_f" width="4"/>
+                  <label param="adsr2_f" text="Fade"/>
+                  <vscale param="adsr2_f" inverted="1" size="1"/>
+                  <value param="adsr2_f" width="4"/>
                 </vbox>
                 <vbox attach-x="4" attach-y="0">
-                  <label param="adsr_r"/>
-                  <vscale param="adsr_r" inverted="1" size="1"/>
-                  <value param="adsr_r" width="4"/>
+                  <label param="adsr2_r" text="Release"/>
+                  <vscale param="adsr2_r" inverted="1" size="1"/>
+                  <value param="adsr2_r" width="4"/>
                 </vbox>
               </table>
               <vbox>
                 <vbox>
                   <label text="To Cutoff"/>
-                  <knob type="1" param="env2cutoff"/>
-                  <value param="env2cutoff"/>
+                  <knob type="1" param="adsr2_cutoff"/>
+                  <value param="adsr2_cutoff"/>
                 </vbox>
                 <vbox>
                   <label text="To Res"/>
-                  <knob param="env2res"/>
-                  <value param="env2res"/>
+                  <knob param="adsr2_res"/>
+                  <value param="adsr2_res"/>
                 </vbox>
                 <vbox>
                   <label text="To Amp"/>
-                  <knob param="env2amp"/>
-                  <value param="env2amp"/>
+                  <knob param="adsr2_amp"/>
+                  <value param="adsr2_amp"/>
                 </vbox>
               </vbox>
             </hbox>

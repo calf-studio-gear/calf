@@ -62,7 +62,7 @@ public:
     /// Last used waveform number - OSC2
     int prev_wave2;
     int filter_type, last_filter_type;
-    float freq, start_freq, target_freq, cutoff, decay_factor, fgain, fgain_delta, separation;
+    float freq, start_freq, target_freq, cutoff, fgain, fgain_delta, separation;
     float detune, xpose, xfade, ampctl, fltctl, queue_vel;
     float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
     /// Last value of phase shift for pulse width emulation for OSC1
@@ -71,7 +71,7 @@ public:
     int32_t last_pwshift2;
     int queue_note_on, stop_count, modwheel_value_int;
     int legato;
-    dsp::adsr envelope;
+    dsp::adsr envelope1, envelope2;
     dsp::keystack stack;
     dsp::gain_smoothing master;
     /// Smoothed cutoff value
