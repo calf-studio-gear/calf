@@ -272,6 +272,7 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
     last_pwshift1 = shift_target1;
     last_pwshift2 = shift_target2;
     last_stretch1 = stretch_target1;
+    lookup_waveforms();
     
     shift1 += (flag1 << 31);
     shift2 += (flag2 << 31);
@@ -337,7 +338,7 @@ void monosynth_audio_module::calculate_buffer_stereo()
 
 void monosynth_audio_module::lookup_waveforms()
 {
-    osc1.waveform = waves[wave1 == wave_sqr ? wave_saw : wave1].get_level(osc1.phasedelta);
+    osc1.waveform = waves[wave1 == wave_sqr ? wave_saw : wave1].get_level((uint32_t)(((uint64_t)osc1.phasedelta) * last_stretch1 >> 16));
     osc2.waveform = waves[wave2 == wave_sqr ? wave_saw : wave2].get_level(osc2.phasedelta);    
     if (!osc1.waveform) osc1.waveform = silence;
     if (!osc2.waveform) osc2.waveform = silence;
