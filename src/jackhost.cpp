@@ -270,6 +270,7 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"client", 1, 0, 'c'},
     {"effect", 0, 0, 'e'},
+    {"load", 1, 0, 'l'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
     {"connect-midi", 1, 0, 'M'},
@@ -279,7 +280,7 @@ static struct option long_options[] = {
 void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
-        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>]\n"
+        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>] [--load <session>]\n"
         "       [--connect-midi <name|capture-index>] [--help] [--version] [!] pluginname[:<preset>] [!] ...\n", 
         argv[0]);
 }
@@ -297,7 +298,7 @@ int main(int argc, char *argv[])
     glade_init();
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:o:m:M:ehv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:l:o:m:M:ehv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -322,6 +323,9 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
                 sess.midi_name = string(optarg) + "_%d";
+                break;
+            case 'l':
+                sess.load_name = optarg;
                 break;
             case 'M':
                 if (atoi(optarg)) {

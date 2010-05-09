@@ -36,7 +36,7 @@ class host_session: public main_window_owner_iface, public calf_plugins::progres
 private:
     static host_session *instance;
 public:
-    std::string client_name, input_name, output_name, midi_name;
+    std::string client_name, input_name, output_name, midi_name, load_name;
     std::vector<std::string> plugin_names;
     std::map<int, std::string> presets;
     session_manager_iface *session_manager;

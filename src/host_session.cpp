@@ -219,7 +219,7 @@ void host_session::connect()
     client.activate();
     if (session_manager)
         session_manager->set_jack_client_name(client.get_name());
-    if (!session_manager || !session_manager->is_being_restored()) 
+    if ((!session_manager || !session_manager->is_being_restored()) && load_name.empty())
     {
         string cnp = client.get_name() + ":";
         for (unsigned int i = 0; i < plugins.size(); i++) {
@@ -279,6 +279,18 @@ void host_session::connect()
                     break;
                 }
             }
+        }
+    }
+    if (!load_name.empty())
+    {
+        char *error = open_file(load_name.c_str());
+        if (error)
+        {
+            GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Cannot load '%s': %s", load_name.c_str(), error);
+            gtk_dialog_run (GTK_DIALOG (widget));
+            gtk_widget_destroy (widget);
+            
+            g_free(error);
         }
     }
     if (session_manager)
