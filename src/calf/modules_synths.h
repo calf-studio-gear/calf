@@ -44,7 +44,7 @@ public:
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
-    dsp::triangle_lfo lfo;
+    dsp::triangle_lfo lfo1, lfo2;
     bool running, stopping, gate, force_fadeout;
     int last_key;
     
@@ -64,7 +64,9 @@ public:
     int filter_type, last_filter_type;
     float freq, start_freq, target_freq, cutoff, fgain, fgain_delta, separation;
     float detune, xpose, xfade, ampctl, fltctl, queue_vel;
-    float odcr, porta_time, lfo_bend, lfo_clock, last_lfov, modwheel_value;
+    float odcr, porta_time, lfo_bend, lfo1_clock, lfo2_clock, modwheel_value;
+    /// Delay counter for LFOs
+    float lfo_clock;
     /// Last value of phase shift for pulse width emulation for OSC1
     int32_t last_pwshift1;
     /// Last value of phase shift for pulse width emulation for OSC2

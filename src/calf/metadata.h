@@ -110,6 +110,8 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         par_env2tocutoff, par_env2tores, par_env2toamp, 
         par_env2attack, par_env2decay, par_env2sustain, par_env2fade, par_env2release, 
         par_stretch1,
+        par_lfo1trig, par_lfo2trig,
+        par_lfo2rate, par_lfo2delay,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64, step_shift = 6 };

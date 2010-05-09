@@ -255,7 +255,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
     return get_static_graph(index, subindex, *params[index], data, points, context);
 }
 
-void monosynth_audio_module::calculate_buffer_oscs(float lfo)
+void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
 {
     int flag1 = (wave1 == wave_sqr);
     int flag2 = (wave2 == wave_sqr);
@@ -263,13 +263,12 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo)
     int32_t shift1 = last_pwshift1;
     int32_t shift2 = last_pwshift2;
     int32_t stretch1 = last_stretch1;
-    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o1pw]));
-    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo * *params[par_lfopw] + 0.01f * moddest[moddest_o2pw]));
+    int32_t shift_target1 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw1] + lfo1 * *params[par_lfopw] + 0.01f * moddest[moddest_o1pw]));
+    int32_t shift_target2 = (int32_t)(0x78000000 * dsp::clip11(*params[par_pw2] + lfo1 * *params[par_lfopw] + 0.01f * moddest[moddest_o2pw]));
     int32_t stretch_target1 = (int32_t)(65536 * dsp::clip(*params[par_stretch1] + 0.01f * moddest[moddest_o1stretch], 1.f, 16.f));
     int32_t shift_delta1 = ((shift_target1 >> 1) - (last_pwshift1 >> 1)) >> (step_shift - 1);
     int32_t shift_delta2 = ((shift_target2 >> 1) - (last_pwshift2 >> 1)) >> (step_shift - 1);
     int32_t stretch_delta1 = ((stretch_target1 >> 1) - (last_stretch1 >> 1)) >> (step_shift - 1);
-    last_lfov = lfo;
     last_pwshift1 = shift_target1;
     last_pwshift2 = shift_target2;
     last_stretch1 = stretch_target1;
@@ -358,7 +357,6 @@ void monosynth_audio_module::delayed_note_on()
     fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
     set_frequency();
     lookup_waveforms();
-    lfo_clock = 0.f;
 
     if (!running)
     {
@@ -369,7 +367,16 @@ void monosynth_audio_module::delayed_note_on()
         osc2.reset();
         filter.reset();
         filter2.reset();
-        lfo.reset();
+        if (*params[par_lfo1trig] <= 0)
+        {
+            lfo1.reset();
+            lfo1_clock = 0.f;
+        }
+        if (*params[par_lfo2trig] <= 0)
+        {
+            lfo2.reset();
+            lfo2_clock = 0.f;
+        }
         switch((int)*params[par_oscmode])
         {
         case 1:
@@ -408,7 +415,7 @@ void monosynth_audio_module::delayed_note_on()
     envelope1.advance();
     envelope2.advance();
     queue_note_on = -1;
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, 0.5+0.5*last_lfov};
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, 0, 0.5+0.5*lfo1.last, 0.5+0.5*lfo2.last};
     calculate_modmatrix(moddest, moddest_count, modsrc);
 }
 
@@ -437,7 +444,8 @@ void monosynth_audio_module::calculate_step()
         envelope2.advance();
         return;
     }
-    lfo.set_freq(*params[par_lforate], crate);
+    lfo1.set_freq(*params[par_lforate], crate);
+    lfo2.set_freq(*params[par_lfo2rate], crate);
     float porta_total_time = *params[par_portamento] * 0.001f;
     
     if (porta_total_time >= 0.00101f && porta_time >= 0) {
@@ -452,11 +460,12 @@ void monosynth_audio_module::calculate_step()
             porta_time += odcr;
         }
     }
-    float lfov = lfo.get() * std::min(1.0f, lfo_clock / *params[par_lfodelay]);
-    lfov = lfov * dsp::lerp(1.f, modwheel_value, *params[par_mwhl_lfo]);
+    float lfov1 = lfo1.get() * std::min(1.0f, lfo_clock / *params[par_lfodelay]);
+    lfov1 = lfov1 * dsp::lerp(1.f, modwheel_value, *params[par_mwhl_lfo]);
+    float lfov2 = lfo2.get() * std::min(1.0f, lfo_clock / *params[par_lfo2delay]);
     lfo_clock += odcr;
     if (fabs(*params[par_lfopitch]) > small_value<float>())
-        lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov * (1.f / 1200.0f));
+        lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov1 * (1.f / 1200.0f));
     inertia_pitchbend.step();
     set_frequency();
     envelope1.advance();
@@ -466,11 +475,11 @@ void monosynth_audio_module::calculate_step()
     
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5+0.5*lfov, 0.5+0.5*lfov};
+    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5+0.5*lfov1, 0.5+0.5*lfov2};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     
     inertia_cutoff.set_inertia(*params[par_cutoff]);
-    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov * *params[par_lfofilter] + env1 * fltctl * *params[par_env1tocutoff] + env2 * fltctl * *params[par_env2tocutoff] + moddest[moddest_cutoff]) * (1.f / 1200.f));
+    cutoff = inertia_cutoff.get() * pow(2.0f, (lfov1 * *params[par_lfofilter] + env1 * fltctl * *params[par_env1tocutoff] + env2 * fltctl * *params[par_env2tocutoff] + moddest[moddest_cutoff]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)
         cutoff *= pow(freq / 264.f, *params[par_keyfollow]);
     cutoff = dsp::clip(cutoff , 10.f, 18000.f);
@@ -539,7 +548,9 @@ void monosynth_audio_module::calculate_step()
     if (moddest[moddest_attenuation] != 0.f)
         newfgain *= dsp::clip<float>(1 - moddest[moddest_attenuation] * moddest[moddest_attenuation], 0.f, 1.f);
     fgain_delta = (newfgain - fgain) * (1.0 / step_size);
-    calculate_buffer_oscs(lfov);
+    calculate_buffer_oscs(lfov1);
+    lfo1.last = lfov1;
+    lfo2.last = lfov2;
     switch(filter_type)
     {
     case flt_lp24:

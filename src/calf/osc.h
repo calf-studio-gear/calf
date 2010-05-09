@@ -19,8 +19,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CALF_OSC_H
-#define __CALF_OSC_H
+#ifndef CALF_OSC_H
+#define CALF_OSC_H
 
 #include "fft.h"
 #include <map>
@@ -284,6 +284,18 @@ struct waveform_oscillator: public simple_oscillator
  */
 struct triangle_lfo: public simple_oscillator
 {
+    /// Previous value (not stored here, but may be used by calling code)
+    float last;
+    
+    triangle_lfo()
+    {
+        reset();
+    }
+    void reset()
+    {
+        simple_oscillator::reset();
+        last = 0;
+    }
     inline float get()
     {
         uint32_t phase2 = phase;

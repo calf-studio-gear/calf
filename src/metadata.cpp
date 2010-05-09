@@ -602,6 +602,7 @@ const char *monosynth_waveform_names[] = { "Sawtooth", "Square", "Pulse", "Sine"
     "Smooth Brass", "Bass", "Dark FM", "Multiwave", "Bell FM", "Dark Pad", "DCO Saw", "DCO Maze" };
 const char *monosynth_mode_names[] = { "0\xC2\xB0 : 0\xC2\xB0", "0\xC2\xB0 : 180\xC2\xB0", "0\xC2\xB0 : 90\xC2\xB0", "90\xC2\xB0 : 90\xC2\xB0", "90\xC2\xB0 : 270\xC2\xB0", "Random" };
 const char *monosynth_legato_names[] = { "Retrig", "Legato", "Fng Retrig", "Fng Legato" };
+const char *monosynth_lfotrig_names[] = { "Retrig", "Free" };
 
 const char *monosynth_filter_choices[] = {
     "12dB/oct Lowpass",
@@ -652,12 +653,12 @@ CALF_PORT_PROPS(monosynth) = {
 
     { 200,         0, 2400,   25, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "pbend_range", "PBend Range" },
 
-    { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo_rate", "LFO Rate" },
-    { 0.5,      0.1,  5,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "lfo_delay", "LFO Delay" },
-    { 0,      -4800, 4800,  0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo2filter", "LFO->Filter" },
-    { 100,        0, 1200,  0, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo2pitch", "LFO->Pitch" },
-    { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "lfo2pw", "LFO->PW" },
-    { 1,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "mwhl2lfo", "ModWheel->LFO" },
+    { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo_rate", "LFO1 Rate" },
+    { 0.5,        0,  5,    0, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "lfo_delay", "LFO1 Delay" },
+    { 0,      -4800, 4800,  0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo2filter", "LFO1->Filter" },
+    { 100,        0, 1200,  0, PF_FLOAT | PF_SCALE_QUAD | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo2pitch", "LFO1->Pitch" },
+    { 0,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "lfo2pw", "LFO1->PW" },
+    { 1,          0,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "mwhl2lfo", "ModWheel->LFO1" },
 
     { 1,          0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "scale_detune", "Scale Detune" },
 
@@ -672,6 +673,11 @@ CALF_PORT_PROPS(monosynth) = {
     { 50,       10,20000,     0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_FADER | PF_UNIT_MSEC, NULL, "adsr2_r", "Release" },
 
     { 1,          1,   16,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "o1_stretch", "Osc1 Stretch" },
+
+    { 0,          0,    1,    0, PF_ENUM | PF_CTL_COMBO, monosynth_lfotrig_names, "lfo1_trig", "LFO1 Trigger Mode" },
+    { 0,          0,    1,    0, PF_ENUM | PF_CTL_COMBO, monosynth_lfotrig_names, "lfo2_trig", "LFO2 Trigger Mode" },
+    { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_rate", "LFO1 Rate" },
+    { 0.5,      0.1,  5,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "lfo2_delay", "LFO1 Delay" },
 };
 
 ////////////////////////////////////////////////////////////////////////////

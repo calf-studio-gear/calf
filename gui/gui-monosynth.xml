@@ -156,6 +156,12 @@
           </frame>
           <frame label="LFO 1">
             <vbox spacing="10">
+              <align>
+                <hbox>
+                  <label param="lfo1_trig" text="Mode" />
+                  <combo param="lfo1_trig" />
+                </hbox>
+              </align>
               <hbox>
                 <vbox>
                   <label text="Rate"/>
@@ -194,21 +200,22 @@
           </frame>
           <frame label="LFO 2">
             <vbox spacing="10">
+              <align>
+                <hbox>
+                  <label param="lfo2_trig" text="Mode" />
+                  <combo param="lfo2_trig" />
+                </hbox>
+              </align>
               <hbox>
                 <vbox>
                   <label text="Rate"/>
-                  <knob param="lfo_rate"/>
-                  <value param="lfo_rate"/>
+                  <knob param="lfo2_rate"/>
+                  <value param="lfo2_rate"/>
                 </vbox>
                 <vbox>
                   <label text="Delay"/>
                   <knob param="lfo_delay"/>
                   <value param="lfo_delay"/>
-                </vbox>
-                <vbox>
-                  <label text="ModWheel"/>
-                  <knob param="mwhl2lfo"/>
-                  <value param="mwhl2lfo"/>
                 </vbox>
               </hbox>
             </vbox>
@@ -257,7 +264,7 @@
                 </vbox>
                 <vbox>
                   <label text="To Amp"/>
-                  <toggle param="env2amp"/>
+                  <toggle param="env2amp" size="1"/>
                 </vbox>
               </vbox>
             </hbox>
@@ -304,7 +311,7 @@
                 </vbox>
                 <vbox>
                   <label text="To Amp"/>
-                  <toggle param="adsr2_amp"/>
+                  <toggle param="adsr2_amp" size="1"/>
                 </vbox>
               </vbox>
             </hbox>
