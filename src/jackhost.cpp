@@ -325,8 +325,19 @@ int main(int argc, char *argv[])
                 sess.midi_name = string(optarg) + "_%d";
                 break;
             case 'l':
-                sess.load_name = optarg;
+            {
+                if (!g_path_is_absolute(optarg))
+                {
+                    gchar *curdir = g_get_current_dir();
+                    gchar *str = g_build_filename(curdir, optarg, NULL);
+                    sess.load_name = str;
+                    g_free(str);
+                    g_free(curdir);
+                }
+                else
+                    sess.load_name = optarg;
                 break;
+            }
             case 'M':
                 if (atoi(optarg)) {
                     sess.autoconnect_midi_index = atoi(optarg);
