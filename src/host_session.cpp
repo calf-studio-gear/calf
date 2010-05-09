@@ -291,7 +291,10 @@ void host_session::connect()
             gtk_widget_destroy (widget);
             
             g_free(error);
+            load_name = "";
         }
+        else
+            main_win->current_filename = load_name;
     }
     if (session_manager)
         session_manager->connect("calf-" + client_name);
