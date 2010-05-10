@@ -700,7 +700,7 @@ int main(int argc, char *argv[])
         make_gui(path_prefix);
     else
     {
-        fprintf(stderr, "calfmakerdf: Mode %s unsupported in this version\n", optarg);
+        fprintf(stderr, "calfmakerdf: Mode '%s' unsupported in this version\n", mode.c_str());
         return 1;
     }
     return 0;
