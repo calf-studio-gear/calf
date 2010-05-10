@@ -1,11 +1,12 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.63)
 AC_INIT([calf],[0.0.19],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 LT_INIT([dlopen])
+LT_LANG([C++])
 
 AM_INIT_AUTOMAKE(1.8)
 
@@ -14,13 +15,11 @@ if test "x$prefix" = "xNONE"; then
 fi
 
 # Checks for programs.
-AC_PROG_CXX
-AC_PROG_CC
-AC_PROG_CPP
 AC_PROG_INSTALL
 
 ############################################################################################
 # Set initial values of shell variables
+LADSPA_ENABLED="no"
 EXEC_GUI_ENABLED="no"
 DSSI_GUI_ENABLED="no"
 LV2_GTK_GUI_ENABLED="no"
@@ -29,6 +28,7 @@ JACK_FOUND="no"
 JACK_ENABLED="no"
 OLD_JACK="no"
 GUI_ENABLED="no"
+LASH_ENABLED="no"
 
 ############################################################################################
 # Create configure substitutions for dependencies
@@ -77,35 +77,52 @@ if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
 
-PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_ENABLED="yes", LV2_ENABLED="no")
+PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_FOUND="yes", LV2_FOUND="no")
+
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.6.0,
-  AC_CHECK_LIB([lash], [lash_client_is_being_restored], LASH_0_6_ENABLED="yes", LASH_0_6_ENABLED="no"),
-  LASH_0_6_ENABLED="no")
-if test "$LASH_0_6_ENABLED" = "yes"; then
-  LASH_ENABLED="yes"
+  AC_CHECK_LIB([lash], [lash_client_is_being_restored], LASH_0_6_FOUND="yes", LASH_0_6_FOUND="no"),
+  LASH_0_6_FOUND="no")
+if test "$LASH_0_6_FOUND" = "yes"; then
+  LASH_FOUND="yes"
 else
-  PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_ENABLED="yes", LASH_ENABLED="no")
+  PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.5.2, LASH_FOUND="yes", LASH_FOUND="no")
 fi
 PKG_CHECK_MODULES(SLV2_HACK, slv2 <= 0.6.1, SLV2_UNSUPPORTED="yes", SLV2_UNSUPPORTED="no")
 
+############################################################################################
+# Assign initial values to feature control variables
+
+LADSPA_ENABLED=$LADSPA_FOUND
+DSSI_ENABLED=$DSSI_FOUND
+LV2_ENABLED=$LV2_FOUND
+LASH_ENABLED=$LASH_FOUND
+
+if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
+    GUI_ENABLED="yes",
+    GUI_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
+  )
+fi
+
+############################################################################################
 # Look for settings and installed libraries to determine what to compile/install/use
 if test "$LADSPA_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow LADSPA])
   AC_ARG_WITH(ladspa,
     AC_HELP_STRING([--without-ladspa],[disable LADSPA and DSSI interfaces]),
-      [if test "$withval" = "no"; then LADSPA_FOUND="no"; DSSI_FOUND="no"; fi],[])
-  AC_MSG_RESULT($LADSPA_FOUND)
+      [if test "$withval" = "no"; then LADSPA_ENABLED="no"; DSSI_ENABLED="no"; fi],[])
+  AC_MSG_RESULT($LADSPA_ENABLED)
 fi
 
 if test "$DSSI_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow DSSI])
   AC_ARG_WITH(dssi,
     AC_HELP_STRING([--without-dssi],[disable DSSI interface]),
-      [if test "$withval" = "no"; then DSSI_FOUND="no"; fi],[])
-  AC_MSG_RESULT($DSSI_FOUND)
+      [if test "$withval" = "no"; then DSSI_ENABLED="no"; fi],[])
+  AC_MSG_RESULT($DSSI_ENABLED)
 fi
 
-if test "$LV2_ENABLED" = "yes"; then
+if test "$LV2_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow LV2])
   AC_ARG_WITH(lv2,
     AC_HELP_STRING([--without-lv2],[disable LV2 interface]),
@@ -113,11 +130,12 @@ if test "$LV2_ENABLED" = "yes"; then
   AC_MSG_RESULT($LV2_ENABLED)
 fi
 
-if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_ENABLED" = "yes"; then
-  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.8.0 libglade-2.0 >= 2.4.0 cairo >= 1.2.0,
-    GUI_ENABLED="yes",
-    GUI_ENABLED="no (GTK+ 2.8, cairo 1.2 and libglade 2.4.0 or newer required)"
-  )
+if test "$LASH_FOUND" = "yes"; then
+  AC_MSG_CHECKING([whether to allow LASH])
+  AC_ARG_WITH(lash,
+    AC_HELP_STRING([--without-lash],[disable LASH compatibility (GPL)]),
+      [if test "$withval" = "no"; then LASH_ENABLED="no"; fi],[])
+  AC_MSG_RESULT($LASH_ENABLED)
 fi
 
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
@@ -148,7 +166,7 @@ if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
   JACK_ENABLED="yes"
 fi
 
-if test "$GUI_ENABLED" = "yes" -a "$DSSI_FOUND" = "yes"; then
+if test "$GUI_ENABLED" = "yes" -a "$DSSI_ENABLED" = "yes"; then
   DSSI_GUI_ENABLED="yes"
   EXEC_GUI_ENABLED="yes"
 fi
@@ -170,8 +188,8 @@ fi
 
 ############################################################################################
 # Create automake conditional symbols
-AM_CONDITIONAL(USE_DSSI, test "$DSSI_FOUND" = "yes")
-AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_FOUND" = "yes")
+AM_CONDITIONAL(USE_DSSI, test "$DSSI_ENABLED" = "yes")
+AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_ENABLED" = "yes")
 AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
@@ -185,10 +203,10 @@ AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
 
 ############################################################################################
 # Create autoconf symbols for config.h
-if test "$LADSPA_FOUND" = "yes"; then
-  AC_DEFINE([USE_LADSPA], [1], [LADSPA wrapper will be built])
+if test "$LADSPA_ENABLED" = "yes"; then
+  AC_DEFINE(USE_LADSPA, 1, [LADSPA wrapper will be built])
 fi
-if test "$DSSI_FOUND" = "yes"; then
+if test "$DSSI_ENABLED" = "yes"; then
   AC_DEFINE(USE_DSSI, 1, [DSSI wrapper will be built])
 fi
 if test "$LV2_ENABLED" = "yes"; then
@@ -202,7 +220,7 @@ if test "$OLD_JACK" = "yes"; then
 fi
 if test "$LASH_ENABLED" = "yes"; then
   AC_DEFINE(USE_LASH, 1, "LASH Audio Session Handler client functionality is enabled")
-  if test "$LASH_0_6_ENABLED" = "yes"; then
+  if test "$LASH_0_6_FOUND" = "yes"; then
     AC_DEFINE(USE_LASH_0_6, 1, "Unstable LASH API is enabled")
   fi
 fi
@@ -221,20 +239,6 @@ fi
 if test "$set_enable_gtk_gui" = "yes"; then
   AC_DEFINE([USE_LV2_GTK_GUI], [1], "In-process GTK+ LV2 GUI features is enabled")
 fi
-
-############################################################################################
-# Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
-AC_C_CONST
-AC_C_INLINE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-AC_TYPE_INT8_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
 
 ############################################################################################
 # Output directories
@@ -293,10 +297,10 @@ AC_MSG_RESULT([
 
     Debug mode:                  $set_enable_debug
     Experimental plugins:        $set_enable_experimental
-    LADSPA enabled:              $LADSPA_FOUND
+    LADSPA enabled:              $LADSPA_ENABLED
     Common GUI code:             $GUI_ENABLED
     Out-of-process GUI code:     $EXEC_GUI_ENABLED
-    DSSI enabled:                $DSSI_FOUND
+    DSSI enabled:                $DSSI_ENABLED
     DSSI GUI enabled:            $DSSI_GUI_ENABLED
     LV2 enabled:                 $LV2_ENABLED
     LV2 in-process GUI enabled:  $LV2_GTK_GUI_ENABLED
@@ -304,7 +308,7 @@ AC_MSG_RESULT([
     JACK host enabled:           $JACK_ENABLED
     LASH enabled:                $LASH_ENABLED])
 if test "$LASH_ENABLED" = "yes"; then
-  AC_MSG_RESULT([    Unstable LASH API:           $LASH_0_6_ENABLED])
+  AC_MSG_RESULT([    Unstable LASH API:           $LASH_0_6_FOUND])
 fi
 AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     
