@@ -15,7 +15,7 @@ class JACKPortInfo(object):
     
     def __init__(self, full_name, id, name, flags, format):
         self.full_name = full_name
-        self.client_name = full_name.split(":")[0]
+        self.client_name = full_name.split(":", 1)[0]
         self.id = int(id)
         self.name = str(name)
         self.flags = int(flags)
@@ -99,8 +99,8 @@ class JACKGraphParser(object):
     def connect(self, first, second):
         self.patchbay.ConnectPortsByName(first.client_name, first.name, second.client_name, second.name)
     def disconnect(self, name_first, name_second):
-        first = name_first.split(":")
-        second = name_second.split(":")
+        first = name_first.split(":", 1)
+        second = name_second.split(":", 1)
         self.patchbay.DisconnectPortsByName(first[0], first[1], second[0], second[1])
         
 class ClientBoxInfo():
