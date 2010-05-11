@@ -382,6 +382,7 @@ class ConnectionGraphEditor:
         return k * sign * (b1.x2 - b2.x1 + 1j * (b1.y1 - b2.y1))
         
     def blow_up(self):
+        return
         for m in self.modules:
             m.velocity = 0+0j
             m.bounds = m.group.get_bounds()
@@ -417,7 +418,8 @@ class ConnectionGraphEditor:
             for m1 in self.modules:
                 print "Velocity is (%s, %s)" % (m1.velocity.real, m1.velocity.imag)
                 m1.group.translate(step * m1.velocity.real, step * m1.velocity.imag)
-                m1.group.update(True, cr, m1.bounds)
+                m1.group.update(True, cr)
+                #m1.group.update(True, cr, m1.bounds)
                 m1.update_wires()
             damping *= 0.99
             temperature *= 0.99
