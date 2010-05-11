@@ -37,6 +37,11 @@ class VisibleWire():
         self.src.module.remove_wire(self)
         self.dest.module.remove_wire(self)
 
+def path_move(x, y):
+    return "M %s %s" % (x, y)
+def path_line(x, y):
+    return "L %s %s" % (x, y)
+
 class ModulePort():
     fontName = "DejaVu Sans 9"
     type = "port"
@@ -53,7 +58,15 @@ class ModulePort():
         return self.get_parser().get_port_id(self.portData)
 
     def calc_width(self, ctx):
-        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.portData))[0] + 4 * self.module.margin
+        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.portData))[0] + 4 * self.module.margin + 15
+
+    @staticmethod
+    def input_arrow(x, y, w, h):
+        return path_move(x, y) + path_line(x + w - 10, y) + path_line(x + w, y + h / 2) + path_line(x + w - 10, y + h) + path_line(x, y + h) + path_line(x, y)
+
+    @staticmethod
+    def output_arrow(x, y, w, h):
+        return path_move(x + w, y) + path_line(x + 10, y) + path_line(x, y + h / 2) + path_line(x + 10, y + h) + path_line(x + w, y + h) + path_line(x + w, y)
 
     def render(self, ctx, parent, y):
         module = self.module
@@ -68,10 +81,11 @@ class ModulePort():
         if not self.isInput:
             title.translate(width - bw, 0)
         color = self.get_parser().get_port_color(self.portData)
+        bw += 10
         if self.isInput:
-            box = goocanvas.Rect(parent = parent, x = 0.5, y = y - 0.5, width = bw, height = height + 1, line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1), line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         else:
-            box = goocanvas.Rect(parent = parent, x = width - bw - 0.5, y = y - 0.5, width = bw, height = height + 1, line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Path(parent = parent, data = self.output_arrow(width - bw, y - 0.5, bw, height + 1), line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
         box.lower(title)
         y += height + spacing
         box.type = "port"
