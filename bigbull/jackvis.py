@@ -71,9 +71,9 @@ class JACKGraphParser(object):
         self.fetch_graph()
     def get_port_color(self, portData):
         if portData.get_type() == 0:
-            color = Colors.audioPort
+            return Colors.audioPortIn, Colors.audioPort
         elif portData.get_type() == 1:
-            color = Colors.eventPort
+            return Colors.eventPortIn, Colors.eventPort
         else:
             print "Unknown type %s" % portData.get_type()
         return color

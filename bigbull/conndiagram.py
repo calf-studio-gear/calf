@@ -19,10 +19,14 @@ class Colors:
     text = 0xE0E0E0FF
     box = 0x303030FF
     defPort = 0x404040FF
-    audioPort = 0x004060FF
+    audioPort = 0x204A87FF
     controlPort = 0x008000FF
     eventPort = 0x800000FF
-    activePort = 0x808080FF
+    audioPortIn = 0x183868FF
+    controlPortIn = 0x00800080
+    eventPortIn = 0x80000080
+    activePort = 0xF0F0F0FF
+    activePortIn = 0x808080FF
     draggedWire = 0xFFFFFFFF
     connectedWire = 0x808080FF
 
@@ -80,16 +84,16 @@ class ModulePort():
         bw = bnds.x2 - bnds.x1 + 2 * margin
         if not self.isInput:
             title.translate(width - bw, 0)
-        color = self.get_parser().get_port_color(self.portData)
+        color_in, color_out = self.get_parser().get_port_color(self.portData)
         bw += 10
         if self.isInput:
-            box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1), line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1), line_width = 1, fill_color_rgba = color_in, stroke_color_rgba = color_out)
         else:
-            box = goocanvas.Path(parent = parent, data = self.output_arrow(width - bw, y - 0.5, bw, height + 1), line_width = 0, fill_color_rgba = color, stroke_color_rgba = Colors.frame)
+            box = goocanvas.Path(parent = parent, data = self.output_arrow(width - bw, y - 0.5, bw, height + 1), line_width = 1, fill_color_rgba = color_in, stroke_color_rgba = color_out)
         box.lower(title)
         y += height + spacing
         box.type = "port"
-        self.orig_color = color
+        self.orig_color_in, self.orig_color_out = color_in, color_out
         box.object = box.module = self
         box.portData = self.portData
         title.portData = self.portData
@@ -166,7 +170,8 @@ class ModuleBox():
     def port_button_press(self, mport, box, event):
         if event.button == 1:
             port_id = mport.get_id()
-            mport.box.props.fill_color_rgba = Colors.activePort
+            mport.box.props.fill_color_rgba = Colors.activePortIn
+            mport.box.props.stroke_color_rgba = Colors.activePort
             (x, y) = self.graph.port_endpoint(mport)
             self.drag_wire = goocanvas.Path(parent = self.parent, stroke_color_rgba = Colors.draggedWire)
             self.drag_wire.type = "tmp wire"
@@ -187,7 +192,8 @@ class ModuleBox():
         wireitem = tuple[2]
         port = self.portDict[tuple[1]]
         self.graph.dragging = None
-        port.box.props.fill_color_rgba = port.orig_color
+        port.box.props.fill_color_rgba = port.orig_color_in
+        port.box.props.stroke_color_rgba = port.orig_color_out
         if self.connect_candidate != None:
             # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
             try:
@@ -203,10 +209,12 @@ class ModuleBox():
     def set_connect_candidate(self, item):
         if self.connect_candidate != item:
             if self.connect_candidate != None:
-                self.connect_candidate.box.props.fill_color_rgba = self.connect_candidate.orig_color
+                self.connect_candidate.box.props.fill_color_rgba = self.connect_candidate.orig_color_in
+                self.connect_candidate.box.props.stroke_color_rgba = self.connect_candidate.orig_color_out
             self.connect_candidate = item
         if item != None:
-            item.box.props.fill_color_rgba = Colors.activePort
+            item.box.props.fill_color_rgba = Colors.activePortIn
+            item.box.props.stroke_color_rgba = Colors.activePort
         
     def update_drag_wire(self, tuple, x2, y2):
         (uri, x, y, dx, dy, wireitem) = (tuple[1], tuple[3], tuple[4], x2 - tuple[3], y2 - tuple[4], tuple[2])
