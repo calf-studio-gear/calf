@@ -15,16 +15,16 @@ def calc_extents(ctx, fontName, text):
     return layout.get_pixel_size()
 
 class Colors:
-    frame = 0x808080FF
+    frame = 0x4C4C4CFF
     text = 0xE0E0E0FF
-    box = 0x303030FF
+    box = 0x242424FF
     defPort = 0x404040FF
     audioPort = 0x204A87FF
     controlPort = 0x008000FF
-    eventPort = 0x800000FF
+    eventPort = 0xA40000FF
     audioPortIn = 0x183868FF
     controlPortIn = 0x00800080
-    eventPortIn = 0x80000080
+    eventPortIn = 0x7C000080
     activePort = 0xF0F0F0FF
     activePortIn = 0x808080FF
     draggedWire = 0xFFFFFFFF
@@ -47,7 +47,7 @@ def path_line(x, y):
     return "L %s %s" % (x, y)
 
 class ModulePort():
-    fontName = "DejaVu Sans 9"
+    fontName = "DejaVu Sans 8"
     type = "port"
     def __init__(self, module, portData):
         self.module = module
@@ -103,7 +103,7 @@ class ModulePort():
 
 class ModuleBox():
     margin = 2
-    spacing = 3
+    spacing = 4
     fontName = "DejaVu Sans Bold 9"
 
     def __init__(self, parser, parent, moduleData, graph):
@@ -134,10 +134,10 @@ class ModuleBox():
             if new_width > width:
                 width = new_width
         self.width = width
-        y = self.render_title(ctx, 0)
+        y = self.render_title(ctx, 0.5)
         for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
             y = self.render_port(ctx, id, y)
-        self.rect = goocanvas.Rect(parent = self.group, width = self.width, height = y, line_width = 2, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
+        self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
         self.rect.lower(self.titleItem)
         self.rect.type = "module"
         self.rect.object = self.rect.module = self

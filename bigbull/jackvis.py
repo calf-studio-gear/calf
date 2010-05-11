@@ -154,15 +154,21 @@ class App:
         self.main_vbox.connect("popup-menu", self.canvas_popup_menu_handler)
         self.cgraph.canvas.connect("button-press-event", self.canvas_button_press_handler)
         self.cgraph.canvas.update()
-        self.add_clients(0.0, 0.0, lambda port: port.is_port_output())
-        self.add_clients(200, 0.0, lambda port: port.is_port_input())
+        width = self.add_clients(0.0, 0.0, lambda port: port.is_port_output())
+        self.add_clients(width + 10, 0.0, lambda port: port.is_port_input())
         self.cgraph.canvas.update()
         self.add_wires()
         self.cgraph.blow_up()
         
     def add_clients(self, x, y, checker):
+        margin = 10
+        mwidth = 0
         for cl in self.parser.graph.clients:
-            y += self.cgraph.add_module(ClientBoxInfo(cl.name, checker), x, y).rect.props.height
+            mod = self.cgraph.add_module(ClientBoxInfo(cl.name, checker), x, y)
+            y += mod.rect.props.height + margin
+            if mod.rect.props.width > mwidth:
+                mwidth = mod.rect.props.width
+        return mwidth
         
     def add_wires(self):
         pmap = self.cgraph.get_port_map()
