@@ -145,7 +145,7 @@ class App:
         self.main_vbox = gtk.VBox()
         self.create_main_menu()
         self.scroll = gtk.ScrolledWindow()
-        self.scroll.add(self.cgraph.create())
+        self.scroll.add(self.cgraph.create(950, 650))
         self.main_vbox.pack_start(self.menu_bar, expand = False, fill = False)
         self.main_vbox.add(self.scroll)
         self.window.add(self.main_vbox)
@@ -158,8 +158,8 @@ class App:
         #self.cgraph.blow_up()
         
     def add_all(self):    
-        width = self.add_clients(0.0, 0.0, lambda port: port.is_port_output())
-        self.add_clients(width + 10, 0.0, lambda port: port.is_port_input())
+        width, left_mods = self.add_clients(10.0, 10.0, lambda port: port.is_port_output())
+        width2, right_mods = self.add_clients(width + 20, 10.0, lambda port: port.is_port_input())
         pmap = self.cgraph.get_port_map()
         for (c, p) in self.parser.graph.connections_name:
             if p in pmap and c in pmap:
@@ -167,16 +167,20 @@ class App:
                 self.cgraph.connect(pmap[c], pmap[p])
             else:
                 print "Connect %s to %s - not found" % (c, p)
+        for m in right_mods:
+            m.translate(950 - width - 20 - width2, 0)
     
     def add_clients(self, x, y, checker):
         margin = 10
         mwidth = 0
+        mods = []
         for cl in self.parser.graph.clients:
             mod = self.cgraph.add_module(ClientModuleModel(cl, checker), x, y)
             y += mod.rect.props.height + margin
             if mod.rect.props.width > mwidth:
                 mwidth = mod.rect.props.width
-        return mwidth
+            mods.append(mod)
+        return mwidth, mods
         
     def create_main_menu(self):
         self.menu_bar = gtk.MenuBar()

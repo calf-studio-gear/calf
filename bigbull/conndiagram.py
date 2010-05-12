@@ -40,6 +40,23 @@ class Colors:
     draggedWire = 0xFFFFFFFF
     connectedWire = 0x808080FF
 
+def path_move(x, y):
+    return "M %s %s " % (x, y)
+    
+def path_line(x, y):
+    return "L %s %s " % (x, y)
+
+def path_curve(x1, y1, x2, y2, x3, y3):
+    return "C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, x2, y2, x3, y3)
+
+def wireData(x1, y1, x2, y2):
+    dist = (x2 - x1) / 2
+    if dist < 30:
+        dist = 30 + (30 - dist) / 2
+        if dist > 60:
+            dist = 60
+    return path_move(x1, y1) + path_curve(x1 + dist, y1, x2 - dist, y2, x2, y2)
+
 class VisibleWire():
     def __init__(self, src, dest):
         """src is source PortView, dst is destination PortView"""
@@ -59,15 +76,8 @@ class VisibleWire():
     def update_shape(self):
         (x1, y1) = self.src.get_endpoint()
         (x2, y2) = self.dest.get_endpoint()
-        xm = (x1 + x2) / 2
-        self.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
+        self.wire.props.data = wireData(x1, y1, x2, y2)
         
-
-def path_move(x, y):
-    return "M %s %s " % (x, y)
-    
-def path_line(x, y):
-    return "L %s %s " % (x, y)
 
 class Dragging():
     def __init__(self, module, port_view, x, y):
@@ -86,8 +96,10 @@ class Dragging():
         return self.module.graph
         
     def update_shape(self, x2, y2):
-        (dx, dy) = (x2 - self.x, y2 - self.y)
-        self.drag_wire.props.data = path_move(self.x, self.y) + "C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (self.x+dx/2, self.y, self.x+dx/2, self.y+dy, self.x+dx, self.y+dy)
+        if self.port_view.isInput:
+            self.drag_wire.props.data = wireData(x2, y2, self.x, self.y)
+        else:
+            self.drag_wire.props.data = wireData(self.x, self.y, x2, y2)
         
     def dragging(self, x2, y2):
         boundsGrp = self.module.group.get_bounds()
@@ -130,6 +142,8 @@ class Dragging():
         if dst is not None:
             # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
             dst.update_style()
+            if src.isInput:
+                src, dst = dst, src
             self.get_graph().get_parser().connect(src.model, dst.model)
             self.get_graph().connect(src, dst)
     
@@ -177,7 +191,9 @@ class PortView():
         bnds = title.get_bounds()
         bw = bnds.x2 - bnds.x1 + 2 * margin
         if not self.isInput:
-            title.translate(width - bw, 0)
+            title.translate(width - bw - 2, 0)
+        else:
+            title.translate(2, 0)
         bw += 10
         if self.isInput:
             box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1))
@@ -257,7 +273,6 @@ class ModuleView():
         self.rect.type = "module"
         self.rect.object = self.rect.module = self
         self.group.ensure_updated()
-        self.wire = None
         
     def create_port(self, model):
         view = PortView(self, model)
@@ -296,6 +311,11 @@ class ModuleView():
             
     def remove_wire(self, wire):
         self.wires = [w for w in self.wires if w != wire]
+            
+    def translate(self, dx, dy):
+        self.group.translate(dx, dy)
+        self.group.ensure_updated()
+        self.update_wires()
 
 class ConnectionGraphEditor:
     def __init__(self, app, parser):
@@ -309,14 +329,14 @@ class ConnectionGraphEditor:
     def get_parser(self):
         return self.parser
 
-    def create(self):
-        self.create_canvas()
+    def create(self, sx, sy):
+        self.create_canvas(sx, sy)
         return self.canvas
         
-    def create_canvas(self):
+    def create_canvas(self, sx, sy):
         self.canvas = goocanvas.Canvas()
         self.canvas.props.automatic_bounds = True
-        self.canvas.set_size_request(640, 480)
+        self.canvas.set_size_request(sx, sy)
         self.canvas.set_scale(1)
         #self.canvas.connect("size-allocate", self.update_canvas_bounds)
         self.canvas.props.background_color_rgb = 0
@@ -386,6 +406,9 @@ class ConnectionGraphEditor:
     def box_button_press(self, group, widget, event):
         if event.button == 1:
             group.raise_(None)
+            for w in group.module.wires:
+                w.wire.raise_(None)
+                
             self.moving = group
             self.motion_x = event.x
             self.motion_y = event.y
@@ -397,7 +420,7 @@ class ConnectionGraphEditor:
     
     def box_motion_notify(self, group, widget, event):
         if self.moving == group:
-            self.moving.translate(event.x - self.motion_x, event.y - self.motion_y)
+            self.moving.module.translate(event.x - self.motion_x, event.y - self.motion_y)
             group.module.update_wires()
                         
     # Connect elements visually (but not logically, that's what controller/parser is for)
@@ -490,7 +513,7 @@ class GraphDetonator:
             for m1 in modules:
                 print "Velocity is (%s, %s)" % (m1.velocity.real, m1.velocity.imag)
                 m1.group.translate(step * m1.velocity.real, step * m1.velocity.imag)
-                m1.group.update(True, cr)
+                m1.group.ensure_updated()
                 #m1.group.update(True, cr, m1.bounds)
                 m1.update_wires()
             damping *= 0.99
