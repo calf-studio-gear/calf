@@ -153,10 +153,10 @@ class PortView():
         return self.module.get_parser()
         
     def get_id(self):
-        return self.get_parser().get_port_id(self.model)
+        return self.model.get_id()
 
     def calc_width(self, ctx):
-        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.model))[0] + 4 * self.module.margin + 15
+        return calc_extents(ctx, self.fontName, self.model.get_name())[0] + 4 * self.module.margin + 15
 
     @staticmethod
     def input_arrow(x, y, w, h):
@@ -195,7 +195,7 @@ class PortView():
         return y
     
     def update_style(self):
-        color = self.get_parser().get_port_color(self)
+        color = self.model.get_port_color()
         self.box.props.fill_color_rgba = color.get_fill(self)
         self.box.props.stroke_color_rgba = color.get_stroke(self)
         self.box.props.line_width = 1
@@ -208,7 +208,7 @@ class PortView():
         
     def get_endpoint(self):
         bounds = self.box.get_bounds()
-        if self.model.is_port_input():
+        if self.isInput:
             x = bounds.x1
         else:
             x = bounds.x2
@@ -228,6 +228,7 @@ class ModuleView():
         self.parent = parent
         self.model = model
         self.group = goocanvas.Group(parent = self.parent)
+        self.ports = []
         self.wires = []
         self.create_items()
         
@@ -242,15 +243,15 @@ class ModuleView():
         self.title = self.model.get_name()
         self.portDict = {}
         width = self.get_title_width(ctx)
-        for (id, model) in self.model.get_port_list():
-            mport = self.create_port(id, model)
-            new_width = mport.calc_width(ctx)
+        for model in self.model.get_port_list():
+            view = self.create_port(model)
+            new_width = view.calc_width(ctx)
             if new_width > width:
                 width = new_width
         self.width = width
         y = self.render_title(ctx, 0.5)
-        for (id, model) in self.model.get_port_list():
-            y = self.render_port(ctx, id, y)
+        for view in self.ports:
+            y = self.render_port(ctx, view, y)
         self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
         self.rect.lower(self.titleItem)
         self.rect.type = "module"
@@ -258,10 +259,11 @@ class ModuleView():
         self.group.ensure_updated()
         self.wire = None
         
-    def create_port(self, portId, model):
-        mport = PortView(self, model)
-        self.portDict[portId] = mport
-        return mport
+    def create_port(self, model):
+        view = PortView(self, model)
+        self.ports.append(view)
+        self.portDict[model.get_id()] = view
+        return view
         
     def get_title_width(self, ctx):
         return calc_extents(ctx, self.fontName, self.title)[0] + 4 * self.margin
@@ -271,11 +273,10 @@ class ModuleView():
         y += self.titleItem.get_requested_height(ctx, self.width) + self.spacing
         return y
         
-    def render_port(self, ctx, portId, y):
-        mport = self.portDict[portId]
-        y = mport.render(ctx, self.group, y)
-        mport.box.connect_object("button-press-event", self.port_button_press, mport)
-        mport.title.connect_object("button-press-event", self.port_button_press, mport)        
+    def render_port(self, ctx, port_view, y):
+        y = port_view.render(ctx, self.group, y)
+        port_view.box.connect_object("button-press-event", self.port_button_press, port_view)
+        port_view.title.connect_object("button-press-event", self.port_button_press, port_view)        
         return y
         
     def delete_items(self):
@@ -412,6 +413,11 @@ class ConnectionGraphEditor:
         src.module.wires.append(wire)
         dest.module.wires.append(wire)
         
+    def blow_up(self):
+        GraphDetonator().blow_up(self)
+        
+# I broke this at some point, and not in mood to fix it now
+class GraphDetonator:
     def seg_distance(self, min1, max1, min2, max2):
         if min1 > min2:
             return self.seg_distance(min2, max2, min1, max1)
@@ -446,29 +452,30 @@ class ConnectionGraphEditor:
             return k * 8 * sign * (b1.x2 - (b2.x1 - 40) + 1j * (b1.y1 - b2.y1))
         return k * sign * (b1.x2 - b2.x1 + 1j * (b1.y1 - b2.y1))
         
-    def blow_up(self):
-        return
-        for m in self.modules:
+    def blow_up(self, graph):
+        modules = graph.modules
+        canvas = graph.canvas
+        for m in modules:
             m.velocity = 0+0j
             m.bounds = m.group.get_bounds()
         damping = 0.5
         step = 2.0
-        cr = self.canvas.create_cairo_context()
-        w, h = self.canvas.allocation.width, self.canvas.allocation.height
+        cr = canvas.create_cairo_context()
+        w, h = canvas.allocation.width, graph.canvas.allocation.height
         temperature = 100
         while True:
             energy = 0.0
             x = y = 0
-            for m1 in self.modules:
+            for m1 in modules:
                 x += (m1.bounds.x1 + m1.bounds.x2) / 2
                 y += (m1.bounds.y1 + m1.bounds.y2) / 2
-            x /= len(self.modules)
-            y /= len(self.modules)
+            x /= len(modules)
+            y /= len(modules)
             gforce = w / 2 - x + 1j * (h / 2 - y)
-            for m1 in self.modules:
+            for m1 in modules:
                 force = gforce
                 force += temperature * random.random()
-                for m2 in self.modules:
+                for m2 in modules:
                     if m1 == m2:
                         continue
                     force += self.repulsion(m1.bounds, m2.bounds)
@@ -480,7 +487,7 @@ class ConnectionGraphEditor:
                 if m1.bounds.y2 > h: force -= (m1.bounds.y2 - h) * 1j
                 m1.velocity = (m1.velocity + force) * damping
                 energy += abs(m1.velocity) ** 2
-            for m1 in self.modules:
+            for m1 in modules:
                 print "Velocity is (%s, %s)" % (m1.velocity.real, m1.velocity.imag)
                 m1.group.translate(step * m1.velocity.real, step * m1.velocity.imag)
                 m1.group.update(True, cr)
@@ -488,7 +495,7 @@ class ConnectionGraphEditor:
                 m1.update_wires()
             damping *= 0.99
             temperature *= 0.99
-            self.canvas.draw(gtk.gdk.Rectangle(0, 0, w, h))
+            canvas.draw(gtk.gdk.Rectangle(0, 0, w, h))
             print "Energy is %s" % energy
             if energy < 0.1:
                 break

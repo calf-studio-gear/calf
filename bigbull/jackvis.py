@@ -13,10 +13,10 @@ class JACKPortInfo(object):
     flags = 0
     format = 0
     
-    def __init__(self, full_name, id, name, flags, format):
+    def __init__(self, full_name, port_id, name, flags, format):
         self.full_name = full_name
         self.client_name = full_name.split(":", 1)[0]
-        self.id = int(id)
+        self.port_id = int(port_id)
         self.name = str(name)
         self.flags = int(flags)
         self.format = int(format)
@@ -24,7 +24,7 @@ class JACKPortInfo(object):
     def get_name(self):
         return self.name
         
-    def get_full_name(self):
+    def get_id(self):
         return self.full_name
         
     def is_audio(self):
@@ -39,6 +39,15 @@ class JACKPortInfo(object):
     def is_port_output(self):
         return (self.flags & 2) != 0
     
+    def get_port_color(self):
+        if self.is_audio():
+            return Colors.audioPort
+        elif self.is_midi():
+            return Colors.eventPort
+        else:
+            print "Unknown type %s" % self.format
+            return Colors.controlPort
+
 class JACKClientInfo(object):
     id = 0
     name = ""
@@ -74,24 +83,10 @@ class JACKGraphParser(object):
         self.patchbay = dbus.Interface(self.service, "org.jackaudio.JackPatchbay")
         self.graph = None
         self.fetch_graph()
-    def get_port_color(self, portData):
-        if portData.model.is_audio():
-            return Colors.audioPort
-        elif portData.model.is_midi():
-            return Colors.eventPort
-        else:
-            print "Unknown type %s" % portData.model.format
-            return Colors.controlPort
-    def is_port_input(self, portData):
-        return portData.is_port_input()
-    def get_port_name(self, portData):
-        return portData.get_name()
-    def get_port_id(self, portData):
-        return portData.get_full_name()
     def fetch_graph(self):
         self.graph = JACKGraphInfo(*self.patchbay.GetGraph(self.graph.known_version if self.graph is not None else 0))
     def can_connect(self, first, second):
-        if self.is_port_input(first) == self.is_port_input(second):
+        if first.is_port_input() == second.is_port_input():
             return False
         if first.is_audio() and second.is_audio():
             return True
@@ -100,10 +95,8 @@ class JACKGraphParser(object):
         return False
     def connect(self, first, second):
         self.patchbay.ConnectPortsByName(first.client_name, first.name, second.client_name, second.name)
-    def disconnect(self, name_first, name_second):
-        first = name_first.split(":", 1)
-        second = name_second.split(":", 1)
-        self.patchbay.DisconnectPortsByName(first[0], first[1], second[0], second[1])
+    def disconnect(self, first, second):
+        self.patchbay.DisconnectPortsByName(first.client_name, first.name, second.client_name, second.name)
         
 class ClientModuleModel():
     def __init__(self, client, checker):
@@ -111,7 +104,7 @@ class ClientModuleModel():
     def get_name(self):
         return self.client.get_name()
     def get_port_list(self):
-        return [(port.get_full_name(), port) for port in self.client.ports if self.checker(port)]
+        return filter(self.checker, self.client.ports)
 
 class App:
     def __init__(self):
@@ -142,7 +135,7 @@ class App:
         menu.popup(None, None, None, 3, time)
         
     def disconnect(self, wire):
-        self.parser.disconnect(wire.src.get_id(), wire.dest.get_id())
+        self.parser.disconnect(wire.src.model, wire.dest.model)
         wire.delete()
         
     def create(self):
@@ -159,13 +152,22 @@ class App:
         self.window.show_all()
         self.main_vbox.connect("popup-menu", self.canvas_popup_menu_handler)
         self.cgraph.canvas.connect("button-press-event", self.canvas_button_press_handler)
+        self.add_all()
         self.cgraph.canvas.update()
+        #this is broken
+        #self.cgraph.blow_up()
+        
+    def add_all(self):    
         width = self.add_clients(0.0, 0.0, lambda port: port.is_port_output())
         self.add_clients(width + 10, 0.0, lambda port: port.is_port_input())
-        self.cgraph.canvas.update()
-        self.add_wires()
-        self.cgraph.blow_up()
-        
+        pmap = self.cgraph.get_port_map()
+        for (c, p) in self.parser.graph.connections_name:
+            if p in pmap and c in pmap:
+                print "Connect %s to %s" % (c, p)
+                self.cgraph.connect(pmap[c], pmap[p])
+            else:
+                print "Connect %s to %s - not found" % (c, p)
+    
     def add_clients(self, x, y, checker):
         margin = 10
         mwidth = 0
@@ -176,15 +178,6 @@ class App:
                 mwidth = mod.rect.props.width
         return mwidth
         
-    def add_wires(self):
-        pmap = self.cgraph.get_port_map()
-        for (c, p) in self.parser.graph.connections_name:
-            if p in pmap and c in pmap:
-                print "Connect %s to %s" % (c, p)
-                self.cgraph.connect(pmap[c], pmap[p])
-            else:
-                print "Connect %s to %s - not found" % (c, p)
-
     def create_main_menu(self):
         self.menu_bar = gtk.MenuBar()
         self.file_menu = add_submenu(self.menu_bar, "_File")
