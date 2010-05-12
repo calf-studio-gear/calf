@@ -62,23 +62,29 @@ class VisibleWire():
         """src is source PortView, dst is destination PortView"""
         self.src = src
         self.dest = dest
-        self.wire = goocanvas.Path(parent = src.get_graph().get_root())
-        self.wire.type = "wire"
+        self.mask = goocanvas.Path(parent = src.get_graph().get_root(), line_width=12, stroke_color_rgba = 0, pointer_events = goocanvas.EVENTS_STROKE)
+        self.mask.type = "wire"
+        self.mask.object = self
+        self.wire = goocanvas.Path(parent = src.get_graph().get_root(), stroke_color_rgba = Colors.connectedWire, pointer_events = 0)
+        self.wire.type = "wirecore"
         self.wire.object = self
-        self.wire.props.stroke_color_rgba = Colors.connectedWire
         self.update_shape()
     
-    def delete(self):
+    def remove(self):
         if self.wire is not None:
             self.wire.remove()
+            self.mask.remove()
             self.src.module.remove_wire(self)
             self.dest.module.remove_wire(self)
             self.wire = None
+            self.mask = None
 
     def update_shape(self):
         (x1, y1) = self.src.get_endpoint()
         (x2, y2) = self.dest.get_endpoint()
-        self.wire.props.data = wireData(x1, y1, x2, y2)
+        data = wireData(x1, y1, x2, y2)
+        self.wire.props.data = data
+        self.mask.props.data = data
         
 
 class Dragging():
@@ -147,7 +153,6 @@ class Dragging():
             if src.isInput:
                 src, dst = dst, src
             self.get_graph().get_controller().connect(src.model, dst.model)
-            self.get_graph().connect(src, dst)
     
     def remove_wire(self):
         self.drag_wire.remove()
@@ -299,7 +304,7 @@ class ModuleView():
     def delete_items(self):
         self.group.remove()
         for w in list(self.wires):
-            w.delete()
+            w.remove()
         
     def port_button_press(self, port_view, box, event):
         if event.button == 1:
@@ -357,8 +362,9 @@ class ConnectionGraphEditor:
     
     def get_items_at(self, x, y):
         cr = self.canvas.create_cairo_context()
-        items = self.canvas.get_items_in_area(goocanvas.Bounds(x - 3, y - 3, x + 3, y + 3), True, True, False)
-        return items
+        #items = self.canvas.get_items_in_area(goocanvas.Bounds(x - 3, y - 3, x + 3, y + 3), True, True, False)
+        items = set()
+        return self.canvas.get_items_at(x, y, True)
         
     def get_data_items_at(self, x, y):
         items = self.get_items_at(x, y)
@@ -373,9 +379,6 @@ class ConnectionGraphEditor:
     def get_size(self):
         bounds = self.canvas.get_bounds()
         return (bounds[2] - bounds[0], bounds[3] - bounds[1])
-
-    def add_module_cb(self, params):
-        self.add_module(*params)
 
     def add_module(self, model, x, y):
         mbox = ModuleView(self.controller, self.canvas.get_root_item(), model, self)
@@ -398,6 +401,13 @@ class ConnectionGraphEditor:
         for mod in self.modules:
             map.update(mod.portDict)
         return map
+        
+    def get_port_view(self, port_model):
+        for mod in self.modules:
+            for p in mod.ports:
+                if p.model == port_model:
+                    return p
+        return None
 
     def canvas_motion_notify(self, group, widget, event):
         if self.dragging != None:
@@ -433,6 +443,13 @@ class ConnectionGraphEditor:
         src.module.wires.append(wire)
         dest.module.wires.append(wire)
         return wire
+        
+    def disconnect(self, src, dest):
+        for w in src.module.wires:
+            if w.dest == dest:
+                w.remove()
+                return True
+        return False
         
     def clear(self):
         for m in self.modules:

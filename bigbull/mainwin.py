@@ -52,6 +52,9 @@ class App:
             self.canvas_popup_menu(event.x, event.y, event.time)
             return True
         
+    def add_module_cb(self, params):
+        self.cgraph.add_module(*params)
+
     def canvas_popup_menu(self, x, y, time):
         menu = gtk.Menu()
         items = self.cgraph.get_data_items_at(x, y)
@@ -65,7 +68,7 @@ class App:
         else:
             for uri in self.lv2db.getPluginList():
                 plugin = self.lv2db.getPluginInfo(uri)
-                add_option(menu, plugin.name, self.cgraph.add_module_cb, (plugin, x, y))
+                add_option(menu, plugin.name, self.add_module_cb, (plugin, x, y))
         menu.show_all()
         menu.popup(None, None, None, 3, time)
         
@@ -107,7 +110,7 @@ class App:
             best_path = self.get_best_category(plugin)
             if best_path in self.submenus:
                 parent_menu = self.submenus[best_path]
-            add_option(parent_menu, plugin.name, self.cgraph.add_module_cb, (plugin, None, None))
+            add_option(parent_menu, plugin.name, self.add_module_cb, (plugin, None, None))
         
     def get_best_category(self, plugin):
         max_len = -1

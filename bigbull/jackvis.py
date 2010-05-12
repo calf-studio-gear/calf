@@ -105,10 +105,19 @@ class JACKGraphController(object):
         if first.is_midi() and second.is_midi():
             return True
         return False
+    def is_connected(self, first, second):
+        return (first.get_id(), second.get_id()) in self.graph.connections_name
     def connect(self, first, second):
+        if self.is_connected(first, second):
+            self.disconnect(first, second)
+            return
         self.patchbay.ConnectPortsByName(first.client_name, first.name, second.client_name, second.name)
+        self.graph.connections_name.add((first.get_id(), second.get_id()))
+        self.view.connect(self.view.get_port_view(first), self.view.get_port_view(second))
     def disconnect(self, first, second):
         self.patchbay.DisconnectPortsByName(first.client_name, first.name, second.client_name, second.name)
+        self.graph.connections_name.remove((first.get_id(), second.get_id()))
+        self.view.disconnect(self.view.get_port_view(first), self.view.get_port_view(second))
     def refresh(self):
         self.fetch_graph()
         self.view.clear()
@@ -167,7 +176,7 @@ class App:
         menu.popup(None, None, None, 3, time)
         
     def disconnect(self, wire):
-        self.parser.disconnect(wire.src.model, wire.dest.model)
+        self.controller.disconnect(wire.src.model, wire.dest.model)
         wire.delete()
         
     def create(self):
