@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <cmath>
 #include <cstdlib>
 #include <map>
