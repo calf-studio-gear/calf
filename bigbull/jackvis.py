@@ -76,15 +76,27 @@ class JACKGraphInfo(object):
             self.connections_name.add(("%s:%s" % (cname1, pname1), "%s:%s" % (cname2, pname2)))
             self.connections_id.add(("%s:%s" % (cid1, pid1), "%s:%s" % (cid2, pid2)))
 
-class JACKGraphParser(object):
+class ClientModuleModel():
+    def __init__(self, client, checker):
+        (self.client, self.checker) = (client, checker)
+    def get_name(self):
+        return self.client.get_name()
+    def get_port_list(self):
+        return filter(self.checker, self.client.ports)
+
+class JACKGraphController(object):
     def __init__(self):
         self.bus = dbus.SessionBus()
         self.service = self.bus.get_object("org.jackaudio.service", "/org/jackaudio/Controller")
         self.patchbay = dbus.Interface(self.service, "org.jackaudio.JackPatchbay")
         self.graph = None
+        self.view = None
         self.fetch_graph()
     def fetch_graph(self):
-        self.graph = JACKGraphInfo(*self.patchbay.GetGraph(self.graph.known_version if self.graph is not None else 0))
+        req_version = self.graph.version if self.graph is not None else 0
+        graphdata = self.patchbay.GetGraph(req_version)
+        if int(graphdata[0]) != req_version:
+            self.graph = JACKGraphInfo(*graphdata)
     def can_connect(self, first, second):
         if first.is_port_input() == second.is_port_input():
             return False
@@ -97,19 +109,39 @@ class JACKGraphParser(object):
         self.patchbay.ConnectPortsByName(first.client_name, first.name, second.client_name, second.name)
     def disconnect(self, first, second):
         self.patchbay.DisconnectPortsByName(first.client_name, first.name, second.client_name, second.name)
+    def refresh(self):
+        self.fetch_graph()
+        self.view.clear()
+        self.add_all()
+    def add_all(self):
+        width, left_mods = self.add_clients(10.0, 10.0, lambda port: port.is_port_output())
+        width2, right_mods = self.add_clients(width + 20, 10.0, lambda port: port.is_port_input())
+        pmap = self.view.get_port_map()
+        for (c, p) in self.graph.connections_name:
+            if p in pmap and c in pmap:
+                print "Connect %s to %s" % (c, p)
+                self.view.connect(pmap[c], pmap[p])
+            else:
+                print "Connect %s to %s - not found" % (c, p)
+        for m in right_mods:
+            m.translate(950 - width - 20 - width2, 0)
+    def add_clients(self, x, y, checker):
+        margin = 10
+        mwidth = 0
+        mods = []
+        for cl in self.graph.clients:
+            mod = self.view.add_module(ClientModuleModel(cl, checker), x, y)
+            y += mod.rect.props.height + margin
+            if mod.rect.props.width > mwidth:
+                mwidth = mod.rect.props.width
+            mods.append(mod)
+        return mwidth, mods    
         
-class ClientModuleModel():
-    def __init__(self, client, checker):
-        (self.client, self.checker) = (client, checker)
-    def get_name(self):
-        return self.client.get_name()
-    def get_port_list(self):
-        return filter(self.checker, self.client.ports)
-
 class App:
     def __init__(self):
-        self.parser = JACKGraphParser()
-        self.cgraph = conndiagram.ConnectionGraphEditor(self, self.parser)
+        self.controller = JACKGraphController()
+        self.cgraph = conndiagram.ConnectionGraphEditor(self, self.controller)
+        self.controller.view = self.cgraph
         
     def canvas_popup_menu_handler(self, widget):
         self.canvas_popup_menu(0, 0, 0)
@@ -152,42 +184,23 @@ class App:
         self.window.show_all()
         self.main_vbox.connect("popup-menu", self.canvas_popup_menu_handler)
         self.cgraph.canvas.connect("button-press-event", self.canvas_button_press_handler)
-        self.add_all()
+        self.controller.add_all()
+        self.cgraph.clear()
+        self.controller.add_all()
         self.cgraph.canvas.update()
         #this is broken
         #self.cgraph.blow_up()
-        
-    def add_all(self):    
-        width, left_mods = self.add_clients(10.0, 10.0, lambda port: port.is_port_output())
-        width2, right_mods = self.add_clients(width + 20, 10.0, lambda port: port.is_port_input())
-        pmap = self.cgraph.get_port_map()
-        for (c, p) in self.parser.graph.connections_name:
-            if p in pmap and c in pmap:
-                print "Connect %s to %s" % (c, p)
-                self.cgraph.connect(pmap[c], pmap[p])
-            else:
-                print "Connect %s to %s - not found" % (c, p)
-        for m in right_mods:
-            m.translate(950 - width - 20 - width2, 0)
-    
-    def add_clients(self, x, y, checker):
-        margin = 10
-        mwidth = 0
-        mods = []
-        for cl in self.parser.graph.clients:
-            mod = self.cgraph.add_module(ClientModuleModel(cl, checker), x, y)
-            y += mod.rect.props.height + margin
-            if mod.rect.props.width > mwidth:
-                mwidth = mod.rect.props.width
-            mods.append(mod)
-        return mwidth, mods
-        
+                
     def create_main_menu(self):
         self.menu_bar = gtk.MenuBar()
         self.file_menu = add_submenu(self.menu_bar, "_File")
+        add_option(self.file_menu, "_Refresh", self.refresh)
         add_option(self.file_menu, "_Blow-up", self.blow_up)
         add_option(self.file_menu, "_Exit", self.exit)
         
+    def refresh(self, data):
+        self.controller.refresh()
+    
     def blow_up(self, data):
         self.cgraph.blow_up()
     

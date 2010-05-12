@@ -69,9 +69,11 @@ class VisibleWire():
         self.update_shape()
     
     def delete(self):
-        self.wire.remove()
-        self.src.module.remove_wire(self)
-        self.dest.module.remove_wire(self)
+        if self.wire is not None:
+            self.wire.remove()
+            self.src.module.remove_wire(self)
+            self.dest.module.remove_wire(self)
+            self.wire = None
 
     def update_shape(self):
         (x1, y1) = self.src.get_endpoint()
@@ -110,7 +112,7 @@ class Dragging():
         found = None
         for type, obj, item in items:
             if type == 'port':
-                if item.module != self and self.get_graph().get_parser().can_connect(self.port_view.model, obj.model):
+                if item.module != self and self.get_graph().get_controller().can_connect(self.port_view.model, obj.model):
                     found = obj
         self.set_connect_candidate(found)
         if found is not None:
@@ -144,7 +146,7 @@ class Dragging():
             dst.update_style()
             if src.isInput:
                 src, dst = dst, src
-            self.get_graph().get_parser().connect(src.model, dst.model)
+            self.get_graph().get_controller().connect(src.model, dst.model)
             self.get_graph().connect(src, dst)
     
     def remove_wire(self):
@@ -163,8 +165,8 @@ class PortView():
     def get_graph(self):
         return self.module.graph
 
-    def get_parser(self):
-        return self.module.get_parser()
+    def get_controller(self):
+        return self.module.get_controller()
         
     def get_id(self):
         return self.model.get_id()
@@ -236,8 +238,8 @@ class ModuleView():
     spacing = 4
     fontName = "DejaVu Sans Bold 9"
 
-    def __init__(self, parser, parent, model, graph):
-        self.parser = parser
+    def __init__(self, controller, parent, model, graph):
+        self.controller = controller
         self.graph = graph
         self.group = None
         self.connect_candidate = None
@@ -248,8 +250,8 @@ class ModuleView():
         self.wires = []
         self.create_items()
         
-    def get_parser(self):
-        return self.parser
+    def get_controller(self):
+        return self.controller
 
     def create_items(self):
         self.group.module = self
@@ -296,6 +298,8 @@ class ModuleView():
         
     def delete_items(self):
         self.group.remove()
+        for w in list(self.wires):
+            w.delete()
         
     def port_button_press(self, port_view, box, event):
         if event.button == 1:
@@ -318,16 +322,16 @@ class ModuleView():
         self.update_wires()
 
 class ConnectionGraphEditor:
-    def __init__(self, app, parser):
+    def __init__(self, app, controller):
         self.app = app
-        self.parser = parser
+        self.controller = controller
         self.moving = None
         self.dragging = None
         self.modules = set()
         pass
         
-    def get_parser(self):
-        return self.parser
+    def get_controller(self):
+        return self.controller
 
     def create(self, sx, sy):
         self.create_canvas(sx, sy)
@@ -374,7 +378,7 @@ class ConnectionGraphEditor:
         self.add_module(*params)
 
     def add_module(self, model, x, y):
-        mbox = ModuleView(self.parser, self.canvas.get_root_item(), model, self)
+        mbox = ModuleView(self.controller, self.canvas.get_root_item(), model, self)
         self.modules.add(mbox)
         bounds = self.canvas.get_bounds()
         if x == None:
@@ -423,18 +427,19 @@ class ConnectionGraphEditor:
             self.moving.module.translate(event.x - self.motion_x, event.y - self.motion_y)
             group.module.update_wires()
                         
-    # Connect elements visually (but not logically, that's what controller/parser is for)
-    def connect(self, p1, p2, wireitem = None):
-        # p1, p2 are PortView objects
-        # if wireitem is set, then this is manual connection, and parser.connect() is called
-        # if wireitem is None, then this is automatic connection, and parser.connect() is bypassed
-        if p2.isInput:
-            (src, dest) = (p1, p2)
-        else:
-            (dest, src) = (p1, p2)
+    # Connect elements visually (but not logically, that's what controller is for)
+    def connect(self, src, dest):
         wire = VisibleWire(src, dest)
         src.module.wires.append(wire)
         dest.module.wires.append(wire)
+        return wire
+        
+    def clear(self):
+        for m in self.modules:
+            m.delete_items()
+        self.modules.clear()
+        self.moving = None
+        self.dragging = None
         
     def blow_up(self):
         GraphDetonator().blow_up(self)
