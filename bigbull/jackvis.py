@@ -46,6 +46,8 @@ class JACKClientInfo(object):
         self.id = id
         self.name = name
         self.ports = [JACKPortInfo("%s:%s" % (name, p[1]), *p) for p in ports]
+    def get_name(self):
+        return self.name
     
 class JACKGraphInfo(object):
     version = 0
@@ -86,13 +88,8 @@ class JACKGraphParser(object):
         return portData.get_name()
     def get_port_id(self, portData):
         return portData.get_full_name()
-    def get_module_name(self, moduleData):
-        return moduleData.name
     def fetch_graph(self):
         self.graph = JACKGraphInfo(*self.patchbay.GetGraph(self.graph.known_version if self.graph is not None else 0))
-    def get_module_port_list(self, moduleData):
-        g = self.graph.client_map[moduleData.name]
-        return [(port.get_full_name(), port) for port in g.ports if moduleData.checker(port)]
     def can_connect(self, first, second):
         if self.is_port_input(first) == self.is_port_input(second):
             return False
@@ -108,9 +105,13 @@ class JACKGraphParser(object):
         second = name_second.split(":", 1)
         self.patchbay.DisconnectPortsByName(first[0], first[1], second[0], second[1])
         
-class ClientBoxInfo():
-    def __init__(self, name, checker):
-        (self.name, self.checker) = (name, checker)
+class ClientModuleModel():
+    def __init__(self, client, checker):
+        (self.client, self.checker) = (client, checker)
+    def get_name(self):
+        return self.client.get_name()
+    def get_port_list(self):
+        return [(port.get_full_name(), port) for port in self.client.ports if self.checker(port)]
 
 class App:
     def __init__(self):
@@ -169,7 +170,7 @@ class App:
         margin = 10
         mwidth = 0
         for cl in self.parser.graph.clients:
-            mod = self.cgraph.add_module(ClientBoxInfo(cl.name, checker), x, y)
+            mod = self.cgraph.add_module(ClientModuleModel(cl, checker), x, y)
             y += mod.rect.props.height + margin
             if mod.rect.props.width > mwidth:
                 mwidth = mod.rect.props.width

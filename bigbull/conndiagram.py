@@ -41,15 +41,27 @@ class Colors:
     connectedWire = 0x808080FF
 
 class VisibleWire():
-    def __init__(self, src, dest, wire):
-        """src is source PortView, dst is destination PortView, wire is a goocanvas.Path"""
+    def __init__(self, src, dest):
+        """src is source PortView, dst is destination PortView"""
         self.src = src
         self.dest = dest
-        self.wire = wire
+        self.wire = goocanvas.Path(parent = src.get_graph().get_root())
+        self.wire.type = "wire"
+        self.wire.object = self
+        self.wire.props.stroke_color_rgba = Colors.connectedWire
+        self.update_shape()
+    
     def delete(self):
         self.wire.remove()
         self.src.module.remove_wire(self)
         self.dest.module.remove_wire(self)
+
+    def update_shape(self):
+        (x1, y1) = self.src.get_endpoint()
+        (x2, y2) = self.dest.get_endpoint()
+        xm = (x1 + x2) / 2
+        self.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
+        
 
 def path_move(x, y):
     return "M %s %s " % (x, y)
@@ -114,16 +126,12 @@ class Dragging():
         src, dst = self.port_view, self.connect_candidate
         self.get_graph().dragging = None
         src.update_style()
+        self.remove_wire()
         if dst is not None:
             # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
             dst.update_style()
-            try:
-                self.get_graph().connect(src, dst, self.drag_wire)
-            except:
-                self.remove_wire()
-                raise
-        else:
-            self.remove_wire()
+            self.get_graph().get_parser().connect(src.model, dst.model)
+            self.get_graph().connect(src, dst)
     
     def remove_wire(self):
         self.drag_wire.remove()
@@ -162,7 +170,7 @@ class PortView():
         module = self.module
         (width, margin, spacing) = (module.width, module.margin, module.spacing)
         al = "left"
-        portName = self.get_parser().get_port_name(self.model)
+        portName = self.model.get_name()
         title = goocanvas.Text(parent = parent, text = portName, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, pointer_events = False, wrap = False)
         height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
         title.ensure_updated()
@@ -212,13 +220,13 @@ class ModuleView():
     spacing = 4
     fontName = "DejaVu Sans Bold 9"
 
-    def __init__(self, parser, parent, moduleData, graph):
+    def __init__(self, parser, parent, model, graph):
         self.parser = parser
         self.graph = graph
         self.group = None
         self.connect_candidate = None
         self.parent = parent
-        self.moduleData = moduleData
+        self.model = model
         self.group = goocanvas.Group(parent = self.parent)
         self.wires = []
         self.create_items()
@@ -231,17 +239,17 @@ class ModuleView():
         while self.group.get_n_children() > 0:
             self.group.remove_child(0)
         ctx = self.group.get_canvas().create_cairo_context()
-        self.title = self.get_parser().get_module_name(self.moduleData)
+        self.title = self.model.get_name()
         self.portDict = {}
         width = self.get_title_width(ctx)
-        for (id, model) in self.get_parser().get_module_port_list(self.moduleData):
+        for (id, model) in self.model.get_port_list():
             mport = self.create_port(id, model)
             new_width = mport.calc_width(ctx)
             if new_width > width:
                 width = new_width
         self.width = width
         y = self.render_title(ctx, 0.5)
-        for (id, model) in self.get_parser().get_module_port_list(self.moduleData):
+        for (id, model) in self.model.get_port_list():
             y = self.render_port(ctx, id, y)
         self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
         self.rect.lower(self.titleItem)
@@ -283,7 +291,7 @@ class ModuleView():
             
     def update_wires(self):
         for wire in self.wires:
-            self.graph.update_wire(wire)
+            wire.update_shape()
             
     def remove_wire(self, wire):
         self.wires = [w for w in self.wires if w != wire]
@@ -344,8 +352,8 @@ class ConnectionGraphEditor:
     def add_module_cb(self, params):
         self.add_module(*params)
 
-    def add_module(self, moduleData, x, y):
-        mbox = ModuleView(self.parser, self.canvas.get_root_item(), moduleData, self)
+    def add_module(self, model, x, y):
+        mbox = ModuleView(self.parser, self.canvas.get_root_item(), model, self)
         self.modules.add(mbox)
         bounds = self.canvas.get_bounds()
         if x == None:
@@ -391,12 +399,7 @@ class ConnectionGraphEditor:
             self.moving.translate(event.x - self.motion_x, event.y - self.motion_y)
             group.module.update_wires()
                         
-    def update_wire(self, wire):
-        (x1, y1) = wire.src.get_endpoint()
-        (x2, y2) = wire.dest.get_endpoint()
-        xm = (x1 + x2) / 2
-        wire.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
-        
+    # Connect elements visually (but not logically, that's what controller/parser is for)
     def connect(self, p1, p2, wireitem = None):
         # p1, p2 are PortView objects
         # if wireitem is set, then this is manual connection, and parser.connect() is called
@@ -405,17 +408,9 @@ class ConnectionGraphEditor:
             (src, dest) = (p1, p2)
         else:
             (dest, src) = (p1, p2)
-        if wireitem == None:
-            wireitem = goocanvas.Path(parent = self.canvas.get_root_item())
-        else:
-            self.get_parser().connect(src.model, dest.model)
-        wire = VisibleWire(src, dest, wireitem)
-        wireitem.type = "wire"
-        wireitem.object = wire
-        wireitem.props.stroke_color_rgba = Colors.connectedWire
+        wire = VisibleWire(src, dest)
         src.module.wires.append(wire)
         dest.module.wires.append(wire)
-        self.update_wire(wire)
         
     def seg_distance(self, min1, max1, min2, max2):
         if min1 > min2:
