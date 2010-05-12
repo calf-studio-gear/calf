@@ -27,8 +27,11 @@ class JACKPortInfo(object):
     def get_full_name(self):
         return self.full_name
         
-    def get_type(self):
-        return self.format
+    def is_audio(self):
+        return self.format == 0
+        
+    def is_midi(self):
+        return self.format == 1
         
     def is_port_input(self):
         return (self.flags & 1) != 0
@@ -70,13 +73,13 @@ class JACKGraphParser(object):
         self.graph = None
         self.fetch_graph()
     def get_port_color(self, portData):
-        if portData.get_type() == 0:
-            return Colors.audioPortIn, Colors.audioPort
-        elif portData.get_type() == 1:
-            return Colors.eventPortIn, Colors.eventPort
+        if portData.model.is_audio():
+            return Colors.audioPort
+        elif portData.model.is_midi():
+            return Colors.eventPort
         else:
-            print "Unknown type %s" % portData.get_type()
-        return color
+            print "Unknown type %s" % portData.model.format
+            return Colors.controlPort
     def is_port_input(self, portData):
         return portData.is_port_input()
     def get_port_name(self, portData):
@@ -93,9 +96,11 @@ class JACKGraphParser(object):
     def can_connect(self, first, second):
         if self.is_port_input(first) == self.is_port_input(second):
             return False
-        if first.get_type() != second.get_type():
-            return False
-        return True
+        if first.is_audio() and second.is_audio():
+            return True
+        if first.is_midi() and second.is_midi():
+            return True
+        return False
     def connect(self, first, second):
         self.patchbay.ConnectPortsByName(first.client_name, first.name, second.client_name, second.name)
     def disconnect(self, name_first, name_second):

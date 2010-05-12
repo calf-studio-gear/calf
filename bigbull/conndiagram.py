@@ -14,25 +14,35 @@ def calc_extents(ctx, fontName, text):
     layout.set_text(text)
     return layout.get_pixel_size()
 
+class PortPalette(object):
+    def __init__(self, stroke, fill, activated_palette = None):
+        self.stroke = stroke
+        self.fill = fill
+        self.activated_palette = activated_palette
+    def get_stroke(self, port):
+        if self.activated_palette is not None and port.is_dragged():
+            return self.activated_palette.get_stroke(port)
+        return self.stroke
+    def get_fill(self, port):
+        if self.activated_palette is not None and port.is_dragged():
+            return self.activated_palette.get_fill(port)
+        return self.fill
+
 class Colors:
     frame = 0x4C4C4CFF
     text = 0xE0E0E0FF
     box = 0x242424FF
     defPort = 0x404040FF
-    audioPort = 0x204A87FF
-    controlPort = 0x008000FF
-    eventPort = 0xA40000FF
-    audioPortIn = 0x183868FF
-    controlPortIn = 0x00800080
-    eventPortIn = 0x7C000080
-    activePort = 0xF0F0F0FF
-    activePortIn = 0x808080FF
+    activePort = PortPalette(0xF0F0F0FF, 0x808080FF)
+    audioPort = PortPalette(0x204A87FF, 0x183868FF, activePort)
+    controlPort = PortPalette(0x008000FF, 0x00800080, activePort)
+    eventPort = PortPalette(0xA40000FF, 0x7C000080, activePort)
     draggedWire = 0xFFFFFFFF
     connectedWire = 0x808080FF
 
 class VisibleWire():
     def __init__(self, src, dest, wire):
-        """src is source ModulePort, dst is destination ModulePort, wire is a goocanvas.Path"""
+        """src is source PortView, dst is destination PortView, wire is a goocanvas.Path"""
         self.src = src
         self.dest = dest
         self.wire = wire
@@ -42,27 +52,103 @@ class VisibleWire():
         self.dest.module.remove_wire(self)
 
 def path_move(x, y):
-    return "M %s %s" % (x, y)
+    return "M %s %s " % (x, y)
+    
 def path_line(x, y):
-    return "L %s %s" % (x, y)
+    return "L %s %s " % (x, y)
 
-class ModulePort():
+class Dragging():
+    def __init__(self, module, port_view, x, y):
+        self.module = module
+        self.port_view = port_view
+        self.x = x
+        self.y = y
+        self.drag_wire = goocanvas.Path(parent = self.get_graph().get_root(), stroke_color_rgba = Colors.draggedWire)
+        self.drag_wire.type = "tmp wire"
+        self.drag_wire.object = None
+        self.drag_wire.raise_(None)
+        self.connect_candidate = None
+        self.update_drag_wire(x, y)
+        
+    def get_graph(self):
+        return self.module.graph
+        
+    def update_shape(self, x2, y2):
+        (dx, dy) = (x2 - self.x, y2 - self.y)
+        self.drag_wire.props.data = path_move(self.x, self.y) + "C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (self.x+dx/2, self.y, self.x+dx/2, self.y+dy, self.x+dx, self.y+dy)
+        
+    def dragging(self, x2, y2):
+        boundsGrp = self.module.group.get_bounds()
+        self.update_drag_wire(x2 + boundsGrp.x1, y2 + boundsGrp.y1)
+
+    def update_drag_wire(self, x2, y2):
+        items = self.get_graph().get_data_items_at(x2, y2)
+        found = None
+        for type, obj, item in items:
+            if type == 'port':
+                if item.module != self and self.get_graph().get_parser().can_connect(self.port_view.model, obj.model):
+                    found = obj
+        self.set_connect_candidate(found)
+        if found is not None:
+            x2, y2 = found.get_endpoint()
+        self.update_shape(x2, y2)
+
+    def has_port_view(self, port_view):
+        if port_view == self.port_view:
+            return True
+        if port_view == self.connect_candidate:
+            return True
+        return False
+
+    def set_connect_candidate(self, item):
+        if self.connect_candidate != item:
+            old = self.connect_candidate
+            self.connect_candidate = item
+            if item is not None:
+                item.update_style()
+            if old is not None:
+                old.update_style()
+
+    def end_drag(self, x2, y2):
+        # self.update_drag_wire(tuple, x2, y2)
+        src, dst = self.port_view, self.connect_candidate
+        self.get_graph().dragging = None
+        src.update_style()
+        if dst is not None:
+            # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
+            dst.update_style()
+            try:
+                self.get_graph().connect(src, dst, self.drag_wire)
+            except:
+                self.remove_wire()
+                raise
+        else:
+            self.remove_wire()
+    
+    def remove_wire(self):
+        self.drag_wire.remove()
+        self.drag_wire = None
+        
+class PortView():
     fontName = "DejaVu Sans 8"
     type = "port"
-    def __init__(self, module, portData):
+    def __init__(self, module, model):
         self.module = module
-        self.portData = portData
-        self.isInput = self.get_parser().is_port_input(portData)
+        self.model = model
+        self.isInput = model.is_port_input()
         self.box = self.title = None
-            
+
+    def get_graph(self):
+        return self.module.graph
+
     def get_parser(self):
         return self.module.get_parser()
         
     def get_id(self):
-        return self.get_parser().get_port_id(self.portData)
+        return self.get_parser().get_port_id(self.model)
 
     def calc_width(self, ctx):
-        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.portData))[0] + 4 * self.module.margin + 15
+        return calc_extents(ctx, self.fontName, self.get_parser().get_port_name(self.model))[0] + 4 * self.module.margin + 15
 
     @staticmethod
     def input_arrow(x, y, w, h):
@@ -76,7 +162,7 @@ class ModulePort():
         module = self.module
         (width, margin, spacing) = (module.width, module.margin, module.spacing)
         al = "left"
-        portName = self.get_parser().get_port_name(self.portData)
+        portName = self.get_parser().get_port_name(self.model)
         title = goocanvas.Text(parent = parent, text = portName, font = self.fontName, width = width - 2 * margin, x = margin, y = y, alignment = al, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, pointer_events = False, wrap = False)
         height = 1 + int(title.get_requested_height(ctx, width - 2 * margin))
         title.ensure_updated()
@@ -84,24 +170,44 @@ class ModulePort():
         bw = bnds.x2 - bnds.x1 + 2 * margin
         if not self.isInput:
             title.translate(width - bw, 0)
-        color_in, color_out = self.get_parser().get_port_color(self.portData)
         bw += 10
         if self.isInput:
-            box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1), line_width = 1, fill_color_rgba = color_in, stroke_color_rgba = color_out)
+            box = goocanvas.Path(parent = parent, data = self.input_arrow(0.5, y - 0.5, bw, height + 1))
         else:
-            box = goocanvas.Path(parent = parent, data = self.output_arrow(width - bw, y - 0.5, bw, height + 1), line_width = 1, fill_color_rgba = color_in, stroke_color_rgba = color_out)
+            box = goocanvas.Path(parent = parent, data = self.output_arrow(width - bw, y - 0.5, bw, height + 1))
         box.lower(title)
         y += height + spacing
         box.type = "port"
-        self.orig_color_in, self.orig_color_out = color_in, color_out
         box.object = box.module = self
-        box.portData = self.portData
-        title.portData = self.portData
+        box.model = self.model
+        title.model = self.model
         self.box = box
         self.title = title
+        self.update_style()
         return y
-
-class ModuleBox():
+    
+    def update_style(self):
+        color = self.get_parser().get_port_color(self)
+        self.box.props.fill_color_rgba = color.get_fill(self)
+        self.box.props.stroke_color_rgba = color.get_stroke(self)
+        self.box.props.line_width = 1
+        
+    def is_dragged(self):
+        dragging = self.get_graph().dragging
+        if dragging is not None and dragging.has_port_view(self):
+            return True
+        return False
+        
+    def get_endpoint(self):
+        bounds = self.box.get_bounds()
+        if self.model.is_port_input():
+            x = bounds.x1
+        else:
+            x = bounds.x2
+        y = (bounds.y1 + bounds.y2) / 2
+        return (x, y)
+        
+class ModuleView():
     margin = 2
     spacing = 4
     fontName = "DejaVu Sans Bold 9"
@@ -128,14 +234,14 @@ class ModuleBox():
         self.title = self.get_parser().get_module_name(self.moduleData)
         self.portDict = {}
         width = self.get_title_width(ctx)
-        for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
-            mport = self.create_port(id, portData)
+        for (id, model) in self.get_parser().get_module_port_list(self.moduleData):
+            mport = self.create_port(id, model)
             new_width = mport.calc_width(ctx)
             if new_width > width:
                 width = new_width
         self.width = width
         y = self.render_title(ctx, 0.5)
-        for (id, portData) in self.get_parser().get_module_port_list(self.moduleData):
+        for (id, model) in self.get_parser().get_module_port_list(self.moduleData):
             y = self.render_port(ctx, id, y)
         self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
         self.rect.lower(self.titleItem)
@@ -144,8 +250,8 @@ class ModuleBox():
         self.group.ensure_updated()
         self.wire = None
         
-    def create_port(self, portId, portData):
-        mport = ModulePort(self, portData)
+    def create_port(self, portId, model):
+        mport = PortView(self, model)
         self.portDict[portId] = mport
         return mport
         
@@ -167,67 +273,13 @@ class ModuleBox():
     def delete_items(self):
         self.group.remove()
         
-    def port_button_press(self, mport, box, event):
+    def port_button_press(self, port_view, box, event):
         if event.button == 1:
-            port_id = mport.get_id()
-            mport.box.props.fill_color_rgba = Colors.activePortIn
-            mport.box.props.stroke_color_rgba = Colors.activePort
-            (x, y) = self.graph.port_endpoint(mport)
-            self.drag_wire = goocanvas.Path(parent = self.parent, stroke_color_rgba = Colors.draggedWire)
-            self.drag_wire.type = "tmp wire"
-            self.drag_wire.object = None
-            self.drag_wire.raise_(None)
-            self.graph.dragging = (self, port_id, self.drag_wire, x, y)
-            self.set_connect_candidate(None)
-            self.update_drag_wire(self.graph.dragging, x, y)
-            print "Port URI is " + port_id
+            (x, y) = port_view.get_endpoint()
+            self.graph.dragging = Dragging(self, port_view, x, y)
+            port_view.update_style()
+            print "Port URI is " + port_view.get_id()
             return True
-            
-    def dragging(self, tuple, x2, y2):
-        boundsGrp = self.group.get_bounds()
-        self.update_drag_wire(tuple, x2 + boundsGrp.x1, y2 + boundsGrp.y1)
-
-    def dragged(self, tuple, x2, y2):
-        # self.update_drag_wire(tuple, x2, y2)
-        wireitem = tuple[2]
-        port = self.portDict[tuple[1]]
-        self.graph.dragging = None
-        port.box.props.fill_color_rgba = port.orig_color_in
-        port.box.props.stroke_color_rgba = port.orig_color_out
-        if self.connect_candidate != None:
-            # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
-            try:
-                self.graph.connect(port, self.connect_candidate, wireitem)
-            except:
-                wireitem.remove()
-                raise
-            finally:
-                self.set_connect_candidate(None)
-        else:
-            wireitem.remove()
-        
-    def set_connect_candidate(self, item):
-        if self.connect_candidate != item:
-            if self.connect_candidate != None:
-                self.connect_candidate.box.props.fill_color_rgba = self.connect_candidate.orig_color_in
-                self.connect_candidate.box.props.stroke_color_rgba = self.connect_candidate.orig_color_out
-            self.connect_candidate = item
-        if item != None:
-            item.box.props.fill_color_rgba = Colors.activePortIn
-            item.box.props.stroke_color_rgba = Colors.activePort
-        
-    def update_drag_wire(self, tuple, x2, y2):
-        (uri, x, y, dx, dy, wireitem) = (tuple[1], tuple[3], tuple[4], x2 - tuple[3], y2 - tuple[4], tuple[2])
-        wireitem.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x, y, x+dx/2, y, x+dx/2, y+dy, x+dx, y+dy)
-        items = self.graph.get_data_items_at(x+dx, y+dy)
-        found = False
-        for type, obj, item in items:
-            if type == 'port':
-                if item.module != self and self.get_parser().can_connect(self.portDict[uri].portData, obj.portData):
-                    found = True
-                    self.set_connect_candidate(obj)
-        if not found and self.connect_candidate != None:
-            self.set_connect_candidate(None)
             
     def update_wires(self):
         for wire in self.wires:
@@ -263,7 +315,13 @@ class ConnectionGraphEditor:
         self.canvas.update()
         self.canvas.get_root_item().connect("motion-notify-event", self.canvas_motion_notify)
         self.canvas.get_root_item().connect("button-release-event", self.canvas_button_release)
-        
+    
+    def get_canvas(self):
+        return self.canvas
+    
+    def get_root(self):
+        return self.canvas.get_root_item()
+    
     def get_items_at(self, x, y):
         cr = self.canvas.create_cairo_context()
         items = self.canvas.get_items_in_area(goocanvas.Bounds(x - 3, y - 3, x + 3, y + 3), True, True, False)
@@ -287,7 +345,7 @@ class ConnectionGraphEditor:
         self.add_module(*params)
 
     def add_module(self, moduleData, x, y):
-        mbox = ModuleBox(self.parser, self.canvas.get_root_item(), moduleData, self)
+        mbox = ModuleView(self.parser, self.canvas.get_root_item(), moduleData, self)
         self.modules.add(mbox)
         bounds = self.canvas.get_bounds()
         if x == None:
@@ -310,11 +368,11 @@ class ConnectionGraphEditor:
 
     def canvas_motion_notify(self, group, widget, event):
         if self.dragging != None:
-            self.dragging[0].dragging(self.dragging, event.x, event.y)
+            self.dragging.dragging(event.x, event.y)
 
     def canvas_button_release(self, group, widget, event):
         if self.dragging != None and event.button == 1:
-            self.dragging[0].dragged(self.dragging, event.x, event.y)
+            self.dragging.end_drag(event.x, event.y)
 
     def box_button_press(self, group, widget, event):
         if event.button == 1:
@@ -333,24 +391,14 @@ class ConnectionGraphEditor:
             self.moving.translate(event.x - self.motion_x, event.y - self.motion_y)
             group.module.update_wires()
                         
-    def port_endpoint(self, port):
-        bounds = port.box.get_bounds()
-        port = port.portData
-        if self.get_parser().is_port_input(port):
-            x = bounds.x1
-        else:
-            x = bounds.x2
-        y = (bounds.y1 + bounds.y2) / 2
-        return (x, y)
-        
     def update_wire(self, wire):
-        (x1, y1) = self.port_endpoint(wire.src)
-        (x2, y2) = self.port_endpoint(wire.dest)
+        (x1, y1) = wire.src.get_endpoint()
+        (x2, y2) = wire.dest.get_endpoint()
         xm = (x1 + x2) / 2
         wire.wire.props.data = "M %0.0f,%0.0f C %0.0f,%0.0f %0.0f,%0.0f %0.0f,%0.0f" % (x1, y1, xm, y1, xm, y2, x2, y2)
         
     def connect(self, p1, p2, wireitem = None):
-        # p1, p2 are ModulePort objects
+        # p1, p2 are PortView objects
         # if wireitem is set, then this is manual connection, and parser.connect() is called
         # if wireitem is None, then this is automatic connection, and parser.connect() is bypassed
         if p2.isInput:
@@ -360,7 +408,7 @@ class ConnectionGraphEditor:
         if wireitem == None:
             wireitem = goocanvas.Path(parent = self.canvas.get_root_item())
         else:
-            self.get_parser().connect(src.portData, dest.portData)
+            self.get_parser().connect(src.model, dest.model)
         wire = VisibleWire(src, dest, wireitem)
         wireitem.type = "wire"
         wireitem.object = wire
