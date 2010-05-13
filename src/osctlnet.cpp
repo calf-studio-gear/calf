@@ -142,8 +142,8 @@ void osc_server::parse_message(const char *buffer, int len)
 void osc_server::read_from_socket()
 {
     do {
-        char buf[16384];
-        int len = recv(socket, buf, 16384, MSG_DONTWAIT);
+        char buf[65536];
+        int len = recv(socket, buf, 65536, MSG_DONTWAIT);
         if (len > 0)
         {
             if (buf[0] == '/')
