@@ -2,6 +2,7 @@
 import pygtk
 pygtk.require('2.0')
 import dbus
+import dbus.mainloop.glib
 import gtk
 import conndiagram
 from calfgtkutils import *
@@ -54,27 +55,37 @@ class JACKClientInfo(object):
     def __init__(self, id, name, ports):
         self.id = id
         self.name = name
-        self.ports = [JACKPortInfo("%s:%s" % (name, p[1]), *p) for p in ports]
+        self.ports = []
+        for p in ports:
+            self.add_port(*p)
     def get_name(self):
         return self.name
+    def add_port(self, port_id, name, flags, format):
+        model = JACKPortInfo("%s:%s" % (self.name, name), port_id, name, flags, format)
+        self.ports.append(model)
+        return model
     
 class JACKGraphInfo(object):
     version = 0
-    clients = []
-    client_map = {}
-    connections_id = set()
-    connections_name = set()
     def __init__(self, version, clients, connections):
         self.version = version
-        self.clients = [JACKClientInfo(*c) for c in clients]
+        self.clients = []
         self.client_map = {}
-        for c in self.clients:
-            self.client_map[c.name] = c
         self.connections_id = set()
         self.connections_name = set()
-        for (cid1, cname1, pid1, pname1, cid2, cname2, pid2, pname2, something) in connections:
-            self.connections_name.add(("%s:%s" % (cname1, pname1), "%s:%s" % (cname2, pname2)))
-            self.connections_id.add(("%s:%s" % (cid1, pid1), "%s:%s" % (cid2, pid2)))
+        for c in clients:
+            self.add_client(*c)
+        for tuple in connections:
+            self.add_connection(*tuple)
+    
+    def add_client(self, id, name, ports):
+        c = JACKClientInfo(id, name, ports)
+        self.clients.append(c)
+        self.client_map[name] = c
+            
+    def add_connection(self, cid1, cname1, pid1, pname1, cid2, cname2, pid2, pname2, something):
+        self.connections_name.add(("%s:%s" % (cname1, pname1), "%s:%s" % (cname2, pname2)))
+        self.connections_id.add(("%s:%s" % (cid1, pid1), "%s:%s" % (cid2, pid2)))
 
 class ClientModuleModel():
     def __init__(self, client, checker):
@@ -86,12 +97,27 @@ class ClientModuleModel():
 
 class JACKGraphController(object):
     def __init__(self):
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         self.bus = dbus.SessionBus()
         self.service = self.bus.get_object("org.jackaudio.service", "/org/jackaudio/Controller")
         self.patchbay = dbus.Interface(self.service, "org.jackaudio.JackPatchbay")
         self.graph = None
         self.view = None
         self.fetch_graph()
+        self.patchbay.connect_to_signal('PortAppeared', self.port_appeared)
+        self.patchbay.connect_to_signal('PortDisappeared', self.port_disappeared)
+        self.patchbay.connect_to_signal('PortsConnected', self.ports_connected)
+        self.patchbay.connect_to_signal('PortsDisconnected', self.ports_disconnected)
+    def port_appeared(self, seq_no, client_id, client_name, port_id, port_name, flags, format):
+        model = self.graph.client_map[str(client_name)].add_port(int(port_id), str(port_name), int(flags_format))
+        print "PortAppeared", model
+    def port_disappeared(self, seq_no, client_id, client_name, port_id, port_name):
+        print "PortDisappeared", str(client_name), str(port_name)
+    def ports_connected(self, *args):
+        print "PortsConnected", args
+        self.graph.add_connection(*args[1:])
+    def ports_disconnected(self, *args):
+        print "PortsDisconnected", args
     def fetch_graph(self):
         req_version = self.graph.version if self.graph is not None else 0
         graphdata = self.patchbay.GetGraph(req_version)
@@ -132,8 +158,10 @@ class JACKGraphController(object):
                 self.view.connect(pmap[c], pmap[p])
             else:
                 print "Connect %s to %s - not found" % (c, p)
+        for m in left_mods:
+            m.translate(width - m.width, 0)
         for m in right_mods:
-            m.translate(950 - width - 20 - width2, 0)
+            m.translate(950 - width - 30 - width2, 0)
     def add_clients(self, x, y, checker):
         margin = 10
         mwidth = 0
@@ -156,28 +184,34 @@ class App:
         self.canvas_popup_menu(0, 0, 0)
         return True
         
-    def canvas_button_press_handler(self, widget, event):
-        if event.button == 3:
-            self.canvas_popup_menu(event.x, event.y, event.time)
-            return True
-        
     def canvas_popup_menu(self, x, y, time):
         menu = gtk.Menu()
         items = self.cgraph.get_data_items_at(x, y)
-        types = set([di[0] for di in items])
-        if 'wire' in types:
-            for i in items:
-                if i[0] == "wire":
-                    wire = i[1]
-                    add_option(menu, "Disconnect", self.disconnect, wire)
-        else:
-            return
-        menu.show_all()
-        menu.popup(None, None, None, 3, time)
+        found = False
+        for i in items:
+            if i[0] == "wire":
+                wire = i[1]
+                add_option(menu, "Disconnect", self.disconnect, wire)
+                found = True
+                break
+            elif i[0] == "port":
+                port = i[1]
+                add_option(menu, "Disconnect All", self.disconnect_all, port, enabled = len(port.get_connections()))
+                found = True
+                break
+        if found:
+            menu.show_all()
+            menu.popup(None, None, None, 3, time)
         
     def disconnect(self, wire):
         self.controller.disconnect(wire.src.model, wire.dest.model)
-        wire.delete()
+        wire.remove()
+        
+    def disconnect_all(self, port):
+        for wire in list(port.module.wires):
+            if wire.src == port or wire.dest == port:
+                self.controller.disconnect(wire.src.model, wire.dest.model)
+                wire.remove()
         
     def create(self):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -192,7 +226,6 @@ class App:
         self.window.add(self.main_vbox)
         self.window.show_all()
         self.main_vbox.connect("popup-menu", self.canvas_popup_menu_handler)
-        self.cgraph.canvas.connect("button-press-event", self.canvas_button_press_handler)
         self.controller.add_all()
         self.cgraph.clear()
         self.controller.add_all()

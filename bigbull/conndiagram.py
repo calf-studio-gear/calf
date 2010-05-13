@@ -62,7 +62,7 @@ class VisibleWire():
         """src is source PortView, dst is destination PortView"""
         self.src = src
         self.dest = dest
-        self.mask = goocanvas.Path(parent = src.get_graph().get_root(), line_width=12, stroke_color_rgba = 0, pointer_events = goocanvas.EVENTS_STROKE)
+        self.mask = goocanvas.Path(parent = src.get_graph().get_root(), line_width=12, stroke_color_rgba = 0, pointer_events = goocanvas.EVENTS_ALL)
         self.mask.type = "wire"
         self.mask.object = self
         self.wire = goocanvas.Path(parent = src.get_graph().get_root(), stroke_color_rgba = Colors.connectedWire, pointer_events = 0)
@@ -74,8 +74,8 @@ class VisibleWire():
         if self.wire is not None:
             self.wire.remove()
             self.mask.remove()
-            self.src.module.remove_wire(self)
-            self.dest.module.remove_wire(self)
+            self.src.module.wires.remove(self)
+            self.dest.module.wires.remove(self)
             self.wire = None
             self.mask = None
 
@@ -88,8 +88,8 @@ class VisibleWire():
         
 
 class Dragging():
-    def __init__(self, module, port_view, x, y):
-        self.module = module
+    def __init__(self, port_view, x, y):
+        self.module = port_view.module
         self.port_view = port_view
         self.x = x
         self.y = y
@@ -110,8 +110,7 @@ class Dragging():
             self.drag_wire.props.data = wireData(self.x, self.y, x2, y2)
         
     def dragging(self, x2, y2):
-        boundsGrp = self.module.group.get_bounds()
-        self.update_drag_wire(x2 + boundsGrp.x1, y2 + boundsGrp.y1)
+        self.update_drag_wire(x2, y2)
 
     def update_drag_wire(self, x2, y2):
         items = self.get_graph().get_data_items_at(x2, y2)
@@ -146,7 +145,8 @@ class Dragging():
         src, dst = self.port_view, self.connect_candidate
         self.get_graph().dragging = None
         src.update_style()
-        self.remove_wire()
+        self.drag_wire.remove()
+        self.drag_wire = None
         if dst is not None:
             # print "Connect: " + tuple[1] + " with " + self.connect_candidate.get_id()
             dst.update_style()
@@ -154,12 +154,8 @@ class Dragging():
                 src, dst = dst, src
             self.get_graph().get_controller().connect(src.model, dst.model)
     
-    def remove_wire(self):
-        self.drag_wire.remove()
-        self.drag_wire = None
-        
 class PortView():
-    fontName = "DejaVu Sans 8"
+    fontName = "DejaVu Sans 11px"
     type = "port"
     def __init__(self, module, model):
         self.module = module
@@ -219,10 +215,8 @@ class PortView():
     
     def update_style(self):
         color = self.model.get_port_color()
-        self.box.props.fill_color_rgba = color.get_fill(self)
-        self.box.props.stroke_color_rgba = color.get_stroke(self)
-        self.box.props.line_width = 1
-        
+        self.box.set_properties(fill_color_rgba = color.get_fill(self), stroke_color_rgba = color.get_stroke(self), line_width = 1, pointer_events = goocanvas.EVENTS_ALL)
+
     def is_dragged(self):
         dragging = self.get_graph().dragging
         if dragging is not None and dragging.has_port_view(self):
@@ -238,6 +232,9 @@ class PortView():
         y = (bounds.y1 + bounds.y2) / 2
         return (x, y)
         
+    def get_connections(self):
+        return [wire for wire in self.module.wires if wire.src == self or wire.dest == self]
+        
 class ModuleView():
     margin = 2
     spacing = 4
@@ -250,82 +247,89 @@ class ModuleView():
         self.connect_candidate = None
         self.parent = parent
         self.model = model
-        self.group = goocanvas.Group(parent = self.parent)
+        self.group = goocanvas.Group(parent = self.parent, pointer_events = goocanvas.EVENTS_ALL)
+        self.group.type = "module"
+        self.group.object = self.group.module = self
+        self.group.raise_(None)
+        self.rect = None
+        self.titleItem = None
         self.ports = []
         self.wires = []
-        self.create_items()
+        self.refresh()
         
     def get_controller(self):
         return self.controller
 
-    def create_items(self):
-        self.group.module = self
+    def refresh(self):
+        self.title = self.model.get_name()
+        self.ports = []
+        self.portDict = {}
+        for model in self.model.get_port_list():
+            self.add_port(model)
+        self.render()
+    
+    def remove(self):
         while self.group.get_n_children() > 0:
             self.group.remove_child(0)
+        self.rect = None
+        self.titleItem = None
+        
+    def render(self):
+        self.remove()
         ctx = self.group.get_canvas().create_cairo_context()
-        self.title = self.model.get_name()
-        self.portDict = {}
-        width = self.get_title_width(ctx)
-        for model in self.model.get_port_list():
-            view = self.create_port(model)
-            new_width = view.calc_width(ctx)
-            if new_width > width:
-                width = new_width
-        self.width = width
+        self.width = max([self.get_title_width(ctx)] + [port_view.calc_width(ctx) for port_view in self.ports])
         y = self.render_title(ctx, 0.5)
-        for view in self.ports:
-            y = self.render_port(ctx, view, y)
-        self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y, line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY)
+        for port_view in self.ports:
+            y = port_view.render(ctx, self.group, y)
+        self.rect = goocanvas.Rect(parent = self.group, x = 0.5, width = self.width, height = y)
+        self.update_style()
         self.rect.lower(self.titleItem)
         self.rect.type = "module"
-        self.rect.object = self.rect.module = self
+        self.rect.object = self.group.module = self
         self.group.ensure_updated()
         
-    def create_port(self, model):
+    def add_port(self, model, pos = None):
+        if pos is None:
+            pos = len(self.ports)
         view = PortView(self, model)
-        self.ports.append(view)
+        self.ports.insert(pos, view)
         self.portDict[model.get_id()] = view
         return view
+        
+    def del_port(self, pos):
+        del self.portDict[self.ports[pos].model.get_id()]
+        self.ports.pop(pos)
         
     def get_title_width(self, ctx):
         return calc_extents(ctx, self.fontName, self.title)[0] + 4 * self.margin
         
     def render_title(self, ctx, y):
-        self.titleItem = goocanvas.Text(parent = self.group, font = self.fontName, text = self.title, width = self.width, x = 0, y = y, alignment = "center", use_markup = True, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, antialias = cairo.ANTIALIAS_GRAY)
-        y += self.titleItem.get_requested_height(ctx, self.width) + self.spacing
+        self.titleItem = goocanvas.Text(parent = self.group, font = self.fontName, text = self.title, width = self.width, x = 0, y = y, alignment = "center", use_markup = True, fill_color_rgba = Colors.text, hint_metrics = cairo.HINT_METRICS_ON, antialias = cairo.ANTIALIAS_GRAY, pointer_events = goocanvas.EVENTS_NONE)
+        y += self.titleItem.get_requested_height(ctx, self.width) + 2 * self.spacing
         return y
         
     def render_port(self, ctx, port_view, y):
-        y = port_view.render(ctx, self.group, y)
-        port_view.box.connect_object("button-press-event", self.port_button_press, port_view)
-        port_view.title.connect_object("button-press-event", self.port_button_press, port_view)        
-        return y
+        return port_view.render(ctx, self.group, y)
+        #port_view.box.connect_object("button-press-event", self.port_button_press, port_view)
+        #port_view.title.connect_object("button-press-event", self.port_button_press, port_view)        
         
     def delete_items(self):
         self.group.remove()
         for w in list(self.wires):
             w.remove()
-        
-    def port_button_press(self, port_view, box, event):
-        if event.button == 1:
-            (x, y) = port_view.get_endpoint()
-            self.graph.dragging = Dragging(self, port_view, x, y)
-            port_view.update_style()
-            print "Port URI is " + port_view.get_id()
-            return True
             
     def update_wires(self):
         for wire in self.wires:
             wire.update_shape()
             
-    def remove_wire(self, wire):
-        self.wires = [w for w in self.wires if w != wire]
-            
     def translate(self, dx, dy):
         self.group.translate(dx, dy)
         self.group.ensure_updated()
         self.update_wires()
-
+        
+    def update_style(self):
+        self.rect.set_properties(line_width = 1, stroke_color_rgba = Colors.frame, fill_color_rgba = Colors.box, antialias = cairo.ANTIALIAS_GRAY, pointer_events = goocanvas.EVENTS_ALL)
+        
 class ConnectionGraphEditor:
     def __init__(self, app, controller):
         self.app = app
@@ -351,8 +355,9 @@ class ConnectionGraphEditor:
         self.canvas.props.background_color_rgb = 0
         self.canvas.props.integer_layout = False
         self.canvas.update()
-        self.canvas.get_root_item().connect("motion-notify-event", self.canvas_motion_notify)
-        self.canvas.get_root_item().connect("button-release-event", self.canvas_button_release)
+        self.canvas.connect("button-press-event", self.canvas_button_press_handler)
+        self.canvas.connect("motion-notify-event", self.canvas_motion_notify)
+        self.canvas.connect("button-release-event", self.canvas_button_release)
     
     def get_canvas(self):
         return self.canvas
@@ -361,11 +366,33 @@ class ConnectionGraphEditor:
         return self.canvas.get_root_item()
     
     def get_items_at(self, x, y):
-        cr = self.canvas.create_cairo_context()
-        #items = self.canvas.get_items_in_area(goocanvas.Bounds(x - 3, y - 3, x + 3, y + 3), True, True, False)
-        items = set()
         return self.canvas.get_items_at(x, y, True)
         
+    def get_module_map(self, model):
+        map = {}
+        for view in self.modules:
+            map[view.model] = view
+        return map
+        
+    def get_module_view(self, model):
+        for view in self.modules:
+            if view.model == model:
+                return view
+        return None
+        
+    def get_port_map(self):
+        map = {}
+        for mod in self.modules:
+            map.update(mod.portDict)
+        return map
+        
+    def get_port_view(self, port_model):
+        for mod in self.modules:
+            for p in mod.ports:
+                if p.model == port_model:
+                    return p
+        return None
+
     def get_data_items_at(self, x, y):
         items = self.get_items_at(x, y)
         if items == None:
@@ -387,56 +414,52 @@ class ConnectionGraphEditor:
         if x == None:
             (x, y) = (int(random.uniform(bounds[0], bounds[2] - 100)), int(random.uniform(bounds[1], bounds[3] - 50)))
         mbox.group.translate(x, y)
-        mbox.group.connect("button-press-event", self.box_button_press)
-        mbox.group.connect("motion-notify-event", self.box_motion_notify)
-        mbox.group.connect("button-release-event", self.box_button_release)
         return mbox
         
     def delete_module(self, module):
         self.modules.remove(mbox)
         module.delete_items()
         
-    def get_port_map(self):
-        map = {}
-        for mod in self.modules:
-            map.update(mod.portDict)
-        return map
-        
-    def get_port_view(self, port_model):
-        for mod in self.modules:
-            for p in mod.ports:
-                if p.model == port_model:
-                    return p
-        return None
-
-    def canvas_motion_notify(self, group, widget, event):
-        if self.dragging != None:
-            self.dragging.dragging(event.x, event.y)
-
-    def canvas_button_release(self, group, widget, event):
-        if self.dragging != None and event.button == 1:
-            self.dragging.end_drag(event.x, event.y)
-
-    def box_button_press(self, group, widget, event):
+    def canvas_button_press_handler(self, widget, event):
         if event.button == 1:
-            group.raise_(None)
-            for w in group.module.wires:
-                w.wire.raise_(None)
-                
-            self.moving = group
-            self.motion_x = event.x
-            self.motion_y = event.y
-            return True
-    
-    def box_button_release(self, group, widget, event):
-        if event.button == 1:
-            self.moving = None
-    
-    def box_motion_notify(self, group, widget, event):
-        if self.moving == group:
-            self.moving.module.translate(event.x - self.motion_x, event.y - self.motion_y)
-            group.module.update_wires()
+            for itype, iobject, item in self.get_data_items_at(event.x, event.y):
+                if itype == 'module':
+                    group = iobject.group
+                    group.raise_(None)
+                    for w in group.module.wires:
+                        w.wire.raise_(None)
                         
+                    self.moving = group.module
+                    self.motion_x = event.x
+                    self.motion_y = event.y
+                    return True
+                if itype == 'port':
+                    port_view = iobject
+                    module = port_view.module
+                    (x, y) = port_view.get_endpoint()
+                    self.dragging = Dragging(port_view, x, y)
+                    port_view.update_style()
+                    print "Port URI is " + port_view.get_id()
+                    return True
+        elif event.button == 3:
+            self.app.canvas_popup_menu(event.x, event.y, event.time)
+            return True
+        
+    def canvas_motion_notify(self, widget, event):
+        if self.dragging is not None:
+            self.dragging.dragging(event.x, event.y)
+        if self.moving is not None:
+            self.moving.translate(event.x - self.motion_x, event.y - self.motion_y)
+            self.moving.update_wires()
+            self.motion_x, self.motion_y = event.x, event.y
+
+    def canvas_button_release(self, widget, event):
+        if event.button == 1:
+            if self.moving is not None:
+                self.moving = None
+            if self.dragging is not None:
+                self.dragging.end_drag(event.x, event.y)
+
     # Connect elements visually (but not logically, that's what controller is for)
     def connect(self, src, dest):
         wire = VisibleWire(src, dest)

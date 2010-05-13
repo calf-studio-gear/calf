@@ -2,8 +2,9 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 
-def add_option(menu, option, handler, data = None):
+def add_option(menu, option, handler, data = None, enabled = True):
     item = gtk.MenuItem(option)
+    item.set_sensitive(enabled)
     item.connect_object("activate", handler, data)
     menu.add(item)
 
