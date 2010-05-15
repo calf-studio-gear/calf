@@ -141,7 +141,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     
     const parameter_properties &props = get_props();
     widget  = gtk_combo_box_new_text ();
-    if (props.choices)
+    if (param_no != -1 && props.choices)
     {
         for (int j = (int)props.min; j <= (int)props.max; j++)
             gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], 1, calf_utils::i2s(j).c_str(), -1);
@@ -155,14 +155,20 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 void combo_box_param_control::set()
 {
     _GUARD_CHANGE_
-    const parameter_properties &props = get_props();
-    gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
+    if (param_no != -1)
+    {
+        const parameter_properties &props = get_props();
+        gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
+    }
 }
 
 void combo_box_param_control::get()
 {
-    const parameter_properties &props = get_props();
-    gui->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min, this);
+    if (param_no != -1)
+    {
+        const parameter_properties &props = get_props();
+        gui->set_param_value(param_no, gtk_combo_box_get_active (GTK_COMBO_BOX(widget)) + props.min, this);
+    }
 }
 
 void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer value)
