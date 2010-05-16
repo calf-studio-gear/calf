@@ -172,6 +172,7 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
         soundfont = value;
         int newsfid = -1;
         fluid_synth_t *new_synth = create_synth(newsfid);
+        status_serial++;
         
         if (new_synth)
         {

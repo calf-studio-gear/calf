@@ -92,11 +92,14 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         module->send_configures(sci);
     }
     uint32_t impl_message_run(const void *valid_inputs, void *output_ports) {
+        uint8_t *vi = (uint8_t *)valid_inputs;
+        int ofs = metadata->get_param_port_offset();
         for (unsigned int i = 0; i < message_params.size(); i++)
         {
             int pn = message_params[i];
             const parameter_properties &pp = *metadata->get_param_props(pn);
-            if ((pp.flags & PF_TYPEMASK) == PF_STRING
+            int ppn = pn + ofs;
+            if ((pp.flags & PF_TYPEMASK) == PF_STRING && (vi[ppn >> 3] & (1 << (ppn & 7)))
                 && (((LV2_String_Data *)params[pn])->flags & LV2_STRING_DATA_CHANGED_FLAG)) {
                 printf("Calling configure on %s\n", pp.short_name);
                 configure(pp.short_name, ((LV2_String_Data *)params[pn])->data);
@@ -160,6 +163,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return metadata; }
     virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return module->send_status_updates(sui, last_serial); }
 };
 
 struct LV2_Calf_Descriptor {

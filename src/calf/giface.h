@@ -356,7 +356,7 @@ struct plugin_ctl_iface
     /// Execute menu command with given number
     virtual void execute(int cmd_no)=0;
     /// Set a configure variable on a plugin
-    virtual char *configure(const char *key, const char *value) { return NULL; }
+    virtual char *configure(const char *key, const char *value) = 0;
     /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
     virtual void send_configures(send_configure_iface *)=0;
     /// Restore all state (parameters and configure vars) to default values - implemented in giface.cpp
@@ -366,7 +366,7 @@ struct plugin_ctl_iface
     virtual bool blobcall(const char *command, const std::string &request, std::string &result) { result = "Call not supported"; return false; }
     /// Update status variables changed since last_serial
     /// @return new last_serial
-    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return last_serial; }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) = 0;
     /// Return metadata object
     virtual const plugin_metadata_iface *get_metadata_iface() const = 0;
     /// @return line_graph_iface if any

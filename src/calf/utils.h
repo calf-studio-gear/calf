@@ -93,10 +93,10 @@ public:
 };
 
 /// Exception-safe temporary assignment
-template<class T, class Tref>
+template<class T, class Tref = T&>
 class scope_assign
 {
-    Tref &data;
+    Tref data;
     T old_value;
 public:
     scope_assign(Tref _data, T new_value)

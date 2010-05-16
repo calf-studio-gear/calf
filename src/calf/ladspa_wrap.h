@@ -59,6 +59,7 @@ struct ladspa_instance: public plugin_ctl_iface
     virtual void send_configures(send_configure_iface *sci) { 
         module->send_configures(sci);
     }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return module->send_status_updates(sui, last_serial); }
     void run(unsigned long SampleCount);
 #if USE_DSSI
     /// Utility function: handle MIDI event (only handles a subset in this version)

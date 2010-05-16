@@ -362,7 +362,7 @@ const void *gui_extension(const char *uri)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-class ext_plugin_gui: public lv2_external_ui, public plugin_proxy_base, public osc_message_sink<osc_strstream>
+class ext_plugin_gui: public lv2_external_ui, public plugin_proxy_base, public osc_message_sink<osc_strstream>, public send_updates_iface
 {
 public:
     GPid child_pid;
@@ -372,6 +372,7 @@ public:
     string prefix;
     dssi_feedback_sender *feedback_sender;
     bool enable_graph_updates;
+    osc_inline_typed_strstream status_data;
 
     ext_plugin_gui(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f);
 
@@ -382,6 +383,7 @@ public:
     void run_impl();
     void port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer);
 
+    virtual void send_status(const char *key, const char *value);
     virtual void receive_osc_message(std::string address, std::string args, osc_strstream &buffer);
     virtual ~ext_plugin_gui();
         
@@ -421,6 +423,11 @@ void ext_plugin_gui::show_impl()
 void ext_plugin_gui::hide_impl()
 {
     cli.send("/hide");
+}
+
+void ext_plugin_gui::send_status(const char *key, const char *value)
+{
+    status_data << key << value;
 }
 
 void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
@@ -504,7 +511,20 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
     {
         string key, value;
         buffer >> key >> value;
-        configure(key.c_str(), value.c_str());
+        plugin_proxy_base::configure(key.c_str(), value.c_str());
+    }
+    else
+    if (address == "/bridge/send_status" && args == "i")
+    {
+        if (instance)
+        {
+            int serial;
+            buffer >> serial;
+
+            status_data.clear();
+            status_data << (uint32_t)instance->send_status_updates(this, serial);
+            cli.send("/status_data", status_data);
+        }
     }
     else
         srv.dump.receive_osc_message(address, args, buffer);

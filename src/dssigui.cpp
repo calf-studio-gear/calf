@@ -102,9 +102,12 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     map<int, param_line_graphs> graphs;
     bool update_graphs;
     const plugin_metadata_iface *metadata;
+    vector<string> new_status;
+    uint32_t new_status_serial;
 
     plugin_proxy(const plugin_metadata_iface *md)
     {
+        new_status_serial = 0;
         metadata = md;
         client = NULL;
         send_osc = false;
@@ -123,6 +126,11 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
+        if((metadata->get_param_props(param_no)->flags & PF_TYPEMASK) == PF_STRING)
+        {
+            g_warning("Attempting to set a float value on a string port");
+            return;
+        }
         update_graphs = true;
         params[param_no] = value;
         if (send_osc)
@@ -168,6 +176,21 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     void send_configures(send_configure_iface *sci) { 
         for (map<string, string>::iterator i = cfg_vars.begin(); i != cfg_vars.end(); i++)
             sci->send_configure(i->first.c_str(), i->second.c_str());
+    }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial)
+    {
+        if ((int)new_status_serial != last_serial)
+        {
+            for (size_t i = 0; i < (new_status.size() & ~1); i += 2)
+            {
+                sui->send_status(new_status[i].c_str(), new_status[i + 1].c_str());
+            }
+            return new_status_serial;
+        }
+        osc_inline_typed_strstream str;
+        str << (uint32_t)last_serial;
+        client->send("/send_status", str);
+        return last_serial;
     }
     virtual const line_graph_iface *get_line_graph_iface() const { return this; }
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
@@ -529,6 +552,24 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
             window->gui->refresh();
             plugin->update_graphs = false;
         }
+        return;
+    }
+    else if (address == prefix + "/status_data" && (args.length() & 1) && args[args.length() - 1] == 'i')
+    {
+        int len = (int)args.length();
+        plugin->new_status.clear();
+        
+        for (int pos = 0; pos < len - 2; pos += 2)
+        {
+            if (args[pos] == 's' && args[pos+1] == 's')
+            {
+                string key, value;
+                buffer >> key >> value;
+                plugin->new_status.push_back(key);
+                plugin->new_status.push_back(value);
+            }
+        }
+        buffer >> plugin->new_status_serial;
         return;
     }
     else
