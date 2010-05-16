@@ -104,8 +104,9 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     const plugin_metadata_iface *metadata;
     vector<string> new_status;
     uint32_t new_status_serial;
+    bool is_lv2;
 
-    plugin_proxy(const plugin_metadata_iface *md)
+    plugin_proxy(const plugin_metadata_iface *md, bool _is_lv2)
     {
         new_status_serial = 0;
         metadata = md;
@@ -117,6 +118,7 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
         params = new float[param_count];
         for (int i = 0; i < param_count; i++)
             params[i] = metadata->get_param_props(i)->def_value;
+        is_lv2 = _is_lv2;
     }
     virtual float get_param_value(int param_no) {
         if (param_no < 0 || param_no >= param_count)
@@ -187,10 +189,20 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
             }
             return new_status_serial;
         }
-        osc_inline_typed_strstream str;
-        str << (uint32_t)last_serial;
-        client->send("/send_status", str);
-        return last_serial;
+        if (!is_lv2)
+        {
+            osc_inline_typed_strstream str;
+            str << "OSC:SEND_STATUS" << calf_utils::i2s(last_serial);
+            client->send("/configure", str);
+            return last_serial;
+        }
+        else
+        {
+            osc_inline_typed_strstream str;
+            str << (uint32_t)last_serial;
+            client->send("/send_status", str);
+            return last_serial;
+        }
     }
     virtual const line_graph_iface *get_line_graph_iface() const { return this; }
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
@@ -306,7 +318,7 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
             exit(1);
         }
         effect_name = pmi->get_id();
-        plugin = new plugin_proxy(pmi);
+        plugin = new plugin_proxy(pmi, is_lv2);
     }
     
     static void on_destroy(GtkWindow *window, dssi_osc_server *self)

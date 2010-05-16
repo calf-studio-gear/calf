@@ -29,8 +29,10 @@
 #include <calf/modules_mod.h>
 #include <calf/modules_synths.h>
 #include <calf/organ.h>
+#include <calf/osctlnet.h>
 
 using namespace calf_plugins;
+using namespace osctl;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -118,8 +120,8 @@ char *ladspa_instance::configure(const char *key, const char *value)
     if (!strcmp(key, "OSC:FEEDBACK_URI"))
     {
         const line_graph_iface *lgi = dynamic_cast<const line_graph_iface *>(metadata);
-        if (!lgi)
-            return NULL;
+        //if (!lgi)
+        //    return NULL;
         if (*value)
         {
             if (feedback_sender) {
@@ -143,6 +145,25 @@ char *ladspa_instance::configure(const char *key, const char *value)
     {
         if (feedback_sender)
             feedback_sender->update();
+        return NULL;
+    }
+    else 
+    if (!strcmp(key, "OSC:SEND_STATUS"))
+    {
+        if (!feedback_sender)
+            return NULL;
+        struct status_gatherer: public send_updates_iface
+        {
+            osc_inline_typed_strstream str;            
+            void send_status(const char *key, const char *value)
+            {
+                str << key << value;
+            }
+        } sg;
+        int serial = atoi(value);
+        serial = module->send_status_updates(&sg, serial);
+        sg.str << (uint32_t)serial;
+        feedback_sender->client->send("/status_data", sg.str);
         return NULL;
     }
     else

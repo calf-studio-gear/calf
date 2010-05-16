@@ -437,9 +437,12 @@ void calf_plugins::dssi_feedback_sender::add_graphs(const calf_plugins::paramete
 
 void calf_plugins::dssi_feedback_sender::update()
 {
-    osctl::osc_inline_typed_strstream os;
-    serialize_graphs(os, graph, indices);
-    client->send("/lineGraph", os);
+    if (graph)
+    {
+        osctl::osc_inline_typed_strstream os;
+        serialize_graphs(os, graph, indices);
+        client->send("/lineGraph", os);
+    }
 }
 
 calf_plugins::dssi_feedback_sender::~dssi_feedback_sender()
