@@ -592,6 +592,37 @@ CALF_PORT_PROPS(bassenhancer) = {
 
 CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(gate) = {"In L", "In R", "In Trigger", "Out L", "Out R"};
+
+const char *gate_detection_names[] = { "RMS", "Peak" };
+const char *gate_stereo_link_names[] = { "Average", "Maximum" };
+const char *gate_weighting_names[] = { "Normal", "A-weighted", "Deesser (low)", "Deesser (med)", "Deesser (high)" };
+
+CALF_PORT_PROPS(gate) = {
+    { 0.125,      0.000976563, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
+    { 2,      1, 20,  21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
+    { 20,     1, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 250,    1, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
+    { 1,      1, 64,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
+    { 2.828427125,      1,  8,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
+    { 0,      0,  1,   0, PF_ENUM | PF_CTL_COMBO, gate_detection_names, "detection", "Detection" },
+    { 0,      0,  1,   0, PF_ENUM | PF_CTL_COMBO, gate_stereo_link_names, "stereo_link", "Stereo Link" },
+    { 0,      0,  4,   0, PF_ENUM | PF_CTL_COMBO, gate_weighting_names, "aweighting", "Weighting" },
+    { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating", "Gating" },
+    { 0,      0,  1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "peak", "Peak Output" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip", "0dBFS" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 0.01,   0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "range", "Max Gain Reduction" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono (L only)" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "trigger", "Sidechain (Mono In)" },
+
+};
+
+CALF_PLUGIN_INFO(gate) = { 0x8503, "Gate", "Calf Gate", "Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(monosynth) = {

@@ -27,6 +27,7 @@
 #include "inertia.h"
 #include "audio_fx.h"
 #include "giface.h"
+#include "loudness.h"
 #include "metadata.h"
 
 namespace calf_plugins {
@@ -188,6 +189,60 @@ public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
+
+
+class gate_audio_module: public audio_module<gate_metadata>, public line_graph_iface {
+private:
+    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop, threshold, ratio, knee, makeup, compressedKneeStop, adjKneeStart, range;
+    mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mono;
+    mutable volatile int last_generation;
+    uint32_t clip;
+    dsp::aweighter awL, awR;
+    dsp::biquad_d2<float> bpL, bpR;
+public:
+    uint32_t srate;
+    bool is_active;
+    gate_audio_module();
+    void activate();
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+
+    inline float output_level(float slope) const {
+        bool rms = *params[param_detection] == 0;
+        return slope * output_gain(rms ? slope*slope : slope, rms) * makeup;
+    }
+
+    inline float output_gain(float linSlope, bool rms) const {
+        if(linSlope < linKneeStop) {
+            float slope = log(linSlope);
+
+            //float tratio = rms ? sqrt(ratio) : ratio;
+            float tratio = ratio;
+            float gain = 0.f;
+            float delta = 0.f;
+	    if(IS_FAKE_INFINITY(ratio))
+	        tratio = 1000.f;
+            gain = (slope-threshold) * tratio + threshold;
+            delta = tratio;
+
+            if(knee > 1.f && slope > kneeStart ) {
+		gain = dsp::hermite_interpolation(slope, kneeStart, kneeStop, ((kneeStart - threshold) * tratio  + threshold), kneeStop, delta,1.f);
+	    }
+	    return std::max(range, expf(gain-slope));
+	}
+
+
+        return 1.f;
+    }
+
+    void set_sample_rate(uint32_t sr);
+
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    virtual int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
 
 };
 

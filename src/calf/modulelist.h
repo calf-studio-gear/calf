@@ -20,6 +20,7 @@
     PER_MODULE_ITEM(saturator, false, "saturator")
     PER_MODULE_ITEM(exciter, false, "exciter")
     PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
+    PER_MODULE_ITEM(gate, false, "gate")
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
     PER_MODULE_ITEM(wavetable, true, "wavetable")

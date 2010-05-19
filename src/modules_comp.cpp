@@ -1343,3 +1343,250 @@ int gain_reduction_audio_module::get_changed_offsets(int generation, int &subind
     return last_generation;
 }
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+gate_audio_module::gate_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    last_generation = 0;
+}
+
+void gate_audio_module::activate()
+{
+    is_active = true;
+    linSlope = 0.f;
+    peak = 0.f;
+    clip = 0.f;
+}
+
+void gate_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void gate_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    awL.set(sr);
+    awR.set(sr);
+}
+
+bool gate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+{
+    if (!is_active)
+        return false;
+    if (subindex > 1) // 1
+        return false;
+    for (int i = 0; i < points; i++)
+    {
+        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
+        float output = output_level(input);
+        if (subindex == 0)
+            data[i] = dB_grid(input);
+        else
+            data[i] = dB_grid(output);
+    }
+    if (subindex == (*params[param_bypass] > 0.f ? 1 : 0))
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+    else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_line_width(1.5);
+    }
+    return true;
+}
+
+bool gate_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active)
+        return false;
+    if (!subindex)
+    {
+        bool rms = *params[param_detection] == 0;
+        float det = rms ? sqrt(detected) : detected;
+        x = 0.5 + 0.5 * dB_grid(det);
+        y = dB_grid(*params[param_bypass] > 0.f ? det : output_level(det));
+        return *params[param_bypass] > 0.f ? false : true;
+    }
+    return false;
+}
+
+bool gate_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    bool tmp;
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}
+
+uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.f;
+
+    if(bypass) {
+        int count = numsamples * sizeof(float);
+        memcpy(outs[0], ins[0], count);
+        memcpy(outs[1], ins[1], count);
+
+        if(params[param_gating] != NULL) {
+            *params[param_gating] = 1.f;
+        }
+
+        if(params[param_clip] != NULL) {
+            *params[param_clip] = 0.f;
+        }
+
+        if(params[param_peak] != NULL) {
+            *params[param_peak] = 0.f;
+        }
+
+        return inputs_mask;
+    }
+
+    bool rms = *params[param_detection] == 0;
+    bool average = *params[param_stereo_link] == 0;
+    int aweighting = fastf2i_drm(*params[param_aweighting]);
+    float linThreshold = *params[param_threshold];
+    if (rms)
+        linThreshold = linThreshold * linThreshold;
+    ratio = *params[param_ratio];
+    float attack = *params[param_attack];
+    float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
+    float release = *params[param_release];
+    float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
+    makeup = *params[param_makeup];
+    knee = *params[param_knee];
+
+    range = *params[param_range];
+
+    float linKneeSqrt = sqrt(knee);
+    linKneeStart = linThreshold / linKneeSqrt;
+    adjKneeStart = linKneeStart*linKneeStart;
+    linKneeStop = linThreshold * linKneeSqrt;
+
+    threshold = log(linThreshold);
+    kneeStart = log(linKneeStart);
+    kneeStop = log(linKneeStop);
+    compressedKneeStop = (kneeStop - threshold) / ratio + threshold;
+
+    if (aweighting >= 2)
+    {
+        bpL.set_highshelf_rbj(5000, 0.707, 10 << (aweighting - 2), srate);
+        bpR.copy_coeffs(bpL);
+        bpL.sanitize();
+        bpR.sanitize();
+    }
+
+    numsamples += offset;
+
+    float gating = 1.f;
+
+    peak -= peak * 5.f * numsamples / srate;
+
+    clip -= std::min(clip, numsamples);
+    float left;
+    float right;
+
+    while(offset < numsamples) {
+        if(*params[param_trigger]) {
+	    left = ins[2][offset];  // Use sidechain to trigger input
+	    right = left;           // (mono sidechain)
+	} else {
+	    left = ins[0][offset];
+            right = ins[1][offset];
+        }
+
+        if(aweighting == 1) {
+            left = awL.process(left);
+            right = awR.process(right);
+        }
+        else if(aweighting >= 2) {
+            left = bpL.process(left);
+            right = bpR.process(right);
+        }
+
+        float absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
+        if(rms) absample *= absample;
+
+        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
+
+        float gain = 1.f;
+
+        if(linSlope > 0.f) {
+            gain = output_gain(linSlope, rms);
+        }
+
+        gating = gain;
+        gain *= makeup;
+
+        float outL = ins[0][offset] * gain;
+        float outR = ins[1][offset] * gain;
+
+        outs[0][offset] = outL;
+        outs[1][offset] = outR;
+
+        ++offset;
+
+        float maxLR = std::max(fabs(outL), fabs(outR));
+
+        if(maxLR > 1.f) clip = srate >> 3; /* blink clip LED for 125 ms */
+
+        if(maxLR > peak) {
+            peak = maxLR;
+        }
+    }
+
+    detected = linSlope;
+
+    if(params[param_gating] != NULL) {
+        *params[param_gating] = gating;
+    }
+
+    if(params[param_clip] != NULL) {
+        *params[param_clip] = clip;
+    }
+
+    if(params[param_peak] != NULL) {
+        *params[param_peak] = peak;
+    }
+
+    return inputs_mask;
+}
+
+int gate_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+
+    if (fabs(range-old_range) + fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs( makeup - old_makeup) + fabs( *params[param_bypass] - old_bypass) > 0.01f)
+    {
+        old_range = range;
+        old_threshold = threshold;
+        old_ratio = ratio;
+        old_knee = knee;
+        old_makeup = makeup;
+        old_bypass = *params[param_bypass];
+        old_trigger = *params[param_trigger];
+        old_mono = *params[param_mono];
+        last_generation++;
+    }
+        old_trigger = *params[param_trigger];
+
+    if (generation == last_generation)
+        subindex_graph = 2;
+    return last_generation;
+}

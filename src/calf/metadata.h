@@ -294,6 +294,16 @@ struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
            param_freq, param_listen, param_count };
     PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
 };
+
+/// Damien's gate - metadata
+struct gate_metadata: public plugin_metadata<gate_metadata>
+{
+    enum { in_count = 3, out_count = 2, ins_optional = 1, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_aweighting, param_gating, param_peak, param_clip, param_bypass, param_range, param_mono, param_trigger, // param_freq, param_bw,
+        param_count };
+    PLUGIN_NAME_ID_LABEL("gate", "gate", "Gate")
+};
+
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
 struct organ_enums

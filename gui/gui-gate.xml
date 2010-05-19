@@ -1,0 +1,78 @@
+<table border="10" rows="4" cols="1">
+    <hbox attach-x="0" attach-y="0" shrink-y="1" expand-y="0">
+    	<vbox expand="0">
+             <label param="bypass"/>
+             <align><toggle param="bypass" shrink="1"/></align>
+        </vbox>
+    	<vbox expand="0">
+             <label param="trigger"/>
+             <align><toggle param="trigger" shrink="1"/></align>
+        </vbox>
+    	<vbox expand="0">
+             <label param="detection"/>
+             <combo param="detection"/>
+        </vbox>
+    	<vbox expand="0">
+             <label param="stereo_link"/>
+             <combo param="stereo_link"/>
+        </vbox>
+    	<vbox expand="0">
+             <label param="aweighting"/>
+             <combo param="aweighting"/>
+        </vbox>
+    </hbox>
+    <if cond="directlink">
+        <line-graph attach-x="0" attach-y="1" refresh="1" width="384" height="384" param="gating" square="1" expand-y="1" fill-y="1"/>
+    </if>
+    <table attach-x="0" attach-y="2" expand-y="0" expand-x="1" spacing="10" rows="1" cols="3">
+        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="0" attach-y="0">
+            <label param="gating" />
+            <vumeter param="gating" mode="2" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="1" attach-y="0">
+            <label param="clip" expand="0" fill="0" />
+            <led param="clip" expand="0" fill="0" />
+        </vbox>
+        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="2" attach-y="0">
+            <label param="peak" />
+            <vumeter param="peak" mode="0" shrink-y="0" />
+        </vbox>
+    </table>
+    <hbox attach-x="0" attach-y="3" expand-y="0">
+        <vbox border="10" expand="0">
+            <label param="attack" />
+            <knob param="attack" />
+            <value param="attack" />
+        </vbox>
+        <vbox border="10" expand="0">
+            <label param="release" />
+            <knob param="release" />
+            <value param="release" />
+        </vbox>
+        <vbox border="10" expand="0">
+            <label param="threshold" />
+            <knob param="threshold"/>
+            <value param="threshold" />
+        </vbox>
+        <vbox border="10" expand="0">
+            <label param="ratio" />
+            <knob param="ratio" />
+            <value param="ratio" />
+        </vbox>
+	<vbox border="10" expand="0">
+	    <label param="range" />
+	    <knob param="range" />
+	    <value param="range" />
+	</vbox>
+        <vbox border="10" expand="0">
+            <label param="makeup" />
+            <knob param="makeup" />
+            <value param="makeup" />
+        </vbox>
+        <vbox border="10" expand="0">
+            <label param="knee" />
+            <knob param="knee" />
+            <value param="knee" />
+        </vbox>
+    </hbox>
+</table>
