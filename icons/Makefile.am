@@ -6,11 +6,11 @@ install-data-hook:
 		mkdir -p "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/"; \
 		cp "calf_$${fn}.png" "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf.png"; \
 	done
-	@-gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
+	@-test -z "$(DESTDIR)" && gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 	
 uninstall-hook:
 	@-for fn in $(SIZES); do \
 		rm -f "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf.png"; \
 	done
-	@-gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
+	@-test -z "$(DESTDIR)" && gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 	
