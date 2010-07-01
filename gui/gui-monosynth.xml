@@ -50,6 +50,11 @@
               <knob param="o1_stretch"/>
               <value param="o1_stretch"/>
             </vbox>
+            <vbox>
+              <label param="o1_window" text="Window"/>
+              <knob param="o1_window"/>
+              <value param="o1_window"/>
+            </vbox>
           </hbox>
         </frame>
         <frame label="Oscillator 2">
