@@ -506,8 +506,9 @@ struct ladspa_wrapper
     
     /// Get a wrapper singleton - used to prevent initialization order problems which were present in older versions
     static ladspa_wrapper &get() { 
-        static ladspa_wrapper instance;
-        return instance;
+        static ladspa_wrapper *instance = new ladspa_wrapper;
+        // never destroyed, but that's OK - otherwise it may run into problems with hosts that unload plugins after discovery
+        return *instance;
     }
 };
 
