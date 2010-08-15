@@ -40,7 +40,11 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
     param_count = 0;
     container = NULL;
     effect_name = NULL;
-    draw_rackmounts = true;
+    const char *ev = getenv("CALF_NO_RACK_EARS");
+    if (ev && atoi(ev))
+        draw_rackmounts = false;
+    else
+        draw_rackmounts = true;
     preset_access = new gui_preset_access(this);
 }
 
@@ -238,42 +242,41 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     last_status_serial_no = plugin->send_status_updates(this, 0);
     GtkWidget *decoTable = gtk_table_new(3, 1, FALSE);
     
-    if(draw_rackmounts) {
-        // decorations
-        // overall background
-        //GtkWidget *bgImg     = gtk_image_new_from_file(PKGLIBDIR "/background.png");
-        //gtk_widget_set_size_request(GTK_WIDGET(bgImg), 1, 1);
+    // decorations
+    // overall background
+    //GtkWidget *bgImg     = gtk_image_new_from_file(PKGLIBDIR "/background.png");
+    //gtk_widget_set_size_request(GTK_WIDGET(bgImg), 1, 1);
+
+    // images for left side
+    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_nw.png");
+    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_sw.png");
+    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_w.png");
+    gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
     
-        // images for left side
-        GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_nw.png");
-        GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_sw.png");
-        GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_w.png");
-        gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
+    // images for right side
+    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_ne.png");
+    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_se.png");
+    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_e.png");
+    GtkWidget *logoImg   = gtk_image_new_from_file(PKGLIBDIR "/side_e_logo.png");
+    gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
+    
+    // pack left box
+    leftBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
+    
+     // pack right box
+    rightBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
+    
+    //gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bgImg),     0, 2, 0, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBox),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
         
-        // images for right side
-        GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_ne.png");
-        GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_se.png");
-        GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_e.png");
-        GtkWidget *logoImg   = gtk_image_new_from_file(PKGLIBDIR "/side_e_logo.png");
-        gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
-        
-        // pack left box
-        GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
-        gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
-        
-         // pack right box
-        GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
-        gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
-        
-        //gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bgImg),     0, 2, 0, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
-        gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBox),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-        gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-    }
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     
     // create window with viewport
@@ -368,6 +371,19 @@ void plugin_gui::set_radio_group(int param, GSList *group)
     param_radio_groups[param] = group;
 }
 
+void plugin_gui::show_rack_ears(bool show)
+{
+    if (show)
+    {
+        gtk_widget_show(leftBox);
+        gtk_widget_show(rightBox);
+    }
+    else
+    {
+        gtk_widget_hide(leftBox);
+        gtk_widget_hide(rightBox);
+    }
+}
 
 plugin_gui::~plugin_gui()
 {
@@ -608,6 +624,9 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
     gtk_widget_show_all(GTK_WIDGET(sw));
+    
+    gui->show_rack_ears(gui->draw_rackmounts);
+    
     gtk_widget_size_request(GTK_WIDGET(container), &req);
     int wx = max(req.width + 10, req2.width);
     int wy = req.height + req2.height + 10;

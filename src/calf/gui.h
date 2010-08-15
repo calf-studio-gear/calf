@@ -106,6 +106,7 @@ protected:
     int ignore_stack;
     int last_status_serial_no;
     std::map<int, GSList *> param_radio_groups;
+    GtkWidget *leftBox, *rightBox;
 public:
     plugin_gui_window *window;
     GtkWidget *container;
@@ -134,6 +135,8 @@ public:
     GSList *get_radio_group(int param);
     /// Set a radio button group for a parameter
     void set_radio_group(int param, GSList *group);
+    /// Show rack ear widgets
+    void show_rack_ears(bool show);
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);

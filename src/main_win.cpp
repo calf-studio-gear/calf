@@ -33,7 +33,11 @@ main_window::main_window()
     toplevel = NULL;
     owner = NULL;
     is_closed = true;
-    draw_rackmounts = true;
+    const char *ev = getenv("CALF_NO_RACK_EARS");
+    if (ev && atoi(ev))
+        draw_rackmounts = false;
+    else
+        draw_rackmounts = true;
 }
 
 static const char *ui_xml = 
@@ -374,7 +378,7 @@ void main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this, this);
     gui_win->create(plugin, (prefix + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
-    gtk_widget_show_all(GTK_WIDGET(gui_win->toplevel));
+    gtk_widget_show(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }
 
