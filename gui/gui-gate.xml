@@ -1,78 +1,100 @@
-<table border="10" rows="4" cols="1">
-    <hbox attach-x="0" attach-y="0" shrink-y="1" expand-y="0">
-    	<vbox expand="0">
-             <label param="bypass"/>
-             <align><toggle param="bypass" shrink="1"/></align>
+<hbox spacing="10">
+
+    <vbox spacing="20" expand="0" fill="0">
+        <vbox expand="0" fill="0" spacing="7" >
+            <label param="bypass" expand="0" fill="0" />
+            <align><toggle param="bypass" shrink="1" size="2"/></align>
         </vbox>
-    	<vbox expand="0">
-             <label param="trigger"/>
-             <align><toggle param="trigger" shrink="1"/></align>
+        <vbox expand="0" fill="0" spacing="7">
+            <label param="range" expand="0" fill="0" expand-y="0" fill-y="0" />
+            <knob param="range" size="5" expand="1" fill="1" />
+            <value param="range" />
         </vbox>
-    	<vbox expand="0">
-             <label param="detection"/>
-             <combo param="detection"/>
+        <vbox expand="1" fill="1">
+            <label expand="1" fill="1" />
         </vbox>
-    	<vbox expand="0">
-             <label param="stereo_link"/>
-             <combo param="stereo_link"/>
+    </vbox>
+
+    <vbox spacing="5">
+        <frame label="Gate">
+            <vbox spacing="5">
+                <table expand="0" fill="0" rows="3" cols="3">
+                    <label param="meter_in" expand-x="0" fill-x="0" attach-x="0" attach-y="0" />
+                    <vumeter param="meter_in" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
+                    <led param="clip_in" mode="0" expand-x="0" fill-x="0" attach-x="2" attach-y="0" />
+                    
+                    <label param="meter_out" expand-x="0" fill-x="0" attach-x="0" attach-y="1" />
+                    <vumeter param="meter_out" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" fill-x="1" />
+                    <led param="clip_out" mode="1" expand-x="0" fill-x="0" attach-x="2" attach-y="1" />
+                    
+                    <label param="gating" expand-x="0" fill-x="0" attach-x="0" attach-y="2" />
+                    <vumeter param="gating" mode="2" hold="1.5" expand-x="1" fill-x="1" attach-x="1" attach-y="2" attach-w="2" />
+                </table>
+                
+                <table expand="1" rows="2" cols="3" homogeneous="1">
+                    <vbox expand="0" attach-x="0" attach-y="0">
+                        <label param="attack" />
+                        <knob param="attack" />
+                        <value param="attack" />
+                    </vbox>
+                    <vbox expand="0" attach-x="1" attach-y="0">
+                        <label param="release" />
+                        <knob param="release" />
+                        <value param="release" />
+                    </vbox>
+                    <vbox expand="0" attach-x="2" attach-y="0">
+                        <label param="knee" />
+                        <knob param="knee" />
+                        <value param="knee" />
+                    </vbox>
+                    <vbox expand="0" attach-x="0" attach-y="1">
+                        <label param="ratio" />
+                        <knob param="ratio" />
+                        <value param="ratio" />
+                    </vbox>
+                    <vbox expand="0" attach-x="1" attach-y="1">
+                        <label param="threshold" />
+                        <knob param="threshold"/>
+                        <value param="threshold" />
+                    </vbox>
+                    <vbox expand="0" attach-x="2" attach-y="1">
+                        <label param="makeup" />
+                        <knob param="makeup" />
+                        <value param="makeup" />
+                    </vbox>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Options">
+            <vbox spacing="10" pad-x="5" fill-y="0" expand-y="0">
+                <vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
+                    <label param="stereo_link" expand-y="0" fill-y="0"/>
+                    <align>
+                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1">
+                            <radio param="stereo_link" value="Average" expand-x="1" fill-x="1"/>
+                            <radio param="stereo_link" value="Maximum" expand-x="1" fill-x="1"/>
+                        </hbox>
+                    </align>
+                </vbox>
+                <vbox expand="1" expand-y="0">
+                    <label param="detection" expand-y="0" fill-y="0" expand-x="1" fill-x="1"/>
+                    <align>
+                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" >
+                            <radio param="detection" value="RMS" expand-x="1" fill-x="1"/>
+                            <radio param="detection" value="Peak" expand-x="1" fill-x="1"/>
+                        </hbox>
+                    </align>
+                </vbox>
+            </vbox>
+        </frame>
+    </vbox>
+    
+    
+      <frame label="Gating">
+        <vbox >
+            <if cond="directlink">
+                <line-graph refresh="1" width="340" height="340" param="gating" square="1" expand="1" fill="1"/>
+            </if>
         </vbox>
-    	<vbox expand="0">
-             <label param="aweighting"/>
-             <combo param="aweighting"/>
-        </vbox>
-    </hbox>
-    <if cond="directlink">
-        <line-graph attach-x="0" attach-y="1" refresh="1" width="384" height="384" param="gating" square="1" expand-y="1" fill-y="1"/>
-    </if>
-    <table attach-x="0" attach-y="2" expand-y="0" expand-x="1" spacing="10" rows="1" cols="3">
-        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="0" attach-y="0">
-            <label param="gating" />
-            <vumeter param="gating" mode="1" />
-        </vbox>
-        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="1" attach-y="0">
-            <label param="clip" expand="0" fill="0" />
-            <led param="clip" expand="0" fill="0" />
-        </vbox>
-        <vbox expand-x="1" fill-x="1" expand="1" fill="1" attach-x="2" attach-y="0">
-            <label param="peak" />
-            <vumeter param="peak" mode="0" shrink-y="0" />
-        </vbox>
-    </table>
-    <hbox attach-x="0" attach-y="3" expand-y="0">
-        <vbox border="10" expand="0">
-            <label param="attack" />
-            <knob param="attack" />
-            <value param="attack" />
-        </vbox>
-        <vbox border="10" expand="0">
-            <label param="release" />
-            <knob param="release" />
-            <value param="release" />
-        </vbox>
-        <vbox border="10" expand="0">
-            <label param="threshold" />
-            <knob param="threshold"/>
-            <value param="threshold" />
-        </vbox>
-        <vbox border="10" expand="0">
-            <label param="ratio" />
-            <knob param="ratio" />
-            <value param="ratio" />
-        </vbox>
-	<vbox border="10" expand="0">
-	    <label param="range" />
-	    <knob param="range" />
-	    <value param="range" />
-	</vbox>
-        <vbox border="10" expand="0">
-            <label param="makeup" />
-            <knob param="makeup" />
-            <value param="makeup" />
-        </vbox>
-        <vbox border="10" expand="0">
-            <label param="knee" />
-            <knob param="knee" />
-            <value param="knee" />
-        </vbox>
-    </hbox>
-</table>
+      </frame>
+</hbox>
