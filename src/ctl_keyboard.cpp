@@ -23,6 +23,7 @@
 #include <calf/ctl_keyboard.h>
 #include <stdint.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 static const int semitones_b[] = { 1, 3, -1, 6, 8, 10, -1 };
 static const int semitones_w[] = { 0, 2, 4, 5, 7, 9, 11 };

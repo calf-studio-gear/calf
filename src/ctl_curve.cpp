@@ -22,6 +22,7 @@
 #include <calf/ctl_curve.h>
 #include <malloc.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 
 static gpointer parent_class = NULL;

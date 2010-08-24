@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 GtkWidget *
 calf_led_new()
