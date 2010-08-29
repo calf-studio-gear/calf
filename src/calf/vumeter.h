@@ -21,6 +21,8 @@
 #ifndef __CALF_VUMETER_H
 #define __CALF_VUMETER_H
 
+namespace dsp {
+
 /// Peak meter class
 struct vumeter
 {
@@ -36,30 +38,47 @@ struct vumeter
     vumeter()
     {
         falloff = 0.999f;
-        level = 0;
         clip_falloff = 0.999f;
+        reset();
+    }
+    
+    void reset()
+    {
+        level = 0;
         clip = 0;
     }
     
     /// Update peak meter based on input signal
-    inline void update(float *src, unsigned int len)
+    inline void update(const float *src, unsigned int len)
+    {
+        update_stereo(src, NULL, len);
+    }
+    /// Update peak meter based on louder of two input signals
+    inline void update_stereo(const float *src1, const float *src2, unsigned int len)
     {
         // "Age" the old level by falloff^length
-        float tmp = level * pow(falloff, len);
+        level *= pow(falloff, len);
         // Same for clip level (using different fade constant)
-        double tmp_clip = clip * pow(clip_falloff, len);
+        clip *= pow(clip_falloff, len);
+        dsp::sanitize(level);
+        dsp::sanitize(clip);
         // Process input samples - to get peak value, take a max of all values in the input signal and "aged" old peak
         // Clip is set to 1 if any sample is out-of-range, if no clip occurs, the "aged" value is assumed
+        if (src1)
+            run_sample_loop(src1, len);
+        if (src2)
+            run_sample_loop(src2, len);
+    }
+    inline void run_sample_loop(const float *src, unsigned int len)
+    {
+        float tmp = level;
         for (unsigned int i = 0; i < len; i++) {
             float sig = fabs(src[i]);
             tmp = std::max(tmp, sig);
             if (sig >= 1.f)
-                tmp_clip = 1.f;
+                clip = 1.f;
         }
         level = tmp;
-        clip = tmp_clip;
-        dsp::sanitize(level);
-        dsp::sanitize(clip);
     }
     /// Update clip meter as if update was called with all-zero input signal
     inline void update_zeros(unsigned int len)
@@ -69,6 +88,8 @@ struct vumeter
         dsp::sanitize(level);
         dsp::sanitize(clip);
     }
+};
+
 };
 
 #endif

@@ -66,7 +66,7 @@ public:
         jack_port_t *handle;
         float *data;
         std::string name;
-        vumeter meter;
+        dsp::vumeter meter;
         port() : handle(NULL), data(NULL) {}
         ~port() { }
     };
