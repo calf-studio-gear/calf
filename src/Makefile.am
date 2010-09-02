@@ -64,7 +64,7 @@ if USE_LV2_GTK_GUI
 
 # Version WITH out-of-process GUI - links GTK+, UI controls etc.
 
-calflv2gui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp metadata.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+calflv2gui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp custom_ctl.cpp metadata.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
 
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
@@ -90,7 +90,7 @@ endif
 endif
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp utils.cpp
+libcalfgui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp utils.cpp
 libcalfgui_la_LDFLAGS = -static -disable-shared
 endif
 
