@@ -108,7 +108,8 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     
     write_function = wf;
     controller = c;
-    
+
+    instance = NULL;
     instance_handle = NULL;
     data_access = NULL;
     ext_ui_host = NULL;
