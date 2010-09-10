@@ -159,6 +159,11 @@ AC_ARG_ENABLE(debug,
   [set_enable_debug="no"])
 AC_MSG_RESULT($set_enable_debug)
 
+if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
+  AC_PATH_PROG(GCONFTOOL, gconftool-2)
+  AM_GCONF_SOURCE_2
+fi
+
 ############################################################################################
 # Compute status shell variables
 

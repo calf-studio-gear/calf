@@ -6,9 +6,18 @@
 #include <gconf/gconf-client.h>
 #include <string>
 
+struct config_exception: public std::exception
+{
+    std::string content;
+    const char *content_ptr;
+    config_exception(const std::string &text) : content(text) { content_ptr = content.c_str(); }
+    virtual const char *what() const throw() { return content_ptr; }
+    virtual ~config_exception() throw() { }
+};
+
 struct gui_config_db_iface
 {
-    virtual bool has_key(const char *key) = 0;
+    virtual bool has_dir(const char *key) = 0;
     virtual bool get_bool(const char *key, bool def_value) = 0;
     virtual int get_int(const char *key, int def_value) = 0;
     virtual std::string get_string(const char *key, const std::string &def_value) = 0;
@@ -26,7 +35,7 @@ protected:
     void handle_error(GError *error);
 public:
     gconf_config_db(const char *parent_key);
-    virtual bool has_key(const char *key);
+    virtual bool has_dir(const char *key);
     virtual bool get_bool(const char *key, bool def_value);
     virtual int get_int(const char *key, int def_value);
     virtual std::string get_string(const char *key, const std::string &def_value);

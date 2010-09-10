@@ -15,16 +15,16 @@ gui_config::~gui_config()
 
 void gui_config::load(gui_config_db_iface *db)
 {
-    rows = db->get_int("rows", gui_config().rows);
-    cols = db->get_int("cols", gui_config().cols);
-    rack_ears = db->get_bool("rack-ears", gui_config().rack_ears);
+    rows = db->get_int("rack-rows", gui_config().rows);
+    cols = db->get_int("rack-cols", gui_config().cols);
+    rack_ears = db->get_bool("show-rack-ears", gui_config().rack_ears);
 }
 
 void gui_config::save(gui_config_db_iface *db)
 {
-    db->set_int("rows", rows);
-    db->set_int("cols", cols);
-    db->set_bool("rack-ears", rack_ears);
+    db->set_int("rack-rows", rows);
+    db->set_int("rack-cols", cols);
+    db->set_bool("show-rack-ears", rack_ears);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,20 +33,35 @@ gconf_config_db::gconf_config_db(const char *parent_key)
 {
     prefix = string(parent_key) + "/";
     client = gconf_client_get_default();
+    if (client)
+    {
+        GError *err = NULL;
+        gconf_client_add_dir(client, parent_key, GCONF_CLIENT_PRELOAD_ONELEVEL, &err);
+        if (err)
+        {
+            client = NULL;
+            handle_error(err);
+        }
+    }
 }
 
 void gconf_config_db::handle_error(GError *error)
 {
     if (error)
     {
+        string msg = error->message;
         g_error_free(error);
+        throw config_exception(msg.c_str());
     }
 }
 
-bool gconf_config_db::has_key(const char *key)
+bool gconf_config_db::has_dir(const char *key)
 {
-    g_warning("Not implemented: has_key");
-    return true;
+    GError *err = NULL;
+    bool result = gconf_client_dir_exists(client, (prefix + key).c_str(), &err);
+    if (err)
+        handle_error(err);
+    return result;
 }
 
 bool gconf_config_db::get_bool(const char *key, bool def_value)
