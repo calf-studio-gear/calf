@@ -94,6 +94,7 @@ namespace calf_plugins {
         static void on_open_action(GtkWidget *widget, main_window *main);
         static void on_save_action(GtkWidget *widget, main_window *main);
         static void on_save_as_action(GtkWidget *widget, main_window *main);
+        static void on_preferences_action(GtkWidget *widget, main_window *main);
         static void on_exit_action(GtkWidget *widget, main_window *main);
     };
 };

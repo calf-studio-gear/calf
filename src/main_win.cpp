@@ -44,6 +44,8 @@ static const char *ui_xml =
 "      <menuitem action=\"FileSave\"/>\n"
 "      <menuitem action=\"FileSaveAs\"/>\n"
 "      <separator/>\n"
+"      <menuitem action=\"Preferences\"/>\n"
+"      <separator/>\n"
 "      <menuitem action=\"FileQuit\"/>\n"
 "    </menu>\n"
 "    <menu action=\"AddPluginMenuAction\" />\n"
@@ -58,6 +60,7 @@ const GtkActionEntry main_window::actions[] = {
     { "FileSaveAs", GTK_STOCK_SAVE_AS, "Save _as...", NULL, "Save a rack file as", (GCallback)on_save_as_action },
     { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
     { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
+    { "Preferences", GTK_STOCK_PREFERENCES, "_Preferences...", NULL, "Adjust preferences", (GCallback)on_preferences_action },
     { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)on_exit_action },
 };
 
@@ -74,6 +77,36 @@ void main_window::on_save_action(GtkWidget *widget, main_window *main)
 void main_window::on_save_as_action(GtkWidget *widget, main_window *main)
 {
     main->save_file_as();
+}
+
+void main_window::on_preferences_action(GtkWidget *widget, main_window *main)
+{
+    GtkBuilder *prefs_builder = gtk_builder_new();
+    GError *error = NULL;
+    const gchar *objects[] = { "preferences", NULL };
+    if (!gtk_builder_add_objects_from_file(prefs_builder, PKGLIBDIR "/calf-gui.xml", (gchar **)objects, &error))
+    {
+        g_warning("Cannot load preferences dialog: %s", error->message);
+        g_error_free(error);
+        g_object_unref(G_OBJECT(prefs_builder));
+        return;
+    }
+    GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")), main->get_config()->rack_ears);
+    gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-columns")), 0, 3);
+    gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-rows")), 0, 3);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-columns")), main->get_config()->cols);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-rows")), main->get_config()->rows);
+    int response = gtk_dialog_run(GTK_DIALOG(preferences_dlg));
+    if (response == GTK_RESPONSE_OK)
+    {
+        main->get_config()->rack_ears = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")));
+        main->get_config()->cols = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-columns")));
+        main->get_config()->rows = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "force-rows")));
+        main->get_config()->save(main->get_config_db());
+    }
+    gtk_widget_destroy(preferences_dlg);
+    g_object_unref(G_OBJECT(prefs_builder));
 }
 
 void main_window::on_exit_action(GtkWidget *widget, main_window *main)

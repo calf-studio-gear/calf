@@ -52,8 +52,12 @@ void gui_preset_access::store_preset()
         return;
     }
     GtkBuilder *store_preset_builder = gtk_builder_new();
-    if (!gtk_builder_add_from_file(store_preset_builder, PKGLIBDIR "/calf-gui.xml", NULL))
+    const gchar *objects[] = { "store_preset", NULL };
+    GError *error = NULL;
+    if (!gtk_builder_add_objects_from_file(store_preset_builder, PKGLIBDIR "/calf-gui.xml", (gchar **)objects, &error))
     {
+        g_warning("Cannot load preset GUI dialog: %s", error->message);
+        g_error_free(error);
         g_object_unref(G_OBJECT(store_preset_builder));
         return;
     }
