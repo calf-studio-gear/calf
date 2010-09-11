@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#include <glade/glade.h>
 #include <jack/midiport.h>
 #include <calf/host_session.h>
 #include <calf/preset.h>
@@ -295,7 +294,6 @@ int main(int argc, char *argv[])
 #if USE_LASH
     sess.session_manager = create_lash_session_mgr(&sess, argc, argv);
 #endif
-    glade_init();
     while(1) {
         int option_index;
         int c = getopt_long(argc, argv, "c:i:l:o:m:M:ehv", long_options, &option_index);

@@ -100,8 +100,8 @@ clean-local:
 install-data-hook:
 	install -d -m 755 $(DESTDIR)$(pkgdatadir) 
 	install -c -m 644 $(top_srcdir)/presets.xml $(DESTDIR)$(pkgdatadir)
-if USE_JACK
-	install -c -m 644 $(top_srcdir)/calf.glade $(DESTDIR)$(pkgdatadir)
+if USE_GUI
+	install -c -m 644 $(top_srcdir)/calf-gui.xml $(DESTDIR)$(pkgdatadir)
 endif
 if USE_LADSPA
 	install -d -m 755 $(DESTDIR)$(with_ladspa_dir)
@@ -137,8 +137,8 @@ endif
 	rm -f $(DESTDIR)$(lv2dir)/*.ttl
 	rmdir -p $(DESTDIR)$(lv2dir) || true
 endif
-if USE_JACK
-	rm -f $(DESTDIR)$(pkgdatadir)/calf.glade 
+if USE_GUI
+	rm -f $(DESTDIR)$(pkgdatadir)/calf-gui.xml
 endif
 	rm -f $(DESTDIR)$(pkgdatadir)/presets*.xml
 	rmdir $(DESTDIR)$(pkgdatadir) || true

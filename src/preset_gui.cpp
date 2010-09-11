@@ -20,7 +20,6 @@
 #include <calf/gui.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
-#include <glade/glade.h>
 
 using namespace calf_plugins;
 using namespace std;
@@ -39,8 +38,6 @@ struct activate_preset_params
     }
 };
 
-GladeXML *store_preset_xml = NULL;
-
 gui_preset_access::gui_preset_access(plugin_gui *_gui)
 {
     gui = _gui;
@@ -54,11 +51,16 @@ void gui_preset_access::store_preset()
         gtk_window_present(GTK_WINDOW(store_preset_dlg));
         return;
     }
-    store_preset_xml = glade_xml_new(PKGLIBDIR "/calf.glade", NULL, NULL);
-    store_preset_dlg = glade_xml_get_widget(store_preset_xml, "store_preset");
+    GtkBuilder *store_preset_builder = gtk_builder_new();
+    if (!gtk_builder_add_from_file(store_preset_builder, PKGLIBDIR "/calf-gui.xml", NULL))
+    {
+        g_object_unref(G_OBJECT(store_preset_builder));
+        return;
+    }
+    store_preset_dlg = GTK_WIDGET(gtk_builder_get_object(store_preset_builder, "store_preset"));
     gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), (gui_preset_access *)this);
 //    gtk_widget_set_name(GTK_WIDGET(store_preset_dlg), "Calf-Preset");
-    GtkWidget *preset_name_combo = glade_xml_get_widget(store_preset_xml, "preset_name");    
+    GtkWidget *preset_name_combo = GTK_WIDGET(gtk_builder_get_object(store_preset_builder, "preset_name"));
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
     gtk_combo_box_set_model(GTK_COMBO_BOX(preset_name_combo), model);
     gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(preset_name_combo), 0);
@@ -112,6 +114,7 @@ void gui_preset_access::store_preset()
         if (gui->window->main)
             gui->window->main->refresh_all_presets(false);
     }
+    g_object_unref(G_OBJECT(store_preset_builder));
 }
 
 void gui_preset_access::activate_preset(int preset, bool builtin)
