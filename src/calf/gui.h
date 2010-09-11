@@ -196,6 +196,8 @@ struct main_window_owner_iface
 
 class plugin_gui_window: public calf_utils::config_listener_iface
 {
+private:
+    void cleanup();
 public:
     plugin_gui *gui;
     GtkWindow *toplevel;

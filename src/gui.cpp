@@ -652,7 +652,7 @@ void plugin_gui_window::on_config_change()
     gui->show_rack_ears(environment->get_config()->rack_ears);
 }
 
-void plugin_gui_window::close()
+void plugin_gui_window::cleanup()
 {
     if (notifier)
     {
@@ -662,15 +662,19 @@ void plugin_gui_window::close()
     if (source_id)
         g_source_remove(source_id);
     source_id = 0;
+}
+
+void plugin_gui_window::close()
+{
+    cleanup();
     gtk_widget_destroy(GTK_WIDGET(toplevel));
 }
 
 plugin_gui_window::~plugin_gui_window()
 {
-    if (source_id)
-        g_source_remove(source_id);
     if (main)
         main->set_window(gui->plugin, NULL);
+    cleanup();
     delete gui;
 }
 
