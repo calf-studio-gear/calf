@@ -18,6 +18,7 @@
  * Boston, MA  02110-1301  USA
  */
  
+#include <calf/gui_config.h>
 #include <calf/gui_controls.h>
 #include <calf/preset.h>
 #include <calf/preset_gui.h>
@@ -40,11 +41,6 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
     param_count = 0;
     container = NULL;
     effect_name = NULL;
-    const char *ev = getenv("CALF_NO_RACK_EARS");
-    if (ev && atoi(ev))
-        draw_rackmounts = false;
-    else
-        draw_rackmounts = true;
     preset_access = new gui_preset_access(this);
 }
 
@@ -493,8 +489,10 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
     user_preset_actions = NULL;
     command_actions = NULL;
     environment = _env;
+    notifier = NULL;
     main = _main;
     assert(environment);
+
 }
 
 void plugin_gui_window::on_window_destroyed(GtkWidget *window, gpointer data)
@@ -625,7 +623,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     
     gtk_widget_show_all(GTK_WIDGET(sw));
     
-    gui->show_rack_ears(gui->draw_rackmounts);
+    gui->show_rack_ears(environment->get_config()->rack_ears);
     
     gtk_widget_size_request(GTK_WIDGET(container), &req);
     int wx = max(req.width + 10, req2.width);
@@ -644,10 +642,23 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     gtk_ui_manager_ensure_update(ui_mgr);
     gui->plugin->send_configures(gui);
+    
+    notifier = environment->get_config_db()->add_listener(this);
+}
+
+void plugin_gui_window::on_config_change()
+{
+    environment->get_config()->load(environment->get_config_db());
+    gui->show_rack_ears(environment->get_config()->rack_ears);
 }
 
 void plugin_gui_window::close()
 {
+    if (notifier)
+    {
+        delete notifier;
+        notifier = NULL;
+    }
     if (source_id)
         g_source_remove(source_id);
     source_id = 0;
@@ -670,4 +681,17 @@ void calf_plugins::activate_command(GtkAction *action, activate_command_params *
     gui->refresh();
 }
 
+
+/***************************** GUI environment ********************************************/
+
+gui_environment::gui_environment()
+{
+    config_db = new calf_utils::gconf_config_db("/apps/calf");
+    gui_config.load(config_db);
+}
+
+gui_environment::~gui_environment()
+{
+    delete config_db;
+}
 

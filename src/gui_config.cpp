@@ -1,6 +1,7 @@
 #include <calf/gui_config.h>
 
 using namespace std;
+using namespace calf_utils;
 
 gui_config::gui_config()
 {
@@ -13,14 +14,14 @@ gui_config::~gui_config()
 {
 }
 
-void gui_config::load(gui_config_db_iface *db)
+void gui_config::load(config_db_iface *db)
 {
     rows = db->get_int("rack-rows", gui_config().rows);
     cols = db->get_int("rack-cols", gui_config().cols);
     rack_ears = db->get_bool("show-rack-ears", gui_config().rack_ears);
 }
 
-void gui_config::save(gui_config_db_iface *db)
+void gui_config::save(config_db_iface *db)
 {
     db->set_int("rack-rows", rows);
     db->set_int("rack-cols", cols);
@@ -115,6 +116,46 @@ void gconf_config_db::set_string(const char *key, const std::string &value)
     gconf_client_set_string(client, (prefix + key).c_str(), value.c_str(), &err);
     if (err)
         handle_error(err);
+}
+
+class gconf_notifier: public config_notifier_iface
+{
+protected:
+    GConfClient *client;
+    config_listener_iface *listener;
+    guint notify_id;
+public:
+    gconf_notifier(GConfClient *_client, config_listener_iface *_listener, const gchar *namespace_section);
+    static void cb_notify(GConfClient *_client, guint cnxn_id, GConfEntry *entry, gpointer pThis);
+    virtual ~gconf_notifier();
+};
+
+gconf_notifier::gconf_notifier(GConfClient *_client, config_listener_iface *_listener, const gchar *namespace_section)
+{
+    client = _client;
+    listener = _listener;
+    g_object_ref(G_OBJECT(client));
+    
+    GError *error = NULL;
+    notify_id = gconf_client_notify_add(client, namespace_section, cb_notify, this, NULL, &error);
+}
+
+void gconf_notifier::cb_notify(GConfClient *_client, guint cnxn_id, GConfEntry *entry, gpointer pThis)
+{
+    gconf_notifier *self = (gconf_notifier *)pThis;
+    self->listener->on_config_change();
+}
+
+gconf_notifier::~gconf_notifier()
+{
+    gconf_client_notify_remove(client, notify_id);
+    g_object_unref(G_OBJECT(client));
+}
+
+
+config_notifier_iface *gconf_config_db::add_listener(config_listener_iface *listener)
+{
+    return new gconf_notifier(client, listener, prefix.substr(0, prefix.length() - 1).c_str());
 }
 
 gconf_config_db::~gconf_config_db()

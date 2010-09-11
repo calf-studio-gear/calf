@@ -6,6 +6,8 @@
 #include <gconf/gconf-client.h>
 #include <string>
 
+namespace calf_utils {
+
 struct config_exception: public std::exception
 {
     std::string content;
@@ -15,7 +17,18 @@ struct config_exception: public std::exception
     virtual ~config_exception() throw() { }
 };
 
-struct gui_config_db_iface
+struct config_listener_iface
+{
+    virtual void on_config_change() = 0;
+    virtual ~config_listener_iface() {}
+};
+
+struct config_notifier_iface
+{
+    virtual ~config_notifier_iface() {}
+};
+
+struct config_db_iface
 {
     virtual bool has_dir(const char *key) = 0;
     virtual bool get_bool(const char *key, bool def_value) = 0;
@@ -24,10 +37,11 @@ struct gui_config_db_iface
     virtual void set_bool(const char *key, bool value) = 0;
     virtual void set_int(const char *key, int value) = 0;
     virtual void set_string(const char *key, const std::string &value) = 0;
-    virtual ~gui_config_db_iface() {}
+    virtual config_notifier_iface *add_listener(config_listener_iface *listener) = 0;
+    virtual ~config_db_iface() {}
 };
 
-class gconf_config_db: public gui_config_db_iface
+class gconf_config_db: public config_db_iface
 {
 protected:
     GConfClient *client;
@@ -42,8 +56,8 @@ public:
     virtual void set_bool(const char *key, bool value);
     virtual void set_int(const char *key, int value);
     virtual void set_string(const char *key, const std::string &value);
+    virtual config_notifier_iface *add_listener(config_listener_iface *listener);
     virtual ~gconf_config_db();
-    
 };
 
 struct gui_config
@@ -53,8 +67,10 @@ struct gui_config
     
     gui_config();
     ~gui_config();
-    void load(gui_config_db_iface *db);
-    void save(gui_config_db_iface *db);
+    void load(config_db_iface *db);
+    void save(config_db_iface *db);
+};
+
 };
 
 #endif

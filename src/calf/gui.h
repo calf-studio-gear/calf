@@ -27,6 +27,7 @@
 #include <vector>
 #include <gtk/gtk.h>
 #include "giface.h"
+#include "gui_config.h"
 
 namespace calf_plugins {
 
@@ -114,7 +115,6 @@ public:
     plugin_ctl_iface *plugin;
     preset_access_iface *preset_access;
     std::vector<param_control *> params;
-    bool draw_rackmounts;
 
     plugin_gui(plugin_gui_window *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
@@ -149,15 +149,27 @@ class main_window_owner_iface;
 struct gui_environment_iface
 {
     virtual bool check_condition(const char *name)=0;
+    virtual calf_utils::config_db_iface *get_config_db() = 0;
+    virtual calf_utils::gui_config *get_config() = 0;
     virtual ~gui_environment_iface() {}
 };
 
 /// Trivial implementation of gui_environment_iface
 class gui_environment: public gui_environment_iface
 {
+private:
+    calf_utils::config_db_iface *config_db;
+    calf_utils::gui_config gui_config;
+
 public:
     std::set<std::string> conditions;
+
+public:
+    gui_environment();
     virtual bool check_condition(const char *name) { return conditions.count(name) != 0; }
+    virtual calf_utils::config_db_iface *get_config_db() { return config_db; }
+    virtual calf_utils::gui_config *get_config() { return &gui_config; }
+    ~gui_environment();
 };
 
 /// Interface used by the plugin to communicate with the main hosting window
@@ -182,7 +194,7 @@ struct main_window_owner_iface
     virtual ~main_window_owner_iface() {}
 };
 
-class plugin_gui_window
+class plugin_gui_window: public calf_utils::config_listener_iface
 {
 public:
     plugin_gui *gui;
@@ -192,6 +204,7 @@ public:
     gui_environment_iface *environment;
     main_window_iface *main;
     int source_id;
+    calf_utils::config_notifier_iface *notifier;
 
     plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch);
@@ -199,6 +212,7 @@ public:
     void fill_gui_presets(bool builtin, char &ch);
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
     void close();
+    virtual void on_config_change();
     static gboolean on_idle(void *data);
     static void on_window_destroyed(GtkWidget *window, gpointer data);
     ~plugin_gui_window();

@@ -22,10 +22,11 @@
 #define __CALF_MAIN_WIN_H
 
 #include "gui.h"
+#include "gui_config.h"
 
 namespace calf_plugins {
 
-    class main_window: public main_window_iface, public gui_environment
+    class main_window: public main_window_iface, public gui_environment, public calf_utils::config_listener_iface
     {
     public:
         struct plugin_strip
@@ -33,7 +34,7 @@ namespace calf_plugins {
             main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra;
+            GtkWidget *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra, *leftBox, *rightBox;
         };
         
         struct add_plugin_params
@@ -58,6 +59,7 @@ namespace calf_plugins {
         int source_id;
         main_window_owner_iface *owner;
         std::string current_filename;
+        calf_utils::config_notifier_iface *notifier;
 
     protected:
         volatile bool save_file_on_next_idle_call;
@@ -67,6 +69,7 @@ namespace calf_plugins {
         std::string make_plugin_list(GtkActionGroup *actions);
         static void add_plugin_action(GtkWidget *src, gpointer data);
         void display_error(const char *error, const char *filename);
+        void on_config_change();
 
     public:
         main_window();
@@ -85,6 +88,7 @@ namespace calf_plugins {
         void save_file();
         void save_file_as();
         void save_file_from_sighandler();
+        void show_rack_ears(bool show);
     private:
         static const GtkActionEntry actions[];
         static void on_open_action(GtkWidget *widget, main_window *main);

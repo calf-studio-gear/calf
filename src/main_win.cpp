@@ -32,12 +32,8 @@ main_window::main_window()
 {
     toplevel = NULL;
     owner = NULL;
+    notifier = NULL;
     is_closed = true;
-    const char *ev = getenv("CALF_NO_RACK_EARS");
-    if (ev && atoi(ev))
-        draw_rackmounts = false;
-    else
-        draw_rackmounts = true;
 }
 
 static const char *ui_xml = 
@@ -189,6 +185,23 @@ extra_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
     return TRUE;
 }
 
+void main_window::show_rack_ears(bool show)
+{
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    {
+        if (show)
+        {
+            gtk_widget_show(i->second->leftBox);
+            gtk_widget_show(i->second->rightBox);
+        }
+        else
+        {
+            gtk_widget_hide(i->second->leftBox);
+            gtk_widget_hide(i->second->rightBox);
+        }
+    }
+}
+
 main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
 {
     plugin_strip *strip = new plugin_strip;
@@ -202,35 +215,41 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     g_object_get(G_OBJECT(strips_table), "n-rows", &row, "n-columns", &cols, NULL);
     gtk_table_resize(GTK_TABLE(strips_table), row + 4, cols);
     
-    if(draw_rackmounts) {
-        // images for left side
-        GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
-        GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
-        GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
-        gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
-        
-        // images for right side
-        GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
-        GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
-        GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
-        gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
-        
-        // pack left box
-        GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
-        gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
-        gtk_table_attach(GTK_TABLE(strips_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-        gtk_widget_show_all(GTK_WIDGET(leftBox));
-        
-         // pack right box
-        GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
-        gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
-        gtk_table_attach(GTK_TABLE(strips_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-        gtk_widget_show_all(GTK_WIDGET(rightBox));
-    }
+    // images for left side
+    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
+    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
+    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
+    gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
+    
+    // images for right side
+    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
+    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
+    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
+    gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
+    
+    // pack left box
+    GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
+    gtk_widget_show_all(GTK_WIDGET(leftBox));
+    if (!get_config()->rack_ears)
+        gtk_widget_hide(GTK_WIDGET(leftBox));
+    gtk_table_attach(GTK_TABLE(strips_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    
+     // pack right box
+    GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
+    gtk_widget_show_all(GTK_WIDGET(rightBox));
+    if (!get_config()->rack_ears)
+        gtk_widget_hide(GTK_WIDGET(rightBox));
+    gtk_table_attach(GTK_TABLE(strips_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    
+    strip->leftBox = leftBox;
+    strip->rightBox = rightBox;
+    
     
     // top light
     GtkWidget *topImg     = gtk_image_new_from_file(PKGLIBDIR "/light_top.png");
@@ -473,6 +492,15 @@ void main_window::create()
     gtk_window_add_accel_group(toplevel, gtk_ui_manager_get_accel_group(ui_mgr));
     gtk_widget_show_all(GTK_WIDGET(toplevel));
     source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
+    
+    notifier = get_config_db()->add_listener(this);
+    on_config_change();
+}
+
+void main_window::on_config_change()
+{
+    get_config()->load(get_config_db());
+    show_rack_ears(get_config()->rack_ears);    
 }
 
 void main_window::refresh_plugin(plugin_ctl_iface *plugin)
@@ -494,6 +522,11 @@ void main_window::close_guis()
 
 void main_window::on_closed()
 {
+    if (notifier)
+    {
+        delete notifier;
+        notifier = NULL;
+    }
     if (source_id)
         g_source_remove(source_id);
     is_closed = true;
