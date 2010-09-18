@@ -23,6 +23,7 @@
 #include <calf/ctl_curve.h>
 #include <calf/ctl_keyboard.h>
 #include <calf/ctl_led.h>
+#include <calf/ctl_vumeter.h>
 #include <calf/custom_ctl.h>
 #include <calf/giface.h>
 #include <calf/gui.h>

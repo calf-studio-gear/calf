@@ -19,7 +19,7 @@
  */
  
 #include <calf/ctl_led.h>
-#include <calf/custom_ctl.h>
+#include <calf/ctl_vumeter.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
