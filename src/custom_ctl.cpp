@@ -927,7 +927,7 @@ calf_knob_button_press (GtkWidget *widget, GdkEventButton *event)
     gtk_widget_grab_focus(widget);
     gtk_grab_add(widget);
     self->start_x = event->x;
-    self->start_y = event->y;
+    self->last_y = self->start_y = event->y;
     self->start_value = gtk_range_get_value(GTK_RANGE(widget));
     
     return TRUE;
@@ -951,23 +951,21 @@ static inline float endless(float value)
         return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
 }
 
-static inline float deadzone(GtkWidget *widget, float value, float incr, float scale)
+static inline float deadzone(GtkWidget *widget, float value, float incr)
 {
-    CalfKnob *self = CALF_KNOB(widget);
-    float dz = 20 / scale;
-    if(self->last_dz < 0.f) {
-        self -> last_dz = value + incr;
-    } else if (self->last_dz > 1.f) {
-        self->last_dz = 1.f;
-    } else {
-        self->last_dz += incr;
-    }
-    if(self->last_dz > 0.5 + dz) {
-        return std::min(0.5 + (self->last_dz - 0.5 - dz) * 0.5 / (0.5 - dz), (double)1);
-    }
-    if(self->last_dz < 0.5 - dz) {
-        return std::max(self->last_dz * 0.5 / (0.5 - dz), (double)0);
-    }
+    // map to dead zone
+    float ov = value;
+    if (ov > 0.5)
+        ov = 0.1 + ov;
+    if (ov < 0.5)
+        ov = ov - 0.1;
+    
+    float nv = ov + incr;
+    
+    if (nv > 0.6)
+        return nv - 0.1;
+    if (nv < 0.4)
+        return nv + 0.1;
     return 0.5;
 }
 
@@ -982,24 +980,22 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
-        float sens = 1 + fabs(event->x - self->start_x) / 10;
         if (self->knob_type == 3)
         {
-            gtk_range_set_value(GTK_RANGE(widget), endless(gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / (scale * sens)));
+            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / scale));
         }
         else
         if (self->knob_type == 1)
         {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(GTK_WIDGET(widget), gtk_range_get_value(GTK_RANGE(widget)), -(event->y - self->last_y) / (scale * sens), (scale * sens)));
+            gtk_range_set_value(GTK_RANGE(widget), deadzone(GTK_WIDGET(widget), self->start_value, -(event->y - self->start_y) / scale));
         }
         else
         {
-            gtk_range_set_value(GTK_RANGE(widget), gtk_range_get_value(GTK_RANGE(widget)) - (event->y - self->last_y) / (scale * sens));
+            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / scale);
         }
         moved = TRUE;
     }
     self->last_y = event->y;
-    self->last_x = event->x;
     return moved;
 }
 

@@ -115,7 +115,7 @@ struct CalfKnob
     GtkRange parent;
     int knob_type;
     int knob_size;
-    double start_x, start_y, start_value, last_y, last_x;
+    double start_x, start_y, last_y, start_value;
     double last_dz;
 };
 
