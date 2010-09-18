@@ -37,16 +37,6 @@ calf_line_graph_copy_cache_to_window( CalfLineGraph *lg, cairo_t *c )
 }
 
 static void
-calf_line_graph_copy_window_to_cache( CalfLineGraph *lg, cairo_t *c )
-{
-    cairo_t *cache_cr = cairo_create( lg->cache_surface );
-    cairo_surface_t *window_surface = cairo_get_target( c );
-    cairo_set_source_surface( cache_cr, window_surface, 0,0 );
-    cairo_paint( cache_cr );
-    cairo_destroy( cache_cr );
-}
-
-static void
 calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float pos, int phase, int sx, int sy )
 {
     int ox=5, oy=5;
@@ -1035,7 +1025,6 @@ calf_knob_init (CalfKnob *self)
     GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
-    self->last_dz = -1.f;
 }
 
 GtkWidget *
