@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * A few useful widgets - a line graph, a knob, a tube - Panama!
  *
- * Copyright (C) 2008 Krzysztof Foltman, Torben Hohn, Markus
+ * Copyright (C) 2008-2010 Krzysztof Foltman, Torben Hohn, Markus
  * Schmidt and others
  *
  * This program is free software; you can redistribute it and/or
