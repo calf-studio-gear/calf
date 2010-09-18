@@ -27,27 +27,6 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 
-/*
-I don't really know how to do it, or if it can be done this way.
-struct calf_ui_type_module
-{
-    GTypeModule *module;
-    
-    calf_ui_type_module()
-    {
-        module = g_type_module_new();
-        g_type_module_set_name(module, "calf_custom_ctl");
-        g_type_module_use(module);
-    }
-    ~calf_ui_type_module()
-    {
-        g_type_module_unuse(module);
-    }
-};
-
-static calf_ui_type_module type_module;
-*/
-
 static void
 calf_line_graph_copy_cache_to_window( CalfLineGraph *lg, cairo_t *c )
 {
