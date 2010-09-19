@@ -23,6 +23,7 @@
 #if USE_LV2
 #include <calf/lv2_contexts.h>
 #include <calf/lv2_event.h>
+#include <calf/lv2_persist.h>
 #include <calf/lv2_uri_map.h>
 #endif
 #include <getopt.h>
@@ -205,12 +206,16 @@ static const char *units[] = {
 
 //////////////// To all haters: calm down, I'll rewrite it to use the new interface one day
 
-static void add_ctl_port(string &ports, const parameter_properties &pp, int pidx, const plugin_metadata_iface *pmi, int param)
+static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx, const plugin_metadata_iface *pmi, int param)
 {
     stringstream ss;
     const char *ind = "        ";
 
     parameter_flags type = (parameter_flags)(pp.flags & PF_TYPEMASK);
+#if USE_PERSIST_EXTENSION
+    if (type == PF_STRING)
+        return false;
+#endif
     uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
     
     if (ports != "") ports += " , ";
@@ -278,6 +283,7 @@ static void add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     
     ss << "    ]";
     ports += ss.str();
+    return true;
 }
 
 void make_ttl(string path_prefix)
@@ -417,7 +423,13 @@ void make_ttl(string path_prefix)
             ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
         }
         if (pi->requires_string_ports())
+        {
+#if USE_PERSIST_EXTENSION
+            ttl += "    lv2:requiredFeature <" LV2_PERSIST_URI "> ;\n";
+#else
             ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port#StringTransfer> ;\n";
+#endif
+        }
         
         string ports = "";
         int pn = 0;
@@ -434,7 +446,8 @@ void make_ttl(string path_prefix)
             else
                 add_port(ports, out_names[i], out_names[i], "Output", pn++, "lv2:AudioPort", true);
         for (int i = 0; i < pi->get_param_count(); i++)
-            add_ctl_port(ports, *pi->get_param_props(i), pn++, pi, i);
+            if (add_ctl_port(ports, *pi->get_param_props(i), pn, pi, i))
+                pn++;
         if (pi->get_midi()) {
             add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
         }
