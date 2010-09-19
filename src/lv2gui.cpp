@@ -193,6 +193,12 @@ const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
 
 char *plugin_proxy_base::configure(const char *key, const char *value)
 {
+#if USE_PERSIST_EXTENSION
+    if (instance)
+        return instance->configure(key, value);
+    else
+        return "Configuration not available because of lack of instance-access/data-access";
+#else
     map<string, int>::iterator i = params_by_name.find(key);
     if (i == params_by_name.end())
     {
@@ -220,6 +226,7 @@ char *plugin_proxy_base::configure(const char *key, const char *value)
     }
     
     return NULL;
+#endif
 }
 
 void plugin_proxy_base::enable_all_sends()
