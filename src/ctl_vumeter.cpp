@@ -29,6 +29,40 @@
 
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
 
+static void
+calf_vumeter_draw_outline_part (cairo_t *c, int pad, int rad, int ix, int iy, int ox, int oy, int sx, int sy)
+{
+    cairo_arc(c, ix + rad + pad, iy + rad + pad, rad, 0, 2 * M_PI);
+    cairo_arc(c, ix + ox * 2 + sx - rad - pad, iy + rad + pad, rad, 0, 2 * M_PI);
+    cairo_arc(c, ix + rad + pad, iy + oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+    cairo_arc(c, ix + ox * 2 + sx - rad - pad, iy + oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
+    cairo_rectangle(c, ix + pad, iy + rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
+    cairo_rectangle(c, ix + rad + pad, iy + pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
+}
+
+static void
+calf_vumeter_draw_outline (cairo_t *c, int ix, int iy, int ox, int oy, int sx, int sy)
+{
+    // outer (light)
+    calf_vumeter_draw_outline_part (c, 0, 6, ix, iy, ox, oy, sx, sy);
+    cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - 0 * 2);
+    cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
+    cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
+    cairo_set_source (c, pat2);
+    cairo_fill(c);
+    cairo_pattern_destroy(pat2);
+    
+    // inner (black)
+    calf_vumeter_draw_outline_part (c, 1, 5, ix, iy, ox, oy, sx, sy);
+    pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - 1 * 2);
+    cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
+    cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
+    cairo_set_source (c, pat2);
+    //cairo_set_source_rgb(c, 0, 0, 0);
+    cairo_fill(c);
+    cairo_pattern_destroy(pat2);
+}
+
 static gboolean
 calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -38,11 +72,13 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfVUMeter *vu = CALF_VUMETER(widget);
     GtkStyle	*style;
     
-    int ox = 4, oy = 3, led = 3, inner = 1, rad, pad;
-    int sx = widget->allocation.width - (ox * 2) - ((widget->allocation.width - inner * 2 - ox * 2) % led) - 1, sy = widget->allocation.height - (oy * 2);
+    int ox = 4, oy = 3, led = 3, inner = 1;
+    int mx = vu->meter_width;
+    if (mx > widget->allocation.width / 2)
+        mx = 0;
+    int sx = widget->allocation.width - (ox * 2) - ((widget->allocation.width - inner * 2 - ox * 2) % led) - 1 - mx, sy = widget->allocation.height - (oy * 2);
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-
     if( vu->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
         // create the cache_surface.
@@ -64,37 +100,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 //        }
         cairo_paint(cache_cr);
         
-        // outer (light)
-        pad = 0;
-        rad = 6;
-        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
-        cairo_set_source (cache_cr, pat2);
-        cairo_fill(cache_cr);
-        
-        // inner (black)
-        pad = 1;
-        rad = 5;
-        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
-        cairo_set_source (cache_cr, pat2);
-        //cairo_set_source_rgb(cache_cr, 0, 0, 0);
-        cairo_fill(cache_cr);
-        cairo_pattern_destroy(pat2);
+        calf_vumeter_draw_outline (cache_cr, 0, 0, ox, oy, sx, sy);
         
         cairo_rectangle(cache_cr, ox, oy, sx, sy);
         cairo_set_source_rgb (cache_cr, 0, 0, 0);
@@ -228,6 +234,27 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_rectangle( c, ox + inner + value * (sx - 2 * inner), oy + inner, (sx - 2 * inner) * (1 - value), sy - 2 * inner );
     }
     cairo_fill( c );
+    
+    if (mx > 0)
+    {
+        cairo_select_font_face(c, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(c, 10);
+        
+        const char *str = vu->meter_text ? vu->meter_text->c_str() : "";
+
+        cairo_text_extents_t tx;
+        cairo_text_extents(c, str, &tx);
+
+        int mtl = 2;
+        int ix = widget->allocation.width - mx + mtl;
+        calf_vumeter_draw_outline(c, ix, 0, ox, oy, mx - mtl - 2 * ox, sy);
+
+        cairo_move_to(c, ox + sx + mx - tx.width - inner, oy + sy / 2 + tx.height / 2);
+        cairo_set_source_rgba (c, 0, 1, 0, 1);
+        cairo_show_text(c, str);
+        cairo_fill(c);
+    }
+    cairo_destroy(c);
     //gtk_paint_shadow(widget->style, widget->window, GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL, widget, NULL, ox - 2, oy - 2, sx + 4, sy + 4);
     //printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
 
@@ -279,6 +306,8 @@ calf_vumeter_init (CalfVUMeter *self)
     self->cache_surface = NULL;
     self->falling = false;
     self->holding = false;
+    self->meter_width = 0;
+    self->meter_text = NULL;
 }
 
 GtkWidget *

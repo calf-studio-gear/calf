@@ -54,6 +54,8 @@ struct CalfVUMeter
     bool falling;
     float last_falloff;
     long last_falltime;
+    int meter_width;
+    std::string *meter_text;
     cairo_surface_t *cache_surface;
     cairo_pattern_t *pat;
 };
