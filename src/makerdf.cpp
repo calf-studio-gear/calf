@@ -212,10 +212,6 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     const char *ind = "        ";
 
     parameter_flags type = (parameter_flags)(pp.flags & PF_TYPEMASK);
-#if USE_PERSIST_EXTENSION
-    if (type == PF_STRING)
-        return false;
-#endif
     uint8_t unit = (pp.flags & PF_UNITMASK) >> 24;
     
     if (ports != "") ports += " , ";
@@ -224,10 +220,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
         ss << ind << "a lv2:OutputPort ;\n";
     else
         ss << ind << "a lv2:InputPort ;\n";
-    if (type == PF_STRING)
-        ss << ind << "a strport:StringPort ;\n";
-    else
-        ss << ind << "a lv2:ControlPort ;\n";
+    ss << ind << "a lv2:ControlPort ;\n";
     ss << ind << "lv2:index " << pidx << " ;\n";
     ss << ind << "lv2:symbol \"" << pp.short_name << "\" ;\n";
     ss << ind << "lv2:name \"" << pp.name << "\" ;\n";
@@ -245,13 +238,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
         ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
     if (pp.flags & PF_PROP_OUTPUT_GAIN)
         ss << ind << "lv2:portProperty epp:outputGain ;\n";
-    if (pp.flags & PF_PROP_MSGCONTEXT)
-        ss << ind << "lv2ctx:context lv2ctx:MessageContext ;\n";
-    if (type == PF_STRING)
-    {
-        ss << ind << "strport:default \"\"\"" << pp.choices[0] << "\"\"\" ;\n";
-    }
-    else if (type == PF_BOOL)
+    if (type == PF_BOOL)
         ss << ind << "lv2:portProperty lv2:toggled ;\n";
     else if (type == PF_ENUM)
     {
@@ -264,17 +251,14 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     else if ((pp.flags & PF_SCALEMASK) == PF_SCALE_LOG)
         ss << ind << "lv2:portProperty epp:logarithmic ;\n";
     ss << showpoint;
-    if (type != PF_STRING)
-    {
-        if (!(pp.flags & PF_PROP_OUTPUT))
-            ss << ind << "lv2:default " << pp.def_value << " ;\n";
-        ss << ind << "lv2:minimum " << pp.min << " ;\n";
-        ss << ind << "lv2:maximum " << pp.max << " ;\n";
-        if (pp.step > 1)
-            ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
-        if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
-            ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
-    }
+    if (!(pp.flags & PF_PROP_OUTPUT))
+        ss << ind << "lv2:default " << pp.def_value << " ;\n";
+    ss << ind << "lv2:minimum " << pp.min << " ;\n";
+    ss << ind << "lv2:maximum " << pp.max << " ;\n";
+    if (pp.step > 1)
+        ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
+    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
+        ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
     // this may change as more complex plugins are added
@@ -416,19 +400,9 @@ void make_ttl(string path_prefix)
             }
         }
         
-        if (pi->requires_message_context())
+        if (pi->get_configure_vars())
         {
-            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/contexts> ;\n";
-            ttl += "    lv2:requiredFeature <" LV2_CONTEXT_MESSAGE "> ;\n";
-            ttl += "    lv2ctx:requiredContext lv2ctx:MessageContext ;\n";
-        }
-        if (pi->requires_string_ports())
-        {
-#if USE_PERSIST_EXTENSION
-            ttl += "    lv2:requiredFeature <" LV2_PERSIST_URI "> ;\n";
-#else
-            ttl += "    lv2:requiredFeature <http://lv2plug.in/ns/dev/string-port#StringTransfer> ;\n";
-#endif
+            ttl += "    lv2:optionalFeature <" LV2_PERSIST_URI "> ;\n";
         }
         
         string ports = "";
@@ -596,10 +570,6 @@ void make_gui(string path_prefix)
                 (props.flags & PF_CTLMASK) == PF_CTL_COMBO)
             {
                 ctl = "    <combo " + attach_x + attach_y + param + expand_x + pad_x + " />\n";
-            }
-            else if ((props.flags & PF_TYPEMASK) == PF_STRING)
-            {
-                ctl = "    <entry " + attach_x + attach_y + "key=\"" + props.short_name + "\" " + expand_x + pad_x + " />\n";
             }
             else if ((props.flags & PF_TYPEMASK) == PF_BOOL && 
                      (props.flags & PF_CTLMASK) == PF_CTL_TOGGLE)

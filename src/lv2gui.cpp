@@ -67,8 +67,6 @@ struct plugin_proxy_base
     plugin_ctl_iface *instance;
     /// If true, a given parameter (not port) may be sent to host - it is blocked when the parameter is written to by the host
     vector<bool> sends;
-    /// If true, a given parameter (not port) is a string port
-    vector<bool> is_string_param;
     /// Map of parameter name to parameter index (used for mapping configure values to string ports)
     map<string, int> params_by_name;
     /// Values of parameters (float control ports)
@@ -120,18 +118,12 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     
     /// Block all updates until GUI is ready
     sends.resize(param_count, false);
-    is_string_param.resize(param_count, false);
     params.resize(param_count);
     for (int i = 0; i < param_count; i++)
     {
         const parameter_properties *pp = metadata->get_param_props(i);
         params_by_name[pp->short_name] = i;
-        unsigned int port_type = pp->flags & PF_TYPEMASK;
-        if (port_type < PF_STRING)
-            params[i] = pp->def_value;
-        else
-        if (port_type == PF_STRING)
-            is_string_param[i] = true;
+        params[i] = pp->def_value;
     }
     for (int i = 0; features[i]; i++)
     {
@@ -193,40 +185,10 @@ const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
 
 char *plugin_proxy_base::configure(const char *key, const char *value)
 {
-#if USE_PERSIST_EXTENSION
     if (instance)
         return instance->configure(key, value);
     else
-        return "Configuration not available because of lack of instance-access/data-access";
-#else
-    map<string, int>::iterator i = params_by_name.find(key);
-    if (i == params_by_name.end())
-    {
-        g_error("configure called for unknown key %s\n", key);
-        g_assert(FALSE);
-        return NULL;
-    }
-    int idx = i->second;
-    if (!sends[idx])
-        return NULL;
-    LV2_String_Data data;
-    data.data = (char *)value;
-    data.len = strlen(value);
-    data.storage = -1; // host doesn't need that
-    data.flags = 0;
-    data.pad = 0;
-    
-    if (string_port_uri)
-    {
-        write_function(controller, idx + param_offset, sizeof(LV2_String_Data), string_port_uri, &data);
-    }
-    else
-    {
-        g_warning("String port not supported - cannot write configure variable %s", key);
-    }
-    
-    return NULL;
-#endif
+        return strdup("Configuration not available because of lack of instance-access/data-access");
 }
 
 void plugin_proxy_base::enable_all_sends()
@@ -267,11 +229,6 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
-        if (is_string_param[param_no])
-        {
-            g_warning("Attempt to write a float value to a string port %d", param_no + param_offset);;
-            return;
-        }
         send_float_to_host(param_no, value);
     }
     
@@ -347,12 +304,6 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     int param = port - proxy->plugin_metadata->get_param_port_offset();
     if (param >= proxy->plugin_metadata->get_param_count())
         return;
-    if (proxy->is_string_param[param])
-    {
-        TempSendSetter _a_(proxy->sends[param], false);
-        gui->plugin->configure(proxy->plugin_metadata->get_param_props(param)->short_name, ((LV2_String_Data *)buffer)->data);
-        return;
-    }
     if (fabs(gui->plugin->get_param_value(param) - v) < 0.00001)
         return;
     {
@@ -446,14 +397,6 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
     {
         int param = port - param_offset;
         TempSendSetter _a_(sends[param], false);
-        if (is_string_param[param])
-        {
-            osc_inline_typed_strstream data;
-            data << plugin_metadata->get_param_props(param)->short_name;
-            data << ((LV2_String_Data *)buffer)->data;
-            cli.send("/configure", data);
-        }
-        else
         if (format == 0)
         {
             osc_inline_typed_strstream data;

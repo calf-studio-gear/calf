@@ -13,7 +13,7 @@
     </vbox>
     <frame attach-x="2" attach-y="0" label="Source">
       <table rows="3" cols="2" pad-x="10" fill-y="0">
-          <align attach-x="0" attach-y="0"   align-x="1"><label param="soundfont"  /></align>
+          <align attach-x="0" attach-y="0"   align-x="1"><label text="Soundfont"  /></align>
           <filechooser attach-x="1" attach-y="0" key="soundfont" title="Select a soundfont" width_chars="30" pad-x="5" pad-y="6" />
           <align attach-x="0" attach-y="1"   align-x="1"><label text="Current preset" /></align>
           <combo attach-x="1" attach-y="1" key="preset_list" current-key="preset_key" setter-key="preset_key_set" pad-x="5" pad-y="6" />

@@ -128,11 +128,6 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     virtual void set_param_value(int param_no, float value) {
         if (param_no < 0 || param_no >= param_count)
             return;
-        if((metadata->get_param_props(param_no)->flags & PF_TYPEMASK) == PF_STRING)
-        {
-            g_warning("Attempting to set a float value on a string port");
-            return;
-        }
         update_graphs = true;
         params[param_no] = value;
         if (send_osc)
