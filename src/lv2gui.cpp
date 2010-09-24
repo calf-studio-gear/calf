@@ -449,11 +449,17 @@ void ext_plugin_gui::receive_osc_message(std::string address, std::string args, 
             feedback_sender->update();
     }
     else
-    if (address == "/bridge/configure" && args == "ss")
+    if (address == "/bridge/configure" && (args == "s" || args == "ss"))
     {
         string key, value;
-        buffer >> key >> value;
-        plugin_proxy_base::configure(key.c_str(), value.c_str());
+        buffer >> key;
+        if (args == "ss")
+        {
+            buffer >> value;
+            plugin_proxy_base::configure(key.c_str(), value.c_str());
+        }
+        else
+            plugin_proxy_base::configure(key.c_str(), NULL);
     }
     else
     if (address == "/bridge/send_status" && args == "i")

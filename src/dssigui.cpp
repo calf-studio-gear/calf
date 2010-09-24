@@ -163,10 +163,15 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
     }
     char *configure(const char *key, const char *value) { 
         // do not store temporary vars in presets
-        if (strncmp(key, "OSC:", 4))
-            cfg_vars[key] = value;
         osc_inline_typed_strstream str;
-        str << key << value;
+        if (value)
+        {
+            if (strncmp(key, "OSC:", 4))
+                cfg_vars[key] = value;
+            str << key << value;
+        }
+        else
+            str << key;
         client->send("/configure", str);
         return NULL;
     }
