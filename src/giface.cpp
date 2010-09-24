@@ -194,8 +194,11 @@ void calf_plugins::plugin_ctl_iface::clear_preset() {
         set_param_value(i, pp.def_value);
     }
     const char *const *vars = get_metadata_iface()->get_configure_vars();
-    for (int i = 0; vars[i]; i++)
-        configure(vars[i], NULL);
+    if (vars)
+    {
+        for (int i = 0; vars[i]; i++)
+            configure(vars[i], NULL);
+    }
 }
 
 const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
