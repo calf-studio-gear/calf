@@ -24,7 +24,6 @@
 #endif
 #include <calf/giface.h>
 #include <calf/lv2_data_access.h>
-#include <calf/lv2_string_port.h>
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
@@ -75,8 +74,6 @@ struct plugin_proxy_base
     int param_count;
     /// Number of the first parameter port
     int param_offset;
-    /// Mapped URI to string port
-    uint32_t string_port_uri;
     
     plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features);
 
@@ -111,7 +108,6 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     instance_handle = NULL;
     data_access = NULL;
     ext_ui_host = NULL;
-    string_port_uri = 0;
     
     param_count = metadata->get_param_count();
     param_offset = metadata->get_param_port_offset();
@@ -134,11 +130,6 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
         else if (!strcmp(features[i]->URI, "http://lv2plug.in/ns/ext/data-access"))
         {
             data_access = (LV2_Extension_Data_Feature *)features[i]->data;
-        }
-        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
-        {
-            uri_map = (LV2_URI_Map_Feature *)features[i]->data;
-            string_port_uri = map_uri("http://lv2plug.in/ns/extensions/ui", LV2_STRING_PORT_URI);
         }
         else if (!strcmp(features[i]->URI, LV2_EXTERNAL_UI_URI))
         {

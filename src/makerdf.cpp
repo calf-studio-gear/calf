@@ -21,7 +21,7 @@
 #include <calf/preset.h>
 #include <calf/utils.h>
 #if USE_LV2
-#include <calf/lv2_contexts.h>
+#include <lv2.h>
 #include <calf/lv2_event.h>
 #include <calf/lv2_persist.h>
 #include <calf/lv2_uri_map.h>
