@@ -307,6 +307,8 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     int param = port - proxy->plugin_metadata->get_param_port_offset();
     if (param >= proxy->plugin_metadata->get_param_count())
         return;
+    if (!proxy->sends[param])
+        return;
     if (fabs(gui->plugin->get_param_value(param) - v) < 0.00001)
         return;
     {
@@ -399,6 +401,8 @@ void ext_plugin_gui::port_event_impl(uint32_t port, uint32_t buffer_size, uint32
     if (port >= (uint32_t)param_offset)
     {
         int param = port - param_offset;
+        if (!sends[param])
+            return;
         TempSendSetter _a_(sends[param], false);
         if (format == 0)
         {
