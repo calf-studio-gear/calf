@@ -205,6 +205,7 @@ struct plugin_proxy: public plugin_ctl_iface, public line_graph_iface
         }
     }
     virtual const line_graph_iface *get_line_graph_iface() const { return this; }
+    virtual const table_edit_iface *get_table_edit_iface() const { return NULL; } // not supported in external UIs yet
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;

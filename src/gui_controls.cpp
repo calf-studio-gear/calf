@@ -938,7 +938,7 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     
-    teif = gui->plugin->get_metadata_iface()->get_table_edit_iface();
+    teif = gui->plugin->get_table_edit_iface();
     const table_column_info *tci = teif->get_table_columns(param_no);
     assert(tci);
     cols = 0;
