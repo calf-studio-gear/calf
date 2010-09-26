@@ -275,7 +275,7 @@ struct listview_param_control: public param_control, public send_configure_iface
 {
     GtkTreeView *tree;
     GtkListStore *lstore;
-    const calf_plugins::table_edit_iface *teif;
+    calf_plugins::table_edit_iface *teif;
     int cols;
     std::vector<GtkTreeIter> positions;
     

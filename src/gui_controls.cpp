@@ -938,8 +938,8 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     
-    teif = gui->plugin->get_table_edit_iface();
-    const table_column_info *tci = teif->get_table_columns(param_no);
+    teif = gui->plugin->get_table_edit_iface(param_variable.c_str());
+    const table_column_info *tci = teif->get_table_columns();
     assert(tci);
     cols = 0;
     while (tci[cols].name != NULL)
@@ -986,14 +986,14 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
 void listview_param_control::update_store()
 {
     gtk_list_store_clear(lstore);
-    uint32_t rows = teif->get_table_rows(param_no);
+    uint32_t rows = teif->get_table_rows();
     for (uint32_t i = 0; i < rows; i++)
     {
         GtkTreeIter iter;
         gtk_list_store_insert(lstore, &iter, i);
         for (int j = 0; j < cols; j++)
         {
-            gtk_list_store_set(lstore, &iter, j, teif->get_cell(param_no, i, j).c_str(), -1);
+            gtk_list_store_set(lstore, &iter, j, teif->get_cell(i, j).c_str(), -1);
         }
         positions.push_back(iter);
     }
@@ -1009,14 +1009,14 @@ void listview_param_control::send_configure(const char *key, const char *value)
 
 void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis)
 {
-    const table_column_info *tci = pThis->teif->get_table_columns(pThis->param_no);
+    const table_column_info *tci = pThis->teif->get_table_columns();
     int column = ((table_column_info *)g_object_get_data(G_OBJECT(renderer), "column")) - tci;
     string error;
-    pThis->teif->set_cell(pThis->param_no, atoi(path), column, new_text, error);
+    pThis->teif->set_cell(atoi(path), column, new_text, error);
     if (error.empty()) {
         pThis->update_store();
         gtk_widget_grab_focus(pThis->widget);
-        if (atoi(path) < (int)pThis->teif->get_table_rows(pThis->param_no))
+        if (atoi(path) < (int)pThis->teif->get_table_rows())
         {
             GtkTreePath *gpath = gtk_tree_path_new_from_string (path);
             gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (pThis->widget), gpath, NULL, NULL, FALSE);
