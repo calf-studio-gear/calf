@@ -99,6 +99,7 @@ void jack_host::create_ports() {
         inputs[i].name = buf2;
         inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
         inputs[i].data = NULL;
+        inputs[i].meter.set_falloff(0.f, client->sample_rate);
         if (!inputs[i].handle)
             throw text_exception("Could not create JACK input port");
         jack_port_set_alias(inputs[i].handle, (prefix + buf2).c_str());
