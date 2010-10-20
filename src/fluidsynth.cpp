@@ -160,16 +160,21 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
 {
     if (!strcmp(key, "preset_key_set"))
     {
-        set_preset = atoi(value);
+        set_preset = value ? atoi(value) : 0;
         return NULL;
     }
     if (!strcmp(key, "soundfont"))
     {
-        if (*value)
+        if (value && *value)
+        {
             printf("Loading %s\n", value);
+            soundfont = value;
+        }
         else
+        {
             printf("Creating a blank synth\n");
-        soundfont = value;
+            soundfont.clear();
+        }
         int newsfid = -1;
         fluid_synth_t *new_synth = create_synth(newsfid);
         status_serial++;
