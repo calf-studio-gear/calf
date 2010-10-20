@@ -287,6 +287,7 @@ void print_help(char *argv[])
 
 int main(int argc, char *argv[])
 {
+    g_type_init();
     host_session sess;
 
     gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
