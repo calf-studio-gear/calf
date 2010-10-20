@@ -37,8 +37,8 @@ using namespace calf_plugins;
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
-    {"mode", 0, 0, 'm'},
-    {"path", 0, 0, 'p'},
+    {"mode", 1, 0, 'm'},
+    {"path", 1, 0, 'p'},
     {0,0,0,0},
 };
 
@@ -270,6 +270,17 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     return true;
 }
 
+static FILE *open_and_check(const std::string &filename)
+{
+    FILE *f = fopen(filename.c_str(), "w");
+    if (!f)
+    {
+        fprintf(stderr, "Cannot write file '%s': %s\n", filename.c_str(), strerror(errno));
+        exit(1);
+    }
+    return f;
+}
+
 void make_ttl(string path_prefix)
 {
     if (path_prefix.empty())
@@ -429,7 +440,7 @@ void make_ttl(string path_prefix)
             ttl += "    lv2:port " + ports + "\n";
         ttl += ".\n\n";
         
-        FILE *f = fopen((path_prefix+string(lpi.label)+".ttl").c_str(), "w");
+        FILE *f = open_and_check(path_prefix+string(lpi.label)+".ttl");
         fprintf(f, "%s\n", ttl.c_str());
         fclose(f);
     }
@@ -498,7 +509,7 @@ void make_ttl(string path_prefix)
     }
     for (map<string, string>::iterator i = preset_data.begin(); i != preset_data.end(); i++)
     {
-        FILE *f = fopen((path_prefix + "presets-" + i->first + ".ttl").c_str(), "w");
+        FILE *f = open_and_check(path_prefix + "presets-" + i->first + ".ttl");
         fprintf(f, "%s\n", i->second.c_str());
         fclose(f);
     }
@@ -514,7 +525,7 @@ void make_ttl(string path_prefix)
         ttl += ".\n";
         
     }
-    FILE *f = fopen((path_prefix+"manifest.ttl").c_str(), "w");
+    FILE *f = open_and_check(path_prefix+"manifest.ttl");
     fprintf(f, "%s\n", ttl.c_str());
     fclose(f);
 
@@ -633,7 +644,7 @@ void make_gui(string path_prefix)
             xml << "    </if>" << endl;
         }
         xml << "</table>\n";
-        FILE *f = fopen((path_prefix+string(pi->get_id())+".xml").c_str(), "w");
+        FILE *f = open_and_check(path_prefix+string(pi->get_id())+".xml");
         fprintf(f, "%s\n", xml.str().c_str());
         fclose(f);
     }
@@ -665,6 +676,13 @@ int main(int argc, char *argv[])
                 break;
             case 'p':
                 path_prefix = optarg;
+                if (path_prefix.empty())
+                {
+                    fprintf(stderr, "calfmakerdf: Path prefix must not be empty\n");
+                    exit(1);
+                }
+                if (path_prefix[path_prefix.length() - 1] != '/')
+                    path_prefix += '/';
                 break;
         }
     }
