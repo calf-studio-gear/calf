@@ -326,7 +326,7 @@
     </vbox>
     <if cond="jackhost">
       <vbox page="Modulation Matrix">
-        <listview param="scale_detune" />
+        <listview key="mod_matrix" />
       </vbox>
     </if>
   </notebook>
