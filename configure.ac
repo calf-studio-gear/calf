@@ -160,8 +160,13 @@ AC_ARG_ENABLE(debug,
 AC_MSG_RESULT($set_enable_debug)
 
 if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
-  AC_PATH_PROG(GCONFTOOL, gconftool-2)
+  AC_PATH_PROG(GCONFTOOL, gconftool-2, no)
+  if test "$GCONFTOOL" = "no"; then
+    AC_MSG_ERROR([gconftool-2 not found - do you have GConf devel package installed?])
+  fi
   AM_GCONF_SOURCE_2
+else
+  AM_CONDITIONAL(GCONF_SCHEMAS_INSTALL, false)
 fi
 
 ############################################################################################

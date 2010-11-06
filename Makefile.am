@@ -16,8 +16,15 @@ clean-local:
 	rm -rf autom4te.cache
 
 install-data-local:
+if USE_JACK
+if USE_GUI
 	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $(top_srcdir)/calf.schemas
+endif
+endif
         
 uninstall-local:
+if USE_JACK
+if USE_GUI
 	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-uninstall-rule $(top_srcdir)/calf.schemas
-        
+endif
+endif        
