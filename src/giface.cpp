@@ -212,7 +212,7 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     }
 }
 
-bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies)
+bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies, float res, float ofs)
 {
     if (subindex < 0 )
 	return false;
@@ -245,7 +245,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
     if (subindex >= 32)
         return false;
     float gain = 16.0 / (1 << subindex);
-    pos = dB_grid(gain);
+    pos = dB_grid(gain, res, ofs);
     if (pos < -1)
         return false;
     if (subindex != 4)
