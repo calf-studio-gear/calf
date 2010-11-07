@@ -309,10 +309,14 @@ void make_ttl(string path_prefix)
         "\n"
     ;
     
+    printf("Retrieving plugin list\n");
+    fflush(stdout);
     const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
     
     map<string, string> classes;
     
+    printf("Creating a list of plugin classes\n");
+    fflush(stdout);
     const char *ptypes[] = {
         "Flanger", "Reverb", "Generator", "Instrument", "Oscillator",
         "Utility", "Converter", "Analyser", "Mixer", "Simulator",
@@ -356,6 +360,8 @@ void make_ttl(string path_prefix)
         const plugin_metadata_iface *pi = plugins[i];
         const ladspa_plugin_info &lpi = pi->get_plugin_info();
         id_to_label[pi->get_id()] = pi->get_label();
+        printf("Generating a .ttl file for plugin '%s'\n", lpi.label);
+        fflush(stdout);
         string uri = string("<" + plugin_uri_prefix)  + string(lpi.label) + ">";
         string ttl;
         ttl = "@prefix : " + uri + " .\n" + header + gui_header;
@@ -445,6 +451,8 @@ void make_ttl(string path_prefix)
         fclose(f);
     }
     // Generate a manifest
+    printf("Writing presets\n");
+    fflush(stdout);
     
     // Prefixes for the manifest TTL
     string ttl = 
@@ -514,6 +522,8 @@ void make_ttl(string path_prefix)
         fclose(f);
     }
 
+    printf("Generating a manifest file\n");
+    fflush(stdout);
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
         string label = plugins[i]->get_plugin_info().label;
