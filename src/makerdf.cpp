@@ -562,6 +562,11 @@ void make_gui(string path_prefix)
     {
         const plugin_metadata_iface *pi = plugins[i];
         
+        // check for empty item after all the params
+        assert(pi->get_id());
+        assert(pi->get_param_props(pi->get_param_count())->short_name == NULL);
+        assert(pi->get_param_props(pi->get_param_count())->name == NULL);
+        
         stringstream xml;
         int graphs = 0;
         for (int j = 0; j < pi->get_param_count(); j++)
@@ -576,6 +581,11 @@ void make_gui(string path_prefix)
             if (j)
                 xml << "\n    <!-- -->\n\n";
             const parameter_properties &props = *pi->get_param_props(j);
+            if (!props.short_name)
+            {
+                fprintf(stderr, "Plugin %s is missing short name for parameter %d\n", pi->get_name(), j);
+                exit(1);
+            }
             string expand_x = "expand-x=\"1\" ";
             string fill_x = "fill-x=\"1\" ";
             string shrink_x = "shrink-x=\"1\" ";
