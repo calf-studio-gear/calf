@@ -1,5 +1,5 @@
 #!/bin/sh
-aclocal
+aclocal --force
 libtoolize --force --automake --copy
 autoheader --force
 autoconf --force
