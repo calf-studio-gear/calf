@@ -275,7 +275,7 @@ struct listview_param_control: public param_control, public send_configure_iface
 {
     GtkTreeView *tree;
     GtkListStore *lstore;
-    calf_plugins::table_edit_iface *teif;
+    const calf_plugins::table_metadata_iface *tmif;
     int cols;
     std::vector<GtkTreeIter> positions;
     
@@ -283,9 +283,10 @@ struct listview_param_control: public param_control, public send_configure_iface
     virtual void get() {}
     virtual void set() {}
     virtual void send_configure(const char *key, const char *value);
-    void update_store();
+protected:
+    void set_rows(unsigned int needed_rows);
     static void on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis);
-    static void on_editing_canceled(GtkCellRenderer *renderer, listview_param_control *pThis);
+    static void on_editing_canceled(GtkCellRenderer *renderer, listview_param_control *pThis);    
 };
 
 };

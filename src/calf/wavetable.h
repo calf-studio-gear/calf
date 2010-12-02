@@ -88,7 +88,7 @@ public:
     }
 };    
 
-class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public mod_matrix
+class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public mod_matrix_impl
 {
 public:
     using dsp::basic_synth::note_on;
@@ -101,7 +101,6 @@ protected:
     bool panic_flag;
 
 public:
-    enum { mod_matrix_slots = 10 };
     int16_t tables[wt_count][129][256]; // one dummy level for interpolation
     /// Rows of the modulation matrix
     dsp::modulation_entry mod_matrix_data[mod_matrix_slots];

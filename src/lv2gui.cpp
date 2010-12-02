@@ -92,9 +92,6 @@ struct plugin_proxy_base
     /// Obtain line graph interface if available
     const line_graph_iface *get_line_graph_iface() const;
     
-    /// Obtain line graph interface if available
-    const table_edit_iface *get_table_edit_iface(const char *key) const;
-    
     /// Map an URI to an integer value using a given URI map
     uint32_t map_uri(const char *mapURI, const char *keyURI);
 
@@ -177,13 +174,6 @@ const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
     return NULL;
 }
 
-const table_edit_iface *plugin_proxy_base::get_table_edit_iface(const char *key) const
-{
-    if (instance)
-        return instance->get_table_edit_iface(key);
-    return NULL;
-}
-
 char *plugin_proxy_base::configure(const char *key, const char *value)
 {
     if (instance)
@@ -249,8 +239,6 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
     /// Override for a method in plugin_ctl_iface - trivial delegation to base class
     virtual const line_graph_iface *get_line_graph_iface() const { return plugin_proxy_base::get_line_graph_iface(); }
-    /// Override for a method in plugin_ctl_iface - trivial delegation to base class
-    virtual const table_edit_iface *get_table_edit_iface(const char *key) const { return plugin_proxy_base::get_table_edit_iface(key); }
 };
 
 static gboolean plugin_on_idle(void *data)

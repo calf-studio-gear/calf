@@ -32,6 +32,7 @@
 #include <gdk/gdk.h>
 
 using namespace calf_plugins;
+using namespace calf_utils;
 using namespace std;
 
 /******************************** control/container base class **********************/
@@ -939,10 +940,14 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     
     string key = attribs["key"];
-    teif = gui->plugin->get_table_edit_iface(key.c_str());
-    if (!teif)
-        g_error("Missing table_edit_iface for variable '%s'", key.c_str());
-    const table_column_info *tci = teif->get_table_columns();
+    tmif = gui->plugin->get_metadata_iface()->get_table_metadata_iface(key.c_str());
+    if (!tmif)
+    {
+        g_error("Missing table_metadata_iface for variable '%s'", key.c_str());
+        return NULL;
+    }
+    positions.clear();
+    const table_column_info *tci = tmif->get_table_columns();
     assert(tci);
     cols = 0;
     while (tci[cols].name != NULL)
@@ -952,11 +957,11 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     for (int i = 0; i < cols; i++)
         p[i] = G_TYPE_STRING;
     lstore = gtk_list_store_newv(cols, p);
-    update_store();
+    if (tmif->get_table_rows() != 0)
+        set_rows(tmif->get_table_rows());
     widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(lstore));
     delete []p;
     tree = GTK_TREE_VIEW (widget);
-    assert(teif);
     g_object_set (G_OBJECT (tree), "enable-search", FALSE, "rules-hint", TRUE, "enable-grid-lines", TRUE, NULL);
     
     for (int i = 0; i < cols; i++)
@@ -986,17 +991,15 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
-void listview_param_control::update_store()
+void listview_param_control::set_rows(unsigned int needed_rows)
 {
-    gtk_list_store_clear(lstore);
-    uint32_t rows = teif->get_table_rows();
-    for (uint32_t i = 0; i < rows; i++)
+    while(positions.size() < needed_rows)
     {
         GtkTreeIter iter;
-        gtk_list_store_insert(lstore, &iter, i);
+        gtk_list_store_insert(lstore, &iter, positions.size());
         for (int j = 0; j < cols; j++)
         {
-            gtk_list_store_set(lstore, &iter, j, teif->get_cell(i, j).c_str(), -1);
+            gtk_list_store_set(lstore, &iter, j, "", -1);
         }
         positions.push_back(iter);
     }
@@ -1004,27 +1007,58 @@ void listview_param_control::update_store()
 
 void listview_param_control::send_configure(const char *key, const char *value)
 {
-    if (attribs["key"] == key)
+    string orig_key = attribs["key"] + ":";
+    bool is_rows = false;
+    int row = -1, col = -1;
+    if (parse_table_key(key, orig_key.c_str(), is_rows, row, col))
     {
-        update_store();
+        string suffix = string(key + orig_key.length());
+        if (is_rows && tmif->get_table_rows() == 0)
+        {
+            int rows = atoi(value);
+            set_rows(rows);
+            return;
+        }
+        else
+        if (row != -1 && col != -1)
+        {
+            int max_rows = tmif->get_table_rows();
+            if (col < 0 || col >= cols)
+            {
+                g_warning("Invalid column %d in key %s", col, key);
+                return;
+            }
+            if (max_rows && (row < 0 || row >= max_rows))
+            {
+                g_warning("Invalid row %d in key %s, this is a fixed table with row count = %d", row, key, max_rows);
+                return;
+            }
+            
+            if (row >= (int)positions.size())
+                set_rows(row + 1);
+            
+            gtk_list_store_set(lstore, &positions[row], col, value, -1);
+            return;
+        }
     }
 }
 
 void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, listview_param_control *pThis)
 {
-    const table_column_info *tci = pThis->teif->get_table_columns();
+    const table_column_info *tci = pThis->tmif->get_table_columns();
     int column = ((table_column_info *)g_object_get_data(G_OBJECT(renderer), "column")) - tci;
+    string key = pThis->attribs["key"] + ":" + i2s(atoi(path)) + "," + i2s(column);
     string error;
-    pThis->teif->set_cell(atoi(path), column, new_text, error);
+    const char *error_or_null = pThis->gui->plugin->configure(key.c_str(), new_text);
+    if (error_or_null)
+        error = error_or_null;
+    
     if (error.empty()) {
-        pThis->update_store();
+        pThis->send_configure(key.c_str(), new_text);
         gtk_widget_grab_focus(pThis->widget);
-        if (atoi(path) < (int)pThis->teif->get_table_rows())
-        {
-            GtkTreePath *gpath = gtk_tree_path_new_from_string (path);
-            gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (pThis->widget), gpath, NULL, NULL, FALSE);
-            gtk_tree_path_free (gpath);
-        }
+        GtkTreePath *gpath = gtk_tree_path_new_from_string (path);
+        gtk_tree_view_set_cursor_on_cell (GTK_TREE_VIEW (pThis->widget), gpath, NULL, NULL, FALSE);
+        gtk_tree_path_free (gpath);
     }
     else
     {

@@ -30,30 +30,6 @@
 using namespace dsp;
 using namespace calf_plugins;
 
-static const char *mod_src_names[] = {
-    "None", 
-    "Velocity",
-    "Pressure",
-    "ModWheel",
-    "Env 1",
-    "Env 2",
-    "Env 3",
-    NULL
-};
-
-static const char *mod_dest_names[] = {
-    "None",
-    "Attenuation",
-    "Osc Mix Ratio (%)",
-    "Cutoff [ct]",
-    "Resonance",
-    "O1: Shift (%)",
-    "O2: Shift (%)",
-    "O1: Detune [ct]",
-    "O2: Detune [ct]",
-    NULL
-};
-
 wavetable_voice::wavetable_voice()
 {
     sample_rate = -1;
@@ -187,7 +163,7 @@ static void interpolate_wt(int16_t table[129][256], int step)
 }
 
 wavetable_audio_module::wavetable_audio_module()
-: mod_matrix(mod_matrix_data, mod_matrix_slots, ::mod_src_names, ::mod_dest_names)
+: mod_matrix_impl(mod_matrix_data, &mm_metadata)
 , inertia_cutoff(1)
 , inertia_pitchbend(1)
 , inertia_pressure(64)

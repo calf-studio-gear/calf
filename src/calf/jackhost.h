@@ -128,7 +128,6 @@ public:
     virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return module->send_status_updates(sui, last_serial); }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return module->get_metadata_iface(); }
     virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
-    virtual table_edit_iface *get_table_edit_iface(const char *key) { return module->get_table_edit_iface(key); }
 };
 
 extern jack_host *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
