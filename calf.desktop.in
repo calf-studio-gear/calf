@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Calf Plugin Pack for JACK
 Name[pl]=Zestaw wtyczek Calf
+Name[ru]=Набор эффектов и инструментов Calf для JACK
 Version=@VERSION@
 Comment=Process and produce sounds using a set of plugins with JACK interface
 Comment[pl]=Przetwarzaj i generuj dźwięk używając zestawu wtyczek zgodnych z JACK
+Comment[ru]=Обработка и создание музыки при помощи эффектов и инструментов через JACK
 Exec=calfjackhost
 Terminal=false
 Type=Application
