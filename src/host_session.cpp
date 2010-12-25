@@ -152,6 +152,7 @@ void host_session::open()
     main_win->prefix = client_name + " - ";
     main_win->conditions.insert("jackhost");
     main_win->conditions.insert("directlink");
+    main_win->conditions.insert("configure");
     if (!session_manager || !session_manager->is_being_restored()) 
         create_plugins_from_list();
     main_win->create();

@@ -207,7 +207,10 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     {
         gui = NULL;
         if (instance)
+        {
             conditions.insert("directlink");
+            conditions.insert("configure");
+        }
         conditions.insert("lv2gui");    
     }
     

@@ -336,6 +336,7 @@ struct dssi_osc_server: public osc_glib_server, public osc_message_sink<osc_strs
         plugin->client = &cli;
         plugin->send_osc = true;
         conditions.insert("dssi");
+        conditions.insert("configure");
         conditions.insert("directlink");
         window->create(plugin, title.c_str(), effect_name.c_str());
         plugin->gui = window->gui;
