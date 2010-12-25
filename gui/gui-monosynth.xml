@@ -324,7 +324,7 @@
         </vbox>
       </hbox>
     </vbox>
-    <if cond="jackhost">
+    <if cond="configure">
       <vbox page="Modulation Matrix">
         <listview key="mod_matrix" />
       </vbox>
