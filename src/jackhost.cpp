@@ -265,6 +265,8 @@ void jack_host::cache_ports()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static const char *short_options = "c:i:l:o:m:M:s:ehv";
+
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
@@ -294,19 +296,33 @@ int main(int argc, char *argv[])
     gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
     
+    // Scan the options for the first time to find switches like --help, -h or -?
+    // This avoids starting communication with LASH when displaying help text.
+    while(1)
+    {
+        int option_index;
+        int c = getopt_long(argc, argv, short_options, long_options, &option_index);
+        if (c == -1)
+            break;
+        if (c == 'h' || c == '?')
+        {
+            print_help(argv);
+            return 0;
+        }
+    }
+    // Rewind options to start
+    optind = 1;
+    
 #if USE_LASH
     sess.session_manager = create_lash_session_mgr(&sess, argc, argv);
 #endif
-    while(1) {
+    while(1)
+    {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:l:o:m:M:s:ehv", long_options, &option_index);
+        int c = getopt_long(argc, argv, short_options, long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
-            case 'h':
-            case '?':
-                print_help(argv);
-                return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);
                 return 0;
