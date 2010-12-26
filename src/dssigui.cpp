@@ -545,7 +545,7 @@ void dssi_osc_server::receive_osc_message(std::string address, std::string args,
     {
         set_osc_update(true);
 
-        gtk_widget_show_all(GTK_WIDGET(window->toplevel));
+        gtk_widget_show(GTK_WIDGET(window->toplevel));
         return;
     }
     else if (address == prefix + "/hide")
