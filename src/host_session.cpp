@@ -25,6 +25,7 @@
 #include <calf/preset.h>
 #include <calf/main_win.h>
 #include <getopt.h>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace calf_utils;
@@ -43,6 +44,7 @@ host_session::host_session()
     autoconnect_midi_index = -1;
     gui_win = NULL;
     session_manager = NULL;
+    only_load_if_exists = false;
 }
 
 std::string host_session::get_next_instance_name(const std::string &effect_name)
@@ -287,15 +289,31 @@ void host_session::connect()
         char *error = open_file(load_name.c_str());
         if (error)
         {
-            GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Cannot load '%s': %s", load_name.c_str(), error);
-            gtk_dialog_run (GTK_DIALOG (widget));
-            gtk_widget_destroy (widget);
-            
-            g_free(error);
-            load_name = "";
+            bool suppress_error = false;
+            if (only_load_if_exists)
+            {
+                struct stat s;
+                int stat_result = stat(load_name.c_str(), &s);
+                if (stat_result == -1 && errno == ENOENT)
+                    suppress_error = true;
+            }
+            // If the file is optional and it didn't exist, suppress the error
+            if (suppress_error)
+            {
+                g_free(error);
+                // keep the load_name for any later save
+            }
+            else
+            {
+                GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Cannot load '%s': %s", load_name.c_str(), error);
+                gtk_dialog_run (GTK_DIALOG (widget));
+                gtk_widget_destroy (widget);
+                
+                g_free(error);
+                load_name = "";
+            }
         }
-        else
-            main_win->current_filename = load_name;
+        main_win->current_filename = load_name;
     }
     if (session_manager)
         session_manager->connect("calf-" + client_name);

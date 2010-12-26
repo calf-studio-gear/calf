@@ -273,6 +273,7 @@ static struct option long_options[] = {
     {"load", 1, 0, 'l'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
+    {"state", 1, 0, 's'},
     {"connect-midi", 1, 0, 'M'},
     {0,0,0,0},
 };
@@ -280,7 +281,7 @@ static struct option long_options[] = {
 void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
-        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>] [--load <session>]\n"
+        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>] [--load|state <session>]\n"
         "       [--connect-midi <name|capture-index>] [--help] [--version] [!] pluginname[:<preset>] [!] ...\n", 
         argv[0]);
 }
@@ -298,7 +299,7 @@ int main(int argc, char *argv[])
 #endif
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "c:i:l:o:m:M:ehv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:i:l:o:m:M:s:ehv", long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -325,6 +326,7 @@ int main(int argc, char *argv[])
                 sess.midi_name = string(optarg) + "_%d";
                 break;
             case 'l':
+            case 's':
             {
                 if (!g_path_is_absolute(optarg))
                 {
@@ -336,6 +338,7 @@ int main(int argc, char *argv[])
                 }
                 else
                     sess.load_name = optarg;
+                sess.only_load_if_exists = (c == 's');
                 break;
             }
             case 'M':

@@ -578,6 +578,7 @@ gboolean main_window::on_idle(void *data)
     {
         self->save_file_on_next_idle_call = false;
         self->save_file();
+        printf("LADISH Level 1 support: file '%s' saved\n", self->current_filename.c_str());
     }
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
     {
@@ -630,20 +631,24 @@ void main_window::open_file()
     gtk_widget_destroy (dialog);
 }
 
-void main_window::save_file()
+bool main_window::save_file()
 {
-    if (!current_filename.empty()) {
-        const char *error = owner->save_file(current_filename.c_str());
-        if (error)
-            display_error(error, current_filename.c_str());
+    if (current_filename.empty())
+        return save_file_as();
+
+    const char *error = owner->save_file(current_filename.c_str());
+    if (error)
+    {
+        display_error(error, current_filename.c_str());
+        return false;
     }
-    else
-        save_file_as();
+    return true;
 }
 
-void main_window::save_file_as()
+bool main_window::save_file_as()
 {
     GtkWidget *dialog;
+    bool success = false;
     dialog = gtk_file_chooser_dialog_new ("Save File",
         toplevel,
         GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -657,11 +662,15 @@ void main_window::save_file_as()
         if (error) 
             display_error(error, filename);
         else
+        {
             current_filename = filename;
+            success = true;
+        }
         g_free (filename);
         free(error);
     }
     gtk_widget_destroy (dialog);
+    return success;
 }
 
 void main_window::display_error(const char *error, const char *filename)

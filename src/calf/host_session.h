@@ -36,9 +36,23 @@ class host_session: public main_window_owner_iface, public calf_plugins::progres
 private:
     static host_session *instance;
 public:
-    std::string client_name, input_name, output_name, midi_name, load_name;
+    /// Requested JACK client name.
+    std::string client_name;
+    /// Template for input names.
+    std::string input_name;
+    /// Template for output names.
+    std::string output_name;
+    /// Template for MIDI port names.
+    std::string midi_name;
+    /// Name of the file to load at start.
+    std::string load_name;
+    /// Use load_name as session state name - doesn't signal an error if the file doesn't exist, but uses it for saving.
+    bool only_load_if_exists;
+    /// Plugins to create on startup, in create_plugins_from_list (based on command line).
     std::vector<std::string> plugin_names;
+    /// Requested presets for the plugins in plugin_names.
     std::map<int, std::string> presets;
+    /// Selected session manager (if any).
     session_manager_iface *session_manager;
     
     // these are not saved

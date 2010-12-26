@@ -85,8 +85,8 @@ namespace calf_plugins {
         void open_gui(plugin_ctl_iface *plugin);    
         void create();
         void open_file();
-        void save_file();
-        void save_file_as();
+        bool save_file();
+        bool save_file_as();
         void save_file_from_sighandler();
         void show_rack_ears(bool show);
     private:
