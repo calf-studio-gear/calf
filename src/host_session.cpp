@@ -180,6 +180,7 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
     {
         if (plugins[i] == plugin)
         {
+            instances.erase(plugins[i]->instance_name);
             client.del(i);
             plugins.erase(plugins.begin() + i);
             main_win->del_plugin(plugin);
@@ -199,6 +200,7 @@ void host_session::remove_all_plugins()
         main_win->del_plugin(plugin);
         delete plugin;
     }
+    instances.clear();
 }
 
 bool host_session::activate_preset(int plugin_no, const std::string &preset, bool builtin)
