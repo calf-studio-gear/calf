@@ -96,9 +96,12 @@ const char **jack_client::get_ports(const char *name_re, const char *type_re, un
 int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
 {
     jack_client *self = (jack_client *)p;
-    ptlock lock(self->mutex);
-    for(unsigned int i = 0; i < self->plugins.size(); i++)
-        self->plugins[i]->process(nframes);
+    pttrylock lock(self->mutex);
+    if (lock.is_locked())
+    {
+        for(unsigned int i = 0; i < self->plugins.size(); i++)
+            self->plugins[i]->process(nframes);
+    }
     return 0;
 }
 
