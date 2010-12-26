@@ -13,6 +13,8 @@ configure
 config.*
 src/.deps
 src/.libs
+src/calf_gtk
+gui/calf.rc
 install-sh
 ltmain.sh
 libtool
