@@ -44,7 +44,9 @@ static const char *ui_xml =
 "      <menuitem action=\"FileSave\"/>\n"
 "      <menuitem action=\"FileSaveAs\"/>\n"
 "      <separator/>\n"
-"      <menuitem action=\"Preferences\"/>\n"
+"      <menuitem action=\"FileReorder\"/>\n"
+"      <separator/>\n"
+"      <menuitem action=\"FilePreferences\"/>\n"
 "      <separator/>\n"
 "      <menuitem action=\"FileQuit\"/>\n"
 "    </menu>\n"
@@ -60,7 +62,8 @@ const GtkActionEntry main_window::actions[] = {
     { "FileSaveAs", GTK_STOCK_SAVE_AS, "Save _as...", NULL, "Save a rack file as", (GCallback)on_save_as_action },
     { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
     { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
-    { "Preferences", GTK_STOCK_PREFERENCES, "_Preferences...", NULL, "Adjust preferences", (GCallback)on_preferences_action },
+    { "FileReorder", NULL, "_Reorder plugins", NULL, "Reorder plugins to minimize latency", (GCallback)on_reorder_action },
+    { "FilePreferences", GTK_STOCK_PREFERENCES, "_Preferences...", NULL, "Adjust preferences", (GCallback)on_preferences_action },
     { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)on_exit_action },
 };
 
@@ -77,6 +80,11 @@ void main_window::on_save_action(GtkWidget *widget, main_window *main)
 void main_window::on_save_as_action(GtkWidget *widget, main_window *main)
 {
     main->save_file_as();
+}
+
+void main_window::on_reorder_action(GtkWidget *widget, main_window *main)
+{
+    main->owner->reorder_plugins();
 }
 
 void main_window::on_preferences_action(GtkWidget *widget, main_window *main)

@@ -96,6 +96,7 @@ void jack_host::create_ports() {
     for (int i=0; i<in_count; i++) {
         sprintf(buf, "%s_in_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->input_name.c_str(), client->input_nr++);
+        inputs[i].nice_name = buf;
         inputs[i].name = buf2;
         inputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput , 0);
         inputs[i].data = NULL;
@@ -107,6 +108,7 @@ void jack_host::create_ports() {
     if (metadata->get_midi()) {
         sprintf(buf, "%s_midi_in", instance_name.c_str());
         sprintf(buf2, client->midi_name.c_str(), client->midi_nr++);
+        midi_port.nice_name = buf;
         midi_port.name = buf2;
         midi_port.handle = jack_port_register(client->client, buf, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
         if (!midi_port.handle)
@@ -116,6 +118,7 @@ void jack_host::create_ports() {
     for (int i=0; i<out_count; i++) {
         sprintf(buf, "%s_out_%s", instance_name.c_str(), suffixes[i]);
         sprintf(buf2, client->output_name.c_str(), client->output_nr++);
+        outputs[i].nice_name = buf;
         outputs[i].name = buf2;
         outputs[i].handle = jack_port_register(client->client, buf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput , 0);
         outputs[i].data = NULL;
@@ -261,6 +264,20 @@ void jack_host::cache_ports()
     for (int i=0; i<out_count; i++) {
         outs[i] = outputs[i].data = (float *)jack_port_get_buffer(outputs[i].handle, 0);
     }
+}
+
+void jack_host::get_all_input_ports(std::vector<port *> &ports)
+{
+    for (int i = 0; i < in_count; i++)
+        ports.push_back(&inputs[i]);
+    if (metadata->get_midi())
+        ports.push_back(&midi_port);
+}
+
+void jack_host::get_all_output_ports(std::vector<port *> &ports)
+{
+    for (int i = 0; i < out_count; i++)
+        ports.push_back(&outputs[i]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -191,6 +191,7 @@ struct main_window_owner_iface
     virtual void remove_plugin(plugin_ctl_iface *plugin) = 0;
     virtual char *open_file(const char *name) = 0;
     virtual char *save_file(const char *name) = 0;
+    virtual void reorder_plugins() = 0;
     virtual ~main_window_owner_iface() {}
 };
 

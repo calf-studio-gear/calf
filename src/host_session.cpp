@@ -499,6 +499,13 @@ void host_session::set_ladish_handler()
     sa.sa_handler = sigusr1handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGUSR1, &sa, NULL);
-    
+    sigaction(SIGUSR1, &sa, NULL);    
 }
+
+void host_session::reorder_plugins()
+{
+    vector<int> order;
+    client.calculate_plugin_order(order);
+    client.apply_plugin_order(order);
+}
+

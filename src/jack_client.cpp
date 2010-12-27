@@ -23,6 +23,7 @@
 #include <jack/jack.h>
 #include <calf/giface.h>
 #include <calf/jackhost.h>
+#include <set>
 
 using namespace std;
 using namespace calf_utils;
@@ -121,5 +122,85 @@ void jack_client::delete_plugins()
         delete plugins[i];
     }
     plugins.clear();
+}
+
+void jack_client::calculate_plugin_order(std::vector<int> &indices)
+{
+    map<string, int> port_to_plugin;
+    multimap<int, int> run_before;
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        vector<jack_host::port *> ports;
+        plugins[i]->get_all_input_ports(ports);
+        for (unsigned int j = 0; j < ports.size(); j++)
+            port_to_plugin[ports[j]->nice_name] = i;
+    }
+    
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        vector<jack_host::port *> ports;
+        plugins[i]->get_all_output_ports(ports);
+        for (unsigned int j = 0; j < ports.size(); j++)
+        {
+            const char **conns = jack_port_get_connections(ports[j]->handle);
+            if (!conns)
+                continue;
+            for (const char **k = conns; *k; k++)
+            {
+                int cnlen = name.length();
+                if (0 != strncmp(*k, name.c_str(), cnlen))
+                    continue;
+                if ((*k)[cnlen] != ':')
+                    continue;
+                map<string, int>::const_iterator p = port_to_plugin.find((*k) + cnlen + 1);
+                if (p != port_to_plugin.end())
+                {
+                    run_before.insert(make_pair<int, int>(p->second, i));
+                }
+            }
+            jack_free(conns);
+        }
+    }
+    
+    struct deptracker
+    {
+        vector<int> &indices;
+        const multimap<int, int> &run_before;
+        set<int> already_added;
+        int count;
+        
+        deptracker(vector<int> &i, const multimap<int, int> &rb, int c)
+        : indices(i)
+        , run_before(rb)
+        , count(c)
+        {
+        }
+        void add_with_dependent(int item)
+        {
+            if (already_added.count(item))
+                return;
+            already_added.insert(item);
+            for(multimap<int, int>::const_iterator i = run_before.find(item); i != run_before.end() && i->first == item; i++)
+                add_with_dependent(i->second);
+            indices.push_back(item);
+        }
+        void run()
+        {
+            for (int i = 0; i < count; i++)
+                add_with_dependent(i);                    
+        }
+    };
+    indices.clear();
+    deptracker(indices, run_before, plugins.size()).run();
+}
+
+void jack_client::apply_plugin_order(const std::vector<int> &indices)
+{
+    std::vector<jack_host *> plugins_new;
+    assert(indices.size() == plugins.size());
+    for (unsigned int i = 0; i < indices.size(); i++)
+        plugins_new.push_back(plugins[indices[i]]);
+    ptlock lock(mutex);
+    plugins.swap(plugins_new);
 }
 

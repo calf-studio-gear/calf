@@ -54,6 +54,8 @@ public:
     void delete_plugins();
     void connect(const std::string &p1, const std::string &p2);
     void close();
+    void apply_plugin_order(const std::vector<int> &indices);
+    void calculate_plugin_order(std::vector<int> &indices);
     const char **get_ports(const char *name_re, const char *type_re, unsigned long flags);
     
     static int do_jack_process(jack_nframes_t nframes, void *p);
@@ -65,7 +67,7 @@ public:
     struct port {
         jack_port_t *handle;
         float *data;
-        std::string name;
+        std::string name, nice_name;
         dsp::vumeter meter;
         port() : handle(NULL), data(NULL) {}
         ~port() { }
@@ -105,6 +107,10 @@ public:
     int process(jack_nframes_t nframes);
     /// Retrieve and cache output port buffers
     void cache_ports();
+    /// Retrieve the full list of input ports, audio+MIDI (the pointers are temporary, may point to nowhere after any changes etc.)
+    void get_all_input_ports(std::vector<port *> &ports);
+    /// Retrieve the full list of output ports (the pointers are temporary, may point to nowhere after any changes etc.)
+    void get_all_output_ports(std::vector<port *> &ports);
     
 public:
     // Port access
