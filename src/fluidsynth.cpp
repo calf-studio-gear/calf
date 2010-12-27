@@ -55,10 +55,10 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
 {
     set_preset = -1;
     fluid_settings_t *new_settings = new_fluid_settings();
+    fluid_settings_setnum(new_settings, "synth.sample-rate", srate);
     fluid_synth_t *s = new_fluid_synth(new_settings);
     if (!soundfont.empty())
     {
-        fluid_synth_set_sample_rate(s, srate);
         int sid = fluid_synth_sfload(s, soundfont.c_str(), 1);
         if (sid == -1)
         {
