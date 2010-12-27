@@ -210,5 +210,14 @@ void jack_client::apply_plugin_order(const std::vector<int> &indices)
         plugins_new.push_back(plugins[indices[i]]);
     ptlock lock(mutex);
     plugins.swap(plugins_new);
+    
+    string s;
+    for (unsigned int i = 0; i < plugins.size(); i++)    
+    {
+        if (i)
+            s += " -> ";
+        s += plugins[i]->instance_name;
+    }
+    printf("Order: %s\n", s.c_str());
 }
 

@@ -62,7 +62,7 @@ const GtkActionEntry main_window::actions[] = {
     { "FileSaveAs", GTK_STOCK_SAVE_AS, "Save _as...", NULL, "Save a rack file as", (GCallback)on_save_as_action },
     { "HostMenuAction", NULL, "_Host", NULL, "Host-related operations", NULL },
     { "AddPluginMenuAction", NULL, "_Add plugin", NULL, "Add a plugin to the rack", NULL },
-    { "FileReorder", NULL, "_Reorder plugins", NULL, "Reorder plugins to minimize latency", (GCallback)on_reorder_action },
+    { "FileReorder", NULL, "_Reorder plugins", NULL, "Reorder plugins to minimize latency (experimental)", (GCallback)on_reorder_action },
     { "FilePreferences", GTK_STOCK_PREFERENCES, "_Preferences...", NULL, "Adjust preferences", (GCallback)on_preferences_action },
     { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)on_exit_action },
 };
