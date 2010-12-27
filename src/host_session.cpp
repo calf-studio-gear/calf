@@ -404,7 +404,8 @@ char *host_session::save_file(const char *name)
     if (!f || 1 != fwrite(data.c_str(), data.length(), 1, f))
     {
         int e = errno;
-        fclose(f);
+        if (f)
+            fclose(f);
         return strdup(strerror(e));
     }
     if (fclose(f))
