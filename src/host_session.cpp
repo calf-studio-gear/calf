@@ -181,7 +181,7 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
         if (plugins[i] == plugin)
         {
             instances.erase(plugins[i]->instance_name);
-            client.del(i);
+            client.del(plugins[i]);
             plugins.erase(plugins.begin() + i);
             main_win->del_plugin(plugin);
             delete plugin;
@@ -194,8 +194,8 @@ void host_session::remove_all_plugins()
 {
     while(!plugins.empty())
     {
-        plugin_ctl_iface *plugin = plugins[0];
-        client.del(0);
+        jack_host *plugin = plugins[0];
+        client.del(plugins[0]);
         plugins.erase(plugins.begin());
         main_win->del_plugin(plugin);
         delete plugin;

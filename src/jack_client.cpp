@@ -45,10 +45,18 @@ void jack_client::add(jack_host *plugin)
     plugins.push_back(plugin);
 }
 
-void jack_client::del(int item)
+void jack_client::del(jack_host *plugin)
 {
     calf_utils::ptlock lock(mutex);
-    plugins.erase(plugins.begin()+item);
+    for (unsigned int i = 0; i < plugins.size(); i++)
+    {
+        if (plugins[i] == plugin)
+        {
+            plugins.erase(plugins.begin()+i);
+            return;
+        }
+    }
+    assert(0);
 }
 
 void jack_client::open(const char *client_name)

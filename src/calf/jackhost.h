@@ -46,7 +46,7 @@ public:
 
     jack_client();
     void add(jack_host *plugin);
-    void del(int item);
+    void del(jack_host *plugin);
     void open(const char *client_name);
     std::string get_name();
     void activate();
