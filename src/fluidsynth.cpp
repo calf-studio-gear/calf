@@ -101,27 +101,27 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
     return s;
 }
 
-void fluidsynth_audio_module::note_on(int note, int vel)
+void fluidsynth_audio_module::note_on(int channel, int note, int vel)
 {
-    fluid_synth_noteon(synth, 0, note, vel);
+    fluid_synth_noteon(synth, channel, note, vel);
 }
 
-void fluidsynth_audio_module::note_off(int note, int vel)
+void fluidsynth_audio_module::note_off(int channel, int note, int vel)
 {
-    fluid_synth_noteoff(synth, 0, note);
+    fluid_synth_noteoff(synth, channel, note);
 }
 
-void fluidsynth_audio_module::control_change(int controller, int value)
+void fluidsynth_audio_module::control_change(int channel, int controller, int value)
 {
-    fluid_synth_cc(synth, 0, controller, value);
+    fluid_synth_cc(synth, channel, controller, value);
 
     if (controller == 0 || controller == 32)
         update_preset_num();
 }
 
-void fluidsynth_audio_module::program_change(int program)
+void fluidsynth_audio_module::program_change(int channel, int program)
 {
-    fluid_synth_program_change(synth, 0, program);
+    fluid_synth_program_change(synth, channel, program);
 
     update_preset_num();
 }

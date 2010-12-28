@@ -130,30 +130,31 @@ void jack_host::create_ports() {
 
 void jack_host::handle_event(uint8_t *buffer, uint32_t size)
 {
+    int channel = buffer[0] & 15;
     int value;
     switch(buffer[0] >> 4)
     {
     case 8:
-        module->note_off(buffer[1], buffer[2]);
+        module->note_off(channel, buffer[1], buffer[2]);
         break;
     case 9:
         if (!buffer[2])
-            module->note_off(buffer[1], 0);
+            module->note_off(channel, buffer[1], 0);
         else
-            module->note_on(buffer[1], buffer[2]);
+            module->note_on(channel, buffer[1], buffer[2]);
         break;
     case 11:
-        module->control_change(buffer[1], buffer[2]);
+        module->control_change(channel, buffer[1], buffer[2]);
         break;
     case 12:
-        module->program_change(buffer[1]);
+        module->program_change(channel, buffer[1]);
         break;
     case 13:
-        module->channel_pressure(buffer[1]);
+        module->channel_pressure(channel, buffer[1]);
         break;
     case 14:
         value = buffer[1] + 128 * buffer[2] - 8192;
-        module->pitch_bend(value);
+        module->pitch_bend(channel, value);
         break;
     }
 }
@@ -181,7 +182,7 @@ void jack_host::process_part(unsigned int time, unsigned int len)
         return;
     for (int i = 0; i < in_count; i++)
         inputs[i].meter.update(ins[i] + time, len);
-    unsigned int mask = module->process(time, len, -1, -1);
+    unsigned int mask = module->process_slice(time, time + len);
     for (int i = 0; i < out_count; i++)
     {
         if (!(mask & (1 << i))) {
