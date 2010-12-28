@@ -99,6 +99,9 @@ public:
     
     /// SIGUSR1 handler
     static void sigusr1handler(int signum);
+    
+    /// Client name for window title bar
+    std::string get_client_name() const;
 };
 
 };

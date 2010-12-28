@@ -510,3 +510,7 @@ void host_session::reorder_plugins()
     client.apply_plugin_order(order);
 }
 
+std::string host_session::get_client_name() const
+{
+    return client.name;
+}

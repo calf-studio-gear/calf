@@ -192,6 +192,7 @@ struct main_window_owner_iface
     virtual char *open_file(const char *name) = 0;
     virtual char *save_file(const char *name) = 0;
     virtual void reorder_plugins() = 0;
+    virtual std::string get_client_name() const = 0;
     virtual ~main_window_owner_iface() {}
 };
 
