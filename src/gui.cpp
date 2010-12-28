@@ -422,6 +422,73 @@ void activate_preset(GtkAction *action, activate_preset_params *params)
     params->preset_access->activate_preset(params->preset, params->builtin);
 }
 
+void about_action(GtkAction *action, plugin_gui_window *gui_win)
+{
+    GtkAboutDialog *dlg = GTK_ABOUT_DIALOG(gtk_about_dialog_new());
+    if (!dlg)
+        return;
+    
+    static const char *artists[] = {
+        "Markus Schmidt (GUI)",
+        "Thorsten Wilms (icon)",
+        NULL
+    };
+    
+    static const char *authors[] = {
+        "Krzysztof Foltman <wdev@foltman.com>",
+        "Hermann Meyer <brummer-@web.de>",
+        "Thor Harald Johansen <thj@thj.no>",
+        "Thorsten Wilms <t_w_@freenet.de>",
+        "Hans Baier <hansfbaier@googlemail.com>",
+        "Torben Hohn <torbenh@gmx.de>",
+        "Markus Schmidt <schmidt@boomshop.net>",
+        "Tom Szilagyi <tomszilagyi@gmail.com>",
+        "Damien Zammit <damien.zammit@gmail.com>",
+        "David T\xC3\xA4ht <d@teklibre.com>",
+        "Dave Robillard <dave@drobilla.net>",
+        NULL
+    };
+    
+    static const char translators[] = 
+        "Russian: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
+    ;
+    
+    string label = gui_win->gui->plugin->get_metadata_iface()->get_label();
+    gtk_about_dialog_set_name(dlg, ("About Calf " + label).c_str());
+    gtk_about_dialog_set_program_name(dlg, ("Calf " + label).c_str());
+    gtk_about_dialog_set_version(dlg, PACKAGE_VERSION);
+    gtk_about_dialog_set_website(dlg, "http://calf.sourceforge.net/");
+    gtk_about_dialog_set_copyright(dlg, "Copyright \xC2\xA9 2001-2010 Krzysztof Foltman, Thor Harald Johansen, Markus Schmidt and others.\nSee AUTHORS file for the full list.");
+    gtk_about_dialog_set_logo_icon_name(dlg, "calf");
+    gtk_about_dialog_set_artists(dlg, artists);
+    gtk_about_dialog_set_authors(dlg, authors);
+    gtk_about_dialog_set_translator_credits(dlg, translators);
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(GTK_WIDGET(dlg));
+}
+
+void tips_tricks_action(GtkAction *action, plugin_gui_window *gui_win)
+{
+    static const char tips_and_tricks[] = 
+    "1. Knob control\n"
+    "\n"
+    "Use SHIFT-dragging for increased precision. Mouse wheel is also supported.\n"
+    "\n"
+    "2. Rack ears\n"
+    "\n"
+    "If you consider those a waste of screen space, you can turn them off in Preferences dialog in Calf JACK host. The setting affects all versions of the GUI (DSSI, LV2 GTK+, LV2 External, JACK host).\n"
+    "\n"
+    ;
+    GtkMessageDialog *dlg = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(gui_win->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, tips_and_tricks));
+    if (!dlg)
+        return;
+    
+    
+    gtk_window_set_title(GTK_WINDOW(dlg), "Tips and Tricks");
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(GTK_WIDGET(dlg));
+}
+
 };
 
 static const GtkActionEntry actions[] = {
@@ -429,7 +496,10 @@ static const GtkActionEntry actions[] = {
     { "BuiltinPresetMenuAction", NULL, "_Built-in", NULL, "Built-in (factory) presets", NULL },
     { "UserPresetMenuAction", NULL, "_User", NULL, "User (your) presets", NULL },
     { "CommandMenuAction", NULL, "_Command", NULL, "Plugin-related commands", NULL },
+    { "HelpMenuAction", NULL, "_Help", NULL, "Help-related commands", NULL },
     { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
+    { "about", "gtk-about", "_About...", NULL, "About this plugin", (GCallback)about_action },
+    { "tips-tricks", NULL, "_Tips and tricks...", NULL, "Show a list of tips and tricks", (GCallback)tips_tricks_action },
 };
 
 /***************************** GUI window ********************************************/
@@ -445,6 +515,11 @@ static const char *ui_xml =
 "      <placeholder name=\"user_presets\"/>\n"
 "    </menu>\n"
 "    <placeholder name=\"commands\"/>\n"
+"    <menu action=\"HelpMenuAction\">\n"
+"      <menuitem action=\"tips-tricks\"/>\n"
+"      <separator/>\n"
+"      <menuitem action=\"about\"/>\n"
+"    </menu>\n"
 "  </menubar>\n"
 "</ui>\n"
 ;
