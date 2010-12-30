@@ -196,6 +196,7 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
 void fluidsynth_audio_module::send_configures(send_configure_iface *sci)
 {
     sci->send_configure("soundfont", soundfont.c_str());
+    sci->send_configure("preset_key_set", calf_utils::i2s(last_selected_preset).c_str());
 }
 
 int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int last_serial)
