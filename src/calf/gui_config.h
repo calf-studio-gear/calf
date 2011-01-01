@@ -1,7 +1,6 @@
 #ifndef CALF_GUI_CONFIG_H
 #define CALF_GUI_CONFIG_H
 
-#include <gtk/gtk.h>
 #include <glib.h>
 #include <gconf/gconf-client.h>
 #include <string>
