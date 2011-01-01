@@ -236,7 +236,8 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
-    virtual void send_configures(send_configure_iface *sci) { 
+    virtual void send_configures(send_configure_iface *sci)
+    {    
         if (instance)
         {
             fprintf(stderr, "Send configures...\n");
@@ -244,6 +245,13 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
         }
         else
             fprintf(stderr, "Configuration not available because of lack of instance-access/data-access\n");
+    }
+    virtual int send_status_updates(send_updates_iface *sui, int last_serial)
+    { 
+        if (instance)
+            return instance->send_status_updates(sui, last_serial);
+        else // no status updates because of lack of instance-access/data-access
+            return 0;
     }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
     /// Override for a method in plugin_ctl_iface - trivial delegation to base class
