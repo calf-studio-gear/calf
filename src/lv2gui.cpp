@@ -236,8 +236,14 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
-    void send_configures(send_configure_iface *sci) { 
-        fprintf(stderr, "TODO: send_configures (non-control port configuration dump) not implemented in LV2 GUIs\n");
+    virtual void send_configures(send_configure_iface *sci) { 
+        if (instance)
+        {
+            fprintf(stderr, "Send configures...\n");
+            instance->send_configures(sci);
+        }
+        else
+            fprintf(stderr, "Configuration not available because of lack of instance-access/data-access\n");
     }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return plugin_metadata; }
     /// Override for a method in plugin_ctl_iface - trivial delegation to base class
@@ -372,6 +378,29 @@ bool ext_plugin_gui::initialise()
 
 void ext_plugin_gui::show_impl()
 {
+    struct osc_configure_sender: public send_configure_iface
+    {
+        osc_client &cli;
+        
+        osc_configure_sender(osc_client &c)
+        : cli(c)
+        {
+        }
+        
+        virtual void send_configure(const char *key, const char *value)
+        {
+            osc_inline_typed_strstream data;
+            data << key;
+            data << value;
+            cli.send("/configure", data);
+        }
+    };
+
+    osc_configure_sender sender(cli);
+    
+    if (instance)
+        instance->send_configures(&sender);
+    
     cli.send("/show");
 }
 
