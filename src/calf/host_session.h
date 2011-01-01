@@ -31,7 +31,7 @@ namespace calf_plugins {
 
 class main_window;
 
-class host_session: public main_window_owner_iface, public calf_plugins::progress_report_iface, public session_client_iface
+class host_session: public main_window_owner_iface, public session_client_iface
 {
 private:
     static host_session *instance;
@@ -54,6 +54,10 @@ public:
     std::map<int, std::string> presets;
     /// Selected session manager (if any).
     session_manager_iface *session_manager;
+    /// Save has been requested from SIGUSR1 handler
+    volatile bool save_file_on_next_idle_call;
+    /// File name of the current rack
+    std::string current_filename;
     
     // these are not saved
     jack_client client;
@@ -61,9 +65,8 @@ public:
     int autoconnect_midi_index;
     std::set<int> chains;
     std::vector<jack_host *> plugins;
-    main_window *main_win;
+    main_window_iface *main_win;
     std::set<std::string> instances;
-    GtkWidget *progress_window;
     plugin_gui_window *gui_win;
     
     host_session();
@@ -73,20 +76,19 @@ public:
     void connect();
     void close();
     bool activate_preset(int plugin, const std::string &preset, bool builtin);
-    virtual void new_plugin(const char *name);    
-    virtual void remove_plugin(plugin_ctl_iface *plugin);
     void remove_all_plugins();
-    void reorder_plugins();
     std::string get_next_instance_name(const std::string &effect_name);
-    
-    /// Create a toplevel window with progress bar
-    GtkWidget *create_progress_window();
-    /// Implementation of progress_report_iface function
-    void report_progress(float percentage, const std::string &message);
     
     /// Set handler for SIGUSR1 that LADISH uses to invoke Save function
     void set_ladish_handler();
     
+    /// SIGUSR1 handler
+    static void sigusr1handler(int signum);
+    
+    /// Client name for window title bar
+    std::string get_client_name() const;
+    
+public:
     /// Implementation of open file functionality (TODO)
     virtual char *open_file(const char *name);
     /// Implementation of save file functionality
@@ -97,11 +99,13 @@ public:
     /// Save to session manager
     virtual void save(session_save_iface *);
     
-    /// SIGUSR1 handler
-    static void sigusr1handler(int signum);
-    
-    /// Client name for window title bar
-    std::string get_client_name() const;
+    virtual void new_plugin(const char *name);    
+    virtual void remove_plugin(plugin_ctl_iface *plugin);
+    virtual void on_main_window_destroy();
+    virtual void on_idle();
+    virtual void reorder_plugins();
+    virtual std::string get_current_filename() const;
+    virtual void set_current_filename(const std::string &name);
 };
 
 };

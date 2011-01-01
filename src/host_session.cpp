@@ -40,7 +40,6 @@ host_session::host_session()
     client_name = "calf";
     main_win = new main_window;
     main_win->set_owner(this);
-    progress_window = NULL;
     autoconnect_midi_index = -1;
     gui_win = NULL;
     session_manager = NULL;
@@ -65,7 +64,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
 {
     if (instance_name.empty())
         instance_name = get_next_instance_name(name);
-    jack_host *jh = create_jack_host(name.c_str(), instance_name, this);
+    jack_host *jh = create_jack_host(name.c_str(), instance_name, main_win);
     if (!jh) {
         string s = 
         #define PER_MODULE_ITEM(name, isSynth, jackname) jackname ", "
@@ -92,36 +91,6 @@ void host_session::add_plugin(string name, string preset, string instance_name)
     }
 }
 
-void host_session::report_progress(float percentage, const std::string &message)
-{
-    if (percentage < 100)
-    {
-        if (!progress_window) {
-            progress_window = create_progress_window();
-            gtk_window_set_modal (GTK_WINDOW (progress_window), TRUE);
-            if (main_win->toplevel)
-                gtk_window_set_transient_for (GTK_WINDOW (progress_window), main_win->toplevel);
-        }
-        gtk_widget_show(progress_window);
-        GtkWidget *pbar = gtk_bin_get_child (GTK_BIN (progress_window));
-        if (!message.empty())
-            gtk_progress_bar_set_text (GTK_PROGRESS_BAR (pbar), message.c_str());
-        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (pbar), percentage / 100.0);
-    }
-    else
-    {
-        if (progress_window) {
-            gtk_window_set_modal (GTK_WINDOW (progress_window), FALSE);
-            gtk_widget_destroy (progress_window);
-            progress_window = NULL;
-        }
-    }
-    
-    while (gtk_events_pending ())
-        gtk_main_iteration ();
-}
-
-
 void host_session::create_plugins_from_list()
 {
     for (unsigned int i = 0; i < plugin_names.size(); i++) {
@@ -129,17 +98,7 @@ void host_session::create_plugins_from_list()
     }
 }
 
-GtkWidget *host_session::create_progress_window()
-{
-    GtkWidget *tlw = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
-    gtk_window_set_type_hint (GTK_WINDOW (tlw), GDK_WINDOW_TYPE_HINT_DIALOG);
-    GtkWidget *pbar = gtk_progress_bar_new();
-    gtk_container_add (GTK_CONTAINER(tlw), pbar);
-    gtk_widget_show_all (pbar);
-    return tlw;
-}
-
-static void window_destroy_cb(GtkWindow *window, gpointer data)
+void host_session::on_main_window_destroy()
 {
     gtk_main_quit();
 }
@@ -151,19 +110,17 @@ void host_session::open()
     if (!midi_name.empty()) client.midi_name = midi_name;
     
     client.open(client_name.c_str());
-    main_win->prefix = client_name + " - ";
-    main_win->conditions.insert("jackhost");
-    main_win->conditions.insert("directlink");
-    main_win->conditions.insert("configure");
+    main_win->add_condition("jackhost");
+    main_win->add_condition("directlink");
+    main_win->add_condition("configure");
     if (!session_manager || !session_manager->is_being_restored()) 
         create_plugins_from_list();
     main_win->create();
-    gtk_signal_connect(GTK_OBJECT(main_win->toplevel), "destroy", G_CALLBACK(window_destroy_cb), NULL);
 }
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host *jh = create_jack_host(name, get_next_instance_name(name), this);
+    jack_host *jh = create_jack_host(name, get_next_instance_name(name), main_win);
     if (!jh)
         return;
     instances.insert(jh->instance_name);
@@ -315,7 +272,7 @@ void host_session::connect()
                 load_name = "";
             }
         }
-        main_win->current_filename = load_name;
+        set_current_filename(load_name);
     }
     if (session_manager)
         session_manager->connect("calf-" + client_name);
@@ -326,7 +283,6 @@ void host_session::close()
     if (session_manager)
         session_manager->disconnect();
     main_win->on_closed();
-    main_win->close_guis();
     client.deactivate();
     client.delete_plugins();
     client.close();
@@ -489,7 +445,17 @@ void host_session::save(session_save_iface *stream)
 
 void host_session::sigusr1handler(int signum)
 {
-    instance->main_win->save_file_from_sighandler();
+    instance->save_file_on_next_idle_call = true;
+}
+
+void host_session::on_idle()
+{
+    if (save_file_on_next_idle_call)
+    {
+        save_file_on_next_idle_call = false;
+        main_win->save_file();
+        printf("LADISH Level 1 support: file '%s' saved\n", get_current_filename().c_str());
+    }
 }
 
 void host_session::set_ladish_handler()
@@ -513,4 +479,14 @@ void host_session::reorder_plugins()
 std::string host_session::get_client_name() const
 {
     return client.name;
+}
+
+std::string host_session::get_current_filename() const
+{
+    return current_filename;
+}
+
+void host_session::set_current_filename(const std::string &name)
+{
+    current_filename = name;
 }

@@ -53,16 +53,16 @@ namespace calf_plugins {
         GtkActionGroup *std_actions, *plugin_actions;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
         std::vector<plugin_ctl_iface *> plugin_queue;
-        std::string prefix;
         bool is_closed;
         bool draw_rackmounts;
         int source_id;
         main_window_owner_iface *owner;
-        std::string current_filename;
         calf_utils::config_notifier_iface *notifier;
 
     protected:
-        volatile bool save_file_on_next_idle_call;
+        GtkWidget *progress_window;
+    
+    protected:
         plugin_strip *create_strip(plugin_ctl_iface *plugin);
         void update_strip(plugin_ctl_iface *plugin);
         static gboolean on_idle(void *data);
@@ -70,6 +70,8 @@ namespace calf_plugins {
         static void add_plugin_action(GtkWidget *src, gpointer data);
         void display_error(const char *error, const char *filename);
         void on_config_change();
+        /// Create a toplevel window with progress bar
+        GtkWidget *create_progress_window();        
 
     public:
         main_window();
@@ -81,7 +83,6 @@ namespace calf_plugins {
         void refresh_all_presets(bool builtin_too);
         void refresh_plugin(plugin_ctl_iface *plugin);
         void on_closed();
-        void close_guis();
         void open_gui(plugin_ctl_iface *plugin);    
         void create();
         void open_file();
@@ -89,6 +90,10 @@ namespace calf_plugins {
         bool save_file_as();
         void save_file_from_sighandler();
         void show_rack_ears(bool show);
+        /// Implementation of progress_report_iface function
+        virtual void report_progress(float percentage, const std::string &message);
+        /// Mark condition as true
+        virtual void add_condition(const std::string &name);
     private:
         static const GtkActionEntry actions[];
         static void on_open_action(GtkWidget *widget, main_window *main);

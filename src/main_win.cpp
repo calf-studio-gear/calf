@@ -34,6 +34,7 @@ main_window::main_window()
     owner = NULL;
     notifier = NULL;
     is_closed = true;
+    progress_window = NULL;
 }
 
 static const char *ui_xml = 
@@ -437,7 +438,7 @@ void main_window::update_strip(plugin_ctl_iface *plugin)
 void main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this, this);
-    gui_win->create(plugin, (prefix + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
+    gui_win->create(plugin, (owner->get_client_name() + " - " + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
     gtk_widget_show(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }
@@ -479,6 +480,11 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
         gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_id()), action_destroy_notify);
     }
     return s + plugin_post_xml;
+}
+
+static void window_destroy_cb(GtkWindow *window, gpointer data)
+{
+    ((main_window *)data)->owner->on_main_window_destroy();
 }
 
 void main_window::create()
@@ -537,6 +543,7 @@ void main_window::create()
     
     notifier = get_config_db()->add_listener(this);
     on_config_change();
+    gtk_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
 }
 
 void main_window::on_config_change()
@@ -551,17 +558,6 @@ void main_window::refresh_plugin(plugin_ctl_iface *plugin)
         plugins[plugin]->gui_win->gui->refresh();
 }
 
-void main_window::close_guis()
-{
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
-    {
-        if (i->second && i->second->gui_win) {
-            i->second->gui_win->close();
-        }
-    }
-    plugins.clear();
-}
-
 void main_window::on_closed()
 {
     if (notifier)
@@ -573,6 +569,14 @@ void main_window::on_closed()
         g_source_remove(source_id);
     is_closed = true;
     toplevel = NULL;
+
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    {
+        if (i->second && i->second->gui_win) {
+            i->second->gui_win->close();
+        }
+    }
+    plugins.clear();
 }
 
 static inline float LVL(float value)
@@ -583,12 +587,7 @@ static inline float LVL(float value)
 gboolean main_window::on_idle(void *data)
 {
     main_window *self = (main_window *)data;
-    if (self->save_file_on_next_idle_call)
-    {
-        self->save_file_on_next_idle_call = false;
-        self->save_file();
-        printf("LADISH Level 1 support: file '%s' saved\n", self->current_filename.c_str());
-    }
+    self->owner->on_idle();
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
     {
         if (i->second)
@@ -612,11 +611,6 @@ gboolean main_window::on_idle(void *data)
     return TRUE;
 }
 
-void main_window::save_file_from_sighandler()
-{
-    save_file_on_next_idle_call = true;
-}
-
 void main_window::open_file()
 {
     GtkWidget *dialog;
@@ -633,7 +627,7 @@ void main_window::open_file()
         if (error) 
             display_error(error, filename);
         else
-            current_filename = filename;
+            owner->set_current_filename(filename);
         g_free (filename);
         free (error);
     }
@@ -642,13 +636,13 @@ void main_window::open_file()
 
 bool main_window::save_file()
 {
-    if (current_filename.empty())
+    if (owner->get_current_filename().empty())
         return save_file_as();
 
-    const char *error = owner->save_file(current_filename.c_str());
+    const char *error = owner->save_file(owner->get_current_filename().c_str());
     if (error)
     {
-        display_error(error, current_filename.c_str());
+        display_error(error, owner->get_current_filename().c_str());
         return false;
     }
     return true;
@@ -672,7 +666,7 @@ bool main_window::save_file_as()
             display_error(error, filename);
         else
         {
-            current_filename = filename;
+            owner->set_current_filename(filename);
             success = true;
         }
         g_free (filename);
@@ -689,3 +683,48 @@ void main_window::display_error(const char *error, const char *filename)
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 }
+
+GtkWidget *main_window::create_progress_window()
+{
+    GtkWidget *tlw = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
+    gtk_window_set_type_hint (GTK_WINDOW (tlw), GDK_WINDOW_TYPE_HINT_DIALOG);
+    GtkWidget *pbar = gtk_progress_bar_new();
+    gtk_container_add (GTK_CONTAINER(tlw), pbar);
+    gtk_widget_show_all (pbar);
+    return tlw;
+}
+
+void main_window::report_progress(float percentage, const std::string &message)
+{
+    if (percentage < 100)
+    {
+        if (!progress_window) {
+            progress_window = create_progress_window();
+            gtk_window_set_modal (GTK_WINDOW (progress_window), TRUE);
+            if (toplevel)
+                gtk_window_set_transient_for (GTK_WINDOW (progress_window), toplevel);
+        }
+        gtk_widget_show(progress_window);
+        GtkWidget *pbar = gtk_bin_get_child (GTK_BIN (progress_window));
+        if (!message.empty())
+            gtk_progress_bar_set_text (GTK_PROGRESS_BAR (pbar), message.c_str());
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (pbar), percentage / 100.0);
+    }
+    else
+    {
+        if (progress_window) {
+            gtk_window_set_modal (GTK_WINDOW (progress_window), FALSE);
+            gtk_widget_destroy (progress_window);
+            progress_window = NULL;
+        }
+    }
+    
+    while (gtk_events_pending ())
+        gtk_main_iteration ();
+}
+
+void main_window::add_condition(const std::string &name)
+{
+    conditions.insert(name);
+}
+

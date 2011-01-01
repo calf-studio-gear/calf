@@ -173,15 +173,32 @@ public:
 };
 
 /// Interface used by the plugin to communicate with the main hosting window
-struct main_window_iface
+struct main_window_iface: public progress_report_iface
 {
-    virtual void set_owner(main_window_owner_iface *owner)=0;
-
-    virtual void add_plugin(plugin_ctl_iface *plugin)=0;
-    virtual void del_plugin(plugin_ctl_iface *plugin)=0;
+    /// Set owner pointer
+    virtual void set_owner(main_window_owner_iface *owner) = 0;
+    /// Add a condition to the list of conditions supported by the host
+    virtual void add_condition(const std::string &name) = 0;
+    /// Create the actual window associated with this interface
+    virtual void create() = 0;
+    /// Add the plugin to the window
+    virtual void add_plugin(plugin_ctl_iface *plugin) = 0;
+    /// Remove the plugin from the window
+    virtual void del_plugin(plugin_ctl_iface *plugin) = 0;
+    /// Refresh the plugin UI
+    virtual void refresh_plugin(plugin_ctl_iface *plugin) = 0;
+    /// Bind the plugin window to the plugin
+    virtual void set_window(plugin_ctl_iface *plugin, plugin_gui_window *window) = 0;
+    /// Refresh preset lists on all windows (if, for example, a new preset has been created)
+    virtual void refresh_all_presets(bool builtin_too) = 0;
+    /// Default open file operation
+    virtual void open_file() = 0;
+    /// Default save file operation
+    virtual bool save_file() = 0;
+    /// Called to clean up when host quits
+    virtual void on_closed() = 0;
     
-    virtual void set_window(plugin_ctl_iface *plugin, plugin_gui_window *window)=0;
-    virtual void refresh_all_presets(bool builtin_too)=0;
+    
     virtual ~main_window_iface() {}
 };
 
@@ -192,7 +209,16 @@ struct main_window_owner_iface
     virtual char *open_file(const char *name) = 0;
     virtual char *save_file(const char *name) = 0;
     virtual void reorder_plugins() = 0;
+    /// Return JACK client name (or its counterpart) to put in window title bars
     virtual std::string get_client_name() const = 0;
+    /// Called on 'destroy' event of the main window
+    virtual void on_main_window_destroy() = 0;
+    /// Called from idle handler
+    virtual void on_idle() = 0;
+    /// Get the file name of the current rack
+    virtual std::string get_current_filename() const = 0;    
+    /// Set the file name of the current rack
+    virtual void set_current_filename(const std::string &name) = 0;    
     virtual ~main_window_owner_iface() {}
 };
 
