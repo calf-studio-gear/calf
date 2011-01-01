@@ -99,8 +99,10 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
             size_t len = 0;
             uint32_t type = 0;
             const void *ptr = (*retrieve)(callback_data, vars[i], &len, &type);
-            if (ptr && type == string_type)
+            if (ptr)
             {
+                if (type != string_type)
+                    fprintf(stderr, "Warning: type is %d, expected %d\n", (int)type, (int)string_type);
                 printf("Calling configure on %s\n", vars[i]);
                 configure(vars[i], std::string((const char *)ptr, len).c_str());
             }
