@@ -95,10 +95,18 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
         }
         plugin->set_param_value(pos->second, values[i]);
     }
-    for (map<string, string>::iterator i = variables.begin(); i != variables.end(); i++)
+    const char *const *vnames = metadata->get_configure_vars();
+    if (vnames)
     {
-        printf("configure %s: %s\n", i->first.c_str(), i->second.c_str());
-        plugin->configure(i->first.c_str(), i->second.c_str());
+        for (; *vnames; vnames++)
+        {
+            const char *key = *vnames;
+            map<string, string>::const_iterator i = variables.find(key);
+            if (i == variables.end())
+                plugin->configure(key, NULL);
+            else
+                plugin->configure(key, i->second.c_str());
+        }
     }
 }
 
