@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
  * GUI - main window
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,12 +26,12 @@
 
 namespace calf_plugins {
 
-    class main_window: public main_window_iface, public gui_environment, public calf_utils::config_listener_iface
+    class gtk_main_window: public main_window_iface, public gui_environment, public calf_utils::config_listener_iface
     {
     public:
         struct plugin_strip
         {
-            main_window *main_win;
+            gtk_main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
             GtkWidget *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra, *leftBox, *rightBox;
@@ -39,9 +39,9 @@ namespace calf_plugins {
         
         struct add_plugin_params
         {
-            main_window *main_win;
+            gtk_main_window *main_win;
             std::string name;
-            add_plugin_params(main_window *_main_win, const std::string &_name)
+            add_plugin_params(gtk_main_window *_main_win, const std::string &_name)
             : main_win(_main_win), name(_name) {}
         };
         
@@ -74,7 +74,7 @@ namespace calf_plugins {
         GtkWidget *create_progress_window();        
 
     public:
-        main_window();
+        gtk_main_window();
         void set_owner(main_window_owner_iface *_owner) { owner = _owner; }
         void new_plugin(const char *name) { owner->new_plugin(name); }
         void add_plugin(plugin_ctl_iface *plugin);
@@ -94,14 +94,16 @@ namespace calf_plugins {
         virtual void report_progress(float percentage, const std::string &message);
         /// Mark condition as true
         virtual void add_condition(const std::string &name);
+        /// Display an error dialog
+        virtual void show_error(const std::string &text);
     private:
         static const GtkActionEntry actions[];
-        static void on_open_action(GtkWidget *widget, main_window *main);
-        static void on_save_action(GtkWidget *widget, main_window *main);
-        static void on_save_as_action(GtkWidget *widget, main_window *main);
-        static void on_preferences_action(GtkWidget *widget, main_window *main);
-        static void on_reorder_action(GtkWidget *widget, main_window *main);
-        static void on_exit_action(GtkWidget *widget, main_window *main);
+        static void on_open_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_save_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_save_as_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_preferences_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_reorder_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_exit_action(GtkWidget *widget, gtk_main_window *main);
     };
 };
 

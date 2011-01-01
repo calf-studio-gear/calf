@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
  * Standalone application module wrapper example.
  *
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <jack/midiport.h>
 #include <calf/host_session.h>
 #include <calf/preset.h>
+#include <calf/gtk_session_env.h>
 #include <getopt.h>
 
 using namespace std;
@@ -309,10 +310,9 @@ void print_help(char *argv[])
 int main(int argc, char *argv[])
 {
     g_type_init();
-    host_session sess;
-
-    gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
-    gtk_init(&argc, &argv);
+    
+    host_session sess(new gtk_session_environment());
+    sess.session_env->init_gui(argc, argv);
     
     // Scan the options for the first time to find switches like --help, -h or -?
     // This avoids starting communication with LASH when displaying help text.
@@ -413,11 +413,8 @@ int main(int argc, char *argv[])
         sess.connect();
         sess.client.activate();
         sess.set_ladish_handler();
-        gtk_main();
-        
+        sess.session_env->start_gui_loop();
         sess.close();
-        // this is now done on preset add
-        // save_presets(get_preset_filename().c_str());
     }
     catch(std::exception &e)
     {

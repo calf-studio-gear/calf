@@ -1,6 +1,6 @@
 /* Calf DSP Library
  * Universal GUI module
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -142,16 +142,31 @@ public:
     static void xml_element_end(void *data, const char *element);
 };
 
+class main_window_iface;
 class main_window_owner_iface;
 
 /// A class used to inform the plugin GUIs about the environment they run in
 /// (currently: what plugin features are accessible)
 struct gui_environment_iface
 {
-    virtual bool check_condition(const char *name)=0;
+    virtual bool check_condition(const char *name) = 0;
     virtual calf_utils::config_db_iface *get_config_db() = 0;
     virtual calf_utils::gui_config *get_config() = 0;
     virtual ~gui_environment_iface() {}
+};
+
+/// An interface that wraps UI-dependent elements of the session
+struct session_environment_iface
+{
+    /// Called to initialise the UI libraries
+    virtual void init_gui(int &argc, char **&argv) = 0;
+    /// Create an appropriate version of the main window
+    virtual main_window_iface *create_main_window() = 0;
+    /// Called to start the UI loop
+    virtual void start_gui_loop() = 0;
+    /// Called from within event handlers to finish the UI loop
+    virtual void quit_gui_loop() = 0;
+    virtual ~session_environment_iface() {}
 };
 
 /// Trivial implementation of gui_environment_iface
@@ -197,6 +212,8 @@ struct main_window_iface: public progress_report_iface
     virtual bool save_file() = 0;
     /// Called to clean up when host quits
     virtual void on_closed() = 0;
+    /// Show an error message
+    virtual void show_error(const std::string &text) = 0;
     
     
     virtual ~main_window_iface() {}

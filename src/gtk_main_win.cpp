@@ -1,6 +1,6 @@
 /* Calf DSP Library
  * GUI main window.
- * Copyright (C) 2007 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,12 +23,12 @@
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
-#include <calf/main_win.h>
+#include <calf/gtk_main_win.h>
 
 using namespace calf_plugins;
 using namespace std;
 
-main_window::main_window()
+gtk_main_window::gtk_main_window()
 {
     toplevel = NULL;
     owner = NULL;
@@ -56,7 +56,7 @@ static const char *ui_xml =
 "</ui>\n"
 ;
 
-const GtkActionEntry main_window::actions[] = {
+const GtkActionEntry gtk_main_window::actions[] = {
     { "FileMenuAction", NULL, "_File", NULL, "File-related operations", NULL },
     { "FileOpen", GTK_STOCK_OPEN, "_Open", "<Ctrl>O", "Open a rack file", (GCallback)on_open_action },
     { "FileSave", GTK_STOCK_SAVE, "_Save", "<Ctrl>S", "Save a rack file", (GCallback)on_save_action },
@@ -68,27 +68,27 @@ const GtkActionEntry main_window::actions[] = {
     { "FileQuit", GTK_STOCK_QUIT, "_Quit", "<Ctrl>Q", "Exit application", (GCallback)on_exit_action },
 };
 
-void main_window::on_open_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_open_action(GtkWidget *widget, gtk_main_window *main)
 {
     main->open_file();
 }
 
-void main_window::on_save_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_save_action(GtkWidget *widget, gtk_main_window *main)
 {
     main->save_file();
 }
 
-void main_window::on_save_as_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_save_as_action(GtkWidget *widget, gtk_main_window *main)
 {
     main->save_file_as();
 }
 
-void main_window::on_reorder_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_reorder_action(GtkWidget *widget, gtk_main_window *main)
 {
     main->owner->reorder_plugins();
 }
 
-void main_window::on_preferences_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *main)
 {
     GtkBuilder *prefs_builder = gtk_builder_new();
     GError *error = NULL;
@@ -118,12 +118,12 @@ void main_window::on_preferences_action(GtkWidget *widget, main_window *main)
     g_object_unref(G_OBJECT(prefs_builder));
 }
 
-void main_window::on_exit_action(GtkWidget *widget, main_window *main)
+void gtk_main_window::on_exit_action(GtkWidget *widget, gtk_main_window *main)
 {
     gtk_widget_destroy(GTK_WIDGET(main->toplevel));
 }
 
-void main_window::add_plugin(plugin_ctl_iface *plugin)
+void gtk_main_window::add_plugin(plugin_ctl_iface *plugin)
 {
     if (toplevel)
     {
@@ -137,7 +137,7 @@ void main_window::add_plugin(plugin_ctl_iface *plugin)
     }
 }
 
-void main_window::del_plugin(plugin_ctl_iface *plugin)
+void gtk_main_window::del_plugin(plugin_ctl_iface *plugin)
 {
     if (!plugins.count(plugin))
         return;
@@ -181,7 +181,7 @@ void main_window::del_plugin(plugin_ctl_iface *plugin)
     gtk_table_resize(GTK_TABLE(strips_table), rows - 4, cols);
 }
 
-void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_win)
+void gtk_main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_win)
 {
     if (!plugins.count(plugin))
         return;
@@ -193,7 +193,7 @@ void main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gui_wi
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(strip->button), gui_win != NULL);    
 }
 
-void main_window::refresh_all_presets(bool builtin_too)
+void gtk_main_window::refresh_all_presets(bool builtin_too)
 {
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
     {
@@ -206,7 +206,7 @@ void main_window::refresh_all_presets(bool builtin_too)
 }
 
 static gboolean
-gui_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
+gui_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
 {
     GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
     if ((gtk_toggle_button_get_active(tb) != 0) == (strip->gui_win != NULL))
@@ -221,13 +221,13 @@ gui_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
 }
 
 static gboolean
-extra_button_pressed(GtkWidget *button, main_window::plugin_strip *strip)
+extra_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
 {
     strip->main_win->owner->remove_plugin(strip->plugin);
     return TRUE;
 }
 
-void main_window::show_rack_ears(bool show)
+void gtk_main_window::show_rack_ears(bool show)
 {
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
     {
@@ -244,7 +244,7 @@ void main_window::show_rack_ears(bool show)
     }
 }
 
-main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
+gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *plugin)
 {
     plugin_strip *strip = new plugin_strip;
     strip->main_win = this;
@@ -428,14 +428,14 @@ main_window::plugin_strip *main_window::create_strip(plugin_ctl_iface *plugin)
     return strip;
 }
 
-void main_window::update_strip(plugin_ctl_iface *plugin)
+void gtk_main_window::update_strip(plugin_ctl_iface *plugin)
 {
     // plugin_strip *strip = plugins[plugin];
     // assert(strip);
     
 }
 
-void main_window::open_gui(plugin_ctl_iface *plugin)
+void gtk_main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this, this);
     gui_win->create(plugin, (owner->get_client_name() + " - " + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
@@ -456,7 +456,7 @@ static const char *plugin_post_xml =
 "</ui>\n"
 ;
 
-void main_window::add_plugin_action(GtkWidget *src, gpointer data)
+void gtk_main_window::add_plugin_action(GtkWidget *src, gpointer data)
 {
     add_plugin_params *app = (add_plugin_params *)data;
     app->main_win->new_plugin(app->name.c_str());
@@ -464,10 +464,10 @@ void main_window::add_plugin_action(GtkWidget *src, gpointer data)
 
 static void action_destroy_notify(gpointer data)
 {
-    delete (main_window::add_plugin_params *)data;
+    delete (gtk_main_window::add_plugin_params *)data;
 }
 
-std::string main_window::make_plugin_list(GtkActionGroup *actions)
+std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
     const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
@@ -484,10 +484,10 @@ std::string main_window::make_plugin_list(GtkActionGroup *actions)
 
 static void window_destroy_cb(GtkWindow *window, gpointer data)
 {
-    ((main_window *)data)->owner->on_main_window_destroy();
+    ((gtk_main_window *)data)->owner->on_main_window_destroy();
 }
 
-void main_window::create()
+void gtk_main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(toplevel, (owner->get_client_name() + " - Calf JACK Host").c_str());
@@ -546,19 +546,19 @@ void main_window::create()
     gtk_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
 }
 
-void main_window::on_config_change()
+void gtk_main_window::on_config_change()
 {
     get_config()->load(get_config_db());
     show_rack_ears(get_config()->rack_ears);    
 }
 
-void main_window::refresh_plugin(plugin_ctl_iface *plugin)
+void gtk_main_window::refresh_plugin(plugin_ctl_iface *plugin)
 {
     if (plugins[plugin]->gui_win)
         plugins[plugin]->gui_win->gui->refresh();
 }
 
-void main_window::on_closed()
+void gtk_main_window::on_closed()
 {
     if (notifier)
     {
@@ -584,9 +584,9 @@ static inline float LVL(float value)
     return sqrt(value) * 0.75;
 }
 
-gboolean main_window::on_idle(void *data)
+gboolean gtk_main_window::on_idle(void *data)
 {
-    main_window *self = (main_window *)data;
+    gtk_main_window *self = (gtk_main_window *)data;
     self->owner->on_idle();
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
     {
@@ -611,7 +611,7 @@ gboolean main_window::on_idle(void *data)
     return TRUE;
 }
 
-void main_window::open_file()
+void gtk_main_window::open_file()
 {
     GtkWidget *dialog;
     dialog = gtk_file_chooser_dialog_new ("Open File",
@@ -634,7 +634,7 @@ void main_window::open_file()
     gtk_widget_destroy (dialog);
 }
 
-bool main_window::save_file()
+bool gtk_main_window::save_file()
 {
     if (owner->get_current_filename().empty())
         return save_file_as();
@@ -648,7 +648,7 @@ bool main_window::save_file()
     return true;
 }
 
-bool main_window::save_file_as()
+bool gtk_main_window::save_file_as()
 {
     GtkWidget *dialog;
     bool success = false;
@@ -676,7 +676,7 @@ bool main_window::save_file_as()
     return success;
 }
 
-void main_window::display_error(const char *error, const char *filename)
+void gtk_main_window::display_error(const char *error, const char *filename)
 {
     GtkWidget *dialog;
     dialog = gtk_message_dialog_new_with_markup (toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, error, filename, NULL);
@@ -684,7 +684,7 @@ void main_window::display_error(const char *error, const char *filename)
     gtk_widget_destroy (dialog);
 }
 
-GtkWidget *main_window::create_progress_window()
+GtkWidget *gtk_main_window::create_progress_window()
 {
     GtkWidget *tlw = gtk_window_new ( GTK_WINDOW_TOPLEVEL );
     gtk_window_set_type_hint (GTK_WINDOW (tlw), GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -694,7 +694,7 @@ GtkWidget *main_window::create_progress_window()
     return tlw;
 }
 
-void main_window::report_progress(float percentage, const std::string &message)
+void gtk_main_window::report_progress(float percentage, const std::string &message)
 {
     if (percentage < 100)
     {
@@ -723,8 +723,14 @@ void main_window::report_progress(float percentage, const std::string &message)
         gtk_main_iteration ();
 }
 
-void main_window::add_condition(const std::string &name)
+void gtk_main_window::add_condition(const std::string &name)
 {
     conditions.insert(name);
 }
 
+void gtk_main_window::show_error(const std::string &text)
+{
+    GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", text.c_str());
+    gtk_dialog_run (GTK_DIALOG (widget));
+    gtk_widget_destroy (widget);
+}

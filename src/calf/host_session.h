@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
  * Class for managing calfjackhost's session.
  *
- * Copyright (C) 2007-2010 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,8 +68,9 @@ public:
     main_window_iface *main_win;
     std::set<std::string> instances;
     plugin_gui_window *gui_win;
+    session_environment_iface *session_env;
     
-    host_session();
+    host_session(session_environment_iface *);
     void open();
     void add_plugin(std::string name, std::string preset, std::string instance_name = std::string());
     void create_plugins_from_list();

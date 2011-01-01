@@ -1,7 +1,7 @@
 /* Calf DSP Library Utility Application - calfjackhost
  * A class that contains a JACK host session
  *
- * Copyright (C) 2007-2010 Krzysztof Foltman
+ * Copyright (C) 2007-2011 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <calf/host_session.h>
 #include <calf/gui.h>
 #include <calf/preset.h>
-#include <calf/main_win.h>
 #include <getopt.h>
 #include <sys/stat.h>
 
@@ -35,15 +34,17 @@ using namespace calf_plugins;
 
 host_session *host_session::instance = NULL;
 
-host_session::host_session()
+host_session::host_session(session_environment_iface *se)
 {
     client_name = "calf";
-    main_win = new main_window;
-    main_win->set_owner(this);
+    session_env = se;
     autoconnect_midi_index = -1;
     gui_win = NULL;
     session_manager = NULL;
     only_load_if_exists = false;
+
+    main_win = session_env->create_main_window();
+    main_win->set_owner(this);
 }
 
 std::string host_session::get_next_instance_name(const std::string &effect_name)
@@ -100,7 +101,7 @@ void host_session::create_plugins_from_list()
 
 void host_session::on_main_window_destroy()
 {
-    gtk_main_quit();
+    session_env->quit_gui_loop();
 }
 
 void host_session::open()
@@ -257,20 +258,13 @@ void host_session::connect()
                     suppress_error = true;
             }
             // If the file is optional and it didn't exist, suppress the error
-            if (suppress_error)
+            if (!suppress_error)
             {
-                g_free(error);
-                // keep the load_name for any later save
-            }
-            else
-            {
-                GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Cannot load '%s': %s", load_name.c_str(), error);
-                gtk_dialog_run (GTK_DIALOG (widget));
-                gtk_widget_destroy (widget);
+                main_win->show_error("Cannot load '" + load_name + "': " + error);
                 
-                g_free(error);
                 load_name = "";
             }
+            g_free(error);
         }
         set_current_filename(load_name);
     }
