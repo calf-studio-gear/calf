@@ -42,6 +42,7 @@ host_session::host_session(session_environment_iface *se)
     gui_win = NULL;
     session_manager = NULL;
     only_load_if_exists = false;
+    save_file_on_next_idle_call = false;
 
     main_win = session_env->create_main_window();
     main_win->set_owner(this);
