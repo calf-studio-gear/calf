@@ -82,6 +82,7 @@ struct organ_parameters {
     float lfo_wet;
     float lfo_phase;
     float lfo_mode;
+    float lfo_type;
     
     float global_transpose;
     float global_detune;
@@ -206,6 +207,7 @@ protected:
     enum { ScannerSize = 18 };
     float lfo_phase;
     dsp::biquad_d2<float> scanner[ScannerSize];
+    organ_vibrato legacy;
 public:
     void reset();
     void process(organ_parameters *parameters, float (*data)[2], unsigned int len, float sample_rate);

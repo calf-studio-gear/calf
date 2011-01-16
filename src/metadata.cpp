@@ -851,6 +851,8 @@ const char *organ_ampctl_names[] = { "None", "Direct", "Flt 1", "Flt 2", "All"  
 
 const char *organ_vibrato_mode_names[] = { "None", "Direct", "Flt 1", "Flt 2", "Voice", "Global"  };
 
+const char *organ_vibrato_type_names[] = { "Allpass", "Scanner (V1/C1)", "Scanner (V2/C2)", "Scanner (V3/C3)", "Scanner (Full)"  };
+
 const char *organ_filter_type_names[] = { "12dB/oct LP", "12dB/oct HP" };
 
 const char *organ_filter_send_names[] = { "Output", "Filter 2" };
@@ -991,7 +993,8 @@ CALF_PORT_PROPS(organ) = {
     { 1.0,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_amt", "Vib Mod Amt" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "vib_wet", "Vib Wet" },
     { 180,        0,  360,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "vib_phase", "Vib Stereo" },
-    { organ_enums::lfomode_global,        0,  organ_enums::lfomode_count - 1,    0, PF_ENUM | PF_CTL_COMBO, organ_vibrato_mode_names, "vib_mode", "Vib Mode" },
+    { organ_enums::lfomode_global,    0,  organ_enums::lfomode_count - 1,    0, PF_ENUM | PF_CTL_COMBO, organ_vibrato_mode_names, "vib_mode", "Vib Mode" },
+    { organ_enums::lfotype_cv3,       0,   organ_enums::lfotype_count - 1,    0, PF_ENUM | PF_CTL_COMBO, organ_vibrato_type_names, "vib_type", "Vib Type" },
 //    { 0,  0, organ_enums::ampctl_count - 1,
 //                              0, PF_INT | PF_CTL_COMBO, organ_ampctl_names, "vel_amp_ctl", "Vel To Amp"},
 

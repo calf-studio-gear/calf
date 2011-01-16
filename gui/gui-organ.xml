@@ -548,6 +548,11 @@
             <value param="vib_phase"/>
           </vbox>
           <vbox >
+            <label param="vib_type"/>
+            <combo param="vib_type" />
+            <label />
+          </vbox>
+          <vbox >
             <label param="vib_mode"/>
             <combo param="vib_mode" />
             <label />
