@@ -1,54 +1,66 @@
 <table rows="1" cols="3">
-	<frame attach-x="2" attach-y="0" label="Manual">
-		<table rows="2" cols="2">
-		    <vbox  attach-x="1" attach-y="0" fill-x="1" fill-y="1" border="10">
-		        <label param="treble_speed" />
-		        <led param="meter_h" mode="2" />
-		        <value param="treble_speed" />
-		    </vbox>
-		    <knob param="treble_speed" size="3" attach-x="0" attach-y="0" pad-x="10" />
-		    <vbox attach-x="1" attach-y="1" fill-x="1" fill-y="1" border="10">
-		        <label param="bass_speed" />
-		        <led param="meter_l" mode="3" border="10" />
-		        <value param="bass_speed" />
-		    </vbox>
-		    <knob param="bass_speed" size="3" attach-x="0" attach-y="1" pad-x="10" />
-		</table>
+    <frame attach-x="2" attach-y="0" label="Manual">
+        <table rows="2" cols="2">
+            <vbox  attach-x="1" attach-y="0" fill-x="1" fill-y="1" border="10">
+                <label param="treble_speed" />
+                <led param="meter_h" mode="2" />
+                <value param="treble_speed" />
+            </vbox>
+            <knob param="treble_speed" size="3" attach-x="0" attach-y="0" pad-x="10" />
+            <vbox attach-x="1" attach-y="1" fill-x="1" fill-y="1" border="10">
+                <label param="bass_speed" />
+                <led param="meter_l" mode="3" border="10" />
+                <value param="bass_speed" />
+            </vbox>
+            <knob param="bass_speed" size="3" attach-x="0" attach-y="1" pad-x="10" />
+        </table>
     </frame>
     <vbox expand-y="0" attach-x="0" attach-y="0" pad-x="20">
-        <label param="mod_depth" fill-x="0" expand-x="0" align-y="1.0" />
-        <knob param="mod_depth" size="5" />
-        <value param="mod_depth" align-y="0.0" />
+        <vbox spacing="3" fill="0">
+            <label param="mod_depth" fill-x="0" expand-x="0" align-y="1.0" />
+            <knob param="mod_depth" size="3" />
+            <value param="mod_depth" align-y="0.0" />
+        </vbox>
+        <vbox spacing="3" fill="0">
+            <label param="am_depth" />
+            <knob param="am_depth" size="3" />
+            <value param="am_depth" />
+        </vbox>
     </vbox>
     <vbox attach-x="1" attach-y="0" pad-x="8">
-		<frame label="Cabinet">
-			<hbox homogeneous="1">
-				<vbox spacing="3" fill="0">
-				    <label param="shift" />
-				    <knob param="shift" size="2" />
-				    <value param="shift" />
-				</vbox>
-				<vbox spacing="3" fill="0">
-				    <label param="spacing" />
-				    <knob param="spacing" size="2" />
-				    <value param="spacing" />
-				</vbox>
-				<vbox spacing="3" fill="0">
-				    <label param="mic_distance"/>
-				    <knob param="mic_distance" size="2" />
-				    <value param="mic_distance" />
-				</vbox>
-				<vbox spacing="3" fill="0">
-				    <label param="reflection" />
-				    <knob param="reflection" size="2" />
-				    <value param="reflection" />
-				</vbox>
-			</hbox>
-		</frame>
-		<frame label="Controller">
-		    <vbox>
-		        <combo param="vib_speed" border="5" />
-		    </vbox>
-		</frame>
-	</vbox>
+        <frame label="Cabinet">
+                <hbox homogeneous="1">
+                        <vbox spacing="3" fill="0">
+                            <label param="shift" />
+                            <knob param="shift" size="2" />
+                            <value param="shift" />
+                        </vbox>
+                        <vbox spacing="3" fill="0">
+                            <label param="spacing" />
+                            <knob param="spacing" size="2" />
+                            <value param="spacing" />
+                        </vbox>
+                        <vbox spacing="3" fill="0">
+                            <label param="mic_distance"/>
+                            <knob param="mic_distance" size="2" />
+                            <value param="mic_distance" />
+                        </vbox>
+                        <vbox spacing="3" fill="0">
+                            <label param="reflection" />
+                            <knob param="reflection" size="2" />
+                            <value param="reflection" />
+                        </vbox>
+                        <vbox spacing="3" fill="0">
+                            <label param="test" />
+                            <knob param="test" size="2" />
+                            <value param="test" />
+                        </vbox>
+                </hbox>
+        </frame>
+        <frame label="Controller">
+            <vbox>
+                <combo param="vib_speed" border="5" />
+            </vbox>
+        </frame>
+    </vbox>
 </table>
