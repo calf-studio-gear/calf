@@ -20,7 +20,6 @@
  * Boston, MA  02110-1301  USA
  */
 #include <calf/ctl_curve.h>
-#include <malloc.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
