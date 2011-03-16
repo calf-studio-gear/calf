@@ -36,6 +36,7 @@ void osc_socket::bind(const char *hostaddr, int port)
         throw osc_net_exception("socket");
     
     sockaddr_in sadr;
+    memset(&sadr, 0, sizeof(sadr));
     sadr.sin_family = AF_INET;
     sadr.sin_port = htons(port);
     inet_aton(hostaddr, &sadr.sin_addr);

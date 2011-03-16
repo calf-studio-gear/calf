@@ -21,7 +21,6 @@
 #include <calf/ctl_led.h>
 #include <math.h>
 #include <stdint.h>
-#include <malloc.h>
 #include <stdlib.h>
 
 GtkWidget *
