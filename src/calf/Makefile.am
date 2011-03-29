@@ -4,7 +4,7 @@ noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
     gui.h gui_config.h gui_controls.h inertia.h jackhost.h \
     host_session.h ladspa_wrap.h loudness.h \
     lv2_data_access.h lv2_event.h lv2_external_ui.h \
-    lv2_persist.h lv2_persist2.h lv2_progress.h lv2_ui.h lv2_uri_map.h lv2helpers.h lv2wrap.h \
+    lv2_persist.h  lv2_progress.h lv2_ui.h lv2_uri_map.h lv2helpers.h lv2wrap.h \
     metadata.h modmatrix.h \
     modules.h modules_comp.h modules_dev.h modules_dist.h modules_eq.h modules_mod.h modules_synths.h \
     modulelist.h \

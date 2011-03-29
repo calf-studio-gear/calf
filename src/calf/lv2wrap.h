@@ -28,7 +28,7 @@
 #include <lv2.h>
 #include <calf/giface.h>
 #include <calf/lv2_event.h>
-#include <calf/lv2_persist2.h>
+#include <calf/lv2_persist.h>
 #include <calf/lv2_progress.h>
 #include <calf/lv2_uri_map.h>
 #include <string.h>
@@ -92,13 +92,15 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         if (!vars)
             return;
         assert(uri_map);
-        uint32_t string_type = uri_map->uri_to_id(uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        uint32_t string_type = uri_map->uri_to_id(uri_map, NULL, "http://www.w3.org/2001/XMLSchema#string");
         assert(string_type);
         for (unsigned int i = 0; vars[i]; i++)
         {
-            size_t len = 0;
-            uint32_t type = 0;
-            const void *ptr = (*retrieve)(callback_data, vars[i], &len, &type);
+            const uint32_t key   = uri_map->uri_to_id(uri_map, NULL, vars[i]);
+            size_t         len   = 0;
+            uint32_t       type  = 0;
+            uint32_t       flags = 0;
+            const void *ptr = (*retrieve)(callback_data, key, &len, &type, &flags);
             if (ptr)
             {
                 if (type != string_type)
@@ -303,19 +305,26 @@ struct lv2_wrapper
         {
             LV2_Persist_Store_Function store;
             void *callback_data;
+            instance *inst;
             uint32_t string_data_type;
             
             virtual void send_configure(const char *key, const char *value)
             {
-                (*store)(callback_data, key, value, strlen(value) + 1, string_data_type);
+                (*store)(callback_data,
+                         inst->uri_map->uri_to_id(inst->uri_map, NULL, key),
+                         value,
+                         strlen(value) + 1,
+                         string_data_type,
+                         LV2_PERSIST_IS_POD|LV2_PERSIST_IS_PORTABLE);
             }
         };
-        // A host that supports a Persist extension should support an URI map extension as well.
+        // A host that supports Persist MUST support URI-Map as well.
         assert(inst->uri_map);
         store_state s;
         s.store = store;
         s.callback_data = callback_data;
-        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        s.inst = inst;
+        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map, NULL, "http://www.w3.org/2001/XMLSchema#string");
 
         inst->send_configures(&s);
     }
