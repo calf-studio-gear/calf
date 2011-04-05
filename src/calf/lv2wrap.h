@@ -92,7 +92,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         if (!vars)
             return;
         assert(uri_map);
-        uint32_t string_type = uri_map->uri_to_id(uri_map, NULL, "http://www.w3.org/2001/XMLSchema#string");
+        uint32_t string_type = uri_map->uri_to_id(uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
         assert(string_type);
         for (unsigned int i = 0; vars[i]; i++)
         {
@@ -324,7 +324,7 @@ struct lv2_wrapper
         s.store = store;
         s.callback_data = callback_data;
         s.inst = inst;
-        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map, NULL, "http://www.w3.org/2001/XMLSchema#string");
+        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
 
         inst->send_configures(&s);
     }
