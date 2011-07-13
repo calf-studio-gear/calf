@@ -6,9 +6,9 @@
 #
 # Feel free to modify and share!
 
-gtk_color_scheme = "fg_color:#101010\nbg_color:#EFEBE7\nbase_color:#FFF\ntext_color:#1A1A1A\nselected_bg_color:#FFA443\nselected_fg_color:#1A1A1A\ntooltip_bg_color:#F5F5B5\ntooltip_fg_color:#000"
+#gtk_color_scheme = "calf_fg_color:#101010\ncalf_bg_color:#EFEBE7\ncalf_base_color:#FFF\ncalf_text_color:#1A1A1A\ncalf_selected_bg_color:#FFA443\ncalf_selected_fg_color:#1A1A1A\ncalf_tooltip_bg_color:#F5F5B5\ncalf_tooltip_fg_color:#000"
 
-pixmap_path "@pkgdatadir@"
+pixmap_path "/usr/local/share/calf"
 
 style "calf-default"
 {
@@ -62,7 +62,7 @@ style "calf-default"
 	fg[SELECTED]      = "#0af"
 	fg[INSENSITIVE]   = "#aaa"
 
-	bg[NORMAL]        = "#465160"
+	bg[NORMAL]        = "#eee"
 	bg[PRELIGHT]      = "#000"
 	bg[ACTIVE]        = shade (0.9, "#465160")
 	bg[SELECTED]	  = "#000" # Gnome Appearances Preferences workaround
@@ -277,7 +277,7 @@ style "calf-wide"
 	xthickness   = 3
 	ythickness   = 2
 
-	bg[SELECTED] = @selected_bg_color
+	bg[SELECTED] = "#FFA443"
 }
 
 style "calf-wider"
@@ -1689,8 +1689,8 @@ style "calf-statusbar"
 
 style "calf-tooltips" = "calf-wider"
 {
-	bg[NORMAL] = @tooltip_bg_color
-	fg[NORMAL] = @tooltip_fg_color
+	bg[NORMAL] = "#F5F5B5"
+	fg[NORMAL] = "#000"
 }
 
 
@@ -1766,7 +1766,7 @@ widget "*Calf*Range"       					style : highest "calf-scale-small"
 widget "*Calf*Scale1"       					style : highest "calf-scale-small"
 widget "*Calf*Scale2"       					style : highest "calf-scale-big"
 widget "*Calf*Scrollbar*"   					style : highest "calf-scrollbar"
-
+#
 
 # Increase the x/ythickness in some widgets
 #class "GtkToolbar"   					style "calf-default" 
@@ -1814,12 +1814,12 @@ widget "*Calf*.gtk-combobox-popup-menu.*"   			style "calf-menuitem-text-is-fg-c
 # base color set.
 style "calf-fg-is-text-color-workaround"
 {
-	bg[SELECTED]    = @selected_bg_color
-	fg[NORMAL]      = @text_color
-	fg[PRELIGHT]    = @text_color
-	fg[ACTIVE]      = @selected_fg_color
-	fg[SELECTED]    = @selected_fg_color
-	fg[INSENSITIVE] = darker (@bg_color)
+	bg[SELECTED]    = "#FFA443"
+	fg[NORMAL]      = "#1A1A1A"
+	fg[PRELIGHT]    = "#1A1A1A"
+	fg[ACTIVE]      = "#1A1A1A"
+	fg[SELECTED]    = "#1A1A1A"
+	fg[INSENSITIVE] = darker ("#EFEBE7")
 }
 
 widget_class "*Calf*<GtkListItem>*" 				style "calf-fg-is-text-color-workaround"

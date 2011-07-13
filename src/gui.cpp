@@ -236,6 +236,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     
     XML_ParserFree(parser);
     last_status_serial_no = plugin->send_status_updates(this, 0);
+    GtkWidget *eventbox  = gtk_event_box_new();
     GtkWidget *decoTable = gtk_table_new(3, 1, FALSE);
     
     // decorations
@@ -274,6 +275,8 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
         
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
+    gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
+    gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-whatever" );
     
     // create window with viewport
 //    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -281,7 +284,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
 //    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
 //    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
     
-    return GTK_WIDGET(decoTable);
+    return GTK_WIDGET(eventbox);
 }
 
 void plugin_gui::send_configure(const char *key, const char *value)
