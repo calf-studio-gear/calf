@@ -91,7 +91,7 @@ endif
 
 if USE_GUI
 libcalfgui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp ctl_vumeter.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp utils.cpp
-libcalfgui_la_LDFLAGS = -static -disable-shared
+libcalfgui_la_LDFLAGS = -static -disable-shared -lexpat
 endif
 
 clean-local:
