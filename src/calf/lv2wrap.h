@@ -92,11 +92,11 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         if (!vars)
             return;
         assert(uri_map);
-        uint32_t string_type = uri_map->uri_to_id(uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        uint32_t string_type = uri_map->uri_to_id(uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
         assert(string_type);
         for (unsigned int i = 0; vars[i]; i++)
         {
-            const uint32_t key   = uri_map->uri_to_id(uri_map, NULL, vars[i]);
+            const uint32_t key   = uri_map->uri_to_id(uri_map->callback_data, NULL, vars[i]);
             size_t         len   = 0;
             uint32_t       type  = 0;
             uint32_t       flags = 0;
@@ -311,7 +311,7 @@ struct lv2_wrapper
             virtual void send_configure(const char *key, const char *value)
             {
                 (*store)(callback_data,
-                         inst->uri_map->uri_to_id(inst->uri_map, NULL, key),
+                         inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, key),
                          value,
                          strlen(value) + 1,
                          string_data_type,
@@ -324,7 +324,7 @@ struct lv2_wrapper
         s.store = store;
         s.callback_data = callback_data;
         s.inst = inst;
-        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
 
         inst->send_configures(&s);
     }
