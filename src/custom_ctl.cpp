@@ -102,7 +102,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
-    int ox = 5, oy = 5, rad, pad;
+    int ox = 5, oy = 5, pad;
     int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
 
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -161,31 +161,16 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 //            }
             cairo_paint(cache_cr);
             
-            // outer (light)
+            // outer (black)
             pad = 0;
-            rad = 6;
-            cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-            cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-            cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-            cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-            cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
-            cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
-            cairo_set_source (cache_cr, pat2);
+            cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+            cairo_set_source_rgb(cache_cr, 0, 0, 0);
             cairo_fill(cache_cr);
             
-            // inner (black)
+            // inner (bevel)
             pad = 1;
-            rad = 5;
-            cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-            cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-            cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-            cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-            pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
+            cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+            cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
             cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
             cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
             cairo_set_source (cache_cr, pat2);
@@ -906,35 +891,19 @@ calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
 //        }
         cairo_paint(cache_cr);
         
-        // outer (light)
+        // outer (black)
         pad = 0;
-        rad = 6;
-        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
-        cairo_set_source (cache_cr, pat2);
+        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+        cairo_set_source_rgb(cache_cr, 0, 0, 0);
         cairo_fill(cache_cr);
         
-        // inner (black)
+        // inner (bevel)
         pad = 1;
-        rad = 5;
-        cairo_arc(cache_cr, rad + pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, rad + pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, rad + pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_arc(cache_cr, ox * 2 + sx - rad - pad, oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-        cairo_rectangle(cache_cr, pad, rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-        cairo_rectangle(cache_cr, rad + pad, pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
+        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
         cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
         cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
         cairo_set_source (cache_cr, pat2);
-        //cairo_set_source_rgb(cache_cr, 0, 0, 0);
         cairo_fill(cache_cr);
         cairo_pattern_destroy(pat2);
         

@@ -30,35 +30,25 @@
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
 
 static void
-calf_vumeter_draw_outline_part (cairo_t *c, int pad, int rad, int ix, int iy, int ox, int oy, int sx, int sy)
+calf_vumeter_draw_outline_part (cairo_t *c, int pad, int ix, int iy, int ox, int oy, int sx, int sy)
 {
-    cairo_arc(c, ix + rad + pad, iy + rad + pad, rad, 0, 2 * M_PI);
-    cairo_arc(c, ix + ox * 2 + sx - rad - pad, iy + rad + pad, rad, 0, 2 * M_PI);
-    cairo_arc(c, ix + rad + pad, iy + oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-    cairo_arc(c, ix + ox * 2 + sx - rad - pad, iy + oy * 2 + sy - rad - pad, rad, 0, 2 * M_PI);
-    cairo_rectangle(c, ix + pad, iy + rad + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - rad * 2 - pad * 2);
-    cairo_rectangle(c, ix + rad + pad, iy + pad, sx + ox * 2 - rad * 2 - pad * 2, sy + oy * 2 - pad * 2);
+    cairo_rectangle(c, ix + pad, iy + pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
 }
 
 static void
 calf_vumeter_draw_outline (cairo_t *c, int ix, int iy, int ox, int oy, int sx, int sy)
 {
-    // outer (light)
-    calf_vumeter_draw_outline_part (c, 0, 6, ix, iy, ox, oy, sx, sy);
-    cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - 0 * 2);
-    cairo_pattern_add_color_stop_rgba (pat2, 0, 0, 0, 0, 0.3);
-    cairo_pattern_add_color_stop_rgba (pat2, 1, 1, 1, 1, 0.6);
-    cairo_set_source (c, pat2);
+    // outer (black)
+    calf_vumeter_draw_outline_part (c, 0, ix, iy, ox, oy, sx, sy);
+    cairo_set_source_rgb(c, 0, 0, 0);
     cairo_fill(c);
-    cairo_pattern_destroy(pat2);
     
-    // inner (black)
-    calf_vumeter_draw_outline_part (c, 1, 5, ix, iy, ox, oy, sx, sy);
-    pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - 1 * 2);
+    // inner (bevel)
+    calf_vumeter_draw_outline_part (c, 1, ix, iy, ox, oy, sx, sy);
+    cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - 1 * 2);
     cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
     cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
     cairo_set_source (c, pat2);
-    //cairo_set_source_rgb(c, 0, 0, 0);
     cairo_fill(c);
     cairo_pattern_destroy(pat2);
 }
@@ -76,7 +66,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     int mx = vu->meter_width;
     if (mx > widget->allocation.width / 2)
         mx = 0;
-    int sx = widget->allocation.width - (ox * 2) - ((widget->allocation.width - inner * 2 - ox * 2) % led) - 1 - mx, sy = widget->allocation.height - (oy * 2);
+    int sx = widget->allocation.width - (ox * 2), sy = widget->allocation.height - (oy * 2);
+    int sx1 = sx - ((widget->allocation.width - inner * 2 - ox * 2) % led) - 1 - mx;
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     if( vu->cache_surface == NULL ) {
@@ -101,6 +92,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_paint(cache_cr);
         
         calf_vumeter_draw_outline (cache_cr, 0, 0, ox, oy, sx, sy);
+        
+        sx = sx1;
         
         cairo_rectangle(cache_cr, ox, oy, sx, sy);
         cairo_set_source_rgb (cache_cr, 0, 0, 0);
@@ -153,6 +146,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_pattern_add_color_stop_rgba (vu->pat, 1, 0, 0, 0, 0.6);
         cairo_destroy( cache_cr );
     }
+    
+    sx = sx1;
 
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
     cairo_paint( c );
