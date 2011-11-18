@@ -329,17 +329,17 @@ style "calf-button"
     xthickness = 5
     ythickness = 2
     
-    fg[NORMAL]			= "#000"
-	fg[PRELIGHT]		= "#000"
-	fg[SELECTED]		= "#000"
-	fg[ACTIVE]			= "#000"
-	fg[INSENSITIVE]		= "#666"
+    	fg[NORMAL]			= "#146AB7"
+	fg[PRELIGHT]		= "#49DBE8"
+	fg[SELECTED]		= "#146AB7"
+	fg[ACTIVE]			= "#49DBE8"
+	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#000"
-	text[PRELIGHT]		= "#000"
-	text[SELECTED]		= "#000"
-	text[ACTIVE]		= "#000"
-	text[INSENSITIVE]	= "#666"
+	text[NORMAL]		= "#146AB7"
+	text[PRELIGHT]		= "#49DBE8"
+	text[SELECTED]		= "#146AB7"
+	text[ACTIVE]		= "#49DBE8"
+	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -412,17 +412,17 @@ style "calf-toggle"
     xthickness = 5
     ythickness = 2
     
-    fg[NORMAL]			= "#000"
-	fg[PRELIGHT]		= "#000"
-	fg[SELECTED]		= "#000"
-	fg[ACTIVE]			= "#000"
-	fg[INSENSITIVE]		= "#666"
+    	fg[NORMAL]			= "#146AB7"
+	fg[PRELIGHT]		= "#49DBE8"
+	fg[SELECTED]		= "#146AB7"
+	fg[ACTIVE]			= "#49DBE8"
+	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#000"
-	text[PRELIGHT]		= "#000"
-	text[SELECTED]		= "#000"
-	text[ACTIVE]		= "#000"
-	text[INSENSITIVE]	= "#666"
+	text[NORMAL]		= "#146AB7"
+	text[PRELIGHT]		= "#49DBE8"
+	text[SELECTED]		= "#146AB7"
+	text[ACTIVE]		= "#49DBE8"
+	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -496,17 +496,17 @@ style "calf-button-norm"
     xthickness = 5
     ythickness = 2
     
-    fg[NORMAL]			= "#000"
-	fg[PRELIGHT]		= "#000"
-	fg[SELECTED]		= "#000"
-	fg[ACTIVE]			= "#000"
-	fg[INSENSITIVE]		= "#666"
+    	fg[NORMAL]			= "#146AB7"
+	fg[PRELIGHT]		= "#49DBE8"
+	fg[SELECTED]		= "#146AB7"
+	fg[ACTIVE]			= "#49DBE8"
+	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#000"
-	text[PRELIGHT]		= "#000"
-	text[SELECTED]		= "#000"
-	text[ACTIVE]		= "#000"
-	text[INSENSITIVE]	= "#666"
+	text[NORMAL]		= "#146AB7"
+	text[PRELIGHT]		= "#49DBE8"
+	text[SELECTED]		= "#146AB7"
+	text[ACTIVE]		= "#49DBE8"
+	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -571,17 +571,17 @@ style "calf-button-norm"
 
 style "calf-combobox"
 {
-	fg[NORMAL]			= "#000"
-	fg[PRELIGHT]		= "#000"
-	fg[SELECTED]		= "#000"
-	fg[ACTIVE]			= "#000"
-	fg[INSENSITIVE]		= "#666"
+	fg[NORMAL]			= "#146AB7"
+	fg[PRELIGHT]		= "#49DBE8"
+	fg[SELECTED]		= "#146AB7"
+	fg[ACTIVE]			= "#49DBE8"
+	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#000"
-	text[PRELIGHT]		= "#000"
-	text[SELECTED]		= "#000"
-	text[ACTIVE]		= "#000"
-	text[INSENSITIVE]	= "#666"
+	text[NORMAL]		= "#146AB7"
+	text[PRELIGHT]		= "#49DBE8"
+	text[SELECTED]		= "#146AB7"
+	text[ACTIVE]		= "#49DBE8"
+	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
