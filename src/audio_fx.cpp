@@ -351,6 +351,7 @@ tap_distortion::tap_distortion()
     is_active = false;
     srate = 0;
     meter = 0.f;
+    prev_med = prev_out = 0.f;
 }
 
 void tap_distortion::activate()
