@@ -146,8 +146,8 @@
                      <align><toggle size="1" param="bypass0" shrink="1"/></align>
                 </vbox>
                 <vbox expand="0" attach-x="1" attach-y="0">
-                     <label param="mute0"/>
-                     <align><toggle size="1" param="mute0" shrink="1"/></align>
+                     <label param="solo0"/>
+                     <align><toggle size="1" param="solo0" shrink="1"/></align>
                 </vbox>
             </table>
         </vbox></frame>
@@ -206,8 +206,8 @@
                      <align><toggle size="1" param="bypass1" shrink="1"/></align>
                 </vbox>
                 <vbox expand="0" attach-x="1" attach-y="0">
-                     <label param="mute1"/>
-                     <align><toggle size="1" param="mute1" shrink="1"/></align>
+                     <label param="solo1"/>
+                     <align><toggle size="1" param="solo1" shrink="1"/></align>
                 </vbox>
             </table>
         </vbox></frame>
@@ -266,8 +266,8 @@
                      <align><toggle size="1" param="bypass2" shrink="1"/></align>
                 </vbox>
                 <vbox expand="0" attach-x="1" attach-y="0">
-                     <label param="mute2"/>
-                     <align><toggle size="1" param="mute2" shrink="1"/></align>
+                     <label param="solo2"/>
+                     <align><toggle size="1" param="solo2" shrink="1"/></align>
                 </vbox>
             </table>
         </vbox></frame>
@@ -326,8 +326,8 @@
                      <align><toggle size="1" param="bypass3" shrink="1"/></align>
                 </vbox>
                 <vbox expand="0" attach-x="1" attach-y="0">
-                     <label param="mute3"/>
-                     <align><toggle size="1" param="mute3" shrink="1"/></align>
+                     <label param="solo3"/>
+                     <align><toggle size="1" param="solo3" shrink="1"/></align>
                 </vbox>
             </table>
         </vbox></frame>

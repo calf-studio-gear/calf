@@ -165,7 +165,8 @@ class multibandcompressor_audio_module: public audio_module<multibandcompressor_
 private:
     typedef multibandcompressor_audio_module AM;
     static const int strips = 4;
-    bool mute[strips];
+    bool solo[strips];
+    bool no_solo;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];

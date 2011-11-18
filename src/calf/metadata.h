@@ -185,13 +185,13 @@ struct multibandcompressor_metadata: public plugin_metadata<multibandcompressor_
            param_sep0, param_sep1, param_sep2,
            param_q0, param_q1, param_q2,
            param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0,
-           param_detection0, param_compression0, param_output0, param_bypass0, param_mute0,
+           param_detection0, param_compression0, param_output0, param_bypass0, param_solo0,
            param_threshold1, param_ratio1, param_attack1, param_release1, param_makeup1, param_knee1,
-           param_detection1, param_compression1, param_output1, param_bypass1, param_mute1,
+           param_detection1, param_compression1, param_output1, param_bypass1, param_solo1,
            param_threshold2, param_ratio2, param_attack2, param_release2, param_makeup2, param_knee2,
-           param_detection2, param_compression2, param_output2, param_bypass2, param_mute2,
+           param_detection2, param_compression2, param_output2, param_bypass2, param_solo2,
            param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3,
-           param_detection3, param_compression3, param_output3, param_bypass3, param_mute3,
+           param_detection3, param_compression3, param_output3, param_bypass3, param_solo3,
            param_count };
     PLUGIN_NAME_ID_LABEL("multiband_compressor", "multibandcompressor", "Multiband Compressor")
 };

@@ -75,6 +75,15 @@ void multibandcompressor_audio_module::deactivate()
 
 void multibandcompressor_audio_module::params_changed()
 {
+    // determine mute/solo states
+    solo[0] = *params[param_solo0] > 0.f ? true : false;
+    solo[1] = *params[param_solo1] > 0.f ? true : false;
+    solo[2] = *params[param_solo2] > 0.f ? true : false;
+    solo[3] = *params[param_solo3] > 0.f ? true : false;
+    no_solo = (*params[param_solo0] > 0.f ||
+            *params[param_solo1] > 0.f ||
+            *params[param_solo2] > 0.f ||
+            *params[param_solo3] > 0.f) ? false : true;
     // set the params of all filters
     if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0]) {
         lpL0.set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
@@ -104,10 +113,10 @@ void multibandcompressor_audio_module::params_changed()
         q_old[2]    = *params[param_q2];
     }
     // set the params of all strips
-    strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], *params[param_mute0]);
-    strip[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], 1.f, *params[param_bypass1], *params[param_mute1]);
-    strip[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], 1.f, *params[param_bypass2], *params[param_mute2]);
-    strip[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], 1.f, *params[param_bypass3], *params[param_mute3]);
+    strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo));
+    strip[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], 1.f, *params[param_bypass1], !(solo[1] || no_solo));
+    strip[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], 1.f, *params[param_bypass2], !(solo[2] || no_solo));
+    strip[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], 1.f, *params[param_bypass3], !(solo[3] || no_solo));
 }
 
 void multibandcompressor_audio_module::set_sample_rate(uint32_t sr)
@@ -156,12 +165,6 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
     } else {
         // process all strips
         
-        // determine mute state of strips
-        mute[0] = *params[param_mute0] > 0.f ? true : false;
-        mute[1] = *params[param_mute1] > 0.f ? true : false;
-        mute[2] = *params[param_mute2] > 0.f ? true : false;
-        mute[3] = *params[param_mute3] > 0.f ? true : false;
-        
         // let meters fall a bit
         clip_inL    -= std::min(clip_inL,  numsamples);
         clip_inR    -= std::min(clip_inR,  numsamples);
@@ -183,7 +186,7 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             float outR = 0.f;
             for (int i = 0; i < strips; i ++) {
                 // cycle trough strips
-                if (!mute[i]) {
+                if (solo[i] || no_solo) {
                     // strip unmuted
                     float left  = inL;
                     float right = inR;
