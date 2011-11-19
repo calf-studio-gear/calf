@@ -67,7 +67,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     if (mx > widget->allocation.width / 2)
         mx = 0;
     int sx = widget->allocation.width - (ox * 2), sy = widget->allocation.height - (oy * 2);
-    int sx1 = sx - ((widget->allocation.width - inner * 2 - ox * 2) % led) - 1 - mx;
+    int sx1 = sx - ((widget->allocation.width - inner * 2 - ox * 2) % led) - mx;
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     if( vu->cache_surface == NULL ) {
@@ -261,9 +261,9 @@ calf_vumeter_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_VUMETER(widget));
-
-    requisition->width = 50;
-    requisition->height = 18;
+    CalfVUMeter *self = CALF_VUMETER(widget);
+    requisition->width = self->vumeter_width;
+    requisition->height = self->vumeter_height;
 }
 
 static void
@@ -296,8 +296,8 @@ calf_vumeter_init (CalfVUMeter *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
     //GTK_WIDGET_SET_FLAGS (widget, GTK_NO_WINDOW);
-    widget->requisition.width = 50;
-    widget->requisition.height = 18;
+    widget->requisition.width =  self->vumeter_width;
+    widget->requisition.height = self->vumeter_height;
     self->cache_surface = NULL;
     self->falling = false;
     self->holding = false;
@@ -401,7 +401,7 @@ extern float calf_vumeter_get_falloff(CalfVUMeter *meter)
 
 extern void calf_vumeter_set_hold(CalfVUMeter *meter, float value)
 {
-    if (value != meter->vumeter_falloff)
+    if (value != meter->vumeter_hold)
     {
         meter->vumeter_hold = value;
         gtk_widget_queue_draw(GTK_WIDGET(meter));
@@ -413,3 +413,30 @@ extern float calf_vumeter_get_hold(CalfVUMeter *meter)
     return meter->vumeter_hold;
 }
 
+extern void calf_vumeter_set_width(CalfVUMeter *meter, int value)
+{
+    if (value != meter->vumeter_width)
+    {
+        meter->vumeter_width = value;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern int calf_vumeter_get_width(CalfVUMeter *meter)
+{
+    return meter->vumeter_width;
+}
+
+extern void calf_vumeter_set_height(CalfVUMeter *meter, int value)
+{
+    if (value != meter->vumeter_height)
+    {
+        meter->vumeter_height = value;
+        gtk_widget_queue_draw(GTK_WIDGET(meter));
+    }
+}
+
+extern int calf_vumeter_get_height(CalfVUMeter *meter)
+{
+    return meter->vumeter_height;
+}

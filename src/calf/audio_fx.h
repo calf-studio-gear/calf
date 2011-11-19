@@ -565,6 +565,31 @@ public:
     bool get_dot(float &x, float &y, int &size, calf_plugins::cairo_iface *context) const;
 };
 
+
+/// Fast Lookahead Limiter by Steve Harris
+/// [This module is used with permission of Steve Harris]
+/// THERE'S NO PERMISSION TO USE IT BY NOW!!
+/// This is a limiter with an attack time of 5ms.
+/// It adds just over 5ms of lantecy to the input signal, but it guatantees that
+/// there will be no signals over the limit, and tries to get the minimum
+/// ammount of distortion. 
+
+class lookahead_limiter {
+private:
+    float limit, release, gain, attenuation;
+    uint32_t srate;
+    bool is_active;
+public:
+    int id;
+    lookahead_limiter();
+    void process(float &left, float &right);
+    void set_sample_rate(uint32_t sr);
+    void set_params(float l, float r, float g, uint32_t sr);
+    float get_attenuation();
+    void activate();
+    void deactivate();
+};
+
 #if 0
 { to keep editor happy
 #endif

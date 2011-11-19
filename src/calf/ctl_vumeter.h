@@ -55,6 +55,8 @@ struct CalfVUMeter
     float last_falloff;
     long last_falltime;
     int meter_width;
+    int vumeter_width;
+    int vumeter_height;
     std::string *meter_text;
     cairo_surface_t *cache_surface;
     cairo_pattern_t *pat;
@@ -75,6 +77,10 @@ extern void calf_vumeter_set_hold(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_hold(CalfVUMeter *meter);
 extern void calf_vumeter_set_falloff(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_falloff(CalfVUMeter *meter);
+extern void calf_vumeter_set_width(CalfVUMeter *meter, int value);
+extern int calf_vumeter_get_width(CalfVUMeter *meter);
+extern void calf_vumeter_set_height(CalfVUMeter *meter, int value);
+extern int calf_vumeter_get_height(CalfVUMeter *meter);
 
 G_END_DECLS
 

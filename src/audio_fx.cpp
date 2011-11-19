@@ -531,3 +531,45 @@ bool simple_lfo::get_dot(float &x, float &y, int &size, cairo_iface *context) co
     return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+lookahead_limiter::lookahead_limiter() {
+    is_active = false;
+    attenuation = 1.f;
+}
+
+void lookahead_limiter::activate()
+{
+    is_active = true;
+    attenuation = 1.f;
+}
+
+void lookahead_limiter::deactivate()
+{
+    is_active = false;
+}
+
+float lookahead_limiter::get_attenuation()
+{
+    return attenuation;
+}
+
+void lookahead_limiter::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+void lookahead_limiter::set_params(float l, float r, float g, uint32_t sr)
+{
+    limit = l;
+    release = r;
+    gain = g;
+    srate = sr;
+}
+
+void lookahead_limiter::process(float &left, float &right)
+{
+    left = (left * limit) / limit;
+    right = (right * limit) / limit;
+}

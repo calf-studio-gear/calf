@@ -28,7 +28,7 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-/// Multibandcompressor by Markus Schmidt
+/// Multiband Compressor by Markus Schmidt
 ///
 /// This module splits the signal in four different bands
 /// and sends them through multiple filters (implemented by
