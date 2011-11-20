@@ -161,10 +161,10 @@
           </frame>
           <frame label="LFO 1">
             <vbox spacing="10">
-              <align>
-                <hbox>
-                  <label param="lfo1_trig" text="Mode" />
-                  <combo param="lfo1_trig" />
+              <align fill="1" expand="1">
+                <hbox fill="1" expand="1">
+                  <label param="lfo1_trig" text="Mode" fill="0" expand="0" />
+                  <combo param="lfo1_trig" fill="1" expand="1" />
                 </hbox>
               </align>
               <hbox>
@@ -205,10 +205,10 @@
           </frame>
           <frame label="LFO 2">
             <vbox spacing="10">
-              <align>
-                <hbox>
-                  <label param="lfo2_trig" text="Mode" />
-                  <combo param="lfo2_trig" />
+              <align fill="1" expand="1">
+                <hbox fill="1" expand="1">
+                  <label param="lfo2_trig" text="Mode" fill="0" expand="0" />
+                  <combo param="lfo2_trig" fill="1" expand="1" />
                 </hbox>
               </align>
               <hbox>
