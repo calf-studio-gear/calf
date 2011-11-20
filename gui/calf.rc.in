@@ -601,7 +601,7 @@ style "calf-combobox"
 	GtkButton      ::inner-border         = { 8, 29, 1, 1}
 	
     xthickness = 2
-    ythickness = 0
+    ythickness = 1
 	
 	engine "pixmap"
 	{
@@ -619,7 +619,7 @@ style "calf-combobox"
 			recolorable     = FALSE
 			state			= PRELIGHT
 			file            = "combo_active.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 		image
@@ -636,7 +636,7 @@ style "calf-combobox"
 			recolorable     = FALSE
 			state			= NORMAL
 			file            = "combo.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 		image
@@ -653,7 +653,7 @@ style "calf-combobox"
 			recolorable     = FALSE
 			state			= ACTIVE
 			file            = "combo_active.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 		image
@@ -670,7 +670,7 @@ style "calf-combobox"
 			recolorable     = FALSE
 			state			= INSENSITIVE
 			file            = "combo_inactive.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 #		image
@@ -760,7 +760,7 @@ style "calf-entry"
 	xthickness			= 0
 	ythickness			= 0
 	GtkEntry::shadow-type				= GTK_SHADOW_NONE
-	GtkEntry::inner-border				= { 6, 6, 5, 4 }
+	GtkEntry::inner-border				= { 7, 7, 6, 5 }
 	base[NORMAL] = "#000"
 	engine "pixmap"
 	{
@@ -779,7 +779,7 @@ style "calf-entry"
 			state           = INSENSITIVE
     		detail          = "entry_bg"
 			file            = "entry_inactive.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 		image
@@ -788,7 +788,7 @@ style "calf-entry"
 			state           = NORMAL
     		detail          = "entry_bg"
 			file            = "entry.png"
-			border			= { 4, 4, 5, 4 }
+			border			= { 6, 6, 6, 6 }
 			stretch         = TRUE
   		}
 	}
