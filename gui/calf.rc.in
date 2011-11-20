@@ -326,18 +326,18 @@ style "calf-button"
 	GtkButton      ::child-displacement-y = 0
 	GtkButton      ::inner-border         = { 8, 8, 2, 2}
 	
-    xthickness = 5
-    ythickness = 2
+    xthickness = 2
+    ythickness = 1
     
-    	fg[NORMAL]			= "#146AB7"
+    fg[NORMAL]			= "#0385CD"
 	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#146AB7"
+	fg[SELECTED]		= "#0385CD"
 	fg[ACTIVE]			= "#49DBE8"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#146AB7"
+	text[NORMAL]		= "#0385CD"
 	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#146AB7"
+	text[SELECTED]		= "#0385CD"
 	text[ACTIVE]		= "#49DBE8"
 	text[INSENSITIVE]	= "#aaa"
 	
@@ -409,18 +409,18 @@ style "calf-toggle"
 	GtkButton      ::child-displacement-y = 0
 	GtkButton      ::inner-border         = { 8, 26, 2, 2}
 	
-    xthickness = 5
-    ythickness = 2
+    xthickness = 2
+    ythickness = 1
     
-    	fg[NORMAL]			= "#146AB7"
+    fg[NORMAL]			= "#0385CD"
 	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#146AB7"
+	fg[SELECTED]		= "#0385CD"
 	fg[ACTIVE]			= "#49DBE8"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#146AB7"
+	text[NORMAL]		= "#0385CD"
 	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#146AB7"
+	text[SELECTED]		= "#0385CD"
 	text[ACTIVE]		= "#49DBE8"
 	text[INSENSITIVE]	= "#aaa"
 	
@@ -493,18 +493,18 @@ style "calf-button-norm"
 	GtkButton      ::child-displacement-y = 0
 	GtkButton      ::inner-border         = { 8, 8, 2, 2}
 	
-    xthickness = 5
-    ythickness = 2
+    xthickness = 2
+    ythickness = 1
     
-    	fg[NORMAL]			= "#146AB7"
+    fg[NORMAL]			= "#0385CD"
 	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#146AB7"
+	fg[SELECTED]		= "#0385CD"
 	fg[ACTIVE]			= "#49DBE8"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#146AB7"
+	text[NORMAL]		= "#0385CD"
 	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#146AB7"
+	text[SELECTED]		= "#0385CD"
 	text[ACTIVE]		= "#49DBE8"
 	text[INSENSITIVE]	= "#aaa"
 	
@@ -571,77 +571,108 @@ style "calf-button-norm"
 
 style "calf-combobox"
 {
-	fg[NORMAL]			= "#146AB7"
-	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#146AB7"
-	fg[ACTIVE]			= "#49DBE8"
-	fg[INSENSITIVE]		= "#aaa"
-	
-	text[NORMAL]		= "#146AB7"
-	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#146AB7"
-	text[ACTIVE]		= "#49DBE8"
-	text[INSENSITIVE]	= "#aaa"
-	
-	bg[NORMAL]        = "#DADADA"
-	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
-	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
-	bg[SELECTED]	  = "#DADADA"
-	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+#	fg[NORMAL]			= "#0385CD"
+#	fg[PRELIGHT]		= "#49DBE8"
+#	fg[SELECTED]		= "#0385CD"
+#	fg[ACTIVE]			= "#49DBE8"
+#	fg[INSENSITIVE]		= "#aaa"
+#	
+#	text[NORMAL]		= "#0385CD"
+#	text[PRELIGHT]		= "#49DBE8"
+#	text[SELECTED]		= "#0385CD"
+#	text[ACTIVE]		= "#49DBE8"
+#	text[INSENSITIVE]	= "#aaa"
+#	
+#	bg[NORMAL]        = "#DADADA"
+#	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
+#	bg[ACTIVE]        = shade (1.4, "#D1D1D1")
+#	bg[SELECTED]	  = "#DADADA"
+#	bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
 
-	base[NORMAL]        = "#DADADA"
-	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
-	base[ACTIVE]        = shade (1.4, "#D1D1D1")
-	base[SELECTED]	  = "#DADADA"
-	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
+#	base[NORMAL]        = "#DADADA"
+#	base[PRELIGHT]      = shade (1.4, "#D1D1D1")
+#	base[ACTIVE]        = shade (1.4, "#D1D1D1")
+#	base[SELECTED]	  = "#DADADA"
+#	base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
 	
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
 #	GtkButton      ::default-border       = { 6, 24, 5, 5 }
 	GtkButton      ::inner-border         = { 8, 29, 1, 1}
 	
-    xthickness = 5
-    ythickness = 2
+    xthickness = 2
+    ythickness = 0
 	
 	engine "pixmap"
 	{
 		image
-		{
-			function		= BOX
-			recolorable		= FALSE
+#		{
+#			function		= BOX
+#			recolorable		= FALSE
+#			state			= PRELIGHT
+#			file			= "button_default_prelight.png"
+#			border			= {8, 24, 6, 6}
+#			stretch			= TRUE
+#		}
+        {
+			function        = BOX
+			recolorable     = FALSE
 			state			= PRELIGHT
-			file			= "button_default_prelight.png"
-			border			= {8, 24, 6, 6}
-			stretch			= TRUE
-		}
+			file            = "combo_active.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
 		image
-		{
-			function		= BOX
-			recolorable		= FALSE
+#		{
+#			function		= BOX
+#			recolorable		= FALSE
+#			state			= NORMAL
+#			file			= "button_default.png"
+#			border			= {8, 24, 6, 6}
+#			stretch			= TRUE
+#		}
+        {
+			function        = BOX
+			recolorable     = FALSE
 			state			= NORMAL
-			file			= "button_default.png"
-			border			= {8, 24, 6, 6}
-			stretch			= TRUE
-		}
-
+			file            = "combo.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
 		image
-		{
-			function		= BOX
-			recolorable		= FALSE
+#		{
+#			function		= BOX
+#			recolorable		= FALSE
+#			state			= ACTIVE
+#			file			= "button_default_active.png"
+#			border			= {8, 24, 6, 6}
+#			stretch			= TRUE
+#		}
+        {
+			function        = BOX
+			recolorable     = FALSE
 			state			= ACTIVE
-			file			= "button_default_active.png"
-			border			= {8, 24, 6, 6}
-			stretch			= TRUE
-		}
+			file            = "combo_active.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
 		image
-		{
-			function		= BOX
-			recolorable		= FALSE
+#		{
+#			function		= BOX
+#			recolorable		= FALSE
+#			state			= INSENSITIVE
+#			file			= "button_default.png"
+#			border			= {8, 24, 6, 6}
+#			stretch			= TRUE
+#		}
+        {
+			function        = BOX
+			recolorable     = FALSE
 			state			= INSENSITIVE
-			file			= "button_default.png"
-			border			= {8, 24, 6, 6}
-			stretch			= TRUE
-		}
+			file            = "combo_inactive.png"
+			border			= { 4, 4, 5, 4 }
+			stretch         = TRUE
+  		}
 #		image
 #		{
 #			function		= ARROW
@@ -649,21 +680,54 @@ style "calf-combobox"
 #			overlay_file		= "null.png"
 #			overlay_stretch		= FALSE
 #		}
+    	# Arrows
+		image
+		{
+			function		= ARROW
+			state			= INSENSITIVE
+			recolorable		= FALSE
+			overlay_file		= "combo_arrow.png"
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= NORMAL
+			overlay_file		= "combo_arrow.png"
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= ACTIVE
+			overlay_file		= "combo_arrow.png"
+			overlay_stretch		= FALSE
+		}
+		image
+		{
+			function		= ARROW
+			recolorable		= FALSE
+			state			= PRELIGHT
+			overlay_file		= "combo_arrow.png"
+			overlay_stretch		= FALSE
+		}
+		
+		# Lines
 		image
 		{
 			function		= VLINE
 			recolorable		= FALSE
-			file			= "vline.png"
-			border			= { 1, 1, 0, 0 }
-			stretch			= TRUE
+			file			= "blank.png"
+			stretch			= FALSE
 		}
 		image
 		{
 			function		= HLINE
 			recolorable		= FALSE
-			file			= "hline.png"
-			border			= { 0, 0, 1, 1	}
-			stretch			= TRUE
+			file			= "blank.png"
+			stretch			= FALSE
 		}
 	}
 }
@@ -684,6 +748,15 @@ style "calf-comboboxentry" = "calf-combobox"
 
 style "calf-entry"
 {
+    fg[NORMAL]			= "#000"
+	fg[PRELIGHT]		= "#000"
+	fg[ACTIVE]			= "#000"
+	fg[INSENSITIVE]		= "#aaa"
+	
+	text[NORMAL]		= "#000"
+	text[PRELIGHT]		= "#000"
+	text[ACTIVE]		= "#000"
+	text[INSENSITIVE]	= "#000"
 	xthickness			= 0
 	ythickness			= 0
 	GtkEntry::shadow-type				= GTK_SHADOW_NONE

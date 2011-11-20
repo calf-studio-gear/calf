@@ -286,4 +286,22 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-
+bool  multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    bool tmp;
+    printf("%d\n", index);
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}

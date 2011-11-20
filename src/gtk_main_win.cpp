@@ -340,7 +340,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), TRUE, TRUE, 0);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), TRUE, TRUE, 0);
         gtk_table_attach(GTK_TABLE(strips_table), midiBox, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 5, 3);
-        gtk_widget_set_size_request(GTK_WIDGET(label), 40, 36);
+        gtk_widget_set_size_request(GTK_WIDGET(label), 25, 25);
         strip->midi_in = label;
         gtk_widget_show_all(midiBox);
     } else {
@@ -365,12 +365,14 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         label = calf_vumeter_new();
         calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
         calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+        calf_vumeter_set_height(CALF_VUMETER(label), 12);
         gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
         strip->audio_in[0] = label;
         
         label = calf_vumeter_new();
         calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
         calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+        calf_vumeter_set_height(CALF_VUMETER(label), 12);
         gtk_box_pack_start(GTK_BOX(inBox), label,TRUE, TRUE, 0);
         strip->audio_in[1] = label;
         
@@ -389,12 +391,14 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         label = calf_vumeter_new();
         calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
         calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+        calf_vumeter_set_height(CALF_VUMETER(label), 12);
         gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
         strip->audio_out[0] = label;
         
         label = calf_vumeter_new();
         calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
         calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+        calf_vumeter_set_height(CALF_VUMETER(label), 12);
         gtk_box_pack_start(GTK_BOX(outBox), label,TRUE, TRUE, 0);
         strip->audio_out[1] = label;
         
