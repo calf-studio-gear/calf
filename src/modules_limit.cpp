@@ -286,22 +286,43 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-bool  multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
 {
-    bool tmp;
-    printf("%d\n", index);
-    vertical = (subindex & 1) != 0;
-    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
-    if (result && vertical) {
-        if ((subindex & 4) && !legend.empty()) {
-            legend = "";
+    if (!is_active or subindex > 3)
+        return false;
+    for (int i = 0; i < points; i++)
+    {
+        float ret = 1.f;
+        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        switch(subindex) {
+            case 0:
+                ret *= lpL0.freq_gain(freq, (float)srate);
+                break;
+            case 1:
+                ret *= hpL0.freq_gain(freq, (float)srate);
+                ret *= lpL1.freq_gain(freq, (float)srate);
+                break;
+            case 2:
+                ret *= hpL1.freq_gain(freq, (float)srate);
+                ret *= lpL2.freq_gain(freq, (float)srate);
+                break;
+            case 3:
+                ret *= hpL2.freq_gain(freq, (float)srate);
+                break;
         }
-        else {
-            size_t pos = legend.find(" dB");
-            if (pos != std::string::npos)
-                legend.erase(pos);
-        }
-        pos = 0.5 + 0.5 * pos;
+        data[i] = dB_grid(ret, 32, 0);
     }
-    return result;
+    context->set_line_width(1.5);
+    return true;
 }
+
+bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active) {
+        return false;
+    } else {
+        vertical = (subindex & 1) != 0;
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 36, 0);
+    }
+}
+
