@@ -1,5 +1,5 @@
 body {
-    background: url(../images/background_dark.png);
+    background: url(../../../gui/background_dark.png);
     color: white;
     text-align: center;
     font-family: sans-serif;
@@ -67,7 +67,7 @@ strong {
 }
 
 .headerbg {
-    background: url(../images/background_black.png);
+    background: url(../../../gui/background_black.png);
     border-bottom: 1px solid #111;
 }
 .header {
