@@ -17,15 +17,15 @@
             <vbox spacing="5">
                 <table expand="0" fill="0" rows="3" cols="3">
                     <label param="meter_in" expand-x="0" fill-x="0" attach-x="0" attach-y="0" />
-                    <vumeter param="meter_in" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
+                    <vumeter param="meter_in" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
                     <led param="clip_in" mode="0" expand-x="0" fill-x="0" attach-x="2" attach-y="0" />
                     
                     <label param="meter_out" expand-x="0" fill-x="0" attach-x="0" attach-y="1" />
-                    <vumeter param="meter_out" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" fill-x="1" />
+                    <vumeter param="meter_out" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" fill-x="1" />
                     <led param="clip_out" mode="1" expand-x="0" fill-x="0" attach-x="2" attach-y="1" />
                     
                     <label param="compression" expand-x="0" fill-x="0" attach-x="0" attach-y="2" />
-                    <vumeter param="compression" mode="2" hold="1.5" expand-x="1" fill-x="1" attach-x="1" attach-y="2" attach-w="2" />
+                    <vumeter param="compression" mode="2" position="2" hold="1.5" expand-x="1" fill-x="1" attach-x="1" attach-y="2" attach-w="2" />
                 </table>
                 
                 <table expand="1" rows="2" cols="3" homogeneous="1">

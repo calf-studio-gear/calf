@@ -331,7 +331,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 2,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup0", "Makeup 1" },
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee0", "Knee 1" },
     { 0,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandcompressor_detection_names, "detection0", "Detection 1" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression0", "Gain Reduction 1" },
+    { 1,           0.0625,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression0", "Gain Reduction 1" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output0", "Output 1" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass0", "Bypass 1" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo0", "Solo 1" },
@@ -344,7 +344,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 2,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup1", "Makeup 2" },
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee1", "Knee 2" },
     { 0,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandcompressor_detection_names, "detection1", "Detection 2" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression1", "Gain Reduction 2" },
+    { 1,           0.0625,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression1", "Gain Reduction 2" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output1", "Output 2" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass1", "Bypass 2" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo1", "Solo 2" },
@@ -357,7 +357,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 2,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup2", "Makeup 3" },
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee2", "Knee 3" },
     { 0,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandcompressor_detection_names, "detection2", "Detection 3" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression2", "Gain Reduction 3" },
+    { 1,           0.0625,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression2", "Gain Reduction 3" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output2", "Output 3" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass2", "Bypass 3" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo2", "Solo 3" },
@@ -370,7 +370,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 2,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup3", "Makeup 4" },
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee3", "Knee 4" },
     { 0,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandcompressor_detection_names, "detection3", "Detection 4" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression3", "Gain Reduction 4" },
+    { 1,           0.0625,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression3", "Gain Reduction 4" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output3", "Output 4" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass3", "Bypass 4" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo3", "Solo 4" },
@@ -390,7 +390,7 @@ const char *deesser_mode_names[] = { "Wide", "Split" };
 CALF_PORT_PROPS(deesser) = {
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 0,      0,  1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "detected", "Detected" },
-    { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Gain Reduction" },
+    { 0, 0.0625, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Gain Reduction" },
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "detected_led", "Active" },
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_out", "Out" },
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, deesser_detection_names, "detection", "Detection" },
@@ -492,6 +492,7 @@ CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "Sidechaingate", "Calf Sidechain Gat
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(multibandlimiter) = {"In L", "In R", "Out L", "Out R"};
+const char *multibandlimiter_filter_choices[] = { "12dB", "36dB"};
 
 CALF_PORT_PROPS(multibandlimiter) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -518,14 +519,15 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 0.895025,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
     { 0.895025,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
     
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandlimiter_filter_choices, "mode", "Filter Mode" },
     
     { 1,      0.0625, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "limit", "Limit" },
     { 50,         1,        1000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att0", "Low" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att1", "LMid" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att2", "HMid" },
-    { 1,           0.03125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att3", "Hi" },
+    { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att0", "Low" },
+    { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att1", "LMid" },
+    { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att2", "HMid" },
+    { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att3", "Hi" },
     
     {}
 };

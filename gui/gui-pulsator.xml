@@ -5,8 +5,8 @@
         <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
-        <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
-        <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
@@ -19,8 +19,8 @@
         <toggle param="mono" attach-x="4" attach-y="1" attach-h="2" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
         
         <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />

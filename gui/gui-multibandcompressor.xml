@@ -7,8 +7,8 @@
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0" pad-y="24">
             <label param="meter_inL" />
-            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
             <label param="meter_inR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0" pad-y="24">
@@ -70,8 +70,8 @@
         </table>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="7" attach-y="0" pad-y="24">
             <label param="meter_outL" />
-            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
             <label param="meter_outR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="8" attach-y="0" pad-y="24">
@@ -134,10 +134,10 @@
             </table>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
                 <label param="compression0" />
-                <vumeter param="compression0" mode="2" hold="1.5" falloff="2.5" />
+                <vumeter param="compression0" position="2" mode="2" hold="1.5" falloff="2.5" />
             </vbox>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
-                <vumeter param="output0" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+                <vumeter param="output0" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
                 <label param="output0" />
             </vbox>
             <table expand-y="0" expand-x="1" cols="3" rows="1" spacing="5">
@@ -194,10 +194,10 @@
             </table>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
                 <label param="compression1" />
-                <vumeter param="compression1" mode="2" hold="1.5" falloff="2.5" />
+                <vumeter param="compression1" position="2" mode="2" hold="1.5" falloff="2.5" />
             </vbox>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
-                <vumeter param="output1" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+                <vumeter param="output1" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
                 <label param="output1" />
             </vbox>
             <table expand-y="0" expand-x="1" cols="3" rows="1" spacing="5">
@@ -254,10 +254,10 @@
             </table>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
                 <label param="compression2" />
-                <vumeter param="compression2" mode="2" hold="1.5" falloff="2.5" />
+                <vumeter param="compression2" position="2" mode="2" hold="1.5" falloff="2.5" />
             </vbox>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
-                <vumeter param="output2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+                <vumeter param="output2" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
                 <label param="output2" />
             </vbox>
             <table expand-y="0" expand-x="1" cols="3" rows="1" spacing="5">
@@ -314,10 +314,10 @@
             </table>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
                 <label param="compression3" />
-                <vumeter param="compression3" mode="2" hold="1.5" falloff="2.5" />
+                <vumeter param="compression3" position="2" mode="2" hold="1.5" falloff="2.5" />
             </vbox>
             <vbox expand-x="1" fill-x="1" expand="1" fill="1">
-                <vumeter param="output3" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+                <vumeter param="output3" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
                 <label param="output3" />
             </vbox>
             <table expand-y="0" expand-x="1" cols="3" rows="1" spacing="5">

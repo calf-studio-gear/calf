@@ -239,6 +239,7 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
            param_freq0, param_freq1, param_freq2,
            param_sep0, param_sep1, param_sep2,
            param_q0, param_q1, param_q2,
+           param_mode,
            param_limit, param_release,
            param_att0, param_att1, param_att2, param_att3,
            param_count };

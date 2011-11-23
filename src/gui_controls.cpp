@@ -435,6 +435,7 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     CALF_VUMETER(widget)->vumeter_falloff = get_float("falloff", 0.f);
     CALF_VUMETER(widget)->vumeter_width = get_int("width", 50);
     CALF_VUMETER(widget)->vumeter_height = get_int("height", 18);
+    CALF_VUMETER(widget)->vumeter_position = get_int("position", 0);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VUMeter");
     return widget;
 }

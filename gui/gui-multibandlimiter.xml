@@ -7,8 +7,8 @@
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
             <label param="meter_inL" />
-            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
             <label param="meter_inR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0">
@@ -17,14 +17,14 @@
             <led param="clip_inR" expand="0" fill="0" />
             <label text="0dB" expand="0" fill="0" />
         </vbox>
-        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="20">
+        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="2">
              <label param="bypass"/>
              <align><toggle param="bypass" shrink="1"/></align>
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
             <label param="meter_outL" />
-            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
             <label param="meter_outR" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="5" attach-y="0">
@@ -110,23 +110,20 @@
                         <value param="q2" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                     </table>
                 </hbox>
+                <hbox>
+                    <label param="mode" />
+                    <combo param="mode" />
+                </hbox>
                 <if cond="directlink">
                     <line-graph refresh="1" width="220" height="90" param="limit" expand="0" fill="1"/>
                 </if>
+                <hbox homogenous="1">
+                    <vumeter attach-x="1" attach-y="0" param="att0" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
+                    <vumeter attach-x="1" attach-y="1" param="att1" mode="2" hold="1.5" falloff="2.6" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
+                    <vumeter attach-x="1" attach-y="2" param="att2" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
+                    <vumeter attach-x="1" attach-y="3" param="att3" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
+                </hbox>
             </vbox>
-        </frame>
-        
-        <frame label="Attenuation" expand="1" fill="1">
-            <table rows="4" cols="2" expand="1" fill="1">
-                <label attach-x="0" attach-y="0" param="att0" expand-x="0" />
-                <vumeter attach-x="1" attach-y="0" param="att0" mode="1" hold="1.5" falloff="2.5" width="120" expand-x="1" fill-y="0" expand-y="0" height="32" />
-                <label attach-x="0" attach-y="1" param="att1" expand-x="0" />
-                <vumeter attach-x="1" attach-y="1" param="att1" mode="1" hold="1.5" falloff="2.5" width="120" expand-x="1" fill-y="0" expand-y="0" height="32" />
-                <label attach-x="0" attach-y="2" param="att2" expand-x="0" />
-                <vumeter attach-x="1" attach-y="2" param="att2" mode="1" hold="1.5" falloff="2.5" width="120" expand-x="1" fill-y="0" expand-y="0" height="32" />
-                <label attach-x="0" attach-y="3" param="att3" expand-x="0" />
-                <vumeter attach-x="1" attach-y="3" param="att3" mode="1" hold="1.5" falloff="2.5" width="120" expand-x="1" fill-y="0" expand-y="0" height="32" />
-            </table>
         </frame>
     </hbox>
 </table>    

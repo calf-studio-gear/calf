@@ -574,10 +574,31 @@ public:
 /// there will be no signals over the limit, and tries to get the minimum
 /// ammount of distortion. 
 
+// Convert a value in dB's to a coefficent
+#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
+#define CO_DB(v) (20.0f * log10f(v))
+
 class lookahead_limiter {
 private:
-    float limit, release, gain, attenuation;
+    float limit, release, gain;
+    int num_chunks;
+    float buffer_time;
+    float latency;
+    float * buffer;
+    unsigned int buffer_len;
+    unsigned int buffer_pos;
     uint32_t srate;
+    float atten;
+    float atten_lp;
+    float atten_max;
+    float peak;
+    float delta;
+    int attask;
+    unsigned int delay;
+    unsigned int chunk_num;
+    unsigned int chunk_pos;
+    unsigned int chunk_size;
+    float * chunks;
     bool is_active;
 public:
     int id;
@@ -588,6 +609,11 @@ public:
     float get_attenuation();
     void activate();
     void deactivate();
+    static inline void round_to_zero(volatile float *f)
+    {
+	    *f += 1e-18;
+	    *f -= 1e-18;
+    }
 };
 
 #if 0
