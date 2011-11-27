@@ -1,0 +1,67 @@
+<table rows="3" cols="1">
+    <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
+            <label param="level_in" />
+            <knob param="level_in" size="2" />
+            <value param="level_in" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
+            <label param="meter_inL" />
+            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" width="120" />
+            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label param="meter_inR" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_inL" expand="0" fill="0" />
+            <led param="clip_inR" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="2">
+             <label param="bypass"/>
+             <align><toggle param="bypass" shrink="1"/></align>
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
+            <label param="meter_outL" />
+            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" width="120" />
+            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label param="meter_outR" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="5" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_outL" expand="0" mode="1" fill="0" />
+            <led param="clip_outR" expand="0" mode="1" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="6" attach-y="0">
+            <label param="level_out" />
+            <knob param="level_out" size="2" />
+            <value param="level_out" />
+        </vbox>
+    </table>
+    
+    <frame attach-x="0" attach-y="1" label="Limit" expand="0" fill="1">
+        <hbox homogenous="1">
+            <vbox>
+                <label param="attack" />
+                <knob param="attack" size="3" />
+                <value param="attack" />
+            </vbox>
+            <vbox>
+                <label param="limit" />
+                <knob param="limit" size="5" type="2" />
+                <value param="limit" />
+            </vbox>
+            <vbox>
+                <label param="release" />
+                <knob param="release" size="3" />
+                <value param="release" />
+            </vbox>
+        </hbox>
+    </frame>
+    
+    <frame attach-x="0" attach-y="2" label="Attenuation" expand="1" fill="1">
+        <vumeter param="att" mode="2" hold="1.5" falloff="2.5" position="2" />
+    </frame>
+    
+</table>    

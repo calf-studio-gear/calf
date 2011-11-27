@@ -542,39 +542,43 @@ bool simple_lfo::get_dot(float &x, float &y, int &size, cairo_iface *context) co
 
 lookahead_limiter::lookahead_limiter() {
     is_active = false;
+    
     buffer_time = 0.0053;
-    num_chunks = 16;
     buffer_len = 128;
     buffer_pos = 0;
-
+    num_chunks = 16; // length of chunks array
+    
     /* Find size for power-of-two interleaved delay buffer */
     while(buffer_len < srate * buffer_time * 2) {
-        buffer_len *= 2;
+        buffer_len *= 2; // (512 @ 48kHz) length of buffer array
     }
     buffer = (float*) calloc(buffer_len, sizeof(float));
-    delay = (int)(0.005 * srate);
+    memset(buffer, 0, num_chunks * sizeof(float)); // reset buffer to zero
+    delay = (int)(0.005 * srate); // (240 @ 48kHz) delay of returned samples in buffer
 
-    chunk_pos = 0;
-    chunk_num = 0;
-    chunk_size = srate / 2000;
+    chunk_pos = 0; // position in chunk
+    chunk_num = 0; // count of processed chunks
     
-    /* find a chunk size (in smaples) thats roughly 0.5ms */
-    //chunk_size = srate / 2000;
     chunks = (float*) calloc(num_chunks, sizeof(float));
-
-    peak = 0.0f;
-    atten = 1.0f;
-    atten_lp = 1.0f;
+    
+    
+    peak = 0.0f; // holds the latest maximum of the input values left and right
+    atten = 1.0f; // holds the "pure" attenuation level
+    atten_lp = 1.0f; // holds the calculated attenuation level
     delta = 0.0f;
-    atten_max = 1.0;
+    
+    atten_max = 1.0; // holds the latest attenuation level since last get_attenuation()
 }
 
 void lookahead_limiter::activate()
 {
     is_active = true;
-    memset(buffer, 0, num_chunks * sizeof(float));
+    
+    memset(buffer, 0, num_chunks * sizeof(float)); // reset buffer to zero
+    
     chunk_pos = 0;
     chunk_num = 0;
+    
     peak = 0.0f;
     atten = 1.0f;
     atten_lp = 1.0f;
@@ -598,75 +602,82 @@ float lookahead_limiter::get_attenuation()
 void lookahead_limiter::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    /* find a chunk size (in smaples) thats roughly 0.5ms */
+    chunk_size = srate / 2000; // 24 @ 48kHz
 }
 
-void lookahead_limiter::set_params(float l, float r, float g, uint32_t sr)
+void lookahead_limiter::set_params(float l, float r, float g, uint32_t sr, bool d)
 {
     limit = l;
-    release = r / 1000;
+    release = r / 1000.f;
     gain = g;
     srate = sr;
+    debug = d;
 }
 
 void lookahead_limiter::process(float &left, float &right)
 {
-    const float trim = 1.f;
-    float sig;
+    const float trim = 1.f; // output multiplicator (added on input)
+    float sig; // cache for choosing max between peak and max between left and right
     unsigned int i;
-    
     if (chunk_pos++ == chunk_size) {
         /* we've got a full chunk */
-             
-        delta = (1.0f - atten) / (srate * release);
+        // one chunk contains a peak inside [chunk_size] sample blocks
+        delta = (1.0f - atten) / (srate * release); // (0.002083 @ 48kHz/50ms)
         round_to_zero(&delta);
+        if(debug) printf("%.5f\n", atten);
         for (i=0; i<10; i++) {
+            // cycle over last 10 chunks
             const int p = (chunk_num - 9 + i) & (num_chunks - 1);
-                const float this_delta = (limit / chunks[p] - atten) /
-                      ((float)(i) * srate * 0.0005f + 1.0f);
-
+            const float this_delta = (limit / chunks[p] - atten) /
+                ((float)(i) * srate * 0.0005f + 1.0f);
+            if(debug) printf("%.5f - %.5f\n", this_delta, delta);
             if (this_delta < delta) {
                 delta = this_delta;
             }
         }
+        if(debug) printf("%.5f\n", delta);
+        // store actual peak and reset peak to 0.f
         chunks[chunk_num++ & (num_chunks - 1)] = peak;
         peak = 0.0f;
+        
         chunk_pos = 0;
+        //if(debug) printf("\ratt: %.4f -  - cnum: %d",
+        //          atten, chunk_num);
     }
-
+    
+    // store left and right in buffer array
     buffer[(buffer_pos * 2) & (buffer_len - 1)] =     left * trim  + 1.0e-30;
     buffer[(buffer_pos * 2 + 1) & (buffer_len - 1)] = right * trim + 1.0e-30;
-
+    
+    // find absolute max between left and right and store it in peak if bigger
     sig = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
     sig += 1.0e-30;
     if (sig * trim > peak) {
         peak = sig * trim;
     }
-
+    
+    // calculate atten and atten_lp
     atten += delta;
     atten_lp = atten * 0.1f + atten_lp * 0.9f;
     if (delta > 0.0f && atten > 1.0f) {
         atten = 1.0f;
         delta = 0.0f;
     }
-    atten_max = (atten < atten_max) ? atten : atten_max;
+    
+    // return left and right from buffer and multiply with atten_lp
     left = buffer[(buffer_pos * 2 - delay * 2) & (buffer_len - 1)] * atten_lp;
     right = buffer[(buffer_pos * 2 - delay * 2 + 1) & (buffer_len - 1)] * atten_lp;
+    
+    // post treatment (denormal, limit)
     round_to_zero(&left);
     round_to_zero(&right);
-
-    if (left < -limit) {
-        left = -limit;
-    } else if (left > limit) {
-        left = limit;
-    }
-    if (right < -limit) {
-        right = -limit;
-    } else if (right > limit) {
-        right = limit;
-    }
-
-    left /= limit;
-    right /= limit;
+    std::max(left, -limit);
+    std::min(left, limit);
+    std::max(right, -limit);
+    std::min(right, limit);
     
-    buffer_pos++;
+    atten_max = (atten < atten_max) ? atten : atten_max; // store max atten for meter output
+    
+    buffer_pos++; // iterator
 }

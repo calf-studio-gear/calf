@@ -600,12 +600,13 @@ private:
     unsigned int chunk_size;
     float * chunks;
     bool is_active;
+    bool debug;
 public:
     int id;
     lookahead_limiter();
     void process(float &left, float &right);
     void set_sample_rate(uint32_t sr);
-    void set_params(float l, float r, float g, uint32_t sr);
+    void set_params(float l, float r, float g, uint32_t sr, bool d = false);
     float get_attenuation();
     void activate();
     void deactivate();

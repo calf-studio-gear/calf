@@ -32,7 +32,26 @@
 
 namespace calf_plugins {
 
-/// Multiband Limiter by Markus Schmidt (based on Krzysztof's filters and Steve's lookahead limiter algorythm)
+/// Limiter by Markus Schmidt
+class limiter_audio_module: public audio_module<limiter_metadata>, public line_graph_iface {
+private:
+    typedef limiter_audio_module AM;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    int mode, mode_old;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    dsp::lookahead_limiter limiter;
+public:
+    uint32_t srate;
+    bool is_active;
+    limiter_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+};
+
+/// Multiband Limiter by Markus Schmidt
 class multibandlimiter_audio_module: public audio_module<multibandlimiter_metadata>, public line_graph_iface {
 private:
     typedef multibandlimiter_audio_module AM;

@@ -28,6 +28,160 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
+/// Limiter by Markus Schmidt
+///
+/// This module splits the signal in four different bands
+/// and sends them through multiple filters (implemented by
+/// Krzysztof). They are processed by a compressing routine
+/// (implemented by Steve Harris) afterwards and summed up to the
+/// final output again.
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+limiter_audio_module::limiter_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    // zero all displays
+    clip_inL    = 0.f;
+    clip_inR    = 0.f;
+    clip_outL   = 0.f;
+    clip_outR   = 0.f;
+    meter_inL  = 0.f;
+    meter_inR  = 0.f;
+    meter_outL = 0.f;
+    meter_outR = 0.f;
+}
+
+void limiter_audio_module::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+    limiter.activate();
+}
+
+void limiter_audio_module::deactivate()
+{
+    is_active = false;
+    limiter.deactivate();
+}
+
+void limiter_audio_module::params_changed()
+{
+    limiter.set_params(*params[param_limit], *params[param_release], 1.f, srate);
+}
+
+void limiter_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    limiter.set_sample_rate(srate);
+}
+
+uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+        // displays, too
+        clip_inL    = 0.f;
+        clip_inR    = 0.f;
+        clip_outL   = 0.f;
+        clip_outR   = 0.f;
+        meter_inL  = 0.f;
+        meter_inR  = 0.f;
+        meter_outL = 0.f;
+        meter_outR = 0.f;
+    } else {
+        // let meters fall a bit
+        clip_inL    -= std::min(clip_inL,  numsamples);
+        clip_inR    -= std::min(clip_inR,  numsamples);
+        clip_outL   -= std::min(clip_outL, numsamples);
+        clip_outR   -= std::min(clip_outR, numsamples);
+        meter_inL = 0.f;
+        meter_inR = 0.f;
+        meter_outL = 0.f;
+        meter_outR = 0.f;
+        while(offset < numsamples) {
+            // cycle through samples
+            float inL = ins[0][offset];
+            float inR = ins[1][offset];
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            // out vars
+            float outL = inL;
+            float outR = inR;
+            
+            // process gain reduction
+            limiter.process(outL, outR);
+            
+            // out level
+            outL *= *params[param_level_out];
+            outR *= *params[param_level_out];
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            // clip LED's
+            if(inL > 1.f) {
+                clip_inL  = srate >> 3;
+            }
+            if(inR > 1.f) {
+                clip_inR  = srate >> 3;
+            }
+            if(outL > 1.f) {
+                clip_outL = srate >> 3;
+            }
+            if(outR > 1.f) {
+                clip_outR = srate >> 3;
+            }
+            // set up in / out meters
+            if(inL > meter_inL) {
+                meter_inL = inL;
+            }
+            if(inR > meter_inR) {
+                meter_inR = inR;
+            }
+            if(outL > meter_outL) {
+                meter_outL = outL;
+            }
+            if(outR > meter_outR) {
+                meter_outR = outR;
+            }
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        
+    } // process (no bypass)
+    
+    // draw meters
+    SET_IF_CONNECTED(clip_inL);
+    SET_IF_CONNECTED(clip_inR);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_inL);
+    SET_IF_CONNECTED(meter_inR);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
+    
+    if (*params[param_att]) {
+        if(bypass)
+            *params[param_att] = 1.f;
+        else
+            *params[param_att] = limiter.get_attenuation();
+    }
+    
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
 /// Multiband Limiter by Markus Schmidt
 ///
 /// This module splits the signal in four different bands
@@ -134,10 +288,10 @@ void multibandlimiter_audio_module::params_changed()
         q_old[2]    = *params[param_q2];
     }
     // set the params of all strips
-    strip[0].set_params(*params[param_limit] * 0.66, std::min(1.f / 30, *params[param_release]), 1.f, srate);
-    strip[1].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq0], *params[param_release]), 1.f, srate);
-    strip[2].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq1], *params[param_release]), 1.f, srate);
-    strip[3].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq2], *params[param_release]), 1.f, srate);
+    strip[0].set_params(*params[param_limit], std::max(1.f / 30, *params[param_release]), 1.f, srate);
+    strip[1].set_params(*params[param_limit], std::max(1.f / *params[param_freq0], *params[param_release]), 1.f, srate);
+    strip[2].set_params(*params[param_limit], std::max(1.f / *params[param_freq1], *params[param_release]), 1.f, srate);
+    strip[3].set_params(*params[param_limit], std::max(1.f / *params[param_freq2], *params[param_release]), 1.f, srate, true);
 }
 
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
@@ -201,11 +355,14 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             // out vars
             float outL = 0.f;
             float outR = 0.f;
+            int j1;
+            float left;
+            float right;
             for (int i = 0; i < strips; i++) {
-                float left  = inL;
-                float right = inR;
+                left  = inL;
+                right = inR;
                 // send trough filters
-                int j1;
+                
                 switch(mode) {
                     case 0:
                         j1 = 0;
@@ -316,11 +473,13 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
 {
     if (!is_active or subindex > 3)
         return false;
+    float ret;
+    double freq;
+    int j1;
     for (int i = 0; i < points; i++)
     {
-        float ret = 1.f;
-        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        int j1;
+        ret = 1.f;
+        freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
         switch(mode) {
             case 0:
                 j1 = 0;
@@ -347,9 +506,14 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
                     break;
             }
         }
-        data[i] = dB_grid(ret, 32, 0);
+        data[i] = dB_grid(ret);
     }
-    context->set_line_width(1.5);
+    if (*params[param_bypass] > 0.5f)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+    else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_line_width(1.5);
+    }
     return true;
 }
 
