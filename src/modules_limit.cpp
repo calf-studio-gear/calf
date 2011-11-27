@@ -134,10 +134,10 @@ void multibandlimiter_audio_module::params_changed()
         q_old[2]    = *params[param_q2];
     }
     // set the params of all strips
-    strip[0].set_params(*params[param_limit] * 0.66, std::min(1.f / 30, *params[param_release]), 1.f, srate);
-    strip[1].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq0], *params[param_release]), 1.f, srate);
-    strip[2].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq1], *params[param_release]), 1.f, srate);
-    strip[3].set_params(*params[param_limit] * 0.66, std::min(1.f / *params[param_freq2], *params[param_release]), 1.f, srate);
+    strip[0].set_params(*params[param_limit], std::max(1.f / 30, *params[param_release]), 1.f, srate);
+    strip[1].set_params(*params[param_limit], std::max(1.f / *params[param_freq0], *params[param_release]), 1.f, srate);
+    strip[2].set_params(*params[param_limit], std::max(1.f / *params[param_freq1], *params[param_release]), 1.f, srate);
+    strip[3].set_params(*params[param_limit], std::max(1.f / *params[param_freq2], *params[param_release]), 1.f, srate, true);
 }
 
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
@@ -201,11 +201,14 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             // out vars
             float outL = 0.f;
             float outR = 0.f;
+            int j1;
+            float left;
+            float right;
             for (int i = 0; i < strips; i++) {
-                float left  = inL;
-                float right = inR;
+                left  = inL;
+                right = inR;
                 // send trough filters
-                int j1;
+                
                 switch(mode) {
                     case 0:
                         j1 = 0;
@@ -316,11 +319,13 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
 {
     if (!is_active or subindex > 3)
         return false;
+    float ret;
+    double freq;
+    int j1;
     for (int i = 0; i < points; i++)
     {
-        float ret = 1.f;
-        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        int j1;
+        ret = 1.f;
+        freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
         switch(mode) {
             case 0:
                 j1 = 0;
@@ -347,9 +352,14 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
                     break;
             }
         }
-        data[i] = dB_grid(ret, 32, 0);
+        data[i] = dB_grid(ret);
     }
-    context->set_line_width(1.5);
+    if (*params[param_bypass] > 0.5f)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+    else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_line_width(1.5);
+    }
     return true;
 }
 
