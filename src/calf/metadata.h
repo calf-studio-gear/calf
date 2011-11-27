@@ -230,6 +230,18 @@ struct sidechaingate_metadata: public plugin_metadata<sidechaingate_metadata>
     PLUGIN_NAME_ID_LABEL("sidechaingate", "sidechaingate", "Sidechain Gate")
 };
 
+/// Markus's limiter - metadata
+struct limiter_metadata: public plugin_metadata<limiter_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, 
+           STEREO_VU_METER_PARAMS,
+           param_limit, param_attack, param_release,
+           param_att,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("limiter", "limiter", "Limiter")
+};
+
 /// Markus's multibandlimiter - metadata
 struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metadata>
 {

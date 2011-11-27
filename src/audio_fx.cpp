@@ -636,7 +636,7 @@ void lookahead_limiter::process(float &left, float &right)
                 delta = this_delta;
             }
         }
-        if(debug) printf("\n");
+        if(debug) printf("%.5f\n\n", delta);
         // store actual peak and reset peak to 0.f
         chunks[chunk_num++ & (num_chunks - 1)] = peak;
         peak = 0.0f;
