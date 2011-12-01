@@ -84,30 +84,58 @@ void multibandcompressor_audio_module::params_changed()
             *params[param_solo1] > 0.f ||
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
+    int i;
+    int j1;
+    switch(mode) {
+        case 0:
+            j1 = 0;
+            break;
+        case 1:
+            j1 = 2;
+            break;
+    }
     // set the params of all filters
-    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0]) {
-        lpL0.set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
-        lpR0.copy_coeffs(lpL0);
-        hpL0.set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
-        hpR0.copy_coeffs(hpL0);
+    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0] or *params[param_mode] != mode_old) {
+        lpL[0][0].set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
+        hpL[0][0].set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
+        lpR[0][0].copy_coeffs(lpL[0][0]);
+        hpR[0][0].copy_coeffs(hpL[0][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[0][i].copy_coeffs(lpL[0][0]);
+            hpL[0][i].copy_coeffs(hpL[0][0]);
+            lpR[0][i].copy_coeffs(lpL[0][0]);
+            hpR[0][i].copy_coeffs(hpL[0][0]);
+        }
         freq_old[0] = *params[param_freq0];
         sep_old[0]  = *params[param_sep0];
         q_old[0]    = *params[param_q0];
     }
-    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1]) {
-        lpL1.set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
-        lpR1.copy_coeffs(lpL1);
-        hpL1.set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
-        hpR1.copy_coeffs(hpL1);
+    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
+        lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
+        hpL[1][0].set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
+        lpR[1][0].copy_coeffs(lpL[1][0]);
+        hpR[1][0].copy_coeffs(hpL[1][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[1][i].copy_coeffs(lpL[1][0]);
+            hpL[1][i].copy_coeffs(hpL[1][0]);
+            lpR[1][i].copy_coeffs(lpL[1][0]);
+            hpR[1][i].copy_coeffs(hpL[1][0]);
+        }
         freq_old[1] = *params[param_freq1];
         sep_old[1]  = *params[param_sep1];
         q_old[1]    = *params[param_q1];
     }
-    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2]) {
-        lpL2.set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
-        lpR2.copy_coeffs(lpL2);
-        hpL2.set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
-        hpR2.copy_coeffs(hpL2);
+    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
+        lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
+        hpL[2][0].set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
+        lpR[2][0].copy_coeffs(lpL[2][0]);
+        hpR[2][0].copy_coeffs(hpL[2][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[2][i].copy_coeffs(lpL[2][0]);
+            hpL[2][i].copy_coeffs(hpL[2][0]);
+            lpR[2][i].copy_coeffs(lpL[2][0]);
+            hpR[2][i].copy_coeffs(hpL[2][0]);
+        }
         freq_old[2] = *params[param_freq2];
         sep_old[2]  = *params[param_sep2];
         q_old[2]    = *params[param_q2];
@@ -184,6 +212,7 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             // out vars
             float outL = 0.f;
             float outR = 0.f;
+            int j1;
             for (int i = 0; i < strips; i ++) {
                 // cycle trough strips
                 if (solo[i] || no_solo) {
@@ -191,39 +220,27 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
                     float left  = inL;
                     float right = inR;
                     // send trough filters
-                    switch (i) {
+                    switch(mode) {
                         case 0:
-                            left  = lpL0.process(left);
-                            right = lpR0.process(right);
-                            lpL0.sanitize();
-                            lpR0.sanitize();
+                            j1 = 0;
                             break;
                         case 1:
-                            left  = lpL1.process(left);
-                            right = lpR1.process(right);
-                            left  = hpL0.process(left);
-                            right = hpR0.process(right);
-                            lpL1.sanitize();
-                            lpR1.sanitize();
-                            hpL0.sanitize();
-                            hpR0.sanitize();
+                            j1 = 2;
                             break;
-                        case 2:
-                            left  = lpL2.process(left);
-                            right = lpR2.process(right);
-                            left  = hpL1.process(left);
-                            right = hpR1.process(right);
-                            lpL2.sanitize();
-                            lpR2.sanitize();
-                            hpL1.sanitize();
-                            hpR1.sanitize();
-                            break;
-                        case 3:
-                            left  = hpL2.process(left);
-                            right = hpR2.process(right);
-                            hpL2.sanitize();
-                            hpR2.sanitize();
-                            break;
+                    }
+                    for (int j = 0; j <= j1; j++){
+                        if(i + 1 < strips) {
+                            left  = lpL[i][j].process(left);
+                            right = lpR[i][j].process(right);
+                            lpL[i][j].sanitize();
+                            lpR[i][j].sanitize();
+                        }
+                        if(i - 1 >= 0) {
+                            left  = hpL[i - 1][j].process(left);
+                            right = hpR[i - 1][j].process(right);
+                            hpL[i - 1][j].sanitize();
+                            hpR[i - 1][j].sanitize();
+                        }
                     }
                     // process gain reduction
                     strip[i].process(left, right);
@@ -240,8 +257,16 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             
             // even out filters gain reduction
             // 3dB - levelled manually (based on default sep and q settings)
-            outL *= 1.414213562;
-            outR *= 1.414213562;
+            switch(mode) {
+                case 0:
+                    outL *= 1.414213562;
+                    outR *= 1.414213562;
+                    break;
+                case 1:
+                    outL *= 0.88;
+                    outR *= 0.88;
+                    break;
+            }
             
             // out level
             outL *= *params[param_level_out];
