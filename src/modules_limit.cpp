@@ -298,17 +298,21 @@ void multibandlimiter_audio_module::params_changed()
     // set the params of all strips
     float rel;
     rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
-    rel = (*params[param_minrel] > 0.5) ? std::max(3 * (1.f / 30), rel) : rel;
+    rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / 30), rel) : rel;
     strip[0].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight0] * -1), true, true);
-    rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
-    rel = (*params[param_minrel] > 0.5) ? std::max(3 * (1.f / *params[param_freq0]), rel) : rel;
+    *params[param_effrelease0] = rel;
+    rel = *params[param_release] *  pow(0.25, *params[param_release1] * -1);
+    rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq0]), rel) : rel;
     strip[1].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight1] * -1), true);
-    rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
-    rel = (*params[param_minrel] > 0.5) ? std::max(3 * (1.f / *params[param_freq1]), rel) : rel;
+    *params[param_effrelease1] = rel;
+    rel = *params[param_release] *  pow(0.25, *params[param_release2] * -1);
+    rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq1]), rel) : rel;
     strip[2].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight2] * -1), true);
-    rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
-    rel = (*params[param_minrel] > 0.5) ? std::max(3 * (1.f / *params[param_freq2]), rel) : rel;
+    *params[param_effrelease2] = rel;
+    rel = *params[param_release] *  pow(0.25, *params[param_release3] * -1);
+    rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq2]), rel) : rel;
     strip[3].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight3] * -1), true);
+    *params[param_effrelease3] = rel;
     
     // rebuild multiband buffer
     if( *params[param_attack] != attack_old) {
@@ -433,16 +437,16 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 float k;
                 switch (i) {
                     case 0:
-                        k = *params[param_weight0] + 1;
+                        k = pow(0.25, *params[param_weight0] * -1);
                         break;
                     case 1:
-                        k = *params[param_weight1] + 1;
+                        k = pow(0.25, *params[param_weight1] * -1);
                         break;
                     case 2:
-                        k = *params[param_weight2] + 1;
+                        k = pow(0.25, *params[param_weight2] * -1);
                         break;
                     case 3:
-                        k = *params[param_weight3] + 1;
+                        k = pow(0.25, *params[param_weight3] * -1);
                         break;
                 }
                             
@@ -452,7 +456,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             
             // write multiband coefficient to buffer
             buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
-            //printf("%03d: %.5f\n", pos, fabs(sum_left));
+            //printf("%03d: %.5f\n", pos, buffer[pos]);
             for (int i = 0; i < strips; i++) {
                 // process gain reduction
                 strip[i].process(_tmpL[i], _tmpR[i], buffer);
