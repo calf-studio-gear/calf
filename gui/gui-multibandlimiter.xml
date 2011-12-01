@@ -119,62 +119,92 @@
                 </if>
             </vbox>
         </frame>
-        <frame label="Bands">
-            <vbox>
+        <vbox>
+            <frame label="Low Band">
+            
                 <hbox>
-                    <vbox>
-                        <label param="weight0" />
-                        <knob param="weight0" size="2" />
-                        <value param="weight0" />
-                    </vbox>
-                    <vumeter attach-x="1" attach-y="0" param="att0" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
-                    <vbox>
-                        <label param="release0" />
-                        <knob param="release0" size="2" />
-                        <value param="release0" />
-                    </vbox>
+                    <hbox>
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="weight0" align-x="1.0" />
+                            <value param="weight0" align-x="1.0" />
+                        </vbox>
+                        <knob param="weight0" size="2" type="1" />
+                    </hbox>
+                    <vumeter param="att0" mode="2" hold="1.5" falloff="2.5" width="100" height="28" position="1" />
+                    <hbox>
+                        <knob param="release0" size="2" type="1" />
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="release0" align-x="0.0" />
+                            <value param="release0" align-x="0.0" />
+                        </vbox>
+                    </hbox>
+                </hbox>
+            </frame>
+            <frame label="LowMid Band">
                 <hbox>
+                    <hbox>
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="weight1" align-x="1.0" />
+                            <value param="weight1" align-x="1.0" />
+                        </vbox>
+                        <knob param="weight1" size="2" type="1" />
+                    </hbox>
+                    <vumeter param="att1" mode="2" hold="1.5" falloff="2.5" width="100" height="28" position="1" />
+                    <hbox>
+                        <knob param="release1" size="2" type="1" />
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="release1" align-x="0.0" />
+                            <value param="release1" align-x="0.0" />
+                        </vbox>
+                    </hbox>
+                </hbox>
+            </frame>
+            <frame label="HiMid Band">
                 <hbox>
-                    <vbox>
-                        <label param="weight1" />
-                        <knob param="weight1" size="2" />
-                        <value param="weight1" />
-                    </vbox>
-                    <vumeter attach-x="1" attach-y="0" param="att1" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
-                    <vbox>
-                        <label param="release1" />
-                        <knob param="release1" size="2" />
-                        <value param="release1" />
-                    </vbox>
+                    <hbox>
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="weight2" align-x="1.0" />
+                            <value param="weight2" align-x="1.0" />
+                        </vbox>
+                        <knob param="weight2" size="2" type="1" />
+                    </hbox>
+                    <vumeter param="att2" mode="2" hold="1.5" falloff="2.5" width="100" height="28" position="1" />
+                    <hbox>
+                        <knob param="release2" size="2" type="1" />
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="release2" align-x="0.0" />
+                            <value param="release2" align-x="0.0" />
+                        </vbox>
+                    </hbox>
+                </hbox>
+            </frame>
+            <frame label="High Band">
                 <hbox>
-                <hbox>
-                    <vbox>
-                        <label param="weight2" />
-                        <knob param="weight2" size="2" />
-                        <value param="weight2" />
-                    </vbox>
-                    <vumeter attach-x="1" attach-y="0" param="att2" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
-                    <vbox>
-                        <label param="release2" />
-                        <knob param="release2" size="2" />
-                        <value param="release2" />
-                    </vbox>
-                <hbox>
-                <hbox>
-                    <vbox>
-                        <label param="weight3" />
-                        <knob param="weight3" size="2" />
-                        <value param="weight3" />
-                    </vbox>
-                    <vumeter attach-x="1" attach-y="0" param="att3" mode="2" hold="1.5" falloff="2.5" expand-x="1" fill-y="0" expand-y="0" height="12" position="2" />
-                    <vbox>
-                        <label param="release3" />
-                        <knob param="release3" size="2" />
-                        <value param="release3" />
-                    </vbox>
-                <hbox>
-            </vbox>
-        </frame>
-        
+                    <hbox>
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="weight3" align-x="1.0" />
+                            <value param="weight3" align-x="1.0" />
+                        </vbox>
+                        <knob param="weight3" size="2" type="1" />
+                    </hbox>
+                    <vumeter param="att3" mode="2" hold="1.5" falloff="2.5" width="100" height="28" position="1" />
+                    <hbox>
+                        <knob param="release3" size="2" type="1" />
+                        <vbox expand="0" fill="0" spacing="3">
+                            <label/>
+                            <label param="release3" align-x="0.0" />
+                            <value param="release3" align-x="0.0" />
+                        </vbox>
+                    </hbox>
+                </hbox>
+            </frame>
+        </vbox>
     </hbox>
 </table>    

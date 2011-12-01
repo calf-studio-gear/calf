@@ -591,7 +591,7 @@ private:
 public:
     lookahead_limiter();
     void set_multi(bool set);
-    void process(float &left, float &right, float * multi_buffer);
+    void process(float &left, float &right, float *multi_buffer);
     void set_sample_rate(uint32_t sr);
     void set_params(float l, float a, float r, float weight = 1.f, bool ar = false, bool d = false);
     float get_attenuation();

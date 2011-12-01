@@ -170,7 +170,7 @@ private:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
-    dsp::biquad_d2<float> lpL[3][3], lpR[3][3], hpL[3][3], hpR[3][3];
+    dsp::biquad_d2<float> lpL[strips - 1][3], lpR[strips - 1][3], hpL[strips - 1][3], hpR[strips - 1][3];
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
     int mode, mode_old;
 public:

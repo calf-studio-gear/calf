@@ -606,6 +606,7 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     
     // are we using multiband? get the multiband coefficient
     float multi_coeff = (use_multi) ? multi_buffer[pos] : 1.f;
+    //if(debug) printf("%03d: %.5f\n", pos, multi_coeff);
     
     // input peak - impact in left or right channel?
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
