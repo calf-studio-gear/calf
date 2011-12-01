@@ -68,7 +68,7 @@ void limiter_audio_module::deactivate()
 
 void limiter_audio_module::params_changed()
 {
-    limiter.set_params(*params[param_limit], *params[param_release], 1.f, srate);
+    limiter.set_params(*params[param_limit], *params[param_attack], *params[param_release], 1.f, true, true);
 }
 
 void limiter_audio_module::set_sample_rate(uint32_t sr)
@@ -119,7 +119,12 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             float outR = inR;
             
             // process gain reduction
-            limiter.process(outL, outR);
+            float fickdich[0];
+            limiter.process(outL, outR, fickdich);
+            
+            // autolevel
+            outL /= *params[param_limit];
+            outR /= *params[param_limit];
             
             // out level
             outL *= *params[param_level_out];
@@ -204,6 +209,8 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
+    attack_old = -1.f;
+    channels = 2;
 }
 
 void multibandlimiter_audio_module::activate()
@@ -214,8 +221,9 @@ void multibandlimiter_audio_module::activate()
     // activate all strips
     for (int j = 0; j < strips; j ++) {
         strip[j].activate();
-        strip[j].id = j;
+        strip[j].set_multi(true);
     }
+    pos = 0;
 }
 
 void multibandlimiter_audio_module::deactivate()
@@ -288,10 +296,20 @@ void multibandlimiter_audio_module::params_changed()
         q_old[2]    = *params[param_q2];
     }
     // set the params of all strips
-    strip[0].set_params(*params[param_limit], std::max(1.f / 30, *params[param_release]), 1.f, srate);
-    strip[1].set_params(*params[param_limit], std::max(1.f / *params[param_freq0], *params[param_release]), 1.f, srate);
-    strip[2].set_params(*params[param_limit], std::max(1.f / *params[param_freq1], *params[param_release]), 1.f, srate);
-    strip[3].set_params(*params[param_limit], std::max(1.f / *params[param_freq2], *params[param_release]), 1.f, srate, true);
+    strip[0].set_params(*params[param_limit], *params[param_attack], std::max(3 * (1.f / 30), *params[param_release]), *params[param_weight0] + 1, true, true);
+    strip[1].set_params(*params[param_limit], *params[param_attack], std::max(3 * (1.f / *params[param_freq0]), *params[param_release]), *params[param_weight1] + 1, true);
+    strip[2].set_params(*params[param_limit], *params[param_attack], std::max(3 * (1.f / *params[param_freq1]), *params[param_release]), *params[param_weight2] + 1, true);
+    strip[3].set_params(*params[param_limit], *params[param_attack], std::max(3 * (1.f / *params[param_freq2]), *params[param_release]), *params[param_weight3] + 1, true);
+    
+    // rebuild multiband buffer
+    if( *params[param_attack] != attack_old) {
+        // rebuild buffer
+        buffer_size = (int)srate * *params[param_attack] * channels; // buffer size attack rate
+        buffer = (float*) calloc(buffer_size, sizeof(float));
+        memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
+        attack_old = *params[param_attack];
+        pos = 0;
+    }
 }
 
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
@@ -310,7 +328,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
 #define ACTIVE_COMPRESSION(index) \
     if(params[param_att##index] != NULL) \
         *params[param_att##index] = strip[index].get_attenuation(); \
-
+        
 uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypass = *params[param_bypass] > 0.5f;
@@ -345,6 +363,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         meter_inR = 0.f;
         meter_outL = 0.f;
         meter_outR = 0.f;
+        float _tmpL[channels];
+        float _tmpR[channels];
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -358,6 +378,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             int j1;
             float left;
             float right;
+            float sum_left = 0.f;
+            float sum_right = 0.f;
             for (int i = 0; i < strips; i++) {
                 left  = inL;
                 right = inR;
@@ -385,12 +407,41 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                         hpR[i - 1][j].sanitize();
                     }
                 }
+                _tmpL[i] = left;
+                _tmpR[i] = right;
+                float k;
+                switch (i) {
+                    case 0:
+                        k = *params[param_weight0] + 1;
+                        break;
+                    case 1:
+                        k = *params[param_weight1] + 1;
+                        break;
+                    case 2:
+                        k = *params[param_weight2] + 1;
+                        break;
+                    case 3:
+                        k = *params[param_weight3] + 1;
+                        break;
+                }
+                            
+                sum_left += left * k;
+                sum_right += right * k;
+            } // process single strip with filter
+            
+            // write multiband coefficient to buffer
+            buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
+            
+            for (int i = 0; i < strips; i++) {
                 // process gain reduction
-                strip[i].process(left, right);
+                strip[i].process(_tmpL[i], _tmpR[i], buffer);
                 // sum up output
-                outL += left;
-                outR += right;
-            } // process single strip
+                // autolevel
+                _tmpL[i] /= *params[param_limit];
+                _tmpR[i] /= *params[param_limit];
+                outL += _tmpL[i];
+                outR += _tmpR[i];
+            } // process single strip again for limiter
             
             // even out filters gain reduction
             // 3dB - levelled manually (based on default sep and q settings)
@@ -400,8 +451,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                     outR *= 1.414213562;
                     break;
                 case 1:
-                    outL *= 0.61;
-                    outR *= 0.61;
+                    outL *= 0.88;
+                    outR *= 0.88;
                     break;
             }
             // out level
@@ -465,6 +516,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         ACTIVE_COMPRESSION(2)
         ACTIVE_COMPRESSION(3)
     }
+    
+    pos = (pos += channels) % buffer_size;
     // whatever has to be returned x)
     return outputs_mask;
 }

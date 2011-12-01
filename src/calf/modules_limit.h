@@ -62,6 +62,11 @@ private:
     dsp::lookahead_limiter strip[strips];
     dsp::biquad_d2<float> lpL[3][3], lpR[3][3], hpL[3][3], hpR[3][3];
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
+    unsigned int pos;
+    unsigned int buffer_size;
+    float attack_old;
+    float *buffer;
+    int channels;
 public:
     uint32_t srate;
     bool is_active;

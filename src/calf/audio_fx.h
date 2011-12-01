@@ -566,52 +566,38 @@ public:
 };
 
 
-/// Fast Lookahead Limiter by Steve Harris
-/// [This module is used with permission of Steve Harris]
-/// THERE'S NO PERMISSION TO USE IT BY NOW!!
-/// This is a limiter with an attack time of 5ms.
-/// It adds just over 5ms of lantecy to the input signal, but it guatantees that
-/// there will be no signals over the limit, and tries to get the minimum
-/// ammount of distortion. 
-
-// Convert a value in dB's to a coefficent
-#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
-#define CO_DB(v) (20.0f * log10f(v))
-
+/// Lookahead Limiter by Markus Schmidt
 class lookahead_limiter {
 private:
-    float limit, release, gain;
-    int num_chunks;
-    float buffer_time;
-    float latency;
-    float * buffer;
-    unsigned int buffer_len;
-    unsigned int buffer_pos;
+    float limit, attack, release, weight;
+    float attack__;
     uint32_t srate;
-    float atten;
-    float atten_lp;
-    float atten_max;
-    float peak;
-    float delta;
-    int attask;
-    unsigned int delay;
-    unsigned int chunk_num;
-    unsigned int chunk_pos;
-    unsigned int chunk_size;
-    float * chunks;
+    float att;
+    float att_max;
+    unsigned int pos;
+    unsigned int buffer_size;
     bool is_active;
     bool debug;
+    bool auto_release;
+    float *buffer;
+    int channels;
+    float delta;
+    float _delta;
+    float peak;
+    unsigned int over_s;
+    float over_c;
+    int pos_next;
+    bool use_multi;
 public:
-    int id;
     lookahead_limiter();
-    void process(float &left, float &right);
+    void set_multi(bool set);
+    void process(float &left, float &right, float * multi_buffer);
     void set_sample_rate(uint32_t sr);
-    void set_params(float l, float r, float g, uint32_t sr, bool d = false);
+    void set_params(float l, float a, float r, float weight = 1.f, bool ar = false, bool d = false);
     float get_attenuation();
     void activate();
     void deactivate();
-    static inline void round_to_zero(volatile float *f)
-    {
+    static inline void denormal(volatile float *f) {
 	    *f += 1e-18;
 	    *f -= 1e-18;
     }

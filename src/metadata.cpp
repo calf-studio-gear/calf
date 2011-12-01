@@ -507,7 +507,7 @@ CALF_PORT_PROPS(limiter) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "0dB-OutR" },
     
     { 1,      0.0625, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "limit", "Limit" },
-    { 2,         0.1,        10,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 5,         0.1,        100,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
     { 50,         1,        1000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     
     { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att", "Attenuation" },
@@ -515,7 +515,7 @@ CALF_PORT_PROPS(limiter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Markus Schmidt", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -543,13 +543,14 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep1", "S2" },
     { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep2", "S3" },
     
-    { 0.895025,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q0", "Q1" },
-    { 0.895025,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
-    { 0.895025,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
+    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q0", "Q1" },
+    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
+    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
     
     { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandlimiter_filter_choices, "mode", "Filter Mode" },
     
     { 1,      0.0625, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "limit", "Limit" },
+    { 5,         0.1,        100,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
     { 50,         1,        1000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     
     { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att0", "Low" },
@@ -557,10 +558,15 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att2", "HMid" },
     { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att3", "Hi" },
     
+    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight0", "Weight 1" },
+    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight1", "Weight 2" },
+    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight2", "Weight 3" },
+    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight3", "Weight 4" },
+    
     {}
 };
 
-CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiband Limiter", "Markus Schmidt", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiband Limiter", "Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
