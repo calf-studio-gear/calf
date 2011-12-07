@@ -222,7 +222,9 @@ void multibandlimiter_audio_module::activate()
     for (int j = 0; j < strips; j ++) {
         strip[j].activate();
         strip[j].set_multi(true);
+        strip[j].id = j;
     }
+    broadband.activate();
     pos = 0;
 }
 
@@ -233,6 +235,7 @@ void multibandlimiter_audio_module::deactivate()
     for (int j = 0; j < strips; j ++) {
         strip[j].deactivate();
     }
+    broadband.deactivate();
 }
 
 void multibandlimiter_audio_module::params_changed()
@@ -298,10 +301,10 @@ void multibandlimiter_audio_module::params_changed()
     // set the params of all strips
     float rel;
     
-    *params[param_weight0] = 0.f;
-    *params[param_weight1] = 0.f;
-    *params[param_weight2] = 0.f;
-    *params[param_weight3] = 0.f;
+//    *params[param_weight0] = 0.f;
+//    *params[param_weight1] = 0.f;
+//    *params[param_weight2] = 0.f;
+//    *params[param_weight3] = 0.f;
     
     rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / 30), rel) : rel;
@@ -323,7 +326,7 @@ void multibandlimiter_audio_module::params_changed()
     weight[3] = pow(0.25, *params[param_weight3] * -1);
     strip[3].set_params(*params[param_limit], *params[param_attack], rel, weight[3], true);
     *params[param_effrelease3] = rel;
-    
+    broadband.set_params(*params[param_limit], *params[param_attack], rel, 1.f);
     // rebuild multiband buffer
     if( *params[param_attack] != attack_old) {
         // rebuild buffer
@@ -342,6 +345,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     for (int j = 0; j < strips; j ++) {
         strip[j].set_sample_rate(srate);
     }
+    broadband.set_sample_rate(srate);
 }
 
 #define BYPASSED_COMPRESSION(index) \
@@ -356,6 +360,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
 {
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
+    float batt = 0.f;
 //    for (int i = 0; i < strips; i++)
 //        strip[i].update_curve();
     if(bypass) {
@@ -462,7 +467,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             
             // write multiband coefficient to buffer
             //buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
-            buffer[pos] = std::min(*params[param_limit] / std::min(fabs(sum_left), fabs(sum_right)), 1.0);
+            buffer[pos] = std::min(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
             
             //if(pos%20 == 0) printf("| %+.5f | %+.5f : %3d\n", buffer[pos], std::max(fabs(sum_left), fabs(sum_right)), pos);
             //if(pos%10 == 0) printf("%03d: %.5f\n", pos, buffer[pos]);
@@ -475,7 +480,17 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 outL += _tmpL[i];
                 outR += _tmpR[i];
             } // process single strip again for limiter
+            float fickdich[0];
+            //if(*params[param_minrel] > 0.5)
+            broadband.process(outL, outR, fickdich);
+            batt = broadband.get_attenuation();
             //if(outL > 0.001f) printf("%3d: out: %+.5f - coeffOut: %+.5f - bufferSum: %+.5f\n", pos, outL, buffer[(pos + 2) % buffer_size], bufferSum);
+            
+//            if(outL > *params[param_limit]) {
+//                for(unsigned int i = 0; i < strips; i++) {
+//                    printf("%+.5f - ", strip[i].
+//                }
+//            }
             
             // autolevel
             outL /= *params[param_limit];
@@ -533,17 +548,17 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     SET_IF_CONNECTED(meter_outR);
     // draw strip meters
     if(bypass > 0.5f) {
-        BYPASSED_COMPRESSION(0)
-        BYPASSED_COMPRESSION(1)
-        BYPASSED_COMPRESSION(2)
-        BYPASSED_COMPRESSION(3)
+        if(params[param_att0] != NULL) *params[param_att0] = 1.0;
+        if(params[param_att1] != NULL) *params[param_att1] = 1.0;
+        if(params[param_att2] != NULL) *params[param_att2] = 1.0;
+        if(params[param_att3] != NULL) *params[param_att3] = 1.0;
+           
     } else {
-        ACTIVE_COMPRESSION(0)
-        ACTIVE_COMPRESSION(1)
-        ACTIVE_COMPRESSION(2)
-        ACTIVE_COMPRESSION(3)
+        if(params[param_att0] != NULL) *params[param_att0] = strip[0].get_attenuation() * batt;
+        if(params[param_att1] != NULL) *params[param_att1] = strip[1].get_attenuation() * batt;
+        if(params[param_att2] != NULL) *params[param_att2] = strip[2].get_attenuation() * batt;
+        if(params[param_att3] != NULL) *params[param_att3] = strip[3].get_attenuation() * batt;
     }
-    
     // whatever has to be returned x)
     return outputs_mask;
 }

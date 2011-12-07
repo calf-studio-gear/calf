@@ -537,7 +537,7 @@ bool simple_lfo::get_dot(float &x, float &y, int &size, cairo_iface *context) co
 lookahead_limiter::lookahead_limiter() {
     is_active = false;
     channels = 2;
-    
+    id = 0;
 }
 
 void lookahead_limiter::activate()
@@ -704,6 +704,10 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // post treatment (denormal, limit)
     denormal(&left);
     denormal(&right);
+    
+//    if(pos%20==0)
+//        printf("%d: limit: %+.5f eff_limit: %+.5f\n", id, limit, limit * multi_coeff * weight);
+    
     left = std::max(left, -limit * multi_coeff * weight);
     left = std::min(left, limit * multi_coeff * weight);
     right = std::max(right, -limit * multi_coeff * weight);

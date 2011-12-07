@@ -570,6 +570,7 @@ public:
 
 class lookahead_limiter {
 private:
+public:
     float limit, attack, release, weight;
     float attack__;
     uint32_t srate;
@@ -589,11 +590,11 @@ private:
     float over_c;
     int pos_next;
     bool use_multi;
+    unsigned int id;
     static inline void denormal(volatile float *f) {
 	    *f += 1e-18;
 	    *f -= 1e-18;
     }
-public:
     lookahead_limiter();
     void set_multi(bool set);
     void process(float &left, float &right, float *multi_buffer);
