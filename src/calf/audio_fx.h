@@ -566,7 +566,8 @@ public:
 };
 
 
-/// Lookahead Limiter by Markus Schmidt
+/// Lookahead Limiter by Markus Schmidt and Christian Holschuh
+
 class lookahead_limiter {
 private:
     float limit, attack, release, weight;
@@ -588,6 +589,10 @@ private:
     float over_c;
     int pos_next;
     bool use_multi;
+    static inline void denormal(volatile float *f) {
+	    *f += 1e-18;
+	    *f -= 1e-18;
+    }
 public:
     lookahead_limiter();
     void set_multi(bool set);
@@ -597,10 +602,6 @@ public:
     float get_attenuation();
     void activate();
     void deactivate();
-    static inline void denormal(volatile float *f) {
-	    *f += 1e-18;
-	    *f -= 1e-18;
-    }
 };
 
 #if 0

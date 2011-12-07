@@ -297,21 +297,31 @@ void multibandlimiter_audio_module::params_changed()
     }
     // set the params of all strips
     float rel;
+    
+    *params[param_weight0] = 0.f;
+    *params[param_weight1] = 0.f;
+    *params[param_weight2] = 0.f;
+    *params[param_weight3] = 0.f;
+    
     rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / 30), rel) : rel;
-    strip[0].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight0] * -1), true, true);
+    weight[0] = pow(0.25, *params[param_weight0] * -1);
+    strip[0].set_params(*params[param_limit], *params[param_attack], rel, weight[0], true, true);
     *params[param_effrelease0] = rel;
     rel = *params[param_release] *  pow(0.25, *params[param_release1] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq0]), rel) : rel;
-    strip[1].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight1] * -1), true);
+    weight[1] = pow(0.25, *params[param_weight1] * -1);
+    strip[1].set_params(*params[param_limit], *params[param_attack], rel, weight[1], true);
     *params[param_effrelease1] = rel;
     rel = *params[param_release] *  pow(0.25, *params[param_release2] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq1]), rel) : rel;
-    strip[2].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight2] * -1), true);
+    weight[2] = pow(0.25, *params[param_weight2] * -1);
+    strip[2].set_params(*params[param_limit], *params[param_attack], rel, weight[2], true);
     *params[param_effrelease2] = rel;
     rel = *params[param_release] *  pow(0.25, *params[param_release3] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / *params[param_freq2]), rel) : rel;
-    strip[3].set_params(*params[param_limit], *params[param_attack], rel, pow(0.25, *params[param_weight3] * -1), true);
+    weight[3] = pow(0.25, *params[param_weight3] * -1);
+    strip[3].set_params(*params[param_limit], *params[param_attack], rel, weight[3], true);
     *params[param_effrelease3] = rel;
     
     // rebuild multiband buffer
@@ -411,6 +421,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 // send trough filters
                 
                 switch(mode) {
+                    // how many filter passes? (12/36dB)
                     case 0:
                         j1 = 0;
                         break;
@@ -420,53 +431,55 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 for (int j = 0; j <= j1; j++){
                     if(i + 1 < strips) {
+                        // do lowpass on all bands except most high
                         left  = lpL[i][j].process(left);
                         right = lpR[i][j].process(right);
                         lpL[i][j].sanitize();
                         lpR[i][j].sanitize();
                     }
                     if(i - 1 >= 0) {
+                        // do highpass on all bands except most low
                         left  = hpL[i - 1][j].process(left);
                         right = hpR[i - 1][j].process(right);
                         hpL[i - 1][j].sanitize();
                         hpR[i - 1][j].sanitize();
                     }
                 }
+                
+                // remember filtered values for limiting
+                // (we need multiband_coeff before we can call the limiter bands)
                 _tmpL[i] = left;
                 _tmpR[i] = right;
-                float k;
-                switch (i) {
-                    case 0:
-                        k = pow(0.25, *params[param_weight0] * -1);
-                        break;
-                    case 1:
-                        k = pow(0.25, *params[param_weight1] * -1);
-                        break;
-                    case 2:
-                        k = pow(0.25, *params[param_weight2] * -1);
-                        break;
-                    case 3:
-                        k = pow(0.25, *params[param_weight3] * -1);
-                        break;
-                }
-                            
-                sum_left += left * k;
-                sum_right += right * k;
+                
+                //if(pos%20 == 0) printf("%+.5f - ", left);
+                
+                // sum up for multiband coefficient
+                //sum_left += left * weight[i];
+                //sum_right += right * weight[i];
+                sum_left += ((fabs(left) > *params[param_limit]) ? *params[param_limit] * (fabs(left) / left) : left) * weight[i];
+                sum_right += ((fabs(right) > *params[param_limit]) ? *params[param_limit] * (fabs(right) / right) : right) * weight[i];
             } // process single strip with filter
             
             // write multiband coefficient to buffer
-            buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
-            //printf("%03d: %.5f\n", pos, buffer[pos]);
+            //buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
+            buffer[pos] = std::min(*params[param_limit] / std::min(fabs(sum_left), fabs(sum_right)), 1.0);
+            
+            //if(pos%20 == 0) printf("| %+.5f | %+.5f : %3d\n", buffer[pos], std::max(fabs(sum_left), fabs(sum_right)), pos);
+            //if(pos%10 == 0) printf("%03d: %.5f\n", pos, buffer[pos]);
+            //float bufferSum = 0.f;
             for (int i = 0; i < strips; i++) {
                 // process gain reduction
+                //bufferSum += strip[i].buffer[(pos + 2) % buffer_size];
                 strip[i].process(_tmpL[i], _tmpR[i], buffer);
-                // sum up output
-                // autolevel
-                _tmpL[i] /= *params[param_limit];
-                _tmpR[i] /= *params[param_limit];
+                // sum up output of limiters
                 outL += _tmpL[i];
                 outR += _tmpR[i];
             } // process single strip again for limiter
+            //if(outL > 0.001f) printf("%3d: out: %+.5f - coeffOut: %+.5f - bufferSum: %+.5f\n", pos, outL, buffer[(pos + 2) % buffer_size], bufferSum);
+            
+            // autolevel
+            outL /= *params[param_limit];
+            outR /= *params[param_limit];
             
             // out level
             outL *= *params[param_level_out];
@@ -477,10 +490,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             outs[1][offset] = outR;
             
             // clip LED's
-            if(inL > 1.f) {
+            if(ins[0][offset] > 1.f) {
                 clip_inL  = srate >> 3;
             }
-            if(inR > 1.f) {
+            if(ins[1][offset] > 1.f) {
                 clip_inR  = srate >> 3;
             }
             if(outL > 1.f) {
@@ -491,10 +504,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             }
             // set up in / out meters
             if(inL > meter_inL) {
-                meter_inL = inL;
+                meter_inL = ins[0][offset];
             }
             if(inR > meter_inR) {
-                meter_inR = inR;
+                meter_inR = ins[1][offset];
             }
             if(outL > meter_outL) {
                 meter_outL = outL;

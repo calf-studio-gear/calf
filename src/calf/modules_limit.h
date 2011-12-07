@@ -68,6 +68,7 @@ private:
     float *buffer;
     int channels;
     float striprel[strips];
+    float weight[strips];
 public:
     uint32_t srate;
     bool is_active;

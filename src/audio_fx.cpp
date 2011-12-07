@@ -600,35 +600,39 @@ void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, 
 }
 
 void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
-{
+{   
+    int in0 = 0;
+    int out0 = 0;
     // write left and right to buffer
     buffer[pos] = left;
     buffer[pos + 1] = right;
     
     // are we using multiband? get the multiband coefficient
     float multi_coeff = (use_multi) ? multi_buffer[pos] : 1.f;
-    //if(debug) printf("%03d: %.5f\n", pos,  multi_coeff);
+    //if(debug and pos%10 == 0) printf("%03d: %.5f\n", pos, multi_buffer[pos]);
     
     // input peak - impact in left or right channel?
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
     
     // if we have a peak in input over our limit, check if delta to reach is
     // more important than actual delta
-    if(peak > limit * multi_coeff * weight) {
-        _delta = ((limit * multi_coeff * weight) / peak - att) / buffer_size * channels;
+    if(peak > limit * multi_coeff * weight or multi_coeff < 1.f) {
+        in0 = 1;
+        _delta = ((limit * multi_coeff * weight) / peak - att) / (buffer_size / channels - channels);
         if(_delta < delta) {
             delta = _delta;
             pos_next = pos;
         }
-        _delta = 0;
     }
     
     // switch left and right pointers to output
-    left = buffer[(pos + 2) % buffer_size];
-    right = buffer[(pos + 3) % buffer_size];
+    left = buffer[(pos + channels) % buffer_size];
+    right = buffer[(pos + channels + 1) % buffer_size];
     
     // check multiband coefficient again for output pointer
-    multi_coeff = (use_multi) ? multi_buffer[pos + 2] : 1.f;
+    multi_coeff = (use_multi) ? multi_buffer[(pos + channels) % buffer_size] : 1.f;
+    
+    //if(pos % 20 == 2 and debug) printf("%+.5f | %3d\n", multi_coeff, pos);
     
     // output peak - impact in left or right channel?
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
@@ -639,54 +643,61 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     
     // output is over the limit?
     if(peak > limit * multi_coeff * weight) {
+        delta = (1.0f - att) / (srate * release);
         pos_next = -1;
         unsigned int j;
-        for(unsigned int i = 2; i < buffer_size; i += channels) {
-            // iterate over buffer (ewxcept input and output pointer positions)
+        out0 = 1;
+        for(unsigned int i = channels; i < buffer_size; i += channels) {
+            // iterate over buffer (except input and output pointer positions)
             // and search for maximum slope
-            j = (i + pos + 2) % buffer_size;
-            multi_coeff = (use_multi) ? multi_buffer[j] : 1.f;
+            j = (i + pos + channels) % buffer_size;
+            float _multi_coeff = (use_multi) ? multi_buffer[j] : 1.f;
             float _peak = fabs(buffer[j]) > fabs(buffer[j + 1]) ? fabs(buffer[j]) : fabs(buffer[j + 1]);
             // calculate steepness of slope
-            if(_peak > limit * multi_coeff * weight) {
-                _delta = ((limit * multi_coeff * weight) / peak - att) / i;
-            }
-            // if slope is steeper, use it, fucker.
-            if(_delta < delta) {
-                delta = _delta;
-                pos_next = j;
-            } else {
-                // or do a normal release
-                delta = (1.0f - att) / (srate * release);
+            if(_peak > limit * _multi_coeff * weight) {
+                _delta = ((limit * _multi_coeff * weight) / _peak - att) / (i / channels);
+                // if slope is steeper, use it, fucker.
+                if(_delta < delta) {
+                    delta = _delta;
+                    pos_next = j;
+                }
             }
         }
-        _delta = 0;
     }
     
     // change the attenuation level
     att += delta;
-    
+    //if(debug and (pos%20 == 0 or in0 or out0)) printf("%03d: limit: %+.4f - att %+.4f - delta: %+.8f - in: %+.4f", pos, limit * multi_coeff * weight, att, delta, left);
     // ...and calculate outpout from it
     left *= att;
     right *= att;
     
-    
-    // some security personnel pawing your values
+    // release time seems over
     if (att > 1.0f) {
 	    att = 1.0f;
 	    delta = 0.0f;
 	}
-	
+    
+    
+    //if(debug and (pos%20 == 0 or in0 or out0)) printf(" - out: %+.4f | in: %1d - out: %1d\n", left, in0, out0);
+//    if(fabs(left) > limit * multi_coeff * weight or fabs(right) > limit * multi_coeff * weight)
+//        printf("%+.5f - %+.5f | %+.5f\n", left, right, limit);
+
+    // security personnel pawing your values
 	if(att < 0.f) {
+	    // if this happens we're doomed!!
+	    // may happen on manually lowering attack
 	    att = 0.0000000001;
 	    delta = (1.0f - att) / (srate * release);
 	}
 	
-	if(1 - att < 0.00000001) {
+	if(att != 1.f and 1 - att < 0.0000000000001) {
+	    // denormalize att
 	    att = 1.f;
 	}
 	
-	if(fabs(delta) < 0.000000001) {
+	if(delta != 0.f and fabs(delta) < 0.00000000000001) {
+        // denormalize delta
 	    delta = 0.f;
 	}
 	
@@ -697,6 +708,7 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     left = std::min(left, limit * multi_coeff * weight);
     right = std::max(right, -limit * multi_coeff * weight);
     right = std::min(right, limit * multi_coeff * weight);
+    //if(left > 0.001f) printf("%3d: left: %+.5f - limit: %+.5f - mc: %+.5f weight: %+.5f\n", pos, left, limit, multi_coeff, weight);
     
     att_max = (att < att_max) ? att : att_max; // store max atten for meter output
     
