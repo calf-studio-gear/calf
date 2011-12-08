@@ -445,3 +445,178 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
     return false;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+stereo_audio_module::stereo_audio_module() {
+    active = false;
+}
+
+void stereo_audio_module::activate() {
+    active = true;
+}
+
+void stereo_audio_module::deactivate() {
+    active = false;
+}
+
+void stereo_audio_module::params_changed() {
+    float slev = 2 * *params[param_slev]; // stereo level ( -2 -> 2 )
+    float sbal = 1 + *params[param_sbal]; // stereo balance ( 0 -> 2 )
+    float mlev = 2 * *params[param_mlev]; // mono level ( -2 -> 2 )
+    float mpan = 1 + *params[param_mpan]; // mono pan ( 0 -> 2 )
+
+    switch((int)*params[param_mode])
+    {
+        case 0:
+            //LR->LR
+            LL = (mlev * (2.f - mpan) + slev * (2.f - sbal));
+            LR = (mlev * mpan - slev * sbal);
+            RL = (mlev * (2.f - mpan) - slev * (2.f - sbal));
+            RR = (mlev * mpan + slev * sbal);
+            break;
+        case 1:
+            //LR->MS
+            LL = (2.f - mpan) * (2.f - sbal);
+            LR = mpan * (2.f - sbal) * -1;
+            RL = (2.f - mpan) * sbal;
+            RR = mpan * sbal;
+            break;
+        case 2:
+            //MS->LR
+            LL = mlev * (2.f - sbal);
+            LR = mlev * mpan;
+            RL = slev * (2.f - sbal);
+            RR = slev * sbal * -1;
+            break;
+        
+    }
+}
+
+uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        if(*params[param_bypass] > 0.5) {
+            outs[0][i] = ins[0][i];
+            outs[1][i] = ins[1][i];
+        } else {
+            float L, R;
+            if(*params[param_flip] > 0.5) {
+                // flip
+                L = ins[1][i];
+                R = ins[0][i];
+            } else {
+                // no flip
+                L = ins[0][i];
+                R = ins[1][i];
+            }
+            // mute
+            L *= (1 - floor(*params[param_mute_l] + 0.5));
+            R *= (1 - floor(*params[param_mute_r] + 0.5));
+            
+            // levels in
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            // softclip
+            if(*params[param_softclip]) {
+                int ph;
+                ph = L / fabs(L);
+                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+                ph = R / fabs(R);
+                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
+            }
+            
+            // balance in
+            L *= (1.f - std::max(0.f, *params[param_balance_in]));
+            R *= (1.f + std::min(0.f, *params[param_balance_in]));
+            
+            // phase
+            L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
+            R *= (2 * (1 - floor(*params[param_phase_r] + 0.5))) - 1;
+            
+            // LR/MS
+            L += LL*L + RL*R;
+            R += RR*R + LR*L;
+            
+            // balance out
+            L *= (1.f - std::max(0.f, *params[param_balance_out]));
+            R *= (1.f + std::min(0.f, *params[param_balance_out]));
+            
+            //output
+            outs[0][i] = L * *params[param_level_out];
+            outs[1][i] = R * *params[param_level_out];
+        }
+    }
+    return outputs_mask;
+}
+
+void stereo_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+mono_audio_module::mono_audio_module() {
+    active = false;
+}
+
+void mono_audio_module::activate() {
+    active = true;
+}
+
+void mono_audio_module::deactivate() {
+    active = false;
+}
+
+void mono_audio_module::params_changed() {
+    
+}
+
+uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        if(*params[param_bypass] > 0.5) {
+            outs[0][i] = ins[0][i];
+            outs[1][i] = ins[0][i];
+        } else {
+            float L, R;
+            L = ins[0][i];
+            R = ins[0][i];
+            
+            // mute
+            L *= (1 - floor(*params[param_mute_l] + 0.5));
+            R *= (1 - floor(*params[param_mute_r] + 0.5));
+            
+            // levels in
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            // softclip
+            if(*params[param_softclip]) {
+                int ph;
+                ph = L / fabs(L);
+                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+                ph = R / fabs(R);
+                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
+            }
+            
+            // phase
+            L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
+            R *= (2 * (1 - floor(*params[param_phase_r] + 0.5))) - 1;
+            
+            // balance out
+            L *= (1.f - std::max(0.f, *params[param_balance_out]));
+            R *= (1.f + std::min(0.f, *params[param_balance_out]));
+            
+            //output
+            outs[0][i] = L * *params[param_level_out];
+            outs[1][i] = R * *params[param_level_out];
+        }
+    }
+    return outputs_mask;
+}
+
+void mono_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}

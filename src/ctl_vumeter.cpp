@@ -152,12 +152,41 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                     //                if (vu->value < ts || vu->value <= 0)
                     //                    r *= 0.5, g *= 0.5, b *= 0.5;
                     break;
+                case VU_STANDARD_CENTER:
+                    if (ts < 0.25)
+                        // 0.0 -> 0.25
+                        // green: 0.f -> 1.f
+                        r = 1, g = (ts) / 0.25, b = 0;
+                    else if (ts > 0.75)
+                        // 0.75 -> 1.0
+                        // green: 1.f -> 0.f
+                        r = 1, g = 1 - (ts - 0.75) / 0.25, b = 0;
+                    else if (ts > 0.5)
+                        // 0.5 -> 0.75
+                        // red: 0.f -> 1.f
+                        // green: 0.5 -> 1.f
+                        // blue: 1.f -> 0.f
+                        r = (ts - 0.5) / 0.25, g = 0.5 + (ts - 0.5) * 2.f, b = 1 - (ts - 0.5) / 0.25;
+                    else
+                        // 0.25 -> 0.5
+                        // red: 1.f -> 0.f
+                        // green: 1.f -> 0.5
+                        // blue: 0.f -> 1.f
+                        r = 1 - (ts - 0.25) / 0.25, g = 1.f - ts * 2.f, b = (ts - 0.25) / 0.25;
+                    //                if (vu->value < ts || vu->value <= 0)
+                    //                    r *= 0.5, g *= 0.5, b *= 0.5;
+                    break;
                 case VU_MONOCHROME_REVERSE:
                     r = 0, g = 170.0 / 255.0, b = 1;
                     //                if (!(vu->value < ts) || vu->value >= 1.0)
                     //                    r *= 0.5, g *= 0.5, b *= 0.5;
                     break;
                 case VU_MONOCHROME:
+                    r = 0, g = 170.0 / 255.0, b = 1;
+                    //                if (vu->value < ts || vu->value <= 0)
+                    //                    r *= 0.5, g *= 0.5, b *= 0.5;
+                    break;
+                case VU_MONOCHROME_CENTER:
                     r = 0, g = 170.0 / 255.0, b = 1;
                     //                if (vu->value < ts || vu->value <= 0)
                     //                    r *= 0.5, g *= 0.5, b *= 0.5;

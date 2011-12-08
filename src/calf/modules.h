@@ -239,6 +239,44 @@ private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
 
+
+#define MATH_E 2.718281828
+class mono_audio_module:
+    public audio_module<mono_metadata>
+{
+    uint32_t srate;
+    bool active;
+    void softclip(float &s) {
+        int ph = s / fabs(s);
+        s = s > 0.63 ? ((0.63 + 0.36) * ph * (1 - pow(MATH_E, (1.f / 3) * (0.63 + s * ph)))) : s;
+    }
+public:
+    mono_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+class stereo_audio_module:
+    public audio_module<stereo_metadata>
+{
+    float LL, LR, RL, RR;
+    uint32_t srate;
+    bool active;
+    void softclip(float &s) {
+        int ph = s / fabs(s);
+        s = s > 0.63 ? ((0.63 + 0.36) * ph * (1 - pow(MATH_E, (1.f / 3) * (0.63 + s * ph)))) : s;
+    }
+public:
+    stereo_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
+
+};
 #endif

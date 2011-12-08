@@ -355,6 +355,28 @@ struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
            param_freq, param_listen, param_count };
     PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
 };
+/// Markus's Mono Module - metadata
+struct stereo_metadata: public plugin_metadata<stereo_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, 
+           STEREO_VU_METER_PARAMS, param_balance_in, param_balance_out, param_flip, param_softclip, 
+           param_mute_l, param_mute_r, param_phase_l, param_phase_r,
+           param_mode, param_slev, param_sbal, param_mlev, param_mpan,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("stereo", "stereo", "Stereo Input")
+};
+/// Markus's Mono Module - metadata
+struct mono_metadata: public plugin_metadata<mono_metadata>
+{
+    enum { in_count = 1, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, 
+           param_meter_in, param_meter_outL, param_meter_outR, param_clip_in,param_clip_outL, param_clip_outR,
+           param_balance_out, param_softclip, 
+           param_mute_l, param_mute_r, param_phase_l, param_phase_r,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("mono", "mono", "Mono Input")
+};
 
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
