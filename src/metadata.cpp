@@ -571,6 +571,11 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release2", "Release 3" },
     { -0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release3", "Release 4" },
     
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo0", "Solo 1" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo1", "Solo 2" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo2", "Solo 3" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo3", "Solo 4" },
+    
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease0", "Effectively Release 1" },
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease1", "Effectively Release 2" },
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease2", "Effectively Release 3" },

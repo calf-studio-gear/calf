@@ -58,6 +58,8 @@ private:
     static const int strips = 4;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     int mode, mode_old;
+    bool solo[strips];
+    bool no_solo;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;

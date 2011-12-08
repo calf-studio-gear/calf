@@ -240,6 +240,16 @@ void multibandlimiter_audio_module::deactivate()
 
 void multibandlimiter_audio_module::params_changed()
 {
+    // determine mute/solo states
+    solo[0] = *params[param_solo0] > 0.f ? true : false;
+    solo[1] = *params[param_solo1] > 0.f ? true : false;
+    solo[2] = *params[param_solo2] > 0.f ? true : false;
+    solo[3] = *params[param_solo3] > 0.f ? true : false;
+    no_solo = (*params[param_solo0] > 0.f ||
+            *params[param_solo1] > 0.f ||
+            *params[param_solo2] > 0.f ||
+            *params[param_solo3] > 0.f) ? false : true;
+            
     mode_old = mode;
     mode = *params[param_mode];
     int i;
@@ -477,8 +487,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 //bufferSum += strip[i].buffer[(pos + 2) % buffer_size];
                 strip[i].process(_tmpL[i], _tmpR[i], buffer);
                 // sum up output of limiters
-                outL += _tmpL[i];
-                outR += _tmpR[i];
+                if (solo[i] || no_solo) {
+                    outL += _tmpL[i];
+                    outR += _tmpR[i];
+                }
             } // process single strip again for limiter
             float fickdich[0];
             //if(*params[param_minrel] > 0.5)

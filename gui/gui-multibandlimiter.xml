@@ -157,7 +157,10 @@
                         </vbox>
                         <knob param="weight0" size="2" type="1" />
                     </hbox>
-                    
+                    <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0">
+                         <label param="solo0"/>
+                         <align><toggle param="solo0" shrink="1" size="1" /></align>
+                    </vbox>
                 </hbox>
             </frame>
             <frame label="LowMid Band">
@@ -182,7 +185,10 @@
                         </vbox>
                         <knob param="weight1" size="2" type="1" />
                     </hbox>
-                    
+                    <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0">
+                         <label param="solo1"/>
+                         <align><toggle param="solo1" shrink="1" size="1" /></align>
+                    </vbox>
                 </hbox>
             </frame>
             <frame label="HiMid Band">
@@ -207,7 +213,10 @@
                         </vbox>
                         <knob param="weight2" size="2" type="1" />
                     </hbox>
-                    
+                    <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0">
+                         <label param="solo2"/>
+                         <align><toggle param="solo2" shrink="1" size="1" /></align>
+                    </vbox>
                 </hbox>
             </frame>
             <frame label="High Band">
@@ -232,7 +241,10 @@
                         </vbox>
                         <knob param="weight3" size="2" type="1" />
                     </hbox>
-                    
+                    <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0">
+                         <label param="solo3"/>
+                         <align><toggle param="solo3" shrink="1" size="1" /></align>
+                    </vbox>
                 </hbox>
             </frame>
         </vbox>
