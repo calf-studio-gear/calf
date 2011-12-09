@@ -538,6 +538,24 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L += LL*L + RL*R;
             R += RR*R + LR*L;
             
+            // widener
+            L += *params[param_widener] * R * -1;
+            R += *params[param_widener] * L * -1;
+            
+            // delay
+            buffer[pos]     = L;
+            buffer[pos + 1] = R;
+            
+            int nbuf = srate * (fabs(*params[param_delay]) / 1000.f);
+            nbuf -= nbuf % 2;
+            if(*params[param_delay] > 0.f) {
+                R = buffer[(pos - (int)nbuf + 1 + buffer_size) % buffer_size];
+            } else if (*params[param_delay] < 0.f) {
+                L = buffer[(pos - (int)nbuf + buffer_size)     % buffer_size];
+            }
+            
+            pos = (pos + 2) % buffer_size;
+            
             // balance out
             L *= (1.f - std::max(0.f, *params[param_balance_out]));
             R *= (1.f + std::min(0.f, *params[param_balance_out]));
@@ -553,6 +571,12 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
 void stereo_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    // rebuild buffer
+    buffer_size = (int)(srate * 0.05 * 2.f); // buffer size attack rate multiplied by 2 channels
+    printf("%4d\n", buffer_size);
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
+    pos = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -579,9 +603,8 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[0][i];
         } else {
-            float L, R;
-            L = ins[0][i];
-            R = ins[0][i];
+            float L = ins[0][i];
+            float R = ins[0][i];
             
             // mute
             L *= (1 - floor(*params[param_mute_l] + 0.5));
@@ -604,6 +627,20 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
             R *= (2 * (1 - floor(*params[param_phase_r] + 0.5))) - 1;
             
+            // delay
+            buffer[pos]     = L;
+            buffer[pos + 1] = R;
+            
+            int nbuf = srate * (fabs(*params[param_delay]) / 1000.f);
+            nbuf -= nbuf % 2;
+            if(*params[param_delay] > 0.f) {
+                R = buffer[(pos - (int)nbuf + 1 + buffer_size) % buffer_size];
+            } else if (*params[param_delay] < 0.f) {
+                L = buffer[(pos - (int)nbuf + buffer_size)     % buffer_size];
+            }
+            
+            pos = (pos + 2) % buffer_size;
+            
             // balance out
             L *= (1.f - std::max(0.f, *params[param_balance_out]));
             R *= (1.f + std::min(0.f, *params[param_balance_out]));
@@ -619,4 +656,9 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
 void mono_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    // rebuild buffer
+    buffer_size = (int)srate * 0.05 * 2; // delay buffer size multiplied by 2 channels
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
+    pos = 0;
 }

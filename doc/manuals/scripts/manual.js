@@ -32,7 +32,9 @@ $(document).ready(function () {
                 ["Compressor", "Compressor.html", "images/Calf - Compressor.png"],
                 ["Sidechain Compressor", "Sidechain Compressor.html", "images/Calf - Sidechain Compressor.png"],
                 ["Multiband Compressor", "Multiband Compressor.html", "images/Calf - Multiband Compressor.png"],
-                ["Deesser", "Deesser.html", "images/Calf - Deesser.png"]
+                ["Deesser", "Deesser.html", "images/Calf - Deesser.png"],
+                ["Limiter", "Limiter.html", "images/Calf - Limiter.png"],
+                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"]
             ]
         ],
         [
@@ -52,7 +54,9 @@ $(document).ready(function () {
                 ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
                 ["(Saturator)", "Saturator.html", "images/Calf - Saturator.png"],
                 ["(Exciter)", "Exciter.html", "images/Calf - Exciter.png"],
-                ["(Bass Enhancer)", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"]
+                ["(Bass Enhancer)", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
+                ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.png"],
+                ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"]
             ]
         ]
     ];

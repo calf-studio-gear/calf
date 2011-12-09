@@ -363,8 +363,9 @@ struct stereo_metadata: public plugin_metadata<stereo_metadata>
            STEREO_VU_METER_PARAMS, param_balance_in, param_balance_out, param_flip, param_softclip, 
            param_mute_l, param_mute_r, param_phase_l, param_phase_r,
            param_mode, param_slev, param_sbal, param_mlev, param_mpan,
+           param_widener, param_delay,
            param_count };
-    PLUGIN_NAME_ID_LABEL("stereo", "stereo", "Stereo Input")
+    PLUGIN_NAME_ID_LABEL("stereo", "stereo", "Stereo Tools")
 };
 /// Markus's Mono Module - metadata
 struct mono_metadata: public plugin_metadata<mono_metadata>
@@ -374,6 +375,7 @@ struct mono_metadata: public plugin_metadata<mono_metadata>
            param_meter_in, param_meter_outL, param_meter_outR, param_clip_in,param_clip_outL, param_clip_outR,
            param_balance_out, param_softclip, 
            param_mute_l, param_mute_r, param_phase_l, param_phase_r,
+           param_delay,
            param_count };
     PLUGIN_NAME_ID_LABEL("mono", "mono", "Mono Input")
 };

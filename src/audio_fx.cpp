@@ -632,17 +632,21 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // check multiband coefficient again for output pointer
     multi_coeff = (use_multi) ? multi_buffer[(pos + channels) % buffer_size] : 1.f;
     
-    //if(pos % 20 == 2 and debug) printf("%+.5f | %3d\n", multi_coeff, pos);
-    
     // output peak - impact in left or right channel?
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
     
     // we need  "and (pos == pos_next or pos_next < 0)" in the next if
     // but that fucks up delta = release
-    // because this screws the CPU
+    // (because this screws the CPU)
     
     // output is over the limit?
+    // then we have to search for new delta.
+    // the idea is to calculate a delta for every peak and always use the
+    // lowest. this produces a soft transition between limiting targets without
+    // passing values above limit
+    
     if(peak > limit * multi_coeff * weight) {
+        // default is to do a release
         delta = (1.0f - att) / (srate * release);
         pos_next = -1;
         unsigned int j;
@@ -667,7 +671,6 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     
     // change the attenuation level
     att += delta;
-    //if(debug and (pos%20 == 0 or in0 or out0)) printf("%03d: limit: %+.4f - att %+.4f - delta: %+.8f - in: %+.4f", pos, limit * multi_coeff * weight, att, delta, left);
     // ...and calculate outpout from it
     left *= att;
     right *= att;
@@ -677,11 +680,6 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
 	    att = 1.0f;
 	    delta = 0.0f;
 	}
-    
-    
-    //if(debug and (pos%20 == 0 or in0 or out0)) printf(" - out: %+.4f | in: %1d - out: %1d\n", left, in0, out0);
-//    if(fabs(left) > limit * multi_coeff * weight or fabs(right) > limit * multi_coeff * weight)
-//        printf("%+.5f - %+.5f | %+.5f\n", left, right, limit);
 
     // security personnel pawing your values
 	if(att < 0.f) {
@@ -705,14 +703,10 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     denormal(&left);
     denormal(&right);
     
-//    if(pos%20==0)
-//        printf("%d: limit: %+.5f eff_limit: %+.5f\n", id, limit, limit * multi_coeff * weight);
-    
     left = std::max(left, -limit * multi_coeff * weight);
     left = std::min(left, limit * multi_coeff * weight);
     right = std::max(right, -limit * multi_coeff * weight);
     right = std::min(right, limit * multi_coeff * weight);
-    //if(left > 0.001f) printf("%3d: left: %+.5f - limit: %+.5f - mc: %+.5f weight: %+.5f\n", pos, left, limit, multi_coeff, weight);
     
     att_max = (att < att_max) ? att : att_max; // store max atten for meter output
     

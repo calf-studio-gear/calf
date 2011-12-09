@@ -69,6 +69,11 @@
             </table>
             <hbox spacing="8">
                 <vbox spacing="12">
+                    <label param="delay" />
+                    <knob param="delay" size="2" type="1" />
+                    <value param="delay" />
+                </vbox>
+                <vbox spacing="12">
                     <label param="balance_out" />
                     <knob param="balance_out" size="2" type="1" />
                     <value param="balance_out" />
