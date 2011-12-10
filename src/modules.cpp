@@ -450,6 +450,14 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
 
 stereo_audio_module::stereo_audio_module() {
     active = false;
+    clip_inL    = 0.f;
+    clip_inR    = 0.f;
+    clip_outL   = 0.f;
+    clip_outR   = 0.f;
+    meter_inL  = 0.f;
+    meter_inR  = 0.f;
+    meter_outL = 0.f;
+    meter_outR = 0.f;
 }
 
 void stereo_audio_module::activate() {
@@ -498,24 +506,42 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         if(*params[param_bypass] > 0.5) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[1][i];
+            clip_inL    = 0.f;
+            clip_inR    = 0.f;
+            clip_outL   = 0.f;
+            clip_outR   = 0.f;
+            meter_inL  = 0.f;
+            meter_inR  = 0.f;
+            meter_outL = 0.f;
+            meter_outR = 0.f;
         } else {
-            float L, R;
-            if(*params[param_flip] > 0.5) {
-                // flip
-                L = ins[1][i];
-                R = ins[0][i];
-            } else {
-                // no flip
-                L = ins[0][i];
-                R = ins[1][i];
-            }
-            // mute
-            L *= (1 - floor(*params[param_mute_l] + 0.5));
-            R *= (1 - floor(*params[param_mute_r] + 0.5));
+            // let meters fall a bit
+            clip_inL    -= std::min(clip_inL,  numsamples);
+            clip_inR    -= std::min(clip_inR,  numsamples);
+            clip_outL   -= std::min(clip_outL, numsamples);
+            clip_outR   -= std::min(clip_outR, numsamples);
+            meter_inL = 0.f;
+            meter_inR = 0.f;
+            meter_outL = 0.f;
+            meter_outR = 0.f;
+            
+            float L = ins[0][i];
+            float R = ins[1][i];
             
             // levels in
             L *= *params[param_level_in];
             R *= *params[param_level_in];
+            
+            // balance in
+            L *= (1.f - std::max(0.f, *params[param_balance_in]));
+            R *= (1.f + std::min(0.f, *params[param_balance_in]));
+            
+            // flip
+            if(*params[param_flip] > 0.5) {
+                float tmp = L;
+                L = R;
+                R = tmp;
+            }
             
             // softclip
             if(*params[param_softclip]) {
@@ -526,9 +552,15 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                 R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
             }
             
-            // balance in
-            L *= (1.f - std::max(0.f, *params[param_balance_in]));
-            R *= (1.f + std::min(0.f, *params[param_balance_in]));
+            // GUI stuff
+            if(L > meter_inL) meter_inL = L;
+            if(R > meter_inR) meter_inR = R;
+            if(L > 1.f) clip_inL  = srate >> 3;
+            if(R > 1.f) clip_inR  = srate >> 3;
+            
+            // mute
+            L *= (1 - floor(*params[param_mute_l] + 0.5));
+            R *= (1 - floor(*params[param_mute_r] + 0.5));
             
             // phase
             L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
@@ -560,11 +592,30 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L *= (1.f - std::max(0.f, *params[param_balance_out]));
             R *= (1.f + std::min(0.f, *params[param_balance_out]));
             
+            // level 
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
+            
             //output
-            outs[0][i] = L * *params[param_level_out];
-            outs[1][i] = R * *params[param_level_out];
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // clip LED's
+            if(L > 1.f) clip_outL = srate >> 3;
+            if(R > 1.f) clip_outR = srate >> 3;
+            if(L > meter_outL) meter_outL = L;
+            if(R > meter_outR) meter_outR = R;
         }
     }
+    // draw meters
+    SET_IF_CONNECTED(clip_inL);
+    SET_IF_CONNECTED(clip_inR);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_inL);
+    SET_IF_CONNECTED(meter_inR);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
     return outputs_mask;
 }
 
@@ -573,7 +624,6 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     // rebuild buffer
     buffer_size = (int)(srate * 0.05 * 2.f); // buffer size attack rate multiplied by 2 channels
-    printf("%4d\n", buffer_size);
     buffer = (float*) calloc(buffer_size, sizeof(float));
     memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
     pos = 0;
@@ -583,6 +633,12 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
 
 mono_audio_module::mono_audio_module() {
     active = false;
+    clip_in    = 0.f;
+    clip_outL   = 0.f;
+    clip_outR   = 0.f;
+    meter_in  = 0.f;
+    meter_outL = 0.f;
+    meter_outR = 0.f;
 }
 
 void mono_audio_module::activate() {
@@ -602,26 +658,41 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
         if(*params[param_bypass] > 0.5) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[0][i];
+            clip_in     = 0.f;
+            clip_outL   = 0.f;
+            clip_outR   = 0.f;
+            meter_in    = 0.f;
+            meter_outL  = 0.f;
+            meter_outR  = 0.f;
         } else {
+            // let meters fall a bit
+            clip_in     -= std::min(clip_in,  numsamples);
+            clip_outL   -= std::min(clip_outL, numsamples);
+            clip_outR   -= std::min(clip_outR, numsamples);
+            meter_in     = 0.f;
+            meter_outL   = 0.f;
+            meter_outR   = 0.f;
+            
             float L = ins[0][i];
-            float R = ins[0][i];
+            
+            // levels in
+            L *= *params[param_level_in];
+            
+            // softclip
+            if(*params[param_softclip]) {
+                int ph = L / fabs(L);
+                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+            }
+            
+            // GUI stuff
+            if(L > meter_in) meter_in = L;
+            if(L > 1.f) clip_in = srate >> 3;
+            
+            float R = L;
             
             // mute
             L *= (1 - floor(*params[param_mute_l] + 0.5));
             R *= (1 - floor(*params[param_mute_r] + 0.5));
-            
-            // levels in
-            L *= *params[param_level_in];
-            R *= *params[param_level_in];
-            
-            // softclip
-            if(*params[param_softclip]) {
-                int ph;
-                ph = L / fabs(L);
-                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
-                ph = R / fabs(R);
-                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
-            }
             
             // phase
             L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
@@ -645,11 +716,28 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             L *= (1.f - std::max(0.f, *params[param_balance_out]));
             R *= (1.f + std::min(0.f, *params[param_balance_out]));
             
+            // level 
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
+            
             //output
-            outs[0][i] = L * *params[param_level_out];
-            outs[1][i] = R * *params[param_level_out];
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // clip LED's
+            if(L > 1.f) clip_outL = srate >> 3;
+            if(R > 1.f) clip_outR = srate >> 3;
+            if(L > meter_outL) meter_outL = L;
+            if(R > meter_outR) meter_outR = R;
         }
     }
+    // draw meters
+    SET_IF_CONNECTED(clip_in);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_in);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
     return outputs_mask;
 }
 

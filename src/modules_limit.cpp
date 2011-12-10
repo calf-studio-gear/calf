@@ -28,13 +28,10 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-/// Limiter by Markus Schmidt
+/// Limiter by Markus Schmidt and Christian Holschuh
 ///
-/// This module splits the signal in four different bands
-/// and sends them through multiple filters (implemented by
-/// Krzysztof). They are processed by a compressing routine
-/// (implemented by Steve Harris) afterwards and summed up to the
-/// final output again.
+/// This module provides the lookahead limiter as a simple audio module
+/// with choosable lookahead and release time.
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 limiter_audio_module::limiter_audio_module()
@@ -187,13 +184,12 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     return outputs_mask;
 }
 
-/// Multiband Limiter by Markus Schmidt
+/// Multiband Limiter by Markus Schmidt and Christian Holschuh
 ///
 /// This module splits the signal in four different bands
 /// and sends them through multiple filters (implemented by
-/// Krzysztof). They are processed by a compressing routine
-/// (implemented by Steve Harris) afterwards and summed up to the
-/// final output again.
+/// Krzysztof). They are processed by a lookahead limiter module afterwards
+/// and summed up to the final output again.
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 multibandlimiter_audio_module::multibandlimiter_audio_module()
@@ -311,11 +307,6 @@ void multibandlimiter_audio_module::params_changed()
     // set the params of all strips
     float rel;
     
-//    *params[param_weight0] = 0.f;
-//    *params[param_weight1] = 0.f;
-//    *params[param_weight2] = 0.f;
-//    *params[param_weight3] = 0.f;
-    
     rel = *params[param_release] *  pow(0.25, *params[param_release0] * -1);
     rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / 30), rel) : rel;
     weight[0] = pow(0.25, *params[param_weight0] * -1);
@@ -371,8 +362,6 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     float batt = 0.f;
-//    for (int i = 0; i < strips; i++)
-//        strip[i].update_curve();
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
@@ -434,7 +423,6 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 left  = inL;
                 right = inR;
                 // send trough filters
-                
                 switch(mode) {
                     // how many filter passes? (12/36dB)
                     case 0:
@@ -466,25 +454,16 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 _tmpL[i] = left;
                 _tmpR[i] = right;
                 
-                //if(pos%20 == 0) printf("%+.5f - ", left);
-                
                 // sum up for multiband coefficient
-                //sum_left += left * weight[i];
-                //sum_right += right * weight[i];
                 sum_left += ((fabs(left) > *params[param_limit]) ? *params[param_limit] * (fabs(left) / left) : left) * weight[i];
                 sum_right += ((fabs(right) > *params[param_limit]) ? *params[param_limit] * (fabs(right) / right) : right) * weight[i];
             } // process single strip with filter
             
             // write multiband coefficient to buffer
-            //buffer[pos] = *params[param_limit] / std::min(fabs(sum_left), fabs(sum_right));
             buffer[pos] = std::min(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
             
-            //if(pos%20 == 0) printf("| %+.5f | %+.5f : %3d\n", buffer[pos], std::max(fabs(sum_left), fabs(sum_right)), pos);
-            //if(pos%10 == 0) printf("%03d: %.5f\n", pos, buffer[pos]);
-            //float bufferSum = 0.f;
             for (int i = 0; i < strips; i++) {
                 // process gain reduction
-                //bufferSum += strip[i].buffer[(pos + 2) % buffer_size];
                 strip[i].process(_tmpL[i], _tmpR[i], buffer);
                 // sum up output of limiters
                 if (solo[i] || no_solo) {
@@ -493,16 +472,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
             } // process single strip again for limiter
             float fickdich[0];
-            //if(*params[param_minrel] > 0.5)
             broadband.process(outL, outR, fickdich);
             batt = broadband.get_attenuation();
-            //if(outL > 0.001f) printf("%3d: out: %+.5f - coeffOut: %+.5f - bufferSum: %+.5f\n", pos, outL, buffer[(pos + 2) % buffer_size], bufferSum);
-            
-//            if(outL > *params[param_limit]) {
-//                for(unsigned int i = 0; i < strips; i++) {
-//                    printf("%+.5f - ", strip[i].
-//                }
-//            }
             
             // autolevel
             outL /= *params[param_limit];
@@ -517,10 +488,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             outs[1][offset] = outR;
             
             // clip LED's
-            if(ins[0][offset] > 1.f) {
+            if(ins[0][offset] * *params[param_level_in] > 1.f) {
                 clip_inL  = srate >> 3;
             }
-            if(ins[1][offset] > 1.f) {
+            if(ins[1][offset] * *params[param_level_in] > 1.f) {
                 clip_inR  = srate >> 3;
             }
             if(outL > 1.f) {
@@ -530,11 +501,11 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 clip_outR = srate >> 3;
             }
             // set up in / out meters
-            if(inL > meter_inL) {
-                meter_inL = ins[0][offset];
+            if(ins[0][offset] * *params[param_level_in] > meter_inL) {
+                meter_inL = ins[0][offset] * *params[param_level_in];
             }
-            if(inR > meter_inR) {
-                meter_inR = ins[1][offset];
+            if(ins[1][offset] * *params[param_level_in] > meter_inR) {
+                meter_inR = ins[1][offset] * *params[param_level_in];
             }
             if(outL > meter_outL) {
                 meter_outL = outL;

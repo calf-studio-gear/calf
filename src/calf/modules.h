@@ -244,8 +244,12 @@ private:
 class mono_audio_module:
     public audio_module<mono_metadata>
 {
+    typedef mono_audio_module AM;
     uint32_t srate;
     bool active;
+    
+    uint32_t clip_in, clip_outL, clip_outR;
+    float meter_in, meter_outL, meter_outR;
     
     float * buffer;
     unsigned int pos;
@@ -267,9 +271,13 @@ public:
 class stereo_audio_module:
     public audio_module<stereo_metadata>
 {
+    typedef stereo_audio_module AM;
     float LL, LR, RL, RR;
     uint32_t srate;
     bool active;
+    
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
     
     float * buffer;
     unsigned int pos;
