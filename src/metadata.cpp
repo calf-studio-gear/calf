@@ -563,13 +563,13 @@ CALF_PORT_PROPS(multibandlimiter) = {
     
     { 0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight0", "Weight 1" },
     { -0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight1", "Weight 2" },
-    { 0.1f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight2", "Weight 3" },
-    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight3", "Weight 4" },
+    { 0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight2", "Weight 3" },
+    { -0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "weight3", "Weight 4" },
     
-    { 0.4f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release0", "Release 1" },
+    { 0.5f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release0", "Release 1" },
     { 0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release1", "Release 2" },
-    { 0.f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release2", "Release 3" },
-    { -0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release3", "Release 4" },
+    { -0.2f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release2", "Release 3" },
+    { -0.5f,      -1.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release3", "Release 4" },
     
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo0", "Solo 1" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo1", "Solo 2" },

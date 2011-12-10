@@ -33,21 +33,17 @@
         <vbox spacing="3">
           <frame label="Oscillator 1">
             <hbox spacing="3">
-              <vbox>
-                <label/>
-                <label param="o1_wave" text="Waveform"/>
-                <combo param="o1_wave" fill="0"/>
-                <label/>
-                <label/>
+              <vbox>      
+                <combo param="o1_wave" fill="0" expand="0"/>        
+                <if cond="directlink">
+                  <line-graph param="o1_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
+                </if>
               </vbox>
               <vbox>
                 <label attach-x="1" attach-y="0" param="o1_pw" text="Pulse Width"/>
                 <knob attach-x="1" attach-y="1" param="o1_pw"/>
                 <value attach-x="1" attach-y="2" param="o1_pw"/>
               </vbox>
-              <if cond="directlink">
-                <line-graph param="o1_wave" refresh="1" width="70" height="70" expand="0" fill="0"/>
-              </if>
               <vbox>
                 <label param="o1_stretch" text="Stretch"/>
                 <knob param="o1_stretch"/>
@@ -63,54 +59,48 @@
           <frame label="Oscillator 2">
             <hbox spacing="3">
               <vbox>
-                <label/>
-                <label param="o2_wave" text="Waveform"/>
-                <combo param="o2_wave" fill="0"/>
-                <label/>
-                <label/>
+                <combo param="o2_wave" fill="0" expand="0"/>
+                <if cond="directlink">
+                  <line-graph param="o2_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
+                </if>
               </vbox>
+              <label />
               <vbox>
                 <label attach-x="1" attach-y="0" param="o2_pw" text="Pulse Width"/>
                 <knob attach-x="1" attach-y="1" param="o2_pw"/>
                 <value attach-x="1" attach-y="2" param="o2_pw"/>
               </vbox>
-              <if cond="directlink">
-                <line-graph param="o2_wave" refresh="1" width="70" height="70" expand="0" fill="0"/>
-              </if>
+              <label />
               <vbox>
                 <label param="o2_xpose" text="Transpose"/>
                 <knob type="1" param="o2_xpose"/>
                 <value param="o2_xpose"/>
               </vbox>
-              <label text="           " />
+              <label />
             </hbox>
           </frame>
         </vbox>
         <frame label="Oscillators - Common">
           <vbox>
-            <label/>
+            <vbox>
+              <label param="o12_mix" expand="0" fill="0"/>
+              <hscale param="o12_mix" position="bottom" expand="1" fill="1"/>
+            </vbox>
             <hbox>
               <vbox>
                 <label param="o12_detune"/>
-                <knob param="o12_detune"/>
+                <knob param="o12_detune" size="3"/>
                 <value param="o12_detune"/>
               </vbox>
               <vbox>
                 <label param="scale_detune"/>
-                <knob param="scale_detune"/>
+                <knob param="scale_detune" size="3"/>
                 <value param="scale_detune"/>
               </vbox>
             </hbox>
-            <vbox >
-              <label param="o12_mix" expand="0" fill="0"/>
-              <hscale param="o12_mix" position="bottom" expand="1" fill="1"/>
-            </vbox>
             <vbox>
-              <label/>
               <label param="phase_mode" />
               <combo param="phase_mode" fill="0" expand="0"/>
-              <label/>
-              <label />
             </vbox>
           </vbox>
         </frame>
@@ -119,36 +109,36 @@
         <frame label="Filter">
           <hbox spacing="3">
             <vbox>
-              <label/>
-              <label param="filter" fill="0" expand="0"/>
               <combo param="filter" fill="0" expand="0"/>
-              <label/>
-              <label/>
+              <if cond="directlink">
+                <line-graph param="filter" refresh="1" width="150" height="70" expand="1" fill="1"/>
+              </if>
             </vbox>
-            <label text=""/>
-            <if cond="directlink">
-              <line-graph param="filter" refresh="1" width="70" height="70" expand="0" fill="0"/>
-            </if>
+            <label />
             <vbox>
               <label param="cutoff"/>
-              <knob param="cutoff"/>
+              <knob param="cutoff" size="2"/>
               <value param="cutoff"/>
             </vbox>
+            <label />
             <vbox>
               <label param="res"/>
-              <knob param="res"/>
+              <knob param="res" size="2"/>
               <value param="res"/>
             </vbox>
+            <label text="              "/>
             <vbox>
               <label param="filter_sep"/>
-              <knob type="1" param="filter_sep"/>
+              <knob type="1" param="filter_sep" size="3"/>
               <value param="filter_sep"/>
             </vbox>
+            <label text="          "/>
             <vbox>
               <label param="key_follow"/>
-              <knob param="key_follow"/>
+              <knob param="key_follow" size="3"/>
               <value param="key_follow"/>
             </vbox>
+            <label/>
           </hbox>
         </frame>
       </hbox>
