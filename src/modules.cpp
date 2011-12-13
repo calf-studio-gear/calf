@@ -497,7 +497,14 @@ void stereo_audio_module::params_changed() {
             RL = slev * (2.f - sbal);
             RR = slev * sbal * -1;
             break;
-        
+        case 3:
+        case 4:
+            //LR->LL
+            LL = 0.f;
+            LR = 0.f;
+            RL = 0.f;
+            RR = 0.f;
+            break;
     }
 }
 
@@ -541,6 +548,17 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                 float tmp = L;
                 L = R;
                 R = tmp;
+            }
+            
+            // copy
+            switch((int)*params[param_mode])
+            {
+                case 3:
+                    R = L;
+                    break;
+                case 4:
+                    L = R;
+                    break;
             }
             
             // softclip
@@ -605,6 +623,13 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
+            
+            // phase meter
+            if(fabs(L) > 0.001 and fabs(R) > 0.001) {
+				meter_phase = fabs(fabs(L+R) > 0.000000001 ? sin(fabs((L-R)/(L+R))) : 0.f);
+			} else {
+				meter_phase = 0.f;
+			}
         }
     }
     // draw meters
@@ -616,6 +641,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
     SET_IF_CONNECTED(meter_inR);
     SET_IF_CONNECTED(meter_outL);
     SET_IF_CONNECTED(meter_outR);
+    SET_IF_CONNECTED(meter_phase);
     return outputs_mask;
 }
 

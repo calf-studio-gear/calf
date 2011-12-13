@@ -364,6 +364,7 @@ struct stereo_metadata: public plugin_metadata<stereo_metadata>
            param_mute_l, param_mute_r, param_phase_l, param_phase_r,
            param_mode, param_slev, param_sbal, param_mlev, param_mpan,
            param_widener, param_delay,
+           param_meter_phase,
            param_count };
     PLUGIN_NAME_ID_LABEL("stereo", "stereo", "Stereo Tools")
 };
