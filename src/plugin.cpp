@@ -482,7 +482,7 @@ ladspa_plugin_metadata_set::~ladspa_plugin_metadata_set()
 // instantiate descriptor templates
 template<class Module> LV2_Descriptor calf_plugins::lv2_wrapper<Module>::descriptor;
 template<class Module> LV2_Calf_Descriptor calf_plugins::lv2_wrapper<Module>::calf_descriptor;
-template<class Module> LV2_Persist calf_plugins::lv2_wrapper<Module>::persist;
+template<class Module> LV2_State_Interface calf_plugins::lv2_wrapper<Module>::state_iface;
 
 extern "C" {
 

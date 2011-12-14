@@ -86,7 +86,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     void send_configures(send_configure_iface *sci) { 
         module->send_configures(sci);
     }
-    void impl_restore(LV2_Persist_Retrieve_Function retrieve, void *callback_data)
+    void impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data)
     {
         const char *const *vars = module->get_metadata_iface()->get_configure_vars();
         if (!vars)
@@ -182,7 +182,7 @@ struct lv2_wrapper
     typedef lv2_instance instance;
     static LV2_Descriptor descriptor;
     static LV2_Calf_Descriptor calf_descriptor;
-	static LV2_State_Interface state_iface;
+    static LV2_State_Interface state_iface;
     std::string uri;
     
     lv2_wrapper()
@@ -298,9 +298,9 @@ struct lv2_wrapper
             return &state_iface;
         return NULL;
     }
-	static void cb_state_save(LV2_Handle Instance,
-	                          LV2_State_Store_Function store, LV2_State_Handle handle,
-	                          uint32_t flags, const LV2_Feature *const * features)
+    static void cb_state_save(LV2_Handle Instance,
+                          LV2_State_Store_Function store, LV2_State_Handle handle,
+                          uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
         struct store_state: public send_configure_iface
@@ -324,7 +324,7 @@ struct lv2_wrapper
         assert(inst->uri_map);
         store_state s;
         s.store = store;
-        s.callback_data = callback_data;
+        s.callback_data = handle;
         s.inst = inst;
         s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
 

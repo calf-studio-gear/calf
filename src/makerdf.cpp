@@ -419,7 +419,7 @@ void make_ttl(string path_prefix)
         
         if (pi->get_configure_vars())
         {
-            ttl += "    lv2:optionalFeature <" LV2_PERSIST_URI "> ;\n";
+            ttl += "    lv2:optionalFeature <" LV2_STATE_URI "> ;\n";
         }
         
         string ports = "";
