@@ -445,6 +445,7 @@ void about_action(GtkAction *action, plugin_gui_window *gui_win)
         "Hans Baier <hansfbaier@googlemail.com>",
         "Torben Hohn <torbenh@gmx.de>",
         "Markus Schmidt <schmidt@boomshop.net>",
+        "Christian Holschuh <chrisch.holli@gmx.de>",
         "Tom Szilagyi <tomszilagyi@gmail.com>",
         "Damien Zammit <damien.zammit@gmail.com>",
         "David T\xC3\xA4ht <d@teklibre.com>",
@@ -461,7 +462,7 @@ void about_action(GtkAction *action, plugin_gui_window *gui_win)
     gtk_about_dialog_set_program_name(dlg, ("Calf " + label).c_str());
     gtk_about_dialog_set_version(dlg, PACKAGE_VERSION);
     gtk_about_dialog_set_website(dlg, "http://calf.sourceforge.net/");
-    gtk_about_dialog_set_copyright(dlg, "Copyright \xC2\xA9 2001-2010 Krzysztof Foltman, Thor Harald Johansen, Markus Schmidt and others.\nSee AUTHORS file for the full list.");
+    gtk_about_dialog_set_copyright(dlg, "Copyright \xC2\xA9 2001-2011 Krzysztof Foltman, Thor Harald Johansen, Markus Schmidt and others.\nSee AUTHORS file for the full list.");
     gtk_about_dialog_set_logo_icon_name(dlg, "calf");
     gtk_about_dialog_set_artists(dlg, artists);
     gtk_about_dialog_set_authors(dlg, authors);

@@ -6,8 +6,8 @@
         <!-- Meters -->
         <table rows="4" cols="2">
             <label param="meter_in" attach-x="0" attach-y="0" expand-x="1" fill-x="1" />
-            <vumeter param="meter_in" hold="1.5" falloff="2.5" attach-x="0" attach-y="1" expand-x="1" fill-x="1" />
-            <vumeter param="meter_out" hold="1.5" falloff="2.5" attach-x="0" attach-y="2" expand-x="1" fill-x="1" />
+            <vumeter param="meter_in" position="2" hold="1.5" falloff="2.5" attach-x="0" attach-y="1" expand-x="1" fill-x="1" />
+            <vumeter param="meter_out" position="2" hold="1.5" falloff="2.5" attach-x="0" attach-y="2" expand-x="1" fill-x="1" />
             <label param="meter_out" attach-x="0" attach-y="3" expand-x="1" fill-x="1" />
             
             <label param="clip_in" attach-x="1" attach-y="0" expand-x="0" fill-x="0" />

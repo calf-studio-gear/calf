@@ -1,5 +1,5 @@
 body {
-    background: url(../images/background_blue.png);
+    background: url(../../../gui/background_dark.png);
     color: white;
     text-align: center;
     font-family: sans-serif;
@@ -18,15 +18,18 @@ img {
     border: none;
 }
 h1 {
-    color: #D5F16A;
+/*    color: #D5F16A;*/
+    color: white;
+    font-weight: normal;
 /*    background: url(../images/style_p.png) transparent;*/
     text-align: center;
     margin: 20px;
-    border-bottom: 1px dotted #fff;
+/*    border-bottom: 1px dotted #fff;*/
 }
 h2 {
-    color: #D5F16A;
-    font-size: 20px;
+/*    color: #D5F16A;*/
+    color: white;
+    font-size: 16px;
     font-weight: normal;
     
     padding: 5px 0 10px 0;
@@ -38,7 +41,7 @@ p, ul {
     background: url(../images/style_p.png) transparent;
     margin: 0 0 15px;
     padding: 10px;
-    border: 1px solid black;
+    border: 2px groove white;
     -moz-border-radius: 12px;
     -webkit-border-radius: 12px;
 }
@@ -50,6 +53,7 @@ li {
 }
 strong {
     color: #D5F16A;
+/*    color: black;*/
 }
 
 .wrapper {
@@ -67,7 +71,7 @@ strong {
 }
 
 .headerbg {
-    background: url(../images/background_black.png);
+    background: url(../../../gui/background_black.png);
     border-bottom: 1px solid #111;
 }
 .header {
@@ -125,20 +129,20 @@ strong {
     text-align: center;
     font-weight: normal;
     position: absolute;
-    top: 100px;
+    top: 120px;
     width: 150px;
 }
 .index img {
     position: absolute;
     bottom: 55px !important;
     top: auto;
-    left: 25px;
+    left: 5px;
     text-align: center;
     border: 1px solid black;
     border-top: 5px solid black;
 }
 .index img {
-    width: 100px;
+    width: 140px;
 }
 .index ul {
     background: none;
@@ -149,7 +153,7 @@ strong {
     position: relative;
     display: block;
     width: 150px;
-    height: 150px;
+    height: 170px;
     margin: 8px;
     float: left;
     text-align: center;

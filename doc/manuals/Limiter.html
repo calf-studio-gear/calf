@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Limiter</h1>
+            <a href="images/Calf - Limiter.png" title="Calf - Limiter" class="thickbox"><img class="thumbnail" src="images/Calf - Limiter.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                The Limiter prevents your signals from raising over a desired thershold. The Calf limiter makes up your audio signal automatically by the threshold set.<br /><br />
+                This limiter uses lookahead technology to prevent your signal from distorting. It means that there is a small delay after your signal is processed. Keep in mind that the delay it produces is the lookahead time you set.<br /><br />
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input (knob):</strong> Raise the volume before the signal is sent in the compression stage. If you have found some great settings but want to raise the overall loudness of the track simply increase this level.</li>
+                <li><strong>Input L/R (VU-meter):</strong> The level of the original signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
+                <li><strong>Output L/R (VU-meter):</strong> The level of the compressed and made up signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Output (knob):</strong> Raise the overall volume after the compression stage</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                
+                <li><strong>Split:</strong> Frequency to split between these strips</li>
+                <li><strong>S:</strong> Separate or overlap the frequencies of the neighbour bands</li>
+                <li><strong>Q:</strong> Raise the center frequency</li>
+                <li><strong>Limit:</strong> Don't let signals above this level pass the limiter. The removed amplitude is added automatically.</li>
+                <li><strong>Lookahead:</strong> The Limiter will reach its attenuation level in this amount of time (output will be delayed two times this time)</li>
+                <li><strong>Min Release:</strong>Don't let the release time fall beneath 2.5 times the lowest possible wavelength per band</li>
+                <li><strong>Release:</strong> Come back from limiting to attenuation 1.0 in this amount of milliseconds</li>
+                <li><strong>Release (per strip):</strong> Coefficient the master release time is computed with to have separate release times for each strip</li>
+                <li><strong>Weight:</strong> The "importance" of this strip in the resulting signal</li>
+                <li><strong>Solo:</strong> Hear single (or more) bands exclusively to set the crossover and the release times exactly</li>
+            </ul>
+        </div>
+    </body>
+</html>

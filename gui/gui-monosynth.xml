@@ -28,116 +28,118 @@
     </vbox>
   </frame>
   <notebook>
-    <vbox page="Audio path" spacing="8">
-      <hbox>
-        <frame label="Oscillator 1">
-          <hbox spacing="8">
-            <vbox>
-              <label param="o1_wave" text="Waveform"/>
-              <combo param="o1_wave" fill="0"/>
-              <label/>
-            </vbox>
-            <vbox>
-              <label attach-x="1" attach-y="0" param="o1_pw" text="Pulse Width"/>
-              <knob attach-x="1" attach-y="1" param="o1_pw"/>
-              <value attach-x="1" attach-y="2" param="o1_pw"/>
-            </vbox>
-            <if cond="directlink">
-              <line-graph param="o1_wave" refresh="1" width="80" height="80" expand="0" fill="0"/>
-            </if>
-            <vbox>
-              <label param="o1_stretch" text="Stretch"/>
-              <knob param="o1_stretch"/>
-              <value param="o1_stretch"/>
-            </vbox>
-            <vbox>
-              <label param="o1_window" text="Window"/>
-              <knob param="o1_window"/>
-              <value param="o1_window"/>
-            </vbox>
-          </hbox>
-        </frame>
-        <frame label="Oscillator 2">
-          <hbox spacing="8">
-            <vbox>
-              <label param="o2_wave" text="Waveform"/>
-              <combo param="o2_wave" fill="0"/>
-              <label/>
-            </vbox>
-            <vbox>
-              <label attach-x="1" attach-y="0" param="o2_pw" text="Pulse Width"/>
-              <knob attach-x="1" attach-y="1" param="o2_pw"/>
-              <value attach-x="1" attach-y="2" param="o2_pw"/>
-            </vbox>
-            <if cond="directlink">
-              <line-graph param="o2_wave" refresh="1" width="80" height="80" expand="0" fill="0"/>
-            </if>
-            <vbox>
-              <label param="o2_xpose" text="Transpose"/>
-              <knob type="1" param="o2_xpose"/>
-              <value param="o2_xpose"/>
-            </vbox>
-          </hbox>
-        </frame>
-      </hbox>
-      <frame label="Oscillators - Common">
-        <hbox>
-          <vbox>
-            <label param="o12_detune"/>
-            <knob param="o12_detune"/>
-            <value param="o12_detune"/>
-          </vbox>
-          <vbox>
-            <label param="scale_detune"/>
-            <knob param="scale_detune"/>
-            <value param="scale_detune"/>
-          </vbox>
-          <vbox >
-            <label param="o12_mix" expand="0" fill="0"/>
-            <hscale param="o12_mix" position="bottom" expand="1" fill="1"/>
-          </vbox>
-          <vbox>
-            <label param="phase_mode" />
-            <combo param="phase_mode" fill="0" expand="0"/>
-            <label />
-          </vbox>
-        </hbox>
-      </frame>
-      <hbox>
-        <frame label="Filter">
-          <vbox spacing="8">
-            <align>
-              <hbox fill="0" expand="0">
-                <label param="filter" fill="0" expand="0"/>
-                <combo param="filter" fill="0" expand="0"/>
+    <vbox page="Audio path" spacing="3">
+      <hbox spacing="3">
+        <vbox spacing="3">
+          <frame label="Oscillator 1">
+            <hbox spacing="3">
+              <vbox>      
+                <combo param="o1_wave" fill="0" expand="0"/>        
                 <if cond="directlink">
-                  <line-graph param="filter" refresh="1" width="80" height="80"/>
+                  <line-graph param="o1_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
                 </if>
-              </hbox>
-            </align>
-            <hbox>
-              <vbox>
-                <label param="cutoff"/>
-                <knob param="cutoff"/>
-                <value param="cutoff"/>
               </vbox>
               <vbox>
-                <label param="res"/>
-                <knob param="res"/>
-                <value param="res"/>
+                <label attach-x="1" attach-y="0" param="o1_pw" text="Pulse Width"/>
+                <knob attach-x="1" attach-y="1" param="o1_pw"/>
+                <value attach-x="1" attach-y="2" param="o1_pw"/>
               </vbox>
               <vbox>
-                <label param="filter_sep"/>
-                <knob type="1" param="filter_sep"/>
-                <value param="filter_sep"/>
+                <label param="o1_stretch" text="Stretch"/>
+                <knob param="o1_stretch"/>
+                <value param="o1_stretch"/>
               </vbox>
               <vbox>
-                <label param="key_follow"/>
-                <knob param="key_follow"/>
-                <value param="key_follow"/>
+                <label param="o1_window" text="Window"/>
+                <knob param="o1_window"/>
+                <value param="o1_window"/>
               </vbox>
             </hbox>
+          </frame>
+          <frame label="Oscillator 2">
+            <hbox spacing="3">
+              <vbox>
+                <combo param="o2_wave" fill="0" expand="0"/>
+                <if cond="directlink">
+                  <line-graph param="o2_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
+                </if>
+              </vbox>
+              <label />
+              <vbox>
+                <label attach-x="1" attach-y="0" param="o2_pw" text="Pulse Width"/>
+                <knob attach-x="1" attach-y="1" param="o2_pw"/>
+                <value attach-x="1" attach-y="2" param="o2_pw"/>
+              </vbox>
+              <label />
+              <vbox>
+                <label param="o2_xpose" text="Transpose"/>
+                <knob type="1" param="o2_xpose"/>
+                <value param="o2_xpose"/>
+              </vbox>
+              <label />
+            </hbox>
+          </frame>
+        </vbox>
+        <frame label="Oscillators - Common">
+          <vbox>
+            <vbox>
+              <label param="o12_mix" expand="0" fill="0"/>
+              <hscale param="o12_mix" position="bottom" expand="1" fill="1"/>
+            </vbox>
+            <hbox>
+              <vbox>
+                <label param="o12_detune"/>
+                <knob param="o12_detune" size="3"/>
+                <value param="o12_detune"/>
+              </vbox>
+              <vbox>
+                <label param="scale_detune"/>
+                <knob param="scale_detune" size="3"/>
+                <value param="scale_detune"/>
+              </vbox>
+            </hbox>
+            <vbox>
+              <label param="phase_mode" />
+              <combo param="phase_mode" fill="0" expand="0"/>
+            </vbox>
           </vbox>
+        </frame>
+      </hbox>
+      <hbox>
+        <frame label="Filter">
+          <hbox spacing="3">
+            <vbox>
+              <combo param="filter" fill="0" expand="0"/>
+              <if cond="directlink">
+                <line-graph param="filter" refresh="1" width="150" height="70" expand="1" fill="1"/>
+              </if>
+            </vbox>
+            <label />
+            <vbox>
+              <label param="cutoff"/>
+              <knob param="cutoff" size="2"/>
+              <value param="cutoff"/>
+            </vbox>
+            <label />
+            <vbox>
+              <label param="res"/>
+              <knob param="res" size="2"/>
+              <value param="res"/>
+            </vbox>
+            <label text="              "/>
+            <vbox>
+              <label param="filter_sep"/>
+              <knob type="1" param="filter_sep" size="3"/>
+              <value param="filter_sep"/>
+            </vbox>
+            <label text="          "/>
+            <vbox>
+              <label param="key_follow"/>
+              <knob param="key_follow" size="3"/>
+              <value param="key_follow"/>
+            </vbox>
+            <label/>
+          </hbox>
         </frame>
       </hbox>
     </vbox>
@@ -161,12 +163,10 @@
           </frame>
           <frame label="LFO 1">
             <vbox spacing="10">
-              <align>
-                <hbox>
-                  <label param="lfo1_trig" text="Mode" />
-                  <combo param="lfo1_trig" />
-                </hbox>
-              </align>
+              <hbox>
+                <label param="lfo1_trig" text="Mode     " />
+                <combo param="lfo1_trig" />
+              </hbox>
               <hbox>
                 <vbox>
                   <label text="Rate"/>
@@ -205,12 +205,10 @@
           </frame>
           <frame label="LFO 2">
             <vbox spacing="10">
-              <align>
-                <hbox>
-                  <label param="lfo2_trig" text="Mode" />
-                  <combo param="lfo2_trig" />
-                </hbox>
-              </align>
+              <hbox>
+                <label param="lfo2_trig" text="     Mode" />
+                <combo param="lfo2_trig" />
+              </hbox>
               <hbox>
                 <vbox>
                   <label text="Rate"/>

@@ -1,0 +1,90 @@
+<hbox spacing="5">
+    <frame label="Input" expand="1" fill="1">
+        <vbox spacing="8">
+            <table rows="1" cols="2">
+                <vumeter param="meter_in" position="2" hold="1.5" falloff="2.5"  attach-x="0" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+                <led param="clip_in" attach-x="1" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+            </table>
+            <hbox spacing="8">
+                <vbox>
+                    <label param="level_in" />
+                    <knob param="level_in" size="3" />
+                    <value param="level_in" />
+                </vbox>
+                <vbox spacing="4">
+                    <vbox spacing="5">
+                        
+                        <label param="softclip" />
+                        <toggle param="softclip"/>
+                    </vbox>
+                    <vbox expand="0" spacing="5">
+                        
+                        <toggle param="bypass" />
+                        <label param="bypass" />
+                    </vbox>
+                </vbox>
+            </hbox>
+        </vbox>
+    </frame>
+    
+    <hbox>
+        <frame label="Left" expand="1" fill="1">
+            <vbox>
+                <label /><label />
+                <vbox>
+                    <label param="mutel"/>
+                    <toggle param="mutel"/>
+                </vbox>
+                <vbox>
+                    <toggle param="phasel"/>
+                    <label param="phasel"/>
+                </vbox>
+            </vbox>
+        </frame>
+        <frame label="Right" expand="1" fill="1">
+            <vbox>
+                <label /><label />
+                <vbox>
+                    <label param="muter"/>
+                    <toggle param="muter"/>
+                </vbox>
+                <vbox>
+                    <toggle param="phaser"/>
+                    <label param="phaser"/>
+                </vbox>
+            </vbox>
+        </frame>
+        
+    </hbox>
+    <frame label="Output" expnad="1" fill="1">
+        <vbox spacing="8">
+            <table rows="3" cols="3">
+                <label param="meter_outL" attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L"/>
+                <vumeter param="meter_outL" position="2" hold="1.5" falloff="2.5"  attach-x="1" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+                <led param="clip_outL" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+                
+                <label param="meter_outR" attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
+                <vumeter param="meter_outR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+                <led param="clip_outR" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+            </table>
+            <hbox spacing="8">
+                <vbox spacing="12">
+                    <label param="delay" />
+                    <knob param="delay" size="2" type="1" />
+                    <value param="delay" />
+                </vbox>
+                <vbox spacing="12">
+                    <label param="balance_out" />
+                    <knob param="balance_out" size="2" type="1" />
+                    <value param="balance_out" />
+                </vbox>
+                <vbox>
+                    <label param="level_out" />
+                    <knob param="level_out" size="3" />
+                    <value param="level_out" />
+                </vbox>
+            </hbox>
+        </vbox>
+    </frame>
+</hbox>
+

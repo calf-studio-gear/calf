@@ -28,7 +28,7 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-/// Multibandcompressor by Markus Schmidt
+/// Multiband Compressor by Markus Schmidt
 ///
 /// This module splits the signal in four different bands
 /// and sends them through multiple filters (implemented by
@@ -75,39 +75,76 @@ void multibandcompressor_audio_module::deactivate()
 
 void multibandcompressor_audio_module::params_changed()
 {
+    // determine mute/solo states
+    solo[0] = *params[param_solo0] > 0.f ? true : false;
+    solo[1] = *params[param_solo1] > 0.f ? true : false;
+    solo[2] = *params[param_solo2] > 0.f ? true : false;
+    solo[3] = *params[param_solo3] > 0.f ? true : false;
+    no_solo = (*params[param_solo0] > 0.f ||
+            *params[param_solo1] > 0.f ||
+            *params[param_solo2] > 0.f ||
+            *params[param_solo3] > 0.f) ? false : true;
+    int i;
+    int j1;
+    switch(mode) {
+        case 0:
+            j1 = 0;
+            break;
+        case 1:
+            j1 = 2;
+            break;
+    }
     // set the params of all filters
-    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0]) {
-        lpL0.set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
-        lpR0.copy_coeffs(lpL0);
-        hpL0.set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
-        hpR0.copy_coeffs(hpL0);
+    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0] or *params[param_mode] != mode_old) {
+        lpL[0][0].set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
+        hpL[0][0].set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
+        lpR[0][0].copy_coeffs(lpL[0][0]);
+        hpR[0][0].copy_coeffs(hpL[0][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[0][i].copy_coeffs(lpL[0][0]);
+            hpL[0][i].copy_coeffs(hpL[0][0]);
+            lpR[0][i].copy_coeffs(lpL[0][0]);
+            hpR[0][i].copy_coeffs(hpL[0][0]);
+        }
         freq_old[0] = *params[param_freq0];
         sep_old[0]  = *params[param_sep0];
         q_old[0]    = *params[param_q0];
     }
-    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1]) {
-        lpL1.set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
-        lpR1.copy_coeffs(lpL1);
-        hpL1.set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
-        hpR1.copy_coeffs(hpL1);
+    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
+        lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
+        hpL[1][0].set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
+        lpR[1][0].copy_coeffs(lpL[1][0]);
+        hpR[1][0].copy_coeffs(hpL[1][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[1][i].copy_coeffs(lpL[1][0]);
+            hpL[1][i].copy_coeffs(hpL[1][0]);
+            lpR[1][i].copy_coeffs(lpL[1][0]);
+            hpR[1][i].copy_coeffs(hpL[1][0]);
+        }
         freq_old[1] = *params[param_freq1];
         sep_old[1]  = *params[param_sep1];
         q_old[1]    = *params[param_q1];
     }
-    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2]) {
-        lpL2.set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
-        lpR2.copy_coeffs(lpL2);
-        hpL2.set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
-        hpR2.copy_coeffs(hpL2);
+    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
+        lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
+        hpL[2][0].set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
+        lpR[2][0].copy_coeffs(lpL[2][0]);
+        hpR[2][0].copy_coeffs(hpL[2][0]);
+        for(i = 1; i <= j1; i++) {
+            lpL[2][i].copy_coeffs(lpL[2][0]);
+            hpL[2][i].copy_coeffs(hpL[2][0]);
+            lpR[2][i].copy_coeffs(lpL[2][0]);
+            hpR[2][i].copy_coeffs(hpL[2][0]);
+        }
         freq_old[2] = *params[param_freq2];
         sep_old[2]  = *params[param_sep2];
         q_old[2]    = *params[param_q2];
     }
     // set the params of all strips
-    strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], *params[param_mute0]);
-    strip[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], 1.f, *params[param_bypass1], *params[param_mute1]);
-    strip[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], 1.f, *params[param_bypass2], *params[param_mute2]);
-    strip[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], 1.f, *params[param_bypass3], *params[param_mute3]);
+    strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo));
+    strip[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], 1.f, *params[param_bypass1], !(solo[1] || no_solo));
+    strip[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], 1.f, *params[param_bypass2], !(solo[2] || no_solo));
+    strip[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], 1.f, *params[param_bypass3], !(solo[3] || no_solo));
 }
 
 void multibandcompressor_audio_module::set_sample_rate(uint32_t sr)
@@ -156,12 +193,6 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
     } else {
         // process all strips
         
-        // determine mute state of strips
-        mute[0] = *params[param_mute0] > 0.f ? true : false;
-        mute[1] = *params[param_mute1] > 0.f ? true : false;
-        mute[2] = *params[param_mute2] > 0.f ? true : false;
-        mute[3] = *params[param_mute3] > 0.f ? true : false;
-        
         // let meters fall a bit
         clip_inL    -= std::min(clip_inL,  numsamples);
         clip_inR    -= std::min(clip_inR,  numsamples);
@@ -181,46 +212,35 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             // out vars
             float outL = 0.f;
             float outR = 0.f;
+            int j1;
             for (int i = 0; i < strips; i ++) {
                 // cycle trough strips
-                if (!mute[i]) {
+                if (solo[i] || no_solo) {
                     // strip unmuted
                     float left  = inL;
                     float right = inR;
                     // send trough filters
-                    switch (i) {
+                    switch(mode) {
                         case 0:
-                            left  = lpL0.process(left);
-                            right = lpR0.process(right);
-                            lpL0.sanitize();
-                            lpR0.sanitize();
+                            j1 = 0;
                             break;
                         case 1:
-                            left  = lpL1.process(left);
-                            right = lpR1.process(right);
-                            left  = hpL0.process(left);
-                            right = hpR0.process(right);
-                            lpL1.sanitize();
-                            lpR1.sanitize();
-                            hpL0.sanitize();
-                            hpR0.sanitize();
+                            j1 = 2;
                             break;
-                        case 2:
-                            left  = lpL2.process(left);
-                            right = lpR2.process(right);
-                            left  = hpL1.process(left);
-                            right = hpR1.process(right);
-                            lpL2.sanitize();
-                            lpR2.sanitize();
-                            hpL1.sanitize();
-                            hpR1.sanitize();
-                            break;
-                        case 3:
-                            left  = hpL2.process(left);
-                            right = hpR2.process(right);
-                            hpL2.sanitize();
-                            hpR2.sanitize();
-                            break;
+                    }
+                    for (int j = 0; j <= j1; j++){
+                        if(i + 1 < strips) {
+                            left  = lpL[i][j].process(left);
+                            right = lpR[i][j].process(right);
+                            lpL[i][j].sanitize();
+                            lpR[i][j].sanitize();
+                        }
+                        if(i - 1 >= 0) {
+                            left  = hpL[i - 1][j].process(left);
+                            right = hpR[i - 1][j].process(right);
+                            hpL[i - 1][j].sanitize();
+                            hpR[i - 1][j].sanitize();
+                        }
                     }
                     // process gain reduction
                     strip[i].process(left, right);
@@ -237,8 +257,16 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             
             // even out filters gain reduction
             // 3dB - levelled manually (based on default sep and q settings)
-            outL *= 1.414213562;
-            outR *= 1.414213562;
+            switch(mode) {
+                case 0:
+                    outL *= 1.414213562;
+                    outR *= 1.414213562;
+                    break;
+                case 1:
+                    outL *= 0.88;
+                    outR *= 0.88;
+                    break;
+            }
             
             // out level
             outL *= *params[param_level_out];

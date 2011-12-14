@@ -17,11 +17,11 @@
             <vbox spacing="5">
                 <table expand="0" fill="0" rows="3" cols="3">
                     <label param="meter_in" expand-x="0" fill-x="0" attach-x="0" attach-y="0" />
-                    <vumeter param="meter_in" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
+                    <vumeter param="meter_in" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
                     <led param="clip_in" mode="0" expand-x="0" fill-x="0" attach-x="2" attach-y="0" />
                     
                     <label param="meter_out" expand-x="0" fill-x="0" attach-x="0" attach-y="1" />
-                    <vumeter param="meter_out" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" fill-x="1" />
+                    <vumeter param="meter_out" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" fill-x="1" />
                     <led param="clip_out" mode="1" expand-x="0" fill-x="0" attach-x="2" attach-y="1" />
                 </table>
                 
@@ -91,7 +91,7 @@
             </if>
             <vbox spacing="3">
                 <label param="gating"/>
-                <vumeter param="gating" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>
+                <vumeter param="gating" position="2" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>
             </vbox>
         </vbox>
       </frame>

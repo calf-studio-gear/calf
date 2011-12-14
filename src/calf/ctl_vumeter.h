@@ -38,7 +38,9 @@ enum CalfVUMeterMode
 {
     VU_STANDARD,
     VU_MONOCHROME,
-    VU_MONOCHROME_REVERSE
+    VU_MONOCHROME_REVERSE,
+    VU_STANDARD_CENTER,
+    VU_MONOCHROME_CENTER
 };
 
 struct CalfVUMeter
@@ -55,7 +57,10 @@ struct CalfVUMeter
     float last_falloff;
     long last_falltime;
     int meter_width;
-    std::string *meter_text;
+    int vumeter_width;
+    int vumeter_height;
+    float disp_value;
+    int vumeter_position;
     cairo_surface_t *cache_surface;
     cairo_pattern_t *pat;
 };
@@ -75,6 +80,12 @@ extern void calf_vumeter_set_hold(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_hold(CalfVUMeter *meter);
 extern void calf_vumeter_set_falloff(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_falloff(CalfVUMeter *meter);
+extern void calf_vumeter_set_width(CalfVUMeter *meter, int value);
+extern int calf_vumeter_get_width(CalfVUMeter *meter);
+extern void calf_vumeter_set_height(CalfVUMeter *meter, int value);
+extern int calf_vumeter_get_height(CalfVUMeter *meter);
+extern void calf_vumeter_set_position(CalfVUMeter *meter, int value);
+extern int calf_vumeter_get_position(CalfVUMeter *meter);
 
 G_END_DECLS
 
