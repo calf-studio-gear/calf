@@ -19,10 +19,6 @@ AC_PROG_INSTALL
 
 ############################################################################################
 # Set initial values of shell variables
-LADSPA_ENABLED="no"
-EXEC_GUI_ENABLED="no"
-DSSI_GUI_ENABLED="no"
-LV2_GTK_GUI_ENABLED="no"
 LV2_GUI_ENABLED="no"
 JACK_FOUND="no"
 JACK_ENABLED="no"
@@ -51,10 +47,6 @@ PKG_PROG_PKG_CONFIG
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
-
-AC_CHECK_HEADER(ladspa.h, LADSPA_FOUND="yes", LADSPA_FOUND="no")
-
-AC_CHECK_HEADER(dssi.h, DSSI_FOUND="yes", DSSI_FOUND="no")
 
 AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
 AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
@@ -92,12 +84,10 @@ PKG_CHECK_MODULES(SLV2_HACK, slv2 <= 0.6.1, SLV2_UNSUPPORTED="yes", SLV2_UNSUPPO
 ############################################################################################
 # Assign initial values to feature control variables
 
-LADSPA_ENABLED=$LADSPA_FOUND
-DSSI_ENABLED=$DSSI_FOUND
 LV2_ENABLED=$LV2_FOUND
 LASH_ENABLED=$LASH_FOUND
 
-if test "$JACK_FOUND" = "yes" -o "$DSSI_FOUND" = "yes" -o "$LV2_FOUND" = "yes"; then
+if test "$JACK_FOUND" = "yes" -o "$LV2_FOUND" = "yes"; then
   PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.12.0 gconf-2.0 >= 2.8.0 cairo >= 1.2.0,
     GUI_ENABLED="yes",
     GUI_ENABLED="no (GTK+ 2.12, GConf 2.8 and cairo 1.2 or newer required)"
@@ -106,22 +96,6 @@ fi
 
 ############################################################################################
 # Look for settings and installed libraries to determine what to compile/install/use
-if test "$LADSPA_FOUND" = "yes"; then
-  AC_MSG_CHECKING([whether to allow LADSPA])
-  AC_ARG_WITH(ladspa,
-    AC_HELP_STRING([--without-ladspa],[disable LADSPA and DSSI interfaces]),
-      [if test "$withval" = "no"; then LADSPA_ENABLED="no"; DSSI_ENABLED="no"; fi],[])
-  AC_MSG_RESULT($LADSPA_ENABLED)
-fi
-
-if test "$DSSI_FOUND" = "yes"; then
-  AC_MSG_CHECKING([whether to allow DSSI])
-  AC_ARG_WITH(dssi,
-    AC_HELP_STRING([--without-dssi],[disable DSSI interface]),
-      [if test "$withval" = "no"; then DSSI_ENABLED="no"; fi],[])
-  AC_MSG_RESULT($DSSI_ENABLED)
-fi
-
 if test "$LV2_FOUND" = "yes"; then
   AC_MSG_CHECKING([whether to allow LV2])
   AC_ARG_WITH(lv2,
@@ -144,13 +118,6 @@ AC_ARG_ENABLE(experimental,
   [set_enable_experimental="$enableval"],
   [set_enable_experimental="no"])
 AC_MSG_RESULT($set_enable_experimental)
-
-AC_MSG_CHECKING([whether to enable old-style in-process GTK+ GUI])
-AC_ARG_ENABLE(in-process-lv2-gui,
-  AC_HELP_STRING([--enable-in-process-lv2-gui],[enable old-style in-process GTK+ GUI - not recommended!]),
-  [set_enable_gtk_gui="$enableval"],
-  [set_enable_gtk_gui="no"])
-AC_MSG_RESULT($set_enable_gtk_gui)
 
 AC_MSG_CHECKING([whether to enable debugging mode])
 AC_ARG_ENABLE(debug,
@@ -176,18 +143,8 @@ if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
   JACK_ENABLED="yes"
 fi
 
-if test "$GUI_ENABLED" = "yes" -a "$DSSI_ENABLED" = "yes"; then
-  DSSI_GUI_ENABLED="yes"
-  EXEC_GUI_ENABLED="yes"
-fi
-
 if test "$GUI_ENABLED" = "yes" -a "$LV2_ENABLED" = "yes"; then
   LV2_GUI_ENABLED="yes"
-  EXEC_GUI_ENABLED="yes"
-fi
-
-if test "$set_enable_gtk_gui" = "yes" -a "$LV2_ENABLED" = "yes" -a "$GUI_ENABLED" = "yes"; then
-  LV2_GTK_GUI_ENABLED="yes"
 fi
 
 if test "$set_enable_debug" = "yes"; then
@@ -198,27 +155,16 @@ fi
 
 ############################################################################################
 # Create automake conditional symbols
-AM_CONDITIONAL(USE_DSSI, test "$DSSI_ENABLED" = "yes")
-AM_CONDITIONAL(USE_LADSPA, test "$LADSPA_ENABLED" = "yes")
 AM_CONDITIONAL(USE_JACK, test "$JACK_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2, test "$LV2_ENABLED" = "yes")
 AM_CONDITIONAL(USE_GUI, test "$GUI_ENABLED" = "yes")
-AM_CONDITIONAL(USE_DSSI_GUI, test "$DSSI_GUI_ENABLED" = "yes")
-AM_CONDITIONAL(USE_EXEC_GUI, test "$EXEC_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
-AM_CONDITIONAL(USE_LV2_GTK_GUI, test "$set_enable_gtk_gui" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH_0_6, test "$LASH_0_6_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
 
 ############################################################################################
 # Create autoconf symbols for config.h
-if test "$LADSPA_ENABLED" = "yes"; then
-  AC_DEFINE(USE_LADSPA, 1, [LADSPA wrapper will be built])
-fi
-if test "$DSSI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_DSSI, 1, [DSSI wrapper will be built])
-fi
 if test "$LV2_ENABLED" = "yes"; then
   AC_DEFINE(USE_LV2, 1, [LV2 wrapper will be built])
 fi
@@ -234,48 +180,15 @@ if test "$LASH_ENABLED" = "yes"; then
     AC_DEFINE(USE_LASH_0_6, 1, "Unstable LASH API is enabled")
   fi
 fi
-if test "$EXEC_GUI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_EXEC_GUI, 1, [Out-of-process GTK+ GUI for LV2/DSSI will be built])
-fi
-if test "$DSSI_GUI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_DSSI_GUI, 1, [GTK+ GUI executable will be used for DSSI])
-fi
 if test "$LV2_GUI_ENABLED" = "yes"; then
   AC_DEFINE(USE_LV2_GUI, 1, [GTK+ GUI executable will be used for LV2])
 fi
 if test "$set_enable_experimental" = "yes"; then
   AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
 fi
-if test "$set_enable_gtk_gui" = "yes"; then
-  AC_DEFINE([USE_LV2_GTK_GUI], [1], "In-process GTK+ LV2 GUI features is enabled")
-fi
 
 ############################################################################################
 # Output directories
-AC_MSG_CHECKING(where to install LADSPA plugins)
-AC_ARG_WITH(ladspa_dir,
-  AC_HELP_STRING([--with-ladspa-dir],[install LADSPA plugins to DIR (default=$prefix/lib/ladspa/)]),
-  ,
-  [with_ladspa_dir="$prefix/lib/ladspa/"])
-AC_MSG_RESULT($with_ladspa_dir)
-AC_SUBST(with_ladspa_dir)
-
-AC_MSG_CHECKING(where to install LADSPA RDF file)
-AC_ARG_WITH(ladspa_rdf_dir,
-  AC_HELP_STRING([--with-ladspa-rdf-dir],[install RDF file to DIR (default=$prefix/share/ladspa/rdf/)]),
-  ,
-  [with_ladspa_rdf_dir="$prefix/share/ladspa/rdf/"])
-AC_MSG_RESULT($with_ladspa_rdf_dir)
-AC_SUBST(with_ladspa_rdf_dir)
-
-AC_MSG_CHECKING(where to install DSSI plugins)
-AC_ARG_WITH(dssi_dir,
-  AC_HELP_STRING([--with-dssi-dir],[install DSSI plugins to DIR (default=$prefix/lib/dssi/)]),
-  ,
-  [with_dssi_dir="$prefix/lib/dssi/"])
-AC_MSG_RESULT($with_dssi_dir)
-AC_SUBST(with_dssi_dir)
-
 if test "$LV2_ENABLED" == "yes"; then
   AC_MSG_CHECKING(where to install LV2 plugins)
   AC_ARG_WITH(lv2_dir,
@@ -307,14 +220,9 @@ AC_MSG_RESULT([
 
     Debug mode:                  $set_enable_debug
     Experimental plugins:        $set_enable_experimental
-    LADSPA enabled:              $LADSPA_ENABLED
     Common GUI code:             $GUI_ENABLED
-    Out-of-process GUI code:     $EXEC_GUI_ENABLED
-    DSSI enabled:                $DSSI_ENABLED
-    DSSI GUI enabled:            $DSSI_GUI_ENABLED
     LV2 enabled:                 $LV2_ENABLED
-    LV2 in-process GUI enabled:  $LV2_GTK_GUI_ENABLED
-    LV2 GUI enabled:             $LV2_GUI_ENABLED
+    LV2 GTK+ GUI enabled:        $LV2_GUI_ENABLED
     JACK host enabled:           $JACK_ENABLED
     LASH enabled:                $LASH_ENABLED])
 if test "$LASH_ENABLED" = "yes"; then

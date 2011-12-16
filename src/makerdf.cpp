@@ -1,6 +1,7 @@
 /* Calf DSP Library
- * RDF file generator for LADSPA plugins.
- * Copyright (C) 2007 Krzysztof Foltman
+ * RDF file generator for LV2 plugins.
+ * Copyright (C) 2007-2011 Krzysztof Foltman and others.
+ * See AUTHORS file for a complete list.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,118 +42,6 @@ static struct option long_options[] = {
     {"path", 1, 0, 'p'},
     {0,0,0,0},
 };
-
-#if USE_LADSPA
-
-static std::string unit_to_string(const parameter_properties &props)
-{
-    uint32_t flags = props.flags & PF_UNITMASK;
-    
-    switch(flags) {
-        case PF_UNIT_DB:
-            return "ladspa:hasUnit=\"&ladspa;dB\" ";
-        case PF_UNIT_COEF:
-            return "ladspa:hasUnit=\"&ladspa;coef\" ";
-        case PF_UNIT_HZ:
-            return "ladspa:hasUnit=\"&ladspa;Hz\" ";
-        case PF_UNIT_SEC:
-            return "ladspa:hasUnit=\"&ladspa;seconds\" ";
-        case PF_UNIT_MSEC:
-            return "ladspa:hasUnit=\"&ladspa;milliseconds\" ";
-        default:
-            return string();
-    }
-}
-
-static std::string scale_to_string(const parameter_properties &props)
-{
-    if ((props.flags & PF_TYPEMASK) != PF_ENUM) {
-        return "/";
-    }
-    string tmp = "><ladspa:hasScale><ladspa:Scale>\n";
-    for (int i = (int)props.min; i <= (int)props.max; i++) {
-        tmp += "          <ladspa:hasPoint><ladspa:Point rdf:value=\""+i2s(i)+"\" ladspa:hasLabel=\""+props.choices[(int)(i - props.min)]+"\" /></ladspa:hasPoint>\n";
-    }
-    return tmp+"        </ladspa:Scale></ladspa:hasScale></ladspa:InputControlPort";
-}
-
-std::string generate_ladspa_rdf(const ladspa_plugin_info &info, const parameter_properties *params, const char *param_names[], unsigned int count,
-                                       unsigned int ctl_ofs)
-{
-    string rdf;
-    string plugin_id = "&ladspa;" + i2s(info.unique_id);
-    string plugin_type = string(info.plugin_type); 
-    
-    rdf += "  <ladspa:" + plugin_type + " rdf:about=\"" + plugin_id + "\">\n";
-    rdf += "    <dc:creator>" + xml_escape(info.maker) + "</dc:creator>\n";
-    rdf += "    <dc:title>" + xml_escape(info.name) + "</dc:title>\n";
-    
-    for (unsigned int i = 0; i < count; i++) {
-        rdf += 
-            "    <ladspa:hasPort>\n"
-            "      <ladspa:" + string(params[i].flags & PF_PROP_OUTPUT ? "Output" : "Input") 
-            + "ControlPort rdf:about=\"" + plugin_id + "."+i2s(ctl_ofs + i)+"\" "
-            + unit_to_string(params[i]) +
-            "ladspa:hasLabel=\"" + params[i].short_name + "\" "
-            + scale_to_string(params[i]) + 
-            ">\n"
-            "    </ladspa:hasPort>\n";
-    }
-    rdf += "    <ladspa:hasSetting>\n"
-        "      <ladspa:Default>\n";
-    for (unsigned int i = 0; i < count; i++) {
-        rdf += 
-            "        <ladspa:hasPortValue>\n"
-            "           <ladspa:PortValue rdf:value=\"" + f2s(params[i].def_value) + "\">\n"
-            "             <ladspa:forPort rdf:resource=\"" + plugin_id + "." + i2s(ctl_ofs + i) + "\"/>\n"
-            "           </ladspa:PortValue>\n"
-            "        </ladspa:hasPortValue>\n";
-    }
-    rdf += "      </ladspa:Default>\n"
-        "    </ladspa:hasSetting>\n";
-
-    rdf += "  </ladspa:" + plugin_type + ">\n";
-    return rdf;
-}
-
-void make_rdf()
-{
-    string rdf;
-    rdf = 
-        "<?xml version='1.0' encoding='ISO-8859-1'?>\n"
-        "<!DOCTYPE rdf:RDF [\n"
-        "  <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>\n"
-        "  <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>\n"
-        "  <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>\n"
-        "  <!ENTITY ladspa 'http://ladspa.org/ontology#'>\n"
-        "]>\n";
-    
-    rdf += "<rdf:RDF xmlns:rdf=\"&rdf;\" xmlns:rdfs=\"&rdfs;\" xmlns:dc=\"&dc;\" xmlns:ladspa=\"&ladspa;\">\n";
-
-    const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
-    set<int> used_ids;
-    for (unsigned int i = 0; i < plugins.size(); i++)
-    {
-        const plugin_metadata_iface *p = plugins[i];
-        const ladspa_plugin_info &info = p->get_plugin_info();
-        
-        if(used_ids.count(info.unique_id))
-        {
-            fprintf(stderr, "ERROR: Duplicate ID %d in plugin %s\n", info.unique_id, info.name);
-            assert(0);
-        }
-        used_ids.insert(info.unique_id);
-
-        if (!p->requires_midi()) {
-            rdf += generate_ladspa_rdf(info, p->get_param_props(0), p->get_port_names(), p->get_param_count(), p->get_param_port_offset());
-        }
-        delete p;
-    }    
-    rdf += "</rdf:RDF>\n";
-    
-    printf("%s\n", rdf.c_str());
-}
-#endif
 
 #if USE_LV2
 static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort", bool optional = false)
@@ -338,18 +227,10 @@ void make_ttl(string path_prefix)
     
 #if USE_LV2_GUI
     string gtkgui_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>";
-#if USE_LV2_GTK_GUI
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    uiext:binary <calflv2gui.so> ;\n"
         "    uiext:requiredFeature uiext:makeResident .\n"
-        "\n"
-    ;
-#endif
-    string extgui_uri = "<http://calf.sourceforge.net/plugins/gui/ext-gui>";
-    gui_header += extgui_uri + "\n"
-        "    a uiext:external ;\n"
-        "    uiext:binary <calflv2gui.so> .\n"
         "\n"
     ;
 #endif
@@ -373,10 +254,7 @@ void make_ttl(string path_prefix)
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
-#if USE_LV2_GTK_GUI
                 ttl += gtkgui_uri + portnot;
-#endif
-                ttl += extgui_uri + portnot;
             }
         }
 #endif
@@ -391,10 +269,7 @@ void make_ttl(string path_prefix)
         ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
 
 #if USE_LV2_GUI
-#if USE_LV2_GTK_GUI
         ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
-#endif
-        ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/ext-gui> ;\n";
         ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n";
         ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n";
 #endif
@@ -685,7 +560,7 @@ int main(int argc, char *argv[])
         switch(c) {
             case 'h':
             case '?':
-                printf("LADSPA RDF / LV2 TTL / XML GUI generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|gui] [--path <path>]\n", argv[0]);
+                printf("LV2 TTL / XML GUI generator for Calf plugin pack\nSyntax: %s [--help] [--version] [--mode rdf|ttl|gui] [--path <path>]\n", argv[0]);
                 return 0;
             case 'v':
                 printf("%s\n", PACKAGE_STRING);
@@ -712,10 +587,6 @@ int main(int argc, char *argv[])
     if (false)
     {
     }
-#if USE_LADSPA
-    else if (mode == "rdf")
-        make_rdf();
-#endif
 #if USE_LV2
     else if (mode == "ttl")
         make_ttl(path_prefix);
