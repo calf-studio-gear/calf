@@ -29,10 +29,8 @@
 #include <calf/modules_mod.h>
 #include <calf/modules_synths.h>
 #include <calf/organ.h>
-#include <calf/osctlnet.h>
 
 using namespace calf_plugins;
-using namespace osctl;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -8,5 +8,5 @@ noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
     metadata.h modmatrix.h \
     modules.h modules_comp.h modules_dev.h modules_dist.h modules_eq.h modules_mod.h modules_synths.h \
     modulelist.h \
-    multichorus.h onepole.h organ.h osc.h osctl.h osctlnet.h osctl_glib.h plugin_tools.h preset.h \
+    multichorus.h onepole.h organ.h osc.h osctl.h plugin_tools.h preset.h \
     preset_gui.h primitives.h session_mgr.h synth.h utils.h vumeter.h wave.h waveshaping.h

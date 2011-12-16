@@ -37,7 +37,7 @@ calfmakerdf_LDADD = calf.la
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) calf.la
 
-calf_la_SOURCES = audio_fx.cpp metadata.cpp modules.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp osctlnet.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
+calf_la_SOURCES = audio_fx.cpp metadata.cpp modules.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
 calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS)
@@ -51,7 +51,7 @@ if USE_LV2_GUI
 
 noinst_LTLIBRARIES += calflv2gui.la
 
-calflv2gui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp ctl_vumeter.cpp custom_ctl.cpp metadata.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp osctlnet.cpp utils.cpp
+calflv2gui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp ctl_vumeter.cpp custom_ctl.cpp metadata.cpp giface.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp
 
 if USE_DEBUG
 calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
@@ -62,7 +62,7 @@ endif
 endif
 
 if USE_GUI
-libcalfgui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp ctl_vumeter.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp osctlnet.cpp osctl_glib.cpp utils.cpp
+libcalfgui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_led.cpp ctl_vumeter.cpp preset_gui.cpp custom_ctl.cpp osctl.cpp utils.cpp
 libcalfgui_la_LDFLAGS = -static -disable-shared -lexpat
 endif
 

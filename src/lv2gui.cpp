@@ -26,14 +26,12 @@
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
 #include <calf/lv2helpers.h>
-#include <calf/osctlnet.h>
 #include <calf/utils.h>
 #include <glib.h>
 
 using namespace std;
 using namespace calf_plugins;
 using namespace calf_utils;
-using namespace osctl;
 
 struct LV2_Calf_Descriptor {
     plugin_ctl_iface *(*get_pci)(LV2_Handle Instance);
