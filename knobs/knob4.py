@@ -4,7 +4,7 @@ import cairo
 from math import pi, cos, sin
 
 WIDTH, HEIGHT = 80, 80
-background = "knob4_bg.png"
+background = "knob41_bg.png"
 output = "knob4.png"
 x, y = WIDTH / 2, HEIGHT / 2
 lwidth = WIDTH / 15

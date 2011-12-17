@@ -4,7 +4,7 @@ import cairo
 from math import pi, cos, sin
 
 WIDTH, HEIGHT = 60, 60
-background = "knob3_bg.png"
+background = "knob31_bg.png"
 output = "knob3.png"
 x, y = WIDTH / 2, HEIGHT / 2
 lwidth = WIDTH / 12
@@ -108,7 +108,7 @@ for variant in range(0, 4):
             ctx.arc(x, y, radius, sangle + adelta * led, sangle + adelta * led + spacing)
             ctx.stroke()
 
-        ctx.set_source_rgba(1, 1, 1, 1)
+        ctx.set_source_rgba(0.3, 0.3, 0.3, 1)
         ctx.set_line_width(2)
         mtx = ctx.get_matrix()
         ctx.translate(x + radiusminus2 * c, y + radiusminus2 * s)
