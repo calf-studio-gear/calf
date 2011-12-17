@@ -782,8 +782,8 @@ calf_toggle_class_init (CalfToggleClass *klass)
     widget_class->button_press_event = calf_toggle_button_press;
     widget_class->key_press_event = calf_toggle_key_press;
     GError *error = NULL;
-    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1.png", &error);
-    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2.png", &error);
+    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
+    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
     g_assert(klass->toggle_image != NULL);
 }
 

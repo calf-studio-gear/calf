@@ -7,8 +7,8 @@ using namespace calf_utils;
 
 gui_config::gui_config()
 {
-    rows = 0;
-    cols = 1;
+    rack_float = 0;
+    float_size = 1;
     rack_ears = true;
 }
 
@@ -18,15 +18,15 @@ gui_config::~gui_config()
 
 void gui_config::load(config_db_iface *db)
 {
-    rows = db->get_int("rack-rows", gui_config().rows);
-    cols = db->get_int("rack-cols", gui_config().cols);
+    rack_float = db->get_int("rack-float", gui_config().rack_float);
+    float_size = db->get_int("float-size", gui_config().float_size);
     rack_ears = db->get_bool("show-rack-ears", gui_config().rack_ears);
 }
 
 void gui_config::save(config_db_iface *db)
 {
-    db->set_int("rack-rows", rows);
-    db->set_int("rack-cols", cols);
+    db->set_int("rack-float", rack_float);
+    db->set_int("float-size", float_size);
     db->set_bool("show-rack-ears", rack_ears);
     db->save();
 }

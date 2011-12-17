@@ -78,7 +78,7 @@ public:
 
 struct gui_config
 {
-    int cols, rows;
+    int rack_float, float_size;
     bool rack_ears;
     
     gui_config();

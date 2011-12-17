@@ -31,10 +31,11 @@ namespace calf_plugins {
     public:
         struct plugin_strip
         {
+            int id;
             gtk_main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra, *leftBox, *rightBox;
+            GtkWidget *strip_table, *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra, *leftBox, *rightBox;
         };
         
         struct add_plugin_params
@@ -65,6 +66,7 @@ namespace calf_plugins {
     protected:
         plugin_strip *create_strip(plugin_ctl_iface *plugin);
         void update_strip(plugin_ctl_iface *plugin);
+        void sort_strips();
         static gboolean on_idle(void *data);
         std::string make_plugin_list(GtkActionGroup *actions);
         static void add_plugin_action(GtkWidget *src, gpointer data);
