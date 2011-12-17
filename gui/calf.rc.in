@@ -291,12 +291,12 @@ style "calf-wider"
 
 style "calf-rack"
 {
-	fg[NORMAL]        = "#111"
+    fg[NORMAL]        = "#000"
 	fg[PRELIGHT]      = "#000"
 	fg[ACTIVE]        = "#000"
 	fg[SELECTED]      = "#000"
-	fg[INSENSITIVE]   = "#666"
-
+	fg[INSENSITIVE]   = "#000"
+	
 	bg[NORMAL]        = "#e8e7e2"
 	bg[PRELIGHT]      = "#000"
 	bg[ACTIVE]        = shade (0.9, "#e8e7e2")
@@ -307,8 +307,21 @@ style "calf-rack"
 	bg_pixmap[SELECTED]		= "background_fur_white.png"
 	bg_pixmap[ACTIVE]		= "background_fur_white.png"
 	bg_pixmap[INSENSITIVE]	= "background_fur_white.png"
+	
+	font_name = "Sans 8"
 }
-
+style "calf-rack-title"
+{
+    fg[NORMAL]        = "#000"
+	fg[PRELIGHT]      = "#000"
+	fg[ACTIVE]        = "#000"
+	fg[SELECTED]      = "#000"
+	fg[INSENSITIVE]   = "#000"
+	font_name = "Sans Bold 10"
+	
+    xthickness = 7
+    ythickness = 3
+}
 
 style "calf-label" {
     font_name = "Sans 7"
@@ -329,17 +342,29 @@ style "calf-button"
     xthickness = 2
     ythickness = 1
     
-    fg[NORMAL]			= "#0385CD"
-	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#0385CD"
-	fg[ACTIVE]			= "#49DBE8"
+    fg[NORMAL]			= "#001144"
+	fg[PRELIGHT]		= "#115588"
+	fg[SELECTED]		= "#001144"
+	fg[ACTIVE]			= "#2288aa"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#0385CD"
-	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#0385CD"
-	text[ACTIVE]		= "#49DBE8"
+	text[NORMAL]		= "#001144"
+	text[PRELIGHT]		= "#115588"
+	text[SELECTED]		= "#001144"
+	text[ACTIVE]		= "#2288aa"
 	text[INSENSITIVE]	= "#aaa"
+	
+#    fg[NORMAL]			= "#0385CD"
+#	fg[PRELIGHT]		= "#49DBE8"
+#	fg[SELECTED]		= "#0385CD"
+#	fg[ACTIVE]			= "#49DBE8"
+#	fg[INSENSITIVE]		= "#aaa"
+#	
+#	text[NORMAL]		= "#0385CD"
+#	text[PRELIGHT]		= "#49DBE8"
+#	text[SELECTED]		= "#0385CD"
+#	text[ACTIVE]		= "#49DBE8"
+#	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -407,22 +432,34 @@ style "calf-toggle"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::inner-border         = { 8, 26, 2, 2}
+	GtkButton      ::inner-border         = { 8, 33, 2, 2}
 	
     xthickness = 2
     ythickness = 1
     
-    fg[NORMAL]			= "#0385CD"
-	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#0385CD"
-	fg[ACTIVE]			= "#49DBE8"
+    fg[NORMAL]			= "#001144"
+	fg[PRELIGHT]		= "#115588"
+	fg[SELECTED]		= "#001144"
+	fg[ACTIVE]			= "#2288aa"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#0385CD"
-	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#0385CD"
-	text[ACTIVE]		= "#49DBE8"
+	text[NORMAL]		= "#001144"
+	text[PRELIGHT]		= "#115588"
+	text[SELECTED]		= "#001144"
+	text[ACTIVE]		= "#2288aa"
 	text[INSENSITIVE]	= "#aaa"
+	
+#    fg[NORMAL]			= "#0385CD"
+#	fg[PRELIGHT]		= "#49DBE8"
+#	fg[SELECTED]		= "#0385CD"
+#	fg[ACTIVE]			= "#49DBE8"
+#	fg[INSENSITIVE]		= "#aaa"
+#	
+#	text[NORMAL]		= "#0385CD"
+#	text[PRELIGHT]		= "#49DBE8"
+#	text[SELECTED]		= "#0385CD"
+#	text[ACTIVE]		= "#49DBE8"
+#	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -444,7 +481,7 @@ style "calf-toggle"
 			detail			= "buttondefault"
 			recolorable		= FALSE
 			file			= "button_normal.png"
-			border			= {6, 24, 6, 6}
+			border			= {6, 27, 6, 6}
 			stretch			= TRUE
 		}
 		image
@@ -453,7 +490,7 @@ style "calf-toggle"
 			state			= PRELIGHT
 			recolorable		= FALSE
 			file			= "button_prelight.png"
-			border			= {6, 24, 6, 6}
+			border			= {6, 27, 6, 6}
 			stretch			= TRUE
 		}
 		image
@@ -461,7 +498,7 @@ style "calf-toggle"
 			function		= BOX
 			state			= ACTIVE
 			file			= "button_active.png"
-			border			= {6, 24, 6, 6}
+			border			= {6, 27, 6, 6}
 			stretch			= TRUE
 		}
 		image
@@ -469,14 +506,14 @@ style "calf-toggle"
 			function		= BOX
 			state			= INSENSITIVE
 			file			= "button_insens.png"
-			border			= {6, 24, 6, 6}
+			border			= {6, 27, 6, 6}
 			stretch			= TRUE
 		}
 		image
 		{
 			function		= BOX
 			file			= "button_normal.png"
-			border			= {6, 24, 6, 6}
+			border			= {6, 27, 6, 6}
 			stretch			= TRUE
 		}
 		
@@ -496,17 +533,29 @@ style "calf-button-norm"
     xthickness = 2
     ythickness = 1
     
-    fg[NORMAL]			= "#0385CD"
-	fg[PRELIGHT]		= "#49DBE8"
-	fg[SELECTED]		= "#0385CD"
-	fg[ACTIVE]			= "#49DBE8"
+    fg[NORMAL]			= "#001144"
+	fg[PRELIGHT]		= "#115588"
+	fg[SELECTED]		= "#001144"
+	fg[ACTIVE]			= "#2288aa"
 	fg[INSENSITIVE]		= "#aaa"
 	
-	text[NORMAL]		= "#0385CD"
-	text[PRELIGHT]		= "#49DBE8"
-	text[SELECTED]		= "#0385CD"
-	text[ACTIVE]		= "#49DBE8"
+	text[NORMAL]		= "#001144"
+	text[PRELIGHT]		= "#115588"
+	text[SELECTED]		= "#001144"
+	text[ACTIVE]		= "#2288aa"
 	text[INSENSITIVE]	= "#aaa"
+	
+#    fg[NORMAL]			= "#0385CD"
+#	fg[PRELIGHT]		= "#49DBE8"
+#	fg[SELECTED]		= "#0385CD"
+#	fg[ACTIVE]			= "#49DBE8"
+#	fg[INSENSITIVE]		= "#aaa"
+#	
+#	text[NORMAL]		= "#0385CD"
+#	text[PRELIGHT]		= "#49DBE8"
+#	text[SELECTED]		= "#0385CD"
+#	text[ACTIVE]		= "#49DBE8"
+#	text[INSENSITIVE]	= "#aaa"
 	
 	bg[NORMAL]        = "#DADADA"
 	bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -598,7 +647,7 @@ style "calf-combobox"
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
 #	GtkButton      ::default-border       = { 6, 24, 5, 5 }
-	GtkButton      ::inner-border         = { 8, 29, 1, 1}
+	GtkButton      ::inner-border         = { 8, 30, 1, 1}
 	
     xthickness = 2
     ythickness = 1
@@ -1776,6 +1825,7 @@ widget "*Calf*"    					style : highest "calf-default"
 
 # Rack
 widget "*Calf-Rack*"    					            style : highest "calf-rack"
+widget "Calf-Rack*Calf-Rack-Title"    					    style : highest "calf-rack-title"
 
 # Labels
 widget "*Calf-Label"    					            style : highest "calf-label"
