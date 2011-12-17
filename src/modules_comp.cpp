@@ -88,6 +88,7 @@ void multibandcompressor_audio_module::params_changed()
     int j1;
     switch(mode) {
         case 0:
+        default:
             j1 = 0;
             break;
         case 1:
@@ -222,6 +223,7 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
                     // send trough filters
                     switch(mode) {
                         case 0:
+                        default:
                             j1 = 0;
                             break;
                         case 1:

@@ -538,15 +538,8 @@ lookahead_limiter::lookahead_limiter() {
     is_active = false;
     channels = 2;
     id = 0;
-}
-
-void lookahead_limiter::activate()
-{
-    is_active = true;
-    buffer_size = (int)srate * attack * channels; // buffer size attack rate multiplied by 2 channels
-    buffer = (float*) calloc(buffer_size, sizeof(float));
-    memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
-    
+    buffer_size = 0;
+    overall_buffer_size = 0;
     att = 1.f;
     att_max = 1.0;
     pos = 0;
@@ -556,9 +549,18 @@ void lookahead_limiter::activate()
     over_s = 0;
     over_c = 1.f;
     attack = 0.005;
+    __attack = -1;
     pos_next = -1;
     use_multi = false;
     weight = 1.f;
+    _sanitize = false;
+}
+
+void lookahead_limiter::activate()
+{
+    is_active = true;
+    pos = 0;
+    
 }
 
 void lookahead_limiter::set_multi(bool set) { use_multi = set; }
@@ -578,6 +580,11 @@ float lookahead_limiter::get_attenuation()
 void lookahead_limiter::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    // rebuild buffer
+    overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size attack rate multiplied by 2 channels
+    buffer = (float*) calloc(overall_buffer_size, sizeof(float));
+    memset(buffer, 0, overall_buffer_size * sizeof(float)); // reset buffer to zero
+    pos = 0;
 }
 
 void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, bool d)
@@ -589,12 +596,11 @@ void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, 
     debug = d;
     weight = w;
     //if(debug) printf("%.5f\n", release);
-    if( attack != attack__) {
-        // rebuild buffer
-        buffer_size = (int)srate * attack * channels; // buffer size attack rate multiplied by 2 channels
-        buffer = (float*) calloc(buffer_size, sizeof(float));
-        memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
-        attack__ = attack;
+    if( attack != __attack) {
+        int bs = (int)(srate * attack * channels);
+        buffer_size = bs - bs % channels; // buffer size attack rate
+        __attack = attack;
+        _sanitize = true;
         pos = 0;
     }
 }
@@ -604,8 +610,12 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     int in0 = 0;
     int out0 = 0;
     // write left and right to buffer
-    buffer[pos] = left;
-    buffer[pos + 1] = right;
+    buffer[pos] = 0.f;
+    buffer[pos + 1] = 0.f;
+    if(!_sanitize) {
+        buffer[pos] = left;
+        buffer[pos + 1] = right;
+    }
     
     // are we using multiband? get the multiband coefficient
     float multi_coeff = (use_multi) ? multi_buffer[pos] : 1.f;
@@ -675,6 +685,11 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     left *= att;
     right *= att;
     
+    if(_sanitize) {
+        left = 0.f;
+       right = 0.f;
+    }
+    
     // release time seems over
     if (att > 1.0f) {
 	    att = 1.0f;
@@ -711,4 +726,5 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     att_max = (att < att_max) ? att : att_max; // store max atten for meter output
     
     pos = (pos + channels) % buffer_size;
+    if(pos == 0) _sanitize = false;
 }

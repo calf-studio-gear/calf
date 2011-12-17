@@ -205,8 +205,11 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
-    attack_old = -1.f;
+    __attack = -1.f;
     channels = 2;
+    buffer_size = 0;
+    overall_buffer_size = 0;
+    _sanitize = false;
 }
 
 void multibandlimiter_audio_module::activate()
@@ -252,6 +255,7 @@ void multibandlimiter_audio_module::params_changed()
     int j1;
     switch(mode) {
         case 0:
+        default:
             j1 = 0;
             break;
         case 1:
@@ -329,12 +333,11 @@ void multibandlimiter_audio_module::params_changed()
     *params[param_effrelease3] = rel;
     broadband.set_params(*params[param_limit], *params[param_attack], rel, 1.f);
     // rebuild multiband buffer
-    if( *params[param_attack] != attack_old) {
-        // rebuild buffer
-        buffer_size = (int)(srate * (*params[param_attack] / 1000.f) * channels); // buffer size attack rate
-        buffer = (float*) calloc(buffer_size, sizeof(float));
-        memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
-        attack_old = *params[param_attack];
+    if( *params[param_attack] != __attack) {
+        int bs = (int)(srate * (*params[param_attack] / 1000.f) * channels);
+        buffer_size = bs - bs % channels; // buffer size attack rate
+        __attack = *params[param_attack];
+        _sanitize = true;
         pos = 0;
     }
 }
@@ -342,6 +345,11 @@ void multibandlimiter_audio_module::params_changed()
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    // rebuild buffer
+    overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size max attack rate
+    buffer = (float*) calloc(overall_buffer_size, sizeof(float));
+    memset(buffer, 0, overall_buffer_size * sizeof(float)); // reset buffer to zero
+    pos = 0;
     // set srate of all strips
     for (int j = 0; j < strips; j ++) {
         strip[j].set_sample_rate(srate);
@@ -393,9 +401,13 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         float _tmpL[channels];
         float _tmpR[channels];
         while(offset < numsamples) {
+            float inL = 0.f;
+            float inR = 0.f;
             // cycle through samples
-            float inL = ins[0][offset];
-            float inR = ins[1][offset];
+            if(!_sanitize) {
+                inL = ins[0][offset];
+                inR = ins[1][offset];
+            }
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
@@ -426,6 +438,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 switch(mode) {
                     // how many filter passes? (12/36dB)
                     case 0:
+                    default:
                         j1 = 0;
                         break;
                     case 1:
@@ -516,6 +529,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             // next sample
             ++offset;
             pos = (pos + channels) % buffer_size;
+            if(pos == 0) _sanitize = false;
         } // cycle trough samples
         
     } // process all strips (no bypass)
@@ -559,6 +573,7 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
         switch(mode) {
             case 0:
+            default:
                 j1 = 0;
                 break;
             case 1:

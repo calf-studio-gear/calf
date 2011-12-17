@@ -572,12 +572,13 @@ class lookahead_limiter {
 private:
 public:
     float limit, attack, release, weight;
-    float attack__;
+    float __attack;
     uint32_t srate;
     float att;
     float att_max;
     unsigned int pos;
     unsigned int buffer_size;
+    unsigned int overall_buffer_size;
     bool is_active;
     bool debug;
     bool auto_release;
@@ -591,6 +592,7 @@ public:
     int pos_next;
     bool use_multi;
     unsigned int id;
+    bool _sanitize;
     static inline void denormal(volatile float *f) {
 	    *f += 1e-18;
 	    *f -= 1e-18;

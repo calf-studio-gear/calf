@@ -67,11 +67,13 @@ private:
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
     unsigned int pos;
     unsigned int buffer_size;
-    float attack_old;
+    unsigned int overall_buffer_size;
+    float __attack;
     float *buffer;
     int channels;
     float striprel[strips];
     float weight[strips];
+    bool _sanitize;
 public:
     uint32_t srate;
     bool is_active;
