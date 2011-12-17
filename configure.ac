@@ -88,9 +88,9 @@ LV2_ENABLED=$LV2_FOUND
 LASH_ENABLED=$LASH_FOUND
 
 if test "$JACK_FOUND" = "yes" -o "$LV2_FOUND" = "yes"; then
-  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.12.0 gconf-2.0 >= 2.8.0 cairo >= 1.2.0,
+  PKG_CHECK_MODULES(GUI_DEPS, gtk+-2.0 >= 2.12.0 cairo >= 1.2.0,
     GUI_ENABLED="yes",
-    GUI_ENABLED="no (GTK+ 2.12, GConf 2.8 and cairo 1.2 or newer required)"
+    GUI_ENABLED="no (GTK+ 2.12 and cairo 1.2 or newer required)"
   )
 fi
 
@@ -125,16 +125,6 @@ AC_ARG_ENABLE(debug,
   [set_enable_debug="$enableval"],
   [set_enable_debug="no"])
 AC_MSG_RESULT($set_enable_debug)
-
-if test "$GUI_ENABLED" = "yes" -a "$JACK_FOUND" = "yes"; then
-  AC_PATH_PROG(GCONFTOOL, gconftool-2, no)
-  if test "$GCONFTOOL" = "no"; then
-    AC_MSG_ERROR([gconftool-2 not found - do you have GConf devel package installed?])
-  fi
-  AM_GCONF_SOURCE_2
-else
-  AM_CONDITIONAL(GCONF_SCHEMAS_INSTALL, false)
-fi
 
 ############################################################################################
 # Compute status shell variables

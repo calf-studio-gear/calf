@@ -2,8 +2,8 @@
 #define CALF_GUI_CONFIG_H
 
 #include <glib.h>
-#include <gconf/gconf-client.h>
 #include <string>
+#include <vector>
 
 namespace calf_utils {
 
@@ -36,18 +36,34 @@ struct config_db_iface
     virtual void set_bool(const char *key, bool value) = 0;
     virtual void set_int(const char *key, int value) = 0;
     virtual void set_string(const char *key, const std::string &value) = 0;
+    virtual void save() = 0;
     virtual config_notifier_iface *add_listener(config_listener_iface *listener) = 0;
     virtual ~config_db_iface() {}
 };
 
-class gconf_config_db: public config_db_iface
+class gkeyfile_config_db: public config_db_iface
 {
 protected:
-    GConfClient *client;
-    std::string prefix;
+    class notifier: public config_notifier_iface
+    {
+    protected:
+        gkeyfile_config_db *parent;
+        config_listener_iface *listener;
+        notifier(gkeyfile_config_db *_parent, config_listener_iface *_listener);
+        virtual ~notifier();
+        friend class gkeyfile_config_db;
+    };
+protected:
+    GKeyFile *keyfile;
+    std::string filename;
+    std::string section;
+    std::vector<notifier *> notifiers;
+
     void handle_error(GError *error);
+    void remove_notifier(notifier *n);
+    friend class notifier;
 public:
-    gconf_config_db(const char *parent_key);
+    gkeyfile_config_db(GKeyFile *kf, const char *filename, const char *section);
     virtual bool has_dir(const char *key);
     virtual bool get_bool(const char *key, bool def_value);
     virtual int get_int(const char *key, int def_value);
@@ -55,8 +71,9 @@ public:
     virtual void set_bool(const char *key, bool value);
     virtual void set_int(const char *key, int value);
     virtual void set_string(const char *key, const std::string &value);
+    virtual void save();
     virtual config_notifier_iface *add_listener(config_listener_iface *listener);
-    virtual ~gconf_config_db();
+    virtual ~gkeyfile_config_db();
 };
 
 struct gui_config

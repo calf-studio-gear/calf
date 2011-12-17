@@ -173,6 +173,7 @@ struct session_environment_iface
 class gui_environment: public gui_environment_iface
 {
 private:
+    GKeyFile *keyfile;
     calf_utils::config_db_iface *config_db;
     calf_utils::gui_config gui_config;
 

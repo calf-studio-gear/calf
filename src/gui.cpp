@@ -483,7 +483,7 @@ void tips_tricks_action(GtkAction *action, plugin_gui_window *gui_win)
     "If you consider those a waste of screen space, you can turn them off in Preferences dialog in Calf JACK host. The setting affects all versions of the GUI (DSSI, LV2 GTK+, LV2 External, JACK host).\n"
     "\n"
     ;
-    GtkMessageDialog *dlg = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(gui_win->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, tips_and_tricks));
+    GtkMessageDialog *dlg = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(gui_win->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, "%s", tips_and_tricks));
     if (!dlg)
         return;
     
@@ -769,12 +769,21 @@ void calf_plugins::activate_command(GtkAction *action, activate_command_params *
 
 gui_environment::gui_environment()
 {
-    config_db = new calf_utils::gconf_config_db("/apps/calf");
+    keyfile = g_key_file_new();
+    
+    gchar *fn = g_build_filename(getenv("HOME"), ".calfrc", NULL);
+    string filename = fn;
+    g_free(fn);
+    g_key_file_load_from_file(keyfile, filename.c_str(), (GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS), NULL);
+    
+    config_db = new calf_utils::gkeyfile_config_db(keyfile, filename.c_str(), "gui");
     gui_config.load(config_db);
 }
 
 gui_environment::~gui_environment()
 {
     delete config_db;
+    if (keyfile)
+        g_key_file_free(keyfile);
 }
 

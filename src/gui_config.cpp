@@ -1,4 +1,6 @@
 #include <calf/gui_config.h>
+#include <assert.h>
+#include <stdio.h>
 
 using namespace std;
 using namespace calf_utils;
@@ -26,27 +28,33 @@ void gui_config::save(config_db_iface *db)
     db->set_int("rack-rows", rows);
     db->set_int("rack-cols", cols);
     db->set_bool("show-rack-ears", rack_ears);
+    db->save();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-gconf_config_db::gconf_config_db(const char *parent_key)
+gkeyfile_config_db::notifier::notifier(gkeyfile_config_db *_parent, config_listener_iface *_listener)
 {
-    prefix = string(parent_key) + "/";
-    client = gconf_client_get_default();
-    if (client)
-    {
-        GError *err = NULL;
-        gconf_client_add_dir(client, parent_key, GCONF_CLIENT_PRELOAD_ONELEVEL, &err);
-        if (err)
-        {
-            client = NULL;
-            handle_error(err);
-        }
-    }
+    parent = _parent;
+    listener = _listener;
 }
 
-void gconf_config_db::handle_error(GError *error)
+gkeyfile_config_db::notifier::~notifier()
+{
+    parent->remove_notifier(this);
+ }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+gkeyfile_config_db::gkeyfile_config_db(GKeyFile *kf, const char *_filename, const char *_section)
+{
+    keyfile = kf;
+    filename = _filename;
+    section = _section;
+}
+
+void gkeyfile_config_db::handle_error(GError *error)
 {
     if (error)
     {
@@ -56,110 +64,122 @@ void gconf_config_db::handle_error(GError *error)
     }
 }
 
-bool gconf_config_db::has_dir(const char *key)
+void gkeyfile_config_db::remove_notifier(notifier *n)
 {
-    GError *err = NULL;
-    bool result = gconf_client_dir_exists(client, (prefix + key).c_str(), &err);
-    if (err)
-        handle_error(err);
-    return result;
+    for (size_t i = 0; i < notifiers.size(); i++)
+    {
+        if (notifiers[i] == n)
+        {
+            notifiers.erase(notifiers.begin() + i);
+            return;
+        }
+    }
+    assert(0);
 }
 
-bool gconf_config_db::get_bool(const char *key, bool def_value)
+bool gkeyfile_config_db::has_dir(const char *key)
+{
+    return g_key_file_has_group(keyfile, key);
+}
+
+static bool check_not_found_and_delete(GError *error)
+{
+    if (error && error->domain == G_KEY_FILE_ERROR)
+    {
+        switch(error->code)
+        {
+            case G_KEY_FILE_ERROR_KEY_NOT_FOUND:
+            case G_KEY_FILE_ERROR_GROUP_NOT_FOUND:
+                g_error_free(error);
+                return true;
+            default:
+                return false;
+        }
+    }
+    return false;
+}
+
+bool gkeyfile_config_db::get_bool(const char *key, bool def_value)
 {
     GError *err = NULL;
-    bool value = (bool)gconf_client_get_bool(client, (prefix + key).c_str(), &err);
+    bool value = (bool)g_key_file_get_boolean(keyfile, section.c_str(), key, &err);
     if (err)
+    {
+        if (check_not_found_and_delete(err))
+            return def_value;
         handle_error(err);
+    }
     return value;
 }
 
-int gconf_config_db::get_int(const char *key, int def_value)
+int gkeyfile_config_db::get_int(const char *key, int def_value)
 {
     GError *err = NULL;
-    int value = gconf_client_get_int(client, (prefix + key).c_str(), &err);
+    int value = g_key_file_get_integer(keyfile, section.c_str(), key, &err);
     if (err)
+    {
+        if (check_not_found_and_delete(err))
+            return def_value;
         handle_error(err);
+    }
     return value;
 }
 
-std::string gconf_config_db::get_string(const char *key, const std::string &def_value)
+std::string gkeyfile_config_db::get_string(const char *key, const std::string &def_value)
 {
     GError *err = NULL;
-    gchar *value = (gchar *)gconf_client_get_string(client, (prefix + key).c_str(), &err);
+    gchar *value = g_key_file_get_string(keyfile, section.c_str(), key, &err);
     if (err)
+    {
+        if (check_not_found_and_delete(err))
+            return def_value;
         handle_error(err);
-    string svalue = value;
-    g_free(value);
-    return svalue;
+    }
+    return value;
 }
 
-void gconf_config_db::set_bool(const char *key, bool value)
+void gkeyfile_config_db::set_bool(const char *key, bool value)
+{
+    g_key_file_set_boolean(keyfile, section.c_str(), key, (gboolean)value);
+}
+
+void gkeyfile_config_db::set_int(const char *key, int value)
+{
+    g_key_file_set_integer(keyfile, section.c_str(), key, value);
+}
+
+void gkeyfile_config_db::set_string(const char *key, const std::string &value)
+{
+    g_key_file_set_string(keyfile, section.c_str(), key, value.c_str());
+}
+
+void gkeyfile_config_db::save()
 {
     GError *err = NULL;
-    gconf_client_set_bool(client, (prefix + key).c_str(), (gboolean)value, &err);
+    gsize length = 0;
+    gchar *data = g_key_file_to_data(keyfile, &length, &err);
     if (err)
         handle_error(err);
-}
 
-void gconf_config_db::set_int(const char *key, int value)
-{
-    GError *err = NULL;
-    gconf_client_set_int(client, (prefix + key).c_str(), value, &err);
-    if (err)
+    if (!g_file_set_contents(filename.c_str(), data, length, &err))
+    {
+        g_free(data);
         handle_error(err);
-}
-
-void gconf_config_db::set_string(const char *key, const std::string &value)
-{
-    GError *err = NULL;
-    gconf_client_set_string(client, (prefix + key).c_str(), value.c_str(), &err);
-    if (err)
-        handle_error(err);
-}
-
-class gconf_notifier: public config_notifier_iface
-{
-protected:
-    GConfClient *client;
-    config_listener_iface *listener;
-    guint notify_id;
-public:
-    gconf_notifier(GConfClient *_client, config_listener_iface *_listener, const gchar *namespace_section);
-    static void cb_notify(GConfClient *_client, guint cnxn_id, GConfEntry *entry, gpointer pThis);
-    virtual ~gconf_notifier();
-};
-
-gconf_notifier::gconf_notifier(GConfClient *_client, config_listener_iface *_listener, const gchar *namespace_section)
-{
-    client = _client;
-    listener = _listener;
-    g_object_ref(G_OBJECT(client));
+    }
+    g_free(data);
     
-    GError *error = NULL;
-    notify_id = gconf_client_notify_add(client, namespace_section, cb_notify, this, NULL, &error);
+    for (size_t i = 0; i < notifiers.size(); i++)
+        notifiers[i]->listener->on_config_change();
 }
 
-void gconf_notifier::cb_notify(GConfClient *_client, guint cnxn_id, GConfEntry *entry, gpointer pThis)
+config_notifier_iface *gkeyfile_config_db::add_listener(config_listener_iface *listener)
 {
-    gconf_notifier *self = (gconf_notifier *)pThis;
-    self->listener->on_config_change();
+    notifier *n = new notifier(this, listener);
+    notifiers.push_back(n);
+    return n;
 }
 
-gconf_notifier::~gconf_notifier()
+gkeyfile_config_db::~gkeyfile_config_db()
 {
-    gconf_client_notify_remove(client, notify_id);
-    g_object_unref(G_OBJECT(client));
-}
-
-
-config_notifier_iface *gconf_config_db::add_listener(config_listener_iface *listener)
-{
-    return new gconf_notifier(client, listener, prefix.substr(0, prefix.length() - 1).c_str());
-}
-
-gconf_config_db::~gconf_config_db()
-{
-    g_object_unref(G_OBJECT(client));
 }
 
