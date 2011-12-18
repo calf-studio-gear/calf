@@ -328,24 +328,18 @@ void make_ttl(string path_prefix)
     // Generate a manifest
     printf("Writing presets\n");
     fflush(stdout);
-    
-    // Prefixes for the manifest TTL
-    string ttl = 
-        "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
-        "@prefix lv2p: <http://lv2plug.in/ns/dev/presets#> .\n"
-        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        "@prefix dc: <http://dublincore.org/documents/dcmi-namespace/> .\n"
-        "\n"
-    ;
-    
+
     // Prefixes for the preset TTL
     string presets_ttl_head =
         "@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .\n"
-        "@prefix lv2p:  <http://lv2plug.in/ns/dev/presets#> .\n"
+        "@prefix lv2p:  <http://lv2plug.in/ns/ext/presets#> .\n"
         "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
         "@prefix dc: <http://dublincore.org/documents/dcmi-namespace/> .\n"
         "\n"
     ;
+    
+    // Prefixes for the manifest TTL
+    string ttl = presets_ttl_head;
     
     calf_plugins::get_builtin_presets().load_defaults(true);
     calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
@@ -374,8 +368,8 @@ void make_ttl(string path_prefix)
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
-            "    dc:title \"" + pr.name + "\" ;\n"
-            "    lv2p:appliesTo <" + plugin_uri_prefix + ilm->second + "> ;\n"
+            "    rdfs:label \"" + pr.name + "\" ;\n"
+            "    lv2:appliesTo <" + plugin_uri_prefix + ilm->second + "> ;\n"
             "    lv2:port \n"
         ;
         
