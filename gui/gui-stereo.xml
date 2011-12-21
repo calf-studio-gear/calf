@@ -2,9 +2,6 @@
     <frame label="Input" expand="1" fill="1">
         <vbox spacing="8">
             <table rows="3" cols="3">
-                <label param="bypass" attach-y="2" attach-x="0" fill-x="0" expand-x="0" />
-                <toggle param="bypass" attach-y="0" attach-x="0" attach-h="2" fill-x="0" expand-x="0"/>
-                
                 <label param="meter_inL" attach-x="1" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L"/>
                 <vumeter param="meter_inL" position="2" hold="1.5" falloff="2.5"  attach-x="2" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_inL" attach-x="3" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
@@ -24,8 +21,8 @@
                     <value param="balance_in" />
                 </vbox>
                 <vbox expand="0" spacing="5">
-                    <label param="flip" />
-                    <align><toggle param="flip"/></align>
+                    <label param="bypass" />
+                    <align><toggle param="bypass" /></align>
                     <align><toggle param="softclip"/></align>
                     <label param="softclip" />
                 </vbox>

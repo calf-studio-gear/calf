@@ -817,7 +817,7 @@ CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmi
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(stereo) = {"In L", "In R", "Out L", "Out R"};
-const char *stereo_mode_names[] = { "LR ▸ LR", "LR ▸ MS", "MS ▸ LR", "LR ▸ LL", "LR ▸ RR" };
+const char *stereo_mode_names[] = { "LR ▸ LR (Stereo Default)", "LR ▸ MS (Stereo to Mid-Side)", "MS ▸ LR (Mid-Side to Stereo)", "LR ▸ LL (Mono Left Channel)", "LR ▸ RR (Mono Right Channel)", "LR ▸ L+R (Mono Sum L+R)", "LR ▸ RL (Stereo Flip Channels)" };
 CALF_PORT_PROPS(stereo) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
@@ -834,14 +834,13 @@ CALF_PORT_PROPS(stereo) = {
     { 0.f,      -1.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "balance_in", "Balance In" },
     { 0.f,      -1.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "balance_out", "Balance Out" },
     
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "flip", "Flip L/R" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "softclip", "Softclip" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mutel", "Mute L" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "muter", "Mute R" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phasel", "Phase L" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phaser", "Phase R" },
     
-    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, stereo_mode_names, "mode", "Mode" },
+    { 0,           0,           6,     0,  PF_ENUM | PF_CTL_COMBO, stereo_mode_names, "mode", "Mode" },
     
     { 0.f,      -1.f,            1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "slev", "S Level" },
     { 0.f,      -1.f,            1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sbal", "S Balance" },

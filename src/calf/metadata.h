@@ -360,7 +360,7 @@ struct stereo_metadata: public plugin_metadata<stereo_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out, 
-           STEREO_VU_METER_PARAMS, param_balance_in, param_balance_out, param_flip, param_softclip, 
+           STEREO_VU_METER_PARAMS, param_balance_in, param_balance_out, param_softclip, 
            param_mute_l, param_mute_r, param_phase_l, param_phase_r,
            param_mode, param_slev, param_sbal, param_mlev, param_mpan,
            param_widener, param_delay,

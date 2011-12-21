@@ -477,6 +477,7 @@ void stereo_audio_module::params_changed() {
     switch((int)*params[param_mode])
     {
         case 0:
+        default:
             //LR->LR
             LL = (mlev * (2.f - mpan) + slev * (2.f - sbal));
             LR = (mlev * mpan - slev * sbal);
@@ -499,6 +500,8 @@ void stereo_audio_module::params_changed() {
             break;
         case 3:
         case 4:
+        case 5:
+        case 6:
             //LR->LL
             LL = 0.f;
             LR = 0.f;
@@ -543,21 +546,37 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L *= (1.f - std::max(0.f, *params[param_balance_in]));
             R *= (1.f + std::min(0.f, *params[param_balance_in]));
             
-            // flip
-            if(*params[param_flip] > 0.5) {
-                float tmp = L;
-                L = R;
-                R = tmp;
-            }
-            
-            // copy
+            // copy / flip / mono ...
             switch((int)*params[param_mode])
             {
+                case 0:
+                default:
+                    // LR > LR
+                    break;
+                case 1:
+                    // LR > MS
+                    break;
+                case 2:
+                    // MS > LR
+                    break;
                 case 3:
+                    // LR > LL
                     R = L;
                     break;
                 case 4:
+                    // LR > RR
                     L = R;
+                    break;
+                case 5:
+                    // LR > L+R
+                    L = (L + R) / 2;
+                    R = L;
+                    break;
+                case 6:
+                    // LR > RL
+                    float tmp = L;
+                    L = R;
+                    R = tmp;
                     break;
             }
             

@@ -869,7 +869,7 @@ calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
     GtkStyle  *style  = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
     
-    int ox = 4, oy = 4, inner = 1, rad, pad;
+    int ox = 4, oy = 4, inner = 1, pad;
     int sx = widget->allocation.width - (ox * 2), sy = widget->allocation.height - (oy * 2);
     
     if( self->cache_surface == NULL ) {
