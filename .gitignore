@@ -12,7 +12,9 @@ Makefile.in
 configure
 config.*
 src/.deps
+src/.deps/*
 src/.libs
+src/.libs/*
 src/calf_gtk
 gui/calf.rc
 install-sh
