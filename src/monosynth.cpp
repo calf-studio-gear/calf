@@ -55,7 +55,7 @@ void monosynth_audio_module::activate() {
     prev_wave2 = -1;
     wave1 = -1;
     wave2 = -1;
-    queue_note_on = 0;
+    queue_note_on = -1;
     last_filter_type = -1;
 }
 
@@ -358,8 +358,6 @@ void monosynth_audio_module::delayed_note_on()
     velocity = queue_vel;
     ampctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2amp];
     fltctl = 1.0 + (queue_vel - 1.0) * *params[par_vel2filter];
-    set_frequency();
-    lookup_waveforms();
     bool starting = false;
 
     if (!running)
@@ -414,6 +412,8 @@ void monosynth_audio_module::delayed_note_on()
     queue_note_on = -1;
     float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, envelope1.value, envelope2.value, 0.5+0.5*lfo1.last, 0.5+0.5*lfo2.last};
     calculate_modmatrix(moddest, moddest_count, modsrc);
+    set_frequency();
+    lookup_waveforms();
         
     if (queue_note_on_and_off)
     {
@@ -473,7 +473,6 @@ void monosynth_audio_module::calculate_step()
     if (fabs(*params[par_lfopitch]) > small_value<float>())
         lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov1 * (1.f / 1200.0f));
     inertia_pitchbend.step();
-    set_frequency();
     envelope1.advance();
     envelope2.advance();
     float env1 = envelope1.value, env2 = envelope2.value;
@@ -484,6 +483,7 @@ void monosynth_audio_module::calculate_step()
     float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5+0.5*lfov1, 0.5+0.5*lfov2};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     
+    set_frequency();
     inertia_cutoff.set_inertia(*params[par_cutoff]);
     cutoff = inertia_cutoff.get() * pow(2.0f, (lfov1 * *params[par_lfofilter] + env1 * fltctl * *params[par_env1tocutoff] + env2 * fltctl * *params[par_env2tocutoff] + moddest[moddest_cutoff]) * (1.f / 1200.f));
     if (*params[par_keyfollow] > 0.01f)

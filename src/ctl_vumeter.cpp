@@ -390,6 +390,7 @@ calf_vumeter_init (CalfVUMeter *self)
     self->holding = false;
     self->meter_width = 0;
     self->disp_value = 0.f;
+    self->value = 0.f;
 }
 
 GtkWidget *

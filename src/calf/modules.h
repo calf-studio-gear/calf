@@ -100,9 +100,10 @@ public:
     , inertia_resonance(dsp::exponential_ramp(128), 20)
     , inertia_gain(dsp::exponential_ramp(128), 1.0)
     , timer(128)
-    {
-        is_active = false;
-    }
+    , is_active(false)
+    , last_generation(-1)
+    , last_calculated_generation(-2)
+    {}
     
     void calculate_filter()
     {
