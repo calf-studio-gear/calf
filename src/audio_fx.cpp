@@ -352,6 +352,7 @@ tap_distortion::tap_distortion()
     srate = 0;
     meter = 0.f;
     prev_med = prev_out = 0.f;
+    drive_old = blend_old = -1.f;
 }
 
 void tap_distortion::activate()

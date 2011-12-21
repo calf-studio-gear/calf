@@ -51,6 +51,12 @@ void monosynth_audio_module::activate() {
     last_pwshift1 = last_pwshift2 = 0;
     last_stretch1 = 65536;
     queue_note_on_and_off = false;
+    prev_wave1 = -1;
+    prev_wave2 = -1;
+    wave1 = -1;
+    wave2 = -1;
+    queue_note_on = 0;
+    last_filter_type = -1;
 }
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;

@@ -210,6 +210,12 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     buffer_size = 0;
     overall_buffer_size = 0;
     _sanitize = false;
+    for(int i = 0; i < strips - 1; i ++) {
+        freq_old[i] = -1;
+        sep_old[i] = -1;
+        q_old[i] = -1;
+    }
+    mode_old = 0;
 }
 
 void multibandlimiter_audio_module::activate()

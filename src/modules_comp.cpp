@@ -50,6 +50,12 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
+    for(int i = 0; i < strips - 1; i ++) {
+        freq_old[i] = -1;
+        sep_old[i] = -1;
+        q_old[i] = -1;
+    }
+    mode_old = -1;
 }
 
 void multibandcompressor_audio_module::activate()
@@ -526,6 +532,10 @@ sidechaincompressor_audio_module::sidechaincompressor_audio_module()
     f2_freq_old1  = 0.f;
     f1_level_old1 = 0.f;
     f2_level_old1 = 0.f;
+    f1_freq_old  = 0.f;
+    f2_freq_old  = 0.f;
+    f1_level_old = 0.f;
+    f2_level_old = 0.f;
     sc_mode_old1  = WIDEBAND;
     meters.reset();
 }
@@ -899,6 +909,13 @@ deesser_audio_module::deesser_audio_module()
     f1_level_old1 = 0.f;
     f2_level_old1 = 0.f;
     f2_q_old1     = 0.f;
+    f1_freq_old  = 0.f;
+    f2_freq_old  = 0.f;
+    f1_level_old = 0.f;
+    f2_level_old = 0.f;
+    f2_q_old     = 0.f;
+    detected_led = 0;
+    clip_led     = 0;
 }
 
 void deesser_audio_module::activate()
@@ -1635,6 +1652,17 @@ gain_reduction_audio_module::gain_reduction_audio_module()
     old_detection   = 0.f;
     old_bypass      = 0.f;
     old_mute        = 0.f;
+    linSlope        = 0.f;
+    attack          = 0.f;
+    release         = 0.f;
+    detection       = -1;
+    stereo_link     = -1;
+    threshold       = -1;
+    ratio           = -1;
+    knee            = -1;
+    makeup          = -1;
+    bypass          = -1;
+    mute            = -1;
 }
 
 void gain_reduction_audio_module::activate()
@@ -1647,7 +1675,7 @@ void gain_reduction_audio_module::activate()
     l = r = 0.f;
     float byp = bypass;
     bypass = 0.0;
-    process(l, r);
+    process(l, r, 0, 0);
     bypass = byp;
 }
 
@@ -1680,8 +1708,8 @@ void gain_reduction_audio_module::process(float &left, float &right, const float
     if(bypass < 0.5f) {
         // this routine is mainly copied from thor's compressor module
         // greatest sounding compressor I've heard!
-        bool rms = detection == 0;
-        bool average = stereo_link == 0;
+        bool rms = (detection == 0);
+        bool average = (stereo_link == 0);
         float attack_coeff = std::min(1.f, 1.f / (attack * srate / 4000.f));
         float release_coeff = std::min(1.f, 1.f / (release * srate / 4000.f));
         
@@ -1797,7 +1825,7 @@ bool gain_reduction_audio_module::get_dot(int subindex, float &x, float &y, int 
         if(bypass > 0.5f or mute > 0.f) {
             return false;
         } else {
-            bool rms = detection == 0;
+            bool rms = (detection == 0);
             float det = rms ? sqrt(detected) : detected;
             x = 0.5 + 0.5 * dB_grid(det);
             y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
@@ -1861,7 +1889,15 @@ expander_audio_module::expander_audio_module()
     is_active       = false;
     srate           = 0;
     last_generation = 0;
-    
+    range     = -1.f;
+    threshold = -1.f;
+    ratio     = -1.f;
+    knee      = -1.f;
+    makeup    = -1.f;
+    detection = -1.f;
+    bypass    = -1.f;
+    mute      = -1.f;
+    stereo_link = -1.f;
     old_range     = 0.f;
     old_threshold = 0.f;
     old_ratio     = 0.f;
@@ -1872,6 +1908,8 @@ expander_audio_module::expander_audio_module()
     old_mute      = 0.f;
     old_trigger   = 0.f;
     old_stereo_link = 0.f;
+    linSlope      = -1;
+    linKneeStop   = 0;
 }
 
 void expander_audio_module::activate()
@@ -1895,7 +1933,7 @@ void expander_audio_module::deactivate()
 
 void expander_audio_module::update_curve()
 {
-    bool rms = detection == 0;
+    bool rms = (detection == 0);
     float linThreshold = threshold;
     if (rms)
         linThreshold = linThreshold * linThreshold;
@@ -1921,8 +1959,8 @@ void expander_audio_module::process(float &left, float &right, const float *det_
     }
     if(bypass < 0.5f) {
         // this routine is mainly copied from Damien's expander module based on Thor's compressor
-        bool rms = detection == 0;
-        bool average = stereo_link == 0;
+        bool rms = (detection == 0);
+        bool average = (stereo_link == 0);
         float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
         if(rms) absample *= absample;
             
@@ -1940,7 +1978,7 @@ void expander_audio_module::process(float &left, float &right, const float *det_
 }
 
 float expander_audio_module::output_level(float slope) const {
-    bool rms = detection == 0;
+    bool rms = (detection == 0);
     return slope * output_gain(rms ? slope*slope : slope, rms) * makeup;
 }
 
@@ -2031,7 +2069,7 @@ bool expander_audio_module::get_dot(int subindex, float &x, float &y, int &size,
         if(bypass > 0.5f or mute > 0.f) {
             return false;
         } else {
-            bool rms = detection == 0;
+            bool rms = (detection == 0);
             float det = rms ? sqrt(detected) : detected;
             x = 0.5 + 0.5 * dB_grid(det);
             y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));

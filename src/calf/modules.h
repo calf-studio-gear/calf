@@ -195,6 +195,7 @@ public:
     : filter_module_with_inertia<dsp::biquad_filter_module, filter_metadata>(ins, outs, params)
     {
         last_generation = 0;
+        old_mode = old_resonance = old_cutoff = -1;
     }
     void params_changed()
     { 
