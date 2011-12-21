@@ -608,8 +608,6 @@ void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, 
 
 void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
 {   
-    int in0 = 0;
-    int out0 = 0;
     // write left and right to buffer
     buffer[pos] = 0.f;
     buffer[pos + 1] = 0.f;
@@ -628,7 +626,6 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // if we have a peak in input over our limit, check if delta to reach is
     // more important than actual delta
     if(peak > limit * multi_coeff * weight or multi_coeff < 1.f) {
-        in0 = 1;
         _delta = ((limit * multi_coeff * weight) / peak - att) / (buffer_size / channels - channels);
         if(_delta < delta) {
             delta = _delta;
@@ -661,7 +658,6 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
         delta = (1.0f - att) / (srate * release);
         pos_next = -1;
         unsigned int j;
-        out0 = 1;
         for(unsigned int i = channels; i < buffer_size; i += channels) {
             // iterate over buffer (except input and output pointer positions)
             // and search for maximum slope
