@@ -238,7 +238,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_table_set_col_spacings(GTK_TABLE(strip->strip_table), 0);
     gtk_table_set_row_spacings(GTK_TABLE(strip->strip_table), 0);
     
-    int row = 0, cols = 0;
+    int row = 0;
 //    g_object_get(G_OBJECT(strips_table), "n-rows", &row, "n-columns", &cols, NULL);
 //    gtk_table_resize(GTK_TABLE(strips_table), row + 4, cols);
 //    printf("%03d %03d", row, cols);
@@ -287,7 +287,6 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     row ++;
     
     // title @ 1, 1
-    char buf[128];
     const plugin_metadata_iface *metadata = plugin->get_metadata_iface();
     //sprintf(buf, "<span size=\"12000\">%s</span>", metadata->get_label());
     GtkWidget *title = gtk_label_new(NULL);
