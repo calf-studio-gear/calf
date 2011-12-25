@@ -36,7 +36,7 @@ namespace calf_plugins {
 class limiter_audio_module: public audio_module<limiter_metadata>, public line_graph_iface {
 private:
     typedef limiter_audio_module AM;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR, asc_led;
     int mode, mode_old;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::lookahead_limiter limiter;
@@ -56,7 +56,7 @@ class multibandlimiter_audio_module: public audio_module<multibandlimiter_metada
 private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR, asc_led;
     int mode, mode_old;
     bool solo[strips];
     bool no_solo;

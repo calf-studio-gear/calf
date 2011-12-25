@@ -109,26 +109,37 @@
         
         <frame label="Limit" expand="0" fill="1">
             <vbox spacing="20">
-                <vbox>
-                    <knob param="limit" size="5" type="2" />
-                    <value param="limit" />
-                </vbox>
                 <hbox>
-                    <vbox>
+                    <vbox spacing="0">
                         <label param="attack" />
                         <knob param="attack" />
                         <value param="attack" />
                     </vbox>
                     <vbox>
-                        <label param="minrel" />
-                        <toggle param="minrel" />
-                        <label/>
+                        <knob param="limit" size="5" type="2" />
+                        <value param="limit" />
                     </vbox>
                     <vbox>
                         <label param="release" />
                         <knob param="release" />
                         <value param="release" />
                     </vbox>
+                </hbox>
+                
+                <hbox>
+                    <label />
+                    <vbox expand="0" fill="0" spacing="8">
+                        <label param="minrel" />
+                        <toggle param="minrel" />
+                        <label />
+                    </vbox>
+                    <label />
+                    <vbox expand="0" fill="0" spacing="8">
+                        <label param="asc" />
+                        <toggle param="asc" />
+                        <align><led param="asc_led" /></align>
+                    </vbox>
+                    <label />
                 </hbox>
             </vbox>
         </frame>

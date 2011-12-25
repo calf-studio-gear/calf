@@ -17,10 +17,7 @@
             <led param="clip_inR" expand="0" fill="0" />
             <label text="0dB" expand="0" fill="0" />
         </vbox>
-        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="2">
-             <label param="bypass"/>
-             <align><toggle param="bypass" shrink="1"/></align>
-        </vbox>
+        <label attach-x="3" attach-y="0"/>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
             <label param="meter_outL" />
             <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" width="120" />
@@ -41,7 +38,12 @@
     </table>
     
     <frame attach-x="0" attach-y="1" label="Limit" expand="0" fill="1">
-        <hbox homogenous="1">
+        <hbox homogenous="1" spacing="25">
+            <vbox>
+                 <label param="bypass"/>
+                 <align><toggle param="bypass" shrink="1"/></align>
+                 <label />
+            </vbox>
             <vbox>
                 <label param="attack" />
                 <knob param="attack" size="3" />
@@ -56,6 +58,11 @@
                 <label param="release" />
                 <knob param="release" size="3" />
                 <value param="release" />
+            </vbox>
+            <vbox>
+                 <label param="asc"/>
+                 <align><toggle param="asc"/></align>
+                 <align><led param="asc_led" /></align>
             </vbox>
         </hbox>
     </frame>

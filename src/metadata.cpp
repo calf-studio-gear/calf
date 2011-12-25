@@ -514,6 +514,10 @@ CALF_PORT_PROPS(limiter) = {
     
     { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "att", "Attenuation" },
     
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "asc", "ASC" },
+    
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "asc_led", "asc active" },
+    
     {}
 };
 
@@ -580,6 +584,11 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease1", "Effectively Release 2" },
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease2", "Effectively Release 3" },
     { 1,         0.f,        1000,  0,  PF_FLOAT | PF_UNIT_MSEC | PF_PROP_OUTPUT, NULL, "effrelease3", "Effectively Release 4" },
+    
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "asc", "ASC" },
+    
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "asc_led", "asc active" },
+    
     {}
 };
 

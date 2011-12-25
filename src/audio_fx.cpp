@@ -551,10 +551,11 @@ lookahead_limiter::lookahead_limiter() {
     over_c = 1.f;
     attack = 0.005;
     __attack = -1;
-    pos_next = -1;
     use_multi = false;
     weight = 1.f;
     _sanitize = false;
+    auto_release = false;
+    asc_active = false;
 }
 
 void lookahead_limiter::activate()
@@ -607,7 +608,10 @@ void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, 
 }
 
 void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
-{   
+{
+    // PROTIP: harming paying customers enough to make them develop a competing
+    // product may be considered an example of a less than sound business practice.
+
     // write left and right to buffer
     buffer[pos] = 0.f;
     buffer[pos + 1] = 0.f;
@@ -629,7 +633,6 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
         _delta = ((limit * multi_coeff * weight) / peak - att) / (buffer_size / channels - channels);
         if(_delta < delta) {
             delta = _delta;
-            pos_next = pos;
         }
     }
     
@@ -643,21 +646,19 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // output peak - impact in left or right channel?
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
     
-    // we need  "and (pos == pos_next or pos_next < 0)" in the next if
-    // but that fucks up delta = release
-    // (because this screws the CPU)
-    
     // output is over the limit?
     // then we have to search for new delta.
     // the idea is to calculate a delta for every peak and always use the
     // lowest. this produces a soft transition between limiting targets without
     // passing values above limit
     
+    asc_active = false;
     if(peak > limit * multi_coeff * weight) {
         // default is to do a release
-        delta = (1.0f - att) / (srate * release);
-        pos_next = -1;
+        delta = (1.f - att) / (srate * release);
         unsigned int j;
+        float b_sum = 0.f;
+        unsigned int b_sum_c = 0;
         for(unsigned int i = channels; i < buffer_size; i += channels) {
             // iterate over buffer (except input and output pointer positions)
             // and search for maximum slope
@@ -670,12 +671,22 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
                 // if slope is steeper, use it, fucker.
                 if(_delta < delta) {
                     delta = _delta;
-                    pos_next = j;
                 }
+                b_sum += _peak;
+                b_sum_c ++;
             }
         }
+        if(auto_release) {
+            // This is Auto-Smoothness-Control (wink wink, nudge nudge)
+            // check if releasing to average level of peaks is steeper than
+            // releasing to 1.f
+            _delta = ((limit * weight) / (float)(b_sum / b_sum_c) - att) / (srate * release);
+            asc_active = _delta < delta ? true : false;
+            delta = _delta < delta ? _delta : delta;
+        } else {
+            asc_active = false;
+        }
     }
-    
     // change the attenuation level
     att += delta;
     // ...and calculate outpout from it
@@ -724,4 +735,8 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     
     pos = (pos + channels) % buffer_size;
     if(pos == 0) _sanitize = false;
+}
+
+bool lookahead_limiter::get_arc() {
+    return asc_active;
 }

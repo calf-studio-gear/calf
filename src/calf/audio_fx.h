@@ -567,7 +567,6 @@ public:
 
 
 /// Lookahead Limiter by Markus Schmidt and Christian Holschuh
-
 class lookahead_limiter {
 private:
 public:
@@ -582,6 +581,7 @@ public:
     bool is_active;
     bool debug;
     bool auto_release;
+    bool asc_active;
     float *buffer;
     int channels;
     float delta;
@@ -589,7 +589,6 @@ public:
     float peak;
     unsigned int over_s;
     float over_c;
-    int pos_next;
     bool use_multi;
     unsigned int id;
     bool _sanitize;
@@ -597,6 +596,7 @@ public:
 	    *f += 1e-18;
 	    *f -= 1e-18;
     }
+    bool get_arc();
     lookahead_limiter();
     void set_multi(bool set);
     void process(float &left, float &right, float *multi_buffer);

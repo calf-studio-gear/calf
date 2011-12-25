@@ -239,6 +239,7 @@ struct limiter_metadata: public plugin_metadata<limiter_metadata>
            STEREO_VU_METER_PARAMS,
            param_limit, param_attack, param_release,
            param_att,
+           param_asc, param_asc_led,
            param_count };
     PLUGIN_NAME_ID_LABEL("limiter", "limiter", "Limiter")
 };
@@ -258,7 +259,8 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
            param_weight0, param_weight1, param_weight2, param_weight3, 
            param_release0, param_release1, param_release2, param_release3,
            param_solo0, param_solo1, param_solo2, param_solo3,
-           param_effrelease0, param_effrelease1, param_effrelease2, param_effrelease3, 
+           param_effrelease0, param_effrelease1, param_effrelease2, param_effrelease3,
+           param_asc, param_asc_led,
            param_count };
     PLUGIN_NAME_ID_LABEL("multiband_limiter", "multibandlimiter", "Multiband Limiter")
 };
