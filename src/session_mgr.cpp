@@ -48,7 +48,7 @@ public:
     {
         if (lash_client)
         {
-            lash_source_id = g_timeout_add_full(G_PRIORITY_LOW, 250, update_lash, (session_manager_iface *)this, NULL); // 4 LASH reads per second... should be enough?
+            lash_source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 250, update_lash, (session_manager_iface *)this, NULL); // 4 LASH reads per second... should be enough?
         }
     }
     void disconnect();

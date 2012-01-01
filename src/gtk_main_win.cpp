@@ -571,7 +571,7 @@ void gtk_main_window::create()
     
     gtk_window_add_accel_group(toplevel, gtk_ui_manager_get_accel_group(ui_mgr));
     gtk_widget_show_all(GTK_WIDGET(toplevel));
-    source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
+    source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     
     notifier = get_config_db()->add_listener(this);
     on_config_change();
