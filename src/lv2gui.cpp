@@ -194,8 +194,6 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     plugin_gui *gui;
     /// Glib source ID for update timer
     int source_id;
-    /// Conditional variables for XML GUI
-    std::set<std::string> conditions;
     
     lv2_plugin_proxy(const plugin_metadata_iface *md, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* f)
     : plugin_proxy_base(md, wf, c, f)
