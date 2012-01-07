@@ -533,7 +533,7 @@ GtkWidget *radio_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     require_attribute("value");
-    int value = -1;
+    value = -1;
     string value_name = attribs["value"];
     const parameter_properties &props = get_props();
     if (props.choices && (value_name < "0" || value_name > "9"))
@@ -579,7 +579,9 @@ void radio_param_control::set()
 {
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value == ((int)gui->plugin->get_param_value(param_no) - (int)props.min));
+    float pv = gui->plugin->get_param_value(param_no);
+    if (fabs(value-pv) < 0.5)
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value == ((int)gui->plugin->get_param_value(param_no) - (int)props.min));
 }
 
 // spin button
