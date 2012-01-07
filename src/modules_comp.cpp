@@ -1715,7 +1715,9 @@ void gain_reduction_audio_module::process(float &left, float &right, const float
         
         float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
         if(rms) absample *= absample;
-            
+
+        dsp::sanitize(linSlope);
+	
         linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
         float gain = 1.f;
         if(linSlope > 0.f) {
@@ -1963,7 +1965,9 @@ void expander_audio_module::process(float &left, float &right, const float *det_
         bool average = (stereo_link == 0);
         float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
         if(rms) absample *= absample;
-            
+
+        dsp::sanitize(linSlope);
+	
         linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
         float gain = 1.f;
         if(linSlope > 0.f) {
