@@ -20,6 +20,7 @@
  */
 
 #include "config.h"
+#include <calf/primitives.h>
 #include <calf/ctl_vumeter.h>
 #include <gdk/gdkkeysyms.h>
 #include <cairo/cairo.h>
@@ -322,10 +323,10 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         if((vu->value > vu->disp_value and vu->mode != VU_MONOCHROME_REVERSE)
         or (vu->value < vu->disp_value and vu->mode == VU_MONOCHROME_REVERSE))
             vu->disp_value = vu->value;
-        if (vu->disp_value < 1.0 / 1024.0)
+        if (vu->disp_value < 1.0 / 32768.0)
             sprintf(str, "-inf");
         else
-            sprintf(str, "%0.2f", vu->disp_value);
+            sprintf(str, "%0.2f", dsp::amp2dB(vu->disp_value));
         // draw value as number
         cairo_text_extents(c, str, &extents);
         cairo_move_to(c, text_x + (text_w - extents.width) / 2.0, text_y);
