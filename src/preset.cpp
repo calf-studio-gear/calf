@@ -24,6 +24,7 @@
 #include <expat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 using namespace std;
