@@ -46,7 +46,7 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     int sy = widget->allocation.height - oy * 2;
     int xc = widget->allocation.width / 2;
     int yc = widget->allocation.height / 2;
-    int pad, rad;
+    int pad;
     
     if( self->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
