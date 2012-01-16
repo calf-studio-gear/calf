@@ -372,6 +372,10 @@ void plugin_gui::set_radio_group(int param, GSList *group)
 
 void plugin_gui::show_rack_ears(bool show)
 {
+    // if hidden, add a no-show-all attribute so that LV2 host doesn't accidentally override
+    // the setting by doing a show_all on the outermost container
+    gtk_widget_set_no_show_all(leftBox, !show);
+    gtk_widget_set_no_show_all(rightBox, !show);
     if (show)
     {
         gtk_widget_show(leftBox);
