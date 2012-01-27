@@ -24,7 +24,7 @@
                 <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
                 <li><strong>Output (knob):</strong> Raise the overall volume after the compression stage</li>
                 <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                
+
                 <li><strong>Split:</strong> Frequency to split between these strips</li>
                 <li><strong>S:</strong> Separate or overlap the frequencies of the neighbour bands</li>
                 <li><strong>Q:</strong> Raise the center frequency</li>
@@ -32,9 +32,8 @@
                 <li><strong>Lookahead:</strong> The Limiter will reach its attenuation level in this amount of time (output will be delayed two times this time)</li>
                 <li><strong>Min Release:</strong>Don't let the release time fall beneath 2.5 times the lowest possible wavelength per band</li>
                 <li><strong>Release:</strong> Come back from limiting to attenuation 1.0 in this amount of milliseconds</li>
-                <li><strong>Release (per strip):</strong> Coefficient the master release time is computed with to have separate release times for each strip</li>
-                <li><strong>Weight:</strong> The "importance" of this strip in the resulting signal</li>
-                <li><strong>Solo:</strong> Hear single (or more) bands exclusively to set the crossover and the release times exactly</li>
+                <li><strong>ASC:</strong> When gain reduction is always needed ASC takes care of releasing to an average reduction level rather than reaching a reduction of 0 in the release time</li>
+                <li><strong>ASC Level:</strong> Select how much the release time is affected by ASC, 0 means nearly no changes in release time while 1 produces higher release times</li>
             </ul>
         </div>
     </body>

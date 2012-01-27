@@ -12,8 +12,8 @@ $(document).ready(function () {
         [
             "Synthesizer",
             [
-                ["(Organ)", "Organ.html", "images/Calf - Organ - Tone generator.png"],
-                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio path.png"],
+                ["(Organ)", "Organ.html", "images/Calf - Organ - Tone Generator.png"],
+                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.png"],
             ]
         ],
         [
@@ -21,7 +21,7 @@ $(document).ready(function () {
             [
                 ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.png"],
                 ["(Reverb)", "Reverb.html", "images/Calf - Reverb.png"],
-                ["(Multichorus)", "Multichorus.html", "images/Calf - Multichorus.png"],
+                ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.png"],
                 ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
                 ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
             ]
@@ -34,7 +34,10 @@ $(document).ready(function () {
                 ["Multiband Compressor", "Multiband Compressor.html", "images/Calf - Multiband Compressor.png"],
                 ["Deesser", "Deesser.html", "images/Calf - Deesser.png"],
                 ["Limiter", "Limiter.html", "images/Calf - Limiter.png"],
-                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"]
+                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"],
+                ["Gate", "Gate.html", "images/Calf - Gate.png"],
+                ["Sidechain Gate", "Sidechain Gate.html", "images/Calf - Sidechain Gate.png"],
+                ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.png"]
             ]
         ],
         [
@@ -53,14 +56,14 @@ $(document).ready(function () {
                 ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.png"],
                 ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
                 ["(Saturator)", "Saturator.html", "images/Calf - Saturator.png"],
-                ["(Exciter)", "Exciter.html", "images/Calf - Exciter.png"],
-                ["(Bass Enhancer)", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
+                ["Exciter", "Exciter.html", "images/Calf - Exciter.png"],
+                ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
                 ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.png"],
                 ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"]
             ]
         ]
     ];
-        
+
     var header = '<div class="header"><img src="images/style_logo.png" align="middle" />';
     var menu = "";
     for(var i = 0; i < items.length; i++) {
@@ -83,5 +86,5 @@ $(document).ready(function () {
     $("body").prepend("<div class='headerbg'>" + header + "</div>");
     $(".index").prepend(menu);
     $("h2").append("&nbsp;&laquo;").prepend("&raquo;&nbsp;");
-    
+
 });

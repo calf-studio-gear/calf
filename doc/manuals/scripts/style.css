@@ -25,13 +25,14 @@ h1 {
     text-align: center;
     margin: 20px;
 /*    border-bottom: 1px dotted #fff;*/
+    text-shadow: 0px -1px black;
 }
 h2 {
 /*    color: #D5F16A;*/
     color: white;
     font-size: 16px;
     font-weight: normal;
-    
+    text-shadow: 0px -1px black;
     padding: 5px 0 10px 0;
 }
 h3 {
@@ -63,11 +64,15 @@ strong {
     text-align: left;
 }
 .thumbnail {
-    width: 400px;
+    width: 320px;
     float: right;
     margin: 10px;
-    border: 2px solid black;
-    border-top: 12px solid black;
+/*    border: 2px solid black;*/
+/*    border-top: 12px solid black;*/
+    -moz-box-shadow:    0 3px 10px #000000;
+    -webkit-box-shadow: 0 3px 10px #000000;
+    box-shadow:         0 3px 10px #000000;
+
 }
 
 .headerbg {
@@ -79,13 +84,17 @@ strong {
     margin: auto;
     text-align: left;
     font-size: 9px;
+    position: relative;
 }
 .header img {
     margin: 8px;
-    float: left;
+    position: absolute;
+    left: 0px;
+    bottom: 10px;
 }
 .header .menu {
     float: left;
+    text-transform:uppercase;
 }
 .header .menu h3 {
     margin: 5px;
@@ -138,8 +147,11 @@ strong {
     top: auto;
     left: 5px;
     text-align: center;
-    border: 1px solid black;
-    border-top: 5px solid black;
+/*    border: 1px solid black;*/
+/*    border-top: 5px solid black;*/
+    -moz-box-shadow:    0 3px 10px #000000;
+    -webkit-box-shadow: 0 3px 10px #000000;
+    box-shadow:         0 3px 10px #000000;
 }
 .index img {
     width: 140px;
@@ -159,7 +171,7 @@ strong {
     text-align: center;
 }
 .index li:hover {
-    
+
 }
 
 .inactive {
