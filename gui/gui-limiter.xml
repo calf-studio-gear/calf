@@ -36,7 +36,7 @@
             <value param="level_out" />
         </vbox>
     </table>
-    
+
     <frame attach-x="0" attach-y="1" label="Limit" expand="0" fill="1">
         <hbox homogenous="1" spacing="25">
             <vbox>
@@ -61,14 +61,17 @@
             </vbox>
             <vbox>
                  <label param="asc"/>
-                 <align><toggle param="asc"/></align>
-                 <align><led param="asc_led" /></align>
+                 <align><toggle param="asc" /></align>
+                 <hbox>
+                    <knob param="asc_coeff" size="1" type="1" />
+                    <align><led param="asc_led" /></align>
+                </hbox>
             </vbox>
         </hbox>
     </frame>
-    
+
     <frame attach-x="0" attach-y="2" label="Attenuation" expand="1" fill="1">
         <vumeter param="att" mode="2" hold="1.5" falloff="2.5" position="2" />
     </frame>
-    
-</table>    
+
+</table>

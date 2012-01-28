@@ -52,6 +52,13 @@
                 <knob param="freq" size="5" />
                 <value param="freq" />
             </vbox>
+            
+            <vbox>
+                <label param="ceil" />
+                <toggle param="ceil_active" size="1" />
+                <knob param="ceil" size="3" />
+                <value param="ceil" width="5" />
+            </vbox>
         </hbox>
     </frame>
 </vbox>

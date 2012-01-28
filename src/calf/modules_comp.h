@@ -85,6 +85,7 @@ public:
     void process(float &left, float &right, const float *det_left = NULL, const float *det_right = NULL);
     void activate();
     void deactivate();
+    int id;
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_expander_level();
@@ -189,7 +190,7 @@ public:
     virtual int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Deesser by Markus Schmidt (based on Thor's compressor and Krzysztof's filters)
+/// Deesser by Markus Schmidt (based on Thor's compressor and Krzyexpander_audio_modulesztof's filters)
 class deesser_audio_module: public audio_module<deesser_metadata>, public frequency_response_line_graph  {
 private:
     enum CalfDeessModes {
@@ -286,6 +287,36 @@ public:
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+
+/// Multibandgate by Markus Schmidt (based on Damiens's gate and Krzysztof's filters)
+class multibandgate_audio_module: public audio_module<multibandgate_metadata>, public line_graph_iface {
+private:
+    typedef multibandgate_audio_module AM;
+    static const int strips = 4;
+    bool solo[strips];
+    bool no_solo;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    expander_audio_module gate[strips];
+    dsp::biquad_d2<float> lpL[strips - 1][3], lpR[strips - 1][3], hpL[strips - 1][3], hpR[strips - 1][3];
+    float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
+    int mode, mode_old;
+public:
+    uint32_t srate;
+    bool is_active;
+    multibandgate_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    const expander_audio_module *get_strip_by_param_index(int index) const;
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    virtual int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
 };

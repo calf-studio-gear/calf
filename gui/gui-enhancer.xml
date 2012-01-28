@@ -35,7 +35,6 @@
                 <knob param="drive" size="5" />
                 <value param="drive" />
             </vbox>
-            
             <vbox spacing="5">
                 <label param="blend" />
                 <hscale param="blend" />
@@ -46,11 +45,16 @@
                 <label param="meter_drive" />
                 <vumeter param="meter_drive" hold="1.5" falloff="2.5" />
             </vbox>
-            
             <vbox>
                 <label param="freq" />
-                <knob param="freq" size="5" />
+                <knob param="freq" size="2" />
                 <value param="freq" />
+            </vbox>
+            <vbox>
+                <label param="floor" />
+                <knob param="floor" size="3" />
+                <value param="floor" />
+                <toggle param="floor_active" />
             </vbox>
         </hbox>
     </frame>

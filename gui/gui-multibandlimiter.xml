@@ -39,9 +39,9 @@
             <value param="level_out" />
         </vbox>
     </table>
-    
+
     <hbox attach-x="0" attach-y="1" expand-y="1" expand-x="1" spacing="5">
-        
+
         <frame label="X-Over" expand="0" fill="1">
             <vbox>
                 <if cond="directlink">
@@ -106,7 +106,7 @@
                 </hbox>
             </vbox>
         </frame>
-        
+
         <frame label="Limit" expand="0" fill="1">
             <vbox spacing="20">
                 <hbox>
@@ -125,28 +125,30 @@
                         <value param="release" />
                     </vbox>
                 </hbox>
-                
+
                 <hbox>
-                    <label />
                     <vbox expand="0" fill="0" spacing="8">
                         <label param="minrel" />
                         <toggle param="minrel" />
                         <label />
                     </vbox>
-                    <label />
+                    <vbox expand="0" fill="0" spacing="8">
+                        <label param="asc_coeff" />
+                        <knob param="asc_coeff" type="1" />
+                        <value param="asc_coeff" />
+                    </vbox>
                     <vbox expand="0" fill="0" spacing="8">
                         <label param="asc" />
                         <toggle param="asc" />
                         <align><led param="asc_led" /></align>
                     </vbox>
-                    <label />
                 </hbox>
             </vbox>
         </frame>
-        
+
         <vbox>
             <frame label="Low Band">
-            
+
                 <hbox>
                     <hbox>
                         <knob param="release0" size="2" type="1" />
@@ -260,4 +262,4 @@
             </frame>
         </vbox>
     </hbox>
-</table>    
+</table>

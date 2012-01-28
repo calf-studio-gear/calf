@@ -52,6 +52,12 @@
                 <knob param="freq" size="5" />
                 <value param="freq" />
             </vbox>
+            <vbox>
+                <label param="floor" />
+                <toggle param="floor_active" size="1" />
+                <knob param="floor" size="3" />
+                <value param="floor" width="5" />
+            </vbox>
         </hbox>
     </frame>
 </vbox>
