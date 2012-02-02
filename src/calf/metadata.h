@@ -171,7 +171,7 @@ struct sidechaincompressor_metadata: public plugin_metadata<sidechaincompressor_
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
-           param_sc_listen, param_f1_active, param_f2_active, param_count };
+           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_count };
     PLUGIN_NAME_ID_LABEL("sidechaincompressor", "sidechaincompressor", "Sidechain Compressor")
 };
 
@@ -227,7 +227,7 @@ struct sidechaingate_metadata: public plugin_metadata<sidechaingate_metadata>
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_range, param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_gating,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
-           param_sc_listen, param_f1_active, param_f2_active, param_count };
+           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_count };
     PLUGIN_NAME_ID_LABEL("sidechaingate", "sidechaingate", "Sidechain Gate")
 };
 

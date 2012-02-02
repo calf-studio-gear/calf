@@ -1,4 +1,4 @@
-<hbox spacing="10">
+<hbox spacing="6">
 
     <vbox spacing="20" expand="0" fill="0">
         <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="7" spacing="7" >
@@ -87,10 +87,9 @@
       <frame label="Compression">
         <vbox spacing="6">
             <if cond="directlink">
-                <line-graph refresh="1" width="255" height="255" param="compression" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="290" height="290" param="compression" square="1" expand="1" fill="1"/>
             </if>
             <vbox spacing="3">
-                <label param="compression"/>
                 <vumeter param="compression" position="2" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>
             </vbox>
         </vbox>
@@ -100,15 +99,18 @@
         
         <if cond="directlink">
             <frame label="Sidechain">
-                <vbox spacing="6">
-                    <line-graph refresh="1" width="235" height="112" param="f1_freq" expand="1" fill="1" />
-                    <table rows="2" cols="2" expand="0" fill="0">
-                        <label attach-x="0" attach-y="0" param="sc_mode" expand-y="0" fill-y="0" />
-                        <combo attach-x="0" attach-y="1" param="sc_mode" fill-y="1" expand-y="0"/>
-                        <label attach-x="1" attach-y="0" param="sc_listen" expand-y="0" fill-y="0" />
-                        <toggle attach-x="1" attach-y="1" param="sc_listen" size="2" expand-y="0" fill-y="0"/>
-                    </table>
-                </vbox>
+                <table rows="4" cols="5" spacing="3">
+                    <line-graph refresh="1" width="235" height="112" param="f1_freq" expand="1" fill="1" attach-x="0" attach-y="0" attach-w="5" />
+                    <label param="sc_mode" expand="0" fill="0" attach-x="0" attach-y="1" />
+                    <combo param="sc_mode" fill="0" expand="0" attach-x="1" attach-y="1" attach-w="4" />
+                    <label param="sc_route" expand="0" fill="0" attach-x="0" attach-y="2" />
+                    <combo param="sc_route" fill="0" expand="0" attach-x="1" attach-y="2" attach-w="4"/>
+                    <label param="sc_listen" expand="0" fill="0" attach-x="3" attach-y="3" />
+                    <toggle param="sc_listen" size="2" expand="0" fill="0" attach-x="4" attach-y="3"/>
+                    <label param="sc_level" expand="0" fill="0" attach-x="0" attach-y="3" />
+                    <knob param="sc_level" size="2" expand="0" fill="0" type="1" attach-x="1" attach-y="3"/>
+                    <value param="sc_level" expand="0" fill="0" attach-x="2" attach-y="3" />
+                </table>
             </frame>
         </if>
         <hbox spacing="5">

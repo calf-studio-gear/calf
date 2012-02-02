@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this program; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02111-1307, USA.
  */
 #ifndef CALF_MODULES_COMP_H
@@ -133,6 +133,11 @@ private:
         WEIGHTED_3,
         BANDPASS_1,
         BANDPASS_2
+    };
+    enum CalfScRoute {
+        STEREO,
+        RIGHT_LEFT,
+        LEFT_RIGHT
     };
     mutable float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
     mutable float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
@@ -261,6 +266,11 @@ private:
         WEIGHTED_3,
         BANDPASS_1,
         BANDPASS_2
+    };
+    enum CalfScRoute {
+        STEREO,
+        RIGHT_LEFT,
+        LEFT_RIGHT
     };
     mutable float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
     mutable float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
