@@ -421,6 +421,7 @@ void multichorus_audio_module::deactivate()
 
 void multichorus_audio_module::set_sample_rate(uint32_t sr) {
     srate = sr;
+    last_r_phase = -1;
     left.setup(sr);
     right.setup(sr);
 }
