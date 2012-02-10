@@ -633,6 +633,26 @@ void lookahead_limiter::reset_asc() {
     asc_changed = true;
 }
 
+float lookahead_limiter::get_rdelta(float peak, float _limit, float _att, bool _asc) {
+    
+    // calc the att for average input to walk to if we use asc (att of average signal)
+    float _a_att = (limit * weight) / (asc_coeff * asc) * (float)asc_c;
+
+    // calc a release delta from this attenuation
+    float _rdelta = (1.0 - _att) / (srate * release);
+    if(_asc and auto_release and asc_c > 0 and _a_att > _att) {
+        // check if releasing to average level of peaks is steeper than
+        // releasing to 1.f
+        float _delta = std::max((_a_att - _att) / (srate * release), _rdelta / 10);
+        if(_delta < _rdelta) {
+            asc_active = true;
+            _asc_used = true;
+            _rdelta = _delta;
+        }
+    }
+    return _rdelta;
+}
+
 void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
 {
     // PROTIP: harming paying customers enough to make them develop a competing
@@ -648,15 +668,15 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
         buffer[pos] = left;
         buffer[pos + 1] = right;
     }
-
+    
     // are we using multiband? get the multiband coefficient or use 1.f
     float multi_coeff = (use_multi) ? multi_buffer[pos] : 1.f;
-
-    // input peak - impact higher in left or right channel?
-    peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
-
+    
     // calc the real limit including weight and multi coeff
     float _limit = limit * multi_coeff * weight;
+    
+    // input peak - impact higher in left or right channel?
+    peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
 
     // add an eventually appearing peak to the asc fake buffer if asc active
     if(auto_release and peak > _limit) {
@@ -667,22 +687,11 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     if(peak > _limit or multi_coeff < 1.0) {
         float _multi_coeff = 1.f;
         float _peak;
-
+        
         // calc the attenuation needed to reduce incoming peak
         float _att = std::min(_limit / peak, 1.f);
-
-
-        // calc a release delta from this attenuation
-        float _rdelta = (1.0 - _att) / (srate * release);
-        if(auto_release and asc_c > 0) {
-            // check if releasing to average level of peaks is steeper than
-            // releasing to 1.f
-            float _delta = std::max((limit * weight) / (asc_coeff * asc) * (float)asc_c - _att, 0.000001f) / (srate * release);
-            if(_delta < _rdelta) {
-                asc_active = true;
-                _rdelta = _delta;
-            }
-        }
+        // calc release without any asc to keep all relevant peaks
+        float _rdelta = get_rdelta(peak, _limit, _att, false);
 
         // calc the delta for walking to incoming peak attenuation
         float _delta = (_limit / peak - att) / buffer_size * channels;
@@ -764,12 +773,32 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // ...and calculate outpout from it
     left *= att;
     right *= att;
-
+    
     if((pos + channels) % buffer_size == nextpos[nextiter]) {
         // if we reach a buffered position, change the actual delta and erase
         // this (the first) element from nextpos and nextdelta buffer
-        delta = nextdelta[nextiter];
-        nextlen = (nextlen - 1) % buffer_size;
+        if(auto_release) {
+            // set delta to asc influenced release delta
+            delta = get_rdelta(_peak, (limit * weight * _multi_coeff), att);
+            if(nextlen > 1) {
+                // if there are more positions to walk to, calc delta to next
+                // position in buffer and compare it to release delta (keep
+                // changes between peaks below asc steepness)
+                int _nextpos = nextpos[(nextiter + 1) % buffer_size];
+                float __peak = fabs(buffer[_nextpos]) > fabs(buffer[_nextpos + 1]) ? fabs(buffer[_nextpos]) : fabs(buffer[_nextpos + 1]);
+                float __multi_coeff = (use_multi) ? multi_buffer[_nextpos] : 1.f;
+                float __delta = ((limit * __multi_coeff * weight) / __peak - att) / (((buffer_size + _nextpos - ((pos + channels) % buffer_size)) % buffer_size) / channels);
+                if(__delta < delta) {
+                    delta = __delta;
+                }
+            }
+        } else {
+            // if no asc set delta from nextdelta buffer and fix the attenuation
+            delta = nextdelta[nextiter];
+            att = (limit * weight * _multi_coeff) / _peak;
+        }
+        // remove first element from circular nextpos buffer
+        nextlen -= 1;
         nextpos[nextiter] = -1;
         nextiter = (nextiter + 1) % buffer_size;
     }
@@ -778,6 +807,9 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
         // release time seems over, reset attenuation and delta
         att = 1.0f;
         delta = 0.0f;
+        nextiter = 0;
+        nextlen = 0;
+        nextpos[0] = -1;
     }
 
     // main limiting party is over, let's cleanup the puke

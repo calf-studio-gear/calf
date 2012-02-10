@@ -66,7 +66,7 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;
-    dsp::biquad_d2<float> lpL[strips - 1][3], lpR[strips - 1][3], hpL[strips - 1][3], hpR[strips - 1][3];
+    dsp::biquad_d2<float> lpL[strips - 1][strips - 1], lpR[strips - 1][strips - 1], hpL[strips - 1][strips - 1], hpR[strips - 1][strips - 1];
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
     unsigned int pos;
     unsigned int buffer_size;

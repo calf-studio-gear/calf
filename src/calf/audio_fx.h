@@ -574,9 +574,9 @@ public:
     uint32_t srate;
     float att; // a coefficient the output is multiplied with
     float att_max; // a memory for the highest attenuation - used for display
-    unsigned int pos; // where we are actually in our sample buffer
-    unsigned int buffer_size;
-    unsigned int overall_buffer_size;
+    int pos; // where we are actually in our sample buffer
+    int buffer_size;
+    int overall_buffer_size;
     bool is_active;
     bool debug;
     bool auto_release;
@@ -600,10 +600,12 @@ public:
     int asc_pos;
     bool asc_changed;
     float asc_coeff;
+    bool _asc_used;
     static inline void denormal(volatile float *f) {
 	    *f += 1e-18;
 	    *f -= 1e-18;
     }
+    inline float get_rdelta(float peak, float _limit, float _att, bool _asc = true);
     void reset();
     void reset_asc();
     bool get_asc();
