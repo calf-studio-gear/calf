@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Multiband Gate</h1>
+            <a href="images/Calf - Multiband Gate.png" title="Calf - Multiband Gate" class="thickbox"><img class="thumbnail" src="images/Calf - Multiband Gate.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                Multiband gating is a very special weapon when it comes down to reducing unwanted noise inside complex signals. For example imagine a floor tom with a very open and sustainable tone in every range you want to reduce to a punching "smack" with controlled sustain in the lower frequencies. So you may want to shorten the attack in the higher frequencies to a very short peak, lower the ring of the mids to an apparent but non-ringing release time while keeping most of the sustain in the lower end. Or think about a heavily distorted guitar you want to clean up by eliminating the "rumble" after muted heavy strokes, reducing the spring reverb (which unfortunately was way to loud while recording) and wipe out the noise the amplifier produces in breaks.
+            </p>
+            <h2>Basics</h2>
+            <p>
+                To understand gating and sidechaining <strong>please refer to the <a href="Gate.html" title="Gate">gate</a>'s and <a href="Sidechain Gate.html" title="Sidechain Gate">sidechain gate</a>'s manuals</strong>. There you'll find detailed information about those techniques which build the concept of a multiband gate.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input (knob):</strong> Raise the volume before the signal is sent in the gating stage.</li>
+                <li><strong>Input L/R (VU-meter):</strong> The level of the original signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
+                <li><strong>Output L/R (VU-meter):</strong> The level of the gated and made up signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Output (knob):</strong> Raise the overall volume after the gating stage</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+
+                <li><strong>Split:</strong> Frequency to split between these strips</li>
+                <li><strong>S:</strong> Separate or overlap the frequencies of the neighbour bands</li>
+                <li><strong>Q:</strong> Raise the center frequency</li>
+
+                <li><strong>Attack:</strong> Amount of milliseconds the signal has to fall below the threshold before gain reduction starts</li>
+                <li><strong>Release:</strong> Amount of milliseconds the signal has to raise above the threshold before the reduction is decreased again</li>
+                <li><strong>Knee:</strong> Curve the sharp knee around the threshold to enter gain reduction more softly</li>
+                <li><strong>Ratio:</strong> Set a ratio about which the signal is reduced. 1:2 means that if the level rises 4dB above the threshold, it will be only 2dB above after the reduction.</li>
+                <li><strong>Threshold:</strong> If a signal falls below this level it will affect the gain reduction</li>
+                <li><strong>Makeup:</strong> Amplify this frequency range after processing</li>
+                <li><strong>Detection:</strong> Choose if the strip should take the exact signal for detection or an RMS like one (it's mainly smoother).</li>
+                <li><strong>Gain Reduction:</strong> The level of reduction in this strip</li>
+                <li><strong>Output:</strong> The output level of this strip</li>
+                <li><strong>Reduction:</strong> The level of reduction in this strip</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal of this strip</li>
+                <li><strong>Solo:</strong> Mute all strips not set to solo</li>
+            </ul>
+        </div>
+    </body>
+</html>
