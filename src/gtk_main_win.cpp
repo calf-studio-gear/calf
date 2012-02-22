@@ -522,7 +522,7 @@ void gtk_main_window::create()
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(toplevel, (owner->get_client_name() + " - Calf JACK Host").c_str());
     gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
-    gtk_window_set_default_icon_name("calf");
+    gtk_window_set_icon_name(toplevel, "calf");
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
     

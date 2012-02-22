@@ -67,8 +67,8 @@ void about_action(GtkAction *action, plugin_gui_window *gui_win)
         return;
     
     static const char *artists[] = {
-        "Markus Schmidt (GUI)",
-        "Thorsten Wilms (icon)",
+        "Markus Schmidt (GUI, icons)",
+        "Thorsten Wilms (previous icon)",
         NULL
     };
     
@@ -297,7 +297,7 @@ gboolean plugin_gui_window::on_idle(void *data)
 void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const char *effect)
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
-    gtk_window_set_default_icon_name("calf");
+    gtk_window_set_icon_name(toplevel, "calf_plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
     gtk_window_set_role(toplevel, "plugin_ui");
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
