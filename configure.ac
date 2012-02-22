@@ -50,6 +50,8 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
 
 AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
 AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
+AC_CHECK_HEADER(rfftw.h, true, AC_MSG_ERROR([FFTW2 header (rfftw.h) not found]))
+AC_CHECK_LIB(rfftw, true, AC_MSG_ERROR([FFTW2 library (librfftw) not found]))
 
 # JACK
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
@@ -221,6 +223,11 @@ fi
 AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     
     Installation prefix:         $prefix
+    
+    Note: due to usage of GPL-licensed libraries (FFTW) in this version,
+    the linked binary will be covered by GPL, even though the source is
+    LGPL-licensed. The only way to get an LGPL binary is by removing
+    or reimplementing parts that depend on FFTW.
 ])
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
