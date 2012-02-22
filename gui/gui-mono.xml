@@ -8,20 +8,25 @@
             <hbox spacing="8">
                 <vbox>
                     <label param="level_in" />
-                    <knob param="level_in" size="3" />
+                    <knob param="level_in" size="5" />
                     <value param="level_in" />
                 </vbox>
-                <vbox spacing="4">
-                    <vbox spacing="5">
-                        
-                        <label param="softclip" />
-                        <toggle param="softclip"/>
+                <vbox spacing="4" expand="0">
+                    <label />
+                    <vbox expand="0" spacing="5">
+                        <label param="bypass" />
+                        <toggle param="bypass" />
                     </vbox>
                     <vbox expand="0" spacing="5">
-                        
-                        <toggle param="bypass" />
-                        <label param="bypass" />
+                        <toggle param="softclip"/>
+                        <label param="softclip" />
                     </vbox>
+                </vbox>
+                <vbox fill="0" spacing="10" expand="0">
+                    <label />
+                    <label param="sc_level" />
+                    <knob param="sc_level" size="3" />
+                    <value param="sc_level" />
                 </vbox>
             </hbox>
         </vbox>
@@ -70,17 +75,27 @@
             <hbox spacing="8">
                 <vbox spacing="12">
                     <label param="delay" />
-                    <knob param="delay" size="2" type="1" />
+                    <knob param="delay" size="3" type="1" />
                     <value param="delay" />
                 </vbox>
                 <vbox spacing="12">
+                    <label param="stereo_base" />
+                    <knob param="stereo_base" size="3" type="1" />
+                    <value param="stereo_base" />
+                </vbox>
+                <vbox spacing="12">
+                    <label param="stereo_phase" />
+                    <knob param="stereo_phase" size="3" type="3" />
+                    <value param="stereo_phase" />
+                </vbox>
+                <vbox spacing="12">
                     <label param="balance_out" />
-                    <knob param="balance_out" size="2" type="1" />
+                    <knob param="balance_out" size="3" type="1" />
                     <value param="balance_out" />
                 </vbox>
                 <vbox>
                     <label param="level_out" />
-                    <knob param="level_out" size="3" />
+                    <knob param="level_out" size="5" />
                     <value param="level_out" />
                 </vbox>
             </hbox>

@@ -461,6 +461,7 @@ stereo_audio_module::stereo_audio_module() {
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
+    _phase = -1;
 }
 
 void stereo_audio_module::activate() {
@@ -511,6 +512,15 @@ void stereo_audio_module::params_changed() {
             RL = 0.f;
             RR = 0.f;
             break;
+    }
+    if(*params[param_stereo_phase] != _phase) {
+        _phase = *params[param_stereo_phase];
+        _phase_cos_coef = cos(_phase / 180 * M_PI);
+        _phase_sin_coef = sin(_phase / 180 * M_PI);
+    }
+    if(*params[param_sc_level] != _sc_level) {
+        _sc_level = *params[param_sc_level];
+        _inv_atan_shape = 1.0 / atan(_sc_level);
     }
 }
 
@@ -585,11 +595,13 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             
             // softclip
             if(*params[param_softclip]) {
-                int ph;
-                ph = L / fabs(L);
-                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
-                ph = R / fabs(R);
-                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
+//                int ph;
+//                ph = L / fabs(L);
+//                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+//                ph = R / fabs(R);
+//                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
+                R = _inv_atan_shape * atan(R * _sc_level);
+                L = _inv_atan_shape * atan(L * _sc_level);
             }
             
             // GUI stuff
@@ -610,16 +622,6 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L += LL*L + RL*R;
             R += RR*R + LR*L;
             
-            // stereo base
-            float _sb = *params[param_stereo_base];
-            if(_sb < 0) _sb *= 0.5;
-            
-            float __l = L +_sb * L - _sb * R;
-            float __r = R + _sb * R - _sb * L;
-            
-            L = __l;
-            R = __r;
-            
             // delay
             buffer[pos]     = L;
             buffer[pos + 1] = R;
@@ -631,6 +633,23 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             } else if (*params[param_delay] < 0.f) {
                 L = buffer[(pos - (int)nbuf + buffer_size)     % buffer_size];
             }
+            
+            // stereo base
+            float _sb = *params[param_stereo_base];
+            if(_sb < 0) _sb *= 0.5;
+            
+            float __l = L +_sb * L - _sb * R;
+            float __r = R + _sb * R - _sb * L;
+            
+            L = __l;
+            R = __r;
+            
+            // stereo phase
+            __l = L * _phase_cos_coef - R * _phase_sin_coef;
+            __r = L * _phase_sin_coef + R * _phase_cos_coef;
+            
+            L = __l;
+            R = __r;
             
             pos = (pos + 2) % buffer_size;
             
@@ -704,7 +723,15 @@ void mono_audio_module::deactivate() {
 }
 
 void mono_audio_module::params_changed() {
-    
+    if(*params[param_sc_level] != _sc_level) {
+        _sc_level = *params[param_sc_level];
+        _inv_atan_shape = 1.0 / atan(_sc_level);
+    }
+    if(*params[param_stereo_phase] != _phase) {
+        _phase = *params[param_stereo_phase];
+        _phase_cos_coef = cos(_phase / 180 * M_PI);
+        _phase_sin_coef = sin(_phase / 180 * M_PI);
+    }
 }
 
 uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -734,8 +761,9 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             
             // softclip
             if(*params[param_softclip]) {
-                int ph = L / fabs(L);
-                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+                //int ph = L / fabs(L);
+                //L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
+                L = _inv_atan_shape * atan(L * _sc_level);
             }
             
             // GUI stuff
@@ -763,6 +791,23 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             } else if (*params[param_delay] < 0.f) {
                 L = buffer[(pos - (int)nbuf + buffer_size)     % buffer_size];
             }
+            
+            // stereo base
+            float _sb = *params[param_stereo_base];
+            if(_sb < 0) _sb *= 0.5;
+            
+            float __l = L +_sb * L - _sb * R;
+            float __r = R + _sb * R - _sb * L;
+            
+            L = __l;
+            R = __r;
+            
+            // stereo phase
+            __l = L * _phase_cos_coef - R * _phase_sin_coef;
+            __r = L * _phase_sin_coef + R * _phase_cos_coef;
+            
+            L = __l;
+            R = __r;
             
             pos = (pos + 2) % buffer_size;
             

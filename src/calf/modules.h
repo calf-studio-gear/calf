@@ -257,11 +257,12 @@ class mono_audio_module:
     float * buffer;
     unsigned int pos;
     unsigned int buffer_size;
-    
-    void softclip(float &s) {
-        int ph = s / fabs(s);
-        s = s > 0.63 ? ((0.63 + 0.36) * ph * (1 - pow(MATH_E, (1.f / 3) * (0.63 + s * ph)))) : s;
+    float sign(float x) {
+        if(x < 0) return -1.f;
+        if(x > 0) return 1.f;
+        return 0.f;
     }
+    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
 public:
     mono_audio_module();
     void params_changed();
@@ -285,11 +286,12 @@ class stereo_audio_module:
     float * buffer;
     unsigned int pos;
     unsigned int buffer_size;
-    
-    void softclip(float &s) {
-        int ph = s / fabs(s);
-        s = s > 0.63 ? ((0.63 + 0.36) * ph * (1 - pow(MATH_E, (1.f / 3) * (0.63 + s * ph)))) : s;
+    float sign(float x) {
+        if(x < 0) return -1.f;
+        if(x > 0) return 1.f;
+        return 0.f;
     }
+    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
 public:
     stereo_audio_module();
     void params_changed();

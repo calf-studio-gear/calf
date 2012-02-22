@@ -10,15 +10,16 @@
                 <vumeter param="meter_inR" position="2" hold="1.5" falloff="2.5" attach-x="2" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_inR" attach-x="3" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
             </table>
-            <hbox spacing="8">
+            <hbox spacing="10">
                 <vbox expand="0" fill="0">
                     <knob param="level_in" size="5" />
                     <value param="level_in" />
                 </vbox>
-                <vbox expand="0" spacing="15">
+                <vbox expand="0" spacing="5">
                     <label param="balance_in" />
-                    <knob param="balance_in" size="3" type="1" />
-                    <value param="balance_in" />
+                    <knob param="balance_in" size="2" type="1" />
+                    <knob param="sc_level" size="2" />
+                    <label param="sc_level" />
                 </vbox>
                 <vbox expand="0" spacing="5">
                     <label param="bypass" />
@@ -118,6 +119,11 @@
                     <label param="stereo_base" />
                     <knob param="stereo_base" size="3" type="1" />
                     <value param="stereo_base" />
+                </vbox>
+                <vbox expand="0" spacing="12">
+                    <label param="stereo_phase" />
+                    <knob param="stereo_phase" size="3" type="3" />
+                    <value param="stereo_phase" />
                 </vbox>
                 <vbox expand="0" spacing="12">
                     <label param="balance_out" />
