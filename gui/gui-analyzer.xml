@@ -1,0 +1,81 @@
+<vbox spacing="8">
+    <!--<table rows="3" cols="3" expand="0" fill="0">
+        <label param="meter_L" attach-x="1" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L"/>
+        <vumeter param="meter_L" position="2" hold="1.5" falloff="2.5"  attach-x="2" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+        <led param="clip_L" attach-x="3" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+        
+        <label param="meter_R" attach-x="1" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
+        <vumeter param="meter_R" position="2" hold="1.5" falloff="2.5" attach-x="2" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+        <led param="clip_R" attach-x="3" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+    </table>-->
+    
+    <hbox spacing="8" expand="1" fill="1">
+        <if cond="directlink">
+            <frame label="Analyzer" expand="1" fill="1">
+                <hbox>
+                    <vbox spacing="3">
+                        <hbox>
+                            <combo param="analyzer_mode" expand="0" fill="0"/>
+                            <combo param="analyzer_smoothing" expand="0" fill="0"/>
+                        </hbox>
+                        <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.6"/>
+                        <hbox>
+                            <hbox expand="1" fill="1"></hbox>
+                            <hbox expand="0" fill="0" spacing="12">
+                                <label text="Accuracy" />
+                                <knob param="analyzer_accuracy" size="1" expand="0" fill="0"/>
+                                <label text="     " />
+                                <label text="Speed" />
+                                <knob param="analyzer_speed" size="1" expand="0" fill="0"/>
+                                <label text="     " />
+                                <label text="Hold" />
+                                <toggle param="analyzer_hold" size="1" expand="0" fill="0" />
+                                <label text="     " />
+                                <label text="Freeze" />
+                                <toggle param="analyzer_freeze" size="1" expand="0" fill="0" />
+                                <label text="     " />
+                                <label text="Display" />
+                                <toggle param="analyzer_display" size="1" expand="0" fill="0" />
+                            </hbox>
+                        </hbox>
+                    </vbox>
+                    <vbox spacing="3">
+                        <label text="Level" />
+                        <vscale param="analyzer_level" inverted="1"/>
+                        <value param="analyzer_level" />
+                    </vbox>
+                </hbox>
+            </frame>
+            <frame label="Phase Correlation" expand="0" fill="0">
+                <hbox>
+                    <vbox spacing="3">
+                        
+                        <combo param="gonio_mode" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="240" param="gonio_level" expand="0" fill="0"/>
+                        <hbox>
+                            <label text="Dots" expand="0" fill="0"/>
+                            <knob param="gonio_accuracy" size="1" expand="0" fill="0"/>
+                            
+                            <label text="   "/>
+                            
+                            <label text="Fade" expand="0" fill="0"/>
+                            <knob param="gonio_fade" size="1" expand="0" fill="0"/>
+                            <toggle param="gonio_use_fade" size="1" expand="0" fill="0" />
+                            
+                            <label text="   "/>
+                            
+                            <label text="Display" expand="0" fill="0"/>
+                            <toggle param="gonio_display" size="1" expand="0" fill="0" />
+                        </hbox>
+                        
+                    </vbox>
+                    <vbox spacing="3">
+                        <label text="Level" />
+                        <vscale param="gonio_level" inverted="1"/>
+                        <value param="gonio_level" />
+                    </vbox>
+                </hbox>
+            </frame>
+        </if>
+    </hbox>
+</vbox>
