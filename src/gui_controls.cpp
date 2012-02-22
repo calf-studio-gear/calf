@@ -917,6 +917,8 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     calf_line_graph_set_square(clg, get_int("square", 0));
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
+    CALF_LINE_GRAPH(widget)->use_fade = get_int("use_fade", 0);
+    CALF_LINE_GRAPH(widget)->fade = get_float("fade", 0.5);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LineGraph");
     return widget;
 }
@@ -934,6 +936,48 @@ void line_graph_param_control::set()
 }
 
 line_graph_param_control::~line_graph_param_control()
+{
+}
+
+// phase graph
+
+void phase_graph_param_control::on_idle()
+{
+    if (get_int("refresh", 0))
+        set();
+}
+
+GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    last_generation = -1;
+    
+    widget = calf_phase_graph_new ();
+    gtk_widget_set_name(GTK_WIDGET(widget), "calf-phase");
+    CalfPhaseGraph *clg = CALF_PHASE_GRAPH(widget);
+    widget->requisition.width = get_int("size", 40);
+    widget->requisition.height = get_int("size", 40);
+    clg->source = gui->plugin->get_phase_graph_iface();
+    clg->source_id = param_no;
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-PhaseGraph");
+    return widget;
+}
+
+void phase_graph_param_control::set()
+{
+    GtkWidget *tw = gtk_widget_get_toplevel(widget);
+    gtk_widget_queue_draw(tw);
+//    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
+//    {
+//        int ws = gdk_window_get_state(widget->window);
+//        if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
+//            return;
+//        //last_generation = calf_phase_graph_update_if(CALF_PHASE_GRAPH(widget), last_generation);
+//    }
+}
+
+phase_graph_param_control::~phase_graph_param_control()
 {
 }
 

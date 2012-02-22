@@ -59,7 +59,8 @@ $(document).ready(function () {
                 ["Exciter", "Exciter.html", "images/Calf - Exciter.png"],
                 ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
                 ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.png"],
-                ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"]
+                ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"],
+                ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.png"]
             ]
         ]
     ];

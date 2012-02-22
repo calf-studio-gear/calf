@@ -379,7 +379,7 @@ struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
            param_freq, param_listen, param_floor_active, param_floor, param_count };
     PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
 };
-/// Markus's Mono Module - metadata
+/// Markus's Stereo Module - metadata
 struct stereo_metadata: public plugin_metadata<stereo_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
@@ -387,7 +387,7 @@ struct stereo_metadata: public plugin_metadata<stereo_metadata>
            STEREO_VU_METER_PARAMS, param_balance_in, param_balance_out, param_softclip,
            param_mute_l, param_mute_r, param_phase_l, param_phase_r,
            param_mode, param_slev, param_sbal, param_mlev, param_mpan,
-           param_widener, param_delay,
+           param_stereo_base, param_delay,
            param_meter_phase,
            param_count };
     PLUGIN_NAME_ID_LABEL("stereo", "stereo", "Stereo Tools")
@@ -404,7 +404,16 @@ struct mono_metadata: public plugin_metadata<mono_metadata>
            param_count };
     PLUGIN_NAME_ID_LABEL("mono", "mono", "Mono Input")
 };
-
+/// Markus's and Chrischi's Analyzer
+struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_meter_L, param_meter_R, param_clip_L, param_clip_R,
+           param_analyzer_level, param_analyzer_mode, param_analyzer_accuracy, param_analyzer_speed, param_analyzer_display, param_analyzer_smoothing, param_analyzer_hold, param_analyzer_freeze,
+           param_gonio_level, param_gonio_mode, param_gonio_use_fade, param_gonio_fade, param_gonio_accuracy, param_gonio_display,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("analyzer", "analyzer", "Analyzer")
+};
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
 struct organ_enums

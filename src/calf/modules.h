@@ -21,6 +21,7 @@
 #ifndef CALF_MODULES_H
 #define CALF_MODULES_H
 
+#include "rfftw.h"
 #include <assert.h>
 #include <limits.h>
 #include "biquad.h"
@@ -298,6 +299,53 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
+class analyzer_audio_module:
+    public audio_module<analyzer_metadata>, public frequency_response_line_graph, public phase_graph_iface
+{
+    typedef analyzer_audio_module AM;
+    uint32_t srate;
+    bool active;
+    int _accuracy;
+    int _acc_old;
+    uint32_t clip_L, clip_R;
+    float meter_L, meter_R;
+    
+public:
+    analyzer_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    
+
+protected:
+    static const int max_phase_buffer_size = 8192;
+    int phase_buffer_size;
+    float *phase_buffer;
+    int fft_buffer_size;
+    float *fft_buffer;
+    int plength;
+    int ppos;
+    int fpos;
+    rfftw_plan fft_plan;
+    static const int max_fft_cache_size = 32768;
+    static const int max_fft_buffer_size = max_fft_cache_size * 2;
+    fftw_real *fft_in;
+    fftw_real *fft_out;
+    fftw_real *fft_smooth;
+    float *fft_delta;
+    float *fft_hold;
+    float *fft_freeze;
+    float _hold;
+
+    mutable int ____analyzer_phase_was_drawn_here;
+    mutable int ____analyzer_smooth_dirty;
+    mutable int ____analyzer_hold_dirty;
+
+};
 
 };
 #endif

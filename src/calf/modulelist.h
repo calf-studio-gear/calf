@@ -27,6 +27,7 @@
     PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
     PER_MODULE_ITEM(mono, false, "mono")
     PER_MODULE_ITEM(stereo, false, "stereo")
+    PER_MODULE_ITEM(analyzer, false, "analyzer")
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
     PER_MODULE_ITEM(wavetable, true, "wavetable")

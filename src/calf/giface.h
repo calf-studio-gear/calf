@@ -200,6 +200,13 @@ struct line_graph_iface
     virtual ~line_graph_iface() {}
 };
 
+/// 'provides live line graph values' interface
+struct phase_graph_iface
+{
+    virtual bool get_phase_graph(float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const { return false; };
+    virtual ~phase_graph_iface() {}
+};
+
 enum table_column_type
 {
     TCT_UNKNOWN, ///< guard invalid type
@@ -355,6 +362,8 @@ struct plugin_ctl_iface
     virtual const plugin_metadata_iface *get_metadata_iface() const = 0;
     /// @return line_graph_iface if any
     virtual const line_graph_iface *get_line_graph_iface() const = 0;
+    /// @return phase_graph_iface if any
+    virtual const phase_graph_iface *get_phase_graph_iface() const = 0;
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -435,6 +444,8 @@ struct audio_module_iface
     virtual uint32_t message_run(const void *valid_ports, void *output_ports) = 0;
     /// @return line_graph_iface if any
     virtual const line_graph_iface *get_line_graph_iface() const = 0;
+     /// @return phase_graph_iface if any
+    virtual const phase_graph_iface *get_phase_graph_iface() const = 0;
     virtual ~audio_module_iface() {}
 };
 
@@ -537,6 +548,8 @@ public:
     }
     /// @return line_graph_iface if any
     virtual const line_graph_iface *get_line_graph_iface() const { return dynamic_cast<const line_graph_iface *>(this); }
+    /// @return phase_graph_iface if any
+    virtual const phase_graph_iface *get_phase_graph_iface() const { return dynamic_cast<const phase_graph_iface *>(this); }
 };
 
 #if USE_EXEC_GUI || USE_DSSI
@@ -566,6 +579,9 @@ struct dssi_feedback_sender
     std::vector<int> indices;
     /// Source for the graph data (interface to marshal)
     const calf_plugins::line_graph_iface *graph;
+    
+    /// Source for the graph data (interface to marshal)
+    const calf_plugins::phase_graph_iface *phase;
     
     /// Create using a new client
     dssi_feedback_sender(const char *URI, const line_graph_iface *_graph);

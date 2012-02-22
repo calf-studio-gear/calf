@@ -19,8 +19,13 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02111-1307, USA.
  */
+ 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
 #ifndef __CALF_CUSTOM_CTL
 #define __CALF_CUSTOM_CTL
+
 
 #include <gtk/gtk.h>
 #include <calf/giface.h>
@@ -40,7 +45,10 @@ struct CalfLineGraph
     const calf_plugins::line_graph_iface *source;
     int source_id;
     bool is_square;
+    bool use_fade;
+    float fade;
     cairo_surface_t *cache_surface;
+    cairo_surface_t *fade_surface;
     //GdkPixmap *cache_pixmap;
     int last_generation;
 };
@@ -57,6 +65,44 @@ extern GType calf_line_graph_get_type();
 extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
 extern int calf_line_graph_update_if(CalfLineGraph *graph, int generation);
+
+#define CALF_TYPE_PHASE_GRAPH           (calf_phase_graph_get_type())
+#define CALF_PHASE_GRAPH(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_PHASE_GRAPH, CalfPhaseGraph))
+#define CALF_IS_PHASE_GRAPH(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_PHASE_GRAPH))
+#define CALF_PHASE_GRAPH_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_PHASE_GRAPH, CalfPhaseGraphClass))
+#define CALF_IS_PHASE_GRAPH_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_PHASE_GRAPH))
+#define CALF_PHASE_GRAPH_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_PHASE_GRAPH, CalfPhaseGraphClass))
+
+struct CalfPhaseGraph
+{
+    GtkDrawingArea parent;
+    const calf_plugins::phase_graph_iface *source;
+    int source_id;
+    cairo_surface_t *cache_surface;
+    cairo_surface_t *fade_surface;
+    inline float _atan(float x, float l, float r) {
+        // this is a wrapper for a CPU friendly implementation of atan()
+        if(l >= 0 and r >= 0) {
+            return atan(x);
+        } else if(l >= 0 and r < 0) {
+            return M_PI + atan(x);
+        } else if(l < 0 and r < 0) {
+            return M_PI + atan(x);
+        } else if(l < 0 and r >= 0) {
+            return (2.f * M_PI) + atan(x);
+        }
+        return 0.f;
+    }
+};
+
+struct CalfPhaseGraphClass
+{
+    GtkDrawingAreaClass parent_class;
+};
+
+extern GtkWidget *calf_phase_graph_new();
+
+extern GType calf_phase_graph_get_type();
 
 #define CALF_TYPE_KNOB          (calf_knob_get_type())
 #define CALF_KNOB(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_KNOB, CalfKnob))

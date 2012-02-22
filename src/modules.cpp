@@ -20,9 +20,12 @@
  */
 #include <limits.h>
 #include <memory.h>
+#include <math.h>
+#include <rfftw.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
+
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -607,9 +610,15 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L += LL*L + RL*R;
             R += RR*R + LR*L;
             
-            // widener
-            L += *params[param_widener] * R * -1;
-            R += *params[param_widener] * L * -1;
+            // stereo base
+            float _sb = *params[param_stereo_base];
+            if(_sb < 0) _sb *= 0.5;
+            
+            float __l = L +_sb * L - _sb * R;
+            float __r = R + _sb * R - _sb * L;
+            
+            L = __l;
+            R = __r;
             
             // delay
             buffer[pos]     = L;
@@ -794,4 +803,246 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
     pos = 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+analyzer_audio_module::analyzer_audio_module() {
+    active = false;
+    clip_L   = 0.f;
+    clip_R   = 0.f;
+    meter_L = 0.f;
+    meter_R = 0.f;
+    _accuracy = -1;
+    _acc_old = -1;
+    ppos = 0;
+    plength = 0;
+    fpos = 0;
+    _hold = 0.f;
+    phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
+    memset(phase_buffer, 0, max_phase_buffer_size * sizeof(float)); // reset buffer to zero
+    fft_buffer = (float*) calloc(max_fft_buffer_size, sizeof(float));
+    memset(fft_buffer, 0, max_fft_buffer_size * sizeof(float)); // reset buffer to zero
+    fft_in = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_out = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_smooth = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    memset(fft_smooth, 0, max_fft_cache_size * sizeof(fftw_real)); // reset buffer to zero
+    fft_delta = (float*) calloc(max_fft_cache_size, sizeof(float));
+    memset(fft_delta, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
+    fft_hold = (float*) calloc(max_fft_cache_size, sizeof(float));
+    memset(fft_hold, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
+    fft_freeze = (float*) calloc(max_fft_cache_size, sizeof(float));
+    memset(fft_freeze, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
+    
+    ____analyzer_phase_was_drawn_here = 0;
+    ____analyzer_smooth_dirty = 0;
+    ____analyzer_hold_dirty = 0;
+
+}
+
+void analyzer_audio_module::activate() {
+    active = true;
+}
+
+void analyzer_audio_module::deactivate() {
+    active = false;
+}
+
+void analyzer_audio_module::params_changed() {
+    if(*params[param_analyzer_accuracy] != _acc_old) {
+        _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
+        _acc_old = *params[param_analyzer_accuracy];
+        // recreate fftw plan
+        fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+    }
+    if(*params[param_analyzer_hold] != _hold) {
+        ____analyzer_hold_dirty = 1;
+        _hold = *params[param_analyzer_hold];
+    }
+}
+
+uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        // let meters fall a bit
+        clip_L   -= std::min(clip_L, numsamples);
+        clip_R   -= std::min(clip_R, numsamples);
+        meter_L   = 0.f;
+        meter_R   = 0.f;
+        
+        float L = ins[0][i];
+        float R = ins[1][i];
+        
+        // GUI stuff
+        if(L > 1.f) clip_L = srate >> 3;
+        if(R > 1.f) clip_R = srate >> 3;
+        
+        // goniometer
+        phase_buffer[ppos] = L * *params[param_gonio_level];
+        phase_buffer[ppos + 1] = R * *params[param_gonio_level];
+        
+        plength = std::min(phase_buffer_size, plength + 2);
+        ppos += 2;
+        ppos %= (phase_buffer_size - 2);
+        
+        // analyzer
+        fft_buffer[fpos] = L * *params[param_analyzer_level];
+        fft_buffer[fpos + 1] = R * *params[param_analyzer_level];
+        
+        fpos += 2;
+        fpos %= (max_fft_buffer_size - 2);
+        
+        // meter
+        meter_L = L;
+        meter_R = R;
+        
+        //output
+        outs[0][i] = L;
+        outs[1][i] = R;
+    }
+    // draw meters
+    SET_IF_CONNECTED(clip_L);
+    SET_IF_CONNECTED(clip_R);
+    SET_IF_CONNECTED(meter_L);
+    SET_IF_CONNECTED(meter_R);
+    return outputs_mask;
+}
+
+void analyzer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    phase_buffer_size = srate / 30 * 2;
+    phase_buffer_size -= phase_buffer_size % 2;
+    phase_buffer_size = std::min(phase_buffer_size, (int)max_phase_buffer_size);
+}
+
+bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
+    *_buffer = &phase_buffer[0];
+    *_length = plength;
+    *_use_fade = *params[param_gonio_use_fade];
+    *_fade = *params[param_gonio_fade];
+    *_mode = *params[param_gonio_mode];
+    *_accuracy = *params[param_gonio_accuracy];
+    *_display = *params[param_gonio_display];
+    return false;
+}
+
+bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+{
+    if (!active or subindex > 1 or !*params[param_analyzer_display]
+        or (subindex > 0 and !*params[param_analyzer_hold]))
+        return false;
+    float ret;
+    double freq;
+    int _last = 0;
+    if(subindex == 0) {
+        ____analyzer_phase_was_drawn_here ++;
+        int _param_speed = 16 - (int)*params[param_analyzer_speed];
+        if(!((int)____analyzer_phase_was_drawn_here % _param_speed)) {
+            for(int i = 0; i < _accuracy; i++) {
+                int _fpos = (fpos - _accuracy * 2 + (i * 2)) % max_fft_buffer_size;
+                if(_fpos < 0)
+                    _fpos = max_fft_buffer_size + _fpos;
+                float L = fft_buffer[_fpos];
+                float R = fft_buffer[_fpos + 1];
+                
+                // get the right value for calculations
+                fftw_real val;
+                switch((int)*params[param_analyzer_mode]) {
+                    case 0:
+                        // average
+                        val = (L + R) / 2;
+                        break;
+                    case 1:
+                        // maximum
+                        val = std::max(L, R);
+                        break;
+                    case 2:
+                        // left channel
+                        val = L;
+                        break;
+                    case 3:
+                        // right channel
+                        val = R;
+                        break;
+                }
+                fft_in[i] = (fftw_real)val;
+                
+                // fill smoothing buffer
+                if(*params[param_analyzer_smoothing] == 1.f)
+                    fft_smooth[i] = fabs(fft_out[i]);
+                if(*params[param_analyzer_smoothing] == 0.f and fft_smooth[i] < fabs(fft_out[i])) {
+                    fft_smooth[i] = fabs(fft_out[i]);
+                }
+                
+                // fill delta buffer
+                if(*params[param_analyzer_smoothing] == 0.f) {
+                    fft_delta[i] = fft_smooth[i] / sqrt(_param_speed) / -8.f;
+                }
+                
+                // fill hold buffer
+                if(____analyzer_hold_dirty) {
+                    fft_hold[i] = 0.f;
+                } else if(fabs(fft_out[i]) > fft_hold[i]) {
+                    fft_hold[i] = fabs(fft_out[i]);
+                }
+            }
+            rfftw_one(fft_plan, fft_in, fft_out);
+            ____analyzer_hold_dirty = 0;
+            ____analyzer_smooth_dirty = 1;
+        }
+        for (int i = 0; i < points; i++)
+        {
+            ret = 1.f;
+            freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            int __last = floor(freq * (float)_accuracy / (float)srate);
+            if(!i or __last > _last) {
+                int iter;
+                if(!i) {
+                    iter = 0;
+                } else {
+                    _last = __last;
+                    iter = _last;
+                }
+                if(____analyzer_smooth_dirty and *params[param_analyzer_smoothing] == 1.f) {
+                    fft_delta[iter] = (fabs(fft_out[iter]) - fft_smooth[iter]) / _param_speed;
+                }
+                if(*params[param_analyzer_smoothing] == 1.f) {
+                    fft_smooth[iter] += fft_delta[iter];
+                }
+                if(*params[param_analyzer_smoothing] == 0.f) {
+                    fft_smooth[iter] += fft_delta[iter];
+                    fft_delta[iter] /= 1.01f;
+                }
+                if (*params[param_analyzer_freeze] > 0.f)
+                    ret =  dB_grid(fabs(fft_freeze[iter]) / 800.f);
+                else if(*params[param_analyzer_smoothing] < 2.f) {
+                    ret =  dB_grid(fabs(fft_smooth[iter]) / 800.f);
+                    fft_freeze[iter] = fft_smooth[iter];
+                } else {
+                    ret =  dB_grid(fabs(fft_out[iter]) / 800.f);
+                    fft_freeze[iter] = fft_out[iter];
+                }
+            } else
+                ret = INFINITY;
+            data[i] = ret;
+            
+        }
+        ____analyzer_smooth_dirty = 0;
+        return true;
+    } else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+        for (int i = 0; i < points; i++)
+        {
+            freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            int __last = floor(freq * (float)_accuracy / (float)srate);
+            if(!i) {
+                ret =  dB_grid(fft_hold[0] / 800.f);
+            } else if(__last > _last) {
+                _last = __last;
+                ret =  dB_grid(fft_hold[_last] / 800.f);
+            } else
+                ret = INFINITY;
+            data[i] = ret;
+        }
+    }
+    return true;
 }

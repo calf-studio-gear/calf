@@ -72,6 +72,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new vumeter_param_control;
     if (!strcmp(element, "line-graph"))
         return new line_graph_param_control;
+    if (!strcmp(element, "phase-graph"))
+        return new phase_graph_param_control;
     if (!strcmp(element, "keyboard"))
         return new keyboard_param_control;
     if (!strcmp(element, "curve"))

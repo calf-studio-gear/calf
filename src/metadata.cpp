@@ -964,7 +964,7 @@ CALF_PORT_PROPS(stereo) = {
     { 0.f,      -1.f,            1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mlev", "M Level" },
     { 0.f,      -1.f,            1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mpan", "M Panorama" },
 
-    { 0,           0,           1,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "widener", "Widener" },
+    { 0.f,           -1.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "stereo_base", "Stereo Base" },
     { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "delay", "Delay" },
 
     { 0.f,      0.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_COEF | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_phase", "Phase Correlation" },
@@ -973,6 +973,39 @@ CALF_PORT_PROPS(stereo) = {
 };
 
 CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(analyzer) = {"In L", "In R", "Out L", "Out R"};
+const char *gonio_mode_names[] = { "Small Dots", "Medium Dots", "Big Dots", "Fields", "Lines" };
+const char *analyzer_mode_names[] = { "Average", "Maximum", "Left Channel", "Right Channel" };
+const char *analyzer_smooth_names[] = { "Falling", "Smoothing", "Off" };
+CALF_PORT_PROPS(analyzer) = {
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Level L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Level R" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_L", "Clip L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_R", "Clip R" },
+    
+    { 1,           0.125,           8,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
+    { 6,      2,           8,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_accuracy", "Analyzer Accuracy" },
+    { 13,      1,           15,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_speed", "Analyzer Speed" },
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_display", "Analyzer Display" },
+    { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_smooth_names, "analyzer_smoothing", "Analyzer Smoothing" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_hold", "Analyzer Hold" },
+    { 0,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_freeze", "Analyzer Freeze" },
+    
+    { 1,           0.125,           8,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "gonio_level", "Gonio Level" },
+    { 1,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, gonio_mode_names, "gonio_mode", "Gonio Mode" },
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "gonio_use_fade", "Gonio Fade Active" },
+    { 0.5f,      0.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "gonio_fade", "Gonio Fade" },
+    { 4,      1,           5,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "gonio_accuracy", "Gonio Accuracy" },
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "gonio_display", "Gonio Display" },
+    
+    {}
+};
+
+CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "Analyzer" };
 
 
 ////////////////////////////////////////////////////////////////////////////
