@@ -4,12 +4,12 @@ SIZES = 16x16 22x22 24x24 32x32 48x48 64x64 128x128 256x256
 install-data-hook:
 	-for fn in $(SIZES); do \
 		mkdir -p "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/"; \
-		cp "calf_$${fn}.png" "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf.png"; \
-		cp "calf_plugin_$${fn}.png" "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf_plugin.png"; \
+		cp "$(top_srcdir)/icons/calf_$${fn}.png" "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf.png"; \
+		cp "$(top_srcdir)/icons/calf_plugin_$${fn}.png" "$(DESTDIR)$(datadir)/icons/hicolor/$${fn}/apps/calf_plugin.png"; \
 	done
 	mkdir -p "$(DESTDIR)$(datadir)/icons/hicolor/scalable/apps/"; \
-	cp "calf_scalable.svg" "$(DESTDIR)$(datadir)/icons/hicolor/scalable/apps/calf.svg";
-	cp "calf_plugin_scalable.svg" "$(DESTDIR)$(datadir)/icons/hicolor/scalable/apps/calf_plugin.svg";
+	cp "$(top_srcdir)/icons/calf_scalable.svg" "$(DESTDIR)$(datadir)/icons/hicolor/scalable/apps/calf.svg";
+	cp "$(top_srcdir)/icons/calf_plugin_scalable.svg" "$(DESTDIR)$(datadir)/icons/hicolor/scalable/apps/calf_plugin.svg";
 	@-test -z "$(DESTDIR)" && gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 	
 uninstall-hook:
