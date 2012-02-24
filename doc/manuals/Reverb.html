@@ -12,21 +12,34 @@
             <a href="images/Calf - Reverb.png" title="Calf - Reverb" class="thickbox"><img class="thumbnail" src="images/Calf - Reverb.png" /></a>
             <h2>Functionality</h2>
             <p>
-                
+                A reverb effect simulates reverberation caused by propagation of sound in an enclosed space. It can be used to add a feeling of space to
+                sounds that have been synthesized or recorded without significant ambience (analog synthesizers, close miked drums, DI guitars etc.). It can also be used to
+                enhance an existing ambience in a recording.
             </p>
             <h2>Tips</h2>
             <p>
-                
+                All good-quality reverb plug-ins will consume significant amount of CPU power.
+            </p>
+            <p>
+                Use reverb sparingly. Modern recordings tend to use small amount of short reverb. Too much reverb may make a recording sound muddy. In rare cases, a plain delay may actually sound better.
+            </p>
+            <p>
+                On the other hand, liberal use of long reverb is great for 80's style vocals or drums. Even then, more is not always better.
+            </p>
+            <p>
+                Reverb is usually applied as a global (aux) effect. Different tracks usually require different amount of reverb, or none at all. Some projects may need two reverb plug-ins on different busses - a short one for the short, percussive sounds and a longer one for pads and some lead instruments and vocals. Some tracks may even need both types at the same time, with different levels of each.
             </p>
             <h2>Controls</h2>
             <ul>
-                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                <li><strong>Input:</strong> Control the input level before the signal is processed</li>
-                <li><strong>In L/In R:</strong> The level after the input knob</li>
-                <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
-                <li><strong>Output:</strong> Control the output of the plugin - clipping could destroy your signal</li>
-                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
-                <li><strong>0dB:</strong> Flashes, if the signal rises about 0dB in the output stage</li>
+                <li><strong>Pre Delay:</strong> Additional delay - corresponds to a distance between sound source and the nearest wall</li>
+                <li><strong>Decay time:</strong> Time it takes for reverberation to fade out</li>
+                <li><strong>Room size:</strong> Size of the space that simulated reverberation occurs in - determines times between reflections</li>
+                <li><strong>High Frq Damp:</strong> Cutoff frequency of the reflections - causes higher frequencies to decay faster</li>
+                <li><strong>Diffusion</strong> Increase for less uniform reverberation</li>
+                <li><strong>Bass Cut</strong> Removes low frequencies from the reverberation</li>
+                <li><strong>Treble Cut</strong> Removes high frequencies from the reverberation</li>
+                <li><strong>Dry Amount</strong> Amount of unprocessed signal in the output</li>
+                <li><strong>Wet Amount</strong> Amount of processed signal (reverberation) in the output</li>
             </ul>
         </div>
     </body>
