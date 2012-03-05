@@ -20,13 +20,15 @@
             </p>
             <h2>Controls</h2>
             <ul>
-                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                <li><strong>Input:</strong> Control the input level before the signal is processed</li>
-                <li><strong>In L/In R:</strong> The level after the input knob</li>
-                <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
-                <li><strong>Output:</strong> Control the output of the plugin - clipping could destroy your signal</li>
-                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
-                <li><strong>0dB:</strong> Flashes, if the signal rises about 0dB in the output stage</li>
+                <li><strong>BPM:</strong> Tempo (in beats per minute) to use when setting delay time.</li>
+                <li><strong>Subdivide:</strong> Fraction of a beat to use as a unit of delay time (1 = quarter note, 2 = quaver/8th note, 4 = semiquaver/16th note, 3 = 8th note triplet and so on)</li>
+                <li><strong>Delay L/R:</strong> Delay length in units specified by BPM and Subdivide. If Delay L is set to 3 and Subdivide is set to 4, then delay time for the left channel is 3 16ths.</li>
+                <li><strong>Feedback:</strong> Percentage of delayed signal fed back to delay line. Setting it to zero creates a single copy, setting it to higher values creates a repeating echo.</li>
+                <li><strong>Mix mode:</strong> If set to <strong>Stereo</strong>, this effect works as two independent delay effects, one effect per channel. If set to <strong>Ping-Pong</strong>, the feedback paths of the delays are cross-wired so that output from left channel is fed back to the right channel and vice versa. This causes the sound to bounce back between two channels. The other modes (L then R and R then L) uses the output of one channel's delay line as the input of another, via feedback output.</li>
+                <li><strong>Medium:</strong> Controls bandwidth loss caused by the delay. <strong>Plain</strong> means no frequency loss, as typically seen with a traditional digital delay. <strong>Tape</strong> and </strong>Old Tape</strong> apply different degrees of filtering to simulate loss of low and high frequencies common in tape-based delay units.</li>
+                <li><strong>Stereo Width:</strong> Controls the stereo panning of delayed signal.</li>
+                <li><strong>Amount:</strong> Amount of the processed (delayed) signal.</li>
+                <li><strong>Dry Amount:</strong> Amount of the unprocessed (dry) signal.</li>
             </ul>
         </div>
     </body>
