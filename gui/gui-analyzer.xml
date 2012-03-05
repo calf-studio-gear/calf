@@ -17,23 +17,30 @@
                         <hbox>
                             <combo param="analyzer_mode" expand="0" fill="0"/>
                             <combo param="analyzer_smoothing" expand="0" fill="0"/>
+                            <combo param="analyzer_correction" expand="0" fill="0"/>
                         </hbox>
-                        <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.6"/>
+                        <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.6" bars="1"/>
                         <hbox>
                             <hbox expand="1" fill="1"></hbox>
                             <hbox expand="0" fill="0" spacing="12">
                                 <label text="Accuracy" />
                                 <knob param="analyzer_accuracy" size="1" expand="0" fill="0"/>
-                                <label text="     " />
+                                <label text=" " />
                                 <label text="Speed" />
                                 <knob param="analyzer_speed" size="1" expand="0" fill="0"/>
-                                <label text="     " />
+                                <label text=" " />
                                 <label text="Hold" />
                                 <toggle param="analyzer_hold" size="1" expand="0" fill="0" />
-                                <label text="     " />
+                                <label text=" " />
                                 <label text="Freeze" />
                                 <toggle param="analyzer_freeze" size="1" expand="0" fill="0" />
-                                <label text="     " />
+                                <label text=" " />
+                                <label text="Linear" />
+                                <toggle param="analyzer_linear" size="1" expand="0" fill="0" />
+                                <label text=" " />
+                                <label text="Bars" />
+                                <toggle param="analyzer_bars" size="1" expand="0" fill="0" />
+                                <label text=" " />
                                 <label text="Display" />
                                 <toggle param="analyzer_display" size="1" expand="0" fill="0" />
                             </hbox>

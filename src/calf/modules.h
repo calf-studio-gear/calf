@@ -320,7 +320,7 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, bool *bars, bool *boxes) const;
     
 
 protected:
@@ -332,17 +332,22 @@ protected:
     int plength;
     int ppos;
     int fpos;
-    rfftw_plan fft_plan;
+    mutable rfftw_plan fft_plan;
     static const int max_fft_cache_size = 32768;
     static const int max_fft_buffer_size = max_fft_cache_size * 2;
     fftw_real *fft_in;
     fftw_real *fft_out;
     fftw_real *fft_smooth;
+    fftw_real *fft_inL;
+    fftw_real *fft_outL;
+    fftw_real *fft_inR;
+    fftw_real *fft_outR;
     float *fft_delta;
     float *fft_hold;
     float *fft_freeze;
     float _hold;
-
+    mutable int _smoothing;
+    mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
     mutable int ____analyzer_smooth_dirty;
     mutable int ____analyzer_hold_dirty;

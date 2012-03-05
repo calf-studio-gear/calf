@@ -47,6 +47,8 @@ struct CalfLineGraph
     bool is_square;
     bool use_fade;
     float fade;
+    bool bars;
+    bool boxes;
     cairo_surface_t *cache_surface;
     cairo_surface_t *fade_surface;
     //GdkPixmap *cache_pixmap;

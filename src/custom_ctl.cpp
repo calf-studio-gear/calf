@@ -76,24 +76,43 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 }
 
 static void
-calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy )
+calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, bool bars, bool boxes )
 {
     int ox=5, oy=5;
-
+    int _last = 0;
+    int y;
     for (int i = 0; i < sx; i++)
     {
-        int y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
-        //if (y < oy) y = oy;
-        //if (y >= oy + sy) y = oy + sy - 1;
-        if (i and (data[i] < INFINITY or i == sx - 1)) {
-            cairo_line_to(c, ox + i, y);
-        } else if (i) {
-            continue;
+        y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
+        if(bars) {
+            // we want to draw bars
+            if(!i) {
+                _last = 0;
+            } else if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                if(boxes)
+                    cairo_rectangle(c, ox + _last, oy + y, i - _last, 3);
+                else
+                    cairo_rectangle(c, ox + _last, oy + y, i - _last, sy - y);
+                _last = i;
+            } else {
+                continue;
+            }
+        } else {
+            // we want to draw a line
+            if (i and (data[i] < INFINITY or i == sx - 1)) {
+                cairo_line_to(c, ox + i, y);
+            } else if (i) {
+                continue;
+            }
+            else
+                cairo_move_to(c, ox, y);
         }
-        else
-            cairo_move_to(c, ox, y);
     }
-    cairo_stroke(c);
+    if(bars) {
+        cairo_fill(c);
+    } else {
+        cairo_stroke(c);
+    }
 }
 
 static gboolean
@@ -222,12 +241,13 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             grid_n_save = grid_n;
 
-            gdk_cairo_set_source_color(cache_cr, &sc2);
+            //gdk_cairo_set_source_color(cache_cr, &sc2);
+            cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
             cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
             cairo_set_line_width(cache_cr, 1);
-            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl); graph_n++)
+            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->bars, &lg->boxes); graph_n++)
             {
-                calf_line_graph_draw_graph( cache_cr, data, sx, sy );
+                calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->bars, lg->boxes and graph_n );
             }
             gdk_cairo_set_source_color(cache_cr, &sc3);
             for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
@@ -267,12 +287,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
         }
 
-        gdk_cairo_set_source_color(cache_cr, &sc2);
+        cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
         cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(cache_cr, 1);
-        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl); gn++)
+        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->bars, &lg->boxes); gn++)
         {
-            calf_line_graph_draw_graph( cache_cr, data, sx, sy );
+            calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->bars, lg->boxes and gn );
         }
         gdk_cairo_set_source_color(cache_cr, &sc3);
         for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cache_cimpl); gn++)
@@ -595,8 +615,8 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         if(display) {
             cairo_rectangle(cache_cr, ox, oy, sx, sy);
             cairo_clip(cache_cr);
-            gdk_cairo_set_source_color(cache_cr, &sc3);
-            
+            //gdk_cairo_set_source_color(cache_cr, &sc3);
+            cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
             double _a;
             for(int i = 0; i < length; i+= accuracy) {
                 float l = phase_buffer[i];

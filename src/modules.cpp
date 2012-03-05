@@ -863,12 +863,17 @@ analyzer_audio_module::analyzer_audio_module() {
     plength = 0;
     fpos = 0;
     _hold = 0.f;
+    _smoothing = 0;
     phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
     memset(phase_buffer, 0, max_phase_buffer_size * sizeof(float)); // reset buffer to zero
     fft_buffer = (float*) calloc(max_fft_buffer_size, sizeof(float));
     memset(fft_buffer, 0, max_fft_buffer_size * sizeof(float)); // reset buffer to zero
     fft_in = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_out = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_inL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_outL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_inR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_outR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_smooth = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     memset(fft_smooth, 0, max_fft_cache_size * sizeof(fftw_real)); // reset buffer to zero
     fft_delta = (float*) calloc(max_fft_cache_size, sizeof(float));
@@ -897,11 +902,17 @@ void analyzer_audio_module::params_changed() {
         _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
         _acc_old = *params[param_analyzer_accuracy];
         // recreate fftw plan
+        if (fft_plan) rfftw_destroy_plan (fft_plan);
         fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+        lintrans = -1;
     }
     if(*params[param_analyzer_hold] != _hold) {
         ____analyzer_hold_dirty = 1;
         _hold = *params[param_analyzer_hold];
+    }
+    if(*params[param_analyzer_smoothing] != _smoothing) {
+        memset(fft_delta, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
+        _smoothing = *params[param_analyzer_smoothing];
     }
 }
 
@@ -970,48 +981,70 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
     return false;
 }
 
-bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, bool *bars, bool *boxes) const
 {
     if (!active or subindex > 1 or !*params[param_analyzer_display]
         or (subindex > 0 and !*params[param_analyzer_hold]))
+        // stop drawing
         return false;
-    float ret;
+
+    if(*params[param_analyzer_bars])
+        *bars = true;
+    else
+        *bars = false;
+    
+    bool fftdone = false; // if fft was renewed, this one is true
     double freq;
-    int _last = 0;
+    int iter = 0;
+    int _iter = 0;
+    int _param_speed = 16 - (int)*params[param_analyzer_speed];
     if(subindex == 0) {
-        ____analyzer_phase_was_drawn_here ++;
-        int _param_speed = 16 - (int)*params[param_analyzer_speed];
+        
         if(!((int)____analyzer_phase_was_drawn_here % _param_speed)) {
+            // seems we have to do a fft, so let's read the latest data from the
+            // buffer to send it to fft
             for(int i = 0; i < _accuracy; i++) {
+                // go to the right position back in time according to accuracy
+                // settings and cycling in the main buffer
                 int _fpos = (fpos - _accuracy * 2 + (i * 2)) % max_fft_buffer_size;
                 if(_fpos < 0)
                     _fpos = max_fft_buffer_size + _fpos;
                 float L = fft_buffer[_fpos];
                 float R = fft_buffer[_fpos + 1];
                 
-                // get the right value for calculations
+                // get the right value for analyzer calculations
                 fftw_real val;
+                
+                //if phase by frequency is active, we need to
+                //compute two FFT's, so store left and right channel
+                fftw_real valL;
+                fftw_real valR;
+                
                 switch((int)*params[param_analyzer_mode]) {
                     case 0:
+                    default:
                         // average
                         val = (L + R) / 2;
                         break;
                     case 1:
-                        // maximum
-                        val = std::max(L, R);
-                        break;
-                    case 2:
                         // left channel
                         val = L;
                         break;
-                    case 3:
+                    case 2:
                         // right channel
                         val = R;
                         break;
                 }
+                // store value in analyzer buffer
                 fft_in[i] = (fftw_real)val;
+                if(*params[param_analyzer_correction] == 3) {
+                    valL = L;
+                    valR = R;
+                    fft_inL[i] = valL;
+                    fft_inR[i] = valR;
+                }
                 
-                // fill smoothing buffer
+                // fill smoothing & falling buffer
                 if(*params[param_analyzer_smoothing] == 1.f)
                     fft_smooth[i] = fabs(fft_out[i]);
                 if(*params[param_analyzer_smoothing] == 0.f and fft_smooth[i] < fabs(fft_out[i])) {
@@ -1030,64 +1063,154 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     fft_hold[i] = fabs(fft_out[i]);
                 }
             }
+            // run fft
+            // this takes our latest buffer and returns an array with
+            // non-normalized
             rfftw_one(fft_plan, fft_in, fft_out);
+            //run fft for left and right channel while in "phase by freq" mode
+            if(*params[param_analyzer_correction] == 3) {
+            rfftw_one(fft_plan, fft_inL, fft_outL);
+            rfftw_one(fft_plan, fft_inR, fft_outR);
+            }
+            // ...and reset some values
             ____analyzer_hold_dirty = 0;
             ____analyzer_smooth_dirty = 1;
+            fftdone = true;       
         }
-        for (int i = 0; i < points; i++)
-        {
-            ret = 1.f;
-            freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-            int __last = floor(freq * (float)_accuracy / (float)srate);
-            if(!i or __last > _last) {
-                int iter;
-                if(!i) {
-                    iter = 0;
-                } else {
-                    _last = __last;
-                    iter = _last;
-                }
-                if(____analyzer_smooth_dirty and *params[param_analyzer_smoothing] == 1.f) {
-                    fft_delta[iter] = (fabs(fft_out[iter]) - fft_smooth[iter]) / _param_speed;
-                }
-                if(*params[param_analyzer_smoothing] == 1.f) {
-                    fft_smooth[iter] += fft_delta[iter];
-                }
-                if(*params[param_analyzer_smoothing] == 0.f) {
-                    fft_smooth[iter] += fft_delta[iter];
-                    fft_delta[iter] /= 1.01f;
-                }
-                if (*params[param_analyzer_freeze] > 0.f)
-                    ret =  dB_grid(fabs(fft_freeze[iter]) / 800.f);
-                else if(*params[param_analyzer_smoothing] < 2.f) {
-                    ret =  dB_grid(fabs(fft_smooth[iter]) / 800.f);
-                    fft_freeze[iter] = fft_smooth[iter];
-                } else {
-                    ret =  dB_grid(fabs(fft_out[iter]) / 800.f);
-                    fft_freeze[iter] = fft_out[iter];
-                }
-            } else
-                ret = INFINITY;
-            data[i] = ret;
-            
+        ____analyzer_phase_was_drawn_here ++;
+    }
+    if (lintrans < 0) {
+        // accuracy was changed so we have to recalc linear transition
+        int _lintrans = (int)((float)points * log((20.f + (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
+        lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans));
+    } 
+    for (int i = 0; i <= points; i++)
+    {
+        float lastoutL = 0.f;
+        float lastoutR = 0.f;
+        // cycle through the points to draw
+        freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/1000
+        if(*params[param_analyzer_linear]) {
+            // we have linear view enabled
+            if((i % lintrans == 0 and points - i > lintrans) or i == points - 1)
+                _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
+        } else {
+            // we have logarithmic view enabled
+            _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
         }
-        ____analyzer_smooth_dirty = 0;
-        return true;
-    } else {
+        if(_iter > iter) {
+            // we have to draw a value
+            if(fftdone and i) {
+                int n = 0;
+                float var1 = 0.f;
+                float var2 = 0.f;
+                
+                switch((int)*params[param_analyzer_correction]) {
+                    case 0:
+                        // nothing to do
+                    break;
+                    case 1:
+                        if(fftdone and i) {
+                            // if fft was renewed, recalc the absolute values if frequencies
+                            // are skipped
+                            for(int j = iter + 1; j < _iter; j++) {
+                                fft_out[_iter] += fabs(fft_out[j]);
+                            }
+                        }
+                    break;
+                    case 2:
+                        for(int k = 0; k < std::max(10 , std::min(400 , (int)(2.f*(float)((_iter - iter))))); k++) {
+                            if(_iter - k > 0) {
+                                var1 += fabs(fft_out[_iter - k]);
+                                n++;
+                            }
+                            if(k != 0) var1 += fabs(fft_out[_iter + k]);
+                            else if(i) var1 += fabs(lastoutL);
+                            else var1 += fabs(fft_out[_iter]);
+                            n++;
+                        }
+                        lastoutL = fft_out[_iter];
+                        fft_out[_iter] = std::max(n * fabs(fft_out[_iter]) - var1 , 1e-20);
+                    break;
+                    case 3:
+//                        for(int k = 0; k < std::max(10 , std::min(400 , (int)(2.f*(float)((_iter - iter))))); k++) {
+//                            if(_iter - k > 0) {
+//                                var1 += fabs(fft_outL[_iter - k]);
+//                                var2 += fabs(fft_outR[_iter - k]);
+//                                n++;
+//                            }
+//                            if(k != 0) {
+//                                var1 += fabs(fft_out[_iter + k]);
+//                                var2 += fabs(fft_out[_iter + k]);
+//                            }
+//                            else if(i) {
+//                                var1 += fabs(lastoutL);
+//                                var2 += fabs(lastoutR);
+//                            }
+//                            else {
+//                                var1 += fabs(fft_out[_iter]);
+//                                var2 += fabs(fft_out[_iter]);
+//                            }
+//                            n++;
+//                        }
+                        float diff_fft;
+                        diff_fft = fabs(fft_outL[_iter]) - fabs(fft_out[_iter]);
+                        printf("i %5d diff %.4f\n", i, diff_fft);
+                        fft_out[_iter] = _accuracy / 2.f * (((float)n +1.f) * (1.f + diff_fft));
+//                        lastoutL = fft_outL[_iter];
+//                        lastoutR = fft_outR[_iter];
+                    break;
+                 }
+            }
+            iter = _iter;
+            float val = 0.f;
+            *boxes = false;
+            if (*params[param_analyzer_freeze]) {
+                // freeze enabled
+                val = fft_freeze[iter];
+            } else if (subindex == 1) {
+                // we draw the hold buffer
+                *boxes = true;
+                val = fft_hold[iter];
+            } else {
+                // we draw normally (no freeze)
+                switch((int)*params[param_analyzer_smoothing]) {
+                    case 0:
+                        // falling
+                        fft_smooth[iter] += fft_delta[iter];
+                        fft_delta[iter] /= 1.01f;
+                        val = fft_smooth[iter];
+                        break;
+                    case 1:
+                        // smoothing
+                        if(____analyzer_smooth_dirty) {
+                            // rebuild delta values
+                            fft_delta[iter] = (fabs(fft_out[iter]) - fft_smooth[iter]) / _param_speed;
+                        }
+                        fft_smooth[iter] += fft_delta[iter];
+                        val = fft_smooth[iter];
+                        break;
+                    case 2:
+                        // off
+                        val = fft_out[iter];
+                        break;
+                }
+                // fill freeze buffer
+                fft_freeze[iter] = val;
+            }
+            data[i] = dB_grid(fabs(val) / _accuracy * 2.f);
+        } //else if(*params[param_analyzer_correction] == 2) {
+          //  data[i] = dB_grid(fabs(1e-20) / _accuracy * 2.f);
+          //  } 
+        else {
+            data[i] = INFINITY;
+        }
+    }
+    ____analyzer_smooth_dirty = 0;
+    if(subindex == 1) {
+        // subtle hold line
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
-        for (int i = 0; i < points; i++)
-        {
-            freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-            int __last = floor(freq * (float)_accuracy / (float)srate);
-            if(!i) {
-                ret =  dB_grid(fft_hold[0] / 800.f);
-            } else if(__last > _last) {
-                _last = __last;
-                ret =  dB_grid(fft_hold[_last] / 800.f);
-            } else
-                ret = INFINITY;
-            data[i] = ret;
-        }
     }
     return true;
 }
+
