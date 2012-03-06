@@ -997,6 +997,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         return false;
     bool fftdone = false; // if fft was renewed, this one is true
     double freq;
+    float stereo_coeff = pow(2, 4 * *params[param_analyzer_level] - 2);
     int iter = 0;
     int _iter = 1;
     float posneg = 1;
@@ -1137,7 +1138,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         //do not forget fft_out[_iter] for the next time
                         lastout = fft_out[_iter];
                         //pumping up actual signal an erase surrounding sounds
-                        fft_out[_iter] = std::max(n * fabs(fft_out[_iter]) - var1 , 1e-20);
+                        fft_out[_iter] = 0.25f * std::max(n * 0.6f * fabs(fft_out[_iter]) - var1 , 1e-20);
                     break;
                     case 3:
                         if(fftdone and i) {
@@ -1198,7 +1199,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
             if(*params[param_analyzer_mode] == 3) {
                 if(i) {
-                    data[i] = val * pow(*params[param_analyzer_level], 3);
+                    data[i] = 0.2f * (1.f - stereo_coeff) * pow(val, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(val, 3.f) + val * stereo_coeff;
                 }
                 else data[i] = 0.f;
             } 

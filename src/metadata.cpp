@@ -992,7 +992,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_L", "Clip L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_R", "Clip R" },
     
-    { 1,           0.5,           2,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
+    { 1.33,           0.5,           2,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
     { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_source_names, "analyzer_source", "Analyzer Source" },
     { 6,      2,           8,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_accuracy", "Analyzer Accuracy" },
     { 13,      1,           15,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_speed", "Analyzer Speed" },
@@ -1000,7 +1000,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_smooth_names, "analyzer_smoothing", "Analyzer Smoothing" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_hold", "Analyzer Hold" },
     { 0,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_freeze", "Analyzer Freeze" },
-    { 1,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_linear", "Analyzer Linear" },
+    { 0,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_linear", "Analyzer Linear" },
     { 1,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_bars", "Analyzer Bars" },
     { 1,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
     
