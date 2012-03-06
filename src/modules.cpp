@@ -1177,8 +1177,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             }
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f);
             if(*params[param_analyzer_correction] == 3) {
-                if(i)data[i] = fft_out[iter];
-                if(!i)data[i}
+                if(i) data[i] = fft_out[iter];
+                else data[i] = 0.f;
                 if(fabs(data[i])>1.f) printf("mehr als 1!!!!!!!!!! bei %5d bei iter %4d und _iter %4d\n",i,iter,_iter);
             } 
         } //else if(*params[param_analyzer_correction] == 2) {

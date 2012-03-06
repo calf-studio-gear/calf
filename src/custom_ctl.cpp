@@ -125,9 +125,9 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode )
         }
     }
     if(!mode) {
-        cairo_fill(c);
-    } else {
         cairo_stroke(c);
+    } else {
+        cairo_fill(c);
     }
 }
 
