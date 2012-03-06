@@ -1065,15 +1065,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     fft_hold[i] = fft_out[i];
                 }
             }
-            for(int k = 0; k < 1; true) {
-                //hier auf richtigen plan prüfen
-                if(true) {
-                    break;
-                }
-                // recreate fftw plan
-                rfftw_destroy_plan (fft_plan);
-                fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
-            }            
             
             // run fft
             // this takes our latest buffer and returns an array with
@@ -1130,6 +1121,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     break;
                     case 2:
                         for(int k = 0; k < std::max(10 , std::min(400 , (int)(2.f*(float)((_iter - iter))))); k++) {
+                            
+                            //collect amplitudes in the environment of _iter to
+                            //be able to erase them from signal and leave just
+                            //the peaks
                             if(_iter - k > 0) {
                                 var1 += fabs(fft_out[_iter - k]);
                                 n++;
@@ -1139,18 +1134,21 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                             else var1 += fabs(fft_out[_iter]);
                             n++;
                         }
+                        //do not forget fft_out[_iter] for the next time
                         lastout = fft_out[_iter];
+                        //pumping up actual signal an erase surrounding sounds
                         fft_out[_iter] = std::max(n * fabs(fft_out[_iter]) - var1 , 1e-20);
                     break;
                     case 3:
                         if(fftdone and i) {
-                            // if fft was renewed, recalc the absolute values if frequencies
-                            // are skipped
+                            // if fft was renewed, recalc the absolute values in left and right 
+                            // if frequencies are skipped
                             for(int j = iter + 1; j < _iter; j++) {
                                 fft_out[_iter] += fabs(fft_out[j]);
                                 fft_outR[_iter] += fabs(fft_outR[j]);
                             }
                         }
+                        //calculate difference between left an right channel                        
                         float diff_fft;
                         diff_fft = fabs(fft_out[_iter]) - fabs(fft_outR[_iter]);
                         posneg = fabs(diff_fft) / diff_fft;
@@ -1196,6 +1194,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // fill freeze buffer
                 fft_freeze[iter] = val;
             }
+            //send values to painting
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
             if(*params[param_analyzer_mode] == 3) {
                 if(i) {
