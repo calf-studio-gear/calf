@@ -871,8 +871,6 @@ analyzer_audio_module::analyzer_audio_module() {
     memset(fft_buffer, 0, max_fft_buffer_size * sizeof(float)); // reset buffer to zero
     fft_in = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_out = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_inL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_outL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_inR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_outR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
     fft_smooth = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
@@ -988,7 +986,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
 {
     if(____analyzer_sanitize) {
         memset(fft_in, 1e-20, max_fft_cache_size * sizeof(float)); // reset buffer to zero
-        memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
         ____analyzer_sanitize = 0;
         return false;
@@ -1045,7 +1042,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 if(*params[param_analyzer_mode] == 3) {
                     valL = L;
                     valR = R;
-                    fft_inL[i] = valL;
+                    fft_in[i] = valL;
                     fft_inR[i] = valR;
                 }
                 
@@ -1069,11 +1066,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 }
             }
             for(int k = 0; k < 1; true) {
-            //hier auf richtigen plan prüfen
-            if(true) {
-                break;
-            }
-            // recreate fftw plan
+                //hier auf richtigen plan prüfen
+                if(true) {
+                    break;
+                }
+                // recreate fftw plan
                 rfftw_destroy_plan (fft_plan);
                 fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
             }            
@@ -1084,7 +1081,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             rfftw_one(fft_plan, fft_in, fft_out);
             //run fft for left and right channel while in "phase by freq" mode
             if(*params[param_analyzer_mode] == 3) {
-                rfftw_one(fft_plan, fft_inL, fft_outL);
                 rfftw_one(fft_plan, fft_inR, fft_outR);
             }
             // ...and reset some values
@@ -1096,12 +1092,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     if (lintrans < 0) {
         // accuracy was changed so we have to recalc linear transition
-        int _lintrans = (int)((float)points * log((20.f + (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
+        int _lintrans = (int)((float)points * log((20.f + 2.f * (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
         lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans));
     }
     for (int i = 0; i <= points; i++)
     {
-        bool kacke = false;
         float lastout = 0.f;
         // cycle through the points to draw
         freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/1000
@@ -1109,14 +1104,12 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // we have linear view enabled
             if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
                 _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
-                printf("_iter: %2d iter: %2d\n", _iter, iter);
-                kacke = true;
             }    
         } else {
             // we have logarithmic view enabled
             _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
         }
-        if(_iter > iter or kacke) {
+        if(_iter > iter) {
             // we have to draw a value
             if(fftdone and i) {
                 int n = 0;
@@ -1154,12 +1147,12 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                             // if fft was renewed, recalc the absolute values if frequencies
                             // are skipped
                             for(int j = iter + 1; j < _iter; j++) {
-                                fft_outL[_iter] += fabs(fft_outL[j]);
+                                fft_out[_iter] += fabs(fft_out[j]);
                                 fft_outR[_iter] += fabs(fft_outR[j]);
                             }
                         }
                         float diff_fft;
-                        diff_fft = fabs(fft_outL[_iter]) - fabs(fft_outR[_iter]);
+                        diff_fft = fabs(fft_out[_iter]) - fabs(fft_outR[_iter]);
                         posneg = fabs(diff_fft) / diff_fft;
                         fft_out[_iter] = diff_fft / _accuracy;
                     break;
@@ -1214,10 +1207,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         else {
             data[i] = INFINITY;
         }
-//        if(*params[param_analyzer_linear] and !i) {
-//        iter = 0;
-//        _iter = 0;
-//        }
     }
     ____analyzer_smooth_dirty = 0;
     if(subindex == 1) {
