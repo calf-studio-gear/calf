@@ -882,10 +882,11 @@ analyzer_audio_module::analyzer_audio_module() {
     memset(fft_hold, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
     fft_freeze = (float*) calloc(max_fft_cache_size, sizeof(float));
     memset(fft_freeze, 0, max_fft_cache_size * sizeof(float)); // reset buffer to zero
-    
+    fft_plan = false;
     ____analyzer_phase_was_drawn_here = 0;
     ____analyzer_smooth_dirty = 0;
     ____analyzer_hold_dirty = 0;
+    ____analyzer_sanitize = 0;
 
 }
 
@@ -899,6 +900,7 @@ void analyzer_audio_module::deactivate() {
 
 void analyzer_audio_module::params_changed() {
     if(*params[param_analyzer_accuracy] != _acc_old) {
+        ____analyzer_sanitize = 1;
         _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
         _acc_old = *params[param_analyzer_accuracy];
         // recreate fftw plan
@@ -983,11 +985,18 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
 
 bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if(____analyzer_sanitize) {
+        memset(fft_in, 1e-20, max_fft_cache_size * sizeof(float)); // reset buffer to zero
+        memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
+        ____analyzer_sanitize = 0;
+        return false;
+    }
+    
     if (!active or subindex > 1 or !*params[param_analyzer_display]
         or (subindex > 0 and !*params[param_analyzer_hold]))
         // stop drawing
         return false;
-
     bool fftdone = false; // if fft was renewed, this one is true
     double freq;
     int iter = 0;
@@ -1080,8 +1089,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     for (int i = 0; i <= points; i++)
     {
-        float lastoutL = 0.f;
-        float lastoutR = 0.f;
+        float lastout = 0.f;
         // cycle through the points to draw
         freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/1000
         if(*params[param_analyzer_linear]) {
@@ -1097,7 +1105,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             if(fftdone and i) {
                 int n = 0;
                 float var1 = 0.f;
-                float var2 = 0.f;
                 
                 switch((int)*params[param_analyzer_mode]) {
                     case 0:
@@ -1119,11 +1126,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                                 n++;
                             }
                             if(k != 0) var1 += fabs(fft_out[_iter + k]);
-                            else if(i) var1 += fabs(lastoutL);
+                            else if(i) var1 += fabs(lastout);
                             else var1 += fabs(fft_out[_iter]);
                             n++;
                         }
-                        lastoutL = fft_out[_iter];
+                        lastout = fft_out[_iter];
                         fft_out[_iter] = std::max(n * fabs(fft_out[_iter]) - var1 , 1e-20);
                     break;
                     case 3:
@@ -1138,6 +1145,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         float diff_fft;
                         diff_fft = fabs(fft_outL[_iter]) - fabs(fft_outR[_iter]);
                         fft_out[_iter] = diff_fft / _accuracy;
+                        //printf("fft_out[_iter]: %.4f\n",fft_out[_iter]);
                     break;
                  }
             }
@@ -1175,15 +1183,14 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // fill freeze buffer
                 fft_freeze[iter] = val;
             }
-            data[i] = dB_grid(fabs(val) / _accuracy * 2.f);
-            if(*params[param_analyzer_mode] == 3) {
-                if(i) data[i] = fft_out[iter];
+            data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
+            if(*params[param_analyzer_correction] == 3) {
+                if(i) {
+                    data[i] = fft_out[iter];
+                }
                 else data[i] = 0.f;
-//                if(fabs(data[i])>1.f) printf("mehr als 1!!!!!!!!!! bei %5d bei iter %4d und _iter %4d\n",i,iter,_iter);
             } 
-        } //else if(*params[param_analyzer_mode] == 2) {
-          //  data[i] = dB_grid(fabs(1e-20) / _accuracy * 2.f);
-          //  } 
+        }
         else {
             data[i] = INFINITY;
         }
@@ -1208,6 +1215,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // draw lines
         *mode = 0;
     }
+    ____analyzer_sanitize = 0;
     return true;
 }
 
