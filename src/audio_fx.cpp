@@ -512,7 +512,7 @@ void simple_lfo::set_params(float f, int m, float o, uint32_t sr, float a)
     amount = a;
 }
 
-bool simple_lfo::get_graph(float *data, int points, cairo_iface *context) const
+bool simple_lfo::get_graph(float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
