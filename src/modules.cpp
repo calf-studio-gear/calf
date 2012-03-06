@@ -996,7 +996,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     bool fftdone = false; // if fft was renewed, this one is true
     double freq;
     int iter = 0;
-    int _iter = 0;
+    int _iter = 1;
     int _param_speed = 16 - (int)*params[param_analyzer_speed];
     if(subindex == 0) {
         
@@ -1069,8 +1069,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             rfftw_one(fft_plan, fft_in, fft_out);
             //run fft for left and right channel while in "phase by freq" mode
             if(*params[param_analyzer_correction] == 3) {
-            rfftw_one(fft_plan, fft_inL, fft_outL);
-            rfftw_one(fft_plan, fft_inR, fft_outR);
+                rfftw_one(fft_plan, fft_inL, fft_outL);
+                rfftw_one(fft_plan, fft_inR, fft_outR);
             }
             // ...and reset some values
             ____analyzer_hold_dirty = 0;
@@ -1133,32 +1133,17 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         fft_out[_iter] = std::max(n * fabs(fft_out[_iter]) - var1 , 1e-20);
                     break;
                     case 3:
-//                        for(int k = 0; k < std::max(10 , std::min(400 , (int)(2.f*(float)((_iter - iter))))); k++) {
-//                            if(_iter - k > 0) {
-//                                var1 += fabs(fft_outL[_iter - k]);
-//                                var2 += fabs(fft_outR[_iter - k]);
-//                                n++;
-//                            }
-//                            if(k != 0) {
-//                                var1 += fabs(fft_out[_iter + k]);
-//                                var2 += fabs(fft_out[_iter + k]);
-//                            }
-//                            else if(i) {
-//                                var1 += fabs(lastoutL);
-//                                var2 += fabs(lastoutR);
-//                            }
-//                            else {
-//                                var1 += fabs(fft_out[_iter]);
-//                                var2 += fabs(fft_out[_iter]);
-//                            }
-//                            n++;
-//                        }
+                        if(fftdone and i) {
+                            // if fft was renewed, recalc the absolute values if frequencies
+                            // are skipped
+                            for(int j = iter + 1; j < _iter; j++) {
+                                fft_outL[_iter] += fabs(fft_outL[j]);
+                                fft_outR[_iter] += fabs(fft_outR[j]);
+                            }
+                        }
                         float diff_fft;
-                        diff_fft = fabs(fft_outL[_iter]) - fabs(fft_out[_iter]);
-                        printf("i %5d diff %.4f\n", i, diff_fft);
-                        fft_out[_iter] = _accuracy / 2.f * (((float)n +1.f) * (1.f + diff_fft));
-//                        lastoutL = fft_outL[_iter];
-//                        lastoutR = fft_outR[_iter];
+                        diff_fft = fabs(fft_outL[_iter]) - fabs(fft_outR[_iter]);
+                        fft_out[_iter] = diff_fft / _accuracy;
                     break;
                  }
             }
@@ -1199,6 +1184,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_freeze[iter] = val;
             }
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f);
+            if(*params[param_analyzer_correction] == 3) {
+                if(i)data[i] = fft_out[iter];
+                if(!i)data[i}
+                if(fabs(data[i])>1.f) printf("mehr als 1!!!!!!!!!! bei %5d bei iter %4d und _iter %4d\n",i,iter,_iter);
+            } 
         } //else if(*params[param_analyzer_correction] == 2) {
           //  data[i] = dB_grid(fabs(1e-20) / _accuracy * 2.f);
           //  } 
