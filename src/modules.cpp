@@ -1183,24 +1183,27 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // fill freeze buffer
                 fft_freeze[iter] = val;
             }
-            data[i] = dB_grid(fabs(val) / _accuracy * 2.f);
+            data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
             if(*params[param_analyzer_correction] == 3) {
-                if(i) data[i] = fft_out[iter];
+                if(i) {
+                    data[i] = fft_out[iter];
+                }
                 else data[i] = 0.f;
-//                if(fabs(data[i])>1.f) printf("mehr als 1 bei %5d bei %4d : %.4f\n",i,iter,data[i]);
             } 
         }
         else {
             data[i] = INFINITY;
         }
-        printf("data: %.5f\n", data[i]);
     }
     ____analyzer_smooth_dirty = 0;
     if(subindex == 1) {
         // subtle hold line
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
-    if(*params[param_analyzer_bars]) {
+    if (*params[param_analyzer_correction] == 3) {
+        // draw centered bars
+        *mode = 3;
+    } else if(*params[param_analyzer_bars]) {
         if(subindex == 0) {
             // draw bars
             *mode = 1;
@@ -1208,9 +1211,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // draw boxes
             *mode = 2;
         }
-    } else if (*params[param_analyzer_correction] == 3) {
-        // draw centered bars
-        *mode = 3;
     } else {
         // draw lines
         *mode = 0;
