@@ -1068,6 +1068,16 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     fft_hold[i] = fft_out[i];
                 }
             }
+            for(int k = 0; k < 1; true) {
+            //hier auf richtigen plan prüfen
+            if(true) {
+                break;
+            }
+            // recreate fftw plan
+                rfftw_destroy_plan (fft_plan);
+                fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+            }            
+            
             // run fft
             // this takes our latest buffer and returns an array with
             // non-normalized
