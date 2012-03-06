@@ -351,6 +351,7 @@ protected:
     mutable int ____analyzer_phase_was_drawn_here;
     mutable int ____analyzer_smooth_dirty;
     mutable int ____analyzer_hold_dirty;
+    mutable int ____analyzer_sanitize;
 
 };
 
