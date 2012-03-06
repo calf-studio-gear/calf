@@ -636,7 +636,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active or subindex > 3)
         return false;
@@ -647,7 +647,7 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
     {
         ret = 1.f;
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        switch(mode) {
+        switch(*mode) {
             case 0:
             default:
                 j1 = 0;

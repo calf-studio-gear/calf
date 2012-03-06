@@ -306,7 +306,7 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -436,7 +436,7 @@ void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int veloci
     }
 }
 
-bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active || index != par_mode) {
         return false;

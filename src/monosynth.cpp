@@ -182,7 +182,7 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
     
 }
 
-bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     monosynth_audio_module::precalculate_waves(NULL);
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);

@@ -49,7 +49,7 @@ void flanger_audio_module::deactivate() {
     is_active = false;
 }
 
-bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -134,7 +134,7 @@ void phaser_audio_module::deactivate()
     is_active = false;
 }
 
-bool phaser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool phaser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -426,7 +426,7 @@ void multichorus_audio_module::set_sample_rate(uint32_t sr) {
     right.setup(sr);
 }
 
-bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -707,18 +707,18 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
     return outputs_mask;
 }
 
-bool pulsator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool pulsator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active) {
         return false;
     } else if(index == param_freq) {
         if(subindex == 0) {
             context->set_source_rgba(0.35, 0.4, 0.2, 1);
-            return lfoL.get_graph(data, points, context);
+            return lfoL.get_graph(data, points, context, mode);
         }
         if(subindex == 1) {
             context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
-            return lfoR.get_graph(data, points, context);
+            return lfoR.get_graph(data, points, context, mode);
         }
     }
     return false;

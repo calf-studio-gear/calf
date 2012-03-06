@@ -206,7 +206,7 @@ public:
         inertia_filter_module::params_changed(); 
     }
         
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
@@ -236,7 +236,7 @@ public:
     virtual void note_on(int channel, int note, int vel);
     virtual void note_off(int channel, int note, int vel);
     
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     
 private:
     void adjust_gain_according_to_filter_mode(int velocity);

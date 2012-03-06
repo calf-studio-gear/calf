@@ -357,11 +357,11 @@ const gain_reduction_audio_module *multibandcompressor_audio_module::get_strip_b
     return NULL;
 }
 
-bool multibandcompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool multibandcompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_graph(subindex, data, points, context);
+        return m->get_graph(subindex, data, points, context, mode);
     return false;
 }
 
@@ -488,11 +488,11 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
     // whatever has to be returned x)
     return outputs_mask;
 }
-bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
-    return compressor.get_graph(subindex, data, points, context);
+    return compressor.get_graph(subindex, data, points, context, mode);
 }
 
 bool compressor_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
@@ -865,7 +865,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
     // whatever has to be returned x)
     return outputs_mask;
 }
-bool sidechaincompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool sidechaincompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -873,7 +873,7 @@ bool sidechaincompressor_audio_module::get_graph(int index, int subindex, float 
         context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
     } else if(index == param_compression) {
-        return compressor.get_graph(subindex, data, points, context);
+        return compressor.get_graph(subindex, data, points, context, mode);
     }
     return false;
 }
@@ -1127,7 +1127,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     // whatever has to be returned x)
     return outputs_mask;
 }
-bool deesser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool deesser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -1277,11 +1277,11 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
     // whatever has to be returned x)
     return outputs_mask;
 }
-bool gate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool gate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
-    return gate.get_graph(subindex, data, points, context);
+    return gate.get_graph(subindex, data, points, context, mode);
 }
 
 bool gate_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
@@ -1652,7 +1652,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
     // whatever has to be returned x)
     return outputs_mask;
 }
-bool sidechaingate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool sidechaingate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -1660,7 +1660,7 @@ bool sidechaingate_audio_module::get_graph(int index, int subindex, float *data,
         context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
     } else if(index == param_gating) {
-        return gate.get_graph(subindex, data, points, context);
+        return gate.get_graph(subindex, data, points, context, mode);
     }
     return false;
 }
@@ -2052,11 +2052,11 @@ const expander_audio_module *multibandgate_audio_module::get_strip_by_param_inde
     return NULL;
 }
 
-bool multibandgate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool multibandgate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_graph(subindex, data, points, context);
+        return m->get_graph(subindex, data, points, context, mode);
     return false;
 }
 
@@ -2244,7 +2244,7 @@ float gain_reduction_audio_module::get_comp_level() {
     return meter_comp;
 }
 
-bool gain_reduction_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context) const
+bool gain_reduction_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
@@ -2490,7 +2490,7 @@ float expander_audio_module::get_expander_level() {
     return meter_gate;
 }
 
-bool expander_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context) const
+bool expander_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;

@@ -76,7 +76,7 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 }
 
 static void
-calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode )
+calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 0 )
 {
     int ox=5, oy=5;
     int _last = 0;
@@ -262,6 +262,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
             cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
             cairo_set_line_width(cache_cr, 1);
+            lg->mode = 0;
             for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->mode); graph_n++)
             {
                 calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
@@ -307,6 +308,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
         cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(cache_cr, 1);
+        lg->mode = 0;
         for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->mode); gn++)
         {
             calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
@@ -408,6 +410,7 @@ calf_line_graph_init (CalfLineGraph *self)
     widget->requisition.height = 40;
     self->cache_surface = NULL;
     self->last_generation = 0;
+    self->mode = 0;
 }
 
 GtkWidget *

@@ -54,7 +54,7 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
 
@@ -80,7 +80,7 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
@@ -148,7 +148,7 @@ public:
     void activate();
     void deactivate();
     void set_sample_rate(uint32_t sr);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     float freq_gain(int subindex, float freq, float srate) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
@@ -180,7 +180,7 @@ public:
         }
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
 };
