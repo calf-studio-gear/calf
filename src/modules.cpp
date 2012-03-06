@@ -1002,6 +1002,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     double freq;
     int iter = 0;
     int _iter = 1;
+    float posneg = 1;
     int _param_speed = 16 - (int)*params[param_analyzer_speed];
     if(subindex == 0) {
         if(!((int)____analyzer_phase_was_drawn_here % _param_speed)) {
@@ -1050,7 +1051,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 
                 // fill smoothing & falling buffer
                 if(*params[param_analyzer_smoothing] == 1.f)
-                    fft_smooth[i] = fabs(fft_out[i]);
+                    fft_smooth[i] = fft_out[i];
                 if(*params[param_analyzer_smoothing] == 0.f and fft_smooth[i] < fabs(fft_out[i])) {
                     fft_smooth[i] = fabs(fft_out[i]);
                 }
@@ -1064,7 +1065,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 if(____analyzer_hold_dirty) {
                     fft_hold[i] = 0.f;
                 } else if(fabs(fft_out[i]) > fft_hold[i]) {
-                    fft_hold[i] = fabs(fft_out[i]);
+                    fft_hold[i] = fft_out[i];
                 }
             }
             // run fft
@@ -1145,8 +1146,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         }
                         float diff_fft;
                         diff_fft = fabs(fft_outL[_iter]) - fabs(fft_outR[_iter]);
+                        posneg = fabs(diff_fft) / diff_fft;
                         fft_out[_iter] = diff_fft / _accuracy;
-                        //printf("fft_out[_iter]: %.4f\n",fft_out[_iter]);
                     break;
                  }
             }
@@ -1163,7 +1164,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 switch((int)*params[param_analyzer_smoothing]) {
                     case 0:
                         // falling
-                        fft_smooth[iter] += fft_delta[iter];
+                        fft_smooth[iter] -= fabs(fft_delta[iter]);
                         fft_delta[iter] /= 1.01f;
                         val = fft_smooth[iter];
                         break;
@@ -1171,7 +1172,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // smoothing
                         if(____analyzer_smooth_dirty) {
                             // rebuild delta values
-                            fft_delta[iter] = (fabs(fft_out[iter]) - fft_smooth[iter]) / _param_speed;
+                            fft_delta[iter] = (posneg * fabs(fft_out[iter]) - fft_smooth[iter]) / _param_speed;
                         }
                         fft_smooth[iter] += fft_delta[iter];
                         val = fft_smooth[iter];
@@ -1187,7 +1188,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
             if(*params[param_analyzer_mode] == 3) {
                 if(i) {
-                    data[i] = fft_out[iter];
+                    data[i] = val;
                 }
                 else data[i] = 0.f;
             } 
