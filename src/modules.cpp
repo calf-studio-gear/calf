@@ -981,25 +981,19 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
     return false;
 }
 
-bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, bool *bars, bool *boxes) const
+bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!active or subindex > 1 or !*params[param_analyzer_display]
         or (subindex > 0 and !*params[param_analyzer_hold]))
         // stop drawing
         return false;
 
-    if(*params[param_analyzer_bars])
-        *bars = true;
-    else
-        *bars = false;
-    
     bool fftdone = false; // if fft was renewed, this one is true
     double freq;
     int iter = 0;
     int _iter = 0;
     int _param_speed = 16 - (int)*params[param_analyzer_speed];
     if(subindex == 0) {
-        
         if(!((int)____analyzer_phase_was_drawn_here % _param_speed)) {
             // seems we have to do a fft, so let's read the latest data from the
             // buffer to send it to fft
@@ -1083,7 +1077,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // accuracy was changed so we have to recalc linear transition
         int _lintrans = (int)((float)points * log((20.f + (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
         lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans));
-    } 
+    }
     for (int i = 0; i <= points; i++)
     {
         float lastoutL = 0.f;
@@ -1164,13 +1158,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             }
             iter = _iter;
             float val = 0.f;
-            *boxes = false;
             if (*params[param_analyzer_freeze]) {
                 // freeze enabled
                 val = fft_freeze[iter];
             } else if (subindex == 1) {
                 // we draw the hold buffer
-                *boxes = true;
                 val = fft_hold[iter];
             } else {
                 // we draw normally (no freeze)
@@ -1210,6 +1202,21 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     if(subindex == 1) {
         // subtle hold line
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+    }
+    if(*params[param_analyzer_bars]) {
+        if(subindex == 0) {
+            // draw bars
+            *mode = 1;
+        } else {
+            // draw boxes
+            *mode = 2;
+        }
+    } else if (*params[param_analyzer_correction] == 3) {
+        // draw centered bars
+        *mode = 3;
+    } else {
+        // draw lines
+        *mode = 0;
     }
     return true;
 }

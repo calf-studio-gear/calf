@@ -164,7 +164,7 @@ struct line_graph_iface
     /// @param context cairo context to adjust (for multicolour graphs etc.)
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, bool *bars, bool *blocks) const { return false; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const { return false; }
 
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)

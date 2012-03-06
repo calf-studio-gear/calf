@@ -76,7 +76,7 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 }
 
 static void
-calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, bool bars, bool boxes )
+calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode )
 {
     int ox=5, oy=5;
     int _last = 0;
@@ -84,31 +84,47 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, bool bars, 
     for (int i = 0; i < sx; i++)
     {
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
-        if(bars) {
-            // we want to draw bars
-            if(!i) {
-                _last = 0;
-            } else if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                if(boxes)
-                    cairo_rectangle(c, ox + _last, oy + y, i - _last, 3);
+        switch(mode) {
+            case 0:
+                // we want to draw a line
+                if (i and (data[i] < INFINITY or i == sx - 1)) {
+                    cairo_line_to(c, ox + i, y);
+                } else if (i) {
+                    continue;
+                }
                 else
+                    cairo_move_to(c, ox, y);
+                break;
+            case 1:
+                // bars are used
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
                     cairo_rectangle(c, ox + _last, oy + y, i - _last, sy - y);
-                _last = i;
-            } else {
-                continue;
-            }
-        } else {
-            // we want to draw a line
-            if (i and (data[i] < INFINITY or i == sx - 1)) {
-                cairo_line_to(c, ox + i, y);
-            } else if (i) {
-                continue;
-            }
-            else
-                cairo_move_to(c, ox, y);
+                    _last = i;
+                } else {
+                    continue;
+                }
+                break;
+            case 2:
+                // this one is drawing little boxes at the values position
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                    cairo_rectangle(c, ox + _last, oy + y, i - _last, 3);
+                    _last = i;
+                } else {
+                    continue;
+                }
+                break;
+            case 3:
+                // this one is drawing bars centered on the y axis
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                    cairo_rectangle(c, ox + _last, oy + y, i - _last, 3);
+                    _last = i;
+                } else {
+                    continue;
+                }
+                break;
         }
     }
-    if(bars) {
+    if(!mode) {
         cairo_fill(c);
     } else {
         cairo_stroke(c);
@@ -245,9 +261,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
             cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
             cairo_set_line_width(cache_cr, 1);
-            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->bars, &lg->boxes); graph_n++)
+            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->mode); graph_n++)
             {
-                calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->bars, lg->boxes and graph_n );
+                calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
             }
             gdk_cairo_set_source_color(cache_cr, &sc3);
             for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
@@ -290,9 +306,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
         cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
         cairo_set_line_width(cache_cr, 1);
-        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->bars, &lg->boxes); gn++)
+        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->mode); gn++)
         {
-            calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->bars, lg->boxes and gn );
+            calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
         }
         gdk_cairo_set_source_color(cache_cr, &sc3);
         for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cache_cimpl); gn++)
