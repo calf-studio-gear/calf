@@ -983,9 +983,9 @@ CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus
 
 CALF_PORT_NAMES(analyzer) = {"In L", "In R", "Out L", "Out R"};
 const char *gonio_mode_names[] = { "Small Dots", "Medium Dots", "Big Dots", "Fields", "Lines" };
-const char *analyzer_mode_names[] = { "Average", "Left Channel", "Right Channel" };
+const char *analyzer_source_names[] = { "Average", "Left Channel", "Right Channel" };
 const char *analyzer_smooth_names[] = { "Falling", "Smoothing", "Off" };
-const char *analyzer_correction_names[] = { "Off", "Additive", "Denoised Peaks", "Phase by Frequeny" };
+const char *analyzer_mode_names[] = { "Normalized", "Additive", "Denoised Peaks", "Stereo Image" };
 CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Level L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Level R" },
@@ -993,7 +993,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_R", "Clip R" },
     
     { 1,           0.125,           8,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
-    { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
+    { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_source_names, "analyzer_source", "Analyzer Source" },
     { 6,      2,           8,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_accuracy", "Analyzer Accuracy" },
     { 13,      1,           15,   0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_speed", "Analyzer Speed" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_display", "Analyzer Display" },
@@ -1002,7 +1002,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_freeze", "Analyzer Freeze" },
     { 1,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_linear", "Analyzer Linear" },
     { 1,          0, 1,     2, PF_BOOL | PF_CTL_TOGGLE , NULL, "analyzer_bars", "Analyzer Bars" },
-    { 1,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_correction_names, "analyzer_correction", "Analyzer Correction" },
+    { 1,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
     
     { 1,           0.125,           8,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "gonio_level", "Gonio Level" },
     { 1,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, gonio_mode_names, "gonio_mode", "Gonio Mode" },

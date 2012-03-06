@@ -1023,7 +1023,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fftw_real valL;
                 fftw_real valR;
                 
-                switch((int)*params[param_analyzer_mode]) {
+                switch((int)*params[param_analyzer_source]) {
                     case 0:
                     default:
                         // average
@@ -1040,7 +1040,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 }
                 // store value in analyzer buffer
                 fft_in[i] = (fftw_real)val;
-                if(*params[param_analyzer_correction] == 3) {
+                if(*params[param_analyzer_mode] == 3) {
                     valL = L;
                     valR = R;
                     fft_inL[i] = valL;
@@ -1071,7 +1071,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // non-normalized
             rfftw_one(fft_plan, fft_in, fft_out);
             //run fft for left and right channel while in "phase by freq" mode
-            if(*params[param_analyzer_correction] == 3 ) {
+            if(*params[param_analyzer_mode] == 3) {
                 rfftw_one(fft_plan, fft_inL, fft_outL);
                 rfftw_one(fft_plan, fft_inR, fft_outR);
             }
@@ -1106,7 +1106,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 int n = 0;
                 float var1 = 0.f;
                 
-                switch((int)*params[param_analyzer_correction]) {
+                switch((int)*params[param_analyzer_mode]) {
                     case 0:
                         // nothing to do
                     break;
@@ -1184,10 +1184,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_freeze[iter] = val;
             }
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
-            if(*params[param_analyzer_correction] == 3) {
-                if(i) {
-                    data[i] = fft_out[iter];
-                }
+            if(*params[param_analyzer_mode] == 3) {
+                if(i) data[i] = fft_out[iter];
                 else data[i] = 0.f;
             } 
         }
@@ -1200,7 +1198,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // subtle hold line
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
-    if (*params[param_analyzer_correction] == 3) {
+    if (*params[param_analyzer_mode] == 3) {
         // draw centered bars
         *mode = 3;
     } else if(*params[param_analyzer_bars]) {
