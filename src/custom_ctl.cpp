@@ -86,6 +86,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode )
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
         switch(mode) {
             case 0:
+            default:
                 // we want to draw a line
                 if (i and (data[i] < INFINITY or i == sx - 1)) {
                     cairo_line_to(c, ox + i, y);
