@@ -409,7 +409,7 @@ struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_meter_L, param_meter_R, param_clip_L, param_clip_R,
-           param_analyzer_level, param_analyzer_mode, param_analyzer_accuracy, param_analyzer_speed, param_analyzer_display, param_analyzer_smoothing, param_analyzer_hold, param_analyzer_freeze, param_analyzer_linear, param_analyzer_bars, param_analyzer_correction,
+           param_analyzer_level, param_analyzer_source, param_analyzer_accuracy, param_analyzer_speed, param_analyzer_display, param_analyzer_smoothing, param_analyzer_hold, param_analyzer_freeze, param_analyzer_linear, param_analyzer_bars, param_analyzer_mode,
            param_gonio_level, param_gonio_mode, param_gonio_use_fade, param_gonio_fade, param_gonio_accuracy, param_gonio_display,
            param_count };
     PLUGIN_NAME_ID_LABEL("analyzer", "analyzer", "Analyzer")
