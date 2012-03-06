@@ -995,7 +995,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     
     if (!active or subindex > 1 or !*params[param_analyzer_display]
-        or (subindex > 0 and !*params[param_analyzer_hold]))
+        or (subindex > 0 and (!*params[param_analyzer_hold] or *params[param_analyzer_mode] == 3)))
         // stop drawing
         return false;
     bool fftdone = false; // if fft was renewed, this one is true
