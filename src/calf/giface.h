@@ -196,6 +196,10 @@ struct line_graph_iface
     /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
     virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
     
+    /// Return if a graph should redraw completely
+    /// @param index Parameter/graph number (usually tied to particular plugin control port)
+    virtual bool get_clear_all(int index) const { return false; }
+    
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
 };

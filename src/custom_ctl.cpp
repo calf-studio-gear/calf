@@ -116,7 +116,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode )
             case 3:
                 // this one is drawing bars centered on the y axis
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, data[i] * (sx / 2));
+                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sx / 2));
                     _last = i;
                 } else {
                     continue;
@@ -196,8 +196,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
         int cache_graph_index, cache_dot_index, cache_grid_index;
         int gen_index = lg->source->get_changed_offsets( lg->source_id, lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
-
-        if( cache_dirty || (gen_index != lg->last_generation) ) {
+        
+        if( cache_dirty || gen_index != lg->last_generation || lg->source->get_clear_all(lg->source_id)) {
             
             cairo_t *cache_cr = cairo_create( lg->cache_surface );
         
