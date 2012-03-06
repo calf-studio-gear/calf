@@ -320,7 +320,7 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, bool *bars, bool *boxes) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     
 
 protected:
