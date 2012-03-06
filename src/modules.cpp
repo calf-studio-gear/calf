@@ -1201,8 +1201,13 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
     if (*params[param_analyzer_mode] == 3) {
-        // draw centered bars
-        *mode = 3;
+        if(*params[param_analyzer_bars]) {
+            // draw centered bars
+            *mode = 3;
+        } else {
+            // draw centered line
+            *mode = 0;
+        }
     } else if(*params[param_analyzer_bars]) {
         if(subindex == 0) {
             // draw bars
