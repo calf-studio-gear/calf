@@ -339,8 +339,6 @@ protected:
     fftw_real *fft_in;
     fftw_real *fft_out;
     fftw_real *fft_smooth;
-    fftw_real *fft_inL;
-    fftw_real *fft_outL;
     fftw_real *fft_inR;
     fftw_real *fft_outR;
     float *fft_delta;
