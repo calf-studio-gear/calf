@@ -1193,7 +1193,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // subtle hold line
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
-    if(*params[param_analyzer_bars]) {
+    if (*params[param_analyzer_correction] == 3) {
+        // draw centered bars
+        *mode = 3;
+    } else if(*params[param_analyzer_bars]) {
         if(subindex == 0) {
             // draw bars
             *mode = 1;
@@ -1201,9 +1204,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // draw boxes
             *mode = 2;
         }
-    } else if (*params[param_analyzer_correction] == 3) {
-        // draw centered bars
-        *mode = 3;
     } else {
         // draw lines
         *mode = 0;
