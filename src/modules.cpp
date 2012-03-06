@@ -859,6 +859,7 @@ analyzer_audio_module::analyzer_audio_module() {
     meter_R = 0.f;
     _accuracy = -1;
     _acc_old = -1;
+    _mode_old = -1;
     ppos = 0;
     plength = 0;
     fpos = 0;
@@ -1224,3 +1225,27 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     return true;
 }
 
+bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{ 
+    bool out;
+    if(*params[param_analyzer_mode] != 3)
+        out = get_freq_gridline(subindex, pos, vertical, legend, context);
+    else
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 16, 0.0000000001f);
+    if(*params[param_analyzer_mode] == 3 and not vertical) {
+        if(subindex == 30)
+            legend="L";
+        else if(subindex == 34)
+            legend="R";
+        else
+            legend = "";
+    }
+    return out;
+}
+bool analyzer_audio_module::get_clear_all(int index) const {
+    if(*params[param_analyzer_mode] != _mode_old) {
+        _mode_old = *params[param_analyzer_mode];
+        return true;
+    }
+    return false;
+}
