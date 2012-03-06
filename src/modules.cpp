@@ -1101,18 +1101,22 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     for (int i = 0; i <= points; i++)
     {
+        bool kacke = false;
         float lastout = 0.f;
         // cycle through the points to draw
         freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/1000
         if(*params[param_analyzer_linear]) {
             // we have linear view enabled
-            if((i % lintrans == 0 and points - i > lintrans) or i == points - 1)
+            if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
                 _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
+                printf("_iter: %2d iter: %2d\n", _iter, iter);
+                kacke = true;
+            }    
         } else {
             // we have logarithmic view enabled
             _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
         }
-        if(_iter > iter) {
+        if(_iter > iter or kacke) {
             // we have to draw a value
             if(fftdone and i) {
                 int n = 0;
@@ -1210,6 +1214,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         else {
             data[i] = INFINITY;
         }
+//        if(*params[param_analyzer_linear] and !i) {
+//        iter = 0;
+//        _iter = 0;
+//        }
     }
     ____analyzer_smooth_dirty = 0;
     if(subindex == 1) {
