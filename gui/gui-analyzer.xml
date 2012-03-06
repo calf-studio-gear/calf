@@ -50,7 +50,7 @@
                         </hbox>
                     </vbox>
                     <vbox spacing="3">
-                        <label text="Level" />
+                        <label text="Zoom" />
                         <vscale param="analyzer_level" inverted="1"/>
                         <value param="analyzer_level" />
                     </vbox>

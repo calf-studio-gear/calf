@@ -943,8 +943,8 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         ppos %= (phase_buffer_size - 2);
         
         // analyzer
-        fft_buffer[fpos] = L * *params[param_analyzer_level];
-        fft_buffer[fpos + 1] = R * *params[param_analyzer_level];
+        fft_buffer[fpos] = L;
+        fft_buffer[fpos + 1] = R;
         
         fpos += 2;
         fpos %= (max_fft_buffer_size - 2);
@@ -1174,9 +1174,13 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 switch((int)*params[param_analyzer_smoothing]) {
                     case 0:
                         // falling
-                        fft_smooth[iter] -= fabs(fft_delta[iter]);
-                        fft_delta[iter] /= 1.01f;
-                        val = fft_smooth[iter];
+                        if(*params[param_analyzer_mode] != 3) {
+                            fft_smooth[iter] -= fabs(fft_delta[iter]);
+                            fft_delta[iter] /= 1.01f;
+                            val = fft_smooth[iter];
+                        } else {
+                            val = fft_out[iter];
+                        }
                         break;
                     case 1:
                         // smoothing
@@ -1195,10 +1199,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // fill freeze buffer
                 fft_freeze[iter] = val;
             }
-            data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
+            data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
             if(*params[param_analyzer_mode] == 3) {
                 if(i) {
-                    data[i] = val;
+                    data[i] = val * pow(*params[param_analyzer_level], 3);
                 }
                 else data[i] = 0.f;
             } 
@@ -1240,9 +1244,9 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
 { 
     bool out;
     if(*params[param_analyzer_mode] != 3)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context);
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 0.5f);
     else
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 16, 0.0000000001f);
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 16, 0.f);
     if(*params[param_analyzer_mode] == 3 and not vertical) {
         if(subindex == 30)
             legend="L";
@@ -1254,7 +1258,7 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     return out;
 }
 bool analyzer_audio_module::get_clear_all(int index) const {
-    if(*params[param_analyzer_mode] != _mode_old) {
+    if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level]) {
         _mode_old = *params[param_analyzer_mode];
         return true;
     }
