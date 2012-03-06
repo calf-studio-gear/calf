@@ -1185,7 +1185,9 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             }
             data[i] = dB_grid(fabs(val) / _accuracy * 2.f + 1e-20);
             if(*params[param_analyzer_mode] == 3) {
-                if(i) data[i] = fft_out[iter];
+                if(i) {
+                    data[i] = fft_out[iter];
+                }
                 else data[i] = 0.f;
             } 
         }
