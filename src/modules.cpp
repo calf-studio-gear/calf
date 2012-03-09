@@ -1044,6 +1044,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 float R = fft_buffer[_fpos + 1];
                 
                 // perhaps we need to compute two FFT's, so store left and right channel
+                // in case we need only one FFT, the left channel is used as 'standard'"
                 fftw_real valL;
                 fftw_real valR;
                 
@@ -1052,7 +1053,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     default:
                         // average
                         valL = (L + R) / 2;
-                        valR = 1e-20;
+                        valR = (L + R) / 2;
                         break;
                     case 1:
                         // left channel
@@ -1103,7 +1104,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // this takes our latest buffer and returns an array with
             // non-normalized
             rfftw_one(fft_plan, fft_inL, fft_outL);
-            //run fft for left and right channel while in "phase by freq" mode
+            //run fft for for right channel too. it is needed fpr stereoimage 
+            //and stereo defference mode 
             if(*params[param_analyzer_mode] >= 3) {
                 rfftw_one(fft_plan, fft_inR, fft_outR);
             }
@@ -1287,7 +1289,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     data[i] = 0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
                 } else if (subindex == 1 or subindex == 3) {
                     // Right channel signal
-                    data[i] = -0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff;
+                    data[i] = -1.f * (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff);
                 }
             } else {
                 // normal analyzer behavior
@@ -1325,7 +1327,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         *mode = 0;
     }
     ____analyzer_sanitize = 0;
-    printf("%3d\n",subindex);
+    //printf("%3d\n",subindex);
     return true;
 }
 
