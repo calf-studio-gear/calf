@@ -60,6 +60,23 @@ void activate_preset(GtkAction *action, activate_preset_params *params)
     params->preset_access->activate_preset(params->preset, params->builtin);
 }
 
+void help_action(GtkAction *action, plugin_gui_window *gui_win)
+{
+    string uri = "file://" PKGDOCDIR "/" + string(gui_win->gui->plugin->get_metadata_iface()->get_label()) + ".html";
+    GError *error = NULL;
+    if (!gtk_show_uri(gtk_window_get_screen(gui_win->toplevel), uri.c_str(), time(NULL), &error))
+    {
+        GtkMessageDialog *dlg = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(gui_win->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, "%s", error->message));
+        if (!dlg)
+            return;
+        
+        gtk_dialog_run(GTK_DIALOG(dlg));
+        gtk_widget_destroy(GTK_WIDGET(dlg));
+        
+        g_error_free(error);
+    }
+}
+
 void about_action(GtkAction *action, plugin_gui_window *gui_win)
 {
     GtkAboutDialog *dlg = GTK_ABOUT_DIALOG(gtk_about_dialog_new());
@@ -146,6 +163,7 @@ static const GtkActionEntry actions[] = {
     { "HelpMenuAction", NULL, "_Help", NULL, "Help-related commands", NULL },
     { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
     { "about", "gtk-about", "_About...", NULL, "About this plugin", (GCallback)about_action },
+    { "HelpMenuItemAction", "gtk-help", "_Help", NULL, "Show manual page for this plugin", (GCallback)help_action },
     { "tips-tricks", NULL, "_Tips and tricks...", NULL, "Show a list of tips and tricks", (GCallback)tips_tricks_action },
 };
 
@@ -163,6 +181,7 @@ static const char *ui_xml =
 "    </menu>\n"
 "    <placeholder name=\"commands\"/>\n"
 "    <menu action=\"HelpMenuAction\">\n"
+"      <menuitem action=\"HelpMenuItemAction\"/>\n"
 "      <menuitem action=\"tips-tricks\"/>\n"
 "      <separator/>\n"
 "      <menuitem action=\"about\"/>\n"

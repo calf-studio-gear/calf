@@ -194,6 +194,7 @@ fi
 ############################################################################################
 # Other defines
 AC_DEFINE_UNQUOTED(PKGLIBDIR,"$prefix/share/calf/",[Calf shared data directory (bitmaps, GUI XML etc.)])
+AC_DEFINE_UNQUOTED(PKGDOCDIR,"$prefix/share/doc/calf/",[Calf documentation directory])
 
 ############################################################################################
 # Output files for configure step
