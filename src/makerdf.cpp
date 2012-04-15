@@ -277,7 +277,7 @@ void make_ttl(string path_prefix)
         // XXXKF not really optional for now, to be honest
         ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
         if (pi->is_rt_capable())
-            ttl += "    lv2:optionalFeature lv2:hardRtCapable ;\n";
+            ttl += "    lv2:optionalFeature lv2:hardRTCapable ;\n";
         if (pi->get_midi())
         {
             if (pi->requires_midi()) {
