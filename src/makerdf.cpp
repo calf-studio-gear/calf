@@ -63,16 +63,20 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
         ss << ind << "lv2ev:supportsEvent lv2midi:MidiEvent ;\n";
     }
     if (!strcmp(symbol, "in_l")) 
-        ss << ind << "pg:membership [ pg:group <#stereoIn>; pg:role pg:leftChannel ] ;" << endl;
+        ss << ind << "lv2:designation pg:left ;\n"
+           << ind << "pg:group :in ;" << endl;
     else
     if (!strcmp(symbol, "in_r")) 
-        ss << ind << "pg:membership [ pg:group <#stereoIn>; pg:role pg:rightChannel ] ;" << endl;
+        ss << ind << "lv2:designation pg:right ;\n"
+           << ind << "pg:group :in ;" << endl;
     else
     if (!strcmp(symbol, "out_l")) 
-        ss << ind << "pg:membership [ pg:group <#stereoOut>; pg:role pg:leftChannel ] ;" << endl;
+        ss << ind << "lv2:designation pg:left ;\n"
+           << ind << "pg:group :out ;" << endl;
     else
     if (!strcmp(symbol, "out_r")) 
-        ss << ind << "pg:membership [ pg:group <#stereoOut>; pg:role pg:rightChannel ] ;" << endl;
+        ss << ind << "lv2:designation pg:right ;\n"
+           << ind << "pg:group :out ;" << endl;
     ss << "    ]";
     ports += ss.str();
 }
@@ -188,7 +192,7 @@ void make_ttl(string path_prefix)
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
         "@prefix lv2ctx: <http://lv2plug.in/ns/dev/contexts#> .\n"
         "@prefix strport: <http://lv2plug.in/ns/dev/string-port#> .\n"
-        "@prefix pg: <http://ll-plugins.nongnu.org/lv2/ext/portgroups#> .\n"
+        "@prefix pg: <http://lv2plug.in/ns/ext/port-groups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
         "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
@@ -241,9 +245,10 @@ void make_ttl(string path_prefix)
         id_to_label[pi->get_id()] = pi->get_label();
         printf("Generating a .ttl file for plugin '%s'\n", lpi.label);
         fflush(stdout);
-        string uri = string("<" + plugin_uri_prefix)  + string(lpi.label) + ">";
+        string unquoted_uri = plugin_uri_prefix + string(lpi.label);
+        string uri = string("<" + unquoted_uri + ">");
         string ttl;
-        ttl = "@prefix : " + uri + " .\n" + header + gui_header;
+        ttl = "@prefix : <" + unquoted_uri + "#> .\n" + header + gui_header;
         
 #if USE_LV2_GUI
         for (int j = 0; j < pi->get_param_count(); j++)
@@ -256,6 +261,17 @@ void make_ttl(string path_prefix)
             }
         }
 #endif
+
+        if(pi->get_input_count() >= 2) {
+            ttl += ":in a pg:StereoGroup , pg:InputGroup ;\n"
+                "    lv2:symbol \"in\" ;\n"
+                "    rdfs:label \"Input\" .\n\n";
+        }
+        if(pi->get_output_count() >= 2) {
+            ttl += ":out a pg:StereoGroup , pg:OutputGroup ;\n"
+                "    lv2:symbol \"out\" ;\n"
+                "    rdfs:label \"Output\" .\n\n";
+        }
         
         ttl += uri + " a lv2:Plugin ;\n";
         
@@ -294,7 +310,14 @@ void make_ttl(string path_prefix)
         {
             ttl += "    lv2:optionalFeature <" LV2_STATE_URI "> ;\n";
         }
-        
+
+        if(pi->get_input_count() >= 2) {
+            ttl += "    pg:mainInput :in ;\n";
+        }
+        if(pi->get_output_count() >= 2) {
+            ttl += "    pg:mainOutput :out ;\n";
+        }
+
         string ports = "";
         int pn = 0;
         const char *in_names[] = { "in_l", "in_r", "sidechain" };
