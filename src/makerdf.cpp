@@ -85,11 +85,11 @@ static const char *units[] = {
     "ue:hz",
     "ue:s",
     "ue:ms",
-    "ue:cent", // - ask SWH (or maybe ue2: and write the extension by myself)
-    "ue:semitone12TET", // - ask SWH
+    "ue:cent",
+    "ue:semitone12TET",
     "ue:bpm",
     "ue:degree",
-    "ue:midiNote", // question to SWH: the extension says midiNode, but that must be a typo
+    "ue:midiNote",
     NULL // rotations per minute
 };
 
