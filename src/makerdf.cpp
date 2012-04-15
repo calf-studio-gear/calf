@@ -301,11 +301,9 @@ void make_ttl(string path_prefix)
         if (pi->get_midi())
         {
             if (pi->requires_midi()) {
-                ttl += "    lv2:requiredFeature <" LV2_EVENT_URI "> ;\n";
                 ttl += "    lv2:requiredFeature <" LV2_URI_MAP_URI "> ;\n";                
             }
             else {
-                ttl += "    lv2:optionalFeature <" LV2_EVENT_URI "> ;\n";
                 ttl += "    lv2:optionalFeature <" LV2_URI_MAP_URI "> ;\n";                
             }
         }
