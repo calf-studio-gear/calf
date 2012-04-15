@@ -262,7 +262,11 @@ void make_ttl(string path_prefix)
         }
 #endif
 
-        if(pi->get_input_count() >= 2) {
+        if(pi->get_input_count() == 1) {
+            ttl += ":in a pg:MonoGroup , pg:InputGroup ;\n"
+                "    lv2:symbol \"in\" ;\n"
+                "    rdfs:label \"Input\" .\n\n";
+        } else if(pi->get_input_count() >= 2) {
             ttl += ":in a pg:StereoGroup , pg:InputGroup ;\n"
                 "    lv2:symbol \"in\" ;\n"
                 "    rdfs:label \"Input\" .\n\n";
@@ -311,7 +315,7 @@ void make_ttl(string path_prefix)
             ttl += "    lv2:optionalFeature <" LV2_STATE_URI "> ;\n";
         }
 
-        if(pi->get_input_count() >= 2) {
+        if(pi->get_input_count() >= 1) {
             ttl += "    pg:mainInput :in ;\n";
         }
         if(pi->get_output_count() >= 2) {
