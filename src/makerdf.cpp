@@ -128,7 +128,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     if (!pmi->is_cv(param))
         ss << ind << "lv2:portProperty epp:notAutomatic ;\n";
     if (pp.flags & PF_PROP_OUTPUT_GAIN)
-        ss << ind << "lv2:portProperty epp:outputGain ;\n";
+        ss << ind << "lv2:designation param:gain ;\n";
     if (type == PF_BOOL)
         ss << ind << "lv2:portProperty lv2:toggled ;\n";
     else if (type == PF_ENUM)
@@ -146,15 +146,16 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
         ss << ind << "lv2:default " << pp.def_value << " ;\n";
     ss << ind << "lv2:minimum " << pp.min << " ;\n";
     ss << ind << "lv2:maximum " << pp.max << " ;\n";
-    if (pp.step > 1)
-        ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
+    // XXX This value does not seem to match the definition of the property
+    //if (pp.step > 1)
+    //    ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
     if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
         ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
     // this may change as more complex plugins are added
     if (unit == (PF_UNIT_BPM >> 24))
-        ss << ind << "lv2:portProperty epp:reportsBpm ;\n";
+        ss << ind << "lv2:designation <http://lv2plug.in/ns/ext/time#beatsPerMinute> ;\n";
     
     ss << "    ]";
     ports += ss.str();
@@ -194,8 +195,9 @@ void make_ttl(string path_prefix)
         "@prefix strport: <http://lv2plug.in/ns/dev/string-port#> .\n"
         "@prefix pg: <http://lv2plug.in/ns/ext/port-groups#> .\n"
         "@prefix ue: <http://lv2plug.in/ns/extensions/units#> .\n"
-        "@prefix epp: <http://lv2plug.in/ns/dev/extportinfo#> .\n"
+        "@prefix epp: <http://lv2plug.in/ns/ext/port-props#> .\n"
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
+        "@prefix param: <http://lv2plug.in/ns/ext/parameters#> .\n"
 
         "\n"
     ;
