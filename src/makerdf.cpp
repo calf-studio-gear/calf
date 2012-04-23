@@ -312,7 +312,7 @@ void make_ttl(string path_prefix)
         
         if (pi->get_configure_vars())
         {
-            ttl += "    lv2:optionalFeature <" LV2_STATE_URI "> ;\n";
+            ttl += "    lv2:extensionData <" LV2_STATE__interface "> ;\n";
         }
 
         if(pi->get_input_count() >= 1) {

@@ -295,13 +295,13 @@ struct lv2_wrapper
     {
         if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
             return &calf_descriptor;
-        if (!strcmp(URI, LV2_STATE_INTERFACE_URI))
+        if (!strcmp(URI, LV2_STATE__interface))
             return &state_iface;
         return NULL;
     }
-    static void cb_state_save(LV2_Handle Instance,
-                          LV2_State_Store_Function store, LV2_State_Handle handle,
-                          uint32_t flags, const LV2_Feature *const * features)
+    static LV2_State_Status cb_state_save(
+	    LV2_Handle Instance, LV2_State_Store_Function store, LV2_State_Handle handle,
+	    uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
         struct store_state: public send_configure_iface
@@ -330,13 +330,15 @@ struct lv2_wrapper
         s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
 
         inst->send_configures(&s);
+        return LV2_STATE_SUCCESS;
     }
-    static void cb_state_restore(LV2_Handle Instance,
-                                 LV2_State_Retrieve_Function retrieve, LV2_State_Handle callback_data,
-                                 uint32_t flags, const LV2_Feature *const * features)
+    static LV2_State_Status cb_state_restore(
+	    LV2_Handle Instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle callback_data,
+	    uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
         inst->impl_restore(retrieve, callback_data);
+        return LV2_STATE_SUCCESS;
     }
     
     static lv2_wrapper &get() { 
