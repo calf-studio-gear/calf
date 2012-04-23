@@ -96,7 +96,8 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         assert(string_type);
         for (unsigned int i = 0; vars[i]; i++)
         {
-            const uint32_t key   = uri_map->uri_to_id(uri_map->callback_data, NULL, vars[i]);
+            std::string    pred  = std::string("urn:calf:") + vars[i];
+            const uint32_t key   = uri_map->uri_to_id(uri_map->callback_data, NULL, pred.c_str());
             size_t         len   = 0;
             uint32_t       type  = 0;
             uint32_t       flags = 0;
@@ -313,8 +314,9 @@ struct lv2_wrapper
             
             virtual void send_configure(const char *key, const char *value)
             {
+                std::string pred = std::string("urn:calf:") + key;
                 (*store)(callback_data,
-                         inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, key),
+                         inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, pred.c_str()),
                          value,
                          strlen(value) + 1,
                          string_data_type,
