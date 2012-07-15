@@ -933,6 +933,8 @@ void analyzer_audio_module::params_changed() {
         memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
         _smoothing = *params[param_analyzer_smoothing];
     }
+    *params[param_analyzer_display] = *params[param_analyzer_scale];
+
 }
 
 uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -1048,14 +1050,14 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fftw_real valL;
                 fftw_real valR;
                 
-                switch((int)*params[param_analyzer_source]) {
+                switch((int)*params[param_analyzer_mode]) {
                     case 0:
-                    default:
                         // average
                         valL = (L + R) / 2;
                         valR = (L + R) / 2;
                         break;
                     case 1:
+                        default:
                         // left channel
                         valL = L;
                         valR = R;
@@ -1130,7 +1132,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         float lastout = 0.f;
         // cycle through the points to draw
         freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/1000
-        if(*params[param_analyzer_linear]) {
+        if(*params[param_analyzer_scale]) {
             // we have linear view enabled
             if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
                 _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
@@ -1307,14 +1309,14 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
     if (*params[param_analyzer_mode] >= 3) {
-        if(*params[param_analyzer_bars]) {
+        if(*params[param_analyzer_view]) {
             // draw centered bars
             *mode = 3;
         } else {
             // draw centered line
             *mode = 0;
         }
-    } else if(*params[param_analyzer_bars]) {
+    } else if(*params[param_analyzer_view]) {
         if(subindex == 0) {
             // draw bars
             *mode = 1;

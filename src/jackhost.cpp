@@ -310,7 +310,7 @@ void print_help(char *argv[])
 int main(int argc, char *argv[])
 {
     g_type_init();
-    g_thread_init(NULL);
+    if (!g_thread_supported()) g_thread_init(NULL);
     
     host_session sess(new gtk_session_environment());
     sess.session_env->init_gui(argc, argv);
