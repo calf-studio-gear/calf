@@ -57,7 +57,7 @@ AC_CHECK_LIB(rfftw, true, AC_MSG_ERROR([FFTW2 library (librfftw) not found]))
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
 
 # GLib
-PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0, true, AC_MSG_ERROR([glib-2.0 library not found]))
+PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0, true, AC_MSG_ERROR([Calf requires glib2 and gthread2]))
 
 # Fluidsynth
 PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
