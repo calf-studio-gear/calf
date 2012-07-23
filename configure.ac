@@ -128,6 +128,13 @@ AC_ARG_ENABLE(debug,
   [set_enable_debug="no"])
 AC_MSG_RESULT($set_enable_debug)
 
+AC_MSG_CHECKING([whether to compile with SSE])
+AC_ARG_ENABLE(sse,
+  AC_HELP_STRING([--enable-sse],[compile with SSE extensions]),
+  [set_enable_sse="$enableval"],
+  [set_enable_sse="no"])
+AC_MSG_RESULT($set_enable_sse)
+
 ############################################################################################
 # Compute status shell variables
 
@@ -143,6 +150,10 @@ if test "$set_enable_debug" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O0 -g -Wall"
 else
   CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
+fi
+
+if test "$set_enable_sse" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -msse -mfpmath=sse"
 fi
 
 ############################################################################################
@@ -212,6 +223,7 @@ AC_MSG_RESULT([
     Calf configured
 
     Debug mode:                  $set_enable_debug
+    With SSE:                    $set_enable_sse
     Experimental plugins:        $set_enable_experimental
     Common GUI code:             $GUI_ENABLED
     LV2 enabled:                 $LV2_ENABLED
