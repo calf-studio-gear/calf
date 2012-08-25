@@ -50,8 +50,8 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
 
 AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
 AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
-AC_CHECK_HEADER(rfftw.h, true, AC_MSG_ERROR([FFTW2 header (rfftw.h) not found]))
-AC_CHECK_LIB(rfftw, true, AC_MSG_ERROR([FFTW2 library (librfftw) not found]))
+AC_CHECK_HEADER(srfftw.h, true, AC_MSG_ERROR([Single-precision FFTW2 header (srfftw.h) not found]))
+AC_CHECK_LIB(srfftw, true, AC_MSG_ERROR([Single-precision FFTW2 library (libsrfftw) not found]))
 
 # JACK
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)

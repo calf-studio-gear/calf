@@ -21,7 +21,7 @@
 #ifndef CALF_MODULES_H
 #define CALF_MODULES_H
 
-#include "rfftw.h"
+#include "srfftw.h"
 #include <assert.h>
 #include <limits.h>
 #include "biquad.h"

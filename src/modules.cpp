@@ -21,7 +21,7 @@
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
-#include <rfftw.h>
+#include <srfftw.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
