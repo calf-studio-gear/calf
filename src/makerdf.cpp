@@ -43,6 +43,17 @@ static struct option long_options[] = {
     {0,0,0,0},
 };
 
+static FILE *open_and_check(const std::string &filename)
+{
+    FILE *f = fopen(filename.c_str(), "w");
+    if (!f)
+    {
+        fprintf(stderr, "Cannot write file '%s': %s\n", filename.c_str(), strerror(errno));
+        exit(1);
+    }
+    return f;
+}
+
 #if USE_LV2
 static void add_port(string &ports, const char *symbol, const char *name, const char *direction, int pidx, const char *type = "lv2:AudioPort", bool optional = false)
 {
@@ -160,17 +171,6 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     ss << "    ]";
     ports += ss.str();
     return true;
-}
-
-static FILE *open_and_check(const std::string &filename)
-{
-    FILE *f = fopen(filename.c_str(), "w");
-    if (!f)
-    {
-        fprintf(stderr, "Cannot write file '%s': %s\n", filename.c_str(), strerror(errno));
-        exit(1);
-    }
-    return f;
 }
 
 void make_ttl(string path_prefix)
