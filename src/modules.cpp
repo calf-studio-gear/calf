@@ -1008,6 +1008,9 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // right channel
                         val = R;
                         break;
+                    default:
+                        val = 0.f;
+                        break;
                 }
                 fft_in[i] = (fftw_real)val;
                 
