@@ -40,9 +40,9 @@ calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) -lsrfftw -lsfftw calf.la
 calf_la_SOURCES = audio_fx.cpp metadata.cpp modules.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
 calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
 if USE_DEBUG
-calf_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
 else
-calf_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"  $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"  $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
 endif
 
 if USE_LV2_GUI
