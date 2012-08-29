@@ -712,6 +712,7 @@ mono_audio_module::mono_audio_module() {
     meter_in  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
+    _phase = -1.f;
 }
 
 void mono_audio_module::activate() {
