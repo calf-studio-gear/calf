@@ -1115,7 +1115,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // ...and reset some values
             ____analyzer_hold_dirty = 0;
             ____analyzer_smooth_dirty = 1;
-            fftdone = true;       
+            ____analyzer_phase_was_drawn_here = 0;     
+            fftdone = true;  
         }
         ____analyzer_phase_was_drawn_here ++;
     }
@@ -1275,29 +1276,37 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_freezeL[iter] = valL;
                 fft_freezeR[iter] = valR;
             }
-            // #####################################
-            // send values back to painting function
-            // according to mode setting
-            // #####################################
-            if(*params[param_analyzer_mode] == 3) {
-                // We want to draw Stereo Difference
-                if(i) {
-                    data[i] = 0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
+            if(*params[analyzer_view] < 2) {
+                // #####################################
+                // send values back to painting function
+                // according to mode setting but only if
+                // we are drawing lines or boxes
+                // #####################################
+                if(*params[param_analyzer_mode] == 3) {
+                    // We want to draw Stereo Difference
+                    if(i) {
+                        data[i] = 0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
+                    }
+                    else data[i] = 0.f;
+                } else if(*params[param_analyzer_mode] == 4) {
+                    // we want to draw Stereo Image
+                    if(subindex == 0 or subindex == 2) {
+                        // Left channel signal
+                        data[i] = 0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
+                    } else if (subindex == 1 or subindex == 3) {
+                        // Right channel signal
+                        data[i] = -1.f * (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff);
+                    }
+                } else {
+                    // normal analyzer behavior
+                    data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
                 }
-                else data[i] = 0.f;
-            } else if(*params[param_analyzer_mode] == 4) {
-                // we want to draw Stereo Image
-                if(subindex == 0 or subindex == 2) {
-                    // Left channel signal
-                    data[i] = 0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
-                } else if (subindex == 1 or subindex == 3) {
-                    // Right channel signal
-                    data[i] = -1.f * (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff);
-                }
-            } else {
-                // normal analyzer behavior
-                data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
             }
+        }
+        else if(*params[analyzer_view] == 2) {
+            // we have to draw splines, so we draw every x-pixel according to
+            // the pre-generated fft_splinesL and fft_splinesR buffers
+            data[i] = INFINITY;
         }
         else {
             data[i] = INFINITY;
