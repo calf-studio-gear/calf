@@ -861,7 +861,9 @@ analyzer_audio_module::analyzer_audio_module() {
     meter_R = 0.f;
     _accuracy = -1;
     _acc_old = -1;
+    _scale_old = -1;
     _mode_old = -1;
+    _post_old = -1;
     ppos = 0;
     plength = 0;
     fpos = 0;
@@ -905,6 +907,7 @@ analyzer_audio_module::analyzer_audio_module() {
     ____analyzer_smooth_dirty = 0;
     ____analyzer_hold_dirty = 0;
     ____analyzer_sanitize = 0;
+    ____analyzer_force_sanitize = 0;
 }
 
 void analyzer_audio_module::activate() {
@@ -917,22 +920,50 @@ void analyzer_audio_module::deactivate() {
 
 void analyzer_audio_module::params_changed() {
     if(*params[param_analyzer_accuracy] != _acc_old) {
-        ____analyzer_sanitize = 1;
         _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
         _acc_old = *params[param_analyzer_accuracy];
         // recreate fftw plan
         if (fft_plan) rfftw_destroy_plan (fft_plan);
         fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
         lintrans = -1;
+        ____analyzer_force_sanitize = 1;
     }
     if(*params[param_analyzer_hold] != _hold) {
-        ____analyzer_hold_dirty = 1;
         _hold = *params[param_analyzer_hold];
+        ____analyzer_force_sanitize = 1;
     }
     if(*params[param_analyzer_smoothing] != _smoothing) {
         memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
         _smoothing = *params[param_analyzer_smoothing];
+        ____analyzer_force_sanitize = 1;
+    }
+    if(*params[param_analyzer_mode] != _mode_old) {
+        _mode_old = *params[param_analyzer_mode];
+        ____analyzer_force_sanitize = 1;
+    }
+    if(*params[param_analyzer_scale] != _scale_old) {
+        _scale_old = *params[param_analyzer_scale];
+        ____analyzer_force_sanitize = 1;
+    }
+    if(*params[param_analyzer_post] != _post_old) {
+        _post_old = *params[param_analyzer_post];
+        ____analyzer_force_sanitize = 1;
+    }
+    if(____analyzer_force_sanitize) {
+        // null the overall buffer
+        memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_outL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_outR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_holdL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_holdR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_smoothL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
+        ____analyzer_force_sanitize = 0;
+        ____analyzer_phase_was_drawn_here = 0;
     }
 }
 
@@ -1041,7 +1072,13 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     int iter = 0; // this is the pixel we have been drawing the last box/bar/line
     int _iter = 1; // this is the next pixel we want to draw a box/bar/line
     float posneg = 1;
-    int _param_speed = 16 - (int)*params[param_analyzer_speed]; 
+    int _param_speed = 16 - (int)*params[param_analyzer_speed];
+    int _smoothing = (int)*params[param_analyzer_smoothing];
+    if(*params[param_analyzer_mode] == 5 and _smoothing) {
+        // there's no falling for difference mode, only smoothing
+        _smoothing = 2;
+    }
+        
     if(subindex == 0) {
         // #####################################################################
         // We are doing FFT here, so we first have to setup fft-buffers from
@@ -1089,12 +1126,12 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_inR[i] = valR;
                 
                 // fill smoothing & falling & delta buffer
-                if(*params[param_analyzer_smoothing] == 2.f) {
+                if(_smoothing == 2) {
                     // smooting
                     fft_smoothL[i] = fft_outL[i];
                     fft_smoothR[i] = fft_outR[i];
                 }
-                if(*params[param_analyzer_smoothing] == 1.f) {
+                if(_smoothing == 1) {
                     // falling
                     if(fft_smoothL[i] < fabs(fft_outL[i]))
                         fft_smoothL[i] = fabs(fft_outL[i]);
@@ -1137,7 +1174,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     if (lintrans < 0) {
         // accuracy was changed so we have to recalc linear transition
         int _lintrans = (int)((float)points * log((20.f + 2.f * (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
-        lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans));
+        lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans)) / 4; // / 4 was added to see finer bars but breaks low end
     }
     for (int i = 0; i <= points; i++)
     {
@@ -1217,6 +1254,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // and right channel
                         // if fft was renewed, recalc the absolute values in left and right 
                         // if frequencies are skipped
+                        // this is additive mode - no other mode is available
                         for(int j = iter + 1; j < _iter; j++) {
                             fft_outL[_iter] += fabs(fft_outL[j]);
                             fft_outR[_iter] += fabs(fft_outR[j]);
@@ -1246,7 +1284,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 valR = fft_holdR[iter];
             } else {
                 // we draw normally (no freeze)
-                switch((int)*params[param_analyzer_smoothing]) {
+                switch(_smoothing) {
                     case 0:
                         // off
                         valL = fft_outL[iter];

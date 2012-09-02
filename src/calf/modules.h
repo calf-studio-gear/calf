@@ -309,6 +309,8 @@ class analyzer_audio_module:
     bool active;
     int _accuracy;
     int _acc_old;
+    int _scale_old;
+    int _post_old;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
     
@@ -349,6 +351,7 @@ protected:
     mutable int ____analyzer_smooth_dirty;
     mutable int ____analyzer_hold_dirty;
     mutable int ____analyzer_sanitize;
+    mutable int ____analyzer_force_sanitize;
 
 };
 
