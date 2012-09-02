@@ -994,7 +994,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_L", "Clip L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_R", "Clip R" },
     
-    { 1,           0.125,       8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
+    { 1.25,           0.5,         2,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
     { 0,           0,           1,     2,  PF_ENUM | PF_CTL_COMBO, analyzer_scale_names, "analyzer_scale", "Analyzer Scale" },
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_post_names, "analyzer_post", "Analyzer Post FFT" },
