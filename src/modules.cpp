@@ -1283,63 +1283,46 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // smooting and fill delta buffers if fft
             // was done above
             // #######################################
+            // the shit that follows is calculated by chrischi and seems kind of
+            // rocket science if I take a closer look on his sheets. so if any
+            // questions: chrisch.holli@gmx.de ,)
             if(subindex == 0) {
-                switch(_param_smooth) {
-                    default:
-                    case 0:
-                        // off
-                        break;
-                    case 1:
-                        // falling
-                        if(fftdone) {
-                            // rebuild delta values after fft was done
-                            if(fft_smoothL[iter] > fft_outL[iter]) {
-                                // we have to rise with smoothing
-                                
-                            } else {
-                                // we have to fall with log rate
-                                fft_deltaL[iter] = fft_smoothL[iter] / sqrt(_param_speed) / -8.f;
-                            }
-                            if(fft_smoothR[iter] > fft_outR[iter]) {
-                                // we have to rise with smoothing
-                                
-                            } else {
-                                // we have to fall with log rate
-                                fft_deltaR[iter] = fft_smoothR[iter] / sqrt(_param_speed) / -8.f;
-                            }
-                        }
-                        
-                        if(fft_smoothL[iter] > fft_outL[iter]) {
-                            // we are rising with smoothing
-                            fft_smoothL[iter] -= fabs(fft_deltaL[iter]);
-                            fft_deltaL[iter] /= 1.01f;
+                float _frate = 0.1;
+                // ############################################################################################################################################
+                if(_param_smooth == 1 and fabs(fft_smoothL[iter]) - fabs(fft_outL[iter]) > _frate * _param_speed) {
+                    // falling
+                    if(fftdone) {
+                        // rebuild delta values after fft was done
+                        fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / (fabs(fft_outL[iter]) - _frate * _param_speed), 1.f / _param_speed);
+                        fft_deltaR[iter] = pow(fabs(fft_outR[iter]) / (fabs(fft_outL[iter]) - _frate * _param_speed), 1.f / _param_speed);
+                    } else {
+                        // change fft_smooth according to delta
+                        fft_smoothL[iter] *= fft_deltaL[iter];
+                        fft_smoothR[iter] *= fft_deltaR[iter];
+                    }
+                } else if(_param_smooth >= 1) {
+                    // smoothing
+                    if(fftdone) {
+                        // rebuild delta values after fft was done
+                        if(_param_mode < 5) {
+                            fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / fabs(fft_smoothL[iter]), 1.f / _param_speed);
+                            fft_deltaR[iter] = pow(fabs(fft_outR[iter]) / fabs(fft_smoothR[iter]), 1.f / _param_speed);
                         } else {
-                            // we are falling at log rate
-                            fft_smoothL[iter] += fft_deltaL[iter];
-                        }
-                        if(fft_smoothR[iter] > fft_outR[iter]) {
-                            // we are rising with smoothing
-                            fft_smoothR[iter] -= fabs(fft_deltaR[iter]);
-                            fft_deltaR[iter] /= 1.01f;
-                        } else {
-                            // we are falling at log rate
-                            fft_smoothR[iter] += fft_deltaR[iter];
-                        }
-                        break;
-                    case 2:
-                        // smoothing
-                        if(fftdone) {
-                            // rebuild delta values after fft was done
                             fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / _param_speed;
                             fft_deltaR[iter] = (posneg * fabs(fft_outR[iter]) - fft_smoothR[iter]) / _param_speed;
                         }
-                        
-                        fft_smoothL[iter] += fft_deltaL[iter];
-                        fft_smoothR[iter] += fft_deltaR[iter];
-                        break;
+                    } else {
+                        // change fft_smooth according to delta
+                        if(_param_mode < 5) {
+                            fft_smoothL[iter] *= fft_deltaL[iter];
+                            fft_smoothR[iter] *= fft_deltaR[iter];
+                        } else {
+                            fft_smoothL[iter] += fft_deltaL[iter];
+                            fft_smoothR[iter] += fft_deltaR[iter];
+                        }
+                    }
                 }
             }
-            
             // #######################################
             // Choose the L and R value from the right
             // buffer according to view settings

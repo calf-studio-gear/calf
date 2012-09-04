@@ -84,7 +84,6 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     int y;
     for (int i = 0; i < sx; i++)
     {
-        printf("%.5f\n", data[i]);
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
         switch(mode) {
             case 0:
