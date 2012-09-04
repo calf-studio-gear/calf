@@ -1,14 +1,14 @@
 body {
-    background: url(../images/background_dark.png);
+    background: #222;
     color: white;
     text-align: center;
     font-family: sans-serif;
     font-size: 0.8em;
 }
 a {
-    color: white;
+    color: #0af;
     font-weight: bold;
-    text-decoration: underline;
+    text-decoration: none;
 }
 a:hover {
     color: #0af;
@@ -39,12 +39,16 @@ h3 {
 /*    border-bottom: 1px dotted #fff;*/
 }
 p, ul {
-    background: url(../images/style_p.png) transparent;
+    background: #333;
     margin: 0 0 15px;
     padding: 10px;
-    border: 2px groove white;
+/*    border: 2px groove white;*/
     -moz-border-radius: 12px;
     -webkit-border-radius: 12px;
+    border-radius: 12px;
+    -moz-box-shadow:    0 3px 10px #111;
+    -webkit-box-shadow: 0 3px 10px #111;
+    box-shadow:         0 3px 10px #111;
 }
 ul {
 }
@@ -76,8 +80,11 @@ strong {
 }
 
 .headerbg {
-    background: url(../../../gui/background_black.png);
+    background: #111;
     border-bottom: 1px solid #111;
+    -moz-box-shadow:    0 3px 10px #111;
+    -webkit-box-shadow: 0 3px 10px #111;
+    box-shadow:         0 3px 10px #111;
 }
 .header {
     width: 800px;
@@ -128,10 +135,14 @@ strong {
 }
 
 .index {
-    padding: 20px 50px;
+    
 }
 .index h3 {
-    border-bottom: 1px dotted white;
+    color: white;
+    font-size: 16px;
+    font-weight: normal;
+    text-shadow: 0px -1px black;
+    padding: 5px 0 10px 0;
 }
 .index a {
     display: block;
@@ -143,7 +154,7 @@ strong {
 }
 .index img {
     position: absolute;
-    bottom: 55px !important;
+    bottom: 35px !important;
     top: auto;
     left: 5px;
     text-align: center;
@@ -154,18 +165,17 @@ strong {
     box-shadow:         0 3px 10px #000000;
 }
 .index img {
-    width: 140px;
+    width: 130px;
 }
 .index ul {
-    background: none;
     color: #0af;
     border: none;
 }
 .index li {
     position: relative;
     display: block;
-    width: 150px;
-    height: 170px;
+    width: 140px;
+    height: 140px;
     margin: 8px;
     float: left;
     text-align: center;

@@ -1283,9 +1283,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // smooting and fill delta buffers if fft
             // was done above
             // #######################################
-            // the shit that follows is calculated by chrischi and seems kind of
-            // rocket science if I take a closer look on his sheets. so if any
-            // questions: chrisch.holli@gmx.de ,)
             if(subindex == 0) {
                 float _frate = 0.1;
                 // ############################################################################################################################################
