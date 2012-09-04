@@ -78,11 +78,13 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 static void
 calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 0 )
 {
+    
     int ox=5, oy=5;
     int _last = 0;
     int y;
     for (int i = 0; i < sx; i++)
     {
+        printf("%.5f\n", data[i]);
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
         switch(mode) {
             case 0:

@@ -864,11 +864,11 @@ analyzer_audio_module::analyzer_audio_module() {
     _scale_old = -1;
     _mode_old = -1;
     _post_old = -1;
+    _hold_old = -1;
+    _smooth_old = -1;
     ppos = 0;
     plength = 0;
     fpos = 0;
-    _hold = 0.f;
-    _smoothing = 0;
     
     phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
     memset(phase_buffer, 0, max_phase_buffer_size * sizeof(float));
@@ -904,10 +904,7 @@ analyzer_audio_module::analyzer_audio_module() {
     fft_plan = false;
     
     ____analyzer_phase_was_drawn_here = 0;
-    ____analyzer_smooth_dirty = 0;
-    ____analyzer_hold_dirty = 0;
     ____analyzer_sanitize = 0;
-    ____analyzer_force_sanitize = 0;
 }
 
 void analyzer_audio_module::activate() {
@@ -919,6 +916,7 @@ void analyzer_audio_module::deactivate() {
 }
 
 void analyzer_audio_module::params_changed() {
+    bool ___sanitize = false;
     if(*params[param_analyzer_accuracy] != _acc_old) {
         _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
         _acc_old = *params[param_analyzer_accuracy];
@@ -926,31 +924,31 @@ void analyzer_audio_module::params_changed() {
         if (fft_plan) rfftw_destroy_plan (fft_plan);
         fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
         lintrans = -1;
-        ____analyzer_force_sanitize = 1;
+        ___sanitize = true;
     }
-    if(*params[param_analyzer_hold] != _hold) {
-        _hold = *params[param_analyzer_hold];
-        ____analyzer_force_sanitize = 1;
+    if(*params[param_analyzer_hold] != _hold_old) {
+        _hold_old = *params[param_analyzer_hold];
+        ___sanitize = true;
     }
-    if(*params[param_analyzer_smoothing] != _smoothing) {
+    if(*params[param_analyzer_smoothing] != _smooth_old) {
         memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
-        _smoothing = *params[param_analyzer_smoothing];
-        ____analyzer_force_sanitize = 1;
+        _smooth_old = *params[param_analyzer_smoothing];
+        ___sanitize = true;
     }
     if(*params[param_analyzer_mode] != _mode_old) {
         _mode_old = *params[param_analyzer_mode];
-        ____analyzer_force_sanitize = 1;
+        ___sanitize = true;
     }
     if(*params[param_analyzer_scale] != _scale_old) {
         _scale_old = *params[param_analyzer_scale];
-        ____analyzer_force_sanitize = 1;
+        ___sanitize = true;
     }
     if(*params[param_analyzer_post] != _post_old) {
         _post_old = *params[param_analyzer_post];
-        ____analyzer_force_sanitize = 1;
+        ___sanitize = true;
     }
-    if(____analyzer_force_sanitize) {
+    if(___sanitize) {
         // null the overall buffer
         memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
@@ -962,7 +960,6 @@ void analyzer_audio_module::params_changed() {
         memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
-        ____analyzer_force_sanitize = 0;
         ____analyzer_phase_was_drawn_here = 0;
     }
 }
@@ -1044,23 +1041,23 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         return false;
     }
     
+    // just for the stoopid
+    int _param_mode = (int)*params[param_analyzer_mode];
+    bool _param_hold = (bool)*params[param_analyzer_hold];
     
     if (!active \
         or !*params[param_analyzer_display] \
         
-        or (subindex == 1 and !*params[param_analyzer_hold] \
-            and *params[param_analyzer_mode] < 3) \
+        or (subindex == 1 and !_param_hold and _param_mode < 3) \
         
-        or (subindex > 1 and *params[param_analyzer_mode] < 3) \
+        or (subindex > 1 and _param_mode < 3) \
         
-        or (subindex == 2 and !*params[param_analyzer_hold] \
-            and (*params[param_analyzer_mode] == 3 \
-            or *params[param_analyzer_mode] == 4)) \
+        or (subindex == 2 and !_param_hold and (_param_mode == 3 \
+            or _param_mode == 4)) \
         
-        or (subindex == 4 and (*params[param_analyzer_mode] == 3 \
-            or *params[param_analyzer_mode] == 4)) \
+        or (subindex == 4 and (_param_mode == 3 or _param_mode == 4)) \
             
-        or (subindex == 1 and *params[param_analyzer_mode] == 5) \
+        or (subindex == 1 and _param_mode == 5) \
     ) {
         // stop drawing when all curves have been drawn according to the mode
         // and hold settings
@@ -1073,12 +1070,13 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     int _iter = 1; // this is the next pixel we want to draw a box/bar/line
     float posneg = 1;
     int _param_speed = 16 - (int)*params[param_analyzer_speed];
-    int _smoothing = (int)*params[param_analyzer_smoothing];
-    if(*params[param_analyzer_mode] == 5 and _smoothing) {
+    int _param_smooth = (int)*params[param_analyzer_smoothing];
+    if(_param_mode == 5 and _param_smooth) {
         // there's no falling for difference mode, only smoothing
-        _smoothing = 2;
+        _param_smooth = 2;
     }
-        
+    
+    
     if(subindex == 0) {
         // #####################################################################
         // We are doing FFT here, so we first have to setup fft-buffers from
@@ -1087,22 +1085,28 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // #####################################################################
         if(!((int)____analyzer_phase_was_drawn_here % _param_speed)) {
             // seems we have to do a fft, so let's read the latest data from the
-            // buffer to send it to fft
+            // buffer to send it to fft afterwards
+            // we want to remember old fft_out values for smoothing as well
+            // and we fill the hold buffer in this (extra) cycle
             for(int i = 0; i < _accuracy; i++) {
-                // go to the right position back in time according to accuracy
+            // fill smoothing buffer
+                fft_smoothL[i] = fft_outL[i];
+                fft_smoothR[i] = fft_outR[i];    // go to the right position back in time according to accuracy
                 // settings and cycling in the main buffer
-                int _fpos = (fpos - _accuracy * 2 + (i * 2)) % max_fft_buffer_size;
+                int _fpos = (fpos - _accuracy * 2 \
+                    + (i * 2)) % max_fft_buffer_size;
                 if(_fpos < 0)
                     _fpos = max_fft_buffer_size + _fpos;
                 float L = fft_buffer[_fpos];
                 float R = fft_buffer[_fpos + 1];
                 
-                // perhaps we need to compute two FFT's, so store left and right channel
-                // in case we need only one FFT, the left channel is used as 'standard'"
+                // perhaps we need to compute two FFT's, so store left and right
+                // channel in case we need only one FFT, the left channel is
+                // used as 'standard'"
                 fftw_real valL;
                 fftw_real valR;
                 
-                switch((int)*params[param_analyzer_mode]) {
+                switch(_param_mode) {
                     case 0:
                         // average (mode 0)
                         valL = (L + R) / 2;
@@ -1125,33 +1129,17 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_inL[i] = valL;
                 fft_inR[i] = valR;
                 
-                // fill smoothing & falling & delta buffer
-                if(_smoothing == 2) {
-                    // smooting
-                    fft_smoothL[i] = fft_outL[i];
-                    fft_smoothR[i] = fft_outR[i];
-                }
-                if(_smoothing == 1) {
-                    // falling
-                    if(fft_smoothL[i] < fabs(fft_outL[i]))
-                        fft_smoothL[i] = fabs(fft_outL[i]);
-                    if(fft_smoothR[i] < fabs(fft_outR[i]))
-                        fft_smoothR[i] = fabs(fft_outR[i]);
-                    // delta buffer
-                    fft_deltaL[i] = fft_smoothL[i] / sqrt(_param_speed) / -8.f;
-                    fft_deltaR[i] = fft_smoothR[i] / sqrt(_param_speed) / -8.f;
-                }
+                // fill smoothing buffer with the last out values
+                // before fft is recalced
+                fft_smoothL[i] = fft_outL[i];
+                fft_smoothR[i] = fft_outR[i];
                 
-                // fill hold buffer
-                if(____analyzer_hold_dirty) {
-                    fft_holdL[i] = 0.f;
-                    fft_holdR[i] = 0.f;
-                } else {
-                    if(fabs(fft_outL[i]) > fft_holdL[i])
-                        fft_holdL[i] = fabs(fft_outL[i]);
-                    if(fabs(fft_outR[i]) > fft_holdR[i])
-                        fft_holdR[i] = fabs(fft_outR[i]);
-                }
+                // fill hold buffer with last out values
+                // before fft is recalced
+                if(fabs(fft_outL[i]) > fft_holdL[i])
+                    fft_holdL[i] = fabs(fft_outL[i]);
+                if(fabs(fft_outR[i]) > fft_holdR[i])
+                    fft_holdR[i] = fabs(fft_outR[i]);
             }
             
             // run fft
@@ -1160,12 +1148,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             rfftw_one(fft_plan, fft_inL, fft_outL);
             //run fft for for right channel too. it is needed for stereo image 
             //and stereo difference modes
-            if(*params[param_analyzer_mode] >= 3) {
+            if(_param_mode >= 3) {
                 rfftw_one(fft_plan, fft_inR, fft_outR);
             }
-            // ...and reset some values
-            ____analyzer_hold_dirty = 0;
-            ____analyzer_smooth_dirty = 1;
+            // ...and set some values for later use
             ____analyzer_phase_was_drawn_here = 0;     
             fftdone = true;  
         }
@@ -1173,8 +1159,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     if (lintrans < 0) {
         // accuracy was changed so we have to recalc linear transition
-        int _lintrans = (int)((float)points * log((20.f + 2.f * (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
-        lintrans = (int)(_lintrans + points % _lintrans / floor(points / _lintrans)) / 4; // / 4 was added to see finer bars but breaks low end
+        int _lintrans = (int)((float)points * log((20.f + 2.f * \
+            (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
+        lintrans = (int)(_lintrans + points % _lintrans / \
+            floor(points / _lintrans)) / 4; // / 4 was added to see finer bars but breaks low end
     }
     for (int i = 0; i <= points; i++)
     {
@@ -1185,14 +1173,18 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // cycle through the points to draw
         // we need to know the exact frequency at this pixel
         freq = 20.f * pow (1000.f, (float)i / points);
-        float lastout = 0.f; // we need to know the last drawn value over the time
+        
+        // we need to know the last drawn value over the time
+        float lastoutL = 0.f; 
+        float lastoutR = 0.f;
         
         // let's see how many pixels we may want to skip until the drawing
         // function has to draw a bar/box/line
         if(*params[param_analyzer_scale] or *params[param_analyzer_view] == 2) {
             // we have linear view enabled or we want to see tit... erm curves
             if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
-                _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
+                _iter = std::max(1, (int)floor(freq * \
+                    (float)_accuracy / (float)srate));
             }    
         } else {
             // we have logarithmic view enabled
@@ -1206,9 +1198,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // according to the post processing
                 // ################################
                 int n = 0;
-                float var1 = 0.f; // used later for denoising peaks
+                float var1L = 0.f; // used later for denoising peaks
+                float var1R = 0.f;
                 float diff_fft;
-                switch((int)*params[param_analyzer_mode]) {
+                switch(_param_mode) {
                     default:
                         // all normal modes
                         posneg = 1;
@@ -1229,31 +1222,49 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                                 break;
                             case 2:
                                 // Analyzer Denoised Peaks - filter out unwanted noise
-                                for(int k = 0; k < std::max(10 , std::min(400 , (int)(2.f*(float)((_iter - iter))))); k++) {
+                                for(int k = 0; k < std::max(10 , std::min(400 ,\
+                                    (int)(2.f*(float)((_iter - iter))))); k++) {
                                     //collect amplitudes in the environment of _iter to
                                     //be able to erase them from signal and leave just
                                     //the peaks
                                     if(_iter - k > 0) {
-                                        var1 += fabs(fft_outL[_iter - k]);
+                                        var1L += fabs(fft_outL[_iter - k]);
                                         n++;
                                     }
-                                    if(k != 0) var1 += fabs(fft_outL[_iter + k]);
-                                    else if(i) var1 += fabs(lastout);
-                                    else var1 += fabs(fft_outL[_iter]);
+                                    if(k != 0) var1L += fabs(fft_outL[_iter + k]);
+                                    else if(i) var1L += fabs(lastoutL);
+                                    else var1L += fabs(fft_outL[_iter]);
+                                    if(_param_mode == 3 or _param_mode == 4) {
+                                        if(_iter - k > 0) {
+                                            var1R += fabs(fft_outR[_iter - k]);
+                                            n++;
+                                        }
+                                        if(k != 0) var1R += fabs(fft_outR[_iter + k]);
+                                        else if(i) var1R += fabs(lastoutR);
+                                        else var1R += fabs(fft_outR[_iter]);
+                                    }
                                     n++;
                                 }
                                 //do not forget fft_out[_iter] for the next time
-                                lastout = fft_outL[_iter];
-                                //pumping up actual signal an erase surrounding sounds
-                                fft_outL[_iter] = 0.25f * std::max(n * 0.6f * fabs(fft_outL[_iter]) - var1 , 1e-20);
+                                lastoutL = fft_outL[_iter];
+                                //pumping up actual signal an erase surrounding
+                                // sounds
+                                fft_outL[_iter] = 0.25f * std::max(n * 0.6f * \
+                                    fabs(fft_outL[_iter]) - var1L , 1e-20);
+                                if(_param_mode == 3 or _param_mode == 4) {
+                                    // do the same with R channel if needed
+                                    lastoutR = fft_outR[_iter];
+                                    fft_outR[_iter] = 0.25f * std::max(n * \
+                                        0.6f * fabs(fft_outR[_iter]) - var1R , 1e-20);
+                                }
                                 break;
                         }
                         break;
                     case 5:
                         // Stereo Difference - draw the difference between left
-                        // and right channel
-                        // if fft was renewed, recalc the absolute values in left and right 
-                        // if frequencies are skipped
+                        // and right channel if fft was renewed, recalc the
+                        // absolute values in left and right if frequencies are
+                        // skipped.
                         // this is additive mode - no other mode is available
                         for(int j = iter + 1; j < _iter; j++) {
                             fft_outL[_iter] += fabs(fft_outL[j]);
@@ -1266,25 +1277,87 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         break;
                 }
             }
+            iter = _iter;
+            // #######################################
+            // Calculate transitions for falling and
+            // smooting and fill delta buffers if fft
+            // was done above
+            // #######################################
+            if(subindex == 0) {
+                switch(_param_smooth) {
+                    default:
+                    case 0:
+                        // off
+                        break;
+                    case 1:
+                        // falling
+                        if(fftdone) {
+                            // rebuild delta values after fft was done
+                            if(fft_smoothL[iter] > fft_outL[iter]) {
+                                // we have to rise with smoothing
+                                
+                            } else {
+                                // we have to fall with log rate
+                                fft_deltaL[iter] = fft_smoothL[iter] / sqrt(_param_speed) / -8.f;
+                            }
+                            if(fft_smoothR[iter] > fft_outR[iter]) {
+                                // we have to rise with smoothing
+                                
+                            } else {
+                                // we have to fall with log rate
+                                fft_deltaR[iter] = fft_smoothR[iter] / sqrt(_param_speed) / -8.f;
+                            }
+                        }
+                        
+                        if(fft_smoothL[iter] > fft_outL[iter]) {
+                            // we are rising with smoothing
+                            fft_smoothL[iter] -= fabs(fft_deltaL[iter]);
+                            fft_deltaL[iter] /= 1.01f;
+                        } else {
+                            // we are falling at log rate
+                            fft_smoothL[iter] += fft_deltaL[iter];
+                        }
+                        if(fft_smoothR[iter] > fft_outR[iter]) {
+                            // we are rising with smoothing
+                            fft_smoothR[iter] -= fabs(fft_deltaR[iter]);
+                            fft_deltaR[iter] /= 1.01f;
+                        } else {
+                            // we are falling at log rate
+                            fft_smoothR[iter] += fft_deltaR[iter];
+                        }
+                        break;
+                    case 2:
+                        // smoothing
+                        if(fftdone) {
+                            // rebuild delta values after fft was done
+                            fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / _param_speed;
+                            fft_deltaR[iter] = (posneg * fabs(fft_outR[iter]) - fft_smoothR[iter]) / _param_speed;
+                        }
+                        
+                        fft_smoothL[iter] += fft_deltaL[iter];
+                        fft_smoothR[iter] += fft_deltaR[iter];
+                        break;
+                }
+            }
+            
             // #######################################
             // Choose the L and R value from the right
             // buffer according to view settings
             // #######################################
-            iter = _iter;
             float valL = 0.f;
             float valR = 0.f;
             if (*params[param_analyzer_freeze]) {
                 // freeze enabled
                 valL = fft_freezeL[iter];
                 valR = fft_freezeR[iter];
-            } else if ((subindex == 1 and *params[param_analyzer_mode] < 3) \
+            } else if ((subindex == 1 and _param_mode < 3) \
                 or subindex > 1) {
                 // we draw the hold buffer
                 valL = fft_holdL[iter];
                 valR = fft_holdR[iter];
             } else {
                 // we draw normally (no freeze)
-                switch(_smoothing) {
+                switch(_param_smooth) {
                     case 0:
                         // off
                         valL = fft_outL[iter];
@@ -1292,26 +1365,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         break;
                     case 1:
                         // falling
-                        if(subindex == 0) {
-                            fft_smoothL[iter] -= fabs(fft_deltaL[iter]);
-                            fft_deltaL[iter] /= 1.01f;
-                            fft_smoothR[iter] -= fabs(fft_deltaR[iter]);
-                            fft_deltaR[iter] /= 1.01f;
-                        }
                         valL = fft_smoothL[iter];
                         valR = fft_smoothR[iter];
                         break;
                     case 2:
                         // smoothing
-                        if(subindex == 0) {
-                            if(____analyzer_smooth_dirty) {
-                                // rebuild delta values
-                                fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / _param_speed;
-                                fft_deltaR[iter] = (posneg * fabs(fft_outR[iter]) - fft_smoothR[iter]) / _param_speed;
-                            }
-                            fft_smoothL[iter] += fft_deltaL[iter];
-                            fft_smoothR[iter] += fft_deltaR[iter];
-                        }
                         valL = fft_smoothL[iter];
                         valR = fft_smoothR[iter];
                         break;
@@ -1326,31 +1384,36 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // according to mode setting but only if
                 // we are drawing lines or boxes
                 // #####################################
-                if(*params[param_analyzer_mode] == 3) {
-                    // stereo analyzer
-                    if(subindex == 0 or subindex == 2) {
+                switch(_param_mode) {
+                    case 3:
+                        // stereo analyzer
+                        if(subindex == 0 or subindex == 2) {
+                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                        } else {
+                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                        }
+                        break;
+                    case 4:
+                        // we want to draw Stereo Image
+                        if(subindex == 0 or subindex == 2) {
+                            // Left channel signal
+                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff);
+                        } else if (subindex == 1 or subindex == 3) {
+                            // Right channel signal
+                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff) * -1.f;
+                        }
+                        break;
+                    case 5:
+                        // We want to draw Stereo Difference
+                        if(i) {
+                            data[i] = 0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
+                        }
+                        else data[i] = 0.f;
+                        break;
+                    default:
+                        // normal analyzer behavior
                         data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
-                    } else {
-                        data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
-                    }
-                } else if(*params[param_analyzer_mode] == 4) {
-                    // we want to draw Stereo Image
-                    if(subindex == 0 or subindex == 2) {
-                        // Left channel signal
-                        data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff);
-                    } else if (subindex == 1 or subindex == 3) {
-                        // Right channel signal
-                        data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff) * -1.f;
-                    }
-                } else if(*params[param_analyzer_mode] == 5) {
-                    // We want to draw Stereo Difference
-                    if(i) {
-                        data[i] = 0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
-                    }
-                    else data[i] = 0.f;
-                } else {
-                    // normal analyzer behavior
-                    data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                        break;
                 }
             }
         }
@@ -1363,31 +1426,38 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             data[i] = INFINITY;
         }
     }
-    ____analyzer_smooth_dirty = 0;
+    
+    // ###################################
+    // colorize the curves/boxes according
+    // to the chosen display settings
+    // ###################################
     
     // change alpha (or color) for hold lines or stereo modes
-    if((subindex == 1 and *params[param_analyzer_mode] < 3) \
-        or (subindex > 1 and *params[param_analyzer_mode] == 4) \
-    ) {
+    if((subindex == 1 and _param_mode < 3) or (subindex > 1 and _param_mode == 4)) {
         // subtle hold line on left, right, average or stereo image
         context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
     }
-    if(subindex == 0 and *params[param_analyzer_mode] == 3) {
+    if(subindex == 0 and _param_mode == 3) {
         // left channel in stereo analyzer
         context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
     }
-    if(subindex == 1 and *params[param_analyzer_mode] == 3) {
+    if(subindex == 1 and _param_mode == 3) {
         // right channel in stereo analyzer
         context->set_source_rgba(0.05, 0.30, 0.0, 0.3);
     }
-    if(subindex == 2 and *params[param_analyzer_mode] == 3) {
+    if(subindex == 2 and _param_mode == 3) {
         // left hold in stereo analyzer
         context->set_source_rgba(0.45, 0.30, 0.2, 0.2);
     }
-    if(subindex == 3 and *params[param_analyzer_mode] == 3) {
+    if(subindex == 3 and _param_mode == 3) {
         // right hold in stereo analyzer
         context->set_source_rgba(0.25, 0.50, 0.2, 0.2);
     }
+    
+    // #############################
+    // choose a drawing mode between
+    // boxes, lines and bars
+    // #############################
     
     // modes:
     // 0: left
@@ -1408,7 +1478,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     // 2: boxes (little things on the values position
     // 3: centered bars (0dB is centered in y direction)
     
-    if (*params[param_analyzer_mode] > 3) {
+    if (_param_mode > 3) {
         // centered viewing modes like stereo image and stereo difference
         if(!*params[param_analyzer_view]) {
             // boxes
@@ -1425,8 +1495,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         }
     } else if(!*params[param_analyzer_view]) {
         // bars
-        if((subindex == 0 and *params[param_analyzer_mode] < 3) \
-        or (subindex <= 1 and *params[param_analyzer_mode] == 3)) {
+        if((subindex == 0 and _param_mode < 3) or (subindex <= 1 and _param_mode == 3)) {
             // draw bars
             *mode = 1;
         } else {
@@ -1438,7 +1507,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         *mode = 0;
     }
     ____analyzer_sanitize = 0;
-    //printf("%3d\n",subindex);
     return true;
 }
 

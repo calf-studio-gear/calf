@@ -60,7 +60,7 @@ private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR, asc_led;
-    int mode, mode_old;
+    int _mode, mode_old;
     bool solo[strips];
     bool no_solo;
     float meter_inL, meter_inR, meter_outL, meter_outR;

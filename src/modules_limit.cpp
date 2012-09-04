@@ -244,6 +244,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
         q_old[i] = -1;
     }
     mode_old = 0;
+    _mode = 0;
     for(int i = 0; i < strips; i ++) {
         weight_old[i] = -1.f;
     }
@@ -289,11 +290,11 @@ void multibandlimiter_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    mode_old = mode;
-    mode = *params[param_mode];
+    mode_old = _mode;
+    _mode = *params[param_mode];
     int i;
     int j1;
-    switch(mode) {
+    switch(_mode) {
         case 0:
         default:
             j1 = 0;
@@ -472,7 +473,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             inL *= *params[param_level_in];
             // even out filters gain reduction
             // 3dB - levelled manually (based on default sep and q settings)
-            switch(mode) {
+            switch(_mode) {
                 case 0:
                     inL *= 1.414213562;
                     inR *= 1.414213562;
@@ -495,7 +496,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 left  = inL;
                 right = inR;
                 // send trough filters
-                switch(mode) {
+                switch(_mode) {
                     // how many filter passes? (12/36dB)
                     case 0:
                     default:
@@ -647,7 +648,7 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
     {
         ret = 1.f;
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        switch(*mode) {
+        switch(_mode) {
             case 0:
             default:
                 j1 = 0;

@@ -311,6 +311,8 @@ class analyzer_audio_module:
     int _acc_old;
     int _scale_old;
     int _post_old;
+    int _hold_old;
+    int _smooth_old;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
     
@@ -344,14 +346,9 @@ protected:
     float *fft_deltaL, *fft_deltaR;
     float *fft_holdL, *fft_holdR;
     float *fft_freezeL, *fft_freezeR;
-    float _hold;
-    mutable int _smoothing;
     mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
-    mutable int ____analyzer_smooth_dirty;
-    mutable int ____analyzer_hold_dirty;
     mutable int ____analyzer_sanitize;
-    mutable int ____analyzer_force_sanitize;
 
 };
 
