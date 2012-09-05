@@ -334,6 +334,7 @@ protected:
     float *phase_buffer;
     int fft_buffer_size;
     float *fft_buffer;
+    int *spline_buffer;
     int plength;
     int ppos;
     int fpos;

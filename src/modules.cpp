@@ -870,6 +870,9 @@ analyzer_audio_module::analyzer_audio_module() {
     plength = 0;
     fpos = 0;
     
+    spline_buffer = (int*) calloc(200, sizeof(int));
+    memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
+    
     phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
     memset(phase_buffer, 0, max_phase_buffer_size * sizeof(float));
     
@@ -960,6 +963,7 @@ void analyzer_audio_module::params_changed() {
         memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(spline_buffer, 0, 200 * sizeof(int));
         ____analyzer_phase_was_drawn_here = 0;
     }
 }
@@ -1401,6 +1405,88 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // we have to draw splines, so we draw every x-pixel according to
             // the pre-generated fft_splinesL and fft_splinesR buffers
             data[i] = INFINITY;
+            
+//            int _splinepos = -1;
+//            *mode=0;
+//            
+//            for (int i = 0; i<=points; i++) {
+//                if (subindex == 1 and i == spline_buffer[_splinepos]) _splinepos++;
+//                
+//                freq = 20.f * pow (1000.f, (float)i / points); //1000=20000/20
+//                float a0,b0,c0,d0,a1,b1,c1,d1,a2,b2,c2,d2;
+//                
+//                if(((i % lintrans == 0 and points - i > lintrans) or i == points - 1 ) and subindex == 0) {
+
+//                    _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
+//                    //printf("_iter %3d\n",_iter);
+//                }
+//                if(_iter > iter and subindex == 0)
+//                {
+//                    _splinepos++;
+//                    spline_buffer[_splinepos] = _iter;
+//                    //printf("_splinepos: %3d - lintrans: %3d\n", _splinepos,lintrans);
+//                    if(fftdone and i and subindex == 0) 
+//                    {
+//                        // if fft was renewed, recalc the absolute values if frequencies
+//                        // are skipped
+//                        for(int j = iter + 1; j < _iter; j++) {
+//                            fft_out[_iter] += fabs(fft_out[j]);
+//                        }
+//                    }
+//                }
+//                
+//                if(fftdone and subindex == 1 and _splinepos >= 0 and (_splinepos % 3 == 0 or _splinepos == 0)) 
+//                {
+//                    float mleft, mright, y0, y1, y2, y3, y4;
+//                    
+//                    //jetzt spline interpolation
+//                    y0 = dB_grid(fft_out[spline_buffer[_splinepos]] / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+//                    y1 = dB_grid(fft_out[spline_buffer[_splinepos + 1]] / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+//                    y2 = dB_grid(fft_out[spline_buffer[_splinepos + 2]] / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+//                    y3 = dB_grid(fft_out[spline_buffer[_splinepos + 3]] / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+//                    y4 = dB_grid(fft_out[spline_buffer[_splinepos + 4]] / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+//                    mleft  = y1 - y0;
+//                    mright = y4 - y3;
+//                    printf("y-werte %3d, %3d, %3d, %3d, %3d\n",y0,y1,y2,y3,y4);
+//                    a0 = (-3*y3+15*y2-44*y1+32*y0+mright+22*mleft)/34;
+//                    b0 = -(-3*y3+15*y2-78*y1+66*y0+mright+56*mleft)/34;
+//                    c0 = mleft;
+//                    d0 = y0;
+//                    a1 = -(-15*y3+41*y2-50*y1+24*y0+5*mright+8*mleft)/34;
+//                    b1 = (-6*y3+30*y2-54*y1+30*y0+2*mright+10*mleft)/17;
+//                    c1 = -(3*y3-15*y2-24*y1+36*y0-mright+12*mleft)/34;
+//                    d1 = y1;
+//                    a2 = (-25*y3+40*y2-21*y1+6*y0+14*mright+2*mleft)/17;
+//                    b2 = -(-33*y3+63*y2-42*y1+12*y0+11*mright+4*mleft)/17;
+//                    c2 = (9*y3+6*y2-21*y1+6*y0-3*mright+2*mleft)/17;
+//                    d2 = y2;
+//                }
+//                iter = _iter;
+//                
+//                
+//                if(i > spline_buffer[_splinepos] and i <= spline_buffer[_splinepos + 1] and _splinepos >= 0 and subindex == 1) 
+//                {
+//                data[i] = a0 * pow(i / lintrans - _splinepos, 3) + b0 * pow(i / lintrans - _splinepos, 2) + c0 * (i / lintrans - _splinepos) + d0;
+//                printf("1.spline\n");
+//                }
+//                if(i > spline_buffer[_splinepos + 1] and i <= spline_buffer[_splinepos + 2] and _splinepos >= 0 and subindex == 1) 
+//                {
+//                printf("2.spline\n");
+//                data[i] = a1 * pow(i / lintrans - _splinepos, 3) + b1 * pow(i / lintrans - _splinepos, 2) + c1 * (i / lintrans - _splinepos) + d1;
+//                }
+//                if(i > spline_buffer[_splinepos + 2] and i <= spline_buffer[_splinepos + 3] and _splinepos >= 0 and subindex == 1) 
+//                {
+//                printf("3.spline\n");
+//                data[i] = a2 * pow(i / lintrans - _splinepos, 3) + b2 * pow(i / lintrans - _splinepos, 2) + c2 * (i / lintrans - _splinepos) + d2;
+//                }
+//                if(subindex==1) printf("data[i] %3d _splinepos %2d\n", data[i], _splinepos);
+//                if (subindex == 0) 
+//                {
+//                    data[i] = INFINITY;
+//                } else data[i] = dB_grid(i/200, pow(64, *params[param_analyzer_level]), 0.5f);
+//            
+//            }
+            
         }
         else {
             data[i] = INFINITY;
