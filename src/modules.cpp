@@ -891,8 +891,8 @@ analyzer_audio_module::analyzer_audio_module() {
     
     fft_fallingL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_fallingR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_fallingL, false, max_fft_cache_size * sizeof(float));
-    memset(fft_fallingR, false, max_fft_cache_size * sizeof(float));
+    memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
+    memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
     
     fft_deltaL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_deltaR = (float*) calloc(max_fft_cache_size, sizeof(float));
@@ -939,8 +939,6 @@ void analyzer_audio_module::params_changed() {
         ___sanitize = true;
     }
     if(*params[param_analyzer_smoothing] != _smooth_old) {
-//        memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
-//        memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
         _smooth_old = *params[param_analyzer_smoothing];
         ___sanitize = true;
     }
@@ -968,8 +966,8 @@ void analyzer_audio_module::params_changed() {
         memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_fallingL, false, max_fft_cache_size * sizeof(float));
-        memset(fft_fallingR, false, max_fft_cache_size * sizeof(float));
+//        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
+//        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
         memset(spline_buffer, 0, 200 * sizeof(int));
         ____analyzer_phase_was_drawn_here = 0;
     }
@@ -1568,7 +1566,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     if(subindex == 1 and _param_mode == 3) {
         // right channel in stereo analyzer
-        context->set_source_rgba(0.05, 0.30, 0.0, 0.3);
+        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
     }
     if(subindex == 2 and _param_mode == 3) {
         // left hold in stereo analyzer
@@ -1576,7 +1574,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     if(subindex == 3 and _param_mode == 3) {
         // right hold in stereo analyzer
-        context->set_source_rgba(0.25, 0.50, 0.2, 0.2);
+        context->set_source_rgba(0.25, 0.45, 0.2, 0.2);
     }
     
     // #############################
