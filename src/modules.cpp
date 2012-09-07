@@ -1163,10 +1163,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // run fft
             // this takes our latest buffer and returns an array with
             // non-normalized
-            rfftw_one(fft_plan, fft_inL, fft_outL);
+            if (fft_plan)
+                rfftw_one(fft_plan, fft_inL, fft_outL);
             //run fft for for right channel too. it is needed for stereo image 
             //and stereo difference modes
-            if(_param_mode >= 3) {
+            if(_param_mode >= 3 and fft_plan) {
                 rfftw_one(fft_plan, fft_inR, fft_outR);
             }
             // ...and set some values for later use
