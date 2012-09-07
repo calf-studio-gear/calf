@@ -328,6 +328,7 @@ public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_clear_all(int index) const;
     mutable int _mode_old;
+    mutable bool _falling;
 protected:
     static const int max_phase_buffer_size = 8192;
     int phase_buffer_size;
@@ -346,6 +347,7 @@ protected:
     fftw_real *fft_smoothL, *fft_smoothR;
     float *fft_deltaL, *fft_deltaR;
     float *fft_holdL, *fft_holdR;
+    float *fft_fallingL, *fft_fallingR;
     float *fft_freezeL, *fft_freezeR;
     mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
