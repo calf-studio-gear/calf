@@ -889,6 +889,11 @@ analyzer_audio_module::analyzer_audio_module() {
     memset(fft_smoothL, 0, max_fft_cache_size * sizeof(fftw_real));
     memset(fft_smoothR, 0, max_fft_cache_size * sizeof(fftw_real));
     
+    fft_fallingL = (float*) calloc(max_fft_cache_size, sizeof(float));
+    fft_fallingR = (float*) calloc(max_fft_cache_size, sizeof(float));
+    memset(fft_fallingL, false, max_fft_cache_size * sizeof(float));
+    memset(fft_fallingR, false, max_fft_cache_size * sizeof(float));
+    
     fft_deltaL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_deltaR = (float*) calloc(max_fft_cache_size, sizeof(float));
     memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
@@ -934,8 +939,8 @@ void analyzer_audio_module::params_changed() {
         ___sanitize = true;
     }
     if(*params[param_analyzer_smoothing] != _smooth_old) {
-        memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
-        memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
+//        memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
+//        memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
         _smooth_old = *params[param_analyzer_smoothing];
         ___sanitize = true;
     }
@@ -963,6 +968,8 @@ void analyzer_audio_module::params_changed() {
         memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
         memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
+        memset(fft_fallingL, false, max_fft_cache_size * sizeof(float));
+        memset(fft_fallingR, false, max_fft_cache_size * sizeof(float));
         memset(spline_buffer, 0, 200 * sizeof(int));
         ____analyzer_phase_was_drawn_here = 0;
     }
@@ -1093,9 +1100,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // we want to remember old fft_out values for smoothing as well
             // and we fill the hold buffer in this (extra) cycle
             for(int i = 0; i < _accuracy; i++) {
-            // fill smoothing buffer
-                fft_smoothL[i] = fft_outL[i];
-                fft_smoothR[i] = fft_outR[i];    // go to the right position back in time according to accuracy
+                // go to the right position back in time according to accuracy
                 // settings and cycling in the main buffer
                 int _fpos = (fpos - _accuracy * 2 \
                     + (i * 2)) % max_fft_buffer_size;
@@ -1133,10 +1138,21 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 fft_inL[i] = valL;
                 fft_inR[i] = valR;
                 
-                // fill smoothing buffer with the last out values
-                // before fft is recalced
-                fft_smoothL[i] = fft_outL[i];
-                fft_smoothR[i] = fft_outR[i];
+                // fill smoothing & falling buffer
+                if(_param_smooth == 2) {
+                    fft_smoothL[i] = fft_outL[i];
+                    fft_smoothR[i] = fft_outR[i];
+                }
+                if(_param_smooth == 1) {
+                    if(fft_smoothL[i] < fabs(fft_outL[i])) {
+                        fft_smoothL[i] = fabs(fft_outL[i]);
+                        fft_deltaL[i] = 1.f;
+                    }
+                    if(fft_smoothR[i] < fabs(fft_outR[i])) {
+                        fft_smoothR[i] = fabs(fft_outR[i]);
+                        fft_deltaR[i] = 1.f;
+                    }
+                }
                 
                 // fill hold buffer with last out values
                 // before fft is recalced
@@ -1166,7 +1182,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         int _lintrans = (int)((float)points * log((20.f + 2.f * \
             (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
         lintrans = (int)(_lintrans + points % _lintrans / \
-            floor(points / _lintrans)) / 4; // / 4 was added to see finer bars but breaks low end
+            floor(points / _lintrans)) / 2; // / 4 was added to see finer bars but breaks low end
     }
     for (int i = 0; i <= points; i++)
     {
@@ -1223,8 +1239,20 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                                     fft_outL[_iter] += fabs(fft_outL[j]);
                                     fft_outR[_iter] += fabs(fft_outR[j]);
                                 }
+                                fft_outL[_iter] /= (_iter - iter);
+                                fft_outR[_iter] /= (_iter - iter);
                                 break;
                             case 2:
+                                // Analyzer Additive - cycle through skipped values and
+                                // add them
+                                // if fft was renewed, recalc the absolute values if
+                                // frequencies are skipped
+                                for(int j = iter + 1; j < _iter; j++) {
+                                    fft_outL[_iter] += fabs(fft_outL[j]);
+                                    fft_outR[_iter] += fabs(fft_outR[j]);
+                                }
+                                break;
+                            case 3:
                                 // Analyzer Denoised Peaks - filter out unwanted noise
                                 for(int k = 0; k < std::max(10 , std::min(400 ,\
                                     (int)(2.f*(float)((_iter - iter))))); k++) {
@@ -1288,39 +1316,68 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // was done above
             // #######################################
             if(subindex == 0) {
-                float _frate = 0.1;
-                // ############################################################################################################################################
-                if(_param_smooth == 1 and fabs(fft_smoothL[iter]) - fabs(fft_outL[iter]) > _frate * _param_speed) {
-                    // falling
-                    if(fftdone) {
-                        // rebuild delta values after fft was done
-                        fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / (fabs(fft_outL[iter]) - _frate * _param_speed), 1.f / _param_speed);
-                        fft_deltaR[iter] = pow(fabs(fft_outR[iter]) / (fabs(fft_outL[iter]) - _frate * _param_speed), 1.f / _param_speed);
-                    } else {
-                        // change fft_smooth according to delta
-                        fft_smoothL[iter] *= fft_deltaL[iter];
-                        fft_smoothR[iter] *= fft_deltaR[iter];
-                    }
-                } else if(_param_smooth >= 1) {
+                float _fdelta = 0.91;
+                if(_param_smooth == 2) {
                     // smoothing
                     if(fftdone) {
                         // rebuild delta values after fft was done
                         if(_param_mode < 5) {
                             fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / fabs(fft_smoothL[iter]), 1.f / _param_speed);
-                            fft_deltaR[iter] = pow(fabs(fft_outR[iter]) / fabs(fft_smoothR[iter]), 1.f / _param_speed);
                         } else {
                             fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / _param_speed;
-                            fft_deltaR[iter] = (posneg * fabs(fft_outR[iter]) - fft_smoothR[iter]) / _param_speed;
                         }
                     } else {
                         // change fft_smooth according to delta
                         if(_param_mode < 5) {
                             fft_smoothL[iter] *= fft_deltaL[iter];
-                            fft_smoothR[iter] *= fft_deltaR[iter];
                         } else {
                             fft_smoothL[iter] += fft_deltaL[iter];
-                            fft_smoothR[iter] += fft_deltaR[iter];
                         }
+                    }
+                } else if(_param_smooth == 1) {
+                    // falling
+                    if(fftdone) {
+                        // rebuild delta values after fft was done
+                        //fft_deltaL[iter] = _fdelta;
+                    }
+                    // change fft_smooth according to delta
+                    fft_smoothL[iter] *= fft_deltaL[iter];
+                    
+                    if(fft_deltaL[iter] > _fdelta) {
+                        fft_deltaL[iter] *= 1.f - (16.f - _param_speed) / 2000.f;
+                    }
+                }
+                
+                if(_param_mode > 2 and _param_mode < 5) {
+                    // we need right buffers, too for stereo image and
+                    // stereo analyzer
+                    if(_param_smooth == 2) {
+                        // smoothing
+                        if(fftdone) {
+                            // rebuild delta values after fft was done
+                            if(_param_mode < 5) {
+                                fft_deltaR[iter] = pow(fabs(fft_outR[iter]) / fabs(fft_smoothR[iter]), 1.f / _param_speed);
+                            } else {
+                                fft_deltaR[iter] = (posneg * fabs(fft_outR[iter]) - fft_smoothR[iter]) / _param_speed;
+                            }
+                        } else {
+                            // change fft_smooth according to delta
+                            if(_param_mode < 5) {
+                                fft_smoothR[iter] *= fft_deltaR[iter];
+                            } else {
+                                fft_smoothR[iter] += fft_deltaR[iter];
+                            }
+                        }
+                    } else if(_param_smooth == 1) {
+                        // falling
+                        if(fftdone) {
+                            // rebuild delta values after fft was done
+                            //fft_deltaR[iter] = _fdelta;
+                        }
+                        // change fft_smooth according to delta
+                        fft_smoothR[iter] *= fft_deltaR[iter];
+                        if(fft_deltaR[iter] > _fdelta)
+                            fft_deltaR[iter] *= 1.f - (16.f - _param_speed) / 2000.f;
                     }
                 }
             }
@@ -1381,16 +1438,18 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // we want to draw Stereo Image
                         if(subindex == 0 or subindex == 2) {
                             // Left channel signal
-                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valL), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff);
+                            data[i] = fabs(valL) * stereo_coeff * 0.0001;
                         } else if (subindex == 1 or subindex == 3) {
                             // Right channel signal
-                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(fabs(valR), 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valR, 3.f) + valR * stereo_coeff) * -1.f;
+                            data[i] = fabs(valR) * stereo_coeff * -0.0001f;
                         }
                         break;
                     case 5:
                         // We want to draw Stereo Difference
                         if(i) {
-                            data[i] = 0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff;
+                            
+                            //data[i] = stereo_coeff * valL * 2.f;
+                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff) * 1.8f;
                         }
                         else data[i] = 0.f;
                         break;
