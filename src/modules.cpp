@@ -1131,9 +1131,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         valL = R;
                         valR = L;
                         break;
-                    default:
-                        val = 0.f;
-                        break;
                 }
                 // store values in analyzer buffer
                 fft_inL[i] = valL;
