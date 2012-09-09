@@ -73,7 +73,7 @@ void organ_audio_module::params_changed() {
     update_params();
 }
 
-bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const
+bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (index == par_master) {
         organ_voice_base::precalculate_waves(progress_report);

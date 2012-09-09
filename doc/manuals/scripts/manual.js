@@ -73,6 +73,7 @@ $(document).ready(function () {
             menu += "<li>";
             if(items[i][1][j][2]) {
 //                menu += "<a class='thickbox' href='" + items[i][1][j][2] + "' title='" + items[i][1][j][0] + "'>";
+//                menu += "<a href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">"
                 menu += "<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">";
 //                menu += "</a>";
             }
@@ -81,7 +82,7 @@ $(document).ready(function () {
                 cl=" class='inactive'"
             menu += "<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a></li>";
         }
-        menu +="</ul><br clear='all'/></div>";
+        menu +="<br clear='all'></ul><br clear='all'/></div>";
     }
     header += menu + "<br clear='all'></div>";
     $("body").prepend("<div class='headerbg'>" + header + "</div>");

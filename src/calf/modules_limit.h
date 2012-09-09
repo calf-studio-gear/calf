@@ -60,7 +60,7 @@ private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR, asc_led;
-    int mode, mode_old;
+    int _mode, mode_old;
     bool solo[strips];
     bool no_solo;
     float meter_inL, meter_inR, meter_outL, meter_outR;
@@ -89,7 +89,7 @@ public:
     void params_changed();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
 };
 
