@@ -82,7 +82,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     int ox=5, oy=5;
     int _last = 0;
     int y;
-    for (int i = 0; i < sx; i++)
+    for (int i = 0; i <= sx; i++)
     {
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
         switch(mode) {
@@ -124,6 +124,17 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
                     continue;
                 }
                 break;
+            case 4:
+                // this mode draws pixels at the bottom of the surface
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                    cairo_set_source_rgba(c, 0.35, 0.4, 0.2, data[i] + 1 / 2.f);
+                    cairo_rectangle(c, ox + _last, oy + sy - 1, i - _last, 1);
+                    cairo_fill(c);
+                    _last = i;
+                } else {
+                    continue;
+                }
+                break;
         }
     }
     if(!mode) {
@@ -149,7 +160,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     GdkColor sc = { 0, 0, 0, 0 };
 
     bool cache_dirty = 0;
-    bool fade_dirty = 0;
+    bool master_dirty = 0;
+    bool spec_dirty = 0;
+    bool specc_dirty = 0;
     
     if( lg->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
@@ -164,15 +177,35 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         
         cache_dirty = 1;
     }
-    if( lg->fade_surface == NULL ) {
+    if( lg->master_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
         // create the cache_surface.
         cairo_surface_t *window_surface = cairo_get_target( c );
-        lg->fade_surface = cairo_surface_create_similar( window_surface, 
+        lg->master_surface = cairo_surface_create_similar( window_surface, 
                                   CAIRO_CONTENT_COLOR,
                                   widget->allocation.width,
                                   widget->allocation.height );
-        fade_dirty = 1;
+        master_dirty = 1;
+    }
+    if( lg->spec_surface == NULL ) {
+        // looks like its either first call or the widget has been resized.
+        // create the cache_surface.
+        cairo_surface_t *window_surface = cairo_get_target( c );
+        lg->spec_surface = cairo_surface_create_similar( window_surface, 
+                                  CAIRO_CONTENT_ALPHA,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
+        spec_dirty = 1;
+    }
+    if( lg->specc_surface == NULL ) {
+        // looks like its either first call or the widget has been resized.
+        // create the cache_surface.
+        cairo_surface_t *window_surface = cairo_get_target( c );
+        lg->specc_surface = cairo_surface_create_similar( window_surface, 
+                                  CAIRO_CONTENT_ALPHA,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
+        specc_dirty = 1;
     }
     
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -202,12 +235,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         if( cache_dirty || gen_index != lg->last_generation || lg->source->get_clear_all(lg->source_id)) {
             
             cairo_t *cache_cr = cairo_create( lg->cache_surface );
-        
-//            if(widget->style->bg_pixmap[0] == NULL) {
-                gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
-//            } else {
-//                gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(&style->bg_pixmap[GTK_STATE_NORMAL]), widget->allocation.x, widget->allocation.y + 20);
-//            }
+            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
             cairo_paint(cache_cr);
             
             // outer (black)
@@ -283,10 +311,11 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             dot_n = cache_dot_index;
         }
         
-        cairo_t *cache_cr = cairo_create( lg->fade_surface );
+        cairo_t *cache_cr = cairo_create( lg->master_surface );
         cairo_set_source_surface(cache_cr, lg->cache_surface, 0, 0);
-        if(fade_dirty or !lg->use_fade) {
+        if(master_dirty or !lg->use_fade or lg->_spectrum) {
             cairo_paint(cache_cr);
+            lg->_spectrum = 0;
         } else {
             cairo_paint_with_alpha(cache_cr, lg->fade * 0.35 + 0.05);
         }
@@ -312,7 +341,44 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         lg->mode = 0;
         for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->mode); gn++)
         {
-            calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
+            if(lg->mode == 4) {
+                lg->_spectrum = 1;
+                cairo_t *spec_cr = cairo_create( lg->spec_surface );
+                cairo_t *specc_cr = cairo_create( lg->specc_surface );
+                
+                // clear spec cache
+                cairo_set_operator (specc_cr, CAIRO_OPERATOR_CLEAR);
+                cairo_paint (specc_cr);
+                cairo_set_operator (specc_cr, CAIRO_OPERATOR_OVER);
+                //cairo_restore (specc_cr);
+                
+                // draw last spec to spec cache
+                cairo_set_source_surface(specc_cr, lg->spec_surface, 0, -1);
+                cairo_paint(specc_cr);
+                
+                // draw next line to spec cache
+                calf_line_graph_draw_graph( specc_cr, data, sx, sy, lg->mode );
+                cairo_save (specc_cr);
+                
+                // draw spec cache to master
+                cairo_set_source_surface(cache_cr, lg->specc_surface, 0, 0);
+                cairo_paint(cache_cr);
+                
+                // clear spec
+                cairo_set_operator (spec_cr, CAIRO_OPERATOR_CLEAR);
+                cairo_paint (spec_cr);
+                cairo_set_operator (spec_cr, CAIRO_OPERATOR_OVER);
+                //cairo_restore (spec_cr);
+                
+                // draw spec cache to spec
+                cairo_set_source_surface(spec_cr, lg->specc_surface, 0, 0);
+                cairo_paint (spec_cr);
+                
+                cairo_destroy(spec_cr);
+                cairo_destroy(specc_cr);
+            } else {
+                calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
+            }
         }
         gdk_cairo_set_source_color(cache_cr, &sc3);
         for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cache_cimpl); gn++)
@@ -325,7 +391,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_destroy(cache_cr);
     }
     
-    calf_line_graph_copy_cache_to_window( lg->fade_surface, c );
+    calf_line_graph_copy_cache_to_window( lg->master_surface, c );
     
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
 
@@ -371,9 +437,18 @@ calf_line_graph_size_allocate (GtkWidget *widget,
 
     GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_LINE_GRAPH_GET_CLASS( lg ) );
 
+    if( lg->master_surface )
+        cairo_surface_destroy( lg->master_surface );
     if( lg->cache_surface )
         cairo_surface_destroy( lg->cache_surface );
+    if( lg->spec_surface )
+        cairo_surface_destroy( lg->spec_surface );
+    if( lg->specc_surface )
+        cairo_surface_destroy( lg->specc_surface );
+    lg->master_surface = NULL;
     lg->cache_surface = NULL;
+    lg->spec_surface = NULL;
+    lg->specc_surface = NULL;
     
     widget->allocation = *allocation;
     GtkAllocation &a = widget->allocation;
@@ -410,8 +485,11 @@ calf_line_graph_init (CalfLineGraph *self)
     widget->requisition.width = 40;
     widget->requisition.height = 40;
     self->cache_surface = NULL;
+    self->spec_surface = NULL;
+    self->specc_surface = NULL;
     self->last_generation = 0;
     self->mode = 0;
+    self->_spectrum = 0;
 }
 
 GtkWidget *

@@ -983,11 +983,12 @@ CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus
 
 CALF_PORT_NAMES(analyzer) = {"In L", "In R", "Out L", "Out R"};
 const char *gonio_mode_names[] = { "Small Dots", "Medium Dots", "Big Dots", "Fields", "Lines (High CPU)" };
-const char *analyzer_mode_names[] = { "Analyzer Average", "Analyzer Left", "Analyzer Right", "Analyzer Stereo", "Stereo Image", "Stereo Difference" };
+const char *analyzer_mode_names[] = { "Analyzer Average", "Analyzer Left", "Analyzer Right", "Analyzer Stereo", "Stereo Image", "Stereo Difference", "Spectralizer Average", "Spectralizer Left", "Spectralizer Right" };
 const char *analyzer_smooth_names[] = { "Off", "Falling", "Transition" };
 const char *analyzer_post_names[] = { "Normalized", "Average", "Additive", "Denoised Peaks" };
 const char *analyzer_view_names[] = { "Bars", "Lines", "Cubic Splines" };
 const char *analyzer_scale_names[] = { "Logarithmic", "Linear" };
+const char *analyzer_windowing_names[] = { "Linear", "Hamming", "von Hann", "Blackman", "Blackman-Harris", "Blackman-Nuttall", "Bartlett", "Bartlett-Hann", "Sine", "Tukey", "Lanczos", "Kaiser", "Gauß" };
 CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Level L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Level R" },
@@ -995,11 +996,12 @@ CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_R", "Clip R" },
     
     { 1.25,           0.5,         2,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "analyzer_level", "Analyzer Level" },
-    { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
+    { 0,           0,           8,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_mode_names, "analyzer_mode", "Analyzer Mode" },
     { 0,           0,           1,     2,  PF_ENUM | PF_CTL_COMBO, analyzer_scale_names, "analyzer_scale", "Analyzer Scale" },
     { 2,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_post_names, "analyzer_post", "Analyzer Post FFT" },
     { 1,           0,           1,     2,  PF_ENUM | PF_CTL_COMBO , analyzer_view_names, "analyzer_view", "Analyzer View" },
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_smooth_names, "analyzer_smoothing", "Analyzer Smoothing" },
+    { 0,           0,           12,    2,  PF_ENUM | PF_CTL_COMBO, analyzer_windowing_names, "analyzer_windowing", "Analyzer Windowing" },
     { 6,           2,           8,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_accuracy", "Analyzer Accuracy" },
     { 13,          1,           15,    0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_speed", "Analyzer Speed" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_display", "Analyzer Display" },
