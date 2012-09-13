@@ -1001,7 +1001,7 @@ CALF_PORT_PROPS(analyzer) = {
     { 2,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_post_names, "analyzer_post", "Analyzer Post FFT" },
     { 1,           0,           1,     2,  PF_ENUM | PF_CTL_COMBO , analyzer_view_names, "analyzer_view", "Analyzer View" },
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, analyzer_smooth_names, "analyzer_smoothing", "Analyzer Smoothing" },
-    { 0,           0,           12,    2,  PF_ENUM | PF_CTL_COMBO, analyzer_windowing_names, "analyzer_windowing", "Analyzer Windowing" },
+    { 3,           0,           12,    2,  PF_ENUM | PF_CTL_COMBO, analyzer_windowing_names, "analyzer_windowing", "Analyzer Windowing" },
     { 6,           2,           8,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_accuracy", "Analyzer Accuracy" },
     { 13,          1,           15,    0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "analyzer_speed", "Analyzer Speed" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer_display", "Analyzer Display" },
