@@ -25,7 +25,7 @@
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
-
+#include <sys/time.h>
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -113,10 +113,27 @@ vintage_delay_audio_module::vintage_delay_audio_module()
         buffers[0][i] = 0.f;
         buffers[1][i] = 0.f;
     }
+    _tap_avg = 0;
+    _tap_last = 0;
 }
 
 void vintage_delay_audio_module::params_changed()
 {
+    if(*params[par_tap] >= .5f) {
+        timeval tv;
+        gettimeofday(&tv, 0);
+        long _now = tv.tv_sec * 1000000 + tv.tv_usec;
+        if(_tap_last) {
+            if(_tap_avg)
+                _tap_avg = (_tap_avg * 3 + (_now - _tap_last)) / 4.f;
+            else
+                _tap_avg = _now - _tap_last;
+            *params[par_bpm] = 60.f / (float)(_tap_avg / 1000000.f);
+            printf("bpm: %.5f\n", *params[par_bpm]);
+        }
+        _tap_last = _now;
+        *params[par_tap] = 0.f;
+    }
     float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
     deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
     deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
@@ -302,6 +319,22 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
         biquad_left[1].sanitize();biquad_right[1].sanitize();
         
     }
+    
+    // get microseconds
+    if(_tap_last) {
+        timeval tv;
+        gettimeofday(&tv, 0);
+        long _now = tv.tv_sec * 1000 * 1000 + tv.tv_usec;
+        if(_now > _tap_last + 2000000) {
+            // user stopped tapping
+            _tap_avg = 0;
+            _tap_last = 0;
+        }
+        *params[par_waiting] = 1.f;
+    } else {
+        *params[par_waiting] = 0.f;
+    }
+    
     return ostate;
 }
 
