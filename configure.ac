@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
-AC_INIT([calf],[0.0.19-rc1],[wdev@foltman.com])
+AC_INIT([calf],[0.0.19-rc2],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 LT_INIT([dlopen])
@@ -50,8 +50,9 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
 
 AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
 AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
-AC_CHECK_HEADER(srfftw.h, true, AC_MSG_ERROR([Single-precision FFTW2 header (srfftw.h) not found]))
-AC_CHECK_LIB(srfftw, true, AC_MSG_ERROR([Single-precision FFTW2 library (libsrfftw) not found]))
+AC_CHECK_HEADER(fftw3.h, true, AC_MSG_ERROR([FFTW3 header (fftw3.h) not found]))
+AC_CHECK_LIB(fftw3, true, AC_MSG_ERROR([FFTW3 library (libfftw3) not found]))
+AC_CHECK_LIB(fftw3f, true, AC_MSG_ERROR([Single-precision FFTW3 library (libfftw3f) not found]))
 
 # JACK
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)

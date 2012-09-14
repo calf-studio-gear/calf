@@ -21,7 +21,7 @@
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
-#include <srfftw.h>
+#include <fftw3.h>
 #include <calf/giface.h>
 #include <calf/modules.h>
 #include <calf/modules_dev.h>
@@ -880,15 +880,15 @@ analyzer_audio_module::analyzer_audio_module() {
     fft_buffer = (float*) calloc(max_fft_buffer_size, sizeof(float));
     memset(fft_buffer, 0, max_fft_buffer_size * sizeof(float));
     
-    fft_inL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_outL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_inR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_outR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
+    fft_inL = (float*) calloc(max_fft_cache_size, sizeof(float));
+    fft_outL = (float*) calloc(max_fft_cache_size, sizeof(float));
+    fft_inR = (float*) calloc(max_fft_cache_size, sizeof(float));
+    fft_outR = (float*) calloc(max_fft_cache_size, sizeof(float));
     
-    fft_smoothL = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    fft_smoothR = (fftw_real*) calloc(max_fft_cache_size, sizeof(fftw_real));
-    memset(fft_smoothL, 0, max_fft_cache_size * sizeof(fftw_real));
-    memset(fft_smoothR, 0, max_fft_cache_size * sizeof(fftw_real));
+    fft_smoothL = (float*) calloc(max_fft_cache_size, sizeof(float));
+    fft_smoothR = (float*) calloc(max_fft_cache_size, sizeof(float));
+    memset(fft_smoothL, 0, max_fft_cache_size * sizeof(float));
+    memset(fft_smoothR, 0, max_fft_cache_size * sizeof(float));
     
     fft_fallingL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_fallingR = (float*) calloc(max_fft_cache_size, sizeof(float));
@@ -927,11 +927,12 @@ void analyzer_audio_module::deactivate() {
 void analyzer_audio_module::params_changed() {
     bool ___sanitize = false;
     if(*params[param_analyzer_accuracy] != _acc_old) {
-        _accuracy = pow(2, 7 + *params[param_analyzer_accuracy]);
+        _accuracy = 1 << (7 + (int)*params[param_analyzer_accuracy]);
         _acc_old = *params[param_analyzer_accuracy];
         // recreate fftw plan
-        if (fft_plan) rfftw_destroy_plan (fft_plan);
-        fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+        if (fft_plan) fftwf_destroy_plan (fft_plan);
+        //fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+        fft_plan = fftwf_plan_r2r_1d(_accuracy, NULL, NULL, FFTW_R2HC, FFTW_ESTIMATE);
         lintrans = -1;
         ___sanitize = true;
     }
@@ -1204,8 +1205,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // perhaps we need to compute two FFT's, so store left and right
                 // channel in case we need only one FFT, the left channel is
                 // used as 'standard'"
-                fftw_real valL;
-                fftw_real valR;
+                float valL;
+                float valR;
                 
                 switch(_param_mode) {
                     case 0:
@@ -1260,11 +1261,11 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // this takes our latest buffer and returns an array with
             // non-normalized
             if (fft_plan)
-                rfftw_one(fft_plan, fft_inL, fft_outL);
+                fftwf_execute_r2r(fft_plan, fft_inL, fft_outL);
             //run fft for for right channel too. it is needed for stereo image 
             //and stereo difference modes
             if(_param_mode >= 3 and fft_plan) {
-                rfftw_one(fft_plan, fft_inR, fft_outR);
+                fftwf_execute_r2r(fft_plan, fft_inR, fft_outR);
             }
             // ...and set some values for later use
             ____analyzer_phase_was_drawn_here = 0;     

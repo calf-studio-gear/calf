@@ -22,7 +22,7 @@ AM_CXXFLAGS += $(JACK_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = gtk_session_env.cpp host_session.cpp jack_client.cpp jackhost.cpp gtk_main_win.cpp session_mgr.cpp
-calfjackhost_LDADD = libcalfgui.la calf.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(GLIB_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
+calfjackhost_LDADD = libcalfgui.la calf.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(GLIB_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS) -lfftw3f
 if USE_LASH
 AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)
 calfjackhost_LDADD += $(LASH_DEPS_LIBS)
@@ -32,17 +32,17 @@ endif
 AM_CXXFLAGS += $(GLIB_DEPS_CFLAGS)
 noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp 
-calfmakerdf_LDADD = calf.la
+calfmakerdf_LDADD = calf.la 
 
 calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD = $(GLIB_DEPS_LIBS) -lsrfftw -lsfftw calf.la
+calfbenchmark_LDADD = calf.la $(GLIB_DEPS_LIBS)
 
 calf_la_SOURCES = audio_fx.cpp metadata.cpp modules.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_eq.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
-calf_la_LIBADD ?= $(FLUIDSYNTH_DEPS_LIBS)
+calf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) -lfftw3f
 if USE_DEBUG
-calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static 
 else
-calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"  $(FLUIDSYNTH_DEPS_LIBS) -lsrfftw -lsfftw
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"  
 endif
 
 if USE_LV2_GUI

@@ -21,8 +21,8 @@
 #ifndef CALF_MODULES_H
 #define CALF_MODULES_H
 
-#include "srfftw.h"
 #include <assert.h>
+#include <fftw3.h>
 #include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
@@ -339,12 +339,12 @@ protected:
     int plength;
     int ppos;
     int fpos;
-    mutable rfftw_plan fft_plan;
+    mutable fftwf_plan fft_plan;
     static const int max_fft_cache_size = 32768;
     static const int max_fft_buffer_size = max_fft_cache_size * 2;
-    fftw_real *fft_inL, *fft_outL;
-    fftw_real *fft_inR, *fft_outR;
-    fftw_real *fft_smoothL, *fft_smoothR;
+    float *fft_inL, *fft_outL;
+    float *fft_inR, *fft_outR;
+    float *fft_smoothL, *fft_smoothR;
     float *fft_deltaL, *fft_deltaR;
     float *fft_holdL, *fft_holdR;
     float *fft_fallingL, *fft_fallingR;
