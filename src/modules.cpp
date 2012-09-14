@@ -1157,21 +1157,15 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     case 0:
                     default:
                         // Linear
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        _f = 1.f;
                         break;
                     case 1:
                         // Hamming
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        _f = 0.54 + 0.46 * cos(2 * M_PI * (i - 2 / points));
                         break;
                     case 2:
                         // von Hann
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        _f = 0.5 * (1 + cos(2 * M_PI * (i - 2 / points)));
                         break;
                     case 3:
                         // Blackman
@@ -1181,9 +1175,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         a2 = _a / 2.f;
                         _f = a0 + a1 * cos((2.f * M_PI * i) / points - 1) + \
                             a2 * cos((4.f * M_PI * i) / points - 1);
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
                         break;
                     case 4:
                         // Blackman-Harris
@@ -1194,9 +1185,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         _f = a0 - a1 * cos((2.f * M_PI * i) / points - 1) + \
                             a2 * cos((4.f * M_PI * i) / points - 1) - \
                             a3 * cos((6.f * M_PI * i) / points - 1);
-                        L *= _f;
-                        if(_param_mode > _m)
-                            R *= _f;
                         break;
                     case 5:
                         // Blackman-Nuttall
@@ -1207,57 +1195,41 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         _f = a0 - a1 * cos((2.f * M_PI * i) / points - 1) + \
                             a2 * cos((4.f * M_PI * i) / points - 1) - \
                             a3 * cos((6.f * M_PI * i) / points - 1);
-                        L *= _f;
-                        if(_param_mode > _m)
-                            R *= _f;
                         break;
                     case 6:
                         // Bartlett
-                        //_f = (2.f / (sx - 1)) * ((sx - 1) / 2.f
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        _f = (2.f / (points - 1)) * (((points - 1) / 2.f) - \
+                            fabs(i - ((points - 1) / 2.f)));
                         break;
                     case 7:
-                        // Bartlett-Hann
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        // Triangular
+                        _f = (2.f / points) * ((2.f / points) - fabs(i - ((points - 1) / 2.f)));
                         break;
                     case 8:
-                        // Sine
-                        _f = sin((M_PI * i) / (points - 1));
-                        L *= _f;
-                        if(_param_mode > _m)
-                            R *= _f;
+                        // Bartlett-Hann
+                        a0 = 0.62;
+                        a1 = 0.48;
+                        a2 = 0.38;
+                        _f = a0 - a1 * fabs((i / (points - 1)) - 0.5) - \
+                            a2 * cos((2 * M_PI * i) / (points - 1));
                         break;
                     case 9:
-                        // Tukey
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        // Sine
+                        _f = sin((M_PI * i) / (points - 1));
                         break;
                     case 10:
                         // Lanczos
                         _f = sinc((2.f * i) / (points - 1) - 1);
-                        L *= _f;
-                        if(_param_mode > _m)
-                            R *= _f;
                         break;
                     case 11:
-                        // Kaiser
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
-                        break;
-                    case 12:
                         // Gauß
-                        L = L;
-                        if(_param_mode > _m)
-                            R = R;
+                        _a = 2.718281828459045;
+                        _f = pow(_a, -0.5f * pow((i - (points - 1) / 2) / (0.4 * (points - 1) / 2.f), 2));
                         break;
                 }
-                
+                L *= _f;
+                if(_param_mode > _m)
+                    R *= _f;
                 
                 // perhaps we need to compute two FFT's, so store left and right
                 // channel in case we need only one FFT, the left channel is

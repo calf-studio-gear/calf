@@ -127,7 +127,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             case 4:
                 // this mode draws pixels at the bottom of the surface
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_set_source_rgba(c, 0.35, 0.4, 0.2, data[i] + 1 / 2.f);
+                    cairo_set_source_rgba(c, 0.35, 0.4, 0.2, (data[i] + 1) / 2.f);
                     cairo_rectangle(c, ox + _last, oy + sy - 1, i - _last, 1);
                     cairo_fill(c);
                     _last = i;
