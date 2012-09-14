@@ -412,6 +412,7 @@ struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
            param_analyzer_level, param_analyzer_mode,
            param_analyzer_scale, param_analyzer_post,
            param_analyzer_view, param_analyzer_smoothing,
+           param_analyzer_windowing,
            param_analyzer_accuracy, param_analyzer_speed,
            param_analyzer_display, param_analyzer_hold, param_analyzer_freeze,
            param_gonio_level, param_gonio_mode, param_gonio_use_fade, param_gonio_fade, param_gonio_accuracy, param_gonio_display,

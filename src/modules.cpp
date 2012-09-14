@@ -31,6 +31,7 @@ using namespace dsp;
 using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
+#define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1067,6 +1068,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         or (subindex == 4 and (_param_mode == 3 or _param_mode == 4)) \
             
         or (subindex == 1 and _param_mode == 5) \
+        
+        or (subindex == 1 and _param_mode > 5 and _param_mode < 9) \
     ) {
         // stop drawing when all curves have been drawn according to the mode
         // and hold settings
@@ -1084,7 +1087,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // there's no falling for difference mode, only smoothing
         _param_smooth = 2;
     }
-    
+    if(_param_mode > 5 and _param_mode < 9) {
+        // there's no smoothing for spectralizer mode
+        //_param_smooth = 0;
+    }
     
     if(subindex == 0) {
         // #####################################################################
@@ -1106,6 +1112,94 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     _fpos = max_fft_buffer_size + _fpos;
                 float L = fft_buffer[_fpos];
                 float R = fft_buffer[_fpos + 1];
+                float win = 0.54 - 0.46 * cos(2 * M_PI * i / _accuracy);
+                L *= win;
+                R *= win;
+                
+                // #######################################
+                // Do some windowing functions on the
+                // buffer
+                // #######################################
+                int _m = 2;
+                float _f = 1.f;
+                float _a, a0, a1, a2, a3;
+                switch((int)*params[param_analyzer_windowing]) {
+                    case 0:
+                    default:
+                        // Linear
+                        _f = 1.f;
+                        break;
+                    case 1:
+                        // Hamming
+                        _f = 0.54 + 0.46 * cos(2 * M_PI * (i - 2 / points));
+                        break;
+                    case 2:
+                        // von Hann
+                        _f = 0.5 * (1 + cos(2 * M_PI * (i - 2 / points)));
+                        break;
+                    case 3:
+                        // Blackman
+                        _a = 0.16;
+                        a0 = 1.f - _a / 2.f;
+                        a1 = 0.5;
+                        a2 = _a / 2.f;
+                        _f = a0 + a1 * cos((2.f * M_PI * i) / points - 1) + \
+                            a2 * cos((4.f * M_PI * i) / points - 1);
+                        break;
+                    case 4:
+                        // Blackman-Harris
+                        a0 = 0.35875;
+                        a1 = 0.48829;
+                        a2 = 0.14128;
+                        a3 = 0.01168;
+                        _f = a0 - a1 * cos((2.f * M_PI * i) / points - 1) + \
+                            a2 * cos((4.f * M_PI * i) / points - 1) - \
+                            a3 * cos((6.f * M_PI * i) / points - 1);
+                        break;
+                    case 5:
+                        // Blackman-Nuttall
+                        a0 = 0.3653819;
+                        a1 = 0.4891775;
+                        a2 = 0.1365995;
+                        a3 = 0.0106411;
+                        _f = a0 - a1 * cos((2.f * M_PI * i) / points - 1) + \
+                            a2 * cos((4.f * M_PI * i) / points - 1) - \
+                            a3 * cos((6.f * M_PI * i) / points - 1);
+                        break;
+                    case 6:
+                        // Bartlett
+                        _f = (2.f / (points - 1)) * (((points - 1) / 2.f) - \
+                            fabs(i - ((points - 1) / 2.f)));
+                        break;
+                    case 7:
+                        // Triangular
+                        _f = (2.f / points) * ((2.f / points) - fabs(i - ((points - 1) / 2.f)));
+                        break;
+                    case 8:
+                        // Bartlett-Hann
+                        a0 = 0.62;
+                        a1 = 0.48;
+                        a2 = 0.38;
+                        _f = a0 - a1 * fabs((i / (points - 1)) - 0.5) - \
+                            a2 * cos((2 * M_PI * i) / (points - 1));
+                        break;
+                    case 9:
+                        // Sine
+                        _f = sin((M_PI * i) / (points - 1));
+                        break;
+                    case 10:
+                        // Lanczos
+                        _f = sinc((2.f * i) / (points - 1) - 1);
+                        break;
+                    case 11:
+                        // Gauß
+                        _a = 2.718281828459045;
+                        _f = pow(_a, -0.5f * pow((i - (points - 1) / 2) / (0.4 * (points - 1) / 2.f), 2));
+                        break;
+                }
+                L *= _f;
+                if(_param_mode > _m)
+                    R *= _f;
                 
                 // perhaps we need to compute two FFT's, so store left and right
                 // channel in case we need only one FFT, the left channel is
@@ -1115,6 +1209,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 
                 switch(_param_mode) {
                     case 0:
+                    case 6:
                         // average (mode 0)
                         valL = (L + R) / 2;
                         valR = (L + R) / 2;
@@ -1127,6 +1222,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         valR = R;
                         break;
                     case 2:
+                    case 8:
                         // right channel (mode 2)
                         valL = R;
                         valR = L;
@@ -1316,18 +1412,23 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // #######################################
             if(subindex == 0) {
                 float _fdelta = 0.91;
+                if(_param_mode > 5 and _param_mode < 9)
+                    _fdelta = .99f;
+                float _ffactor = 2000.f;
+                if(_param_mode > 5 and _param_mode < 9)
+                    _ffactor = 50.f;
                 if(_param_smooth == 2) {
                     // smoothing
                     if(fftdone) {
                         // rebuild delta values after fft was done
-                        if(_param_mode < 5) {
+                        if(_param_mode < 5 or _param_mode > 5) {
                             fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / fabs(fft_smoothL[iter]), 1.f / _param_speed);
                         } else {
                             fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / _param_speed;
                         }
                     } else {
                         // change fft_smooth according to delta
-                        if(_param_mode < 5) {
+                        if(_param_mode < 5 or _param_mode > 5) {
                             fft_smoothL[iter] *= fft_deltaL[iter];
                         } else {
                             fft_smoothL[iter] += fft_deltaL[iter];
@@ -1343,7 +1444,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                     fft_smoothL[iter] *= fft_deltaL[iter];
                     
                     if(fft_deltaL[iter] > _fdelta) {
-                        fft_deltaL[iter] *= 1.f - (16.f - _param_speed) / 2000.f;
+                        fft_deltaL[iter] *= 1.f - (16.f - _param_speed) / _ffactor;
                     }
                 }
                 
@@ -1391,7 +1492,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 valL = fft_freezeL[iter];
                 valR = fft_freezeR[iter];
             } else if ((subindex == 1 and _param_mode < 3) \
-                or subindex > 1) {
+                or subindex > 1 \
+                or (_param_mode > 5 and *params[param_analyzer_hold])) {
                 // we draw the hold buffer
                 valL = fft_holdL[iter];
                 valR = fft_holdR[iter];
@@ -1602,7 +1704,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     // 2: boxes (little things on the values position
     // 3: centered bars (0dB is centered in y direction)
     
-    if (_param_mode > 3) {
+    if (_param_mode > 3 and _param_mode < 6) {
         // centered viewing modes like stereo image and stereo difference
         if(!*params[param_analyzer_view]) {
             // boxes
@@ -1617,6 +1719,9 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
             // lines
             *mode = 0;
         }
+    } else if (_param_mode > 5 and _param_mode < 9) {
+        // spectrum analyzer
+        *mode = 4;
     } else if(!*params[param_analyzer_view]) {
         // bars
         if((subindex == 0 and _param_mode < 3) or (subindex <= 1 and _param_mode == 3)) {
@@ -1639,15 +1744,23 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     bool out;
     if(*params[param_analyzer_mode] <= 3)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 0.5f);
-    else
+    else if (*params[param_analyzer_mode] < 6)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 16, 0.f);
-    if(*params[param_analyzer_mode] > 3 and not vertical) {
+    else if (*params[param_analyzer_mode] < 9)
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 0, 1.1f);
+    else
+        out = false;
+        
+    if(*params[param_analyzer_mode] > 3 and *params[param_analyzer_mode] < 6 and not vertical) {
         if(subindex == 30)
             legend="L";
         else if(subindex == 34)
             legend="R";
         else
             legend = "";
+    }
+    if(*params[param_analyzer_mode] > 5 and *params[param_analyzer_mode] < 9 and not vertical) {
+        legend = "";
     }
     return out;
 }

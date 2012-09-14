@@ -49,9 +49,12 @@ struct CalfLineGraph
     float fade;
     int mode;
     cairo_surface_t *cache_surface;
-    cairo_surface_t *fade_surface;
+    cairo_surface_t *master_surface;
+    cairo_surface_t *spec_surface;
+    cairo_surface_t *specc_surface;
     //GdkPixmap *cache_pixmap;
     int last_generation;
+    bool _spectrum;
 };
 
 struct CalfLineGraphClass

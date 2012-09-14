@@ -14,45 +14,43 @@
             <frame label="Analyzer" expand="1" fill="1">
                 <hbox>
                     <vbox spacing="3">
-                        <hbox>
-                            <hbox expand="1" fill="1"></hbox>
-                            <hbox expand="0" fill="0" spacing="12">
-                                <label text="Accuracy" />
-                                <knob param="analyzer_accuracy" size="1" expand="0" fill="0"/>
-                                <label text="      " />
-                                <label text="Speed" />
-                                <knob param="analyzer_speed" size="1" expand="0" fill="0"/>
-                                <label text="      " />
-                                <label text="Hold" />
-                                <toggle param="analyzer_hold" size="1" expand="0" fill="0" />
-                                <label text="      " />
-                                <label text="Freeze" />
-                                <toggle param="analyzer_freeze" size="1" expand="0" fill="0" />
-                                <label text="      " />
-                                <label text="Display" />
-                                <toggle param="analyzer_display" size="1" expand="0" fill="0" />
-                            </hbox>
+                        <hbox spacing="12">
+                            <label text="Accuracy" />
+                            <knob param="analyzer_accuracy" size="1" />
+                            <label text="   " />
+                            <label text="Speed" />
+                            <knob param="analyzer_speed" size="1" />
+                            <label text="   " />
+                            <label text="Hold" />
+                            <toggle param="analyzer_hold" size="1" />
+                            <label text="   " />
+                            <label text="Freeze" />
+                            <toggle param="analyzer_freeze" size="1"  />
+                            <label text="   " />
+                            <label text="Display" />
+                            <toggle param="analyzer_display" size="1" />
+                            <combo param="analyzer_mode"/>
                         </hbox>
                         
                         <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.8"/>
                         
                         <hbox homogeneous="1">
-                            <combo param="analyzer_smoothing" expand="0" fill="0"/>
-                            <combo param="analyzer_view" expand="0" fill="0"/>
-                            <combo param="analyzer_post" expand="0" fill="0"/>
-                            <combo param="analyzer_scale" expand="0" fill="0"/>
-                            <combo param="analyzer_mode" expand="0" fill="0"/>
+                            <combo param="analyzer_windowing" />
+                            <combo param="analyzer_smoothing" />
+                            <combo param="analyzer_post" />
+                            <combo param="analyzer_scale" />
+                            <combo param="analyzer_view" />
                         </hbox>
                         
                         <hbox homogeneous="1">
-                            <label text="Smoothing" align="right" expand="0" fill="0"/>
-                            <label text="View Mode" expand="0" fill="0"/>
-                            <label text="Post Processing" expand="0" fill="0"/>
-                            <label text="Scale" expand="0" fill="0"/>
-                            <label text="Analyzer Mode" expand="0" fill="0"/>
+                            <label text="Windowing" align="right" />
+                            <label text="Smoothing" align="right" />
+                            <label text="Post Processing" />
+                            <label text="Scale" />
+                            <label text="View Mode" />
                         </hbox>
                     </vbox>
-                    <vbox spacing="3">
+                    <vbox spacing="3" expand="1" fill="1">
                         <label text="Zoom" />
                         <vscale param="analyzer_level" inverted="1"/>
                         <value param="analyzer_level" />
@@ -77,8 +75,8 @@
                             <label text="Display" expand="0" fill="0"/>
                             <toggle param="gonio_display" size="1" expand="0" fill="0" />
                         </hbox>
-                        <phase-graph refresh="1" size="240" param="gonio_level" expand="0" fill="0"/>
-                        <combo param="gonio_mode" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="240" param="gonio_level" expand="1" fill="1"/>
+                        <combo param="gonio_mode" expand="0" fill="0"/>
                         <label text="Display Mode" expand="0" fill="0"/>
                     </vbox>
                     <vbox spacing="3">
