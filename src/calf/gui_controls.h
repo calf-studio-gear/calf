@@ -187,6 +187,7 @@ struct button_param_control: public param_control
     virtual void get();
     virtual void set();
     static void button_clicked(GtkButton *widget, gpointer value);
+    static void button_press_event(GtkButton *widget, GdkEvent *event, gpointer value);
 };
 
 /// Combo list box

@@ -1168,34 +1168,34 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                             a3 * cos((6.f * M_PI * i) / points - 1);
                         break;
                     case 6:
+                        // Sine
+                        _f = sin((M_PI * i) / (points - 1));
+                        break;
+                    case 7:
+                        // Lanczos
+                        _f = sinc((2.f * i) / (points - 1) - 1);
+                        break;
+                    case 8:
+                        // Gauß
+                        _a = 2.718281828459045;
+                        _f = pow(_a, -0.5f * pow((i - (points - 1) / 2) / (0.4 * (points - 1) / 2.f), 2));
+                        break;
+                    case 9:
                         // Bartlett
                         _f = (2.f / (points - 1)) * (((points - 1) / 2.f) - \
                             fabs(i - ((points - 1) / 2.f)));
                         break;
-                    case 7:
+                    case 10:
                         // Triangular
                         _f = (2.f / points) * ((2.f / points) - fabs(i - ((points - 1) / 2.f)));
                         break;
-                    case 8:
+                    case 11:
                         // Bartlett-Hann
                         a0 = 0.62;
                         a1 = 0.48;
                         a2 = 0.38;
                         _f = a0 - a1 * fabs((i / (points - 1)) - 0.5) - \
                             a2 * cos((2 * M_PI * i) / (points - 1));
-                        break;
-                    case 9:
-                        // Sine
-                        _f = sin((M_PI * i) / (points - 1));
-                        break;
-                    case 10:
-                        // Lanczos
-                        _f = sinc((2.f * i) / (points - 1) - 1);
-                        break;
-                    case 11:
-                        // Gauß
-                        _a = 2.718281828459045;
-                        _f = pow(_a, -0.5f * pow((i - (points - 1) / 2) / (0.4 * (points - 1) / 2.f), 2));
                         break;
                 }
                 L *= _f;
