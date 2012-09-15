@@ -699,7 +699,7 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
     // rebuild buffer
     buffer_size = (int)(srate * 0.05 * 2.f); // buffer size attack rate multiplied by 2 channels
     buffer = (float*) calloc(buffer_size, sizeof(float));
-    memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
+    dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
 }
 
@@ -848,7 +848,7 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
     // rebuild buffer
     buffer_size = (int)srate * 0.05 * 2; // delay buffer size multiplied by 2 channels
     buffer = (float*) calloc(buffer_size, sizeof(float));
-    memset(buffer, 0, buffer_size * sizeof(float)); // reset buffer to zero
+    dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
 }
 
@@ -875,10 +875,9 @@ analyzer_audio_module::analyzer_audio_module() {
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
     
     phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
-    memset(phase_buffer, 0, max_phase_buffer_size * sizeof(float));
+    dsp::zero(phase_buffer, max_phase_buffer_size);
     
     fft_buffer = (float*) calloc(max_fft_buffer_size, sizeof(float));
-    memset(fft_buffer, 0, max_fft_buffer_size * sizeof(float));
     
     fft_inL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_outL = (float*) calloc(max_fft_cache_size, sizeof(float));
@@ -887,28 +886,20 @@ analyzer_audio_module::analyzer_audio_module() {
     
     fft_smoothL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_smoothR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_smoothL, 0, max_fft_cache_size * sizeof(float));
-    memset(fft_smoothR, 0, max_fft_cache_size * sizeof(float));
     
     fft_fallingL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_fallingR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
-    memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
+    dsp::fill(fft_fallingL, 1.f, max_fft_cache_size);
+    dsp::fill(fft_fallingR, 1.f, max_fft_cache_size);
     
     fft_deltaL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_deltaR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_deltaL, 0, max_fft_cache_size * sizeof(float));
-    memset(fft_deltaR, 0, max_fft_cache_size * sizeof(float));
     
     fft_holdL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_holdR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_holdL, 0, max_fft_cache_size * sizeof(float));
-    memset(fft_holdR, 0, max_fft_cache_size * sizeof(float));
     
     fft_freezeL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_freezeR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    memset(fft_freezeL, 0, max_fft_cache_size * sizeof(float));
-    memset(fft_freezeR, 0, max_fft_cache_size * sizeof(float));
     
     fft_plan = NULL;
     
@@ -983,19 +974,19 @@ void analyzer_audio_module::params_changed() {
     }
     if(___sanitize) {
         // null the overall buffer
-        memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_outL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_outR, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_holdL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_holdR, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_smoothL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_smoothR, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_deltaL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_deltaR, 1e-20, max_fft_cache_size * sizeof(float));
+        dsp::zero(fft_inL, max_fft_cache_size);
+        dsp::zero(fft_inR, max_fft_cache_size);
+        dsp::zero(fft_outL, max_fft_cache_size);
+        dsp::zero(fft_outR, max_fft_cache_size);
+        dsp::zero(fft_holdL, max_fft_cache_size);
+        dsp::zero(fft_holdR, max_fft_cache_size);
+        dsp::zero(fft_smoothL, max_fft_cache_size);
+        dsp::zero(fft_smoothR, max_fft_cache_size);
+        dsp::zero(fft_deltaL, max_fft_cache_size);
+        dsp::zero(fft_deltaR, max_fft_cache_size);
 //        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
 //        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
-        memset(spline_buffer, 0, 200 * sizeof(int));
+        dsp::zero(spline_buffer, 200);
         ____analyzer_phase_was_drawn_here = 0;
     }
 }
@@ -1071,8 +1062,8 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
         // null the overall buffer to feed the fft with if someone requested so
         // in the last cycle
         // afterwards quit this call
-        memset(fft_inL, 1e-20, max_fft_cache_size * sizeof(float));
-        memset(fft_inR, 1e-20, max_fft_cache_size * sizeof(float));
+        dsp::zero(fft_inL, max_fft_cache_size);
+        dsp::zero(fft_inR, max_fft_cache_size);
         ____analyzer_sanitize = 0;
         return false;
     }

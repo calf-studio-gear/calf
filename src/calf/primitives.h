@@ -67,6 +67,13 @@ void zero(T *data, unsigned int size) {
         *data++ = value;
 }
 
+/// Set array (buffer or anything similar) to vector of values
+template<class T>
+void fill(T *data, T value, unsigned int size) {
+    for (unsigned int i=0; i<size; i++)
+        *data++ = value;
+}
+
 template<class T = float>struct stereo_sample {
     T left;
     T right;
