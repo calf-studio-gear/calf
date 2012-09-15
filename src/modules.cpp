@@ -910,10 +910,35 @@ analyzer_audio_module::analyzer_audio_module() {
     memset(fft_freezeL, 0, max_fft_cache_size * sizeof(float));
     memset(fft_freezeR, 0, max_fft_cache_size * sizeof(float));
     
-    fft_plan = false;
+    fft_plan = NULL;
     
     ____analyzer_phase_was_drawn_here = 0;
     ____analyzer_sanitize = 0;
+}
+
+analyzer_audio_module::~analyzer_audio_module()
+{
+    free(fft_freezeR);
+    free(fft_freezeL);
+    free(fft_holdR);
+    free(fft_holdL);
+    free(fft_deltaR);
+    free(fft_deltaL);
+    free(fft_fallingR);
+    free(fft_fallingL);
+    free(fft_smoothR);
+    free(fft_smoothL);
+    free(fft_outR);
+    free(fft_outL);
+    free(fft_inR);
+    free(fft_inL);
+    free(phase_buffer);
+    free(spline_buffer);
+    if (fft_plan)
+    {
+        fftwf_destroy_plan(fft_plan);
+        fft_plan = NULL;
+    }
 }
 
 void analyzer_audio_module::activate() {
@@ -1772,3 +1797,4 @@ bool analyzer_audio_module::get_clear_all(int index) const {
     }
     return false;
 }
+
