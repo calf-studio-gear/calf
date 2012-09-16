@@ -988,7 +988,7 @@ const char *analyzer_smooth_names[] = { "Off", "Falling", "Transition" };
 const char *analyzer_post_names[] = { "Normalized", "Average", "Additive", "Denoised Peaks" };
 const char *analyzer_view_names[] = { "Bars", "Lines", "Cubic Splines" };
 const char *analyzer_scale_names[] = { "Logarithmic", "Linear" };
-const char *analyzer_windowing_names[] = { "Linear", "Hamming", "von Hann", "Blackman", "Blackman-Harris", "Blackman-Nuttall", "Sine", "Lanczos", "Gauß", "Bartlett", "Triangular", "Bartlett-Hann" };
+const char *analyzer_windowing_names[] = { "Rectangular", "Hamming", "von Hann", "Blackman", "Blackman-Harris", "Blackman-Nuttall", "Sine", "Lanczos", "Gauß", "Bartlett", "Triangular", "Bartlett-Hann" };
 CALF_PORT_PROPS(analyzer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Level L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Level R" },
