@@ -648,15 +648,15 @@ void button_param_control::button_press_event(GtkButton *widget, GdkEvent *event
 {
     param_control *jhp = (param_control *)value;
     
+#if 0
     static int last_time = 0;
     
     if (event->button.type == GDK_BUTTON_PRESS)
     {
-        printf("time=%f\n", 60000.0 / (event->button.time - last_time));
+        printf("tempo=%f\n", 60000.0 / (event->button.time - last_time));
         last_time = event->button.time;
     }
-    
-    jhp->get();
+#endif
 }
 
 void button_param_control::get()
