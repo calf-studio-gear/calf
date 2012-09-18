@@ -12,21 +12,78 @@
             <a href="images/Calf - Monosynth - Audio Path.png" title="Calf - Monosynth - Audio Path" class="thickbox"><img class="thumbnail" src="images/Calf - Monosynth - Audio Path.png" /></a>
             <h2>Functionality</h2>
             <p>
-
-            </p>
-            <h2>Tips</h2>
-            <p>
-
-            </p>
+                Monosynth is a simple "virtual analogue" monophonic synthesizer. It consists of the following parts:
+                    <ul>
+                        <li>Two oscillators, each capable of producing one of several waveforms, with minimal amount of aliasing</li>
+                        <li>Most of the waveforms can be modified using the Pulse Width setting. The exact effect varies between waveforms, but it can be used to create PWM or chorus-style effects with single oscillator.
+                        <li>One of the oscillators (Osc1) can also stretch its waveform to mimic an effect of a two-oscillator 'hard sync' circuitry from some analogue synthesizers.
+                        <li>A filter capable of operating in several modes (12dB lowpass, 24dB lowpass, 12dB highpass, stereo 12dB lowpass, two types of bandpass and a combination of a notch filter and either LP or HP filter)
+                        <li>Two ADSFR envelope generators, which can be used for either sustained or fading envelopes.
+                        <li>Two low frequency oscillators
+                        <li>A number of fixed modulations for the most commonly used routings, plus a versatile modulation matrix for less frequently used ones
+                        <li>Portamento function
+                    </ul>
+            </p><h2>Tips</h2>
+            <ul>
+                <li>Use "Note velocity - To Cutoff" setting for bubbly velocity-sensitive bass sounds (sometimes referred to as acid bass).
+                <li>Use "Note velocity - To Amp" setting to make notes louder or softer depending on velocity. Or set both Note velocity settings to 0% to simulate a synth keyboard without velocity sensing.
+                <li>The easiest way to achieve a vibrato effect is to use the "LFO1 - To pitch" setting. The more difficult way is by using either of the LFOs and the modulation matrix.
+            </ul>
             <h2>Controls</h2>
             <ul>
-                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                <li><strong>Input:</strong> Control the input level before the signal is processed</li>
-                <li><strong>In L/In R:</strong> The level after the input knob</li>
-                <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
-                <li><strong>Output:</strong> Control the output of the plugin - clipping could destroy your signal</li>
-                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
-                <li><strong>0dB:</strong> Flashes, if the signal rises about 0dB in the output stage</li>
+                <li><strong>Osc1 Wave, Osc2 Wave:</strong> Selects the waveform to be used for the respective oscillator</li>
+                <li><strong>Osc1 PW, Osc2 PW:</strong> Pulse width/phase shift setting for the respective oscillator</li>
+                <li><strong>Osc1 Stretch:</strong> Simulates oscillator 'hard sync' effect.</li>
+                <li><strong>Osc1 Window:</strong> Shapes a waveform produced by the oscillator to make aliasing artifacts from 'Stretch' function less audible.</li>
+                <li><strong>O1&lt;&gt;2 Detune:</strong> Pitch difference between oscillators 1 and 2</li>
+                <li><strong>Scale Detune:</strong> Vary detune amount depending on note pitch. This makes it possible to keep the oscillator beat frequency in low-frequency range across several octaves.</li>
+                <li><strong>Osc2 Transpose:</strong> Transposition (in semitones) of Osc 2 relative to Osc 1</li>
+                <li><strong>Phase mode:</strong> Determines starting phases of the two oscillators</li>
+                <li><strong>O1&lt;&gt;2 Mix:</strong> Relative amounts of signals from Osc1 and Osc2</li>
+                <li><strong>Filter:</strong> Type of filter used to process the signal from the oscillators</li>
+                <li><strong>Cutoff:</strong> Frequency of a cutoff point (usually -3dB) of the filter</li>
+                <li><strong>Resonance:</strong> Strength of the resonant peak of the filter</li>
+                <li><strong>Separation:</strong> In double filters, shifts one filter's cutoff frequency relative to another</li>
+                <li><strong>EG1: Attack:</strong> Sets the duration of the attack phase of envelope generator 1</li>
+                <li><strong>EG1: Decay:</strong> Sets the duration of the decay phase of envelope generator 1</li>
+                <li><strong>EG1: Sustain:</strong> Sets the level of the sustain phase of envelope generator 1 (also controls the start level of fade-in/fade-out)</li>
+                <li><strong>EG1: Fade:</strong> Sets the duration of the fade-in/fade-out phase of envelope generator 1</li>
+                <li><strong>EG1: Release:</strong> Sets the duration of the release phase of envelope generator 1</li>
+                <li><strong>EG1: To Cutoff:</strong> Determines the amount of modulation of cutoff frequency by envelope generator 1</li>
+                <li><strong>EG1: To Res:</strong> Determines the amount of modulation of resonance strength by envelope generator 1</li>
+                <li><strong>EG1: To Amp:</strong> Enables or disables connection between envelope generator 1 and sound amplitude</li>
+                <li><strong>EG2: Attack:</strong> Sets the duration of the attack phase of envelope generator 2</li>
+                <li><strong>EG2: Decay:</strong> Sets the duration of the decay phase of envelope generator 2</li>
+                <li><strong>EG2: Sustain:</strong> Sets the level of the sustain phase of envelope generator 2 (also controls the start level of fade-in/fade-out)</li>
+                <li><strong>EG2: Fade:</strong> Sets the duration of the fade-in/fade-out phase of envelope generator 2</li>
+                <li><strong>EG2: Release:</strong> Sets the duration of the release phase of envelope generator 2</li>
+                <li><strong>EG2: To Cutoff:</strong> Determines the amount of modulation of cutoff frequency by envelope generator 2</li>
+                <li><strong>EG2: To Res:</strong> Determines the amount of modulation of resonance strength by envelope generator 2</li>
+                <li><strong>EG2: To Amp:</strong> Enables or disables connection between envelope generator 2 and sound amplitude</li>
+                <li><strong>Key follow:</strong> Determines how much the pitch affects the cutoff frequency of the filter</li>
+                <li><strong>Legato:</strong> Controls how the envelope retriggering and portamento (smooth pitch transition) operate when a note is played:<ul>
+                        <li>Retrig: always retrigger, always use portamento
+                        <li>Legato: play legato when one of the previous notes is still held, always use portamento
+                        <li>Fng Retrig: always retrigger, only use portamento when one of the previous notes is still held (portamento is skipped if all previous notes have been released)
+                        <li>Fng Legato: play legato and use portamento only when one of the previous notes is still held (portamento is skipped if all previous notes have been released)
+                    </ul>
+                </li>
+                <li><strong>Portamento:</strong> Controls pitch gliding between subsequent notes. Also affected by Legato setting.</li>
+                <li><strong>Note velocity: To Cutoff (Vel-&gt;Filter):</strong> Links note velocity to filter cutoff.</li>
+                <li><strong>Note velocity: To Amp (Vel-&gt;Amp):</strong> Links note velocity to amplitude level.</li>
+                <li><strong>Master:</strong> Master volume.</li>
+                <li><strong>PBend Range:</strong> The range (in cents) of the pitch bend wheel. 200 ct (default) is the typical MIDI setting of +/- 2 semitones. Another common setting is 1200 ct (one octave), traditionally used for some synth sounds.</li>
+                <li><strong>LFO1 Mode:</strong> Whether or not Low Frequency Oscillator 1 restarts on a new note.</li>
+                <li><strong>LFO1 Rate:</strong> Frequency of the Low Frequency Oscillator 1.</li>
+                <li><strong>LFO1 Delay:</strong> Time before Low Frequency Oscillator 1 starts.</li>
+                <li><strong>LFO1 ModWheel:</strong> Links the amplitude of LFO1 to modulation wheel setting. 0% means LFO1 uses full amplitude regardless of modulation wheel setting. 100% means that LFO1 amplitude is fully determined by modulation wheel.</li>
+                <li><strong>LFO1 To Cutoff:</strong> Links the filter cutoff frequency to LFO1 output.</li>
+                <li><strong>LFO1 To Resonance:</strong> Links the filter resonance strength to LFO1 output.</li>
+                <li><strong>LFO1 To Osc PW:</strong> Links the oscillators' pulse width to LFO1 output.</li>
+                <li><strong>LFO2 Mode:</strong> Whether or not Low Frequency Oscillator 2 restarts on a new note.</li>
+                <li><strong>LFO2 Rate:</strong> Frequency of the Low Frequency Oscillator 2.</li>
+                <li><strong>LFO2 Delay:</strong> Time before Low Frequency Oscillator 2 starts.</li>
+                
             </ul>
         </div>
     </body>
