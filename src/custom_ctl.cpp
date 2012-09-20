@@ -392,7 +392,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     }
     
     calf_line_graph_copy_cache_to_window( lg->master_surface, c );
-    
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
 
     return TRUE;
