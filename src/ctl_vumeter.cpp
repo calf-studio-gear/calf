@@ -54,12 +54,14 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     int text_x = 0; int text_y = 0;
     int text_w = 0; int text_h = 0;
     int text_m = 3; // text margin
-    
-    cairo_select_font_face(c, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(c, 8);
+
+    // only valid if vumeter is enabled
     cairo_text_extents_t extents;
     
     if(vu->vumeter_position) {
+        cairo_select_font_face(c, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(c, 8);
+
         cairo_text_extents(c, "-88.88", &extents);
         text_w = extents.width;
         text_h = extents.height;
