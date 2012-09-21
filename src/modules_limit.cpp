@@ -251,6 +251,8 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
+    last_generation = 0;
+    redraw_graph = false;
 }
 
 void multibandlimiter_audio_module::activate()
@@ -318,6 +320,7 @@ void multibandlimiter_audio_module::params_changed()
         freq_old[0] = *params[param_freq0];
         sep_old[0]  = *params[param_sep0];
         q_old[0]    = *params[param_q0];
+        redraw_graph = true;
     }
     if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
         lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
@@ -333,6 +336,7 @@ void multibandlimiter_audio_module::params_changed()
         freq_old[1] = *params[param_freq1];
         sep_old[1]  = *params[param_sep1];
         q_old[1]    = *params[param_q1];
+        redraw_graph = true;
     }
     if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
         lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
@@ -348,6 +352,7 @@ void multibandlimiter_audio_module::params_changed()
         freq_old[2] = *params[param_freq2];
         sep_old[2]  = *params[param_sep2];
         q_old[2]    = *params[param_q2];
+        redraw_graph = true;
     }
     // set the params of all strips
     float rel;
@@ -686,4 +691,18 @@ bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float 
         vertical = (subindex & 1) != 0;
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
+}
+
+int multibandlimiter_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+
+    if (redraw_graph)
+    {
+        redraw_graph = false;
+        last_generation++;
+    }
+    return last_generation;
 }

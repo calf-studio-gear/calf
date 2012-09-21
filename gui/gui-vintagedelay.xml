@@ -2,10 +2,17 @@
     <frame label="Delay time">
     	<vbox>
 		    <table rows="4" cols="2">
-		        <vbox attach-x="0" attach-y="0" attach-h="3" spacing="5" pad-x="20">
+		        <vbox attach-x="0" attach-y="0" attach-h="3" spacing="12" pad-x="10" pad-y="15">
+		            
 		            <label param="bpm" />
-		            <align attach-x="1" attach-y="0" scale-x="0"><knob param="bpm" size="5" /></align>
-		            <spin attach-x="2" attach-y="0" param="bpm" digits="2" fill="0" expand="0"/>
+		            <align><knob param="bpm" size="5" /></align>
+		            
+		            <hbox fill="0" expand="0" spacing="5">
+		                <spin param="bpm" digits="2"/>
+		                <button param="tap" fill="0" expand="0" />
+		                <led param="waiting" fill="0" expand="0" />
+		            </hbox>
+		            
 		        </vbox>
 		        <label attach-x="1" attach-y="0" param="subdiv" />
 		        <hscale attach-x="2" attach-y="0" param="subdiv" />
