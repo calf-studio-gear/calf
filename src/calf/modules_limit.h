@@ -80,6 +80,7 @@ private:
     bool asc_old;
     float attack_old;
     bool _sanitize;
+    bool old_bypass;
     mutable volatile int last_generation;
     mutable bool redraw_graph;
 public:
@@ -93,7 +94,7 @@ public:
     void set_sample_rate(uint32_t sr);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
 };

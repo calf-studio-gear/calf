@@ -354,6 +354,11 @@ void multibandlimiter_audio_module::params_changed()
         q_old[2]    = *params[param_q2];
         redraw_graph = true;
     }
+    if ((*params[param_bypass] > 0.5) != old_bypass)
+    {
+        redraw_graph = true;
+        old_bypass = *params[param_bypass] > 0.5;
+    }
     // set the params of all strips
     float rel;
 
@@ -693,7 +698,7 @@ bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float 
     }
 }
 
-int multibandlimiter_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     subindex_dot = 0;
@@ -703,6 +708,12 @@ int multibandlimiter_audio_module::get_changed_offsets(int generation, int &subi
     {
         redraw_graph = false;
         last_generation++;
+    }
+    else
+    {
+        subindex_graph = INT_MAX;
+        subindex_dot = INT_MAX;
+        subindex_gridline = INT_MAX;
     }
     return last_generation;
 }
