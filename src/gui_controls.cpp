@@ -90,6 +90,16 @@ void control_container::set_std_properties()
 
 /************************* param-associated control base class **************/
 
+param_control::param_control()
+{
+    gui = NULL;
+    param_no = -1;
+    label = NULL;
+    in_change = 0;
+    old_displayed_value = -1.f;
+}
+
+
 void param_control::set_std_properties()
 {
     if (attribs.find("widget-name") != attribs.end())
@@ -112,7 +122,12 @@ GtkWidget *param_control::create_label()
 void param_control::update_label()
 {
     const parameter_properties &props = get_props();
-    gtk_label_set_text (GTK_LABEL (label), props.to_string(gui->plugin->get_param_value(param_no)).c_str());
+    
+    float value = gui->plugin->get_param_value(param_no);
+    if (value == old_displayed_value)
+        return;
+    gtk_label_set_text (GTK_LABEL (label), props.to_string(value).c_str());
+    old_displayed_value = value;
 }
 
 void param_control::hook_params()
@@ -410,8 +425,14 @@ void value_param_control::set()
     if (param_no == -1)
         return;
     _GUARD_CHANGE_
+
     const parameter_properties &props = get_props();
-    gtk_label_set_text (GTK_LABEL (widget), props.to_string(gui->plugin->get_param_value(param_no)).c_str());    
+    string value = props.to_string(gui->plugin->get_param_value(param_no));
+    
+    if (value == old_value)
+        return;
+    old_value = value;
+    gtk_label_set_text (GTK_LABEL (widget), value.c_str());    
 }
 
 void value_param_control::send_status(const char *key, const char *value)

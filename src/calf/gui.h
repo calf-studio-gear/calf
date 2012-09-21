@@ -55,6 +55,7 @@ struct param_control: public control_base
     std::string param_variable;
     GtkWidget *label, *widget;
     int in_change;
+    float old_displayed_value;
     
     struct guard_change {
         param_control *pc;
@@ -62,7 +63,7 @@ struct param_control: public control_base
         ~guard_change() { pc->in_change--; }
     };
     
-    param_control() { gui = NULL; param_no = -1; label = NULL; in_change = 0;}
+    param_control();
     inline const parameter_properties &get_props();
     
     virtual void init_xml(const char *element) {}

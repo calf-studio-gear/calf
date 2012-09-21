@@ -88,6 +88,8 @@ struct label_param_control: public param_control
 /// Display-only control: value text
 struct value_param_control: public param_control, public send_updates_iface
 {
+    std::string old_value;
+
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set();
