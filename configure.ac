@@ -72,7 +72,7 @@ if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
 
-PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 1, LV2_FOUND="yes", LV2_FOUND="no")
+PKG_CHECK_MODULES(LV2_DEPS, lv2 >= 1, LV2_FOUND="yes", LV2_FOUND="no")
 
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.6.0,
   AC_CHECK_LIB([lash], [lash_client_is_being_restored], LASH_0_6_FOUND="yes", LASH_0_6_FOUND="no"),
