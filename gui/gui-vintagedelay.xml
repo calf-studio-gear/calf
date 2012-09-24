@@ -9,8 +9,6 @@
 		            
 		            <hbox fill="0" expand="0" spacing="5">
 		                <spin param="bpm" digits="2"/>
-		                <button param="tap" fill="0" expand="0" />
-		                <led param="waiting" fill="0" expand="0" />
 		            </hbox>
 		            
 		        </vbox>
