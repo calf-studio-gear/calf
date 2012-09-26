@@ -63,7 +63,7 @@ void wavetable_voice::note_on(int note, int vel)
         envs[i].set(0.01, 0.1, 0.5, 1, cr);
         envs[i].note_on();
     }
-    float modsrc[wavetable_metadata::modsrc_count] = { 1, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, envs[0].value, envs[1].value, envs[2].value};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
     calc_derived_dests();
 
@@ -100,7 +100,7 @@ void wavetable_voice::render_block()
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
     
-    float modsrc[wavetable_metadata::modsrc_count] = { 1, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, envs[0].value, envs[1].value, envs[2].value};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
     calc_derived_dests();
 
