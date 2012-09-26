@@ -161,8 +161,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     bool cache_dirty = 0;
     bool master_dirty = 0;
-    bool spec_dirty = 0;
-    bool specc_dirty = 0;
     
     if( lg->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
@@ -195,7 +193,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                                   CAIRO_CONTENT_ALPHA,
                                   widget->allocation.width,
                                   widget->allocation.height );
-        spec_dirty = 1;
     }
     if( lg->specc_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
@@ -205,7 +202,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                                   CAIRO_CONTENT_ALPHA,
                                   widget->allocation.width,
                                   widget->allocation.height );
-        specc_dirty = 1;
     }
     
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -222,10 +218,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         bool vertical = false;
         std::string legend;
         float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
         float x, y;
         int size = 0;
-        GdkColor sc3 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
+        GdkColor sc3 = { 0, (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
 
         int graph_n, grid_n, dot_n, grid_n_save;
 
@@ -615,8 +610,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     if (pg->source) {
         std::string legend;
         float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
-        GdkColor sc3 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
+        GdkColor sc2 = { 0, (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
 
         if( cache_dirty ) {
             
