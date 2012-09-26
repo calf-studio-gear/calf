@@ -869,6 +869,17 @@ calf_phase_graph_class_init (CalfPhaseGraphClass *klass)
 }
 
 static void
+calf_phase_graph_unrealize (GtkWidget *widget, CalfPhaseGraph *pg)
+{
+    if( pg->cache_surface )
+        cairo_surface_destroy( pg->cache_surface );
+    pg->cache_surface = NULL;
+    if( pg->fade_surface )
+        cairo_surface_destroy( pg->fade_surface );
+    pg->fade_surface = NULL;
+}
+
+static void
 calf_phase_graph_init (CalfPhaseGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
@@ -876,6 +887,7 @@ calf_phase_graph_init (CalfPhaseGraph *self)
     widget->requisition.height = 40;
     self->cache_surface = NULL;
     self->fade_surface = NULL;
+    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_phase_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
