@@ -57,6 +57,7 @@ void monosynth_audio_module::activate() {
     wave2 = -1;
     queue_note_on = -1;
     last_filter_type = -1;
+    lfo_clock = 0.f;
 }
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;
@@ -407,10 +408,12 @@ void monosynth_audio_module::delayed_note_on()
         envelope1.note_on();
     if (starting || !(legato & 1) || envelope2.released())
         envelope2.note_on();
+    if (!running || !(legato & 1))
+        lfo_clock = 0.f;
     envelope1.advance();
     envelope2.advance();
     queue_note_on = -1;
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, envelope1.value, envelope2.value, 0.5+0.5*lfo1.last, 0.5+0.5*lfo2.last};
+    float modsrc[modsrc_count] = { 1.f, velocity, (float)inertia_pressure.get_last(), modwheel_value, (float)envelope1.value, (float)envelope2.value, 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     set_frequency();
     lookup_waveforms();
@@ -433,6 +436,14 @@ void monosynth_audio_module::set_sample_rate(uint32_t sr) {
     master.set_sample_rate(sr);
 }
 
+float monosynth_audio_module::get_lfo(dsp::triangle_lfo &lfo, int param)
+{
+    if (*params[param] <= 0)
+        return lfo.get();
+    float pt = lfo_clock / *params[param];
+    return lfo.get() * std::min(1.0f, pt);
+}
+
 void monosynth_audio_module::calculate_step()
 {
     if (queue_note_on != -1)
@@ -445,7 +456,7 @@ void monosynth_audio_module::calculate_step()
         envelope2.advance();
         lfo1.get();
         lfo2.get();
-        float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get_last(), modwheel_value, envelope1.value, envelope2.value, 0.5+0.5*lfo1.last, 0.5+0.5*lfo2.last};
+        float modsrc[modsrc_count] = { 1.f, velocity, inertia_pressure.get_last(), modwheel_value, (float)envelope1.value, (float)envelope2.value, 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last};
         calculate_modmatrix(moddest, moddest_count, modsrc);
         last_stretch1 = (int32_t)(65536 * dsp::clip(*params[par_stretch1] + 0.01f * moddest[moddest_o1stretch], 1.f, 16.f));
         return;
@@ -466,9 +477,9 @@ void monosynth_audio_module::calculate_step()
             porta_time += odcr;
         }
     }
-    float lfov1 = lfo1.get() * std::min(1.0f, lfo_clock / *params[par_lfodelay]);
+    float lfov1 = get_lfo(lfo1, par_lfodelay);
     lfov1 = lfov1 * dsp::lerp(1.f, modwheel_value, *params[par_mwhl_lfo]);
-    float lfov2 = lfo2.get() * std::min(1.0f, lfo_clock / *params[par_lfo2delay]);
+    float lfov2 = get_lfo(lfo2, par_lfodelay);
     lfo_clock += odcr;
     if (fabs(*params[par_lfopitch]) > small_value<float>())
         lfo_bend = pow(2.0f, *params[par_lfopitch] * lfov1 * (1.f / 1200.0f));
@@ -480,7 +491,7 @@ void monosynth_audio_module::calculate_step()
     
     // mod matrix
     // this should be optimized heavily; I think I'll do it when MIDI in Ardour 3 gets stable :>
-    float modsrc[modsrc_count] = { 1, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5+0.5*lfov1, 0.5+0.5*lfov2};
+    float modsrc[modsrc_count] = { 1.f, velocity, inertia_pressure.get(), modwheel_value, env1, env2, 0.5f+0.5f*lfov1, 0.5f+0.5f*lfov2};
     calculate_modmatrix(moddest, moddest_count, modsrc);
     
     set_frequency();
