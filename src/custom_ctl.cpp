@@ -479,6 +479,23 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
 }
 
 static void
+calf_line_graph_unrealize (GtkWidget *widget, CalfLineGraph *lg)
+{
+    if( lg->master_surface )
+        cairo_surface_destroy( lg->master_surface );
+    if( lg->cache_surface )
+        cairo_surface_destroy( lg->cache_surface );
+    if( lg->spec_surface )
+        cairo_surface_destroy( lg->spec_surface );
+    if( lg->specc_surface )
+        cairo_surface_destroy( lg->specc_surface );
+    lg->master_surface = NULL;
+    lg->cache_surface = NULL;
+    lg->spec_surface = NULL;
+    lg->specc_surface = NULL;
+}
+
+static void
 calf_line_graph_init (CalfLineGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
@@ -490,6 +507,7 @@ calf_line_graph_init (CalfLineGraph *self)
     self->last_generation = 0;
     self->mode = 0;
     self->_spectrum = 0;
+    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
