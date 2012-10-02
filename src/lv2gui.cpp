@@ -294,6 +294,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     assert(xml);
     *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
     proxy->enable_all_sends();
+    proxy->send_configures(gui);
     if (*(GtkWidget **)(widget))
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
     gui->show_rack_ears(proxy->get_config()->rack_ears);
