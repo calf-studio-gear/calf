@@ -161,8 +161,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     bool cache_dirty = 0;
     bool master_dirty = 0;
-    bool spec_dirty = 0;
-    bool specc_dirty = 0;
     
     if( lg->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
@@ -195,7 +193,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                                   CAIRO_CONTENT_ALPHA,
                                   widget->allocation.width,
                                   widget->allocation.height );
-        spec_dirty = 1;
     }
     if( lg->specc_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
@@ -205,7 +202,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                                   CAIRO_CONTENT_ALPHA,
                                   widget->allocation.width,
                                   widget->allocation.height );
-        specc_dirty = 1;
     }
     
     cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -222,10 +218,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         bool vertical = false;
         std::string legend;
         float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
         float x, y;
         int size = 0;
-        GdkColor sc3 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
+        GdkColor sc3 = { 0, (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
 
         int graph_n, grid_n, dot_n, grid_n_save;
 
@@ -479,6 +474,23 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
 }
 
 static void
+calf_line_graph_unrealize (GtkWidget *widget, CalfLineGraph *lg)
+{
+    if( lg->master_surface )
+        cairo_surface_destroy( lg->master_surface );
+    if( lg->cache_surface )
+        cairo_surface_destroy( lg->cache_surface );
+    if( lg->spec_surface )
+        cairo_surface_destroy( lg->spec_surface );
+    if( lg->specc_surface )
+        cairo_surface_destroy( lg->specc_surface );
+    lg->master_surface = NULL;
+    lg->cache_surface = NULL;
+    lg->spec_surface = NULL;
+    lg->specc_surface = NULL;
+}
+
+static void
 calf_line_graph_init (CalfLineGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
@@ -490,6 +502,7 @@ calf_line_graph_init (CalfLineGraph *self)
     self->last_generation = 0;
     self->mode = 0;
     self->_spectrum = 0;
+    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
@@ -597,8 +610,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     if (pg->source) {
         std::string legend;
         float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
-        GdkColor sc3 = { 0, 0.35 * 65535, 0.4 * 65535, 0.2 * 65535 };
+        GdkColor sc2 = { 0, (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
 
         if( cache_dirty ) {
             
@@ -857,6 +869,17 @@ calf_phase_graph_class_init (CalfPhaseGraphClass *klass)
 }
 
 static void
+calf_phase_graph_unrealize (GtkWidget *widget, CalfPhaseGraph *pg)
+{
+    if( pg->cache_surface )
+        cairo_surface_destroy( pg->cache_surface );
+    pg->cache_surface = NULL;
+    if( pg->fade_surface )
+        cairo_surface_destroy( pg->fade_surface );
+    pg->fade_surface = NULL;
+}
+
+static void
 calf_phase_graph_init (CalfPhaseGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
@@ -864,6 +887,7 @@ calf_phase_graph_init (CalfPhaseGraph *self)
     widget->requisition.height = 40;
     self->cache_surface = NULL;
     self->fade_surface = NULL;
+    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_phase_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
@@ -908,322 +932,6 @@ calf_phase_graph_get_type (void)
     return type;
 }
 
-
-///////////////////////////////////////// knob ///////////////////////////////////////////////
-
-static gboolean
-calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    
-    CalfKnob *self = CALF_KNOB(widget);
-    GdkWindow *window = widget->window;
-    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-     
-    // printf("adjustment = %p value = %f\n", adj, adj->value);
-    int ox = widget->allocation.x, oy = widget->allocation.y;
-    ox += (widget->allocation.width - self->knob_size * 20) / 2;
-    oy += (widget->allocation.height - self->knob_size * 20) / 2;
-
-    int phase = (int)((adj->value - adj->lower) * 64 / (adj->upper - adj->lower));
-    // skip middle phase except for true middle value
-    if (self->knob_type == 1 && phase == 32) {
-        double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;
-        if (pt < 0)
-            phase = 31;
-        if (pt > 0)
-            phase = 33;
-    }
-    // endless knob: skip 90deg highlights unless the value is really a multiple of 90deg
-    if (self->knob_type == 3 && !(phase % 16)) {
-        if (phase == 64)
-            phase = 0;
-        double nom = adj->lower + phase * (adj->upper - adj->lower) / 64.0;
-        double diff = (adj->value - nom) / (adj->upper - adj->lower);
-        if (diff > 0.0001)
-            phase = (phase + 1) % 64;
-        if (diff < -0.0001)
-            phase = (phase + 63) % 64;
-    }
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1], phase * self->knob_size * 20, self->knob_type * self->knob_size * 20, ox, oy, self->knob_size * 20, self->knob_size * 20, GDK_RGB_DITHER_NORMAL, 0, 0);
-    // printf("exposed %p %d+%d\n", widget->window, widget->allocation.x, widget->allocation.y);
-    if (gtk_widget_is_focus(widget))
-    {
-        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, self->knob_size * 20, self->knob_size * 20);
-    }
-
-    return TRUE;
-}
-
-static void
-calf_knob_size_request (GtkWidget *widget,
-                           GtkRequisition *requisition)
-{
-    g_assert(CALF_IS_KNOB(widget));
-
-    CalfKnob *self = CALF_KNOB(widget);
-
-    // width/height is hardwired at 40px now
-    // is now chooseable by "size" value in XML (1-4)
-    requisition->width  = 20 * self->knob_size;
-    requisition->height = 20 * self->knob_size;
-}
-
-static void
-calf_knob_incr (GtkWidget *widget, int dir_down)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-
-    int oldstep = (int)(0.5f + (adj->value - adj->lower) / adj->step_increment);
-    int step;
-    int nsteps = (int)(0.5f + (adj->upper - adj->lower) / adj->step_increment); // less 1 actually
-    if (dir_down)
-        step = oldstep - 1;
-    else
-        step = oldstep + 1;
-    if (self->knob_type == 3 && step >= nsteps)
-        step %= nsteps;
-    if (self->knob_type == 3 && step < 0)
-        step = nsteps - (nsteps - step) % nsteps;
-
-    // trying to reduce error cumulation here, by counting from lowest or from highest
-    float value = adj->lower + step * double(adj->upper - adj->lower) / nsteps;
-    gtk_range_set_value(GTK_RANGE(widget), value);
-    // printf("step %d:%d nsteps %d value %f:%f\n", oldstep, step, nsteps, oldvalue, value);
-}
-
-static gboolean
-calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-
-    switch(event->keyval)
-    {
-        case GDK_Home:
-            gtk_range_set_value(GTK_RANGE(widget), adj->lower);
-            return TRUE;
-
-        case GDK_End:
-            gtk_range_set_value(GTK_RANGE(widget), adj->upper);
-            return TRUE;
-
-        case GDK_Up:
-            calf_knob_incr(widget, 0);
-            return TRUE;
-
-        case GDK_Down:
-            calf_knob_incr(widget, 1);
-            return TRUE;
-            
-        case GDK_Shift_L:
-        case GDK_Shift_R:
-            self->start_value = gtk_range_get_value(GTK_RANGE(widget));
-            self->start_y = self->last_y;
-            return TRUE;
-    }
-
-    return FALSE;
-}
-
-static gboolean
-calf_knob_key_release (GtkWidget *widget, GdkEventKey *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-
-    if(event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R)
-    {
-        self->start_value = gtk_range_get_value(GTK_RANGE(widget));
-        self->start_y = self->last_y;
-        return TRUE;
-    }
-    
-    return FALSE;
-}
-
-static gboolean
-calf_knob_button_press (GtkWidget *widget, GdkEventButton *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-
-    // CalfKnob *lg = CALF_KNOB(widget);
-    gtk_widget_grab_focus(widget);
-    gtk_grab_add(widget);
-    self->start_x = event->x;
-    self->last_y = self->start_y = event->y;
-    self->start_value = gtk_range_get_value(GTK_RANGE(widget));
-    
-    return TRUE;
-}
-
-static gboolean
-calf_knob_button_release (GtkWidget *widget, GdkEventButton *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-
-    if (GTK_WIDGET_HAS_GRAB(widget))
-        gtk_grab_remove(widget);
-    return FALSE;
-}
-
-static inline float endless(float value)
-{
-    if (value >= 0)
-        return fmod(value, 1.f);
-    else
-        return fmod(1.f - fmod(1.f - value, 1.f), 1.f);
-}
-
-static inline float deadzone(GtkWidget *widget, float value, float incr)
-{
-    // map to dead zone
-    float ov = value;
-    if (ov > 0.5)
-        ov = 0.1 + ov;
-    if (ov < 0.5)
-        ov = ov - 0.1;
-    
-    float nv = ov + incr;
-    
-    if (nv > 0.6)
-        return nv - 0.1;
-    if (nv < 0.4)
-        return nv + 0.1;
-    return 0.5;
-}
-
-static gboolean
-calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
-{
-    g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
-
-    float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
-    gboolean moved = FALSE;
-    
-    if (GTK_WIDGET_HAS_GRAB(widget)) 
-    {
-        if (self->knob_type == 3)
-        {
-            gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / scale));
-        }
-        else
-        if (self->knob_type == 1)
-        {
-            gtk_range_set_value(GTK_RANGE(widget), deadzone(GTK_WIDGET(widget), self->start_value, -(event->y - self->start_y) / scale));
-        }
-        else
-        {
-            gtk_range_set_value(GTK_RANGE(widget), self->start_value - (event->y - self->start_y) / scale);
-        }
-        moved = TRUE;
-    }
-    self->last_y = event->y;
-    return moved;
-}
-
-static gboolean
-calf_knob_scroll (GtkWidget *widget, GdkEventScroll *event)
-{
-    calf_knob_incr(widget, event->direction);
-    return TRUE;
-}
-
-static void
-calf_knob_class_init (CalfKnobClass *klass)
-{
-    // GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    widget_class->expose_event = calf_knob_expose;
-    widget_class->size_request = calf_knob_size_request;
-    widget_class->button_press_event = calf_knob_button_press;
-    widget_class->button_release_event = calf_knob_button_release;
-    widget_class->motion_notify_event = calf_knob_pointer_motion;
-    widget_class->key_press_event = calf_knob_key_press;
-    widget_class->key_release_event = calf_knob_key_release;
-    widget_class->scroll_event = calf_knob_scroll;
-    GError *error = NULL;
-    klass->knob_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob1.png", &error);
-    klass->knob_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob2.png", &error);
-    klass->knob_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob3.png", &error);
-    klass->knob_image[3] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob4.png", &error);
-    klass->knob_image[4] = gdk_pixbuf_new_from_file(PKGLIBDIR "/knob5.png", &error);
-    g_assert(klass->knob_image != NULL);
-}
-
-static void
-calf_knob_init (CalfKnob *self)
-{
-    GtkWidget *widget = GTK_WIDGET(self);
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
-    widget->requisition.width = 40;
-    widget->requisition.height = 40;
-}
-
-GtkWidget *
-calf_knob_new()
-{
-    GtkAdjustment *adj = (GtkAdjustment *)gtk_adjustment_new(0, 0, 1, 0.01, 0.5, 0);
-    return calf_knob_new_with_adjustment(adj);
-}
-
-static gboolean calf_knob_value_changed(gpointer obj)
-{
-    GtkWidget *widget = (GtkWidget *)obj;
-    gtk_widget_queue_draw(widget);
-    return FALSE;
-}
-
-GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment)
-{
-    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_KNOB, NULL ));
-    if (widget) {
-        gtk_range_set_adjustment(GTK_RANGE(widget), _adjustment);
-        gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_knob_value_changed), widget);
-    }
-    return widget;
-}
-
-GType
-calf_knob_get_type (void)
-{
-    static GType type = 0;
-    if (!type) {
-        
-        static const GTypeInfo type_info = {
-            sizeof(CalfKnobClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc)calf_knob_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof(CalfKnob),
-            0,    /* n_preallocs */
-            (GInstanceInitFunc)calf_knob_init
-        };
-        
-        for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfKnob%u%d", 
-                ((unsigned int)(intptr_t)calf_knob_class_init) >> 16, i);
-            if (g_type_from_name(name)) {
-                free(name);
-                continue;
-            }
-            type = g_type_register_static(GTK_TYPE_RANGE,
-                                          name,
-                                          &type_info,
-                                          (GTypeFlags)0);
-            free(name);
-            break;
-        }
-    }
-    return type;
-}
 
 ///////////////////////////////////////// toggle ///////////////////////////////////////////////
 
@@ -1374,310 +1082,3 @@ calf_toggle_get_type (void)
 
 ///////////////////////////////////////// tube ///////////////////////////////////////////////
 
-static gboolean
-calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
-{
-    g_assert(CALF_IS_TUBE(widget));
-    
-    CalfTube  *self   = CALF_TUBE(widget);
-    GdkWindow *window = widget->window;
-    GtkStyle  *style  = gtk_widget_get_style(widget);
-    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
-    
-    int ox = 4, oy = 4, inner = 1, pad;
-    int sx = widget->allocation.width - (ox * 2), sy = widget->allocation.height - (oy * 2);
-    
-    if( self->cache_surface == NULL ) {
-        // looks like its either first call or the widget has been resized.
-        // create the cache_surface.
-        cairo_surface_t *window_surface = cairo_get_target( c );
-        self->cache_surface = cairo_surface_create_similar( window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height );
-
-        // And render the meterstuff again.
-        cairo_t *cache_cr = cairo_create( self->cache_surface );
-        // theme background for reduced width and round borders
-//        if(widget->style->bg_pixmap[0] == NULL) {
-            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
-//        } else {
-//            gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(widget->style->bg_pixmap[0]), widget->allocation.x, widget->allocation.y + 20);
-//        }
-        cairo_paint(cache_cr);
-        
-        // outer (black)
-        pad = 0;
-        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        cairo_set_source_rgb(cache_cr, 0, 0, 0);
-        cairo_fill(cache_cr);
-        
-        // inner (bevel)
-        pad = 1;
-        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
-        cairo_set_source (cache_cr, pat2);
-        cairo_fill(cache_cr);
-        cairo_pattern_destroy(pat2);
-        
-        cairo_rectangle(cache_cr, ox, oy, sx, sy);
-        cairo_set_source_rgb (cache_cr, 0, 0, 0);
-        cairo_fill(cache_cr);
-        
-        cairo_surface_t *image;
-        switch(self->direction) {
-            case 1:
-                // vertical
-                switch(self->size) {
-                    default:
-                    case 1:
-                        image = cairo_image_surface_create_from_png (PKGLIBDIR "tubeV1.png");
-                        break;
-                    case 2:
-                        image = cairo_image_surface_create_from_png (PKGLIBDIR "tubeV2.png");
-                        break;
-                }
-                break;
-            default:
-            case 2:
-                // horizontal
-                switch(self->size) {
-                    default:
-                    case 1:
-                        image = cairo_image_surface_create_from_png (PKGLIBDIR "tubeH1.png");
-                        break;
-                    case 2:
-                        image = cairo_image_surface_create_from_png (PKGLIBDIR "tubeH2.png");
-                        break;
-                }
-                break;
-        }
-        cairo_set_source_surface (cache_cr, image, widget->allocation.width / 2 - sx / 2 + inner, widget->allocation.height / 2 - sy / 2 + inner);
-        cairo_paint (cache_cr);
-        cairo_surface_destroy (image);
-        cairo_destroy( cache_cr );
-    }
-    
-    cairo_set_source_surface( c, self->cache_surface, 0,0 );
-    cairo_paint( c );
-    
-    // get microseconds
-    timeval tv;
-    gettimeofday(&tv, 0);
-    long time = tv.tv_sec * 1000 * 1000 + tv.tv_usec;
-    
-    // limit to 1.f
-    float value_orig = self->value > 1.f ? 1.f : self->value;
-    value_orig = value_orig < 0.f ? 0.f : value_orig;
-    float value = 0.f;
-    
-    float s = ((float)(time - self->last_falltime) / 1000000.0);
-    float m = self->last_falloff * s * 2.5;
-    self->last_falloff -= m;
-    // new max value?
-    if(value_orig > self->last_falloff) {
-        self->last_falloff = value_orig;
-    }
-    value = self->last_falloff;
-    self->last_falltime = time;
-    self->falling = self->last_falloff > 0.000001;
-    cairo_pattern_t *pat;
-    // draw upper light
-    switch(self->direction) {
-        case 1:
-            // vertical
-            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.2, sx, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.2, 3, ox + sx * 0.5, oy + sy * 0.2, sx);
-            break;
-        default:
-        case 2:
-            // horizontal
-            cairo_arc(c, ox + sx * 0.8, oy + sy * 0.5, sy, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.8, oy + sy * 0.5, 3, ox + sx * 0.8, oy + sy * 0.5, sy);
-            break;
-    }
-    cairo_pattern_add_color_stop_rgba (pat, 0,    1,    1,    1,    value);
-    cairo_pattern_add_color_stop_rgba (pat, 0.3,  1,   0.8,  0.3, value * 0.4);
-    cairo_pattern_add_color_stop_rgba (pat, 0.31, 0.9, 0.5,  0.1,  value * 0.5);
-    cairo_pattern_add_color_stop_rgba (pat, 1,    0.0, 0.2,  0.7,  0);
-    cairo_set_source (c, pat);
-    cairo_fill(c);
-    // draw lower light
-    switch(self->direction) {
-        case 1:
-            // vertical
-            cairo_arc(c, ox + sx * 0.5, oy + sy * 0.75, sx / 2, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.5, oy + sy * 0.75, 2, ox + sx * 0.5, oy + sy * 0.75, sx / 2);
-            break;
-        default:
-        case 2:
-            // horizontal
-            cairo_arc(c, ox + sx * 0.25, oy + sy * 0.5, sy / 2, 0, 2 * M_PI);
-            pat = cairo_pattern_create_radial (ox + sx * 0.25, oy + sy * 0.5, 2, ox + sx * 0.25, oy + sy * 0.5, sy / 2);
-            break;
-    }
-    cairo_pattern_add_color_stop_rgba (pat, 0,    1,    1,    1,    value);
-    cairo_pattern_add_color_stop_rgba (pat, 0.3,  1,   0.8,  0.3, value * 0.4);
-    cairo_pattern_add_color_stop_rgba (pat, 0.31, 0.9, 0.5,  0.1,  value * 0.5);
-    cairo_pattern_add_color_stop_rgba (pat, 1,    0.0, 0.2,  0.7,  0);
-    cairo_set_source (c, pat);
-    cairo_fill(c);
-    cairo_destroy(c);
-    return TRUE;
-}
-
-static void
-calf_tube_size_request (GtkWidget *widget,
-                           GtkRequisition *requisition)
-{
-    g_assert(CALF_IS_TUBE(widget));
-
-    CalfTube *self = CALF_TUBE(widget);
-    switch(self->direction) {
-        case 1:
-            switch(self->size) {
-                case 1:
-                    widget->requisition.width = 82;
-                    widget->requisition.height = 130;
-                    break;
-                default:
-                case 2:
-                    widget->requisition.width = 130;
-                    widget->requisition.height = 210;
-                    break;
-            }
-            break;
-        default:
-        case 2:
-            switch(self->size) {
-                case 1:
-                    widget->requisition.width = 130;
-                    widget->requisition.height = 82;
-                    break;
-                default:
-                case 2:
-                    widget->requisition.width = 210;
-                    widget->requisition.height = 130;
-                    break;
-            }
-            break;
-    }
-}
-
-static void
-calf_tube_size_allocate (GtkWidget *widget,
-                           GtkAllocation *allocation)
-{
-    g_assert(CALF_IS_TUBE(widget));
-    CalfTube *tube = CALF_TUBE(widget);
-    
-    GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_TUBE_GET_CLASS( tube ) );
-
-    parent_class->size_allocate( widget, allocation );
-
-    if( tube->cache_surface )
-        cairo_surface_destroy( tube->cache_surface );
-    tube->cache_surface = NULL;
-}
-
-static void
-calf_tube_class_init (CalfTubeClass *klass)
-{
-    // GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    widget_class->expose_event = calf_tube_expose;
-    widget_class->size_request = calf_tube_size_request;
-    widget_class->size_allocate = calf_tube_size_allocate;
-}
-
-static void
-calf_tube_init (CalfTube *self)
-{
-    GtkWidget *widget = GTK_WIDGET(self);
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
-    switch(self->direction) {
-        case 1:
-            switch(self->size) {
-                case 1:
-                    widget->requisition.width = 82;
-                    widget->requisition.height = 130;
-                    break;
-                default:
-                case 2:
-                    widget->requisition.width = 130;
-                    widget->requisition.height = 210;
-                    break;
-            }
-            break;
-        default:
-        case 2:
-            switch(self->size) {
-                case 1:
-                    widget->requisition.width = 130;
-                    widget->requisition.height = 82;
-                    break;
-                default:
-                case 2:
-                    widget->requisition.width = 210;
-                    widget->requisition.height = 130;
-                    break;
-            }
-            break;
-    }
-    self->falling = false;
-    self->cache_surface = NULL;
-}
-
-GtkWidget *
-calf_tube_new()
-{
-    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TUBE, NULL ));
-    return widget;
-}
-
-extern void calf_tube_set_value(CalfTube *tube, float value)
-{
-    if (value != tube->value or tube->falling)
-    {
-        tube->value = value;
-        gtk_widget_queue_draw(GTK_WIDGET(tube));
-    }
-}
-
-GType
-calf_tube_get_type (void)
-{
-    static GType type = 0;
-    if (!type) {
-        
-        static const GTypeInfo type_info = {
-            sizeof(CalfTubeClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc)calf_tube_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof(CalfTube),
-            0,    /* n_preallocs */
-            (GInstanceInitFunc)calf_tube_init
-        };
-        
-        for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfTube%u%d", 
-                ((unsigned int)(intptr_t)calf_tube_class_init) >> 16, i);
-            if (g_type_from_name(name)) {
-                free(name);
-                continue;
-            }
-            type = g_type_register_static( GTK_TYPE_DRAWING_AREA,
-                                           name,
-                                           &type_info,
-                                           (GTypeFlags)0);
-            free(name);
-            break;
-        }
-    }
-    return type;
-}
