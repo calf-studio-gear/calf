@@ -339,6 +339,9 @@ struct lv2_wrapper
 	    uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
+        if (inst->set_srate)
+            inst->module->set_sample_rate(inst->srate_to_set);
+        
         inst->impl_restore(retrieve, callback_data);
         return LV2_STATE_SUCCESS;
     }
