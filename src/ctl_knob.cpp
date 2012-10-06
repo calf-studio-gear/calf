@@ -186,7 +186,6 @@ static gboolean
 calf_knob_button_release (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_KNOB(widget));
-    CalfKnob *self = CALF_KNOB(widget);
 
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
