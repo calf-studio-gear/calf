@@ -168,6 +168,10 @@ calf_knob_button_press (GtkWidget *widget, GdkEventButton *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
 
+    if (event->type == GDK_2BUTTON_PRESS) {
+        gtk_range_set_value(GTK_RANGE(widget), self->default_value);
+    }
+
     // CalfKnob *lg = CALF_KNOB(widget);
     gtk_widget_grab_focus(widget);
     gtk_grab_add(widget);
@@ -182,6 +186,7 @@ static gboolean
 calf_knob_button_release (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_KNOB(widget));
+    CalfKnob *self = CALF_KNOB(widget);
 
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
