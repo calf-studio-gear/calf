@@ -213,7 +213,6 @@ AC_DEFINE_UNQUOTED(PKGDOCDIR,"$prefix/share/doc/calf/",[Calf documentation direc
 AC_CONFIG_FILES([Makefile
                  calf.desktop
                  gui/Makefile
-                 gui/calf.rc
                  icons/Makefile
                  src/Makefile
                  src/calf/Makefile])

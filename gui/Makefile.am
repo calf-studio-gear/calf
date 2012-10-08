@@ -4,7 +4,7 @@ install-data-hook:
 	install -c -m 644 $(srcdir)/*.png $(DESTDIR)$(pkgdatadir)
 	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
 	install -c -m 644 $(srcdir)/gui-*.xml $(DESTDIR)$(pkgdatadir)
-	sed 's#@pkgdatadir@#$(pkgdatadir)#g' $(srcdir)/calf.rc.in >$(top_builddir)/calf.rc
+	sed 's#@guidatadir@#$(pkgdatadir)#g' $(srcdir)/calf.rc.in >$(top_builddir)/calf.rc
 	install -c -m 644 $(top_builddir)/calf.rc $(DESTDIR)$(pkgdatadir)
 	rm -f $(top_builddir)/calf.rc
 
