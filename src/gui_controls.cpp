@@ -669,9 +669,9 @@ void button_param_control::button_clicked(GtkButton *widget, gpointer value)
 
 void button_param_control::button_press_event(GtkButton *widget, GdkEvent *event, gpointer value)
 {
+#if 0
     param_control *jhp = (param_control *)value;
     
-#if 0
     static int last_time = 0;
     
     if (event->button.type == GDK_BUTTON_PRESS)
