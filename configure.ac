@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
-AC_INIT([calf],[0.0.19-rc7],[wdev@foltman.com])
+AC_INIT([calf],[0.0.19-rc8],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 LT_INIT([dlopen])
@@ -242,6 +242,22 @@ AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     LGPL-licensed. The only way to get an LGPL binary is by removing
     or reimplementing parts that depend on FFTW.
 ])
+
+if test "$GUI_ENABLED" == "yes" ; then 
+    if test ! -r `pkg-config --variable libdir gtk+-2.0`/gtk-2.0/`pkg-config --variable gtk_binary_version gtk+-2.0`/engines/libpixmap.so; then
+        AC_MSG_RESULT([WARNING:
+The GTK+2 engine 'pixmap' has not been found on this system. In case of
+errors in GUI rendering, make sure it is installed. The package name for
+Ubuntu is gtk2-engines-pixbuf, it may be different in other distributions.
+])
+    else
+        AC_MSG_RESULT([    Note: In case of GUI rendering errors or warnings about missing 'pixmap'
+    GTK+ engine, make sure it is installed and usable. The package name for
+    Ubuntu is gtk2-engines-pixbuf, it may be different in other distributions.
+    The configure check is not 100% reliable, hence the warning.
+])
+    fi
+fi
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
     AC_MSG_RESULT([
