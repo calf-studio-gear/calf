@@ -960,6 +960,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     CALF_LINE_GRAPH(widget)->use_fade = get_int("use_fade", 0);
     CALF_LINE_GRAPH(widget)->fade = get_float("fade", 0.5);
     CALF_LINE_GRAPH(widget)->mode = get_int("mode", 0);
+    CALF_LINE_GRAPH(widget)->use_crosshairs = get_int("use_crosshairs", 0);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LineGraph");
     return widget;
 }

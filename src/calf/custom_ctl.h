@@ -46,6 +46,8 @@ struct CalfLineGraph
     int source_id;
     bool is_square;
     bool use_fade;
+    bool use_crosshairs;
+    bool button_down;
     float fade;
     int mode;
     cairo_surface_t *cache_surface;
@@ -55,6 +57,7 @@ struct CalfLineGraph
     //GdkPixmap *cache_pixmap;
     int last_generation;
     bool _spectrum;
+    gdouble mouse_x, mouse_y;
 };
 
 struct CalfLineGraphClass

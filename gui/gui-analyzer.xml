@@ -32,7 +32,7 @@
                             <combo param="analyzer_mode"/>
                         </hbox>
                         
-                        <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.8"/>
+                        <line-graph refresh="1" width="560" height="240" param="analyzer_level" expand="1" fill="1" use_fade="1" fade="0.8" use_crosshairs="1"/>
                         
                         <hbox homogeneous="1">
                             <combo param="analyzer_windowing" />

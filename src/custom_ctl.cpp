@@ -26,6 +26,8 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 
+#include <iostream>
+
 static void
 calf_line_graph_copy_cache_to_window( cairo_surface_t *lg, cairo_t *c )
 {
@@ -42,6 +44,7 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
     cairo_text_extents_t tx;
     if (!legend.empty())
         cairo_text_extents(c, legend.c_str(), &tx);
+
     if (vertical)
     {
         float x = floor(ox + pos * sx) + 0.5;
@@ -213,7 +216,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     if (lg->source) {
 
-
         float pos = 0;
         bool vertical = false;
         std::string legend;
@@ -278,6 +280,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.6), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cache_cimpl); grid_n++)
                 {
                     calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
+//                    std::cerr << "1 Draw grid line with legend " << legend << " vertical " << vertical << " pos " << pos << " phase " << phase << " sx/sy " << sx << "/" << sy << std::endl;
                 }
             }
             grid_n_save = grid_n;
@@ -327,7 +330,25 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 0, 0, 0, 0.6), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cache_cimpl); gn++)
             {
                 calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
+                std::cerr << "2 Draw grid line with legend " << legend << " vertical " << vertical << " pos " << pos << " phase " << phase << " sx/sy " << sx << "/" << sy << std::endl;
             }
+        }
+
+        // crosshairs
+        if (lg->use_crosshairs && lg->mouse_x > 0 && lg->mouse_y > 0) {
+          cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
+          cairo_set_line_width(cache_cr, 1.0);
+          
+          cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5         );
+          cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5    );
+          cairo_move_to(cache_cr, ox + 0.5         , lg->mouse_y + 0.5);
+          cairo_line_to(cache_cr, ox + sx + 0.5    , lg->mouse_y + 0.5);
+
+          float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
+          std::stringstream ss;
+          ss << int(freq) << " Hz";
+          cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
+          cairo_show_text(cache_cr, ss.str().c_str());
         }
 
         cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
@@ -392,6 +413,69 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 
     return TRUE;
 }
+
+static gboolean
+calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
+{
+    g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+    
+    lg->mouse_x = event->x;
+    lg->mouse_y = event->y;
+
+    printf("mousex: %lf mousey: %lf\n", lg->mouse_x, lg->mouse_y);
+
+    return TRUE;
+}
+
+static gboolean
+calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
+{
+    g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+
+    printf("button press\n");
+
+    gtk_widget_grab_focus(widget);
+    gtk_grab_add(widget);
+    
+    return TRUE;
+}
+
+static gboolean
+calf_line_graph_button_release (GtkWidget *widget, GdkEventButton *event)
+{
+    g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+
+    printf("button release\n");
+
+    if (GTK_WIDGET_HAS_GRAB(widget))
+        gtk_grab_remove(widget);
+
+    return TRUE;
+}
+
+static gboolean
+calf_line_graph_enter (GtkWidget *widget, GdkEventCrossing *event)
+{
+  printf("enter\n");
+  return TRUE;
+}
+
+static gboolean
+calf_line_graph_leave (GtkWidget *widget, GdkEventCrossing *event)
+{
+  printf("leave\n");
+  g_assert(CALF_IS_LINE_GRAPH(widget));
+  CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+
+  lg->mouse_x = -1;
+  lg->mouse_y = -1;
+
+  return TRUE;
+}
+
 
 void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square)
 {
@@ -471,6 +555,11 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
     widget_class->expose_event = calf_line_graph_expose;
     widget_class->size_request = calf_line_graph_size_request;
     widget_class->size_allocate = calf_line_graph_size_allocate;
+    widget_class->button_press_event = calf_line_graph_button_press;
+    widget_class->button_release_event = calf_line_graph_button_release;
+    widget_class->motion_notify_event = calf_line_graph_pointer_motion;
+    widget_class->enter_notify_event = calf_line_graph_enter;
+    widget_class->leave_notify_event = calf_line_graph_leave;
 }
 
 static void
@@ -494,6 +583,8 @@ static void
 calf_line_graph_init (CalfLineGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS | GTK_SENSITIVE | GTK_PARENT_SENSITIVE);
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
     self->cache_surface = NULL;
