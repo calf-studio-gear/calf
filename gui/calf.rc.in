@@ -8,7 +8,7 @@
 
 #gtk_color_scheme = "calf_fg_color:#101010\ncalf_bg_color:#EFEBE7\ncalf_base_color:#FFF\ncalf_text_color:#1A1A1A\ncalf_selected_bg_color:#FFA443\ncalf_selected_fg_color:#1A1A1A\ncalf_tooltip_bg_color:#F5F5B5\ncalf_tooltip_fg_color:#000"
 
-pixmap_path "/usr/local/share/calf"
+pixmap_path "@guidatadir@"
 
 style "calf-default"
 {

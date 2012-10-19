@@ -24,6 +24,7 @@
 #include <cairo/cairo.h>
 #include <malloc.h>
 #include <math.h>
+#include <stdint.h>
 #include <gdk/gdk.h>
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
