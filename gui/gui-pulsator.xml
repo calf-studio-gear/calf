@@ -39,7 +39,7 @@
         <vbox>
             <frame label="Pulse">
                 <if cond="directlink">
-                    <line-graph refresh="1" width="400" height="100" param="freq" use_crosshairs="1"/>
+                    <line-graph refresh="1" width="400" height="100" param="freq"/>
                 </if>
             </frame>
             <hbox>
