@@ -334,8 +334,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
         }
 
+        float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
+        std::stringstream ss;
+        ss << int(freq) << " Hz";
+
         // crosshairs
-        if (lg->use_crosshairs && lg->mouse_x > 0 && lg->mouse_y > 0) {
+        if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0 && lg->mouse_y > 0) {
           cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
           cairo_set_line_width(cache_cr, 1.0);
           
@@ -344,11 +348,74 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
           cairo_move_to(cache_cr, ox + 0.5         , lg->mouse_y + 0.5);
           cairo_line_to(cache_cr, ox + sx + 0.5    , lg->mouse_y + 0.5);
 
-          float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
-          std::stringstream ss;
-          ss << int(freq) << " Hz";
           cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
           cairo_show_text(cache_cr, ss.str().c_str());
+          cairo_stroke(cache_cr);
+        }
+
+        // freq_handles
+        if (lg->use_freqhandles) {
+            cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 1.0);
+            cairo_set_line_width(cache_cr, 1.0);
+
+            for (int i = 0; i < FREQ_HANDLES; i++) {
+                FreqHandle *handle = &lg->freq_handles[i];
+                if (handle->value == 0.0) {
+                    cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
+                    cairo_line_to(cache_cr, ox + 1, oy + 0.5);
+                    cairo_line_to(cache_cr, ox + 1, oy + sy);
+                    cairo_stroke(cache_cr);
+                    cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
+                            HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
+
+                    cairo_move_to(cache_cr, ox, oy + sy);
+                    cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
+                    cairo_stroke(cache_cr);
+                }
+                if (handle->value > 0.0 && handle->value < 1.0) {
+                    cairo_move_to(cache_cr,
+                            ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
+                    cairo_line_to(cache_cr,
+                            ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
+                    cairo_move_to(cache_cr, ox + handle->value * sx, oy);
+                    cairo_line_to(cache_cr, ox + handle->value * sx, oy + sy);
+
+                    cairo_move_to(cache_cr,
+                            ox + handle->value * sx - HANDLE_WIDTH / 2,
+                            oy + sy);
+                    cairo_line_to(cache_cr,
+                            ox + handle->value * sx + HANDLE_WIDTH / 2,
+                            oy + sy);
+                    if (lg->handle_grabbed > 0) {
+                        cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
+                        cairo_show_text(cache_cr, ss.str().c_str());
+                    }
+                    cairo_stroke(cache_cr);
+
+                    for (int i = 0; i < HANDLE_WIDTH / 3; i++) {
+                        cairo_rectangle(cache_cr,
+                                ox + handle->value * sx - HANDLE_WIDTH / 4.0
+                                        - 0.5,
+                                oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
+                        cairo_rectangle(cache_cr,
+                                ox + handle->value * sx + HANDLE_WIDTH / 4.0
+                                        - 0.5,
+                                oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
+                    }
+                    cairo_fill(cache_cr);
+                }
+                if (handle->value == 1.0) {
+                    cairo_move_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0,
+                            oy + 0.5);
+                    cairo_line_to(cache_cr, ox + sx - 1, oy + 0.5);
+                    cairo_line_to(cache_cr, ox + sx - 1, oy + sy);
+
+                    cairo_move_to(cache_cr, ox + sx - 1, oy + sy);
+                    cairo_line_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0,
+                            oy + sy);
+                    cairo_stroke(cache_cr);
+                }
+            }
         }
 
         cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
@@ -419,11 +486,32 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-    
+    int ox = 5, oy = 5;
+    int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
+    sx += sx % 2 - 1;
+    sy += sy % 2 - 1;
+   
     lg->mouse_x = event->x;
     lg->mouse_y = event->y;
 
-    printf("mousex: %lf mousey: %lf\n", lg->mouse_x, lg->mouse_y);
+    if (lg->handle_grabbed > 0) {
+        FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
+
+        float new_value = float(event->x) / float(ox + sx);
+
+        if (new_value < handle->left_bound) {
+            new_value = handle->left_bound;
+        } else if (new_value > handle->right_bound) {
+            new_value = handle->right_bound;
+        }
+
+        if (new_value != handle->value) {
+            handle->value = new_value;
+            g_signal_emit_by_name(widget, "freqhandle-changed", handle);
+        }
+    }
+
+    gtk_widget_queue_draw (widget);
 
     return TRUE;
 }
@@ -434,7 +522,39 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
 
-    printf("button press\n");
+    int ox = 5, oy = 5;
+    int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
+    sx += sx % 2 - 1;
+    sy += sy % 2 - 1;
+
+    bool inside_handle = false;
+
+    // loop on all handles except the left and rightmost
+    for (int i = 1; i < FREQ_HANDLES - 1; i++) {
+        FreqHandle *handle = &lg->freq_handles[i];
+        if (lg->mouse_x <= ox + handle->value * sx + HANDLE_WIDTH / 4.0 - 0.5 &&
+            lg->mouse_x >= ox + handle->value * sx - HANDLE_WIDTH / 4.0 - 0.5) {
+            lg->handle_grabbed = i;
+            handle->left_bound = lg->freq_handles[i - 1].value + lg->min_handle_distance;
+            inside_handle = true;
+        }
+
+        // use the first right bound of a following handle which is active
+        // ie. has a value > 0
+        if (inside_handle) {
+            FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
+            handle->right_bound = lg->freq_handles[i + 1].value - lg->min_handle_distance;
+
+            // if we got one, we are done
+            if (handle->right_bound > 0) {
+                break;
+            }
+        }
+    }
+
+    if(!inside_handle) {
+        lg->crosshairs_active = !lg->crosshairs_active;
+    }
 
     gtk_widget_grab_focus(widget);
     gtk_grab_add(widget);
@@ -448,7 +568,7 @@ calf_line_graph_button_release (GtkWidget *widget, GdkEventButton *event)
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
 
-    printf("button release\n");
+    lg->handle_grabbed = -1;
 
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
@@ -459,14 +579,12 @@ calf_line_graph_button_release (GtkWidget *widget, GdkEventButton *event)
 static gboolean
 calf_line_graph_enter (GtkWidget *widget, GdkEventCrossing *event)
 {
-  printf("enter\n");
   return TRUE;
 }
 
 static gboolean
 calf_line_graph_leave (GtkWidget *widget, GdkEventCrossing *event)
 {
-  printf("leave\n");
   g_assert(CALF_IS_LINE_GRAPH(widget));
   CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
 
@@ -560,6 +678,11 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
     widget_class->motion_notify_event = calf_line_graph_pointer_motion;
     widget_class->enter_notify_event = calf_line_graph_enter;
     widget_class->leave_notify_event = calf_line_graph_leave;
+    g_signal_new("freqhandle-changed",
+         G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST,
+         0, NULL, NULL,
+         g_cclosure_marshal_VOID__POINTER,
+         G_TYPE_NONE, 1, G_TYPE_POINTER);
 }
 
 static void
@@ -594,6 +717,16 @@ calf_line_graph_init (CalfLineGraph *self)
     self->mode = 0;
     self->_spectrum = 0;
     gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
+
+    self->freq_handles[0].value = 0.0;
+    for(int i = 1; i < FREQ_HANDLES - 1; i++) {
+      FreqHandle *handle = &self->freq_handles[i];
+      handle->index = i;
+      handle->value = -1.0;
+    }
+    self->freq_handles[FREQ_HANDLES - 1].value = 1.0;
+    self->handle_grabbed = -1;
+    self->min_handle_distance = 0.025;
 }
 
 GtkWidget *
