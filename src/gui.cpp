@@ -116,6 +116,18 @@ void plugin_gui::xml_element_start(void *data, const char *element, const char *
     gui->xml_element_start(element, attributes);
 }
 
+int plugin_gui::get_param_no_by_name(string param_name)
+{
+    int param_no = -1;
+    map<string, int>::iterator it = param_name_map.find(param_name);
+    if (it == param_name_map.end())
+        g_error("Unknown parameter %s", param_name.c_str());
+    else
+        param_no = it->second;
+
+    return param_no;
+}
+
 void plugin_gui::xml_element_start(const char *element, const char *attributes[])
 {
     if (ignore_stack) {
@@ -168,11 +180,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             int param_no = -1;
             if (xam.count("param"))
             {
-                map<string, int>::iterator it = param_name_map.find(xam["param"]);
-                if (it == param_name_map.end())
-                    g_error("Unknown parameter %s", xam["param"].c_str());
-                else
-                    param_no = it->second;
+                param_no = get_param_no_by_name(xam["param"]);
             }
             if (param_no != -1)
                 current_control->param_variable = plugin->get_metadata_iface()->get_param_props(param_no)->short_name;

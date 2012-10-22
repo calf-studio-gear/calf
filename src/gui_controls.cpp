@@ -33,6 +33,8 @@
 #include <calf/utils.h>
 #include <gdk/gdk.h>
 
+#include <iostream>
+
 using namespace calf_plugins;
 using namespace calf_utils;
 using namespace std;
@@ -943,6 +945,19 @@ void line_graph_param_control::on_idle()
         set();
 }
 
+static float to_pos(float freq)
+{
+    return log(freq / 20.0) / log(1000);
+}
+
+static float from_pos(float pos)
+{
+    float a = pos * 3.0;
+    float b = powf(10.0, a);
+    float c = b * 20.0;
+    return c;
+}
+
 GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
@@ -961,21 +976,81 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     clg->fade = get_float("fade", 0.5);
     clg->mode = get_int("mode", 0);
     clg->use_crosshairs = get_int("use_crosshairs", 0);
+    clg->use_freqhandles = get_int("use_freqhandles", 0);
+
+    if (clg->use_freqhandles)
+    {
+        for(int i = 1; i < FREQ_HANDLES - 1; i++)
+        {
+            stringstream ss;
+            ss << "handle" << i;
+            const string &param_name = attribs[ss.str()];
+            if(param_name == "")
+                break;
+            int param_no = gui->get_param_no_by_name(param_name);
+            assert(param_no >=0);
+            clg->freq_handles[i].param_no = param_no;
+            clg->freq_handles[i].value = to_pos(gui->plugin->get_param_value(param_no));
+            clg->freq_handles[i].data = (gpointer) this;
+        }
+        g_signal_connect(G_OBJECT(widget), "freqhandle-changed", G_CALLBACK(freqhandle_value_changed), this);
+    }
+
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LineGraph");
     return widget;
 }
 
-void line_graph_param_control::set()
+void line_graph_param_control::get()
 {
     GtkWidget *tw = gtk_widget_get_toplevel(widget);
+    CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
+
     if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
     {
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
+
+        if(clg->handle_grabbed >= 0) {
+            FreqHandle *handle = &clg->freq_handles[clg->handle_grabbed];
+            float value = from_pos(handle->value);
+            gui->set_param_value(handle->param_no, value, this);
+        }
+    }
+}
+
+void line_graph_param_control::set()
+{
+    _GUARD_CHANGE_
+    GtkWidget *tw = gtk_widget_get_toplevel(widget);
+    CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
+    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
+    {
+        int ws = gdk_window_get_state(widget->window);
+        if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
+            return;
+
+        for (int i = 1; i < FREQ_HANDLES - 1; i++) {
+            FreqHandle *handle = &clg->freq_handles[i];
+            if (handle->param_no < 0)
+                break;
+
+            float value = gui->plugin->get_param_value(handle->param_no);
+            handle->value = to_pos(value);
+        }
+
         last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
     }
 }
+
+void line_graph_param_control::freqhandle_value_changed(GtkWidget *widget, gpointer p)
+{
+    assert(p!=NULL);
+    FreqHandle *handle = (FreqHandle *)p;
+    param_control *jhp = (param_control *)handle->data;
+    jhp->get();
+}
+
 
 line_graph_param_control::~line_graph_param_control()
 {

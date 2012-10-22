@@ -41,12 +41,14 @@ G_BEGIN_DECLS
 
 struct FreqHandle
 {
-    int index;
+    int param_no;
+    std::string label;
     float value;
     float left_bound;
     float right_bound;
     bool solo;
     bool bypass;
+    gpointer data;
 };
 
 #define FREQ_HANDLES 5
@@ -59,9 +61,6 @@ struct CalfLineGraph
     int source_id;
     bool is_square;
     bool use_fade;
-    bool use_crosshairs;
-    bool crosshairs_active;
-    bool button_down;
     float fade;
     int mode;
     cairo_surface_t *cache_surface;
@@ -71,8 +70,14 @@ struct CalfLineGraph
     //GdkPixmap *cache_pixmap;
     int last_generation;
     bool _spectrum;
+
+    // crosshairs and FreqHandles
     gdouble mouse_x, mouse_y;
+    bool use_crosshairs;
+    bool crosshairs_active;
+
     bool use_freqhandles;
+    bool use_freqhandles_buttons;
     float min_handle_distance;
     int handle_grabbed;
     FreqHandle freq_handles[FREQ_HANDLES];  

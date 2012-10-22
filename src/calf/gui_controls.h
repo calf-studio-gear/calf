@@ -213,8 +213,9 @@ struct line_graph_param_control: public param_control
     int last_generation;
 
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
-    virtual void get() {}
+    virtual void get();
     virtual void set();
+    static void freqhandle_value_changed(GtkWidget *widget, gpointer p);
     virtual void on_idle();
     virtual ~line_graph_param_control();
 };

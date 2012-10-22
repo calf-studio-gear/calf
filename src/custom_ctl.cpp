@@ -334,12 +334,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
         }
 
-        float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
-        std::stringstream ss;
-        ss << int(freq) << " Hz";
-
         // crosshairs
         if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0 && lg->mouse_y > 0) {
+          float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
+          std::stringstream ss;
+          ss << int(freq) << " Hz";
+
           cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
           cairo_set_line_width(cache_cr, 1.0);
           
@@ -365,8 +365,11 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                     cairo_line_to(cache_cr, ox + 1, oy + 0.5);
                     cairo_line_to(cache_cr, ox + 1, oy + sy);
                     cairo_stroke(cache_cr);
+                    if (lg->use_freqhandles_buttons) {
                     cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
                             HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
+                    // TODO: implement freqhandle buttons
+                    }
 
                     cairo_move_to(cache_cr, ox, oy + sy);
                     cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
@@ -388,6 +391,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                             oy + sy);
                     if (lg->handle_grabbed > 0) {
                         cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
+                        float freq = exp((handle->value) * log(1000)) * 20.0;
+                        std::stringstream ss;
+                        ss << int(freq) << " Hz";
                         cairo_show_text(cache_cr, ss.str().c_str());
                     }
                     cairo_stroke(cache_cr);
@@ -497,7 +503,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     if (lg->handle_grabbed > 0) {
         FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
 
-        float new_value = float(event->x) / float(ox + sx);
+        float new_value = float(event->x) / float(widget->allocation.width);
 
         if (new_value < handle->left_bound) {
             new_value = handle->left_bound;
@@ -721,8 +727,8 @@ calf_line_graph_init (CalfLineGraph *self)
     self->freq_handles[0].value = 0.0;
     for(int i = 1; i < FREQ_HANDLES - 1; i++) {
       FreqHandle *handle = &self->freq_handles[i];
-      handle->index = i;
       handle->value = -1.0;
+      handle->param_no = -1;
     }
     self->freq_handles[FREQ_HANDLES - 1].value = 1.0;
     self->handle_grabbed = -1;
