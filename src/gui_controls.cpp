@@ -987,9 +987,14 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
             const string &param_name = attribs[ss.str()];
             if(param_name == "")
                 break;
+
             int param_no = gui->get_param_no_by_name(param_name);
             assert(param_no >=0);
+
+            const parameter_properties &param_props = *gui->plugin->get_metadata_iface()->get_param_props(param_no);
+
             clg->freq_handles[i].param_no = param_no;
+            clg->freq_handles[i].default_value = to_pos(param_props.def_value);
             clg->freq_handles[i].value = to_pos(gui->plugin->get_param_value(param_no));
             clg->freq_handles[i].data = (gpointer) this;
         }

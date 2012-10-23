@@ -43,6 +43,7 @@ struct FreqHandle
 {
     int param_no;
     std::string label;
+    float default_value;
     float value;
     float left_bound;
     float right_bound;

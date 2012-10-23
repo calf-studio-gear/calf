@@ -558,6 +558,12 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
         }
     }
 
+    if (inside_handle && event->type == GDK_2BUTTON_PRESS) {
+        FreqHandle &handle = lg->freq_handles[lg->handle_grabbed];
+        handle.value = handle.default_value;
+        g_signal_emit_by_name(widget, "freqhandle-changed", &handle);
+    }
+
     if(!inside_handle) {
         lg->crosshairs_active = !lg->crosshairs_active;
     }
