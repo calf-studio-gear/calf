@@ -32,3 +32,5 @@ bigbull/ttl.cpp
 bigbull/ttl.h
 doc/html/*
 dist/*
+.cproject
+.project

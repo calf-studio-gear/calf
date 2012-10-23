@@ -211,6 +211,21 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     }
 }
 
+static float subindex_to_freq(int subindex)
+{
+  float freq = 100;
+  if (subindex < 9)
+    freq = 10 * (subindex + 1);
+  else if (subindex < 18)
+    freq = 100 * (subindex - 9 + 1);
+  else if (subindex < 27)
+    freq = 1000 * (subindex - 18 + 1);
+  else
+    freq = 10000 * (subindex - 27 + 1);
+
+  return freq;
+}
+
 bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies, float res, float ofs)
 {
     if (subindex < 0 )
@@ -223,16 +238,10 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
             if (subindex == 9) legend = "100 Hz";
             if (subindex == 18) legend = "1 kHz";
             if (subindex == 27) legend = "10 kHz";
-            float freq = 100;
-            if (subindex < 9)
-                freq = 10 * (subindex + 1);
-            else if (subindex < 18)
-                freq = 100 * (subindex - 9 + 1);
-            else if (subindex < 27)
-                freq = 1000 * (subindex - 18 + 1);
-            else
-                freq = 10000 * (subindex - 27 + 1);
+
+            float freq = subindex_to_freq(subindex);
             pos = log(freq / 20.0) / log(1000);
+
             if (!legend.empty())
                 context->set_source_rgba(0, 0, 0, 0.2);
             else

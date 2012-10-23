@@ -179,6 +179,9 @@ private:
     dsp::biquad_d2<float> lpL[strips - 1][3], lpR[strips - 1][3], hpL[strips - 1][3], hpR[strips - 1][3];
     float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
     int mode, mode_old;
+    bool old_bypass;
+    mutable volatile int last_generation;
+    mutable bool redraw_graph;
 public:
     uint32_t srate;
     bool is_active;

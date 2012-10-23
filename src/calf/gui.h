@@ -125,6 +125,7 @@ public:
     void add_param_ctl(int param, param_control *ctl) { par2ctl.insert(std::pair<int, param_control *>(param, ctl)); }
     void refresh();
     void refresh(int param_no, param_control *originator = NULL);
+    int get_param_no_by_name(std::string param_name);
     void xml_element_start(const char *element, const char *attributes[]);
     void set_param_value(int param_no, float value, param_control *originator = NULL);
     /// Called on change of configure variable

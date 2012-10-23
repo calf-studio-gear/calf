@@ -39,6 +39,22 @@ G_BEGIN_DECLS
 #define CALF_IS_LINE_GRAPH_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_LINE_GRAPH))
 #define CALF_LINE_GRAPH_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_LINE_GRAPH, CalfLineGraphClass))
 
+struct FreqHandle
+{
+    int param_no;
+    std::string label;
+    float default_value;
+    float value;
+    float left_bound;
+    float right_bound;
+    bool solo;
+    bool bypass;
+    gpointer data;
+};
+
+#define FREQ_HANDLES 5
+#define HANDLE_WIDTH 16.0
+
 struct CalfLineGraph
 {
     GtkDrawingArea parent;
@@ -55,6 +71,17 @@ struct CalfLineGraph
     //GdkPixmap *cache_pixmap;
     int last_generation;
     bool _spectrum;
+
+    // crosshairs and FreqHandles
+    gdouble mouse_x, mouse_y;
+    bool use_crosshairs;
+    bool crosshairs_active;
+
+    bool use_freqhandles;
+    bool use_freqhandles_buttons;
+    float min_handle_distance;
+    int handle_grabbed;
+    FreqHandle freq_handles[FREQ_HANDLES];  
 };
 
 struct CalfLineGraphClass
