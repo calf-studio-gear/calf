@@ -972,11 +972,11 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     calf_line_graph_set_square(clg, get_int("square", 0));
     clg->source = gui->plugin->get_line_graph_iface();
     clg->source_id = param_no;
-    clg->use_fade = get_int("use_fade", 0);
+    clg->use_fade = get_int("use-fade", 0);
     clg->fade = get_float("fade", 0.5);
     clg->mode = get_int("mode", 0);
-    clg->use_crosshairs = get_int("use_crosshairs", 0);
-    clg->use_freqhandles = get_int("use_freqhandles", 0);
+    clg->use_crosshairs = get_int("crosshairs", 0);
+    clg->use_freqhandles = get_int("freqhandles", 0);
 
     if (clg->use_freqhandles)
     {

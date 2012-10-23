@@ -45,7 +45,7 @@
         <frame label="X-Over" expand="0" fill="1">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="200" height="100" param="limit" expand="0" fill="0" use_crosshairs="1" use_freqhandles="1" handle1="freq0" handle2="freq1" handle3="freq2"/>
+                    <line-graph refresh="1" width="200" height="100" param="limit" expand="0" fill="0" crosshairs="1" freqhandles="1" handle1="freq0" handle2="freq1" handle3="freq2"/>
                 </if>
                 <hbox>
                     <label param="mode" expand="0" fill="0" />

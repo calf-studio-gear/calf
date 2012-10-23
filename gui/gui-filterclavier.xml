@@ -30,7 +30,7 @@
     </vbox>
     <if cond="directlink">
         <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0">
-            <line-graph param="mode" refresh="1" width="320" height="160" use_crosshairs="1"/>
+            <line-graph param="mode" refresh="1" width="320" height="160" crosshairs="1"/>
         </frame>
     </if>
 </table>
