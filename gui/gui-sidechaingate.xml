@@ -100,7 +100,7 @@
         <if cond="directlink">
             <frame label="Sidechain">
                 <table rows="4" cols="5" spacing="3">
-                    <line-graph refresh="1" width="235" height="112" param="f1_freq" expand="1" fill="1" attach-x="0" attach-y="0" attach-w="5"  crosshairs="1"/>
+                    <line-graph refresh="1" width="235" height="112" param="f1_freq" expand="1" fill="1" attach-x="0" attach-y="0" attach-w="5"  crosshairs="1" freqhandles="1" handle1="f1_freq" label1="F1" handle2="f2_freq" label2="F2"/>
                     <label param="sc_mode" expand="0" fill="0" attach-x="0" attach-y="1" />
                     <combo param="sc_mode" fill="0" expand="0" attach-x="1" attach-y="1" attach-w="4" />
                     <label param="sc_route" expand="0" fill="0" attach-x="0" attach-y="2" />
