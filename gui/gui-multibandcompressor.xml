@@ -1,4 +1,4 @@
-<table rows="2" cols="1">
+<table rows="3" cols="1">
     <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="4" rows="1" cols="11">
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
             <label param="level_in" />
@@ -19,46 +19,56 @@
         </vbox>
         <vbox attach-x="4" attach-y="0">
             <hbox>
-                <if cond="directlink">
-                    <line-graph refresh="1" width="200" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="1" handle1="freq0" handle2="freq1" handle3="freq2"/>
-                </if>
-            </hbox>
-            <hbox>
-                <table rows="2" cols="2" attach-x="4" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                    <hbox  attach-x="0" attach-y="0" border="0" fill-x="0">
+                <table rows="3" cols="2" attach-x="4" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                    <knob param="freq0" attach-x="0" attach-y="0" border="0" expand="0" fill="0" expand-x="0" fill-x="0" />
+                    <vbox attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                        <label param="freq0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                        <value param="freq0" width="8" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                    </vbox>
+                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
                         <knob param="sep0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="sep0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="sep0" attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
+                    <value param="sep0" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
                         <knob param="q0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="q0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="q0" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <value param="q0" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                 </table>
-                <table rows="2" cols="2" attach-x="5" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                    <hbox  attach-x="0" attach-y="0" border="0" fill-x="0">
+                <table rows="3" cols="2" attach-x="5" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                    <knob param="freq1" attach-x="0" attach-y="0" border="0" expand="0" fill="0" expand-x="0" fill-x="0" />
+                    <vbox attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                        <label param="freq1" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                        <value param="freq1" width="8" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                    </vbox>
+                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
                         <knob param="sep1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="sep1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="sep1" attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
+                    <value param="sep1" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
                         <knob param="q1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="q1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="q1" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <value param="q1" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                 </table>
-                <table rows="2" cols="2" attach-x="6" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                    <hbox  attach-x="0" attach-y="0" border="0" fill-x="0">
+                <table rows="3" cols="2" attach-x="6" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                    <knob param="freq2" attach-x="0" attach-y="0" border="0" expand="0" fill="0" expand-x="0" fill-x="0" />
+                    <vbox attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
+                        <label param="freq2" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                        <value param="freq2" width="8" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" align-x="0.0" />
+                    </vbox>
+                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
                         <knob param="sep2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="sep2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="sep2" attach-x="1" attach-y="0" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
+                    <value param="sep2" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
                         <knob param="q2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         <label param="q2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                     </hbox>
-                    <value param="q2" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                    <value param="q2" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                 </table>
             </hbox>
             <hbox>
@@ -88,7 +98,14 @@
              <align><toggle param="bypass" shrink="1"/></align>
         </vbox>
     </table>
-    <table attach-x="0" attach-y="1" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" rows="1" cols="4">
+    <hbox attach-x="0" attach-y="1" expand-y="0" expand-x="1" spacing="4">
+            <hbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="200" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="1" handle1="freq0" handle2="freq1" handle3="freq2"/>
+                </if>
+            </hbox>
+	</hbox>
+    <table attach-x="0" attach-y="2" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" rows="1" cols="4">
         <frame label="Sub band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="0" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
                 <line-graph refresh="1" width="210" height="210" param="compression0" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
@@ -299,3 +316,4 @@
         </vbox></frame>
     </table>
 </table>    
+
