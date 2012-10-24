@@ -57,7 +57,7 @@
     <frame label="Sidechain">
         <vbox spacing="5">
             <if cond="directlink">
-                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="200"  crosshairs="1" freqhandles="1" handle1="f2_freq" handle2="f1_freq"/>
+                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="200"  crosshairs="1" freqhandles="1" handle1="f2_freq" label1="Peak" handle2="f1_freq" label2="Split"/>
             </if>
             <hbox homogeneous="1" fill="0" expand="0">
                 <vbox fill="0" expand="0">

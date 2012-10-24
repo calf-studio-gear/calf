@@ -381,7 +381,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                         cairo_set_font_size(cache_cr, 9);
                         cairo_text_extents_t te;
 
-                        cairo_text_extents (cache_cr, handle->label, &te);
+                        cairo_text_extents (cache_cr, "M", &te);
                         cairo_move_to(cache_cr, ox + handle->value * sx + 3.0, oy + te.height + 4.0);
                         cairo_show_text(cache_cr, handle->label);
                     }
