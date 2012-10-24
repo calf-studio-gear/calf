@@ -1857,6 +1857,9 @@ void multibandgate_audio_module::params_changed()
             *params[param_solo1] > 0.f ||
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
+
+    mode_old = mode;
+    mode = *params[param_mode];
     int i;
     int j1;
     switch(mode) {
@@ -1883,6 +1886,7 @@ void multibandgate_audio_module::params_changed()
         freq_old[0] = *params[param_freq0];
         sep_old[0]  = *params[param_sep0];
         q_old[0]    = *params[param_q0];
+        redraw_graph = true;
     }
     if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
         lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
@@ -1898,6 +1902,7 @@ void multibandgate_audio_module::params_changed()
         freq_old[1] = *params[param_freq1];
         sep_old[1]  = *params[param_sep1];
         q_old[1]    = *params[param_q1];
+        redraw_graph = true;
     }
     if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
         lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
@@ -1913,7 +1918,16 @@ void multibandgate_audio_module::params_changed()
         freq_old[2] = *params[param_freq2];
         sep_old[2]  = *params[param_sep2];
         q_old[2]    = *params[param_q2];
+        redraw_graph = true;
     }
+
+
+    if ((*params[param_bypass] > 0.5) != old_bypass)
+    {
+        redraw_graph = true;
+        old_bypass = *params[param_bypass] > 0.5;
+    }
+
     // set the params of all strips
     gate[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo), *params[param_range0]);
     gate[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], 1.f, *params[param_bypass1], !(solo[1] || no_solo), *params[param_range1]);
@@ -2129,7 +2143,44 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, float *data,
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_graph(subindex, data, points, context, mode);
-    return false;
+
+    if (!is_active or subindex > 3)
+        return false;
+    float ret;
+    double freq;
+    int j1;
+    for (int i = 0; i < points; i++)
+    {
+        ret = 1.f;
+        freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        switch(this->mode) {
+            case 0:
+            default:
+                j1 = 0;
+                break;
+            case 1:
+                j1 = 2;
+                break;
+        }
+        for(int j = 0; j <= j1; j ++) {
+            if(subindex == 0)
+                ret *= lpL[0][j].freq_gain(freq, (float)srate);
+            if(subindex > 0 and subindex < strips - 1) {
+                ret *= hpL[subindex - 1][j].freq_gain(freq, (float)srate);
+                ret *= lpL[subindex][j].freq_gain(freq, (float)srate);
+            }
+            if(subindex == strips - 1)
+                ret *= hpL[2][j].freq_gain(freq, (float)srate);
+        }
+        data[i] = dB_grid(ret);
+    }
+    if (*params[param_bypass] > 0.5f)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+    else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_line_width(1.5);
+    }
+    return true;
 }
 
 bool multibandgate_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
@@ -2145,7 +2196,13 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, float &po
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_gridline(subindex, pos, vertical, legend, context);
-    return false;
+
+    if (!is_active) {
+        return false;
+    } else {
+        vertical = (subindex & 1) != 0;
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
+    }
 }
 
 int multibandgate_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
@@ -2153,7 +2210,23 @@ int multibandgate_audio_module::get_changed_offsets(int index, int generation, i
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_changed_offsets(generation, subindex_graph, subindex_dot, subindex_gridline);
-    return 0;
+
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+
+    if (redraw_graph)
+    {
+        redraw_graph = false;
+        last_generation++;
+    }
+    else
+    {
+        subindex_graph = INT_MAX;
+        subindex_dot = INT_MAX;
+        subindex_gridline = INT_MAX;
+    }
+    return last_generation;
 }
 
 
