@@ -505,12 +505,10 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 
         float new_value = float(event->x) / float(widget->allocation.width);
 
-        if (lg->enforce_handle_order) {
-            if (new_value < handle->left_bound) {
-                new_value = handle->left_bound;
-            } else if (new_value > handle->right_bound) {
-                new_value = handle->right_bound;
-            }
+        if (new_value < handle->left_bound) {
+            new_value = handle->left_bound;
+        } else if (new_value > handle->right_bound) {
+            new_value = handle->right_bound;
         }
 
         if (new_value != handle->value) {
@@ -551,12 +549,19 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
 
         // use the first right bound of a following handle which is active
         // ie. has a value > 0
-        if (lg->enforce_handle_order && inside_handle) {
+        if (inside_handle) {
             FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
-            handle->right_bound = lg->freq_handles[i + 1].value - lg->min_handle_distance;
 
-            // if we got one, we are done
-            if (handle->right_bound > 0) {
+            if (lg->enforce_handle_order) {
+                handle->right_bound = lg->freq_handles[i + 1].value - lg->min_handle_distance;
+
+                // if we got one, we are done
+                if (handle->right_bound > 0) {
+                    break;
+                }
+            } else {
+                handle->left_bound  = lg->min_handle_distance;
+                handle->right_bound = 1.0 - lg->min_handle_distance;
                 break;
             }
         }
