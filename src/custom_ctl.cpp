@@ -505,10 +505,12 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 
         float new_value = float(event->x) / float(widget->allocation.width);
 
-        if (new_value < handle->left_bound) {
-            new_value = handle->left_bound;
-        } else if (new_value > handle->right_bound) {
-            new_value = handle->right_bound;
+        if (lg->enforce_handle_order) {
+            if (new_value < handle->left_bound) {
+                new_value = handle->left_bound;
+            } else if (new_value > handle->right_bound) {
+                new_value = handle->right_bound;
+            }
         }
 
         if (new_value != handle->value) {
@@ -538,6 +540,8 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
     // loop on all handles except the left and rightmost
     for (int i = 1; i < FREQ_HANDLES - 1; i++) {
         FreqHandle *handle = &lg->freq_handles[i];
+
+        // if user clicked inside a vertical band with width HANDLE_WIDTH / 4.0 handle is considered grabbed
         if (lg->mouse_x <= ox + handle->value * sx + HANDLE_WIDTH / 4.0 - 0.5 &&
             lg->mouse_x >= ox + handle->value * sx - HANDLE_WIDTH / 4.0 - 0.5) {
             lg->handle_grabbed = i;
@@ -547,7 +551,7 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
 
         // use the first right bound of a following handle which is active
         // ie. has a value > 0
-        if (inside_handle) {
+        if (lg->enforce_handle_order && inside_handle) {
             FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
             handle->right_bound = lg->freq_handles[i + 1].value - lg->min_handle_distance;
 

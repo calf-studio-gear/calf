@@ -977,6 +977,8 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     clg->mode = get_int("mode", 0);
     clg->use_crosshairs = get_int("crosshairs", 0);
     clg->use_freqhandles = get_int("freqhandles", 0);
+    clg->enforce_handle_order = get_int("enforce-handle-order", 0);
+    clg->min_handle_distance = get_float("min-handle-distance", 0.01);
 
     if (clg->use_freqhandles)
     {
