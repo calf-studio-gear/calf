@@ -984,11 +984,18 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     {
         for(int i = 1; i < FREQ_HANDLES - 1; i++)
         {
-            stringstream ss;
-            ss << "handle" << i;
-            const string &param_name = attribs[ss.str()];
+            stringstream handle_attribute;
+            handle_attribute << "handle" << i;
+            const string &param_name = attribs[handle_attribute.str()];
             if(param_name == "")
                 break;
+
+            stringstream label_attribute;
+            label_attribute << "label" << i;
+            string label = attribs[label_attribute.str()];
+            if (!label.empty()) {
+                clg->freq_handles[i].label = strdup(label.c_str());
+            }
 
             int param_no = gui->get_param_no_by_name(param_name);
             assert(param_no >=0);

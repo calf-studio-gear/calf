@@ -376,6 +376,15 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                     cairo_stroke(cache_cr);
                 }
                 if (handle->value > 0.0 && handle->value < 1.0) {
+                    if (handle->label && handle->label[0]) {
+                        cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                        cairo_set_font_size(cache_cr, 9);
+                        cairo_text_extents_t te;
+
+                        cairo_text_extents (cache_cr, handle->label, &te);
+                        cairo_move_to(cache_cr, ox + handle->value * sx + 3.0, oy + te.height + 4.0);
+                        cairo_show_text(cache_cr, handle->label);
+                    }
                     cairo_move_to(cache_cr,
                             ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
                     cairo_line_to(cache_cr,
@@ -744,6 +753,7 @@ calf_line_graph_init (CalfLineGraph *self)
       FreqHandle *handle = &self->freq_handles[i];
       handle->value = -1.0;
       handle->param_no = -1;
+      handle->label = NULL;
     }
     self->freq_handles[FREQ_HANDLES - 1].value = 1.0;
     self->handle_grabbed = -1;

@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 struct FreqHandle
 {
     int param_no;
-    std::string label;
+    char *label;
     float default_value;
     float value;
     float left_bound;
@@ -52,7 +52,7 @@ struct FreqHandle
     gpointer data;
 };
 
-#define FREQ_HANDLES 5
+#define FREQ_HANDLES 10
 #define HANDLE_WIDTH 16.0
 
 struct CalfLineGraph
