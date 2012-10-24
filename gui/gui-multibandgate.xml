@@ -1,4 +1,4 @@
-<table rows="2" cols="1">
+<table rows="3" cols="1">
     <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="4" rows="1" cols="11">
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
             <label param="level_in" />
@@ -98,7 +98,14 @@
              <align><toggle param="bypass" shrink="1"/></align>
         </vbox>
     </table>
-    <table attach-x="0" attach-y="1" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" rows="1" cols="4">
+    <hbox attach-x="0" attach-y="1" expand-y="0" expand-x="1" spacing="4">
+            <hbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="200" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="1" enforce-handle-order="1" handle1="freq0" handle2="freq1" handle3="freq2"/>
+                </if>
+            </hbox>
+	</hbox>
+    <table attach-x="0" attach-y="2" expand-y="1" shrink-y="1" expand-x="1" shrink-x="1" fill="1" rows="1" cols="4">
         <frame label="Sub band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="0" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
                 <line-graph refresh="1" width="210" height="210" param="gating0" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
