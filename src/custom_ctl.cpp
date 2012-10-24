@@ -147,6 +147,147 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     }
 }
 
+void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int sx, int oy, int sy) {
+    // crosshairs
+    if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
+            && lg->mouse_y > 0) {
+        float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
+        std::stringstream ss;
+        ss << int(freq) << " Hz";
+        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
+        cairo_set_line_width(cache_cr, 1.0);
+        cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5);
+        cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5);
+        cairo_move_to(cache_cr, ox + 0.5, lg->mouse_y + 0.5);
+        cairo_line_to(cache_cr, ox + sx + 0.5, lg->mouse_y + 0.5);
+        cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
+        cairo_show_text(cache_cr, ss.str().c_str());
+        cairo_stroke(cache_cr);
+    }
+}
+
+void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int oy,
+        int sy, int sx) {
+    // freq_handles
+    if (lg->use_freqhandles) {
+        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 1.0);
+        cairo_set_line_width(cache_cr, 1.0);
+
+        for (int i = 0; i < FREQ_HANDLES; i++) {
+            FreqHandle *handle = &lg->freq_handles[i];
+            if (handle->value == 0.0) {
+                cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
+                cairo_line_to(cache_cr, ox + 1, oy + 0.5);
+                cairo_line_to(cache_cr, ox + 1, oy + sy);
+                cairo_stroke(cache_cr);
+                if (lg->use_freqhandles_buttons) {
+                    cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
+                            HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
+                    // TODO: implement freqhandle buttons
+                }
+
+                cairo_move_to(cache_cr, ox, oy + sy);
+                cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
+                cairo_stroke(cache_cr);
+            }
+            if (handle->value > 0.0 && handle->value < 1.0) {
+                if (handle->label && handle->label[0]) {
+                    cairo_select_font_face(cache_cr, "Bitstream Vera Sans",
+                            CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                    cairo_set_font_size(cache_cr, 9);
+                    cairo_text_extents_t te;
+
+                    cairo_text_extents(cache_cr, "M", &te);
+                    cairo_move_to(cache_cr, ox + handle->value * sx + 3.0,
+                            oy + te.height + 4.0);
+                    cairo_show_text(cache_cr, handle->label);
+                }
+                cairo_move_to(cache_cr,
+                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
+                cairo_line_to(cache_cr,
+                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
+                cairo_move_to(cache_cr, ox + handle->value * sx, oy);
+                cairo_line_to(cache_cr, ox + handle->value * sx, oy + sy);
+
+                cairo_move_to(cache_cr,
+                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy + sy);
+                cairo_line_to(cache_cr,
+                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy + sy);
+                if (lg->handle_grabbed > 0) {
+                    cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
+                    float freq = exp((handle->value) * log(1000)) * 20.0;
+                    std::stringstream ss;
+                    ss << int(freq) << " Hz";
+                    cairo_show_text(cache_cr, ss.str().c_str());
+                }
+                cairo_stroke(cache_cr);
+
+                for (int i = 0; i < HANDLE_WIDTH / 3; i++) {
+                    cairo_rectangle(cache_cr,
+                            ox + handle->value * sx - HANDLE_WIDTH / 4.0 - 0.5,
+                            oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
+                    cairo_rectangle(cache_cr,
+                            ox + handle->value * sx + HANDLE_WIDTH / 4.0 - 0.5,
+                            oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
+                }
+                cairo_fill(cache_cr);
+            }
+            if (handle->value == 1.0) {
+                cairo_move_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + 0.5);
+                cairo_line_to(cache_cr, ox + sx - 1, oy + 0.5);
+                cairo_line_to(cache_cr, ox + sx - 1, oy + sy);
+
+                cairo_move_to(cache_cr, ox + sx - 1, oy + sy);
+                cairo_line_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + sy);
+                cairo_stroke(cache_cr);
+            }
+        }
+    }
+}
+
+void cairo_line_graph_draw_data(CalfLineGraph* lg, cairo_t* cache_cr,
+        float* data, int graph_n, int sx, int sy, cairo_impl& cache_cimpl) {
+    cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
+    cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
+    cairo_set_line_width(cache_cr, 1);
+    lg->mode = 0;
+    for (int gn = graph_n;
+            lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl,
+                    &lg->mode); gn++) {
+        if (lg->mode == 4) {
+            lg->_spectrum = 1;
+            cairo_t* spec_cr = cairo_create(lg->spec_surface);
+            cairo_t* specc_cr = cairo_create(lg->specc_surface);
+            // clear spec cache
+            cairo_set_operator(specc_cr, CAIRO_OPERATOR_CLEAR);
+            cairo_paint(specc_cr);
+            cairo_set_operator(specc_cr, CAIRO_OPERATOR_OVER);
+            //cairo_restore (specc_cr);
+            // draw last spec to spec cache
+            cairo_set_source_surface(specc_cr, lg->spec_surface, 0, -1);
+            cairo_paint(specc_cr);
+            // draw next line to spec cache
+            calf_line_graph_draw_graph(specc_cr, data, sx, sy, lg->mode);
+            cairo_save(specc_cr);
+            // draw spec cache to master
+            cairo_set_source_surface(cache_cr, lg->specc_surface, 0, 0);
+            cairo_paint(cache_cr);
+            // clear spec
+            cairo_set_operator(spec_cr, CAIRO_OPERATOR_CLEAR);
+            cairo_paint(spec_cr);
+            cairo_set_operator(spec_cr, CAIRO_OPERATOR_OVER);
+            //cairo_restore (spec_cr);
+            // draw spec cache to spec
+            cairo_set_source_surface(spec_cr, lg->specc_surface, 0, 0);
+            cairo_paint(spec_cr);
+            cairo_destroy(spec_cr);
+            cairo_destroy(specc_cr);
+        } else {
+            calf_line_graph_draw_graph(cache_cr, data, sx, sy, lg->mode);
+        }
+    }
+}
+
 static gboolean
 calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -334,150 +475,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
         }
 
-        // crosshairs
-        if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0 && lg->mouse_y > 0) {
-          float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
-          std::stringstream ss;
-          ss << int(freq) << " Hz";
+        calf_line_graph_draw_crosshairs(lg, cache_cr, ox, sx, oy, sy);
 
-          cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
-          cairo_set_line_width(cache_cr, 1.0);
-          
-          cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5         );
-          cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5    );
-          cairo_move_to(cache_cr, ox + 0.5         , lg->mouse_y + 0.5);
-          cairo_line_to(cache_cr, ox + sx + 0.5    , lg->mouse_y + 0.5);
+        calf_line_graph_draw_freqhandles(lg, cache_cr, ox, oy, sy, sx);
 
-          cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
-          cairo_show_text(cache_cr, ss.str().c_str());
-          cairo_stroke(cache_cr);
-        }
+        cairo_line_graph_draw_data(lg, cache_cr, data, graph_n, sx, sy, cache_cimpl);
 
-        // freq_handles
-        if (lg->use_freqhandles) {
-            cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 1.0);
-            cairo_set_line_width(cache_cr, 1.0);
-
-            for (int i = 0; i < FREQ_HANDLES; i++) {
-                FreqHandle *handle = &lg->freq_handles[i];
-                if (handle->value == 0.0) {
-                    cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
-                    cairo_line_to(cache_cr, ox + 1, oy + 0.5);
-                    cairo_line_to(cache_cr, ox + 1, oy + sy);
-                    cairo_stroke(cache_cr);
-                    if (lg->use_freqhandles_buttons) {
-                    cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
-                            HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
-                    // TODO: implement freqhandle buttons
-                    }
-
-                    cairo_move_to(cache_cr, ox, oy + sy);
-                    cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
-                    cairo_stroke(cache_cr);
-                }
-                if (handle->value > 0.0 && handle->value < 1.0) {
-                    if (handle->label && handle->label[0]) {
-                        cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-                        cairo_set_font_size(cache_cr, 9);
-                        cairo_text_extents_t te;
-
-                        cairo_text_extents (cache_cr, "M", &te);
-                        cairo_move_to(cache_cr, ox + handle->value * sx + 3.0, oy + te.height + 4.0);
-                        cairo_show_text(cache_cr, handle->label);
-                    }
-                    cairo_move_to(cache_cr,
-                            ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
-                    cairo_line_to(cache_cr,
-                            ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
-                    cairo_move_to(cache_cr, ox + handle->value * sx, oy);
-                    cairo_line_to(cache_cr, ox + handle->value * sx, oy + sy);
-
-                    cairo_move_to(cache_cr,
-                            ox + handle->value * sx - HANDLE_WIDTH / 2,
-                            oy + sy);
-                    cairo_line_to(cache_cr,
-                            ox + handle->value * sx + HANDLE_WIDTH / 2,
-                            oy + sy);
-                    if (lg->handle_grabbed > 0) {
-                        cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
-                        float freq = exp((handle->value) * log(1000)) * 20.0;
-                        std::stringstream ss;
-                        ss << int(freq) << " Hz";
-                        cairo_show_text(cache_cr, ss.str().c_str());
-                    }
-                    cairo_stroke(cache_cr);
-
-                    for (int i = 0; i < HANDLE_WIDTH / 3; i++) {
-                        cairo_rectangle(cache_cr,
-                                ox + handle->value * sx - HANDLE_WIDTH / 4.0
-                                        - 0.5,
-                                oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
-                        cairo_rectangle(cache_cr,
-                                ox + handle->value * sx + HANDLE_WIDTH / 4.0
-                                        - 0.5,
-                                oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
-                    }
-                    cairo_fill(cache_cr);
-                }
-                if (handle->value == 1.0) {
-                    cairo_move_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0,
-                            oy + 0.5);
-                    cairo_line_to(cache_cr, ox + sx - 1, oy + 0.5);
-                    cairo_line_to(cache_cr, ox + sx - 1, oy + sy);
-
-                    cairo_move_to(cache_cr, ox + sx - 1, oy + sy);
-                    cairo_line_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0,
-                            oy + sy);
-                    cairo_stroke(cache_cr);
-                }
-            }
-        }
-
-        cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
-        cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
-        cairo_set_line_width(cache_cr, 1);
-        lg->mode = 0;
-        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, sx, &cache_cimpl, &lg->mode); gn++)
-        {
-            if(lg->mode == 4) {
-                lg->_spectrum = 1;
-                cairo_t *spec_cr = cairo_create( lg->spec_surface );
-                cairo_t *specc_cr = cairo_create( lg->specc_surface );
-                
-                // clear spec cache
-                cairo_set_operator (specc_cr, CAIRO_OPERATOR_CLEAR);
-                cairo_paint (specc_cr);
-                cairo_set_operator (specc_cr, CAIRO_OPERATOR_OVER);
-                //cairo_restore (specc_cr);
-                
-                // draw last spec to spec cache
-                cairo_set_source_surface(specc_cr, lg->spec_surface, 0, -1);
-                cairo_paint(specc_cr);
-                
-                // draw next line to spec cache
-                calf_line_graph_draw_graph( specc_cr, data, sx, sy, lg->mode );
-                cairo_save (specc_cr);
-                
-                // draw spec cache to master
-                cairo_set_source_surface(cache_cr, lg->specc_surface, 0, 0);
-                cairo_paint(cache_cr);
-                
-                // clear spec
-                cairo_set_operator (spec_cr, CAIRO_OPERATOR_CLEAR);
-                cairo_paint (spec_cr);
-                cairo_set_operator (spec_cr, CAIRO_OPERATOR_OVER);
-                //cairo_restore (spec_cr);
-                
-                // draw spec cache to spec
-                cairo_set_source_surface(spec_cr, lg->specc_surface, 0, 0);
-                cairo_paint (spec_cr);
-                
-                cairo_destroy(spec_cr);
-                cairo_destroy(specc_cr);
-            } else {
-                calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
-            }
-        }
         gdk_cairo_set_source_color(cache_cr, &sc3);
         for(int gn = dot_n; lg->source->get_dot(lg->source_id, gn, x, y, size = 3, &cache_cimpl); gn++)
         {
@@ -485,6 +488,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_arc(cache_cr, ox + x * sx, yv, size, 0, 2 * M_PI);
             cairo_fill(cache_cr);
         }
+
         delete []data;
         cairo_destroy(cache_cr);
     }
