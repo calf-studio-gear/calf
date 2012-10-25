@@ -85,6 +85,8 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     int ox=5, oy=5;
     int _last = 0;
     int y;
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_clip(c);
     for (int i = 0; i <= sx; i++)
     {
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
@@ -154,15 +156,17 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int o
         float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
         std::stringstream ss;
         ss << int(freq) << " Hz";
-        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
+        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.4);
         cairo_set_line_width(cache_cr, 1.0);
         cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5);
         cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5);
         cairo_move_to(cache_cr, ox + 0.5, lg->mouse_y + 0.5);
         cairo_line_to(cache_cr, ox + sx + 0.5, lg->mouse_y + 0.5);
+        cairo_stroke(cache_cr);
+        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.6);
         cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
         cairo_show_text(cache_cr, ss.str().c_str());
-        cairo_stroke(cache_cr);
+        cairo_fill(cache_cr);
     }
 }
 
