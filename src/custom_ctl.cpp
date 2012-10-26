@@ -85,6 +85,8 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     int ox=5, oy=5;
     int _last = 0;
     int y;
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_clip(c);
     for (int i = 0; i <= sx; i++)
     {
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
@@ -147,6 +149,11 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     }
 }
 
+//cairo_set_source_rgb(cache_cr, 0.16, 0.19, 0.07);
+//cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
+//cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
+//cairo_set_source_rgb(cache_cr, 0.53, 0.61, 0.25);
+
 void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int sx, int oy, int sy) {
     // crosshairs
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
@@ -154,27 +161,32 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int o
         float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
         std::stringstream ss;
         ss << int(freq) << " Hz";
-        cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 0.7);
+        cairo_set_source_rgb(cache_cr, 0.53, 0.61, 0.25);
         cairo_set_line_width(cache_cr, 1.0);
         cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5);
         cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5);
         cairo_move_to(cache_cr, ox + 0.5, lg->mouse_y + 0.5);
         cairo_line_to(cache_cr, ox + sx + 0.5, lg->mouse_y + 0.5);
+        cairo_stroke(cache_cr);
+        //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
+        cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
         cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
         cairo_show_text(cache_cr, ss.str().c_str());
-        cairo_stroke(cache_cr);
+        cairo_fill(cache_cr);
     }
 }
 
 void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int oy,
         int sy, int sx) {
     // freq_handles
-    if (lg->use_freqhandles) {
+    if (lg->freqhandles > 0) {
         cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 1.0);
         cairo_set_line_width(cache_cr, 1.0);
 
         for (int i = 0; i < FREQ_HANDLES; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
+            if(handle->active_no > -1 and !handle->active)
+                continue;
             if (handle->value == 0.0) {
                 cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
                 cairo_line_to(cache_cr, ox + 1, oy + 0.5);
@@ -191,6 +203,12 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                 cairo_stroke(cache_cr);
             }
             if (handle->value > 0.0 && handle->value < 1.0) {
+                if (lg->handle_grabbed == i) {
+                    cairo_set_source_rgb(cache_cr, 0.16, 0.19, 0.07);
+                } else {
+                    cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
+                }
+                
                 if (handle->label && handle->label[0]) {
                     cairo_select_font_face(cache_cr, "Bitstream Vera Sans",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -202,23 +220,31 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                             oy + te.height + 4.0);
                     cairo_show_text(cache_cr, handle->label);
                 }
-                cairo_move_to(cache_cr,
-                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
-                cairo_line_to(cache_cr,
-                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
-                cairo_move_to(cache_cr, ox + handle->value * sx, oy);
-                cairo_line_to(cache_cr, ox + handle->value * sx, oy + sy);
+                // top line
+//                cairo_move_to(cache_cr,
+//                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
+//                cairo_line_to(cache_cr,
+//                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
+                
+                
 
-                cairo_move_to(cache_cr,
-                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy + sy);
-                cairo_line_to(cache_cr,
-                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy + sy);
-                if (lg->handle_grabbed > 0) {
+                // bottom line
+//                cairo_move_to(cache_cr,
+//                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy + sy);
+//                cairo_line_to(cache_cr,
+//                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy + sy);
+                
+                // vertical line
+                cairo_move_to(cache_cr, round(ox + handle->value * sx) + 0.5, oy);
+                cairo_line_to(cache_cr, round(ox + handle->value * sx) + 0.5, oy + sy);
+                
+                if (lg->handle_grabbed == i) {
                     cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
                     float freq = exp((handle->value) * log(1000)) * 20.0;
                     std::stringstream ss;
                     ss << int(freq) << " Hz";
                     cairo_show_text(cache_cr, ss.str().c_str());
+                    //cairo_set_source_rgb(cache_cr, 0.25, 0.29, 0.12);
                 }
                 cairo_stroke(cache_cr);
 
@@ -753,13 +779,16 @@ calf_line_graph_init (CalfLineGraph *self)
     gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 
     self->freq_handles[0].value = 0.0;
+    self->freq_handles[0].active = true;
     for(int i = 1; i < FREQ_HANDLES - 1; i++) {
       FreqHandle *handle = &self->freq_handles[i];
       handle->value = -1.0;
       handle->param_no = -1;
       handle->label = NULL;
+      handle->active = true;
     }
     self->freq_handles[FREQ_HANDLES - 1].value = 1.0;
+    self->freq_handles[FREQ_HANDLES - 1].active = true;
     self->handle_grabbed = -1;
     self->min_handle_distance = 0.025;
 }

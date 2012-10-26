@@ -48,7 +48,7 @@
     
     <if cond="directlink">
         <frame label="Frequency Response" attach-x="1" attach-y="0" pad-x="8">
-            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" crosshairs="1" freqhandles="1" handle1="p1_freq" label1="I" handle2="p2_freq" label2="II" handle3="p3_freq" label3="III"/>
+            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" crosshairs="1" freqhandles="5" handle1="p1_freq" label1="I" handle2="p2_freq" label2="II" handle3="p3_freq" label3="III" active1="p1_active" active2="p2_active" active3="p3_active"/>
         </frame>
     </if>
     
