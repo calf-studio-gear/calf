@@ -49,6 +49,8 @@ struct FreqHandle
     float right_bound;
     bool solo;
     bool bypass;
+    int active_no;
+    bool active;
     gpointer data;
 };
 
@@ -77,7 +79,7 @@ struct CalfLineGraph
     bool use_crosshairs;
     bool crosshairs_active;
 
-    bool use_freqhandles;
+    int freqhandles;
     bool use_freqhandles_buttons;
     bool enforce_handle_order;
     float min_handle_distance;

@@ -976,13 +976,12 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     clg->fade = get_float("fade", 0.5);
     clg->mode = get_int("mode", 0);
     clg->use_crosshairs = get_int("crosshairs", 0);
-    clg->use_freqhandles = get_int("freqhandles", 0);
+    clg->freqhandles = get_int("freqhandles", 0);
     clg->enforce_handle_order = get_int("enforce-handle-order", 0);
     clg->min_handle_distance = get_float("min-handle-distance", 0.01);
-
-    if (clg->use_freqhandles)
+    if (clg->freqhandles > 0)
     {
-        for(int i = 1; i < FREQ_HANDLES - 1; i++)
+        for(int i = 1; i < clg->freqhandles - 1; i++)
         {
             stringstream handle_attribute;
             handle_attribute << "handle" << i;
@@ -996,7 +995,16 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
             if (!label.empty()) {
                 clg->freq_handles[i].label = strdup(label.c_str());
             }
-
+            
+            stringstream active_attribute;
+            active_attribute << "active" << i;
+            const string &active_name = attribs[active_attribute.str()];
+            if (active_name != "") {
+                clg->freq_handles[i].active_no = gui->get_param_no_by_name(active_name);
+            } else {
+                clg->freq_handles[i].active_no = -1;
+            }
+            
             int param_no = gui->get_param_no_by_name(param_name);
             assert(param_no >=0);
 
@@ -1051,6 +1059,12 @@ void line_graph_param_control::set()
 
             float value = gui->plugin->get_param_value(handle->param_no);
             handle->value = to_pos(value);
+            
+            if(handle->active_no >= 0) {
+                handle->active = bool(gui->plugin->get_param_value(handle->active_no));
+            } else {
+                handle->active = true;
+            }
         }
 
         last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
