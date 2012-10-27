@@ -41,17 +41,24 @@ G_BEGIN_DECLS
 
 struct FreqHandle
 {
-    int param_no;
+    bool active;
+    int dimensions;
     char *label;
-    float default_value;
-    float value;
+
+    int param_active_no;
+    int param_x_no;
+    int param_y_no;
+    float value_x;
+    float value_y;
+    float default_value_x;
+    float default_value_y;
+
     float left_bound;
     float right_bound;
-    bool solo;
-    bool bypass;
-    int active_no;
-    bool active;
+
     gpointer data;
+
+    inline bool is_active() { return (param_active_no < 0 || active); }
 };
 
 #define FREQ_HANDLES 10
@@ -72,7 +79,7 @@ struct CalfLineGraph
     cairo_surface_t *specc_surface;
     //GdkPixmap *cache_pixmap;
     int last_generation;
-    bool _spectrum;
+    bool spectrum;
 
     // crosshairs and FreqHandles
     gdouble mouse_x, mouse_y;
@@ -81,6 +88,7 @@ struct CalfLineGraph
 
     int freqhandles;
     bool use_freqhandles_buttons;
+    bool show_bracket_handles;
     bool enforce_handle_order;
     float min_handle_distance;
     int handle_grabbed;

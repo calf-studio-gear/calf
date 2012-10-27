@@ -230,6 +230,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
 {
     if (subindex < 0 )
 	return false;
+    // frequency grid
     if (use_frequencies)
     {
         if (subindex < 28)
@@ -250,20 +251,27 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         }
         subindex -= 28;
     }
+
     if (subindex >= 32)
         return false;
+
+    // gain/dB grid
     float gain = 16.0 / (1 << subindex);
     pos = dB_grid(gain, res, ofs);
+
     if (pos < -1)
         return false;
+
     if (subindex != 4)
         context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
+
     if (!(subindex & 1))
     {
         std::stringstream ss;
         ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();
     }
+
     vertical = false;
     return true;
 }
