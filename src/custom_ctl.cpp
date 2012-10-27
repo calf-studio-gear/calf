@@ -689,6 +689,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
             new_y_value != handle->value_y) {
             handle->value_x = new_x_value;
             handle->value_y = new_y_value;
+
             g_signal_emit_by_name(widget, "freqhandle-changed", handle);
         }
     }
@@ -735,7 +736,7 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
                     }
 
                     // look for next one dimensional handle to find right_bound
-                    for (int j = i + 1; j < FREQ_HANDLES; j++) {
+                    for (int j = i + 1; j < lg->freqhandles; j++) {
                         FreqHandle *nexthandle = &lg->freq_handles[j];
                         if(nexthandle->is_active() && nexthandle->dimensions == 1) {
                             handle->right_bound = nexthandle->value_x - lg->min_handle_distance;
@@ -929,7 +930,7 @@ calf_line_graph_init (CalfLineGraph *self)
     self->spectrum = 0;
     gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 
-    for(int i = 0; i < self->freqhandles; i++) {
+    for(int i = 0; i < FREQ_HANDLES; i++) {
         FreqHandle *handle = &self->freq_handles[i];
         handle->active = true;
         handle->param_active_no = -1;

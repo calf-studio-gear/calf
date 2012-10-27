@@ -672,7 +672,7 @@ void button_param_control::button_clicked(GtkButton *widget, gpointer value)
 void button_param_control::button_press_event(GtkButton *widget, GdkEvent *event, gpointer value)
 {
 #if 0
-    param_control *jhp = (param_control *)value_x;
+    param_control *jhp = (param_control *)value;
     
     static int last_time = 0;
     
@@ -993,7 +993,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     clg->min_handle_distance = get_float("min-handle-distance", 0.01);
     if (clg->freqhandles > 0)
     {
-        for(int i = 0; i < clg->freqhandles - 1; i++)
+        for(int i = 0; i < clg->freqhandles; i++)
         {
             FreqHandle *handle = &clg->freq_handles[i];
 
@@ -1089,10 +1089,8 @@ void line_graph_param_control::set()
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
 
-        for (int i = 0; i < FREQ_HANDLES; i++) {
+        for (int i = 0; i < clg->freqhandles; i++) {
             FreqHandle *handle = &clg->freq_handles[i];
-            if (handle->param_x_no < 0)
-                break;
 
             float value_x = gui->plugin->get_param_value(handle->param_x_no);
             handle->value_x = to_x_pos(value_x);
