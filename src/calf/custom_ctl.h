@@ -51,10 +51,11 @@ struct FreqHandle
     bool bypass;
     int active_no;
     bool active;
+    int style;
     gpointer data;
 };
 
-#define FREQ_HANDLES 10
+#define FREQ_HANDLES 32
 #define HANDLE_WIDTH 16.0
 
 struct CalfLineGraph

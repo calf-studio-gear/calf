@@ -87,7 +87,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     int y;
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_clip(c);
-    for (int i = 0; i <= sx; i++)
+    for (int i = 0; i < sx; i++)
     {
         y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
         switch(mode) {
@@ -157,7 +157,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
 void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int sx, int oy, int sy) {
     // crosshairs
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
-            && lg->mouse_y > 0) {
+            && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
         std::stringstream ss;
         ss << int(freq) << " Hz";
@@ -183,32 +183,44 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
         cairo_set_source_rgba(cache_cr, 0.0, 0.0, 0.0, 1.0);
         cairo_set_line_width(cache_cr, 1.0);
 
-        for (int i = 0; i < FREQ_HANDLES; i++) {
+        for (int i = 0; i < lg->freqhandles; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
+            
+            // drop inactive handles
             if(handle->active_no > -1 and !handle->active)
                 continue;
-            if (handle->value == 0.0) {
-                cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
-                cairo_line_to(cache_cr, ox + 1, oy + 0.5);
-                cairo_line_to(cache_cr, ox + 1, oy + sy);
-                cairo_stroke(cache_cr);
-                if (lg->use_freqhandles_buttons) {
-                    cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
-                            HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
-                    // TODO: implement freqhandle buttons
-                }
+                
+            
+//            if (handle->value == 0.0) {
+//                cairo_move_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + 0.5);
+//                cairo_line_to(cache_cr, ox + 1, oy + 0.5);
+//                cairo_line_to(cache_cr, ox + 1, oy + sy);
+//                cairo_stroke(cache_cr);
+//                if (lg->use_freqhandles_buttons) {
+//                    cairo_rectangle(cache_cr, ox, oy + HANDLE_WIDTH * 0.7,
+//                            HANDLE_WIDTH * 0.7, HANDLE_WIDTH * 0.7);
+//                    // TODO: implement freqhandle buttons
+//                }
 
-                cairo_move_to(cache_cr, ox, oy + sy);
-                cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
-                cairo_stroke(cache_cr);
-            }
+//                cairo_move_to(cache_cr, ox, oy + sy);
+//                cairo_line_to(cache_cr, ox + HANDLE_WIDTH / 2.0, oy + sy);
+//                cairo_stroke(cache_cr);
+//            }
+            
             if (handle->value > 0.0 && handle->value < 1.0) {
+                int val = round(handle->value * sx);
+                float pat_alpha;
+                // choose colors between dragged and normal state
                 if (lg->handle_grabbed == i) {
-                    cairo_set_source_rgb(cache_cr, 0.16, 0.19, 0.07);
+                    pat_alpha = 0.4;
+                    cairo_set_source_rgb(cache_cr, 0.14, 0.17, 0.06);
                 } else {
-                    cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
+                    pat_alpha = 0.2;
+                    //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
+                    cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
                 }
                 
+                // draw the label on top
                 if (handle->label && handle->label[0]) {
                     cairo_select_font_face(cache_cr, "Bitstream Vera Sans",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -220,53 +232,80 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                             oy + te.height + 4.0);
                     cairo_show_text(cache_cr, handle->label);
                 }
-                // top line
-//                cairo_move_to(cache_cr,
-//                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy);
-//                cairo_line_to(cache_cr,
-//                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy);
                 
+                // draw the main line
+                cairo_move_to(cache_cr, ox + val + 0.5, oy);
+                cairo_line_to(cache_cr, ox + val + 0.5, oy + sy);
                 
-
-                // bottom line
-//                cairo_move_to(cache_cr,
-//                        ox + handle->value * sx - HANDLE_WIDTH / 2, oy + sy);
-//                cairo_line_to(cache_cr,
-//                        ox + handle->value * sx + HANDLE_WIDTH / 2, oy + sy);
-                
-                // vertical line
-                cairo_move_to(cache_cr, round(ox + handle->value * sx) + 0.5, oy);
-                cairo_line_to(cache_cr, round(ox + handle->value * sx) + 0.5, oy + sy);
-                
-                if (lg->handle_grabbed == i) {
-                    cairo_rel_move_to(cache_cr, 0, -HANDLE_WIDTH);
+                // draw the frequency label
+                //if (lg->handle_grabbed == i) {
+                    cairo_rel_move_to(cache_cr, 0, - 14);
                     float freq = exp((handle->value) * log(1000)) * 20.0;
                     std::stringstream ss;
-                    ss << int(freq) << " Hz";
+                    ss << round(freq) << " Hz";
                     cairo_show_text(cache_cr, ss.str().c_str());
                     //cairo_set_source_rgb(cache_cr, 0.25, 0.29, 0.12);
-                }
+                //}
                 cairo_stroke(cache_cr);
-
-                for (int i = 0; i < HANDLE_WIDTH / 3; i++) {
-                    cairo_rectangle(cache_cr,
-                            ox + handle->value * sx - HANDLE_WIDTH / 4.0 - 0.5,
-                            oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
-                    cairo_rectangle(cache_cr,
-                            ox + handle->value * sx + HANDLE_WIDTH / 4.0 - 0.5,
-                            oy + sy / 2 - HANDLE_WIDTH / 2.0 + i * 3, 1, 1);
+                
+                // draw some bling-bling
+                int w = 50;
+                cairo_pattern_t *pat;
+                switch(handle->style) {
+                    default:
+                    case 0:
+                        // bell filters, default
+                        pat = cairo_pattern_create_linear(ox, oy,  ox, sy);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha);
+                        cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
+                        cairo_rectangle(cache_cr, ox + val - 7, oy, 6, sy);
+                        cairo_rectangle(cache_cr, ox + val + 2, oy, 6, sy);
+                        break;
+                    case 1:
+                        // hipass
+                        pat = cairo_pattern_create_linear(ox + val - w, oy, ox + val, oy);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
+                        cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, pat_alpha);
+                        cairo_rectangle(cache_cr, ox + val - w, oy, w - 1, sy);
+                        break;
+                    case 2:
+                        // loshelf
+                        pat = cairo_pattern_create_linear(ox, oy, ox, sy);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha * 1.5);
+                        cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
+                        cairo_rectangle(cache_cr, ox, oy, val - 1, sy);
+                        break;
+                    case 3:
+                        // hishelf
+                        pat = cairo_pattern_create_linear(ox, oy, ox, sy);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha * 1.5);
+                        cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
+                        cairo_rectangle(cache_cr, ox + val + 2, oy, sx - val - 2, sy);
+                        break;
+                    case 4:
+                        // lopass
+                        pat = cairo_pattern_create_linear(ox + val, oy, ox + val + w, oy);
+                        cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, pat_alpha);
+                        cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
+                        cairo_rectangle(cache_cr, ox + val + 2, oy, w - 1, sy);
+                        break;
                 }
+                cairo_set_source(cache_cr, pat);
                 cairo_fill(cache_cr);
+                cairo_pattern_destroy(pat);
             }
-            if (handle->value == 1.0) {
-                cairo_move_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + 0.5);
-                cairo_line_to(cache_cr, ox + sx - 1, oy + 0.5);
-                cairo_line_to(cache_cr, ox + sx - 1, oy + sy);
+//            if (handle->value == 1.0) {
+//                cairo_move_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + 0.5);
+//                cairo_line_to(cache_cr, ox + sx - 1, oy + 0.5);
+//                cairo_line_to(cache_cr, ox + sx - 1, oy + sy);
 
-                cairo_move_to(cache_cr, ox + sx - 1, oy + sy);
-                cairo_line_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + sy);
-                cairo_stroke(cache_cr);
-            }
+//                cairo_move_to(cache_cr, ox + sx - 1, oy + sy);
+//                cairo_line_to(cache_cr, ox + sx - HANDLE_WIDTH / 2.0, oy + sy);
+//                cairo_stroke(cache_cr);
+//            }
         }
     }
 }
@@ -394,21 +433,23 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         int graph_n, grid_n, dot_n, grid_n_save;
 
         int cache_graph_index, cache_dot_index, cache_grid_index;
+        
+        // ask plugin if we need to draw
         int gen_index = lg->source->get_changed_offsets( lg->source_id, lg->last_generation, cache_graph_index, cache_dot_index, cache_grid_index );
         
         if( cache_dirty || gen_index != lg->last_generation || lg->source->get_clear_all(lg->source_id)) {
-            
+            // someone needs a complete redraw of the background
             cairo_t *cache_cr = cairo_create( lg->cache_surface );
             gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
             cairo_paint(cache_cr);
             
-            // outer (black)
+            // outer frame (black)
             pad = 0;
             cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
             cairo_set_source_rgb(cache_cr, 0, 0, 0);
             cairo_fill(cache_cr);
             
-            // inner (bevel)
+            // inner yellowish screen (bevel)
             pad = 1;
             cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
             cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
@@ -431,7 +472,34 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_set_source (cache_cr, pt);
             cairo_rectangle(cache_cr, ox, oy, sx, sy);
             cairo_fill(cache_cr);
+            cairo_pattern_destroy(pt);
             
+            // lights
+            int div = 1;
+            int light_w = sx;
+            while(light_w / div > 300) 
+                div += 1;
+            int w = sx / div;
+            cairo_rectangle(cache_cr, ox, oy, sx, sy);
+            for(int i = 0; i < div; i ++) {
+                cairo_pattern_t *pt = cairo_pattern_create_radial(
+                    ox + w * i + w / 2.f, oy, 1,
+                    ox + w * i + w / 2.f, sy / 4, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.4);
+                cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+                cairo_set_source (cache_cr, pt);
+                cairo_fill_preserve(cache_cr);
+                pt = cairo_pattern_create_radial(
+                    ox + w * i + w / 2.f, oy + sy, 1,
+                    ox + w * i + w / 2.f, sy * 0.75, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.4);
+                cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+                cairo_set_source (cache_cr, pt);
+                cairo_fill_preserve(cache_cr);
+            }
+            
+            
+            // draw grid
             cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
             cairo_set_font_size(cache_cr, 9);
             
@@ -452,18 +520,22 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             grid_n_save = grid_n;
 
-            //gdk_cairo_set_source_color(cache_cr, &sc2);
+            // draw the curve
             cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
             cairo_set_line_join(cache_cr, CAIRO_LINE_JOIN_MITER);
             cairo_set_line_width(cache_cr, 1);
             lg->mode = 0;
-            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->mode); graph_n++)
-            {
+            
+            // ask the plugin for the y-values of different curves until it returns false
+            for(graph_n = 0; (graph_n<cache_graph_index) && lg->source->get_graph(lg->source_id, graph_n, data, sx, &cache_cimpl, &lg->mode); graph_n++) {
                 calf_line_graph_draw_graph( cache_cr, data, sx, sy, lg->mode );
             }
+            
+            // draw dot
             gdk_cairo_set_source_color(cache_cr, &sc3);
-            for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++)
-            {
+            
+            // ask the plugin for different x and y values until it returns false
+            for(dot_n = 0; (dot_n<cache_dot_index) && lg->source->get_dot(lg->source_id, dot_n, x, y, size = 3, &cache_cimpl); dot_n++) {
                 int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
                 cairo_arc(cache_cr, ox + x * sx, yv, size, 0, 2 * M_PI);
                 cairo_fill(cache_cr);
@@ -476,6 +548,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             dot_n = cache_dot_index;
         }
         
+        
+        // paint the freshly created stuff onto the final surface if necessary
+        // it gets neccessary when the master was redrawn (e.g. resize) or
+        // we're using fade-out (the new stuff is blended into the old version)
         cairo_t *cache_cr = cairo_create( lg->master_surface );
         cairo_set_source_surface(cache_cr, lg->cache_surface, 0, 0);
         if(master_dirty or !lg->use_fade or lg->_spectrum) {
@@ -575,12 +651,12 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
     bool inside_handle = false;
 
     // loop on all handles except the left and rightmost
-    for (int i = 1; i < FREQ_HANDLES - 1; i++) {
+    for (int i = 1; i < lg->freqhandles - 1; i++) {
         FreqHandle *handle = &lg->freq_handles[i];
 
-        // if user clicked inside a vertical band with width HANDLE_WIDTH / 4.0 handle is considered grabbed
-        if (lg->mouse_x <= ox + handle->value * sx + HANDLE_WIDTH / 4.0 - 0.5 &&
-            lg->mouse_x >= ox + handle->value * sx - HANDLE_WIDTH / 4.0 - 0.5) {
+        // if user clicked inside a vertical band with width HANDLE_WIDTH / 2.0 handle is considered grabbed
+        if (lg->mouse_x <= ox + handle->value * sx + HANDLE_WIDTH / 2.0 - 0.5 &&
+            lg->mouse_x >= ox + handle->value * sx - HANDLE_WIDTH / 2.0 - 0.5) {
             lg->handle_grabbed = i;
             handle->left_bound = lg->freq_handles[i - 1].value + lg->min_handle_distance;
             inside_handle = true;
@@ -780,15 +856,15 @@ calf_line_graph_init (CalfLineGraph *self)
 
     self->freq_handles[0].value = 0.0;
     self->freq_handles[0].active = true;
-    for(int i = 1; i < FREQ_HANDLES - 1; i++) {
+    for(int i = 1; i < self->freqhandles - 1; i++) {
       FreqHandle *handle = &self->freq_handles[i];
       handle->value = -1.0;
       handle->param_no = -1;
       handle->label = NULL;
       handle->active = true;
     }
-    self->freq_handles[FREQ_HANDLES - 1].value = 1.0;
-    self->freq_handles[FREQ_HANDLES - 1].active = true;
+    self->freq_handles[self->freqhandles - 1].value = 1.0;
+    self->freq_handles[self->freqhandles - 1].active = true;
     self->handle_grabbed = -1;
     self->min_handle_distance = 0.025;
 }

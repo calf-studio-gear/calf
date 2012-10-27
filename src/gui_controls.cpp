@@ -1005,6 +1005,11 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
                 clg->freq_handles[i].active_no = -1;
             }
             
+            stringstream style_attribute;
+            style_attribute << "style" << i;
+            const string style = style_attribute.str();
+            clg->freq_handles[i].style = get_int(style.c_str(), 0);
+           
             int param_no = gui->get_param_no_by_name(param_name);
             assert(param_no >=0);
 
