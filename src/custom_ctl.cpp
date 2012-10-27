@@ -185,6 +185,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
 
         for (int i = 0; i < lg->freqhandles; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
+<<<<<<< HEAD
             
             // drop inactive handles
             if(handle->active_no > -1 and !handle->active)
