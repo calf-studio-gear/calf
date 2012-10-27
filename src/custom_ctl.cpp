@@ -42,9 +42,13 @@ calf_line_graph_draw_grid( cairo_t *c, std::string &legend, bool vertical, float
 {
     int ox=5, oy=5;
     cairo_text_extents_t tx;
+    
     if (!legend.empty())
         cairo_text_extents(c, legend.c_str(), &tx);
-
+    
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_clip(c);
+    
     if (vertical)
     {
         float x = floor(ox + pos * sx) + 0.5;
@@ -185,7 +189,6 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
 
         for (int i = 0; i < lg->freqhandles; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
-<<<<<<< HEAD
             
             // drop inactive handles
             if(handle->active_no > -1 and !handle->active)
@@ -466,7 +469,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
             cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.44,    0.44,    0.30);
-            cairo_pattern_add_color_stop_rgb(pt, 0.025,   0.89,    0.99,    0.54);
+            cairo_pattern_add_color_stop_rgb(pt, 0.04,   0.89,    0.99,    0.54);
             cairo_pattern_add_color_stop_rgb(pt, 0.4,     0.78,    0.89,    0.45);
             cairo_pattern_add_color_stop_rgb(pt, 0.400001,0.71,    0.82,    0.33);
             cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89,    1.00,    0.45);
@@ -485,15 +488,15 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             for(int i = 0; i < div; i ++) {
                 cairo_pattern_t *pt = cairo_pattern_create_radial(
                     ox + w * i + w / 2.f, oy, 1,
-                    ox + w * i + w / 2.f, sy / 4, w / 2.f);
-                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.4);
+                    ox + w * i + w / 2.f, ox + sy * 0.25, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
                 cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
                 cairo_set_source (cache_cr, pt);
                 cairo_fill_preserve(cache_cr);
                 pt = cairo_pattern_create_radial(
                     ox + w * i + w / 2.f, oy + sy, 1,
-                    ox + w * i + w / 2.f, sy * 0.75, w / 2.f);
-                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.4);
+                    ox + w * i + w / 2.f, ox + sy * 0.75, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
                 cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
                 cairo_set_source (cache_cr, pt);
                 cairo_fill_preserve(cache_cr);
@@ -1010,13 +1013,37 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
             cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.44,    0.44,    0.30);
-            cairo_pattern_add_color_stop_rgb(pt, 0.025,   0.89,    0.99,    0.54);
+            cairo_pattern_add_color_stop_rgb(pt, 0.04,   0.89,    0.99,    0.54);
             cairo_pattern_add_color_stop_rgb(pt, 0.4,     0.78,    0.89,    0.45);
             cairo_pattern_add_color_stop_rgb(pt, 0.400001,0.71,    0.82,    0.33);
             cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89,    1.00,    0.45);
             cairo_set_source (cache_cr, pt);
             cairo_rectangle(cache_cr, ox, oy, sx, sy);
             cairo_fill(cache_cr);
+            
+            // lights
+            int div = 1;
+            int light_w = sx;
+            while(light_w / div > 300) 
+                div += 1;
+            int w = sx / div;
+            cairo_rectangle(cache_cr, ox, oy, sx, sy);
+            for(int i = 0; i < div; i ++) {
+                cairo_pattern_t *pt = cairo_pattern_create_radial(
+                    ox + w * i + w / 2.f, oy, 1,
+                    ox + w * i + w / 2.f, ox + sy * 0.25, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+                cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+                cairo_set_source (cache_cr, pt);
+                cairo_fill_preserve(cache_cr);
+                pt = cairo_pattern_create_radial(
+                    ox + w * i + w / 2.f, oy + sy, 1,
+                    ox + w * i + w / 2.f, ox + sy * 0.75, w / 2.f);
+                cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+                cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+                cairo_set_source (cache_cr, pt);
+                cairo_fill_preserve(cache_cr);
+            }
             
             gdk_cairo_set_source_color(cache_cr, &sc2);
             
