@@ -672,7 +672,7 @@ void button_param_control::button_clicked(GtkButton *widget, gpointer value)
 void button_param_control::button_press_event(GtkButton *widget, GdkEvent *event, gpointer value)
 {
 #if 0
-    param_control *jhp = (param_control *)value;
+    param_control *jhp = (param_control *)value_x;
     
     static int last_time = 0;
     
@@ -945,12 +945,12 @@ void line_graph_param_control::on_idle()
         set();
 }
 
-static float to_pos(float freq)
+static float to_x_pos(float freq)
 {
     return log(freq / 20.0) / log(1000);
 }
 
-static float from_pos(float pos)
+static float from_x_pos(float pos)
 {
     float a = pos * 3.0;
     float b = powf(10.0, a);
@@ -958,10 +958,22 @@ static float from_pos(float pos)
     return c;
 }
 
-GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
+static float to_y_pos(float gain)
 {
-    gui = _gui;
-    param_no = _param_no;
+                //log(gain) * (1.0 / log(32));
+    return 0.5 - dB_grid(gain, 32, 0) / 2.0;
+}
+
+static float from_y_pos(float pos)
+{
+    float gain = powf(32.0, (0.5 - pos) * 2.0);
+    return gain;
+}
+
+GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
+{
+    gui = a_gui;
+    param_no = a_param_no;
     last_generation = -1;
     
     widget = calf_line_graph_new ();
@@ -981,28 +993,51 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
     clg->min_handle_distance = get_float("min-handle-distance", 0.01);
     if (clg->freqhandles > 0)
     {
-        for(int i = 1; i < clg->freqhandles - 1; i++)
+        for(int i = 0; i < clg->freqhandles - 1; i++)
         {
-            stringstream handle_attribute;
-            handle_attribute << "handle" << i;
-            const string &param_name = attribs[handle_attribute.str()];
-            if(param_name == "")
+            FreqHandle *handle = &clg->freq_handles[i];
+
+            stringstream handle_x_attribute;
+            handle_x_attribute << "handle" << i + 1 << "-x";
+            const string &param_x_name = attribs[handle_x_attribute.str()];
+            if(param_x_name == "")
                 break;
 
+            int param_x_no = gui->get_param_no_by_name(param_x_name);
+            const parameter_properties &handle_x_props = *gui->plugin->get_metadata_iface()->get_param_props(param_x_no);
+            handle->dimensions = 1;
+            handle->param_x_no = param_x_no;
+            handle->value_x = to_x_pos(gui->plugin->get_param_value(param_x_no));
+            handle->default_value_x = to_x_pos(handle_x_props.def_value);
+
+            stringstream handle_y_attribute;
+            handle_y_attribute << "handle" << i + 1 << "-y";
+            const string &param_y_name = attribs[handle_y_attribute.str()];
+            if(param_y_name != "") {
+                int param_y_no = gui->get_param_no_by_name(param_y_name);
+                const parameter_properties &handle_y_props = *gui->plugin->get_metadata_iface()->get_param_props(param_y_no);
+                handle->dimensions = 2;
+                handle->param_y_no = param_y_no;
+                handle->value_y = to_y_pos(gui->plugin->get_param_value(param_y_no));
+                handle->default_value_y = to_y_pos(handle_y_props.def_value);
+            } else {
+                handle->param_y_no = -1;
+            }
+
             stringstream label_attribute;
-            label_attribute << "label" << i;
+            label_attribute << "label" << i + 1;
             string label = attribs[label_attribute.str()];
             if (!label.empty()) {
-                clg->freq_handles[i].label = strdup(label.c_str());
+                handle->label = strdup(label.c_str());
             }
             
             stringstream active_attribute;
-            active_attribute << "active" << i;
+            active_attribute << "active" << i + 1;
             const string &active_name = attribs[active_attribute.str()];
             if (active_name != "") {
-                clg->freq_handles[i].active_no = gui->get_param_no_by_name(active_name);
+                handle->param_active_no = gui->get_param_no_by_name(active_name);
             } else {
-                clg->freq_handles[i].active_no = -1;
+                handle->param_active_no = -1;
             }
             
             stringstream style_attribute;
@@ -1010,15 +1045,7 @@ GtkWidget *line_graph_param_control::create(plugin_gui *_gui, int _param_no)
             const string style = style_attribute.str();
             clg->freq_handles[i].style = get_int(style.c_str(), 0);
            
-            int param_no = gui->get_param_no_by_name(param_name);
-            assert(param_no >=0);
-
-            const parameter_properties &param_props = *gui->plugin->get_metadata_iface()->get_param_props(param_no);
-
-            clg->freq_handles[i].param_no = param_no;
-            clg->freq_handles[i].default_value = to_pos(param_props.def_value);
-            clg->freq_handles[i].value = to_pos(gui->plugin->get_param_value(param_no));
-            clg->freq_handles[i].data = (gpointer) this;
+            handle->data = (gpointer) this;
         }
         g_signal_connect(G_OBJECT(widget), "freqhandle-changed", G_CALLBACK(freqhandle_value_changed), this);
     }
@@ -1040,8 +1067,13 @@ void line_graph_param_control::get()
 
         if(clg->handle_grabbed >= 0) {
             FreqHandle *handle = &clg->freq_handles[clg->handle_grabbed];
-            float value = from_pos(handle->value);
-            gui->set_param_value(handle->param_no, value, this);
+            if(handle->dimensions == 2) {
+                float value_y = from_y_pos(handle->value_y);
+                gui->set_param_value(handle->param_y_no, value_y, this);
+            }
+
+            float value_x = from_x_pos(handle->value_x);
+            gui->set_param_value(handle->param_x_no, value_x, this);
         }
     }
 }
@@ -1057,16 +1089,21 @@ void line_graph_param_control::set()
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
 
-        for (int i = 1; i < FREQ_HANDLES - 1; i++) {
+        for (int i = 0; i < FREQ_HANDLES; i++) {
             FreqHandle *handle = &clg->freq_handles[i];
-            if (handle->param_no < 0)
+            if (handle->param_x_no < 0)
                 break;
 
-            float value = gui->plugin->get_param_value(handle->param_no);
-            handle->value = to_pos(value);
-            
-            if(handle->active_no >= 0) {
-                handle->active = bool(gui->plugin->get_param_value(handle->active_no));
+            float value_x = gui->plugin->get_param_value(handle->param_x_no);
+            handle->value_x = to_x_pos(value_x);
+
+            if(handle->dimensions == 2) {
+                float value_y = gui->plugin->get_param_value(handle->param_y_no);
+                handle->value_y = to_y_pos(value_y);
+            }
+
+            if(handle->param_active_no >= 0) {
+                handle->active = bool(gui->plugin->get_param_value(handle->param_active_no));
             } else {
                 handle->active = true;
             }

@@ -66,7 +66,7 @@
     
     <if cond="directlink">
         <frame label="Frequency Response" attach-x="1" attach-y="0">
-            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" crosshairs="1" freqhandles="14" handle1="hp_freq" label1="HP" active1="hp_active" style1="1" handle2="ls_freq" label2="LS" active2="ls_active" style2="2" handle3="p1_freq" label3="I" active3="p1_active" handle4="p2_freq" label4="II" active4="p2_active" handle5="p3_freq" label5="III" active5="p3_active" handle6="p4_freq" label6="IV" active6="p4_active" handle7="p5_freq" label7="V" active7="p5_active" handle8="p6_freq" label8="VI" active8="p6_active" handle9="p7_freq" label9="VII" active9="p7_active" handle10="p8_freq" label10="VIII" active10="p8_active" handle11="hs_freq" label11="HS" active11="hs_active" style11="3" handle12="lp_freq" label12="LP" active12="lp_active" style12="4" />
+            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" crosshairs="1" freqhandles="10" handle1-x="p1_freq" handle1-y="p1_level" label1="I" handle2-x="p2_freq" handle2-y="p2_level" label2="II" handle3-x="p3_freq" handle3-y="p3_level" label3="III" handle4-x="p4_freq" handle4-y="p4_level" label4="IV" handle5-x="p5_freq" handle5-y="p5_level" label5="V" handle6-x="p6_freq" handle6-y="p6_level" label6="VI" handle7-x="p7_freq" handle7-y="p7_level" label7="VII" handle8-x="p8_freq" handle8-y="p8_level" label8="VIII" active1="p1_active" active2="p2_active" active3="p3_active" active4="p4_active" active5="p5_active" active6="p6_active" active7="p7_active" active8="p8_active"/>
         </frame>
     </if>
     
