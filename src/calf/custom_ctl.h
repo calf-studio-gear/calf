@@ -88,7 +88,6 @@ struct CalfLineGraph
 
     int freqhandles;
     bool use_freqhandles_buttons;
-    bool show_bracket_handles;
     bool enforce_handle_order;
     float min_handle_distance;
     int handle_grabbed;
