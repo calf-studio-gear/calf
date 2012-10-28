@@ -263,6 +263,27 @@ void combo_box_param_control::set_to_last_key()
 
 // horizontal fader
 
+static gboolean
+scale_to_default (gpointer data)
+{
+    hscale_param_control *jhp = (hscale_param_control *)data;
+    const parameter_properties &props = jhp->get_props();
+    gtk_range_set_value (GTK_RANGE (jhp->widget), props.to_01(props.def_value));
+
+    return FALSE;
+}
+
+static gboolean
+scale_button_press (GtkWidget *widget, GdkEventKey *event, gpointer *user_data)
+{
+  if (event->type == GDK_2BUTTON_PRESS) {
+    g_timeout_add (100, (GSourceFunc)scale_to_default, user_data);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
@@ -271,6 +292,7 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_hscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
+    gtk_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
     
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
@@ -332,13 +354,14 @@ gchar *hscale_param_control::hscale_format_value(GtkScale *widget, double arg1, 
 }
 
 // vertical fader
-
 GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
     widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
     gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
+    gtk_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
+
     gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
     
     if(get_int("inverted", 0) > 0) {
