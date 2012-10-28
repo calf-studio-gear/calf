@@ -1041,10 +1041,12 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
             }
             
             stringstream style_attribute;
-            style_attribute << "style" << i;
+            style_attribute << "style" << i + 1;
             const string style = style_attribute.str();
             clg->freq_handles[i].style = get_int(style.c_str(), 0);
-           
+            if(clg->freq_handles[i].style == 1 or clg->freq_handles[i].style == 4) {
+                clg->freq_handles[i].dimensions = 1;
+            }
             handle->data = (gpointer) this;
         }
         g_signal_connect(G_OBJECT(widget), "freqhandle-changed", G_CALLBACK(freqhandle_value_changed), this);

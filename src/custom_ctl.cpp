@@ -153,30 +153,97 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
     }
 }
 
-//cairo_set_source_rgb(cache_cr, 0.16, 0.19, 0.07);
-//cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
-//cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
-//cairo_set_source_rgb(cache_cr, 0.53, 0.61, 0.25);
-
-void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, int ox, int sx, int oy, int sy) {
+void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, int ox, int oy, int sx, int sy) {
     // crosshairs
-    if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
-            && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
-        float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
-        std::stringstream ss;
-        ss << int(freq) << " Hz";
-        cairo_set_source_rgb(cache_cr, 0.53, 0.61, 0.25);
-        cairo_set_line_width(cache_cr, 1.0);
-        cairo_move_to(cache_cr, lg->mouse_x + 0.5, oy + 0.5);
-        cairo_line_to(cache_cr, lg->mouse_x + 0.5, oy + sy + 0.5);
-        cairo_move_to(cache_cr, ox + 0.5, lg->mouse_y + 0.5);
-        cairo_line_to(cache_cr, ox + sx + 0.5, lg->mouse_y + 0.5);
-        cairo_stroke(cache_cr);
-        //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
-        cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
-        cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
-        cairo_show_text(cache_cr, ss.str().c_str());
+    int _x = ox + x;
+    int _y = ox + y;
+    cairo_pattern_t *pat;
+    if(mask > 0 and circle) {
+        // draw a circle in the center of the crosshair leaving out
+        // the lines
+        // ne
+        cairo_move_to(cache_cr, _x + 1, _y);
+        cairo_arc (cache_cr, _x + 1, _y, mask, 1.5 * M_PI, 2 * M_PI);
+        cairo_close_path(cache_cr);
+        // se
+        cairo_move_to(cache_cr, _x + 1, _y + 1);
+        cairo_arc (cache_cr, _x + 1, _y + 1, mask, 0, 0.5 * M_PI);
+        cairo_close_path(cache_cr);
+        // sw
+        cairo_move_to(cache_cr, _x, _y + 1);
+        cairo_arc (cache_cr, _x, _y + 1, mask, 0.5 * M_PI, M_PI);
+        cairo_close_path(cache_cr);
+        // nw
+        cairo_move_to(cache_cr, _x, _y);
+        cairo_arc (cache_cr, _x, _y, mask, M_PI, 1.5 * M_PI);
+        cairo_close_path(cache_cr);
+        
+        cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_fill(cache_cr);
+    }
+    if(gradient and gradient_rad > 0) {
+        // draw the crosshairs with a steady gradient around
+        pat = cairo_pattern_create_radial(_x, _y, 1, _x, _y, gradient_rad * 2);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, alpha);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, 0);
+        // top
+        cairo_rectangle(cache_cr, _x, _y - gradient_rad, 1, gradient_rad - mask);
+        // right
+        cairo_rectangle(cache_cr, _x + mask, _y, gradient_rad - mask, 1);
+        // bottom
+        cairo_rectangle(cache_cr, _x, _y + mask, 1, gradient_rad - mask);
+        // left
+        cairo_rectangle(cache_cr, _x - gradient_rad, _y, gradient_rad - mask, 1);
+        
+        cairo_set_source(cache_cr, pat);
+        cairo_fill(cache_cr);
+    } else if(gradient) {
+        // draw the crosshairs with a gradient to the frame
+        // top
+        cairo_rectangle(cache_cr, _x, oy, 1, y - mask);
+        pat = cairo_pattern_create_linear(_x, oy, _x, _y);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, 0);
+        cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 0, alpha);
+        cairo_set_source(cache_cr, pat);
+        cairo_fill(cache_cr);
+        // right
+        cairo_rectangle(cache_cr, _x + mask, _y, sx - x - mask, 1);
+        pat = cairo_pattern_create_linear(_x, oy, sx, oy);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, alpha);
+        cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 0, 0);
+        cairo_set_source(cache_cr, pat);
+        cairo_fill(cache_cr);
+        // bottom
+        cairo_rectangle(cache_cr, _x, _y + mask, 1, sy - y - mask);
+        pat = cairo_pattern_create_linear(_x, _y, _x, oy + sy);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, alpha);
+        cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 0, 0);
+        cairo_set_source(cache_cr, pat);
+        cairo_fill(cache_cr);
+        // left
+        cairo_rectangle(cache_cr, ox, _y, x - mask, 1);
+        pat = cairo_pattern_create_linear(ox, oy, _x, oy);
+        cairo_pattern_add_color_stop_rgba(pat, 0, 0, 0, 0, 0);
+        cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 0, alpha);
+        cairo_set_source(cache_cr, pat);
+        cairo_fill(cache_cr);
+    } else {
+        // draw normal crosshairs
+        // top
+        cairo_move_to(cache_cr, _x + 0.5, oy + 0.5);
+        cairo_line_to(cache_cr, _x + 0.5, _y - mask + 0.5);
+        // right
+        cairo_move_to(cache_cr, _x + mask + 0.5, _y + 0.5);
+        cairo_line_to(cache_cr, ox + sx + 0.5, _y + 0.5);
+        // bottom
+        cairo_move_to(cache_cr, _x + 0.5, _y + mask + 0.5);
+        cairo_line_to(cache_cr, _x + 0.5, oy + sy + 0.5);
+        // left
+        cairo_move_to(cache_cr, ox + 0.5, _y + 0.5);
+        cairo_line_to(cache_cr, _x - mask + 0.5, _y + 0.5);
+        
+        cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
+        cairo_stroke(cache_cr);
     }
 }
 
@@ -220,64 +287,56 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
             
             
             if (handle->value_x > 0.0 && handle->value_x < 1.0) {
-                int val = round(handle->value_x * sx);
+                int val_x = round(handle->value_x * sx);
+                int val_y = (handle->dimensions == 2) ? round(handle->value_y * sy) : 0;
                 float pat_alpha;
+                bool grad;
                 // choose colors between dragged and normal state
                 if (lg->handle_grabbed == i) {
-                    pat_alpha = 0.4;
-                    cairo_set_source_rgb(cache_cr, 0.14, 0.17, 0.06);
+                    pat_alpha = 0.6;
+                    grad = false;
+                    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.7);
                 } else {
-                    pat_alpha = 0.2;
+                    pat_alpha = 0.3;
+                    grad = true;
                     //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
-                    cairo_set_source_rgb(cache_cr, 0.34, 0.39, 0.16);
+                    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.4);
                 }
+                if (handle->dimensions == 2) {
+                    cairo_move_to(cache_cr, val_x + 11, val_y);
+                } else {
+                    cairo_move_to(cache_cr, val_x + 11, oy + 15);
+                }
+                // draw the freq label
+                float freq = exp((handle->value_x) * log(1000)) * 20.0;
+                std::stringstream ss;
+                ss << round(freq) << " Hz";
+                cairo_show_text(cache_cr, ss.str().c_str());
                 
                 // draw the label on top
                 if (handle->label && handle->label[0]) {
+                    
                     cairo_select_font_face(cache_cr, "Bitstream Vera Sans",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
                     cairo_set_font_size(cache_cr, 9);
                     cairo_text_extents_t te;
 
-                    cairo_text_extents(cache_cr, "M", &te);
-                    cairo_move_to(cache_cr, ox + handle->value_x * sx + 3.0,
-                            oy + te.height + 4.0);
+                    cairo_text_extents(cache_cr, handle->label, &te);
+                    if (handle->dimensions == 2) {
+                        cairo_move_to(cache_cr, val_x - 3 - te.width, val_y);
+                    } else {
+                        cairo_move_to(cache_cr, val_x - 3 - te.width, oy + 15);
+                    }
                     cairo_show_text(cache_cr, handle->label);
                 }
-                
-                // draw the main line
-                cairo_move_to(cache_cr, ox + val + 0.5, oy);
-                cairo_line_to(cache_cr, ox + val + 0.5, oy + sy);
-                
-                // draw the frequency label
-                //if (lg->handle_grabbed == i) {
-                    cairo_rel_move_to(cache_cr, 0, - 14);
-                    float freq = exp((handle->value_x) * log(1000)) * 20.0;
-                    std::stringstream ss;
-                    ss << round(freq) << " Hz";
-                    cairo_show_text(cache_cr, ss.str().c_str());
-                    //cairo_set_source_rgb(cache_cr, 0.25, 0.29, 0.12);
-                //}
                 cairo_stroke(cache_cr);
                 
-                // paint horizontal handle line and handle dot for 2dim handles
-                if (handle->dimensions == 2) {
-                    // draw horizontal line of crosshairs
-                    cairo_move_to(cache_cr, ox, round(oy + handle->value_y * sy) + 0.5);
-                    cairo_rel_line_to(cache_cr, sx, 0);
-                    cairo_stroke(cache_cr);
-
-                    // circle
-                    cairo_save(cache_cr);
-                    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.2);
-                    cairo_arc(cache_cr, round(ox + handle->value_x * sx) + 0.5, round(oy + handle->value_y * sy), HANDLE_WIDTH / 2.0, 0, 2 * M_PI);
-                    cairo_fill(cache_cr);
-                    cairo_restore(cache_cr);
-                }
-
-                // paint handle grab points for one dimensional handles
                 if (handle->dimensions == 1) {
-                    // draw some bling-bling
+                    // draw the main line
+                    cairo_move_to(cache_cr, ox + val_x + 0.5, oy);
+                    cairo_line_to(cache_cr, ox + val_x + 0.5, oy + sy);
+                    cairo_stroke(cache_cr);
+                    // draw some one-dimensional bling-bling
                     int w = 50;
                     cairo_pattern_t *pat;
                     switch(handle->style) {
@@ -288,15 +347,15 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
                             cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
-                            cairo_rectangle(cache_cr, ox + val - 7, oy, 6, sy);
-                            cairo_rectangle(cache_cr, ox + val + 2, oy, 6, sy);
+                            cairo_rectangle(cache_cr, ox + val_x - 7, oy, 6, sy);
+                            cairo_rectangle(cache_cr, ox + val_x + 2, oy, 6, sy);
                             break;
                         case 1:
                             // hipass
-                            pat = cairo_pattern_create_linear(ox + val - w, oy, ox + val, oy);
+                            pat = cairo_pattern_create_linear(ox + val_x - w, oy, ox + val_x, oy);
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, pat_alpha);
-                            cairo_rectangle(cache_cr, ox + val - w, oy, w - 1, sy);
+                            cairo_rectangle(cache_cr, ox + val_x - w, oy, w - 1, sy);
                             break;
                         case 2:
                             // loshelf
@@ -304,7 +363,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
                             cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha * 1.5);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
-                            cairo_rectangle(cache_cr, ox, oy, val - 1, sy);
+                            cairo_rectangle(cache_cr, ox, oy, val_x - 1, sy);
                             break;
                         case 3:
                             // hishelf
@@ -312,19 +371,23 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
                             cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 0, 0, pat_alpha * 1.5);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
-                            cairo_rectangle(cache_cr, ox + val + 2, oy, sx - val - 2, sy);
+                            cairo_rectangle(cache_cr, ox + val_x + 2, oy, sx - val_x - 2, sy);
                             break;
                         case 4:
                             // lopass
-                            pat = cairo_pattern_create_linear(ox + val, oy, ox + val + w, oy);
+                            pat = cairo_pattern_create_linear(ox + val_x, oy, ox + val_x + w, oy);
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, pat_alpha);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
-                            cairo_rectangle(cache_cr, ox + val + 2, oy, w - 1, sy);
+                            cairo_rectangle(cache_cr, ox + val_x + 2, oy, w - 1, sy);
                             break;
                     }
                     cairo_set_source(cache_cr, pat);
                     cairo_fill(cache_cr);
                     cairo_pattern_destroy(pat);
+                } else {
+                    // (CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, int ox, int oy, int sx, int sy)
+                    calf_line_graph_draw_crosshairs(lg, cache_cr, grad, -1, pat_alpha, 7, true, val_x, val_y, ox, oy, sx, sy);
+                    
                 }
             }
         }
@@ -627,9 +690,20 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 std::cerr << "2 Draw grid line with legend " << legend << " vertical " << vertical << " pos " << pos << " phase " << phase << " sx/sy " << sx << "/" << sy << std::endl;
             }
         }
-
-        calf_line_graph_draw_crosshairs(lg, cache_cr, ox, sx, oy, sy);
-
+        
+        if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
+            && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
+            float freq = exp(((lg->mouse_x - ox) / float(sx)) * log(1000)) * 20.0;
+            std::stringstream ss;
+            ss << int(freq) << " Hz";
+            cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
+            cairo_move_to(cache_cr, lg->mouse_x + 3, lg->mouse_y - 3);
+            cairo_show_text(cache_cr, ss.str().c_str());
+            cairo_fill(cache_cr);
+            // (CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, int ox, int oy, int sx, int sy)
+            calf_line_graph_draw_crosshairs(lg, cache_cr, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, ox, oy, sx, sy);
+        }
+        
         calf_line_graph_draw_freqhandles(lg, cache_cr, ox, oy, sy, sx);
 
         cairo_line_graph_draw_data(lg, cache_cr, data, graph_n, sx, sy, cache_cimpl);
@@ -670,8 +744,8 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     if (lg->handle_grabbed >= 0) {
         FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
 
-        float new_x_value = float(event->x) / float(widget->allocation.width);
-        float new_y_value = float(event->y) / float(widget->allocation.height);
+        float new_x_value = float(event->x - ox) / float(sx);
+        float new_y_value = float(event->y - oy) / float(sy);
 
         if (new_x_value < handle->left_bound) {
             new_x_value = handle->left_bound;

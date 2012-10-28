@@ -66,7 +66,7 @@
     
     <if cond="directlink">
         <frame label="Frequency Response" attach-x="1" attach-y="0" pad-x="8">
-            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" use-fade="0" crosshairs="1" freqhandles="6" handle1-x="p1_freq" handle1-y="p1_level" label1="I" handle2-x="p2_freq" handle2-y="p2_level" label2="II" handle3-x="p3_freq" handle3-y="p3_level" label3="III" handle4-x="p4_freq" handle4-y="p4_level" label4="IV" active1="p1_active" active2="p2_active" active3="p3_active" active4="p4_active" />
+            <line-graph refresh="1" param="p1_freq" expand="1" fill="1" use-fade="0" crosshairs="1" freqhandles="8" handle1-x="hp_freq" style1="1" label1="HP" active1="hp_active" handle2-x="ls_freq" handle2-y="ls_level" label2="LS" active2="ls_active" handle3-x="p1_freq" handle3-y="p1_level" label3="I" active3="p1_active" handle4-x="p2_freq" handle4-y="p2_level" label4="II" active4="p2_active" handle5-x="p3_freq" handle5-y="p3_level" label5="III" active5="p3_active" handle6-x="p4_freq" handle6-y="p4_level" label6="IV" active6="p4_active" handle7-x="hs_freq" handle7-y="hs_level" label7="HS" active7="hs_active" handle8-x="lp_freq" style8="4" label8="LP" active8="lp_active" />
         </frame>
     </if>
     
