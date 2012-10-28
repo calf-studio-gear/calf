@@ -277,7 +277,12 @@ static gboolean
 scale_button_press (GtkWidget *widget, GdkEventKey *event, gpointer *user_data)
 {
   if (event->type == GDK_2BUTTON_PRESS) {
-    g_timeout_add (100, (GSourceFunc)scale_to_default, user_data);
+    // this actually creates a harmless race condition, but diving deep
+    // into gtk signal handling code wouldn't and the resulting complexity
+    // would not really be worth the effort
+    // The timeout is set high enough that most of the time the race
+    // will turn out in our/the users favor
+    g_timeout_add (200, (GSourceFunc)scale_to_default, user_data);
     return TRUE;
   }
 
