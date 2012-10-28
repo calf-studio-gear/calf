@@ -576,7 +576,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 for(grid_n = 0; legend = std::string(), cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.6), (grid_n<cache_grid_index) &&  lg->source->get_gridline(lg->source_id, grid_n, pos, vertical, legend, &cache_cimpl); grid_n++)
                 {
                     calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
-//                    std::cerr << "1 Draw grid line with legend " << legend << " vertical " << vertical << " pos " << pos << " phase " << phase << " sx/sy " << sx << "/" << sy << std::endl;
                 }
             }
             grid_n_save = grid_n;
@@ -634,7 +633,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 0, 0, 0, 0.6), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cache_cimpl); gn++)
             {
                 calf_line_graph_draw_grid( cache_cr, legend, vertical, pos, phase, sx, sy );
-                std::cerr << "2 Draw grid line with legend " << legend << " vertical " << vertical << " pos " << pos << " phase " << phase << " sx/sy " << sx << "/" << sy << std::endl;
             }
         }
         
