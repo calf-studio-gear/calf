@@ -673,6 +673,39 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     return TRUE;
 }
 
+static int
+calf_line_graph_get_handle_at(CalfLineGraph *lg, double x, double y)
+{
+    GtkWidget *widget = GTK_WIDGET(lg);
+    int ox = 5, oy = 5;
+    int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
+    sx += sx % 2 - 1;
+    sy += sy % 2 - 1;
+
+    // loop on all handles
+    for (int i = 0; i < lg->freqhandles; i++) {
+        FreqHandle *handle = &lg->freq_handles[i];
+        if (!handle->is_active())
+            continue;
+
+        if (handle->dimensions == 1) {
+            // if user clicked inside a vertical band with width HANDLE_WIDTH handle is considered grabbed
+            if (lg->mouse_x <= ox + round(handle->value_x * sx + HANDLE_WIDTH / 2.0) + 0.5 &&
+                lg->mouse_x >= ox + round(handle->value_x * sx - HANDLE_WIDTH / 2.0) - 0.5 ) {
+                return i;
+            }
+        } else if (handle->dimensions == 2) {
+            double dx = lg->mouse_x - round(ox + handle->value_x * sx);
+            double dy = lg->mouse_y - round(oy + handle->value_y * sy);
+
+            // if mouse clicked inside circle of HANDLE_WIDTH
+            if (sqrt(dx * dx + dy * dy) <= HANDLE_WIDTH / 2.0)
+                return i;
+        }
+    }
+    return -1;
+}
+
 static gboolean
 calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
@@ -712,6 +745,16 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
             g_signal_emit_by_name(widget, "freqhandle-changed", handle);
         }
     }
+    if (event->is_hint)
+    {
+        gdk_event_request_motions(event);
+    }
+    
+    if (lg->handle_grabbed >= 0 || 
+        calf_line_graph_get_handle_at (lg, event->x, event->y) != -1)
+        gdk_window_set_cursor(widget->window, lg->hand_cursor);
+    else
+        gdk_window_set_cursor(widget->window, lg->arrow_cursor);
 
     gtk_widget_queue_draw (widget);
 
@@ -723,56 +766,40 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-
-    int ox = 5, oy = 5;
-    int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
-    sx += sx % 2 - 1;
-    sy += sy % 2 - 1;
-
     bool inside_handle = false;
 
-    // loop on all handles
-    for (int i = 0; i < lg->freqhandles; i++) {
+    int i = calf_line_graph_get_handle_at(lg, lg->mouse_x, lg->mouse_y);
+    if (i != -1)
+    {
         FreqHandle *handle = &lg->freq_handles[i];
-        if (!handle->is_active())
-            continue;
 
         if (handle->dimensions == 1) {
             // if user clicked inside a vertical band with width HANDLE_WIDTH handle is considered grabbed
-            if (lg->mouse_x <= ox + round(handle->value_x * sx + HANDLE_WIDTH / 2.0) + 0.5 &&
-                lg->mouse_x >= ox + round(handle->value_x * sx - HANDLE_WIDTH / 2.0) - 0.5 ) {
-                lg->handle_grabbed = i;
-                inside_handle = true;
+            lg->handle_grabbed = i;
+            inside_handle = true;
 
-                if (lg->enforce_handle_order) {
-                    // look for previous one dimensional handle to find left_bound
-                    for (int j = i - 1; j >= 0; j--) {
-                        FreqHandle *prevhandle = &lg->freq_handles[j];
-                        if(prevhandle->is_active() && prevhandle->dimensions == 1) {
-                            handle->left_bound = prevhandle->value_x + lg->min_handle_distance;
-                            break;
-                        }
+            if (lg->enforce_handle_order) {
+                // look for previous one dimensional handle to find left_bound
+                for (int j = i - 1; j >= 0; j--) {
+                    FreqHandle *prevhandle = &lg->freq_handles[j];
+                    if(prevhandle->is_active() && prevhandle->dimensions == 1) {
+                        handle->left_bound = prevhandle->value_x + lg->min_handle_distance;
+                        break;
                     }
+                }
 
-                    // look for next one dimensional handle to find right_bound
-                    for (int j = i + 1; j < lg->freqhandles; j++) {
-                        FreqHandle *nexthandle = &lg->freq_handles[j];
-                        if(nexthandle->is_active() && nexthandle->dimensions == 1) {
-                            handle->right_bound = nexthandle->value_x - lg->min_handle_distance;
-                            break;
-                        }
+                // look for next one dimensional handle to find right_bound
+                for (int j = i + 1; j < lg->freqhandles; j++) {
+                    FreqHandle *nexthandle = &lg->freq_handles[j];
+                    if(nexthandle->is_active() && nexthandle->dimensions == 1) {
+                        handle->right_bound = nexthandle->value_x - lg->min_handle_distance;
+                        break;
                     }
                 }
             }
         } else if (handle->dimensions == 2) {
-            double dx = lg->mouse_x - round(ox + handle->value_x * sx);
-            double dy = lg->mouse_y - round(oy + handle->value_y * sy);
-
-            // if mouse clicked inside circle of HANDLE_WIDTH
-            if (sqrt(dx * dx + dy * dy) <= HANDLE_WIDTH / 2.0) {
-                lg->handle_grabbed = i;
-                inside_handle = true;
-            }
+            lg->handle_grabbed = i;
+            inside_handle = true;
         }
     }
 
@@ -896,6 +923,7 @@ calf_line_graph_size_allocate (GtkWidget *widget,
     parent_class->size_allocate( widget, &a );
 }
 
+
 static void
 calf_line_graph_class_init (CalfLineGraphClass *klass)
 {
@@ -938,7 +966,7 @@ calf_line_graph_init (CalfLineGraph *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
     GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS | GTK_SENSITIVE | GTK_PARENT_SENSITIVE);
-    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
     self->cache_surface = NULL;
@@ -947,6 +975,8 @@ calf_line_graph_init (CalfLineGraph *self)
     self->last_generation = 0;
     self->mode = 0;
     self->spectrum = 0;
+    self->arrow_cursor = gdk_cursor_new(GDK_ARROW);
+    self->hand_cursor = gdk_cursor_new(GDK_FLEUR);
     gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 
     for(int i = 0; i < FREQ_HANDLES; i++) {

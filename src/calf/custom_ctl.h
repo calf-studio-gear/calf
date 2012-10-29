@@ -92,6 +92,10 @@ struct CalfLineGraph
     float min_handle_distance;
     int handle_grabbed;
     FreqHandle freq_handles[FREQ_HANDLES];  
+    /// Cached hand (drag) cursor
+    GdkCursor *hand_cursor;
+    /// Cached arrow (drag) cursor
+    GdkCursor *arrow_cursor;
 };
 
 struct CalfLineGraphClass
