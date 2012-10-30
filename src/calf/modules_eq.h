@@ -57,6 +57,7 @@ private:
     dsp::biquad_d2<float> hp[3][2], lp[3][2];
     dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
     dsp::biquad_d2<float> pL[PeakBands], pR[PeakBands];
+    int keep_gliding;
     
     inline void process_hplp(float &left, float &right);
 public:

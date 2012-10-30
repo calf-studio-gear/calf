@@ -41,6 +41,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     hp_freq_old = lp_freq_old = 0;
     hs_freq_old = ls_freq_old = 0;
     hs_level_old = ls_level_old = 0;
+    keep_gliding = 0;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -72,9 +73,21 @@ static inline void copy_lphp(biquad_d2<float> filters[3][2])
                 filters[i][j].copy_coeffs(filters[0][0]);
 }
 
+static inline double glide(double value, double target, int &keep_gliding)
+{
+    if (target == value)
+        return value;
+    keep_gliding = 1;
+    if (target > value)
+        return std::min(target, (value + 0.1) * 1.003);
+    else
+        return std::max(target, (value / 1.003) - 0.1);
+}
+
 template<class BaseClass, bool has_lphp>
 void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
 {
+    keep_gliding = 0;
     // set the params of all filters
     
     // lp/hp first (if available)
@@ -86,11 +99,13 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         float hpfreq = *params[AM::param_hp_freq], lpfreq = *params[AM::param_lp_freq];
         
         if(hpfreq != hp_freq_old) {
+            hpfreq = glide(hp_freq_old, hpfreq, keep_gliding);
             hp[0][0].set_hp_rbj(hpfreq, 0.707, (float)srate, 1.0);
             copy_lphp(hp);
             hp_freq_old = hpfreq;
         }
         if(lpfreq != lp_freq_old) {
+            lpfreq = glide(lp_freq_old, lpfreq, keep_gliding);
             lp[0][0].set_lp_rbj(lpfreq, 0.707, (float)srate, 1.0);
             copy_lphp(lp);
             lp_freq_old = lpfreq;
@@ -102,12 +117,14 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
     float lsfreq = *params[AM::param_ls_freq], lslevel = *params[AM::param_ls_level];
     
     if(lsfreq != ls_freq_old or lslevel != ls_level_old) {
+        lsfreq = glide(ls_freq_old, lsfreq, keep_gliding);
         lsL.set_lowshelf_rbj(lsfreq, 0.707, lslevel, (float)srate);
         lsR.copy_coeffs(lsL);
         ls_level_old = lslevel;
         ls_freq_old = lsfreq;
     }
     if(hsfreq != hs_freq_old or hslevel != hs_level_old) {
+        hsfreq = glide(hs_freq_old, hsfreq, keep_gliding);
         hsL.set_highshelf_rbj(hsfreq, 0.707, hslevel, (float)srate);
         hsR.copy_coeffs(hsL);
         hs_level_old = hslevel;
@@ -120,6 +137,7 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         float level = *params[AM::param_p1_level + offset];
         float q = *params[AM::param_p1_q + offset];
         if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
             pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
             pR[i].copy_coeffs(pL[i]);
             p_freq_old[i] = freq;
@@ -176,6 +194,20 @@ template<class BaseClass, bool has_lphp>
 uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypass = *params[AM::param_bypass] > 0.f;
+    if (keep_gliding && !bypass)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
     uint32_t orig_offset = offset;
     uint32_t orig_numsamples = numsamples;
     numsamples += offset;
