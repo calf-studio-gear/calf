@@ -262,7 +262,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
             
             if (handle->value_x > 0.0 && handle->value_x < 1.0) {
                 int val_x = round(handle->value_x * sx);
-                int val_y = (handle->dimensions == 2) ? round(handle->value_y * sy) : 0;
+                int val_y = (handle->dimensions >= 2) ? round(handle->value_y * sy) : 0;
                 float pat_alpha;
                 bool grad;
                 // choose colors between dragged and normal state
@@ -276,7 +276,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                     //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
                     cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.4);
                 }
-                if (handle->dimensions == 2) {
+                if (handle->dimensions >= 2) {
                     cairo_move_to(cache_cr, val_x + 11, val_y);
                 } else {
                     cairo_move_to(cache_cr, val_x + 11, oy + 15);
@@ -296,7 +296,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                     cairo_text_extents_t te;
 
                     cairo_text_extents(cache_cr, handle->label, &te);
-                    if (handle->dimensions == 2) {
+                    if (handle->dimensions >= 2) {
                         cairo_move_to(cache_cr, val_x - 3 - te.width, val_y);
                     } else {
                         cairo_move_to(cache_cr, val_x - 3 - te.width, oy + 15);
@@ -559,7 +559,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
             cairo_paint(cache_cr);
             
-	    calf_line_graph_draw_background_and_frame(cache_cr, ox, oy, sx, sy, pad);
+        calf_line_graph_draw_background_and_frame(cache_cr, ox, oy, sx, sy, pad);
             // draw grid
             cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
             cairo_set_font_size(cache_cr, 9);
@@ -694,7 +694,7 @@ calf_line_graph_get_handle_at(CalfLineGraph *lg, double x, double y)
                 lg->mouse_x >= ox + round(handle->value_x * sx - HANDLE_WIDTH / 2.0) - 0.5 ) {
                 return i;
             }
-        } else if (handle->dimensions == 2) {
+        } else if (handle->dimensions >= 2) {
             double dx = lg->mouse_x - round(ox + handle->value_x * sx);
             double dy = lg->mouse_y - round(oy + handle->value_y * sy);
 
@@ -732,7 +732,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         }
 
         // restrict y range by top and bottom
-        if (handle->dimensions == 2) {
+        if (handle->dimensions >= 2) {
             if(new_y_value < 0.0) new_y_value = 0.0;
             if(new_y_value > 1.0) new_y_value = 1.0;
         }
@@ -749,12 +749,17 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     {
         gdk_event_request_motions(event);
     }
-    
+
+    int handle_hovered = calf_line_graph_get_handle_at(lg, event->x, event->y);
+
     if (lg->handle_grabbed >= 0 || 
-        calf_line_graph_get_handle_at (lg, event->x, event->y) != -1)
+        handle_hovered != -1) {
         gdk_window_set_cursor(widget->window, lg->hand_cursor);
-    else
+        lg->handle_hovered = handle_hovered;
+    } else {
         gdk_window_set_cursor(widget->window, lg->arrow_cursor);
+        lg->handle_hovered = -1;
+    }
 
     gtk_widget_queue_draw (widget);
 
@@ -797,7 +802,7 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
                     }
                 }
             }
-        } else if (handle->dimensions == 2) {
+        } else if (handle->dimensions >= 2) {
             lg->handle_grabbed = i;
             inside_handle = true;
         }
@@ -831,6 +836,30 @@ calf_line_graph_button_release (GtkWidget *widget, GdkEventButton *event)
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
 
+    return TRUE;
+}
+
+static gboolean
+calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
+{
+    g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+
+    int i = calf_line_graph_get_handle_at(lg, lg->mouse_x, lg->mouse_y);
+    if (i != -1)
+    {
+        FreqHandle *handle = &lg->freq_handles[i];
+        if (handle->dimensions == 3) {
+            if (event->direction == GDK_SCROLL_UP) {
+                handle->value_z += 0.1;
+                g_signal_emit_by_name(widget, "freqhandle-changed", handle);
+            } else if (event->direction == GDK_SCROLL_DOWN) {
+                handle->value_z -= 0.1;
+                g_signal_emit_by_name(widget, "freqhandle-changed", handle);
+            }
+        }
+    }
+    event->direction;
     return TRUE;
 }
 
@@ -935,8 +964,10 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
     widget_class->button_press_event = calf_line_graph_button_press;
     widget_class->button_release_event = calf_line_graph_button_release;
     widget_class->motion_notify_event = calf_line_graph_pointer_motion;
+    widget_class->scroll_event = calf_line_graph_scroll;
     widget_class->enter_notify_event = calf_line_graph_enter;
     widget_class->leave_notify_event = calf_line_graph_leave;
+
     g_signal_new("freqhandle-changed",
          G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST,
          0, NULL, NULL,

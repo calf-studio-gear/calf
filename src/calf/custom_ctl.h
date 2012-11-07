@@ -49,10 +49,13 @@ struct FreqHandle
     int param_active_no;
     int param_x_no;
     int param_y_no;
+    int param_z_no;
     float value_x;
     float value_y;
+    float value_z;
     float default_value_x;
     float default_value_y;
+    float default_value_z;
 
     float left_bound;
     float right_bound;
@@ -91,6 +94,7 @@ struct CalfLineGraph
     bool enforce_handle_order;
     float min_handle_distance;
     int handle_grabbed;
+    int handle_hovered;
     FreqHandle freq_handles[FREQ_HANDLES];  
     /// Cached hand (drag) cursor
     GdkCursor *hand_cursor;
