@@ -852,9 +852,15 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
         if (handle->dimensions == 3) {
             if (event->direction == GDK_SCROLL_UP) {
                 handle->value_z += 0.05;
+                if(handle->value_z > 1.0) {
+                	handle->value_z = 1.0;
+                }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             } else if (event->direction == GDK_SCROLL_DOWN) {
                 handle->value_z -= 0.05;
+                if(handle->value_z < 0.0) {
+                	handle->value_z = 0.0;
+                }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             }
         }

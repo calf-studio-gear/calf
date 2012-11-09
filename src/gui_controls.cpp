@@ -1124,11 +1124,6 @@ void line_graph_param_control::get()
             if(handle->dimensions == 3) {
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(handle->param_z_no);
                 float value_z = handle_z_props.from_01(handle->value_z);
-                if (value_z > handle_z_props.max) {
-                    value_z = handle_z_props.max;
-                } else if (value_z < handle_z_props.min) {
-                    value_z = handle_z_props.min;
-                }
                 gui->set_param_value(handle->param_z_no, value_z, this);
             }
         }
