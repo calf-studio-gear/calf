@@ -56,6 +56,8 @@ public:
     session_manager_iface *session_manager;
     /// Save has been requested from SIGUSR1 handler
     volatile bool save_file_on_next_idle_call;
+    /// If non-zero, quit has been requested through signal with same value
+    volatile int quit_on_next_idle_call;
     /// File name of the current rack
     std::string current_filename;
     
@@ -80,11 +82,11 @@ public:
     void remove_all_plugins();
     std::string get_next_instance_name(const std::string &effect_name);
     
-    /// Set handler for SIGUSR1 that LADISH uses to invoke Save function
-    void set_ladish_handler();
+    /// Set handlers for SIGUSR1 (that LADISH uses to invoke Save function), SIGTERM and SIGHUP
+    void set_signal_handlers();
     
-    /// SIGUSR1 handler
-    static void sigusr1handler(int signum);
+    /// unix signal handler
+    static void signal_handler(int signum);
     
     /// Client name for window title bar
     std::string get_client_name() const;

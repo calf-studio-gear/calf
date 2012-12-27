@@ -43,6 +43,7 @@ host_session::host_session(session_environment_iface *se)
     session_manager = NULL;
     only_load_if_exists = false;
     save_file_on_next_idle_call = false;
+    quit_on_next_idle_call = 0;
 
     main_win = session_env->create_main_window();
     main_win->set_owner(this);
@@ -438,9 +439,18 @@ void host_session::save(session_save_iface *stream)
     }
 }
 
-void host_session::sigusr1handler(int signum)
+void host_session::signal_handler(int signum)
 {
-    instance->save_file_on_next_idle_call = true;
+    switch (signum)
+    {
+    case SIGUSR1:
+        instance->save_file_on_next_idle_call = true;
+        break;
+    case SIGTERM:
+    case SIGHUP:
+        instance->quit_on_next_idle_call = signum;
+        break;
+    }
 }
 
 void host_session::on_idle()
@@ -451,17 +461,26 @@ void host_session::on_idle()
         main_win->save_file();
         printf("LADISH Level 1 support: file '%s' saved\n", get_current_filename().c_str());
     }
+
+    if (quit_on_next_idle_call > 0)
+    {
+        printf("Quit requested through signal %d\n", quit_on_next_idle_call);
+        quit_on_next_idle_call = -quit_on_next_idle_call; // mark the event as handled but preserve signal number
+        session_env->quit_gui_loop();
+    }
 }
 
-void host_session::set_ladish_handler()
+void host_session::set_signal_handlers()
 {
     instance = this;
-    
+
     struct sigaction sa;
-    sa.sa_handler = sigusr1handler;
+    sa.sa_handler = signal_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGUSR1, &sa, NULL);    
+    sigaction(SIGTERM, &sa, NULL);
+    sigaction(SIGHUP,  &sa, NULL);
+    sigaction(SIGUSR1, &sa, NULL);
 }
 
 void host_session::reorder_plugins()

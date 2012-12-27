@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
         sess.open();
         sess.connect();
         sess.client.activate();
-        sess.set_ladish_handler();
+        sess.set_signal_handlers();
         sess.session_env->start_gui_loop();
         sess.close();
     }
