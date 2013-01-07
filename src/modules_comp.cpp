@@ -103,6 +103,15 @@ void multibandcompressor_audio_module::params_changed()
         case 1:
             j1 = 2;
             break;
+        case 2:
+            *params[param_sep0] = 0.0;
+            *params[param_sep1] = 0.0;
+            *params[param_sep2] = 0.0;
+            *params[param_q0] = 1.0 / 1.4142135;
+            *params[param_q1] = 1.0 / 1.4142135;
+            *params[param_q2] = 1.0 / 1.4142135;
+	    j1 = 1;
+            break;
     }
     // set the params of all filters
     if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0] or *params[param_mode] != mode_old) {
@@ -248,6 +257,9 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
                         case 1:
                             j1 = 2;
                             break;
+                        case 2:
+                            j1 = 1;
+                            break;
                     }
                     for (int j = 0; j <= j1; j++){
                         if(i + 1 < strips) {
@@ -287,6 +299,8 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
                     outL *= 0.88;
                     outR *= 0.88;
                     break;
+                case 2:
+		    break;
             }
 
             // out level
@@ -392,6 +406,9 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, float 
                 break;
             case 1:
                 j1 = 2;
+                break;
+            case 2:
+                j1 = 1;
                 break;
         }
         for(int j = 0; j <= j1; j ++) {

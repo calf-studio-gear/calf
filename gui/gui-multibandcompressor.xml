@@ -53,39 +53,24 @@
                 <hbox>
                     <table rows="3" cols="2" attach-x="4" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
                         <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <knob param="freq0" type="1" size="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <label param="freq0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         </hbox>
-                        <value param="sep0" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q0" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                        <value param="freq0" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                     </table>
                     <table rows="3" cols="2" attach-x="5" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
                         <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <knob param="freq1" type="1" size="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <label param="freq1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         </hbox>
-                        <value param="sep1" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q1" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                        <value param="freq1" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                     </table>
                     <table rows="3" cols="2" attach-x="6" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
                         <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <knob param="freq2" type="1" size="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
+                            <label param="freq2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
                         </hbox>
-                        <value param="sep2" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q2" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
+                        <value param="freq2" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
                     </table>
                 </hbox>
             </vbox>

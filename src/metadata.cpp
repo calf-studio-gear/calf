@@ -304,7 +304,7 @@ CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "Sidechaincompressor", "Calf S
 CALF_PORT_NAMES(multibandcompressor) = {"In L", "In R", "Out L", "Out R"};
 
 const char *multibandcompressor_detection_names[] = { "RMS", "Peak" };
-const char *multibandcompressor_filter_choices[] = { "12dB", "36dB"};
+const char *multibandcompressor_filter_choices[] = { "12dB", "36dB", "LR4" };
 
 CALF_PORT_PROPS(multibandcompressor) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -331,7 +331,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
     { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
 
-    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
+    { 2,      0,  2,    0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
 
     { 0.25,      0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold0", "Threshold 1" },
     { 2,           1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio0", "Ratio 1" },
