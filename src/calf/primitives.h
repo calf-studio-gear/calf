@@ -33,12 +33,12 @@ namespace dsp {
 
 /// Set a float to zero
 inline void zero(float &v) {
-    v = 0;
+    v = 0.f;
 };
 
 /// Set a double to zero
 inline void zero(double &v) {
-    v = 0;
+    v = 0.0;
 };
 
 /// Set 64-bit unsigned integer value to zero
@@ -415,12 +415,25 @@ inline void sanitize(float &value)
 }
 
 /**
+ * Works on little-endian machines only, but detects NaN better now!
+ */
+inline bool is_nan(float& value )
+{
+	if (((*(uint32_t *) &value) & 0x7fffffff) > 0x7f800000) {
+		printf("NaN detected.\n");
+		return true;
+	}
+	return false;
+}
+
+/**
  * Force already-denormal float value to zero
  */
 inline void sanitize_denormal(float& value)
 {
-    if (((*(unsigned int *) &value) & 0x7f800000) == 0) {
-        value = 0;
+// old test:   if (((*(unsigned int *) &value) & 0x7f800000) == 0) {
+    if (is_nan(value)) {
+	value = 0.f;
     }
 }
 	
@@ -430,7 +443,7 @@ inline void sanitize_denormal(float& value)
 inline void sanitize(double &value)
 {
     if (std::abs(value) < small_value<double>())
-        value = 0.f;
+        value = 0.0;
 }
 
 /**
