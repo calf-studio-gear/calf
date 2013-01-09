@@ -1012,13 +1012,13 @@ calf_line_graph_init (CalfLineGraph *self)
     self->last_generation = 0;
     self->mode = 0;
     self->spectrum = 0;
-    self->arrow_cursor = gdk_cursor_new(GDK_ARROW);
+    self->arrow_cursor = gdk_cursor_new(GDK_RIGHT_PTR);
     self->hand_cursor = gdk_cursor_new(GDK_FLEUR);
     gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 
     for(int i = 0; i < FREQ_HANDLES; i++) {
         FreqHandle *handle = &self->freq_handles[i];
-        handle->active = true;
+        handle->active = false;
         handle->param_active_no = -1;
         handle->param_x_no = -1;
         handle->param_y_no = -1;
