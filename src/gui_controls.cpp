@@ -1146,7 +1146,6 @@ void line_graph_param_control::set()
 
             float value_x = gui->plugin->get_param_value(handle->param_x_no);
             handle->value_x = to_x_pos(value_x);
-            printf("%2d", handle->dimensions);
             if(handle->dimensions >= 2) {
                 float value_y = gui->plugin->get_param_value(handle->param_y_no);
                 handle->value_y = to_y_pos(value_y);
