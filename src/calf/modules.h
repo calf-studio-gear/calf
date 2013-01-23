@@ -30,10 +30,48 @@
 #include "giface.h"
 #include "metadata.h"
 #include "loudness.h"
+#include "plugin_tools.h"
 
 namespace calf_plugins {
 
 struct ladspa_plugin_info;
+
+class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
+public:
+    typedef audio_module<phonoeq_metadata> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+    float p_level_old[1], p_freq_old[1], p_q_old[1];
+    mutable float old_params_for_graph[1];
+    dual_in_out_metering<phonoeq_metadata> meters;
+    dsp::riaacurve riaacurvL, riaacurvR;
+
+public:
+    typedef std::complex<double> cfloat;
+    uint32_t srate;
+    bool is_active;
+    mutable volatile int last_generation, last_calculated_generation;
+    phonoeq_audio_module();
+    void activate();
+    void deactivate();
+
+    void params_changed();
+    float freq_gain(int index, double freq, uint32_t sr) const;
+    void set_sample_rate(uint32_t sr)
+    {
+        srate = sr;
+        meters.set_sample_rate(sr);
+    }
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
 
 class reverb_audio_module: public audio_module<reverb_metadata>
 {

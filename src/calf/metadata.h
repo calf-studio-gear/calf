@@ -287,6 +287,15 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
     PLUGIN_NAME_ID_LABEL("multiband_limiter", "multibandlimiter", "Multiband Limiter")
 };
 
+/// Damien's RIAA PhonoEQ - metadata
+struct phonoeq_metadata: public plugin_metadata<phonoeq_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("phonoeq", "phonoeq", "RIAA PhonoEQ")
+};
+
 /// Markus's 5-band EQ - metadata
 struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
 {
@@ -304,6 +313,7 @@ struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
     enum { PeakBands = 3, first_graph_param = param_ls_active, last_graph_param = param_p3_q };
     PLUGIN_NAME_ID_LABEL("equalizer5band", "eq5", "Equalizer 5 Band")
 };
+
 /// Markus's 8-band EQ - metadata
 struct equalizer8band_metadata: public plugin_metadata<equalizer8band_metadata>
 {

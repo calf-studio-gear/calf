@@ -742,6 +742,17 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(phonoeq) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(phonoeq) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    {}
+};
+CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "RIAA PhonoEQ", "Calf RIAA PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(equalizer5band) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(equalizer5band) = {

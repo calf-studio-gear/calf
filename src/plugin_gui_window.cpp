@@ -99,7 +99,7 @@ void about_action(GtkAction *action, plugin_gui_window *gui_win)
         "Markus Schmidt <schmidt@boomshop.net>",
         "Christian Holschuh <chrisch.holli@gmx.de>",
         "Tom Szilagyi <tomszilagyi@gmail.com>",
-        "Damien Zammit <damien.zammit@gmail.com>",
+        "Damien Zammit <damien@zamaudio.com>",
         "David T\xC3\xA4ht <d@teklibre.com>",
         "Dave Robillard <dave@drobilla.net>",
         NULL

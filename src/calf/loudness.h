@@ -85,6 +85,63 @@ public:
     
 };
 
+class riaacurve {
+public:
+    biquad_d2<float> r1;
+    
+    /// Produce one output sample from one input sample
+    float process(float sample)
+    {
+        return r1.process(sample);
+    }
+    
+    /// Set sample rate (updates filter coefficients)
+    void set(float sr)
+    {
+        //float tau1 = 0.003180f;
+        //float tau2 = 0.000075f;
+        //float tau3 = 0.000318f;
+        float t1 = 50.f;
+        float t2 = 2122.f;
+        //float t3 = 500.f;
+
+        float f1 = biquad_coeffs<float>::unwarpf(t1, sr);
+        float f2 = biquad_coeffs<float>::unwarpf(t2, sr);
+        //float f3 = biquad_coeffs<float>::unwarpf(t3, sr);
+        
+        // then map s domain to z domain using bilinear transform
+        r1.set_bilinear(1, 0, 0, f2*f1, f2 + f1, 1);
+    
+        // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
+        // find actual gain
+        float gain1kHz = freq_gain(1000.0, sr);
+        // divide one filter's x[n-m] coefficients by that value
+        float gc = 1.0 / gain1kHz;
+        r1.a0 *= gc;
+        r1.a1 *= gc;
+        r1.a2 *= gc;
+    }
+    
+    /// Reset to zero if at risk of denormals
+    void sanitize()
+    {
+        r1.sanitize();
+    }
+    
+    /// Reset state to zero
+    void reset()
+    {
+        r1.reset();
+    }
+    
+    /// Gain and a given frequency
+    float freq_gain(float freq, float sr)
+    {
+        return r1.freq_gain(freq, sr);
+    }
+    
+};
+
 };
 
 #endif
