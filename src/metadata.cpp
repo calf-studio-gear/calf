@@ -744,12 +744,17 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
 
 CALF_PORT_NAMES(phonoeq) = {"In L", "In R", "Out L", "Out R"};
 
+const char *phonoeq_filter_modes[] = { "Reproduction", "Production"};
+const char *phonoeq_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA"};
+
 CALF_PORT_PROPS(phonoeq) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
+    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, phonoeq_filter_modes, "mode", "Filter Mode" },
+    { 3,      0,  3,    0, PF_ENUM | PF_CTL_COMBO, phonoeq_filter_types, "type", "Filter Type" },
     {}
 };
-CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "RIAA PhonoEQ", "Calf RIAA PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
+CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "PhonoEQ", "Calf PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

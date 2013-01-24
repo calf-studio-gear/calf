@@ -63,8 +63,10 @@ void phonoeq_audio_module::deactivate()
 
 void phonoeq_audio_module::params_changed()
 {
-    riaacurvL.set(srate);        
-    riaacurvR.set(srate);        
+    int mode = *params[param_mode];
+    int type = *params[param_type];
+    riaacurvL.set(srate, mode, type);        
+    riaacurvR.set(srate, mode, type);        
 }
 
 uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)

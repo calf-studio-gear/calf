@@ -291,9 +291,9 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
 struct phonoeq_metadata: public plugin_metadata<phonoeq_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
+    enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS, param_mode, param_type,
            param_count };
-    PLUGIN_NAME_ID_LABEL("phonoeq", "phonoeq", "RIAA PhonoEQ")
+    PLUGIN_NAME_ID_LABEL("phonoeq", "phonoeq", "PhonoEQ")
 };
 
 /// Markus's 5-band EQ - metadata

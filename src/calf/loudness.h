@@ -96,22 +96,70 @@ public:
     }
     
     /// Set sample rate (updates filter coefficients)
-    void set(float sr)
+    void set(float sr, int mode, int type)
     {
-        //float tau1 = 0.003180f;
-        //float tau2 = 0.000075f;
-        //float tau3 = 0.000318f;
-        float t1 = 50.f;
-        float t2 = 2122.f;
-        //float t3 = 500.f;
+        float i,j,k,l,g,a0,a1,a2,b1,b2;
+        switch(type) {
+            case 0: //"Columbia"
+                i = 100.f;
+		j = 500.f;
+		k = 1590.f;
+		l = 50048.f;
+                break;
+            case 1: //"EMI"
+                i = 70.f;
+                j = 500.f;
+                k = 2500.f;
+                l = 50048.f;
+                break;
+            case 2: //"BSI(78rpm)"
+                i = 50.f;
+                j = 353.f;
+                k = 3180.f;
+                l = 50048.f;
+                break;
+	    case 3: //"RIAA"
+	    default:
+                float tau1 = 0.003180f;
+                float tau2 = 0.000318f;
+                float tau3 = 0.000075f;
+	        float tau4 = 0.00000318f;
+                i = 1.f / (2.f * M_PI * tau1);
+                j = 1.f / (2.f * M_PI * tau2);
+                k = 1.f / (2.f * M_PI * tau3);
+                l = 1.f / (2.f * M_PI * tau4);
+	        break;
+        }
 
-        float f1 = biquad_coeffs<float>::unwarpf(t1, sr);
-        float f2 = biquad_coeffs<float>::unwarpf(t2, sr);
-        //float f3 = biquad_coeffs<float>::unwarpf(t3, sr);
-        
-        // then map s domain to z domain using bilinear transform
-        r1.set_bilinear(1, 0, 0, f2*f1, f2 + f1, 1);
-    
+	i *= 2.f * M_PI;
+	j *= 2.f * M_PI;
+	k *= 2.f * M_PI;
+	l *= 2.f * M_PI;
+
+        float t = 1.f / sr;
+
+        if (mode == 0) { //Reproduction
+            g = 1.f / (4.f+2.f*i*t+2.f*k*t+i*k*t*t);
+            a0 = (4.f+2.f*j*t+2.f*l*t+j*l*t*t)*g;
+            a1 = (-8.f+2.f*j*l*t*t)*g;
+            a2 = (4.f-2.f*j*t-2.f*l*t+j*l*t*t)*g;
+            b1 = (-8.f+2.f*i*k*t*t)*g;
+            b2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
+        } else {
+            g = 1.f / (4.f+2.f*j*t+2.f*l*t+j*l*t*t);
+            a0 = (4.f+2.f*i*t+2.f*k*t+i*k*t*t)*g;
+            a1 = (-8.f+2.f*i*k*t*t)*g;
+            a2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
+            b1 = (-8.f+2.f*j*l*t*t)*g;
+            b2 = (4.f-2.f*j*t-2.f*l*t+j*l*t*t)*g;
+        }
+
+	r1.sanitize();
+
+
+        //swap a1 b1, a2 b2
+        r1.set_bilinear_direct(a0, a1, a2, b1, b2);
+
         // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
         // find actual gain
         float gain1kHz = freq_gain(1000.0, sr);
@@ -120,6 +168,7 @@ public:
         r1.a0 *= gc;
         r1.a1 *= gc;
         r1.a2 *= gc;
+        r1.sanitize();
     }
     
     /// Reset to zero if at risk of denormals
