@@ -145,6 +145,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     else if (type == PF_ENUM)
     {
         ss << ind << "lv2:portProperty lv2:integer ;\n";
+        ss << ind << "lv2:portProperty lv2:enumeration ;\n";
         for (int i = (int)pp.min; i <= (int)pp.max; i++)
             ss << ind << "lv2:scalePoint [ rdfs:label \"" << pp.choices[i - (int)pp.min] << "\"; rdf:value " << i <<" ] ;\n";
     }
