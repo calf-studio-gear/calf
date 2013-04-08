@@ -1,0 +1,62 @@
+<hbox spacing="10">
+
+    <vbox spacing="20" expand="0" fill="0">
+        <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="7" spacing="7" >
+            <label param="bypass" expand="0" fill="0" />
+            <align><toggle param="bypass" shrink="1" size="2"/></align>
+        </vbox>
+        <vbox attach-x="0" attach-y="1" expand="0" fill="0" pad-y="20" pad-x="7">
+            <label param="level_in" expand="0" fill="0" expand-y="0" fill-y="0" />
+            <knob param="level_in" size="5" expand="1" fill="1" />
+            <value param="level_in" />
+        </vbox>
+    </vbox>
+
+    <vbox spacing="5">
+        <frame label="Compressor">
+            <vbox spacing="5">
+                <table expand="0" fill="0" rows="2" cols="3">
+                    <label param="meter_in" expand-x="0" fill-x="0" attach-x="0" attach-y="0" />
+                    <vumeter param="meter_in" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" expand-x="1" fill-x="1" />
+                    <led param="clip_in" mode="0" expand-x="0" fill-x="0" attach-x="2" attach-y="0" />
+                    
+                    <label param="compression" expand-x="0" fill-x="0" attach-x="0" attach-y="2" />
+                    <vumeter param="compression" mode="2" position="2" hold="1.5" expand-x="1" fill-x="1" attach-x="1" attach-y="2" attach-w="2" />
+                </table>
+                
+                <table expand="1" rows="2" cols="3" homogeneous="1">
+                    <vbox expand="0" attach-x="0" attach-y="0">
+                        <label param="attack" />
+                        <knob param="attack" />
+                        <value param="attack" />
+                    </vbox>
+                    <vbox expand="0" attach-x="1" attach-y="0">
+                        <label param="release" />
+                        <knob param="release" />
+                        <value param="release" />
+                    </vbox>
+                    <vbox expand="0" attach-x="2" attach-y="0">
+                        <label param="knee" />
+                        <knob param="knee" />
+                        <value param="knee" />
+                    </vbox>
+                    <vbox expand="0" attach-x="0" attach-y="1">
+                        <label param="ratio" />
+                        <knob param="ratio" />
+                        <value param="ratio" />
+                    </vbox>
+                    <vbox expand="0" attach-x="1" attach-y="1">
+                        <label param="threshold" />
+                        <knob param="threshold"/>
+                        <value param="threshold" />
+                    </vbox>
+                    <vbox expand="0" attach-x="2" attach-y="1">
+                        <label param="makeup" />
+                        <knob param="makeup" />
+                        <value param="makeup" />
+                    </vbox>
+                </table>
+            </vbox>
+        </frame>
+    </vbox>
+</hbox>

@@ -10,6 +10,7 @@
     PER_MODULE_ITEM(phaser, false, "phaser")
     PER_MODULE_ITEM(multichorus, false, "multichorus")
     PER_MODULE_ITEM(compressor, false, "compressor")
+    PER_MODULE_ITEM(monocompressor, false, "monocompressor")
     PER_MODULE_ITEM(sidechaincompressor, false, "sidechaincompressor")
     PER_MODULE_ITEM(multibandcompressor, false, "multibandcompressor")
     PER_MODULE_ITEM(deesser, false, "deesser")

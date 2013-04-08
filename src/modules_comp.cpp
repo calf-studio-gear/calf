@@ -28,6 +28,132 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
+/// Compressor by DZ
+///
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+monocompressor_audio_module::monocompressor_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    last_generation = 0;
+    meters.reset();
+}
+
+void monocompressor_audio_module::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    monocompressor.activate();
+    params_changed();
+    meters.reset();
+}
+void monocompressor_audio_module::deactivate()
+{
+    is_active = false;
+    monocompressor.deactivate();
+}
+
+void monocompressor_audio_module::params_changed()
+{
+    monocompressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f);
+}
+
+void monocompressor_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    monocompressor.set_sample_rate(srate);
+    meters.set_sample_rate(srate);
+}
+
+uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    uint32_t orig_offset = offset;
+    uint32_t orig_numsamples = numsamples;
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            //outs[1][offset] = 0.f;
+            ++offset;
+        }
+        // displays, too
+        meters.bypassed(params, orig_numsamples);
+    } else {
+        // process
+
+        monocompressor.update_curve();
+
+        while(offset < numsamples) {
+            // cycle through samples
+            float outL = 0.f;
+            //float outR = 0.f;
+            float inL = ins[0][offset];
+            //float inR = ins[1][offset];
+            // in level
+            //inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+
+            float leftAC = inL;
+            //float rightAC = inR;
+
+            monocompressor.process(leftAC);
+
+            outL = leftAC;
+            //outR = rightAC;
+
+            // send to output
+            outs[0][offset] = outL;
+            //outs[1][offset] = 0.f;
+
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        meters.process(params, ins, outs, orig_offset, orig_numsamples);
+    }
+    // draw strip meter
+    if(bypass > 0.5f) {
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = 1.0f;
+        }
+    } else {
+        if(params[param_compression] != NULL) {
+            *params[param_compression] = monocompressor.get_comp_level();
+        }
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+bool monocompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active)
+        return false;
+    return monocompressor.get_graph(subindex, data, points, context, mode);
+}
+
+bool monocompressor_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active)
+        return false;
+    return monocompressor.get_dot(subindex, x, y, size, context);
+}
+
+bool monocompressor_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active)
+        return false;
+    return monocompressor.get_gridline(subindex, pos, vertical, legend, context);
+}
+
+int monocompressor_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    if (!is_active)
+        return false;
+    return monocompressor.get_changed_offsets(generation, subindex_graph, subindex_dot, subindex_gridline);
+}
+
 /// Multiband Compressor by Markus Schmidt
 ///
 /// This module splits the signal in four different bands
@@ -2470,6 +2596,263 @@ bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &v
 }
 
 int gain_reduction_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    subindex_graph = 0;
+    subindex_dot = 0;
+    subindex_gridline = generation ? INT_MAX : 0;
+
+    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f)
+    {
+        old_threshold = threshold;
+        old_ratio     = ratio;
+        old_knee      = knee;
+        old_makeup    = makeup;
+        old_detection = detection;
+        old_bypass    = bypass;
+        old_mute      = mute;
+        last_generation++;
+    }
+
+    if (generation == last_generation)
+        subindex_graph = 2;
+    return last_generation;
+}
+
+/// Gain reduction module by DZ
+////////////////////////////////////////////////////////////////////////////////
+gain_reduction2_audio_module::gain_reduction2_audio_module()
+{
+    is_active       = false;
+    srate           = 0;
+    last_generation = 0;
+    old_threshold   = 0.f;
+    old_ratio       = 0.f;
+    old_knee        = 0.f;
+    old_makeup      = 0.f;
+    old_detection   = 0.f;
+    old_bypass      = 0.f;
+    old_mute        = 0.f;
+    linSlope        = 0.f;
+    attack          = 0.f;
+    release         = 0.f;
+    detection       = -1;
+    stereo_link     = -1;
+    threshold       = -1;
+    ratio           = -1;
+    knee            = -1;
+    makeup          = -1;
+    bypass          = -1;
+    mute            = -1;
+    old_y1          = 0.f;
+    old_yl          = 0.f;
+}
+
+void gain_reduction2_audio_module::activate()
+{
+    is_active = true;
+    linSlope   = 0.f;
+    meter_out  = 0.f;
+    meter_comp = 1.f;
+    float l, r;
+    l = r = 0.f;
+    float byp = bypass;
+    bypass = 0.0;
+    process(l);
+    bypass = byp;
+}
+
+void gain_reduction2_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void gain_reduction2_audio_module::update_curve()
+{
+/*
+    float linThreshold = threshold;
+    float linKneeSqrt = sqrt(knee);
+    linKneeStart = linThreshold / linKneeSqrt;
+    adjKneeStart = linKneeStart*linKneeStart;
+    float linKneeStop = linThreshold * linKneeSqrt;
+    thres = log(linThreshold);
+    kneeStart = log(linKneeStart);
+    kneeStop = log(linKneeStop);
+    compressedKneeStop = (kneeStop - thres) / ratio + thres;
+*/
+}
+
+void gain_reduction2_audio_module::process(float &left)
+{
+    if(bypass < 0.5f) {
+        float width=knee-0.99f;
+        float cdb=0.f;
+        float attack_coeff = exp(-1000.f/(attack * srate));
+        float release_coeff = exp(-1000.f/(release * srate));
+        float thresdb=20.f*log10(threshold);
+
+        float gain = 1.f;
+        float xg, xl, yg, yl, y1;
+        yg=0.f;
+        xg = 20.f*log10(fabs(left));
+        dsp::sanitize_denormal(xg);
+
+        if (2.f*(xg-thresdb)<-width) {
+            yg = xg;
+        }
+        if (2.f*fabs(xg-thresdb)<=width) {
+            yg = xg + (1.f/ratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+        }
+        if (2.f*(xg-thresdb)>width) {
+            yg = thresdb + (xg-thresdb)/ratio;
+        }
+        dsp::sanitize_denormal(yg);
+            
+        xl = xg - yg;
+        dsp::sanitize_denormal(old_y1);
+        dsp::sanitize_denormal(old_yl);
+            
+        y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
+        yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+        dsp::sanitize_denormal(y1);
+        dsp::sanitize_denormal(yl);
+        
+        cdb = -yl;
+        gain = exp(cdb/20.f*log(10.f));
+
+	left *= gain * makeup;
+//	printf("%f\n",knee);
+	meter_out = fabs(left);
+        meter_comp = gain;
+	detected = 0.f;
+        old_yl = yl;
+        old_y1 = y1;
+    }
+}
+
+float gain_reduction2_audio_module::output_level(float inputt) const {
+    return (output_gain(inputt) * makeup);
+}
+
+float gain_reduction2_audio_module::output_gain(float inputt) const {
+        float width=knee-0.99f;
+        float attack_coeff = exp(-1000.f/(attack * srate));
+        float release_coeff = exp(-1000.f/(release * srate));
+        float thresdb=20.f*log10(threshold);
+
+        float gain = 1.f;
+        float xg, xl, yg, yl, y1;
+        yg=0.f;
+        xg = 20.f*log10(fabs(inputt));
+	dsp::sanitize_denormal(xg);
+
+        if (2.f*(xg-thresdb)<-width) {
+            yg = xg;
+        }
+        if (2.f*fabs(xg-thresdb)<=width) {
+            yg = xg + (1.f/ratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+        }
+        if (2.f*(xg-thresdb)>width) {
+            yg = thresdb + (xg-thresdb)/ratio;
+        }
+
+	return (yg);
+}
+
+void gain_reduction2_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+void gain_reduction2_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float det, float stl, float byp, float mu)
+{
+    // set all params
+    attack          = att;
+    release         = rel;
+    threshold       = thr;
+    ratio           = rat;
+    knee            = kn;
+    makeup          = mak;
+    detection       = det;
+    stereo_link     = stl;
+    bypass          = byp;
+    mute            = mu;
+    if(mute > 0.f) {
+        meter_out  = 0.f;
+        meter_comp = 1.f;
+    }
+}
+float gain_reduction2_audio_module::get_output_level() {
+    // returns output level (max(left, right))
+    return meter_out;
+}
+float gain_reduction2_audio_module::get_comp_level() {
+    // returns amount of compression
+    return meter_comp;
+}
+
+bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active)
+        return false;
+    if (subindex > 1) // 1
+        return false;
+    for (int i = 0; i < points; i++)
+    {
+        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
+        if (subindex == 0)
+            data[i] = dB_grid(input);
+        else {
+            float output = output_level(input);
+            data[i] = dB_grid(output);
+        }
+    }
+    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+    else {
+        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_line_width(1.5);
+    }
+    return true;
+}
+
+bool gain_reduction2_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active)
+        return false;
+    if (!subindex)
+    {
+        if(bypass > 0.5f or mute > 0.f) {
+            return false;
+        } else {
+            bool rms = (detection == 0);
+            float det = rms ? sqrt(detected) : detected;
+            x = 0.5 + 0.5 * dB_grid(det);
+            y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+            return true;
+        }
+    }
+    return false;
+}
+
+bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    bool tmp;
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}
+
+int gain_reduction2_audio_module::get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     subindex_dot = 0;

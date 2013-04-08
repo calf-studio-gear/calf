@@ -164,6 +164,17 @@ struct compressor_metadata: public plugin_metadata<compressor_metadata>
     PLUGIN_NAME_ID_LABEL("compressor", "compressor", "Compressor")
 };
 
+/// Damien's compressor - metadata
+/// Added some meters and stripped the weighting part
+struct monocompressor_metadata: public plugin_metadata<monocompressor_metadata>
+{
+    enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
+           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("monocompressor", "monocompressor", "MonoCompressor")
+};
+
 /// Markus's sidechain compressor - metadata
 struct sidechaincompressor_metadata: public plugin_metadata<sidechaincompressor_metadata>
 {

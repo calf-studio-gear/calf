@@ -65,6 +65,37 @@ public:
     int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
+
+class gain_reduction2_audio_module
+{
+private:
+    float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
+    float compressedKneeStop, adjKneeStart, thres;
+    float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
+    mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    mutable volatile int last_generation;
+    mutable float old_y1,old_yl;
+    uint32_t srate;
+    bool is_active;
+    inline float output_level(float inputt) const;
+    inline float output_gain(float inputt) const;
+public:
+    gain_reduction2_audio_module();
+    void set_params(float att, float rel, float thr, float rat, float kn, float mak, float det, float stl, float byp, float mu);
+    void update_curve();
+    void process(float &left);
+    void activate();
+    void deactivate();
+    int id;
+    void set_sample_rate(uint32_t sr);
+    float get_output_level();
+    float get_comp_level();
+    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
 /// Not a true _audio_module style class, just pretends to be one!
 /// Main gate routine by Damien called by various audio modules
 class expander_audio_module {
@@ -107,6 +138,29 @@ public:
     bool is_active;
     mutable volatile int last_generation, last_calculated_generation;
     compressor_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+/// monoCompressor by DZ
+class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
+private:
+    typedef monocompressor_audio_module AM;
+    stereo_in_out_metering<monocompressor_metadata> meters;
+    gain_reduction2_audio_module monocompressor;
+public:
+    typedef std::complex<double> cfloat;
+    uint32_t srate;
+    bool is_active;
+    mutable volatile int last_generation, last_calculated_generation;
+    monocompressor_audio_module();
     void activate();
     void deactivate();
     void params_changed();
