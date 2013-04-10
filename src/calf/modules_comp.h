@@ -74,7 +74,7 @@ private:
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
     mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
     mutable volatile int last_generation;
-    mutable float old_y1,old_yl;
+    float old_y1,old_yl,old_detected;
     uint32_t srate;
     bool is_active;
     inline float output_level(float inputt) const;
@@ -153,7 +153,7 @@ public:
 class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
 private:
     typedef monocompressor_audio_module AM;
-    stereo_in_out_metering<monocompressor_metadata> meters;
+    mono_in_out_metering<monocompressor_metadata> meters;
     gain_reduction2_audio_module monocompressor;
 public:
     typedef std::complex<double> cfloat;

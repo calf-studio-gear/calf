@@ -4085,4 +4085,72 @@
   <param name="bass_cut" value="257.65" />
   <param name="treble_cut" value="20000" />
 </preset>
+<preset bank="0" program="1" plugin="monocompressor" name="Vocal Leveller">
+  <param name="bypass" value="0" />
+  <param name="level_in" value="1" />
+  <param name="meter_in" value="0.847831" />
+  <param name="meter_out" value="0.90861" />
+  <param name="clip_in" value="0" />
+  <param name="clip_out" value="1" />
+  <param name="threshold" value="0.0883884" />
+  <param name="ratio" value="4.25008" />
+  <param name="attack" value="3.10087" />
+  <param name="release" value="25.0012" />
+  <param name="makeup" value="4.85678" />
+  <param name="knee" value="8" />
+  <param name="detection" value="0" />
+  <param name="stereo_link" value="0" />
+  <param name="compression" value="0.176127" />
+</preset>
+<preset bank="0" program="2" plugin="monocompressor" name="Vocal Leveller 2">
+  <param name="bypass" value="0" />
+  <param name="level_in" value="1" />
+  <param name="meter_in" value="0.533457" />
+  <param name="meter_out" value="0.740246" />
+  <param name="clip_in" value="0" />
+  <param name="clip_out" value="1" />
+  <param name="threshold" value="0.0883884" />
+  <param name="ratio" value="4.25008" />
+  <param name="attack" value="10.5096" />
+  <param name="release" value="106.852" />
+  <param name="makeup" value="4.85678" />
+  <param name="knee" value="8" />
+  <param name="detection" value="0" />
+  <param name="stereo_link" value="0" />
+  <param name="compression" value="0.247422" />
+</preset>
+<preset bank="0" program="3" plugin="monocompressor" name="Snare Mic">
+  <param name="bypass" value="0" />
+  <param name="level_in" value="1.05702" />
+  <param name="meter_in" value="0" />
+  <param name="meter_out" value="0" />
+  <param name="clip_in" value="0" />
+  <param name="clip_out" value="0" />
+  <param name="threshold" value="0.164939" />
+  <param name="ratio" value="3.00697" />
+  <param name="attack" value="3.50344" />
+  <param name="release" value="21.8599" />
+  <param name="makeup" value="2.94854" />
+  <param name="knee" value="1" />
+  <param name="detection" value="0" />
+  <param name="stereo_link" value="0" />
+  <param name="compression" value="1" />
+</preset>
+<preset bank="0" program="0" plugin="monocompressor" name="Snare Mic 2">
+  <param name="bypass" value="0" />
+  <param name="level_in" value="1.05702" />
+  <param name="meter_in" value="0" />
+  <param name="meter_out" value="0" />
+  <param name="clip_in" value="0" />
+  <param name="clip_out" value="0" />
+  <param name="threshold" value="0.164939" />
+  <param name="ratio" value="3.00697" />
+  <param name="attack" value="10.5096" />
+  <param name="release" value="80.6973" />
+  <param name="makeup" value="2.94854" />
+  <param name="knee" value="1" />
+  <param name="detection" value="0" />
+  <param name="stereo_link" value="0" />
+  <param name="compression" value="1" />
+</preset>
 </presets>

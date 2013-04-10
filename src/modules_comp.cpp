@@ -2645,6 +2645,7 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
     mute            = -1;
     old_y1          = 0.f;
     old_yl          = 0.f;
+    old_detected    = 0.f;
 }
 
 void gain_reduction2_audio_module::activate()
@@ -2653,6 +2654,8 @@ void gain_reduction2_audio_module::activate()
     linSlope   = 0.f;
     meter_out  = 0.f;
     meter_comp = 1.f;
+    old_y1     = 0.f;
+    old_yl     = 0.f;
     float l, r;
     l = r = 0.f;
     float byp = bypass;
@@ -2668,23 +2671,13 @@ void gain_reduction2_audio_module::deactivate()
 
 void gain_reduction2_audio_module::update_curve()
 {
-/*
-    float linThreshold = threshold;
-    float linKneeSqrt = sqrt(knee);
-    linKneeStart = linThreshold / linKneeSqrt;
-    adjKneeStart = linKneeStart*linKneeStart;
-    float linKneeStop = linThreshold * linKneeSqrt;
-    thres = log(linThreshold);
-    kneeStart = log(linKneeStart);
-    kneeStop = log(linKneeStop);
-    compressedKneeStop = (kneeStop - thres) / ratio + thres;
-*/
+
 }
 
 void gain_reduction2_audio_module::process(float &left)
 {
     if(bypass < 0.5f) {
-        float width=knee-0.99f;
+        float width=(knee-0.99f)*8.f;
         float cdb=0.f;
         float attack_coeff = exp(-1000.f/(attack * srate));
         float release_coeff = exp(-1000.f/(release * srate));
@@ -2693,7 +2686,7 @@ void gain_reduction2_audio_module::process(float &left)
         float gain = 1.f;
         float xg, xl, yg, yl, y1;
         yg=0.f;
-        xg = 20.f*log10(fabs(left));
+        xg = (left==0.f) ? -160.f : 20.f*log10(fabs(left));
         dsp::sanitize_denormal(xg);
 
         if (2.f*(xg-thresdb)<-width) {
@@ -2710,6 +2703,7 @@ void gain_reduction2_audio_module::process(float &left)
         xl = xg - yg;
         dsp::sanitize_denormal(old_y1);
         dsp::sanitize_denormal(old_yl);
+        dsp::sanitize_denormal(old_detected);
             
         y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
         yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
@@ -2720,10 +2714,11 @@ void gain_reduction2_audio_module::process(float &left)
         gain = exp(cdb/20.f*log(10.f));
 
 	left *= gain * makeup;
-//	printf("%f\n",knee);
-	meter_out = fabs(left);
+	meter_out = (fabs(left));
         meter_comp = gain;
-	detected = 0.f;
+	detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
+	old_detected = detected;
+
         old_yl = yl;
         old_y1 = y1;
     }
@@ -2734,15 +2729,12 @@ float gain_reduction2_audio_module::output_level(float inputt) const {
 }
 
 float gain_reduction2_audio_module::output_gain(float inputt) const {
-        float width=knee-0.99f;
-        float attack_coeff = exp(-1000.f/(attack * srate));
-        float release_coeff = exp(-1000.f/(release * srate));
+        float width=(knee-0.99f)*8.f;
         float thresdb=20.f*log10(threshold);
 
-        float gain = 1.f;
-        float xg, xl, yg, yl, y1;
+        float xg, yg;
         yg=0.f;
-        xg = 20.f*log10(fabs(inputt));
+	xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
 	dsp::sanitize_denormal(xg);
 
         if (2.f*(xg-thresdb)<-width) {
@@ -2754,8 +2746,8 @@ float gain_reduction2_audio_module::output_gain(float inputt) const {
         if (2.f*(xg-thresdb)>width) {
             yg = thresdb + (xg-thresdb)/ratio;
         }
-
-	return (yg);
+	
+	return(exp(yg/20.f*log(10.f)));
 }
 
 void gain_reduction2_audio_module::set_sample_rate(uint32_t sr)
