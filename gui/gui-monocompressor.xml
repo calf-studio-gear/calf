@@ -10,6 +10,12 @@
             <knob param="level_in" size="5" expand="1" fill="1" />
             <value param="level_in" />
         </vbox>
+
+        <vbox >
+            <if cond="directlink">
+                <line-graph refresh="1" width="150" height="150" param="compression" square="1" expand="1" fill="1"/>
+            </if>
+        </vbox>
     </vbox>
 
     <vbox spacing="5">
@@ -63,13 +69,5 @@
             </vbox>
         </frame>
     </vbox>
-    
-    
-      <frame label="Compression">
-        <vbox >
-            <if cond="directlink">
-                <line-graph refresh="1" width="340" height="340" param="compression" square="1" expand="1" fill="1"/>
-            </if>
-        </vbox>
-      </frame>
+
 </hbox>

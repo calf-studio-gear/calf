@@ -238,13 +238,13 @@ CALF_PORT_PROPS(monocompressor) = {
     { 250,    0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     { 2,      1, 64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
     { 2.828427125,      1,  8,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
-    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_detection_names, "detection", "Detection" },
-    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_stereo_link_names, "stereo_link", "Stereo Link" },
+    //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_detection_names, "detection", "Detection" },
+    //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Reduction" },
     {}
 };
 
-CALF_PLUGIN_INFO(monocompressor) = { 0x8577, " MonoCompressor", "Calf MonoCompressor", "Damien Zammit", calf_plugins::calf_copyright_info, "MonoCompressorPlugin" };
+CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf MonoCompressor", "Damien Zammit", calf_plugins::calf_copyright_info, "MonoCompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

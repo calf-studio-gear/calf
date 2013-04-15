@@ -56,7 +56,7 @@ void monocompressor_audio_module::deactivate()
 
 void monocompressor_audio_module::params_changed()
 {
-    monocompressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f);
+    monocompressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_bypass], 0.f);
 }
 
 void monocompressor_audio_module::set_sample_rate(uint32_t sr)
@@ -2754,7 +2754,7 @@ void gain_reduction2_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
 }
-void gain_reduction2_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float det, float stl, float byp, float mu)
+void gain_reduction2_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu)
 {
     // set all params
     attack          = att;
@@ -2763,8 +2763,6 @@ void gain_reduction2_audio_module::set_params(float att, float rel, float thr, f
     ratio           = rat;
     knee            = kn;
     makeup          = mak;
-    detection       = det;
-    stereo_link     = stl;
     bypass          = byp;
     mute            = mu;
     if(mute > 0.f) {

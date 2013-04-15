@@ -81,7 +81,7 @@ private:
     inline float output_gain(float inputt) const;
 public:
     gain_reduction2_audio_module();
-    void set_params(float att, float rel, float thr, float rat, float kn, float mak, float det, float stl, float byp, float mu);
+    void set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu);
     void update_curve();
     void process(float &left);
     void activate();
