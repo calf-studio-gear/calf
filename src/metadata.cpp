@@ -707,10 +707,6 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" }, \
     { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
     { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
-
-#define EQ_MODE_PARAMS \
-    { 0,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, equalizer_mode_names, "mode", "Mode" },
-    
     
 #define METERING_PARAMS \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inL", "Meter-InL" }, \
@@ -723,36 +719,35 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "0dB-OutR" },
 
 #define LPHP_PARAMS \
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "hp_active", "HP Active" }, \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "hp_active", "HP Active" }, \
     { 30,          10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hp_freq", "HP Freq" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, rolloff_mode_names, "hp_mode", "HP Mode" }, \
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lp_active", "LP Active" }, \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "lp_active", "LP Active" }, \
     { 18000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lp_freq", "LP Freq" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, rolloff_mode_names, "lp_mode", "LP Mode" }, \
 
 #define SHELF_PARAMS \
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "ls_active", "LS Active" }, \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "ls_active", "LS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "ls_level", "Level L" }, \
     { 200,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "ls_freq", "Freq L" }, \
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "hs_active", "HS Active" }, \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "hs_active", "HS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "hs_level", "Level H" }, \
     { 4000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hs_freq", "Freq H" },
 
 #define EQ_BAND_PARAMS(band, frequency) \
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "p" #band "_active", "F" #band " Active" }, \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "p" #band "_active", "F" #band " Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "p" #band "_level", "Level " #band }, \
     { frequency,   10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "p" #band "_freq", "Freq " #band }, \
     { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *equalizer_mode_names[] = { "Stereo", "M-S Mid", "M-S Side" };
+const char *active_mode_names[] = { "OFF", "Stereo", "M-S Mid", "M-S Side" };
 
 CALF_PORT_NAMES(equalizer5band) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(equalizer5band) = {
     BYPASS_AND_LEVEL_PARAMS
-    EQ_MODE_PARAMS
     METERING_PARAMS
     SHELF_PARAMS
     EQ_BAND_PARAMS(1, 250)
@@ -771,7 +766,6 @@ const char *rolloff_mode_names[] = {"12dB/oct", "24dB/oct", "36dB/oct"};
 
 CALF_PORT_PROPS(equalizer8band) = {
     BYPASS_AND_LEVEL_PARAMS
-    EQ_MODE_PARAMS
     METERING_PARAMS
     LPHP_PARAMS
     SHELF_PARAMS
@@ -790,7 +784,6 @@ CALF_PORT_NAMES(equalizer12band) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(equalizer12band) = {
     BYPASS_AND_LEVEL_PARAMS
-    EQ_MODE_PARAMS
     METERING_PARAMS
     LPHP_PARAMS
     SHELF_PARAMS

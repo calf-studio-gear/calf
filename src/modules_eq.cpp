@@ -157,21 +157,21 @@ inline void equalizerNband_audio_module<BaseClass, has_lphp>::process_hplp(float
         switch(lp_mode)
         {
             case MODE12DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_lp_active] < 3)
                     left = lp[0][0].process(left);
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_lp_active] == 3 or *params[AM::param_lp_active] == 1)
                     right = lp[0][1].process(right);
                 break;
             case MODE24DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_lp_active] < 3)
                     left = lp[1][0].process(lp[0][0].process(left));
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_lp_active] == 3 or *params[AM::param_lp_active] == 1)
                     right = lp[1][1].process(lp[0][1].process(right));
                 break;
             case MODE36DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_lp_active] < 3)
                     left = lp[2][0].process(lp[1][0].process(lp[0][0].process(left)));
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_lp_active] == 3 or *params[AM::param_lp_active] == 1)
                     right = lp[2][1].process(lp[1][1].process(lp[0][1].process(right)));
                 break;
         }
@@ -181,21 +181,21 @@ inline void equalizerNband_audio_module<BaseClass, has_lphp>::process_hplp(float
         switch(hp_mode)
         {
             case MODE12DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_hp_active] < 3)
                     left = hp[0][0].process(left);
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_hp_active] == 3 or *params[AM::param_hp_active] == 1)
                     right = hp[0][1].process(right);
                 break;
             case MODE24DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_hp_active] < 3)
                     left = hp[1][0].process(hp[0][0].process(left));
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_hp_active] == 3 or *params[AM::param_hp_active] == 1)
                     right = hp[1][1].process(hp[0][1].process(right));
                 break;
             case MODE36DB:
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_hp_active] < 3)
                     left = hp[2][0].process(hp[1][0].process(hp[0][0].process(left)));
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_hp_active] == 3 or *params[AM::param_hp_active] == 1)
                     right = hp[2][1].process(hp[1][1].process(hp[0][1].process(right)));
                 break;
         }
@@ -250,23 +250,27 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             // all filters in chain
             process_hplp(procL, procR);
             if(*params[AM::param_ls_active] > 0.f) {
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_ls_active] < 3)
                     procL = lsL.process(procL);
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_ls_active] == 3
+                or *params[AM::param_ls_active] == 1)
                     procR = lsR.process(procR);
             }
             if(*params[AM::param_hs_active] > 0.f) {
-                if (*params[AM::param_mode] < 2)
+                if (*params[AM::param_hs_active] < 3)
                     procL = hsL.process(procL);
-                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                if (*params[AM::param_hs_active] == 3
+                or *params[AM::param_hs_active] == 1)
                     procR = hsR.process(procR);
             }
             for (int i = 0; i < AM::PeakBands; i++)
             {
-                if(*params[AM::param_p1_active + i * params_per_band] > 0.f) {
-                    if (*params[AM::param_mode] < 2)
+                int offset = i * params_per_band;
+                if(*params[AM::param_p1_active + offset] > 0.f) {
+                    if (*params[AM::param_p1_active + offset] < 3)
                         procL = pL[i].process(procL);
-                    if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    if (*params[AM::AM::param_p1_active + offset] == 3
+                    or *params[AM::AM::param_p1_active + offset] == 1)
                         procR = pR[i].process(procR);
                 }
             }
