@@ -157,16 +157,22 @@ inline void equalizerNband_audio_module<BaseClass, has_lphp>::process_hplp(float
         switch(lp_mode)
         {
             case MODE12DB:
-                left = lp[0][0].process(left);
-                right = lp[0][1].process(right);
+                if (*params[AM::param_mode] < 2)
+                    left = lp[0][0].process(left);
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = lp[0][1].process(right);
                 break;
             case MODE24DB:
-                left = lp[1][0].process(lp[0][0].process(left));
-                right = lp[1][1].process(lp[0][1].process(right));
+                if (*params[AM::param_mode] < 2)
+                    left = lp[1][0].process(lp[0][0].process(left));
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = lp[1][1].process(lp[0][1].process(right));
                 break;
             case MODE36DB:
-                left = lp[2][0].process(lp[1][0].process(lp[0][0].process(left)));
-                right = lp[2][1].process(lp[1][1].process(lp[0][1].process(right)));
+                if (*params[AM::param_mode] < 2)
+                    left = lp[2][0].process(lp[1][0].process(lp[0][0].process(left)));
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = lp[2][1].process(lp[1][1].process(lp[0][1].process(right)));
                 break;
         }
     }
@@ -175,16 +181,22 @@ inline void equalizerNband_audio_module<BaseClass, has_lphp>::process_hplp(float
         switch(hp_mode)
         {
             case MODE12DB:
-                left = hp[0][0].process(left);
-                right = hp[0][1].process(right);
+                if (*params[AM::param_mode] < 2)
+                    left = hp[0][0].process(left);
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = hp[0][1].process(right);
                 break;
             case MODE24DB:
-                left = hp[1][0].process(hp[0][0].process(left));
-                right = hp[1][1].process(hp[0][1].process(right));
+                if (*params[AM::param_mode] < 2)
+                    left = hp[1][0].process(hp[0][0].process(left));
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = hp[1][1].process(hp[0][1].process(right));
                 break;
             case MODE36DB:
-                left = hp[2][0].process(hp[1][0].process(hp[0][0].process(left)));
-                right = hp[2][1].process(hp[1][1].process(hp[0][1].process(right)));
+                if (*params[AM::param_mode] < 2)
+                    left = hp[2][0].process(hp[1][0].process(hp[0][0].process(left)));
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    right = hp[2][1].process(hp[1][1].process(hp[0][1].process(right)));
                 break;
         }
     }
@@ -232,24 +244,30 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             inR *= *params[AM::param_level_in];
             inL *= *params[AM::param_level_in];
             
-            float procL = inL;
-            float procR = inR;
+            float procL = (inL + inR) / 2;
+            float procR = (inL - inR);
             
             // all filters in chain
             process_hplp(procL, procR);
             if(*params[AM::param_ls_active] > 0.f) {
-                procL = lsL.process(procL);
-                procR = lsR.process(procR);
+                if (*params[AM::param_mode] < 2)
+                    procL = lsL.process(procL);
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    procR = lsR.process(procR);
             }
             if(*params[AM::param_hs_active] > 0.f) {
-                procL = hsL.process(procL);
-                procR = hsR.process(procR);
+                if (*params[AM::param_mode] < 2)
+                    procL = hsL.process(procL);
+                if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                    procR = hsR.process(procR);
             }
             for (int i = 0; i < AM::PeakBands; i++)
             {
                 if(*params[AM::param_p1_active + i * params_per_band] > 0.f) {
-                    procL = pL[i].process(procL);
-                    procR = pR[i].process(procR);
+                    if (*params[AM::param_mode] < 2)
+                        procL = pL[i].process(procL);
+                    if (*params[AM::param_mode] == 2 or *params[AM::param_mode] == 0)
+                        procR = pR[i].process(procR);
                 }
             }
             
@@ -257,8 +275,8 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             outR = procR * *params[AM::param_level_out];
             
             // send to output
-            outs[0][offset] = outL;
-            outs[1][offset] = outR;
+            outs[0][offset] = outL + outR / 2;
+            outs[1][offset] = outL - outR / 2;
                         
             // next sample
             ++offset;

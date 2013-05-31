@@ -58,7 +58,7 @@ private:
     dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
     dsp::biquad_d2<float> pL[PeakBands], pR[PeakBands];
     int keep_gliding;
-    
+    bool mode;
     inline void process_hplp(float &left, float &right);
 public:
     typedef std::complex<double> cfloat;

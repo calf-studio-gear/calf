@@ -13,12 +13,13 @@
                 </table>
                 <hbox>
                     <vbox>
-                        <label />
+                        <label fill="1" expand="1" />
                         <toggle param="bypass" size="2" />
-                        <label param="bypass" />
+                        <label param="bypass" fill="0" expand="0" />
+                        <label fill="1" expand="1" />
                     </vbox>
                     <vbox>
-                        <knob param="level_in" size="3" />
+                        <knob param="level_in" size="5" />
                         <value param="level_in" />
                     </vbox>
                 </hbox>
@@ -36,7 +37,7 @@
                     <value param="hp_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1" attach-w="2">
-                    <label param="hp_mode" text="Rolloff"/>
+                    <label param="hp_mode" text="Rolloff" align-x="0.15"/>
                     <combo param="hp_mode" />
                 </vbox>
             </table>
@@ -223,25 +224,31 @@
                 </table>
                 <hbox>
                     <vbox>
-                        <knob param="level_out" size="3" />
+                        <knob param="level_out" size="5" />
                         <value param="level_out" />
+                    </vbox>
+                    <vbox expand="1" fill="1">
+                        <label fill="1" expand="1" />
+                        <combo param="mode" expand="0" fill="0"/>
+                        <label text="Mode" fill="0" expand="0" />
+                        <label fill="1" expand="1" />
                     </vbox>
                 </hbox>
             </vbox>
         </frame>
         <frame label="Lowpass">
             <table cols="2" rows="2">
-                <vbox attach-x="0" attach-y="0" fill-y="0">
+                <vbox attach-x="1" attach-y="0" fill-y="0">
                     <label param="lp_active" text="Active"/>
                     <toggle size="1" param="lp_active" />
                 </vbox>
-                <vbox attach-x="1" attach-y="0">
+                <vbox attach-x="0" attach-y="0">
                     <label param="lp_freq" text="Frequency"/>
                     <knob param="lp_freq" />
                     <value param="lp_freq" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1" attach-w="2">
-                    <label param="lp_mode" text="Rolloff"/>
+                    <label param="lp_mode" text="Rolloff" align-x="0.85"/>
                     <combo param="lp_mode" />
                 </vbox>
             </table>
