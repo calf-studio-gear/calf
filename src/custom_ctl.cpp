@@ -267,11 +267,11 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                 bool grad;
                 // choose colors between dragged and normal state
                 if (lg->handle_grabbed == i) {
-                    pat_alpha = 0.4;
+                    pat_alpha = 0.3;
                     grad = false;
                     cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.7);
                 } else {
-                    pat_alpha = 0.2;
+                    pat_alpha = 0.15;
                     grad = true;
                     //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
                     cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
