@@ -269,8 +269,8 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
                 if(*params[AM::param_p1_active + offset] > 0.f) {
                     if (*params[AM::param_p1_active + offset] < 3)
                         procL = pL[i].process(procL);
-                    if (*params[AM::AM::param_p1_active + offset] == 3
-                    or *params[AM::AM::param_p1_active + offset] == 1)
+                    if (*params[AM::param_p1_active + offset] == 3
+                    or *params[AM::param_p1_active + offset] == 1)
                         procR = pR[i].process(procR);
                 }
             }

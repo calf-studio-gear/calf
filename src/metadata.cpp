@@ -742,7 +742,7 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char *active_mode_names[] = { "OFF", "Stereo", "M-S Mid", "M-S Side" };
+const char *active_mode_names[] = { "OFF", "Stereo", "Mid", "Side" };
 
 CALF_PORT_NAMES(equalizer5band) = {"In L", "In R", "Out L", "Out R"};
 

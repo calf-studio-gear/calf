@@ -42,7 +42,7 @@
                 </vbox>
                 <vbox attach-x="1" attach-y="1" fill-y="0">
                     <label param="ls_active" text="Active"/>
-                    <toggle size="1" param="ls_active" />
+                    <combo size="1" param="ls_active" />
                 </vbox>
             </table>
         </frame>
@@ -57,6 +57,10 @@
     <hbox attach-x="1" attach-y="1" spacing="8" pad-x="8">
         <frame label="Parametric 1">
             <table rows="2" cols="2" homogeneous="1">
+                <vbox attach-x="1" attach-y="1" fill-y="0">
+                    <label param="p1_active" text="Active" />
+                    <combo size="1" param="p1_active" />
+                </vbox>
                 <vbox attach-x="0" attach-y="0">
                     <label param="p1_freq" text="Frequency" />
                     <knob param="p1_freq" />
@@ -72,14 +76,14 @@
                     <knob param="p1_q" />
                     <value param="p1_q" />
                 </vbox>
-                <vbox attach-x="1" attach-y="1" fill-y="0">
-                    <label param="p1_active" text="Active" />
-                    <toggle size="1" param="p1_active" />
-                </vbox>
             </table>
         </frame>
         <frame label="Parametric 2">
             <table rows="2" cols="2" homogeneous="1">
+                <vbox attach-x="1" attach-y="1" fill-y="0">
+                    <label param="p2_active" text="Active" />
+                    <combo size="1" param="p2_active" />
+                </vbox>
                 <vbox attach-x="0" attach-y="0">
                     <label param="p2_freq" text="Frequency" />
                     <knob param="p2_freq" />
@@ -95,14 +99,14 @@
                     <knob param="p2_q" />
                     <value param="p2_q" />
                 </vbox>
-                <vbox attach-x="1" attach-y="1" fill-y="0">
-                    <label param="p2_active" text="Active" />
-                    <toggle size="1" param="p2_active" />
-                </vbox>
             </table>
         </frame>
         <frame label="Parametric 3">
             <table rows="2" cols="2" homogeneous="1">
+                <vbox attach-x="1" attach-y="1" fill-y="0">
+                    <label param="p3_active" text="Active" />
+                    <combo size="1" param="p3_active" />
+                </vbox>
                 <vbox attach-x="0" attach-y="0">
                     <label param="p3_freq" text="Frequency" />
                     <knob param="p3_freq" />
@@ -117,10 +121,6 @@
                     <label param="p3_q" text="Q" />
                     <knob param="p3_q" />
                     <value param="p3_q" />
-                </vbox>
-                <vbox attach-x="1" attach-y="1" fill-y="0">
-                    <label param="p3_active" text="Active" />
-                    <toggle size="1" param="p3_active" />
                 </vbox>
             </table>
         </frame>
@@ -144,10 +144,7 @@
                         <value param="level_out" />
                     </vbox>
                     <vbox expand="1" fill="1">
-                        <label fill="1" expand="1" />
-                        <combo param="mode" expand="0" fill="0"/>
-                        <label text="Mode" fill="0" expand="0" />
-                        <label fill="1" expand="1" />
+                        <label fill="1" expand="1" text="      " />
                     </vbox>
                 </hbox>
             </vbox>
@@ -167,9 +164,9 @@
                     <knob param="hs_level" type="1" />
                     <value param="hs_level" />
                 </vbox>
-                <vbox attach-x="1" attach-y="1" fill-y="0">
+                <vbox attach-x="0" attach-y="1" fill-y="0">
                     <label param="hs_active" text="Active"/>
-                    <toggle size="1" param="hs_active" />
+                    <combo size="1" param="hs_active" />
                 </vbox>
             </table>
         </frame>
