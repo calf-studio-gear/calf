@@ -614,7 +614,7 @@ void gtk_main_window::on_closed()
 
 static inline float LVL(float value)
 {
-    return sqrt(value) * 0.75;
+    return value; //sqrt(value) * 0.75;
 }
 
 gboolean gtk_main_window::on_idle(void *data)

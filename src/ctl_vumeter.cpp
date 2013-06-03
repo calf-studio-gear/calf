@@ -228,7 +228,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     // limit to 1.f
     float value_orig = std::max(std::min(vu->value, 1.f), 0.f);
     float value = 0.f;
-    
+
     // falloff?
     if(vu->vumeter_falloff > 0.f and vu->mode != VU_MONOCHROME_REVERSE) {
         // fall off a bit
@@ -249,6 +249,10 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         value = value_orig;
         vu->falling = false;
     }
+    
+    float draw = 0.f;
+    float draw_last = 0.f;
+    
     if(vu->vumeter_hold > 0.0) {
         // peak hold timer
         if(time - (long)(vu->vumeter_hold * 1000 * 1000) > vu->last_hold) {
@@ -265,15 +269,17 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
+            float draw = log10(1 + value * 9);
+            float draw_last = log10(1 + vu->last_value * 9);
             
             // blinder left -> hold LED
-            int hold_x = round((vu->last_value) * (led_w + led_m)); // add last led_m removed earlier
+            int hold_x = round((draw_last) * (led_w + led_m)); // add last led_m removed earlier
             hold_x -= hold_x % led_s + led_m;
             hold_x = std::max(0, hold_x);
             cairo_rectangle( c, led_x, led_y, hold_x, led_h);
             
             // blinder hold LED -> value
-            int val_x = round((1 - value) * (led_w + led_m)); // add last led_m removed earlier
+            int val_x = round((1 - draw) * (led_w + led_m)); // add last led_m removed earlier
             val_x -= val_x % led_s;
             int blind_x = std::min(hold_x + led_s, led_w);
             int blind_w = std::min(std::max(led_w - val_x - hold_x - led_s, 0), led_w);
@@ -285,7 +291,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
-            int val_x = round((1 - value) / 2.f * (led_w + led_m)); // add last led_m removed earlier
+            float draw = log10(1 + value * 9);
+            int val_x = round((1 - draw) / 2.f * (led_w + led_m)); // add last led_m removed earlier
             cairo_rectangle(c, led_x, led_y, val_x, led_h);
             cairo_rectangle(c, led_x + led_w - val_x, led_y, val_x, led_h);
             
@@ -296,10 +303,12 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
+            float draw = log10(1 + value * 9);
+            float draw_last = log10(1 + vu->last_value * 9);
             
-            int hold_x = round((1 - vu->last_value) * (led_w + led_m)); // add last led_m removed earlier
+            int hold_x = round((1 - draw_last) * (led_w + led_m)); // add last led_m removed earlier
             hold_x -= hold_x % led_s;
-            int val_x = round(value * (led_w + led_m)); // add last led_m removed earlier
+            int val_x = round(draw * (led_w + led_m)); // add last led_m removed earlier
             val_x -= val_x % led_s;
             int blind_w = led_w - hold_x - led_s - val_x;
             blind_w = std::min(std::max(blind_w, 0), led_w);
@@ -308,14 +317,15 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         }
     } else {
         // darken normally
+        float draw = log10(1 + value * 9);
         if( vu->mode == VU_MONOCHROME_REVERSE )
-            cairo_rectangle( c, led_x, led_y, value * led_w, led_h);
+            cairo_rectangle( c, led_x, led_y, draw * led_w, led_h);
         else if( vu->mode == VU_STANDARD_CENTER ) {
-            int val_x = round((1 - value) / 2.f * (led_w + led_m)); // add last led_m removed earlier
+            int val_x = round((1 - draw) / 2.f * (led_w + led_m)); // add last led_m removed earlier
             cairo_rectangle(c, led_x, led_y, val_x, led_h);
             cairo_rectangle(c, led_x + led_w - val_x, led_y, val_x, led_h);
         } else
-            cairo_rectangle( c, led_x + value * led_w, led_y, led_w * (1 - value), led_h);
+            cairo_rectangle( c, led_x + draw * led_w, led_y, led_w * (1 - draw), led_h);
     }
     cairo_fill( c );
     
