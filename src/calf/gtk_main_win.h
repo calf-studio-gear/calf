@@ -35,7 +35,8 @@ namespace calf_plugins {
             gtk_main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *strip_table, *name, *button, *midi_in, *audio_in[2], *audio_out[2], *extra, *leftBox, *rightBox;
+            GtkWidget *strip_table, *name, *button, *midi_in, *extra, *leftBox, *rightBox;
+            std::vector<GtkWidget *> audio_in, audio_out;
         };
         
         struct add_plugin_params

@@ -338,32 +338,26 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     strip->midi_in = label;
     
 
-    for (int i = 0; i < 2; i++)
-        strip->audio_in[i] = strip->audio_out[i] = NULL;
+    strip->audio_in.clear();
+    strip->audio_out.clear();
         
-    if (metadata->get_input_count() == 2) {
+    if (metadata->get_input_count() >= 1) {
         
         GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
         
         gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("audio in"),TRUE, TRUE, 0);
         
-        label = calf_vumeter_new();
-        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
-        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-        calf_vumeter_set_width(CALF_VUMETER(label), 120);
-        calf_vumeter_set_height(CALF_VUMETER(label), 12);
-        calf_vumeter_set_position(CALF_VUMETER(label), 2);
-        gtk_box_pack_start(GTK_BOX(inBox), label,FALSE, FALSE, 0);
-        strip->audio_in[0] = label;
-        
-        label = calf_vumeter_new();
-        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
-        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-        calf_vumeter_set_width(CALF_VUMETER(label), 120);
-        calf_vumeter_set_height(CALF_VUMETER(label), 12);
-        calf_vumeter_set_position(CALF_VUMETER(label), 2);
-        gtk_box_pack_start(GTK_BOX(inBox), label,FALSE, FALSE, 0);
-        strip->audio_in[1] = label;
+        for (int i = 0; i < metadata->get_input_count(); i++)
+        {
+            label = calf_vumeter_new();
+            calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+            calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+            calf_vumeter_set_width(CALF_VUMETER(label), 120);
+            calf_vumeter_set_height(CALF_VUMETER(label), 12);
+            calf_vumeter_set_position(CALF_VUMETER(label), 2);
+            gtk_box_pack_start(GTK_BOX(inBox), label,FALSE, FALSE, 0);
+            strip->audio_in.push_back(label);
+        }
         
         gtk_widget_show_all(inBox);
         gtk_table_attach(GTK_TABLE(strip->strip_table), inBox, 3, 4, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
@@ -371,29 +365,23 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         gtk_widget_set_size_request(GTK_WIDGET(inBox), 160, -1);
     }
 
-    if (metadata->get_output_count() == 2) {
+    if (metadata->get_output_count() >= 1) {
         
         GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
         
         gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("audio out"),TRUE, TRUE, 0);
         
-        label = calf_vumeter_new();
-        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
-        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-        calf_vumeter_set_width(CALF_VUMETER(label), 120);
-        calf_vumeter_set_height(CALF_VUMETER(label), 12);
-        calf_vumeter_set_position(CALF_VUMETER(label), 2);
-        gtk_box_pack_start(GTK_BOX(outBox), label,FALSE, FALSE, 0);
-        strip->audio_out[0] = label;
-        
-        label = calf_vumeter_new();
-        calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
-        calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-        calf_vumeter_set_width(CALF_VUMETER(label), 120);
-        calf_vumeter_set_height(CALF_VUMETER(label), 12);
-        calf_vumeter_set_position(CALF_VUMETER(label), 2);
-        gtk_box_pack_start(GTK_BOX(outBox), label,FALSE, FALSE, 0);
-        strip->audio_out[1] = label;
+        for (int i = 0; i < metadata->get_output_count(); i++)
+        {
+            label = calf_vumeter_new();
+            calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
+            calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
+            calf_vumeter_set_width(CALF_VUMETER(label), 120);
+            calf_vumeter_set_height(CALF_VUMETER(label), 12);
+            calf_vumeter_set_position(CALF_VUMETER(label), 2);
+            gtk_box_pack_start(GTK_BOX(outBox), label,FALSE, FALSE, 0);
+            strip->audio_out.push_back(label);
+        }
         
         gtk_widget_show_all(outBox);
         gtk_table_attach(GTK_TABLE(strip->strip_table), outBox, 4, 5, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
@@ -628,13 +616,11 @@ gboolean gtk_main_window::on_idle(void *data)
             plugin_ctl_iface *plugin = i->first;
             plugin_strip *strip = i->second;
             int idx = 0;
-            if (plugin->get_metadata_iface()->get_input_count() == 2) {
-                calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[0]), LVL(plugin->get_level(idx++)));
-                calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[1]), LVL(plugin->get_level(idx++)));
+            for (int i = 0; i < (int)strip->audio_in.size(); i++) {
+                calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[i]), LVL(plugin->get_level(idx++)));
             }
-            if (plugin->get_metadata_iface()->get_output_count() == 2) {
-                calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[0]), LVL(plugin->get_level(idx++)));
-                calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[1]), LVL(plugin->get_level(idx++)));
+            for (int i = 0; i < (int)strip->audio_out.size(); i++) {
+                calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[i]), LVL(plugin->get_level(idx++)));
             }
             if (plugin->get_metadata_iface()->get_midi()) {
                 calf_led_set_value (CALF_LED (strip->midi_in), plugin->get_level(idx++));
