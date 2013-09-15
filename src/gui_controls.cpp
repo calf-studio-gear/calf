@@ -496,8 +496,8 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 void vumeter_param_control::set()
 {
     _GUARD_CHANGE_
-    const parameter_properties &props = get_props();
-    calf_vumeter_set_value (CALF_VUMETER (widget), props.to_01(gui->plugin->get_param_value(param_no)));
+    // const parameter_properties &props = get_props();
+    calf_vumeter_set_value (CALF_VUMETER (widget), gui->plugin->get_param_value(param_no));
     if (label)
         update_label();
 }

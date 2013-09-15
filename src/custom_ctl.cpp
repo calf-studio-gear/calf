@@ -267,14 +267,14 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                 bool grad;
                 // choose colors between dragged and normal state
                 if (lg->handle_grabbed == i) {
-                    pat_alpha = 0.6;
+                    pat_alpha = 0.3;
                     grad = false;
                     cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.7);
                 } else {
-                    pat_alpha = 0.3;
+                    pat_alpha = 0.15;
                     grad = true;
                     //cairo_set_source_rgb(cache_cr, 0.44, 0.5, 0.21);
-                    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.4);
+                    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
                 }
                 if (handle->dimensions >= 2) {
                     cairo_move_to(cache_cr, val_x + 11, val_y);
@@ -359,8 +359,9 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* cache_cr, int 
                     cairo_fill(cache_cr);
                     cairo_pattern_destroy(pat);
                 } else {
+                    int mask = 30 - log10(1 + handle->value_z * 9) * 30 + 7;
                     // (CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, int ox, int oy, int sx, int sy)
-                    calf_line_graph_draw_crosshairs(lg, cache_cr, grad, -1, pat_alpha, 7, true, val_x, val_y, ox, oy, sx, sy);
+                    calf_line_graph_draw_crosshairs(lg, cache_cr, grad, -1, pat_alpha, mask, true, val_x, val_y, ox, oy, sx, sy);
                     
                 }
             }

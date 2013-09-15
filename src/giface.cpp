@@ -144,7 +144,7 @@ std::string parameter_properties::to_string(float value) const
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return "-inf dB"; // XXXKF change to utf-8 infinity
-        sprintf(buf, "%0.1f dB", 6.0 * log(value) / log(2));
+        sprintf(buf, "%0.1f dB", dsp::amp2dB(value));
         return string(buf);
     }
     switch(flags & PF_TYPEMASK)

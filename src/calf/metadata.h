@@ -298,7 +298,8 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
 struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
            param_ls_active, param_ls_level, param_ls_freq,
            param_hs_active, param_hs_level, param_hs_freq,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,

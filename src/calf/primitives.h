@@ -532,9 +532,13 @@ inline float hermite_interpolation(float x, float x0, float x1, float p0, float 
 /// convert amplitude value to dB
 inline float amp2dB(float amp)
 {
-    return 6.0 * log(amp) / log(2);
+    return 20 * log10(amp);
+}
+/// convert dB to amplitude value
+inline float dB2amp(float db)
+{
+    return exp((db / 20.0) * log(10.0));
 }
 
 };
-
 #endif

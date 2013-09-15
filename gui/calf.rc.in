@@ -432,7 +432,7 @@ style "calf-toggle"
 {
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
-	GtkButton      ::inner-border         = { 8, 33, 2, 2}
+	GtkButton::inner-border         = { 6, 31, 1, 1}
 	
     xthickness = 2
     ythickness = 1
@@ -647,7 +647,7 @@ style "calf-combobox"
 	GtkButton      ::child-displacement-x = 0
 	GtkButton      ::child-displacement-y = 0
 #	GtkButton      ::default-border       = { 6, 24, 5, 5 }
-	GtkButton      ::inner-border         = { 8, 30, 1, 1}
+	GtkButton::inner-border         = { 6, 25, 1, 1}
 	
     xthickness = 2
     ythickness = 1
