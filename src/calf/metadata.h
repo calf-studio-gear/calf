@@ -78,6 +78,13 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
     PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
 };
 
+struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
+{
+    enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_count };
+    enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
+    PLUGIN_NAME_ID_LABEL("comp_delay", "compdelay", "Compensation Delay Line")
+};
+
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
 {
 public:

@@ -340,6 +340,90 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+comp_delay_audio_module::comp_delay_audio_module()
+{
+    buffer      = NULL;
+    buf_size    = 0;
+    delay       = 0;
+    write_ptr   = 0;
+}
+
+comp_delay_audio_module::~comp_delay_audio_module()
+{
+    if (buffer != NULL)
+        delete [] buffer;
+}
+
+void comp_delay_audio_module::params_changed()
+{
+    delay = (uint32_t)
+        (
+            (
+                (*params[par_distance_m] * 100.0) +
+                (*params[par_distance_cm] * 1.0) +
+                (*params[par_distance_mm] * 0.1)
+            ) * COMP_DELAY_SOUND_FRONT_DELAY * srate
+        );
+}
+
+void comp_delay_audio_module::activate()
+{
+    write_ptr   = 0;
+}
+
+void comp_delay_audio_module::deactivate()
+{
+}
+
+void comp_delay_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    float *old_buf = buffer;
+
+    uint32_t min_buf_size = (uint32_t)(srate * COMP_DELAY_MAX_DELAY);
+    uint32_t new_buf_size = 1;
+    while (new_buf_size < min_buf_size)
+        new_buf_size <<= 1;
+
+    float *new_buf = new float[new_buf_size];
+    for (size_t i=0; i<new_buf_size; i++)
+        new_buf[i] = 0.0f;
+
+    // Assign new pointer and size
+    buffer         = new_buf;
+    buf_size       = new_buf_size;
+
+    // Delete old buffer
+    if (old_buf != NULL)
+        delete [] old_buf;
+}
+
+uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    uint32_t b_mask = buf_size-1;
+    uint32_t end    = offset + numsamples;
+    uint32_t w_ptr  = write_ptr;
+    uint32_t r_ptr  = (write_ptr + buf_size - delay) & b_mask; // Unsigned math, that's why we add buf_size
+    float dry       = *params[par_dry];
+    float wet       = *params[par_wet];
+
+    for (uint32_t i=offset; i<end; i++)
+    {
+        float sample = ins[0][i];
+        buffer[w_ptr] = sample;
+
+        outs[0][i] = dry * sample + wet * buffer[r_ptr];
+
+        w_ptr = (w_ptr + 1) & b_mask;
+        r_ptr = (r_ptr + 1) & b_mask;
+    }
+    write_ptr = w_ptr;
+
+    return outputs_mask;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)

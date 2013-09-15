@@ -24,6 +24,7 @@ $(document).ready(function () {
                 ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.png"],
                 ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
                 ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
+                ["(Compensation Delay Line)", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.png"],
             ]
         ],
         [

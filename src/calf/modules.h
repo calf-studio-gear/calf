@@ -84,6 +84,34 @@ public:
     long _tap_last;
 };
 
+// The maximum distance for knobs
+#define COMP_DELAY_MAX_DISTANCE         (10.0 * 100.0 + 100.0 * 1.0 + 1.0)
+// The actual speed of sound in normal conditions
+#define COMP_DELAY_SOUND_SPEED_KM_H     1191.6 /* km/h */
+#define COMP_DELAY_SOUND_SPEED_CM_S     (COMP_DELAY_SOUND_SPEED_KM_H * (1000.0 * 100.0) /* cm/km */ / (60.0 * 60.0) /* s/h */)
+#define COMP_DELAY_SOUND_FRONT_DELAY    (1.0 / COMP_DELAY_SOUND_SPEED_CM_S)
+// The maximum delay may be reached by this plugin
+#define COMP_DELAY_MAX_DELAY            (COMP_DELAY_MAX_DISTANCE*COMP_DELAY_SOUND_FRONT_DELAY)
+
+class comp_delay_audio_module: public audio_module<comp_delay_metadata>
+{
+public:
+    float *buffer;
+    uint32_t srate;
+    uint32_t buf_size; // guaranteed to be power of 2
+    uint32_t delay;
+    uint32_t write_ptr;
+
+    comp_delay_audio_module();
+    virtual ~comp_delay_audio_module();
+
+    void params_changed();
+    void activate();
+    void deactivate();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 template<typename FilterClass, typename Metadata>
 class filter_module_with_inertia: public audio_module<Metadata>, public FilterClass
 {
@@ -260,7 +288,7 @@ class mono_audio_module:
     float * buffer;
     unsigned int pos;
     unsigned int buffer_size;
-    float sign(float x) {
+    static inline float sign(float x) {
         if(x < 0) return -1.f;
         if(x > 0) return 1.f;
         return 0.f;
@@ -289,7 +317,7 @@ class stereo_audio_module:
     float * buffer;
     unsigned int pos;
     unsigned int buffer_size;
-    float sign(float x) {
+    static inline float sign(float x) {
         if(x < 0) return -1.f;
         if(x > 0) return 1.f;
         return 0.f;

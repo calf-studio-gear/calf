@@ -31,6 +31,7 @@
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
     PER_MODULE_ITEM(wavetable, true, "wavetable")
+    PER_MODULE_ITEM(comp_delay, true, "compdelay")
 #endif
 #undef PER_MODULE_ITEM
 #endif
