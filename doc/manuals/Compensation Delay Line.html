@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Compensation Delay Line</h1>
+            <a href="images/Calf - Compensation Delay Line.png" title="Calf - Compensation Delay Line" class="thickbox"><img class="thumbnail" src="images/Calf - Compensation Delay Line.png" /></a>
+            <h2>Functionality</h2>
+            <p>This is simple but very useful plugin for audio track synchronizing.</p>
+            <p>
+            	For example, you have recorded guitar with two microphones placed in different location.
+                Because the front of sound wave has fixed speed in normal conditions, the phasing of microphones
+                can vary and depends on their location and interposition. The best sound mix you will get when these microphones
+                are in phase (synchronized). Note that distance of ~30 cm between microphones makes one microphone
+                to capture signal in antiphase to another microphone. That makes the final mix sounding moody.
+                This plugin helps to solve phasing problems by adding different delays to each microphone
+                track and make them synchronized.
+            </p>
+            <h2>Tips</h2>
+            <p>
+            	How to synchronize microphones:
+                <ul>
+                	<li>Place microphones such that they will capture the best shape of signal</li>
+                	<li>Take the roulette and measure distance between sound source and each microphone</li>
+                	<li>Record signal as usual and do not worry abouth phasing problems</li>
+                	<li>Add this plugin to each recorded track</li>
+                	<li>Set distance value on each plugin equal to the distance for the most far separated microphone plus some spare centimeters (5-10 centimeters is enough)</li>
+                	<li>For each track subtract from distance value you have set on the previous step corresponding value that you have measured on step 1</li>
+                	<li>Now tightly rotate distance knobs and listen how does the mixed signal change. Synchronized microphones sound much louder and much cleaner. Use millimeter distance knob for fine tuning.</li>
+                </ul>
+            </p>
+            <p>The best result can be reached when you take one track as base and synchronize other tracks one by one with it.</p>
+            <p>Remember that synchronization/delay tolerance depends on sample rate, too. Higher sample rates will give more tolerance.</p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Meters:</strong>Compensation distance (meters) for hard distance setup</li>
+                <li><strong>Centimeters:</strong>Compensation distance (centimeters) for tighten distance setup</li>
+                <li><strong>Millimetters:</strong>Compensation distance (millimeters) for fine tuning</li>
+                <li><strong>Dry Amount:</strong> Amount of the unprocessed (dry) signal.</li>
+                <li><strong>Wet Amount:</strong> Amount of the processed (wet) signal.</li>
+            </ul>
+        </div>
+    </body>
+</html>
