@@ -1,0 +1,49 @@
+<hbox spacing="5">
+    <frame label="Distance" expand="1" fill="1">
+        <hbox spacing="8">
+            <vbox>
+                <label param="distance_m" />
+                <knob param="distance_m" size="3" />
+                <value param="distance_m" />
+            </vbox>
+            <vbox>
+                <label param="distance_cm" />
+                <knob param="distance_cm" size="3" />
+                <value param="distance_cm" />
+            </vbox>
+            <vbox>
+                <label param="distance_mm" />
+                <knob param="distance_mm" size="3" />
+                <value param="distance_mm" />
+            </vbox>
+        </hbox>
+    </frame>
+    <frame label="Conditions" expand="1" fill="1">
+        <hbox spacing="8">
+            <vbox>
+                <label param="temp" />
+                <knob param="temp" size="3"  type="1" />
+                <value param="temp" />
+            </vbox>
+        </hbox>
+    </frame>
+    <frame label="Gain" expand="1" fill="1">
+        <hbox spacing="8">
+            <vbox>
+                <label param="dry" />
+                <knob param="dry" />
+                <value param="dry" />
+            </vbox>
+            <vbox>
+                <label param="wet" />
+                <knob param="wet" />
+                <value param="wet" />
+            </vbox>
+            <vbox>
+                <label param="bypass" />
+                <toggle param="bypass" />
+                <label />
+            </vbox>
+        </hbox>
+    </frame>
+</hbox>

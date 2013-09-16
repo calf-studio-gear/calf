@@ -362,7 +362,7 @@ void comp_delay_audio_module::params_changed()
                 (*params[par_distance_m] * 100.0) +
                 (*params[par_distance_cm] * 1.0) +
                 (*params[par_distance_mm] * 0.1)
-            ) * COMP_DELAY_SOUND_FRONT_DELAY * srate
+            ) * COMP_DELAY_SOUND_FRONT_DELAY(std::max(50, (int) *params[param_temp])) * srate
         );
 }
 
@@ -400,25 +400,31 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t b_mask = buf_size-1;
-    uint32_t end    = offset + numsamples;
-    uint32_t w_ptr  = write_ptr;
-    uint32_t r_ptr  = (write_ptr + buf_size - delay) & b_mask; // Unsigned math, that's why we add buf_size
-    float dry       = *params[par_dry];
-    float wet       = *params[par_wet];
-
-    for (uint32_t i=offset; i<end; i++)
-    {
-        float sample = ins[0][i];
-        buffer[w_ptr] = sample;
-
-        outs[0][i] = dry * sample + wet * buffer[r_ptr];
-
-        w_ptr = (w_ptr + 1) & b_mask;
-        r_ptr = (r_ptr + 1) & b_mask;
+    if (*params[param_bypass] > 0.5f) {
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            ++offset;
+        }
+    } else {
+        uint32_t b_mask = buf_size-1;
+        uint32_t end    = offset + numsamples;
+        uint32_t w_ptr  = write_ptr;
+        uint32_t r_ptr  = (write_ptr + buf_size - delay) & b_mask; // Unsigned math, that's why we add buf_size
+        float dry       = *params[par_dry];
+        float wet       = *params[par_wet];
+    
+        for (uint32_t i=offset; i<end; i++)
+        {
+            float sample = ins[0][i];
+            buffer[w_ptr] = sample;
+    
+            outs[0][i] = dry * sample + wet * buffer[r_ptr];
+    
+            w_ptr = (w_ptr + 1) & b_mask;
+            r_ptr = (r_ptr + 1) & b_mask;
+        }
+        write_ptr = w_ptr;
     }
-    write_ptr = w_ptr;
-
     return outputs_mask;
 }
 
@@ -791,10 +797,10 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             
             // phase meter
             if(fabs(L) > 0.001 and fabs(R) > 0.001) {
-				meter_phase = fabs(fabs(L+R) > 0.000000001 ? sin(fabs((L-R)/(L+R))) : 0.f);
-			} else {
-				meter_phase = 0.f;
-			}
+                meter_phase = fabs(fabs(L+R) > 0.000000001 ? sin(fabs((L-R)/(L+R))) : 0.f);
+            } else {
+                meter_phase = 0.f;
+            }
         }
     }
     // draw meters
@@ -1905,4 +1911,3 @@ bool analyzer_audio_module::get_clear_all(int index) const {
     }
     return false;
 }
-

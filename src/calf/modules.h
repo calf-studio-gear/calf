@@ -30,6 +30,7 @@
 #include "giface.h"
 #include "metadata.h"
 #include "loudness.h"
+#include <math.h>
 
 namespace calf_plugins {
 
@@ -84,14 +85,17 @@ public:
     long _tap_last;
 };
 
+
+
+
 // The maximum distance for knobs
-#define COMP_DELAY_MAX_DISTANCE         (10.0 * 100.0 + 100.0 * 1.0 + 1.0)
+#define COMP_DELAY_MAX_DISTANCE            (100.0 * 100.0 + 100.0 * 1.0 + 1.0)
 // The actual speed of sound in normal conditions
-#define COMP_DELAY_SOUND_SPEED_KM_H     1191.6 /* km/h */
-#define COMP_DELAY_SOUND_SPEED_CM_S     (COMP_DELAY_SOUND_SPEED_KM_H * (1000.0 * 100.0) /* cm/km */ / (60.0 * 60.0) /* s/h */)
-#define COMP_DELAY_SOUND_FRONT_DELAY    (1.0 / COMP_DELAY_SOUND_SPEED_CM_S)
+#define COMP_DELAY_SOUND_SPEED_KM_H(temp)  1.85325 * (643.95 * std::pow(((temp + 273.15) / 273.15), 0.5))
+#define COMP_DELAY_SOUND_SPEED_CM_S(temp)  (COMP_DELAY_SOUND_SPEED_KM_H(temp) * (1000.0 * 100.0) /* cm/km */ / (60.0 * 60.0) /* s/h */)
+#define COMP_DELAY_SOUND_FRONT_DELAY(temp) (1.0 / COMP_DELAY_SOUND_SPEED_CM_S(temp))
 // The maximum delay may be reached by this plugin
-#define COMP_DELAY_MAX_DELAY            (COMP_DELAY_MAX_DISTANCE*COMP_DELAY_SOUND_FRONT_DELAY)
+#define COMP_DELAY_MAX_DELAY               (COMP_DELAY_MAX_DISTANCE*COMP_DELAY_SOUND_FRONT_DELAY(50))
 
 class comp_delay_audio_module: public audio_module<comp_delay_metadata>
 {
