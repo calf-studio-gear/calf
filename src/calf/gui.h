@@ -116,6 +116,7 @@ public:
     plugin_ctl_iface *plugin;
     preset_access_iface *preset_access;
     std::vector<param_control *> params;
+    std::vector<int> read_serials;
 
     plugin_gui(plugin_gui_window *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);

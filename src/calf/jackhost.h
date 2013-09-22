@@ -114,6 +114,8 @@ public:
     float midi_meter;
     audio_module_iface *module;
     automation_map *cc_mappings;
+    std::vector<int> write_serials;
+    int last_modify_serial;
     
 public:
     typedef int (*process_func)(jack_nframes_t nframes, void *p);
@@ -172,6 +174,7 @@ public:
     virtual const plugin_metadata_iface *get_metadata_iface() const { return module->get_metadata_iface(); }
     virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
     virtual const phase_graph_iface *get_phase_graph_iface() const { return module->get_phase_graph_iface(); }
+    virtual int get_write_serial(int param_no) { return write_serials[param_no]; }
 };
 
 extern jack_host *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);

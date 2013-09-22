@@ -368,6 +368,8 @@ struct plugin_ctl_iface
     virtual const line_graph_iface *get_line_graph_iface() const = 0;
     /// @return phase_graph_iface if any
     virtual const phase_graph_iface *get_phase_graph_iface() const = 0;
+    /// @return serial number of last automation write (JACK host only)
+    virtual int get_write_serial(int param_no) { return 0; }
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
