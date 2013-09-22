@@ -49,6 +49,7 @@ jack_host::jack_host(audio_module_iface *_module, const std::string &_name, cons
     instance_name = _instance_name;
     
     client = NULL;
+    cc_mappings = NULL;
     changed = true;
 
     module->get_port_arrays(ins, outs, params);
@@ -129,8 +130,14 @@ void jack_host::create_ports() {
     }
 }
 
-void jack_host::handle_automation_cc(int channel, int controller, int value)
+void jack_host::handle_automation_cc(uint32_t designator, int value)
 {
+    automation_map::const_iterator i = cc_mappings->find(designator);
+    if (i == cc_mappings->end())
+        return;
+    const automation_range &r = i->second;
+    const parameter_properties *props = metadata->get_param_props(r.param_no);
+    set_param_value(r.param_no, props->from_01(value * 1.0 / 127.0));
 }
 
 void jack_host::handle_event(uint8_t *buffer, uint32_t size)

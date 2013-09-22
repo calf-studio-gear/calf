@@ -79,7 +79,24 @@ public:
     static int do_jack_process(jack_nframes_t nframes, void *p);
     static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
 };
+
+struct automation_range
+{
+    float min_value;
+    float max_value;
+    int param_no;
     
+    automation_range(float l, float u, int param)
+    : min_value(l)
+    , max_value(u)
+    , param_no(param)
+    {}
+};
+
+struct automation_map: public std::multimap<uint32_t, automation_range>
+{
+};
+
 class jack_host: public plugin_ctl_iface {
 public:
     struct port {
@@ -96,6 +113,7 @@ public:
     float *param_values;
     float midi_meter;
     audio_module_iface *module;
+    automation_map *cc_mappings;
     
 public:
     typedef int (*process_func)(jack_nframes_t nframes, void *p);
@@ -129,7 +147,7 @@ public:
     void get_all_input_ports(std::vector<port *> &ports);
     /// Retrieve the full list of output ports (the pointers are temporary, may point to nowhere after any changes etc.)
     void get_all_output_ports(std::vector<port *> &ports);
-    void handle_automation_cc(int channel, int controller, int value);
+    void handle_automation_cc(uint32_t designator, int value);
     
 public:
     // Port access

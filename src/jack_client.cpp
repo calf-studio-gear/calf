@@ -108,27 +108,35 @@ namespace {
 
 class jack_automation: public automation_iface
 {
-    void *midi_data;
-    int event_count;
     int event_pos;
-    jack_midi_event_t event;
+    int event_count;
     jack_host *plugin;
+    void *midi_data;
+    jack_midi_event_t event;
     
     void process_event()
     {
         if (event.size == 3 && ((event.buffer[0] & 0xF0) == 0xB0))
         {
-            plugin->handle_automation_cc(event.buffer[0] & 0xF, event.buffer[1], event.buffer[2]);
+            int designator = ((event.buffer[0] & 0xF) << 8) | event.buffer[1];
+            plugin->handle_automation_cc(designator, event.buffer[2]);
         }
     }
 public:
-    
     jack_automation(jack_port_t *automation_port, int nframes, jack_host *_plugin)
     {
-        midi_data = jack_port_get_buffer(automation_port, nframes);
         event_pos = 0;
-        event_count = jack_midi_get_event_count(midi_data NFRAMES_MAYBE(nframes));
         plugin = _plugin;
+        if (plugin->cc_mappings)
+        {
+            midi_data = jack_port_get_buffer(automation_port, nframes);
+            event_count = jack_midi_get_event_count(midi_data NFRAMES_MAYBE(nframes));
+        }
+        else
+        {
+            midi_data = NULL;
+            event_count = 0;
+        }
     }
     
     uint32_t apply_and_adjust(uint32_t start, uint32_t time)
