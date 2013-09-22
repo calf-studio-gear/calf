@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <jack/jack.h>
+#include <jack/midiport.h>
 #include <calf/giface.h>
 #include <calf/jackhost.h>
 #include <set>
@@ -37,6 +38,7 @@ jack_client::jack_client()
     midi_name = "midi_%d";
     sample_rate = 0;
     client = NULL;
+    automation_port = NULL;
 }
 
 void jack_client::add(jack_host *plugin)
@@ -102,6 +104,48 @@ const char **jack_client::get_ports(const char *name_re, const char *type_re, un
     return jack_get_ports(client, name_re, type_re, flags);
 }
 
+namespace {
+
+class jack_automation: public automation_iface
+{
+    void *midi_data;
+    int event_count;
+    int event_pos;
+    jack_midi_event_t event;
+    jack_host *plugin;
+    
+    void process_event()
+    {
+        if (event.size == 3 && ((event.buffer[0] & 0xF0) == 0xB0))
+        {
+            plugin->handle_automation_cc(event.buffer[0] & 0xF, event.buffer[1], event.buffer[2]);
+        }
+    }
+public:
+    
+    jack_automation(jack_port_t *automation_port, int nframes, jack_host *_plugin)
+    {
+        midi_data = jack_port_get_buffer(automation_port, nframes);
+        event_pos = 0;
+        event_count = jack_midi_get_event_count(midi_data NFRAMES_MAYBE(nframes));
+        plugin = _plugin;
+    }
+    
+    uint32_t apply_and_adjust(uint32_t start, uint32_t time)
+    {
+        while(event_pos < event_count) {
+            jack_midi_event_get(&event, midi_data, event_pos NFRAMES_MAYBE(nframes));
+            if (event.time > start && event.time < time)
+                return event.time;
+            event_pos++;
+            process_event();
+        }
+        return time;
+    }
+};
+
+}
+
 int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
 {
     jack_client *self = (jack_client *)p;
@@ -109,7 +153,10 @@ int jack_client::do_jack_process(jack_nframes_t nframes, void *p)
     if (lock.is_locked())
     {
         for(unsigned int i = 0; i < self->plugins.size(); i++)
-            self->plugins[i]->process(nframes);
+        {
+            jack_automation au(self->automation_port, nframes, self->plugins[i]);
+            self->plugins[i]->process(nframes, au);
+        }
     }
     return 0;
 }
@@ -130,6 +177,19 @@ void jack_client::delete_plugins()
         delete plugins[i];
     }
     plugins.clear();
+}
+
+void jack_client::create_automation_input()
+{
+    automation_port = jack_port_register(client, "automation_midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    if (!automation_port)
+        throw text_exception("Could not create JACK MIDI automation port");
+}
+
+void jack_client::destroy_automation_input()
+{
+    if (automation_port)
+        jack_port_unregister(client, automation_port);
 }
 
 void jack_client::calculate_plugin_order(std::vector<int> &indices)

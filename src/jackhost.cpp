@@ -129,6 +129,10 @@ void jack_host::create_ports() {
     }
 }
 
+void jack_host::handle_automation_cc(int channel, int controller, int value)
+{
+}
+
 void jack_host::handle_event(uint8_t *buffer, uint32_t size)
 {
     int channel = buffer[0] & 15;
@@ -212,7 +216,7 @@ float jack_host::get_level(unsigned int port)
     return 0.f;
 }
 
-int jack_host::process(jack_nframes_t nframes)
+int jack_host::process(jack_nframes_t nframes, automation_iface &automation)
 {
     for (int i=0; i<in_count; i++) {
         ins[i] = inputs[i].data = (float *)jack_port_get_buffer(inputs[i].handle, nframes);
@@ -228,19 +232,12 @@ int jack_host::process(jack_nframes_t nframes)
     if (metadata->get_midi())
     {
         jack_midi_event_t event;
-#ifdef OLD_JACK
-        int count = jack_midi_get_event_count(midi_port.data, nframes);
-#else
-        int count = jack_midi_get_event_count(midi_port.data);
-#endif
+        int count = jack_midi_get_event_count(midi_port.data NFRAMES_MAYBE(nframes));
         for (int i = 0; i < count; i++)
         {
-#ifdef OLD_JACK
-            jack_midi_event_get(&event, midi_port.data, i, nframes);
-#else
-            jack_midi_event_get(&event, midi_port.data, i);
-#endif
-            unsigned int len = event.time - time;
+            jack_midi_event_get(&event, midi_port.data, i NFRAMES_MAYBE(nframes));
+            uint32_t endtime = automation.apply_and_adjust(time, event.time);
+            unsigned int len = endtime - time;
             process_part(time, len);
             
             midi_meter = 1.f;
@@ -249,7 +246,12 @@ int jack_host::process(jack_nframes_t nframes)
             time = event.time;
         }
     }
-    process_part(time, nframes - time);
+    while(time < nframes)
+    {
+        uint32_t endtime = automation.apply_and_adjust(time, nframes);
+        process_part(time, endtime - time);
+        time = endtime;
+    }
     module->params_reset();
     return 0;
 }

@@ -30,14 +30,30 @@
 #include <pthread.h>
 #include <jack/jack.h>
 
+#ifdef OLD_JACK
+#define NFRAMES_MAYBE(nframes) nframes
+#else
+#define NFRAMES_MAYBE(nframes) 
+#endif
+    
 namespace calf_plugins {
 
 class jack_host;
     
+struct automation_iface
+{
+    virtual uint32_t apply_and_adjust(uint32_t start, uint32_t time) = 0;
+    virtual ~automation_iface() {}
+};
+
 class jack_client {
 protected:
     std::vector<jack_host *> plugins;
     calf_utils::ptmutex mutex;
+
+    /// Common port for MIDI parameter automation
+    jack_port_t *automation_port;
+
 public:
     jack_client_t *client;
     int input_nr, output_nr, midi_nr;
@@ -52,6 +68,8 @@ public:
     void activate();
     void deactivate();
     void delete_plugins();
+    void create_automation_input();
+    void destroy_automation_input();
     void connect(const std::string &p1, const std::string &p2);
     void close();
     void apply_plugin_order(const std::vector<int> &indices);
@@ -104,13 +122,14 @@ public:
     /// Get meter value for the Nth port
     virtual float get_level(unsigned int port);
     /// Process audio/MIDI buffers
-    int process(jack_nframes_t nframes);
+    int process(jack_nframes_t nframes, automation_iface &automation);
     /// Retrieve and cache output port buffers
     void cache_ports();
     /// Retrieve the full list of input ports, audio+MIDI (the pointers are temporary, may point to nowhere after any changes etc.)
     void get_all_input_ports(std::vector<port *> &ports);
     /// Retrieve the full list of output ports (the pointers are temporary, may point to nowhere after any changes etc.)
     void get_all_output_ports(std::vector<port *> &ports);
+    void handle_automation_cc(int channel, int controller, int value);
     
 public:
     // Port access

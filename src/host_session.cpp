@@ -116,6 +116,7 @@ void host_session::open()
     main_win->add_condition("jackhost");
     main_win->add_condition("directlink");
     main_win->add_condition("configure");
+    client.create_automation_input();
     if (!session_manager || !session_manager->is_being_restored()) 
         create_plugins_from_list();
     main_win->create();
@@ -281,6 +282,7 @@ void host_session::close()
     main_win->on_closed();
     client.deactivate();
     client.delete_plugins();
+    client.destroy_automation_input();
     client.close();
 }
 
