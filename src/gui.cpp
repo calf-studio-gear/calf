@@ -189,6 +189,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             current_control->init_xml(element);
             current_control->set();
             current_control->hook_params();
+            current_control->add_context_menu_handler();
             return;
         }
     }
@@ -403,8 +404,88 @@ void plugin_gui::show_rack_ears(bool show)
     }
 }
 
+void plugin_gui::on_automation_add(GtkWidget *widget, void *user_data)
+{
+    plugin_gui *self = (plugin_gui *)user_data;
+    printf("automate param_no = %d\n", self->context_menu_param_no);
+}
+
+void plugin_gui::on_automation_delete(GtkWidget *widget, void *user_data)
+{
+    automation_menu_entry *ame = (automation_menu_entry *)user_data;
+    printf("automate delete param_no = %d\n", ame->gui->context_menu_param_no);
+}
+
+void plugin_gui::on_automation_set_lower(GtkWidget *widget, void *user_data)
+{
+    automation_menu_entry *ame = (automation_menu_entry *)user_data;
+    printf("automate set lower param_no = %d\n", ame->gui->context_menu_param_no);
+}
+
+void plugin_gui::on_automation_set_upper(GtkWidget *widget, void *user_data)
+{
+    automation_menu_entry *ame = (automation_menu_entry *)user_data;
+    printf("automate set upper param_no = %d\n", ame->gui->context_menu_param_no);
+}
+
+void plugin_gui::cleanup_automation_entries()
+{
+    for (int i = 0; i < (int)automation_menu_callback_data.size(); i++)
+        delete automation_menu_callback_data[i];
+}
+
+void plugin_gui::on_control_popup(param_control *ctl, int param_no)
+{
+    cleanup_automation_entries();
+    if (param_no == -1)
+        return;
+    context_menu_param_no = param_no;
+    GtkWidget *menu = gtk_menu_new();
+    
+    automation_map tmpmap;
+    tmpmap.insert(make_pair((uint32_t)64, automation_range(0, 1, 0)));
+    tmpmap.insert(make_pair((uint32_t)64 + 256, automation_range(0, 1, 0)));
+    
+    GtkWidget *item = gtk_menu_item_new_with_mnemonic("_Automate");
+    g_signal_connect(item, "activate", (GCallback)on_automation_add, this);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+    
+    for(automation_map::const_iterator i = tmpmap.begin(); i != tmpmap.end(); i++)
+    {
+        if (i->second.param_no != param_no)
+            continue;
+        automation_menu_entry *ame = new automation_menu_entry(this, automation_menu_callback_data.size());
+        automation_menu_callback_data.push_back(ame);
+        stringstream ss;
+        ss << "Mapping: Ch" << (1 + (i->first >> 8)) << ", CC#" << (i->first & 127);
+        item = gtk_menu_item_new_with_label(ss.str().c_str());
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+        
+        GtkWidget *submenu = gtk_menu_new();        
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+        
+        item = gtk_menu_item_new_with_mnemonic("_Delete");
+        g_signal_connect(item, "activate", (GCallback)on_automation_delete, ame);
+        gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+
+        item = gtk_menu_item_new_with_mnemonic("Set _lower limit");
+        g_signal_connect(item, "activate", (GCallback)on_automation_set_lower, ame);
+        gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+
+        item = gtk_menu_item_new_with_mnemonic("Set _upper limit");
+        g_signal_connect(item, "activate", (GCallback)on_automation_set_upper, ame);
+        gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+        //g_signal_connect(item, "activate", (GCallback)on_automation_add, this);
+        
+    }
+    
+    gtk_widget_show_all(menu);
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, 0);
+}
+
 plugin_gui::~plugin_gui()
 {
+    cleanup_automation_entries();
     delete preset_access;
     for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); i++)
     {

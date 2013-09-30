@@ -150,6 +150,39 @@ param_control::~param_control()
         gtk_widget_destroy(widget);
 }
 
+void param_control::add_context_menu_handler()
+{
+    if (widget && !(get_props().flags & PF_PROP_OUTPUT))
+    {
+        gtk_signal_connect(GTK_OBJECT(widget), "button-press-event", (GCallback)on_button_press_event, this);
+        gtk_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
+    }
+}
+
+gboolean param_control::on_popup_menu(GtkWidget *widget, void *user_data)
+{
+    param_control *self = (param_control *)user_data;
+    self->do_popup_menu();
+    return TRUE;
+}
+
+gboolean param_control::on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data)
+{
+    param_control *self = (param_control *)user_data;
+    if (event->button == 3)
+    {
+        self->do_popup_menu();
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void param_control::do_popup_menu()
+{
+    if (gui)
+        gui->on_control_popup(this, param_no);
+}
+
 /******************************** controls ********************************/
 
 // combo box

@@ -80,7 +80,11 @@ struct param_control: public control_base
     virtual void hook_params();
     virtual void on_idle() {}
     virtual void set_std_properties();
+    virtual void add_context_menu_handler();
     virtual ~param_control();
+    virtual void do_popup_menu();
+    static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data);
+    static gboolean on_popup_menu(GtkWidget *widget, void *user_data);
 };
 
 struct control_container: public control_base
@@ -109,6 +113,20 @@ protected:
     int last_status_serial_no;
     std::map<int, GSList *> param_radio_groups;
     GtkWidget *leftBox, *rightBox;
+    int context_menu_param_no;
+
+    struct automation_menu_entry {
+        plugin_gui *gui;
+        int entry_index;
+        automation_menu_entry(plugin_gui *_gui, int _entry_index)
+        : gui(_gui), entry_index(_entry_index) {}
+    };
+    std::vector<automation_menu_entry *> automation_menu_callback_data;
+
+    static void on_automation_add(GtkWidget *widget, void *user_data);
+    static void on_automation_delete(GtkWidget *widget, void *user_data);
+    static void on_automation_set_lower(GtkWidget *widget, void *user_data);
+    static void on_automation_set_upper(GtkWidget *widget, void *user_data);
 public:
     plugin_gui_window *window;
     GtkWidget *container;
@@ -140,6 +158,10 @@ public:
     void set_radio_group(int param, GSList *group);
     /// Show rack ear widgets
     void show_rack_ears(bool show);
+    /// Pop-up a context menu for a control
+    void on_control_popup(param_control *ctl, int param_no);
+    /// Clean up callback data allocated for the automation pop-up menu
+    void cleanup_automation_entries();
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);

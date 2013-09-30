@@ -740,6 +740,23 @@ public:
 };
 #endif
 
+struct automation_range
+{
+    float min_value;
+    float max_value;
+    int param_no;
+    
+    automation_range(float l, float u, int param)
+    : min_value(l)
+    , max_value(u)
+    , param_no(param)
+    {}
+};
+
+struct automation_map: public std::multimap<uint32_t, automation_range>
+{
+};
+
 };
 
 #endif
