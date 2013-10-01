@@ -516,7 +516,7 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
     }
     
     gtk_widget_show_all(menu);
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, 0);
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, gtk_get_current_event_time());
 }
 
 plugin_gui::~plugin_gui()
@@ -550,4 +550,3 @@ gui_environment::~gui_environment()
     if (keyfile)
         g_key_file_free(keyfile);
 }
-
