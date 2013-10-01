@@ -127,16 +127,8 @@ public:
     {
         event_pos = 0;
         plugin = _plugin;
-        if (plugin->cc_mappings)
-        {
-            midi_data = jack_port_get_buffer(automation_port, nframes);
-            event_count = jack_midi_get_event_count(midi_data NFRAMES_MAYBE(nframes));
-        }
-        else
-        {
-            midi_data = NULL;
-            event_count = 0;
-        }
+        midi_data = jack_port_get_buffer(automation_port, nframes);
+        event_count = jack_midi_get_event_count(midi_data NFRAMES_MAYBE(nframes));
     }
     
     uint32_t apply_and_adjust(uint32_t start, uint32_t time)

@@ -38,6 +38,8 @@ enum {
     MAX_SAMPLE_RUN = 256
 };
     
+struct automation_range;
+
 /// Values ORed together for flags field in parameter_properties
 enum parameter_flags
 {
@@ -370,6 +372,16 @@ struct plugin_ctl_iface
     virtual const phase_graph_iface *get_phase_graph_iface() const = 0;
     /// @return serial number of last automation write (JACK host only)
     virtual int get_write_serial(int param_no) { return 0; }
+    
+    /// Add or update parameter automation routing
+    virtual void add_automation(uint32_t source, const automation_range &dest) {}
+    /// Remove parameter automation routing        
+    virtual void delete_automation(uint32_t source, int param_no) {}
+    /// Retrieve automation list for a given parameter
+    /// @param param_no parameter to retrieve automation list for, or -1 for all
+    virtual void get_automation(int param_no, std::vector<std::pair<uint32_t, automation_range> > &dests) {}
+    /// Return the source identifier for the most recently seen control change that could be used for automation
+    virtual uint32_t get_last_automation_source() { return 0xFFFFFFFF; }
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };

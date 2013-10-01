@@ -78,6 +78,12 @@ public:
     
     static int do_jack_process(jack_nframes_t nframes, void *p);
     static int do_jack_bufsize(jack_nframes_t numsamples, void *p);
+    template<class T>
+    void atomic_swap(T &v1, T &v2)
+    {
+        calf_utils::ptlock lock(mutex);
+        std::swap(v1, v2);
+    }
 };
 
 class jack_host: public plugin_ctl_iface {
@@ -99,6 +105,7 @@ public:
     automation_map *cc_mappings;
     std::vector<int> write_serials;
     int last_modify_serial;
+    uint32_t last_designator;
     
 public:
     typedef int (*process_func)(jack_nframes_t nframes, void *p);
@@ -144,9 +151,11 @@ public:
     // Implementations of methods in plugin_ctl_iface 
     bool activate_preset(int bank, int program) { return false; }
     virtual float get_param_value(int param_no) {
+        assert(param_no >= 0 && param_no < param_count);
         return param_values[param_no];
     }
     virtual void set_param_value(int param_no, float value) {
+        assert(param_no >= 0 && param_no < param_count);
         param_values[param_no] = value;
         changed = true;
     }
@@ -158,6 +167,11 @@ public:
     virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }
     virtual const phase_graph_iface *get_phase_graph_iface() const { return module->get_phase_graph_iface(); }
     virtual int get_write_serial(int param_no) { return write_serials[param_no]; }
+    virtual void add_automation(uint32_t source, const automation_range &dest);
+    virtual void delete_automation(uint32_t source, int param_no);
+    virtual void get_automation(int param_no, std::vector<std::pair<uint32_t, automation_range> > &dests);
+    virtual uint32_t get_last_automation_source();
+    void replace_automation_map(automation_map *amap);
 };
 
 extern jack_host *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);

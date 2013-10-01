@@ -68,12 +68,15 @@ jack_host::jack_host(audio_module_iface *_module, const std::string &_name, cons
     }
     clear_preset();
     midi_meter = 0;
+    last_designator = 0xFFFFFFFF;
     module->set_progress_report_iface(_priface);
     module->post_instantiate();
 }
 
 jack_host::~jack_host()
 {
+    delete cc_mappings;
+    cc_mappings = NULL;
     delete []param_values;
     if (client)
         destroy();
@@ -135,14 +138,25 @@ void jack_host::create_ports() {
 
 void jack_host::handle_automation_cc(uint32_t designator, int value)
 {
-    automation_map::const_iterator i = cc_mappings->find(designator);
-    if (i == cc_mappings->end())
+    last_designator = designator;
+    if (!cc_mappings)
         return;
-    const automation_range &r = i->second;
-    const parameter_properties *props = metadata->get_param_props(r.param_no);
-    set_param_value(r.param_no, props->from_01(value * 1.0 / 127.0));
-    write_serials[r.param_no] = ++last_modify_serial;
+    automation_map::const_iterator i = cc_mappings->find(designator);
+    while (i != cc_mappings->end() && i->first == designator)
+    {
+        const automation_range &r = i->second;
+        const parameter_properties *props = metadata->get_param_props(r.param_no);
+        set_param_value(r.param_no, props->from_01(value * 1.0 / 127.0));
+        write_serials[r.param_no] = ++last_modify_serial;
+        ++i;
+    }
 }
+
+uint32_t jack_host::get_last_automation_source()
+{
+    return last_designator;
+}
+
 
 void jack_host::handle_event(uint8_t *buffer, uint32_t size)
 {
@@ -293,6 +307,55 @@ void jack_host::get_all_output_ports(std::vector<port *> &ports)
 {
     for (int i = 0; i < out_count; i++)
         ports.push_back(&outputs[i]);
+}
+
+static void remove_mapping(automation_map &amap, uint32_t source, int param_no)
+{
+    for(automation_map::iterator i = amap.find(source); i != amap.end() && i->first == source; )
+    {
+        automation_map::iterator j = i;
+        ++j;
+        if (i->second.param_no == param_no)
+            amap.erase(i);
+        i = j;
+    }
+}
+
+void jack_host::add_automation(uint32_t source, const automation_range &dest)
+{
+    automation_map *amap = new automation_map;
+    if (cc_mappings)
+        amap->insert(cc_mappings->begin(), cc_mappings->end());
+    remove_mapping(*amap, source, dest.param_no);
+    amap->insert(make_pair(source, dest));
+    replace_automation_map(amap);
+}
+
+void jack_host::delete_automation(uint32_t source, int param_no)
+{
+    automation_map *amap = new automation_map;
+    if (cc_mappings)
+        amap->insert(cc_mappings->begin(), cc_mappings->end());
+    remove_mapping(*amap, source, param_no);
+    replace_automation_map(amap);
+}
+
+void jack_host::replace_automation_map(automation_map *amap)
+{
+    client->atomic_swap(cc_mappings, amap);
+    delete amap;
+}
+
+void jack_host::get_automation(int param_no, vector<pair<uint32_t, automation_range> > &dests)
+{
+    dests.clear();
+    if (!cc_mappings)
+        return;
+    for(automation_map::iterator i = cc_mappings->begin(); i != cc_mappings->end(); ++i)
+    {
+        if (param_no == -1 || param_no == i->second.param_no)
+            dests.push_back(*i);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

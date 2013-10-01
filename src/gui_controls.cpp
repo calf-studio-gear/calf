@@ -1177,14 +1177,17 @@ void line_graph_param_control::set()
         for (int i = 0; i < clg->freqhandles; i++) {
             FreqHandle *handle = &clg->freq_handles[i];
 
-            float value_x = gui->plugin->get_param_value(handle->param_x_no);
-            handle->value_x = to_x_pos(value_x);
-            if(handle->dimensions >= 2) {
-                float value_y = gui->plugin->get_param_value(handle->param_y_no);
-                handle->value_y = to_y_pos(value_y);
+            if (handle->param_x_no >= 0)
+            {
+                float value_x = gui->plugin->get_param_value(handle->param_x_no);
+                handle->value_x = to_x_pos(value_x);
+                if(handle->dimensions >= 2 && handle->param_y_no >= 0) {
+                    float value_y = gui->plugin->get_param_value(handle->param_y_no);
+                    handle->value_y = to_y_pos(value_y);
+                }
             }
 
-            if(handle->dimensions == 3) {
+            if(handle->dimensions == 3 && handle->param_z_no >= 0) {
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(handle->param_z_no);
                 float value_z = gui->plugin->get_param_value(handle->param_z_no);
                 handle->value_z = handle_z_props.to_01(value_z);

@@ -326,18 +326,25 @@ void plugin_gui::send_status(const char *key, const char *value)
 
 void plugin_gui::on_idle()
 {
-    for (unsigned int i = 0; i < params.size(); i++)
+    set<unsigned> changed;
+    for (unsigned i = 0; i < read_serials.size(); i++)
+    {
+        int write_serial = plugin->get_write_serial(i);
+        if (write_serial - read_serials[i] > 0)
+        {
+            read_serials[i] = write_serial;
+            changed.insert(i);
+        }
+    }
+    for (unsigned i = 0; i < params.size(); i++)
     {
         int param_no = params[i]->param_no;
         if (param_no != -1)
         {
-            int write_serial = plugin->get_write_serial(param_no);
             const parameter_properties &props = *plugin->get_metadata_iface()->get_param_props(param_no);
             bool is_output = (props.flags & PF_PROP_OUTPUT) != 0;
-            if (write_serial - read_serials[param_no] > 0 || is_output) {
-                read_serials[i] = write_serial;
+            if (is_output || (param_no != -1 && changed.count(param_no)))
                 params[i]->set();
-            }
         }
         params[i]->on_idle();
     }    
@@ -407,13 +414,13 @@ void plugin_gui::show_rack_ears(bool show)
 void plugin_gui::on_automation_add(GtkWidget *widget, void *user_data)
 {
     plugin_gui *self = (plugin_gui *)user_data;
-    printf("automate param_no = %d\n", self->context_menu_param_no);
+    self->plugin->add_automation(self->context_menu_last_designator, automation_range(0, 1, self->context_menu_param_no));
 }
 
 void plugin_gui::on_automation_delete(GtkWidget *widget, void *user_data)
 {
     automation_menu_entry *ame = (automation_menu_entry *)user_data;
-    printf("automate delete param_no = %d\n", ame->gui->context_menu_param_no);
+    ame->gui->plugin->delete_automation(ame->source, ame->gui->context_menu_param_no);
 }
 
 void plugin_gui::on_automation_set_lower(GtkWidget *widget, void *user_data)
@@ -432,6 +439,7 @@ void plugin_gui::cleanup_automation_entries()
 {
     for (int i = 0; i < (int)automation_menu_callback_data.size(); i++)
         delete automation_menu_callback_data[i];
+    automation_menu_callback_data.clear();
 }
 
 void plugin_gui::on_control_popup(param_control *ctl, int param_no)
@@ -442,19 +450,30 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
     context_menu_param_no = param_no;
     GtkWidget *menu = gtk_menu_new();
     
-    automation_map tmpmap;
-    tmpmap.insert(make_pair((uint32_t)64, automation_range(0, 1, 0)));
-    tmpmap.insert(make_pair((uint32_t)64 + 256, automation_range(0, 1, 0)));
+    vector<pair<uint32_t, automation_range> > mappings;
+    plugin->get_automation(param_no, mappings);
     
-    GtkWidget *item = gtk_menu_item_new_with_mnemonic("_Automate");
-    g_signal_connect(item, "activate", (GCallback)on_automation_add, this);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+    context_menu_last_designator = plugin->get_last_automation_source();
     
-    for(automation_map::const_iterator i = tmpmap.begin(); i != tmpmap.end(); i++)
+    GtkWidget *item;
+    if (context_menu_last_designator != 0xFFFFFFFF)
     {
-        if (i->second.param_no != param_no)
-            continue;
-        automation_menu_entry *ame = new automation_menu_entry(this, automation_menu_callback_data.size());
+        stringstream ss;
+        ss << "_Bind to: Ch" << (1 + (context_menu_last_designator >> 8)) << ", CC#" << (context_menu_last_designator & 127);
+        item = gtk_menu_item_new_with_mnemonic(ss.str().c_str());
+        g_signal_connect(item, "activate", (GCallback)on_automation_add, this);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+    }
+    else
+    {
+        item = gtk_menu_item_new_with_label("Send CC to automate");
+        gtk_widget_set_sensitive(item, FALSE);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+    }
+    
+    for(vector<pair<uint32_t, automation_range> >::const_iterator i = mappings.begin(); i != mappings.end(); i++)
+    {
+        automation_menu_entry *ame = new automation_menu_entry(this, i->first);
         automation_menu_callback_data.push_back(ame);
         stringstream ss;
         ss << "Mapping: Ch" << (1 + (i->first >> 8)) << ", CC#" << (i->first & 127);

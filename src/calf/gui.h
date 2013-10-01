@@ -114,12 +114,13 @@ protected:
     std::map<int, GSList *> param_radio_groups;
     GtkWidget *leftBox, *rightBox;
     int context_menu_param_no;
+    uint32_t context_menu_last_designator;
 
     struct automation_menu_entry {
         plugin_gui *gui;
-        int entry_index;
-        automation_menu_entry(plugin_gui *_gui, int _entry_index)
-        : gui(_gui), entry_index(_entry_index) {}
+        int source;
+        automation_menu_entry(plugin_gui *_gui, int _source)
+        : gui(_gui), source(_source) {}
     };
     std::vector<automation_menu_entry *> automation_menu_callback_data;
 
