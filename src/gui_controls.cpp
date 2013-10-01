@@ -154,8 +154,8 @@ void param_control::add_context_menu_handler()
 {
     if (widget && !(get_props().flags & PF_PROP_OUTPUT))
     {
-        gtk_signal_connect(GTK_OBJECT(widget), "button-press-event", (GCallback)on_button_press_event, this);
-        gtk_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
+        g_signal_connect(GTK_OBJECT(widget), "button-press-event", (GCallback)on_button_press_event, this);
+        g_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
     }
 }
 
@@ -201,7 +201,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
             gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], 1, calf_utils::i2s(j).c_str(), -1);
     }
     gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
-    gtk_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Combobox");
     return widget;
 }
@@ -328,9 +328,9 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
 
     widget = gtk_hscale_new_with_range (0, 1, get_props().get_increment());
-    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
-    gtk_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
-    gtk_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
     
     if(get_int("inverted", 0) > 0) {
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
@@ -397,8 +397,8 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
-    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
-    gtk_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
 
     gtk_scale_set_draw_value(GTK_SCALE(widget), FALSE);
     
@@ -588,7 +588,7 @@ GtkWidget *check_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     
     widget  = gtk_check_button_new ();
-    gtk_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (check_value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "toggled", G_CALLBACK (check_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Checkbox");
     return widget;
 }
@@ -643,7 +643,7 @@ GtkWidget *radio_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (widget), FALSE);
         
     gui->set_radio_group(param_no, gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget)));
-    gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (radio_clicked), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (radio_clicked), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-RadioButton");
     return widget;
 }
@@ -685,7 +685,7 @@ GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)
     else
         widget  = gtk_spin_button_new_with_range (props.min, props.max, 1);
     gtk_spin_button_set_digits (GTK_SPIN_BUTTON(widget), get_int("digits", 0));
-    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-SpinButton");
     return widget;
 }
@@ -717,8 +717,8 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     
     widget  = gtk_button_new_with_label (get_props().name);
-    gtk_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
-    gtk_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (button_press_event), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (button_press_event), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
     return widget;
 }
@@ -779,7 +779,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     } else if (CALF_KNOB(widget)->knob_size < 1) {
         CALF_KNOB(widget)->knob_size = 1;
     }
-    gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
+    g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
 }
@@ -823,7 +823,7 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
         CALF_TOGGLE(widget)->size = 1;
     }
     
-    gtk_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
     return widget;
 }
@@ -939,7 +939,7 @@ GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
     
     widget = gtk_entry_new();
     entry = GTK_ENTRY(widget);
-    gtk_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
+    g_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
     gtk_editable_set_editable(GTK_EDITABLE(entry), get_int("editable", 1));
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Entry");
     return widget;
@@ -972,7 +972,8 @@ GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_file_chooser_button_new(attribs["title"].c_str(), GTK_FILE_CHOOSER_ACTION_OPEN);
     filechooser = GTK_FILE_CHOOSER_BUTTON(widget);
     // XXXKF this is GTK+ 2.12 function, does any replacement exist?
-    gtk_signal_connect(GTK_OBJECT(widget), "file-set", G_CALLBACK(filechooser_value_changed), (gpointer)this);
+    // MS: switched from gtk_signal_connect to g_signal_connect for better emission of signals
+    g_signal_connect(GTK_OBJECT(widget), "file-set", G_CALLBACK(filechooser_value_changed), (gpointer)this);
     if (attribs.count("width"))
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);
     if (attribs.count("width_chars"))
@@ -1309,8 +1310,8 @@ GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
                 g_object_set(cr, "editable", TRUE, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, NULL);
         }
         g_object_set_data (G_OBJECT(cr), "column", (void *)&tci[i]);
-        gtk_signal_connect (GTK_OBJECT (cr), "edited", G_CALLBACK (on_edited), (gpointer)this);
-        gtk_signal_connect (GTK_OBJECT (cr), "editing-canceled", G_CALLBACK (on_editing_canceled), (gpointer)this);
+        g_signal_connect (GTK_OBJECT (cr), "edited", G_CALLBACK (on_edited), (gpointer)this);
+        g_signal_connect (GTK_OBJECT (cr), "editing-canceled", G_CALLBACK (on_editing_canceled), (gpointer)this);
         gtk_tree_view_insert_column_with_attributes(tree, i, tci[i].name, cr, "text", i, NULL);
     }
     gtk_tree_view_set_headers_visible(tree, TRUE);
@@ -1516,4 +1517,3 @@ void scrolled_container::add(GtkWidget *w, control_base *base)
 {
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(container), w);
 }
-
