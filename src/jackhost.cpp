@@ -146,7 +146,7 @@ void jack_host::handle_automation_cc(uint32_t designator, int value)
     {
         const automation_range &r = i->second;
         const parameter_properties *props = metadata->get_param_props(r.param_no);
-        set_param_value(r.param_no, props->from_01(value * 1.0 / 127.0));
+        set_param_value(r.param_no, props->from_01(r.min_value + value * (r.max_value - r.min_value)/ 127.0));
         write_serials[r.param_no] = ++last_modify_serial;
         ++i;
     }
@@ -346,7 +346,7 @@ void jack_host::replace_automation_map(automation_map *amap)
     delete amap;
 }
 
-void jack_host::get_automation(int param_no, vector<pair<uint32_t, automation_range> > &dests)
+void jack_host::get_automation(int param_no, multimap<uint32_t, automation_range> &dests)
 {
     dests.clear();
     if (!cc_mappings)
@@ -354,7 +354,7 @@ void jack_host::get_automation(int param_no, vector<pair<uint32_t, automation_ra
     for(automation_map::iterator i = cc_mappings->begin(); i != cc_mappings->end(); ++i)
     {
         if (param_no == -1 || param_no == i->second.param_no)
-            dests.push_back(*i);
+            dests.insert(*i);
     }
 }
 

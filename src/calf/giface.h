@@ -379,7 +379,7 @@ struct plugin_ctl_iface
     virtual void delete_automation(uint32_t source, int param_no) {}
     /// Retrieve automation list for a given parameter
     /// @param param_no parameter to retrieve automation list for, or -1 for all
-    virtual void get_automation(int param_no, std::vector<std::pair<uint32_t, automation_range> > &dests) {}
+    virtual void get_automation(int param_no, std::multimap<uint32_t, automation_range> &dests) {}
     /// Return the source identifier for the most recently seen control change that could be used for automation
     virtual uint32_t get_last_automation_source() { return 0xFFFFFFFF; }
     /// Do-nothing destructor to silence compiler warning

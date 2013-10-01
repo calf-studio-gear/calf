@@ -423,16 +423,33 @@ void plugin_gui::on_automation_delete(GtkWidget *widget, void *user_data)
     ame->gui->plugin->delete_automation(ame->source, ame->gui->context_menu_param_no);
 }
 
+void plugin_gui::on_automation_set_lower_or_upper(automation_menu_entry *ame, bool is_upper)
+{
+    const parameter_properties *props = plugin->get_metadata_iface()->get_param_props(context_menu_param_no);
+    float mapped = props->to_01(plugin->get_param_value(context_menu_param_no));
+    
+    automation_map mappings;
+    plugin->get_automation(context_menu_param_no, mappings);
+    automation_map::const_iterator i = mappings.find(ame->source);
+    if (i != mappings.end())
+    {
+        if (is_upper)
+            plugin->add_automation(context_menu_last_designator, automation_range(i->second.min_value, mapped, context_menu_param_no));
+        else
+            plugin->add_automation(context_menu_last_designator, automation_range(mapped, i->second.max_value, context_menu_param_no));
+    }
+}
+
 void plugin_gui::on_automation_set_lower(GtkWidget *widget, void *user_data)
 {
     automation_menu_entry *ame = (automation_menu_entry *)user_data;
-    printf("automate set lower param_no = %d\n", ame->gui->context_menu_param_no);
+    ame->gui->on_automation_set_lower_or_upper(ame, false);
 }
 
 void plugin_gui::on_automation_set_upper(GtkWidget *widget, void *user_data)
 {
     automation_menu_entry *ame = (automation_menu_entry *)user_data;
-    printf("automate set upper param_no = %d\n", ame->gui->context_menu_param_no);
+    ame->gui->on_automation_set_lower_or_upper(ame, true);
 }
 
 void plugin_gui::cleanup_automation_entries()
@@ -450,7 +467,7 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
     context_menu_param_no = param_no;
     GtkWidget *menu = gtk_menu_new();
     
-    vector<pair<uint32_t, automation_range> > mappings;
+    multimap<uint32_t, automation_range> mappings;
     plugin->get_automation(param_no, mappings);
     
     context_menu_last_designator = plugin->get_last_automation_source();
@@ -471,7 +488,7 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
     }
     
-    for(vector<pair<uint32_t, automation_range> >::const_iterator i = mappings.begin(); i != mappings.end(); i++)
+    for(multimap<uint32_t, automation_range>::const_iterator i = mappings.begin(); i != mappings.end(); i++)
     {
         automation_menu_entry *ame = new automation_menu_entry(this, i->first);
         automation_menu_callback_data.push_back(ame);

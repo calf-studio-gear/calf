@@ -128,6 +128,7 @@ protected:
     static void on_automation_delete(GtkWidget *widget, void *user_data);
     static void on_automation_set_lower(GtkWidget *widget, void *user_data);
     static void on_automation_set_upper(GtkWidget *widget, void *user_data);
+    void on_automation_set_lower_or_upper(automation_menu_entry *ame, bool is_upper);
 public:
     plugin_gui_window *window;
     GtkWidget *container;

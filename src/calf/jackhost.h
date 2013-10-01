@@ -169,7 +169,7 @@ public:
     virtual int get_write_serial(int param_no) { return write_serials[param_no]; }
     virtual void add_automation(uint32_t source, const automation_range &dest);
     virtual void delete_automation(uint32_t source, int param_no);
-    virtual void get_automation(int param_no, std::vector<std::pair<uint32_t, automation_range> > &dests);
+    virtual void get_automation(int param_no, std::multimap<uint32_t, automation_range> &dests);
     virtual uint32_t get_last_automation_source();
     void replace_automation_map(automation_map *amap);
 };
