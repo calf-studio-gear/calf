@@ -854,13 +854,13 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
             if (event->direction == GDK_SCROLL_UP) {
                 handle->value_z += 0.05;
                 if(handle->value_z > 1.0) {
-                	handle->value_z = 1.0;
+                    handle->value_z = 1.0;
                 }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             } else if (event->direction == GDK_SCROLL_DOWN) {
                 handle->value_z -= 0.05;
                 if(handle->value_z < 0.0) {
-                	handle->value_z = 0.0;
+                    handle->value_z = 0.0;
                 }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             }
@@ -1015,7 +1015,7 @@ calf_line_graph_init (CalfLineGraph *self)
     self->spectrum = 0;
     self->arrow_cursor = gdk_cursor_new(GDK_RIGHT_PTR);
     self->hand_cursor = gdk_cursor_new(GDK_FLEUR);
-    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
+    g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)self);
 
     for(int i = 0; i < FREQ_HANDLES; i++) {
         FreqHandle *handle = &self->freq_handles[i];
@@ -1441,7 +1441,7 @@ calf_phase_graph_init (CalfPhaseGraph *self)
     widget->requisition.height = 40;
     self->cache_surface = NULL;
     self->fade_surface = NULL;
-    gtk_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_phase_graph_unrealize), (gpointer)self);
+    g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_phase_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
@@ -1593,7 +1593,7 @@ GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment)
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE, NULL ));
     if (widget) {
         gtk_range_set_adjustment(GTK_RANGE(widget), _adjustment);
-        gtk_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_toggle_value_changed), widget);
+        g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_toggle_value_changed), widget);
     }
     return widget;
 }
@@ -1635,4 +1635,3 @@ calf_toggle_get_type (void)
 }
 
 ///////////////////////////////////////// tube ///////////////////////////////////////////////
-

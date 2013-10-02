@@ -1059,7 +1059,7 @@ GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
     widget = gtk_file_chooser_button_new(attribs["title"].c_str(), GTK_FILE_CHOOSER_ACTION_OPEN);
     filechooser = GTK_FILE_CHOOSER_BUTTON(widget);
     // XXXKF this is GTK+ 2.12 function, does any replacement exist?
-    // MS: switched from gtk_signal_connect to g_signal_connect for better emission of signals
+    // MS: switched from g_signal_connect to g_signal_connect for better emission of signals
     g_signal_connect(GTK_OBJECT(widget), "file-set", G_CALLBACK(filechooser_value_changed), (gpointer)this);
     if (attribs.count("width"))
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);

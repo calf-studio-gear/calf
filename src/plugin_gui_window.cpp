@@ -376,7 +376,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     //gtk_widget_set_size_request(GTK_WIDGET(toplevel), max(req.width + 10, req2.width), req.height + req2.height + 10);
     // printf("size set %dx%d\n", wx, wy);
     // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-    gtk_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_window *)this);
+    g_signal_connect (GTK_OBJECT (toplevel), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_window *)this);
     if (main)
         main->set_window(gui->plugin, this);
 
@@ -418,4 +418,3 @@ plugin_gui_window::~plugin_gui_window()
     cleanup();
     delete gui;
 }
-

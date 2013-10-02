@@ -62,7 +62,7 @@ void gui_preset_access::store_preset()
         return;
     }
     store_preset_dlg = GTK_WIDGET(gtk_builder_get_object(store_preset_builder, "store_preset"));
-    gtk_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), (gui_preset_access *)this);
+    g_signal_connect(GTK_OBJECT(store_preset_dlg), "destroy", G_CALLBACK(on_dlg_destroy_window), (gui_preset_access *)this);
 //    gtk_widget_set_name(GTK_WIDGET(store_preset_dlg), "Calf-Preset");
     GtkWidget *preset_name_combo = GTK_WIDGET(gtk_builder_get_object(store_preset_builder, "preset_name"));
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
@@ -135,4 +135,3 @@ void gui_preset_access::on_dlg_destroy_window(GtkWindow *window, gpointer data)
 {
     ((gui_preset_access *)data)->store_preset_dlg = NULL;
 }
-
