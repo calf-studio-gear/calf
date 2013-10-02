@@ -32,6 +32,7 @@
 #include <calf/gui_controls.h>
 #include <calf/utils.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include <iostream>
 
@@ -101,6 +102,7 @@ param_control::param_control()
     label = NULL;
     in_change = 0;
     old_displayed_value = -1.f;
+    has_entry = false;
 }
 
 
@@ -155,16 +157,16 @@ void param_control::add_context_menu_handler()
     if (widget && !(get_props().flags & PF_PROP_OUTPUT))
     {
         g_signal_connect(GTK_OBJECT(widget), "button-press-event", (GCallback)on_button_press_event, this);
-        g_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
+        //g_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
     }
 }
 
-gboolean param_control::on_popup_menu(GtkWidget *widget, void *user_data)
-{
-    param_control *self = (param_control *)user_data;
-    self->do_popup_menu();
-    return TRUE;
-}
+//gboolean param_control::on_popup_menu(GtkWidget *widget, void *user_data)
+//{
+    //param_control *self = (param_control *)user_data;
+    //self->do_popup_menu();
+    //return TRUE;
+//}
 
 gboolean param_control::on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
@@ -172,6 +174,11 @@ gboolean param_control::on_button_press_event(GtkWidget *widget, GdkEventButton 
     if (event->button == 3)
     {
         self->do_popup_menu();
+        return TRUE;
+    }
+    else if (event->button == 2)
+    {
+        self->create_value_entry(widget, event->x_root, event->y_root);
         return TRUE;
     }
     return FALSE;
@@ -182,6 +189,86 @@ void param_control::do_popup_menu()
     if (gui)
         gui->on_control_popup(this, param_no);
 }
+
+void param_control::destroy_value_entry ()
+{
+    // remove the window containing the entry
+    gtk_widget_destroy(GTK_WIDGET(entrywin));
+    has_entry = false;
+}
+gboolean param_control::value_entry_click(GtkWidget *widget, GdkEventButton *event, void *user_data)
+{
+    // prevent clicks on the entry itself from hiding the window
+    return TRUE;
+}
+gboolean param_control::value_entry_unfocus(GtkWidget *widget, GdkEventFocus *event, void *user_data)
+{
+    // destroy window if it looses focus
+    param_control *self = (param_control *)user_data;
+    self->destroy_value_entry();
+    return TRUE;
+}
+gboolean param_control::value_entry_action(GtkEntry *widget, GdkEvent *event, void *user_data)
+{
+    // called when a key was hit, sorts out and treats RETURN and ESC
+    param_control *self = (param_control *)user_data;
+    const parameter_properties &props = self->get_props();
+    GdkEventKey *key = (GdkEventKey*)event;
+    if(key->keyval == GDK_Escape)
+        self->destroy_value_entry();
+    else if (key->keyval == GDK_Return) {
+        float val = atof(gtk_entry_get_text(widget));
+        /************************************************************
+         * MISSING THE REAL TRANSFORMATION AND SETTING OF THE VALUE *
+         ************************************************************/
+        
+        printf("%.5f\n", val);
+        
+        /************************************************************/
+        self->destroy_value_entry();
+    }
+    return FALSE;
+}
+void param_control::create_value_entry(GtkWidget *widget, int x, int y)
+{
+    if (has_entry) {
+        // kill an existing entry window on re-trigger
+        destroy_value_entry();
+        return;
+    }
+    
+    const parameter_properties &props = get_props();
+    float value = gui->plugin->get_param_value(param_no);
+    
+    // no chance for a menu, so we have to do everything by hand
+    entrywin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(GTK_WIDGET(entrywin), "Calf-Value-Entry");
+    gtk_window_set_title (GTK_WINDOW (entrywin), "Calf Value Entry");
+    gtk_window_set_resizable (GTK_WINDOW (entrywin), FALSE);
+    gtk_window_set_decorated (GTK_WINDOW (entrywin), FALSE);
+    gtk_window_set_skip_taskbar_hint (GTK_WINDOW (entrywin), TRUE);
+    gtk_window_set_skip_pager_hint (GTK_WINDOW (entrywin), TRUE);
+    gtk_window_set_transient_for (GTK_WINDOW (entrywin), GTK_WINDOW (gui->window->toplevel));
+    gtk_window_set_gravity(GTK_WINDOW(entrywin), GDK_GRAVITY_CENTER);
+    gtk_widget_set_events (GTK_WIDGET(entrywin), GDK_FOCUS_CHANGE_MASK);
+    g_signal_connect (G_OBJECT (entrywin), "focus-out-event", G_CALLBACK (value_entry_unfocus), this);
+    
+    // create the text entry
+    GtkWidget *entry = gtk_entry_new();
+    gtk_widget_set_name(GTK_WIDGET(entry), "Calf-Entry");
+    gtk_entry_set_text(GTK_ENTRY(entry), props.to_string(value).c_str());
+    gtk_widget_add_events (entry, GDK_KEY_PRESS_MASK);
+    g_signal_connect (entry, "key-press-event", (GCallback)value_entry_action, this);
+    g_signal_connect (entry, "button-press-event", (GCallback)value_entry_click, this);
+    
+    // stitch together and show
+    gtk_container_add(GTK_CONTAINER (entrywin), entry);
+    gtk_widget_show_all(entrywin);
+    gtk_window_move(GTK_WINDOW (entrywin), x, y);
+    
+    has_entry = true;
+}
+
 
 /******************************** controls ********************************/
 

@@ -53,8 +53,9 @@ struct param_control: public control_base
 {    
     int param_no;
     std::string param_variable;
-    GtkWidget *label, *widget;
+    GtkWidget *label, *widget, *entrywin;
     int in_change;
+    bool has_entry;
     float old_displayed_value;
     
     struct guard_change {
@@ -85,6 +86,11 @@ struct param_control: public control_base
     virtual void do_popup_menu();
     static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data);
     static gboolean on_popup_menu(GtkWidget *widget, void *user_data);
+    virtual void create_value_entry(GtkWidget *widget, int x, int y);
+    virtual void destroy_value_entry();
+    static gboolean value_entry_action(GtkEntry *widget, GdkEvent *event, void *user_data);
+    static gboolean value_entry_unfocus(GtkWidget *widget, GdkEventFocus *event, void *user_data);
+    static gboolean value_entry_click(GtkWidget *widget, GdkEventButton *event, void *user_data);
 };
 
 struct control_container: public control_base
