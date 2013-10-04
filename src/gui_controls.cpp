@@ -196,11 +196,6 @@ void param_control::destroy_value_entry ()
     gtk_widget_destroy(GTK_WIDGET(entrywin));
     has_entry = false;
 }
-gboolean param_control::value_entry_click(GtkWidget *widget, GdkEventButton *event, void *user_data)
-{
-    // prevent clicks on the entry itself from hiding the window
-    return TRUE;
-}
 gboolean param_control::value_entry_unfocus(GtkWidget *widget, GdkEventFocus *event, void *user_data)
 {
     // destroy window if it looses focus
@@ -254,7 +249,6 @@ void param_control::create_value_entry(GtkWidget *widget, int x, int y)
     gtk_entry_set_text(GTK_ENTRY(entry), props.to_string(value).c_str());
     gtk_widget_add_events (entry, GDK_KEY_PRESS_MASK);
     g_signal_connect (entry, "key-press-event", (GCallback)value_entry_action, this);
-    g_signal_connect (entry, "button-press-event", (GCallback)value_entry_click, this);
     
     // stitch together and show
     gtk_container_add(GTK_CONTAINER (entrywin), entry);
