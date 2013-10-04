@@ -136,6 +136,8 @@ struct parameter_properties
     double to_01(float value) const;
     /// stringify (in sensible way)
     std::string to_string(float value) const;
+    /// convert string (from text entry) to value
+    float string_to_value(const char* string) const;
     /// get required width (for reserving GUI space)
     int get_char_count() const;
     /// get increment step based on step value (if specified) and other factors

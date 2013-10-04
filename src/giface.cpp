@@ -185,6 +185,18 @@ std::string parameter_properties::to_string(float value) const
     return string(buf);
 }
 
+float parameter_properties::string_to_value(const char* string) const
+{
+    float value = atof(string);
+    if ((flags & PF_SCALEMASK) == PF_SCALE_PERC) {
+        return value / 100.0;
+    }
+    if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
+        return dsp::dB2amp(value);
+    }
+    return value;
+}
+
 void calf_plugins::plugin_ctl_iface::clear_preset() {
     int param_count = get_metadata_iface()->get_param_count();
     for (int i = 0; i < param_count; i++)
@@ -229,7 +241,7 @@ static float subindex_to_freq(int subindex)
 bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies, float res, float ofs)
 {
     if (subindex < 0 )
-	return false;
+    return false;
     // frequency grid
     if (use_frequencies)
     {
