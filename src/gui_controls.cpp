@@ -217,14 +217,10 @@ gboolean param_control::value_entry_action(GtkEntry *widget, GdkEvent *event, vo
     if(key->keyval == GDK_Escape)
         self->destroy_value_entry();
     else if (key->keyval == GDK_Return) {
-        float val = atof(gtk_entry_get_text(widget));
-        /************************************************************
-         * MISSING THE REAL TRANSFORMATION AND SETTING OF THE VALUE *
-         ************************************************************/
-        
+        float val = props.string_to_value(gtk_entry_get_text(widget));
         printf("%.5f\n", val);
-        
-        /************************************************************/
+        self->gui->plugin->set_param_value(self->param_no, val);
+        self->set();
         self->destroy_value_entry();
     }
     return FALSE;
