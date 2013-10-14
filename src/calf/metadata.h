@@ -427,6 +427,17 @@ struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
            param_count };
     PLUGIN_NAME_ID_LABEL("analyzer", "analyzer", "Analyzer")
 };
+/// Markus's and Chrischi's Transient Designer
+struct transientdesigner_metadata: public plugin_metadata<transientdesigner_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS, param_mix,
+           param_attack_inertia, param_attack_boost,
+           param_release_threshold, param_release_inertia, param_release_boost,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
+};
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo
 struct organ_enums

@@ -391,5 +391,25 @@ protected:
 
 };
 
+
+class transientdesigner_audio_module:
+    public audio_module<transientdesigner_metadata>
+{
+    typedef transientdesigner_audio_module AM;
+    uint32_t srate;
+    bool active;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    float envelope, attack, release, ffactor;
+    int _count;
+public:
+    transientdesigner_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 };
 #endif

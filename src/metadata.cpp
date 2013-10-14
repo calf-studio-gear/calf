@@ -1039,6 +1039,22 @@ CALF_PORT_PROPS(analyzer) = {
 
 CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "Analyzer" };
 
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(transientdesigner) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(transientdesigner) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 1,      0,           1,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
+    { 0.f,      0.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "attack_inertia", "Attack Inertia" },
+    { 0.f,      -2.f,           2.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "attack_boost", "Attack Boost" },
+    { 0.f,      0.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_threshold", "Release Threshold" },
+    { 0.f,      0.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_inertia", "Release Inertia" },
+    { 0.f,      -2.f,           2.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_boost", "Release Boost" },
+    {}
+};
+
+CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Christian Holschuh, Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
 
 
 ////////////////////////////////////////////////////////////////////////////

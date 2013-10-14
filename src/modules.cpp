@@ -1911,3 +1911,147 @@ bool analyzer_audio_module::get_clear_all(int index) const {
     }
     return false;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+transientdesigner_audio_module::transientdesigner_audio_module() {
+    active      = false;
+    clip_inL    = 0.f;
+    clip_inR    = 0.f;
+    clip_outL   = 0.f;
+    clip_outR   = 0.f;
+    meter_inL   = 0.f;
+    meter_inR   = 0.f;
+    meter_outL  = 0.f;
+    meter_outR  = 0.f;
+    envelope    = 0.f;
+    attack      = 0.f;
+    release     = 0.f;
+    ffactor = 0;
+    _count = 0;
+}
+
+void transientdesigner_audio_module::activate() {
+    active = true;
+}
+
+void transientdesigner_audio_module::deactivate() {
+    active = false;
+}
+
+void transientdesigner_audio_module::params_changed() {
+    
+}
+
+uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        if(*params[param_bypass] > 0.5) {
+            outs[0][i] = ins[0][i];
+            outs[1][i] = ins[1][i];
+            clip_inL    = 0.f;
+            clip_inR    = 0.f;
+            clip_outL   = 0.f;
+            clip_outR   = 0.f;
+            meter_inL  = 0.f;
+            meter_inR  = 0.f;
+            meter_outL = 0.f;
+            meter_outR = 0.f;
+        } else {
+            // let meters fall a bit
+            clip_inL    -= std::min(clip_inL,  numsamples);
+            clip_inR    -= std::min(clip_inR,  numsamples);
+            clip_outL   -= std::min(clip_outL, numsamples);
+            clip_outR   -= std::min(clip_outR, numsamples);
+            meter_inL = 0.f;
+            meter_inR = 0.f;
+            meter_outL = 0.f;
+            meter_outR = 0.f;
+            
+            float L = ins[0][i];
+            float R = ins[1][i];
+            
+            // levels in
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            // GUI stuff
+            if(L > meter_inL) meter_inL = L;
+            if(R > meter_inR) meter_inR = R;
+            if(L > 1.f) clip_inL  = srate >> 3;
+            if(R > 1.f) clip_inR  = srate >> 3;
+            
+            // get average value of input
+            float s = (fabs(L) + fabs(R)) / 2;
+            // envelope follower
+            // this is the real envelope follower curve. It raises as
+            // fast as the signal is raising and falls much slower
+            // depending on the sample rate and the ffactor
+            // (the falling factor)
+            if (s > 0.8 * envelope and _count < 200) {
+                _count = 0;
+            }
+            if (s >= envelope) {
+                envelope = s;
+                _count = 0;
+            } else {
+                envelope -= (_count < 200) ? 0.0002 : 0.001;
+            }
+            
+            // attack follower
+            // this follower is a slowly raising curve used for the
+            // attack phase of the signal
+            attack = attack + *params[param_attack_inertia] * (envelope - attack);
+            // get the difference between attack follower and envelope follower
+            float adiff = envelope - attack;
+            
+            // release follower
+            // this follower is a slowly raising curve used for the
+            // sustain and release phase of the signal
+            release = release;
+            // get the difference between attack follower and envelope follower
+            float rdiff = envelope - release;
+            
+            // attach all curve to the signals
+            float sum = 1 + adiff + *params[param_attack_boost]
+                          + *params[param_release_boost] * (1 / (1 - rdiff) - 1);
+            L *= sum;
+            R *= sum;
+            
+            // prevent a phase of 180°
+            if (ins[0][i] * L < 0) L = 0;
+            if (ins[1][i] * R < 0) R = 0;
+            
+            // levels out
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
+            
+            //output
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // clip LED's
+            if(L > 1.f) clip_outL = srate >> 3;
+            if(R > 1.f) clip_outR = srate >> 3;
+            if(L > meter_outL) meter_outL = L;
+            if(R > meter_outR) meter_outR = R;
+            _count ++;
+        }
+    }
+    // draw meters
+    SET_IF_CONNECTED(clip_inL);
+    SET_IF_CONNECTED(clip_inR);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_inL);
+    SET_IF_CONNECTED(meter_inR);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
+    return outputs_mask;
+}
+
+void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    ffactor = 0.01; //srate;
+}

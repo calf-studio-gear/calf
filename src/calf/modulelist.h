@@ -25,13 +25,14 @@
     PER_MODULE_ITEM(saturator, false, "saturator")
     PER_MODULE_ITEM(exciter, false, "exciter")
     PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
+    PER_MODULE_ITEM(transientdesigner, false, "transientdesigner")
     PER_MODULE_ITEM(mono, false, "mono")
     PER_MODULE_ITEM(stereo, false, "stereo")
     PER_MODULE_ITEM(analyzer, false, "analyzer")
+    PER_MODULE_ITEM(comp_delay, true, "compdelay")
 #ifdef ENABLE_EXPERIMENTAL
     PER_MODULE_ITEM(fluidsynth, true, "fluidsynth")
     PER_MODULE_ITEM(wavetable, true, "wavetable")
-    PER_MODULE_ITEM(comp_delay, true, "compdelay")
 #endif
 #undef PER_MODULE_ITEM
 #endif
