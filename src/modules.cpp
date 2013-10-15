@@ -2056,8 +2056,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             float reldiff = release - envelope;
             
             // amplification factor from attack and release curve
-            float ampfactor = attdiff * (*params[param_attack_boost] > 0 ? *params[param_attack_boost] * 4 : *params[param_attack_boost])
-                          + *params[param_release_boost]
+            float ampfactor = attdiff
+                          * (*params[param_attack_boost] > 0 ? *params[param_attack_boost] * 4 : *params[param_attack_boost] * 2)
+                          + (*params[param_release_boost] > 0 ? *params[param_release_boost] * 2 : *params[param_release_boost] * 8)
                           * ((*params[param_release_boost] > 0) ? ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1)) : reldiff);
             
             float sum = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
