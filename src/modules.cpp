@@ -2033,8 +2033,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // this is a curve which is always above the envelope. It
             // starts to fall when the envelope falls beneath the
             // sustain threshold
-            float reldelta = (envelope / release - *params[param_sustain_threshold])
-                           * 0.707 * release
+            float reldelta = (envelope / release - *params[param_sustain_threshold]) * 0.707
                            / (*params[param_release_time] * srate * 0.001 * *params[param_sustain_threshold]);
             // release delta can never raise above 0
             reldelta = std::min(0.f, reldelta);
@@ -2057,9 +2056,11 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             float reldiff = release - envelope;
             
             // amplification factor from attack and release curve
-            float sum = 1 + attdiff * (*params[param_attack_boost] > 0 ? *params[param_attack_boost] * 4 : *params[param_attack_boost])
+            float ampfactor = attdiff * (*params[param_attack_boost] > 0 ? *params[param_attack_boost] * 4 : *params[param_attack_boost])
                           + *params[param_release_boost]
                           * ((*params[param_release_boost] > 0) ? ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1)) : reldiff);
+            
+            float sum = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
             L *= sum;
             R *= sum;
             
