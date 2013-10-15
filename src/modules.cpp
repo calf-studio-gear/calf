@@ -1928,7 +1928,6 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     envelope     = 0.f;
     attack       = 0.f;
     release      = 0.f;
-    peak         = 0.f;
     attack_coef  = 0.f;
     release_coef = 0.f;
     attacking    = 0.f;
@@ -1937,7 +1936,6 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     _attacking   = false;
     _sustaining  = false;
     _releasing   = false;
-    count = 0;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2021,14 +2019,11 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             attack += attdelta;
             // never raise above envelope
             attack = std::min(envelope, attack);
-            // check if we're in attack phase and remember the highest
-            // peak for having a target in sustain phase
+            // check if we're in attack phase
             if (attack < envelope) {
                 if (!_attacking) {
-                    peak = 0;
                     _attacking = true;
                 }
-                peak = std::max(s, peak);
             } else if (_attacking) {
                 _sustaining = true;
                 _attacking = false;
@@ -2037,8 +2032,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // release follower
             // this is a curve which is always above the envelope. It
             // starts to fall when the envelope falls beneath the
-            // sustain threshold (which is a percentual part of the
-            // peak we searched in attack phase set by the user)
+            // sustain threshold
             float reldelta = (envelope / release - *params[param_sustain_threshold])
                            * 0.707 * release
                            / (*params[param_release_time] * srate * 0.001 * *params[param_sustain_threshold]);
@@ -2064,8 +2058,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             
             // amplification factor from attack and release curve
             float sum = 1 + attdiff * *params[param_attack_boost]
-                          + *params[param_release_boost] * reldiff;
-                          //* ((peak - reldiff == 0) ? 0 : (release / (release - reldiff) - 1));
+                          + *params[param_release_boost]
+                          * ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1));
             L *= sum;
             R *= sum;
             
@@ -2091,10 +2085,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if (_attacking)  attacking  = 1; else attacking = 0;//srate >> 3;
             if (_sustaining) sustaining = 1; else sustaining = 0;//srate >> 3;
             if (_releasing)  releasing  = 1; else releasing = 0;//srate >> 3;
-            
-            if(!(count % 50)) printf("%.5f | %.5f | %.5f\n", peak, reldelta, release);
-            count += 1;
-            
         }
     }
     // draw meters
@@ -2116,5 +2106,5 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
-    release_coef = exp(log(0.01) / (0.02f  * srate));
+    release_coef = exp(log(0.01) / (0.2f  * srate));
 }
