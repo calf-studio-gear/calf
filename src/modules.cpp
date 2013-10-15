@@ -1916,20 +1916,28 @@ bool analyzer_audio_module::get_clear_all(int index) const {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 transientdesigner_audio_module::transientdesigner_audio_module() {
-    active      = false;
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL   = 0.f;
-    meter_inR   = 0.f;
-    meter_outL  = 0.f;
-    meter_outR  = 0.f;
-    envelope    = 0.f;
-    attack      = 0.f;
-    release     = 0.f;
-    ffactor = 0;
-    _count = 0;
+    active       = false;
+    clip_inL     = 0.f;
+    clip_inR     = 0.f;
+    clip_outL    = 0.f;
+    clip_outR    = 0.f;
+    meter_inL    = 0.f;
+    meter_inR    = 0.f;
+    meter_outL   = 0.f;
+    meter_outR   = 0.f;
+    envelope     = 0.f;
+    attack       = 0.f;
+    release      = 0.f;
+    peak         = 0.f;
+    attack_coef  = 0.f;
+    release_coef = 0.f;
+    attacking    = 0.f;
+    sustaining   = 0.f;
+    releasing    = 0.f;
+    _attacking   = false;
+    _sustaining  = false;
+    _releasing   = false;
+    count = 0;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -1957,6 +1965,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR  = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
+            attacking  = 0.f;
+            sustaining = 0.f;
+            releasing  = 0.f;
         } else {
             // let meters fall a bit
             clip_inL    -= std::min(clip_inL,  numsamples);
@@ -1967,6 +1978,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
+            //attacking  -= std::min(attacking,  numsamples);
+            //sustaining -= std::min(sustaining, numsamples);
+            //releasing  -= std::min(releasing,  numsamples);
             
             float L = ins[0][i];
             float R = ins[1][i];
@@ -1983,38 +1997,75 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             
             // get average value of input
             float s = (fabs(L) + fabs(R)) / 2;
+            
             // envelope follower
             // this is the real envelope follower curve. It raises as
             // fast as the signal is raising and falls much slower
             // depending on the sample rate and the ffactor
             // (the falling factor)
-            if (s > 0.8 * envelope and _count < 200) {
-                _count = 0;
-            }
-            if (s >= envelope) {
-                envelope = s;
-                _count = 0;
-            } else {
-                envelope -= (_count < 200) ? 0.0002 : 0.001;
-            }
+            
+            if(s > envelope)
+                envelope = attack_coef * (envelope - s) + s;
+            else
+                envelope = release_coef * (envelope - s) + s;
+            
+            //envelope = (s >= envelope) ? s : envelope + 0.5 / (srate * 0.1)
             
             // attack follower
-            // this follower is a slowly raising curve used for the
-            // attack phase of the signal
-            attack = attack + *params[param_attack_inertia] * (envelope - attack);
-            // get the difference between attack follower and envelope follower
-            float adiff = envelope - attack;
+            // this is a curve which follows the envelope slowly.
+            // It never can rise above the envelope. It reaches 70.7%
+            // of the envelope in a certain amount of time set by the user
+            float attdelta = (envelope - attack)
+                           * 0.707
+                           / (srate * *params[param_attack_time] * 0.001);
+            attack += attdelta;
+            // never raise above envelope
+            attack = std::min(envelope, attack);
+            // check if we're in attack phase and remember the highest
+            // peak for having a target in sustain phase
+            if (attack < envelope) {
+                if (!_attacking) {
+                    peak = 0;
+                    _attacking = true;
+                }
+                peak = std::max(s, peak);
+            } else if (_attacking) {
+                _sustaining = true;
+                _attacking = false;
+            }
             
             // release follower
-            // this follower is a slowly raising curve used for the
-            // sustain and release phase of the signal
-            release = release;
-            // get the difference between attack follower and envelope follower
-            float rdiff = envelope - release;
+            // this is a curve which is always above the envelope. It
+            // starts to fall when the envelope falls beneath the
+            // sustain threshold (which is a percentual part of the
+            // peak we searched in attack phase set by the user)
+            float reldelta = (envelope / release - *params[param_sustain_threshold])
+                           * 0.707 * release
+                           / (*params[param_release_time] * srate * 0.001 * *params[param_sustain_threshold]);
+            // release delta can never raise above 0
+            reldelta = std::min(0.f, reldelta);
+            release += reldelta;
+            // never fall below envelope
+            release = std::max(envelope, release);
+            // check if we enter release phase
+            if (reldelta < 0 and !_releasing) {
+                _sustaining = false;
+                _releasing = true;
+            }
+            // check if releasing has ended
+            if (release == envelope) {
+                _releasing = false;
+            }
             
-            // attach all curve to the signals
-            float sum = 1 + adiff + *params[param_attack_boost]
-                          + *params[param_release_boost] * (1 / (1 - rdiff) - 1);
+            // difference between attack and envelope
+            float attdiff = envelope - attack;
+            // difference between release and envelope
+            float reldiff = release - envelope;
+            
+            // amplification factor from attack and release curve
+            float sum = 1 + attdiff * *params[param_attack_boost]
+                          + *params[param_release_boost] * reldiff;
+                          //* ((peak - reldiff == 0) ? 0 : (release / (release - reldiff) - 1));
             L *= sum;
             R *= sum;
             
@@ -2026,16 +2077,24 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             L *= *params[param_level_out];
             R *= *params[param_level_out];
             
-            //output
-            outs[0][i] = L;
-            outs[1][i] = R;
+            // output
+            outs[0][i] = L * *params[param_mix] + ins[0][i] * (*params[param_mix] * -1 + 1);
+            outs[1][i] = R * *params[param_mix] + ins[1][i] * (*params[param_mix] * -1 + 1);
             
             // clip LED's
             if(L > 1.f) clip_outL = srate >> 3;
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
-            _count ++;
+            
+            // action LED's
+            if (_attacking)  attacking  = 1; else attacking = 0;//srate >> 3;
+            if (_sustaining) sustaining = 1; else sustaining = 0;//srate >> 3;
+            if (_releasing)  releasing  = 1; else releasing = 0;//srate >> 3;
+            
+            if(!(count % 50)) printf("%.5f | %.5f | %.5f\n", peak, reldelta, release);
+            count += 1;
+            
         }
     }
     // draw meters
@@ -2047,11 +2106,15 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
     SET_IF_CONNECTED(meter_inR);
     SET_IF_CONNECTED(meter_outL);
     SET_IF_CONNECTED(meter_outR);
+    SET_IF_CONNECTED(attacking);
+    SET_IF_CONNECTED(sustaining);
+    SET_IF_CONNECTED(releasing);
     return outputs_mask;
 }
 
 void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    ffactor = 0.01; //srate;
+    attack_coef  = exp(log(0.01) / (0.001 * srate));
+    release_coef = exp(log(0.01) / (0.02f  * srate));
 }

@@ -433,8 +433,9 @@ struct transientdesigner_metadata: public plugin_metadata<transientdesigner_meta
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS, param_mix,
-           param_attack_inertia, param_attack_boost,
-           param_release_threshold, param_release_inertia, param_release_boost,
+           param_attack_time, param_attack_boost,
+           param_sustain_threshold, param_release_time, param_release_boost,
+           param_attacking, param_sustaining, param_releasing,
            param_count };
     PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
 };
