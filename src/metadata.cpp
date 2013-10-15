@@ -1051,9 +1051,9 @@ CALF_PORT_PROPS(transientdesigner) = {
     { 0.9f,   0.01f, 1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sustain_threshold", "Sustain Threshold" },
     { 100.f,  1.f,   5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release_time", "Release Time (ms)" },
     { 0.f,   -1.f,   1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_boost", "Release Boost" },
-    { 1,      0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "attacking", "Attacking" },
-    { 1,      0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "sustaining", "Sustaining" },
-    { 1,      0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "releasing", "Releasing" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "attacking", "Attacking" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "sustaining", "Sustaining" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "releasing", "Releasing" },
     {}
 };
 

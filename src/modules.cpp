@@ -1976,9 +1976,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
-            //attacking  -= std::min(attacking,  numsamples);
-            //sustaining -= std::min(sustaining, numsamples);
-            //releasing  -= std::min(releasing,  numsamples);
+            attacking  -= std::min(attacking,  numsamples);
+            sustaining -= std::min(sustaining, numsamples);
+            releasing  -= std::min(releasing,  numsamples);
             
             float L = ins[0][i];
             float R = ins[1][i];
@@ -2007,51 +2007,61 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             else
                 envelope = release_coef * (envelope - s) + s;
             
-            //envelope = (s >= envelope) ? s : envelope + 0.5 / (srate * 0.1)
-            
             // attack follower
             // this is a curve which follows the envelope slowly.
             // It never can rise above the envelope. It reaches 70.7%
             // of the envelope in a certain amount of time set by the user
+            
             float attdelta = (envelope - attack)
                            * 0.707
                            / (srate * *params[param_attack_time] * 0.001);
             attack += attdelta;
+            
             // never raise above envelope
             attack = std::min(envelope, attack);
+            
             // check if we're in attack phase
             if (attack < envelope) {
                 if (!_attacking) {
                     _attacking = true;
+                    printf("attacking\n");
                 }
             } else if (_attacking) {
                 _sustaining = true;
                 _attacking = false;
+                printf("sustaining\n");
             }
             
             // release follower
             // this is a curve which is always above the envelope. It
             // starts to fall when the envelope falls beneath the
             // sustain threshold
+            
             float reldelta = (envelope / release - *params[param_sustain_threshold]) * 0.707
                            / (*params[param_release_time] * srate * 0.001 * *params[param_sustain_threshold]);
+                           
             // release delta can never raise above 0
             reldelta = std::min(0.f, reldelta);
             release += reldelta;
+            
             // never fall below envelope
             release = std::max(envelope, release);
+            
             // check if we enter release phase
             if (reldelta < 0 and !_releasing) {
                 _sustaining = false;
                 _releasing = true;
+                printf("releasing\n");
             }
             // check if releasing has ended
-            if (release == envelope) {
+            if (release == envelope and _releasing) {
                 _releasing = false;
+                printf("done\n");
             }
             
             // difference between attack and envelope
             float attdiff = envelope - attack;
+            
             // difference between release and envelope
             float reldiff = release - envelope;
             
@@ -2084,9 +2094,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > meter_outR) meter_outR = R;
             
             // action LED's
-            if (_attacking)  attacking  = 1; else attacking = 0;//srate >> 3;
-            if (_sustaining) sustaining = 1; else sustaining = 0;//srate >> 3;
-            if (_releasing)  releasing  = 1; else releasing = 0;//srate >> 3;
+            if (_attacking)  attacking  = srate >> 3;
+            if (_sustaining) sustaining = srate >> 3;
+            if (_releasing)  releasing  = srate >> 3;
         }
     }
     // draw meters
