@@ -63,15 +63,7 @@
                 </vbox>
             </hbox>
         </frame>
-        <frame label="Sustain">
-            <hbox>
-                <vbox>
-                    <label text="Threshold"/>
-                    <knob param="sustain_threshold" size="3"/>
-                    <value param="sustain_threshold"/>
-                </vbox>
-            </hbox>
-        </frame>
+        
         <frame label="Release">
             <hbox>
                 <vbox>
@@ -83,6 +75,16 @@
                     <label text="Time"/>
                     <knob param="release_time" size="3"/>
                     <value param="release_time"/>
+                </vbox>
+            </hbox>
+        </frame>
+        
+        <frame label="Sustain">
+            <hbox>
+                <vbox>
+                    <label text="Threshold"/>
+                    <knob param="sustain_threshold" size="3"/>
+                    <value param="sustain_threshold"/>
                 </vbox>
             </hbox>
         </frame>

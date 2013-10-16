@@ -1916,26 +1916,27 @@ bool analyzer_audio_module::get_clear_all(int index) const {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 transientdesigner_audio_module::transientdesigner_audio_module() {
-    active       = false;
-    clip_inL     = 0.f;
-    clip_inR     = 0.f;
-    clip_outL    = 0.f;
-    clip_outR    = 0.f;
-    meter_inL    = 0.f;
-    meter_inR    = 0.f;
-    meter_outL   = 0.f;
-    meter_outR   = 0.f;
-    envelope     = 0.f;
-    attack       = 0.f;
-    release      = 0.f;
-    attack_coef  = 0.f;
-    release_coef = 0.f;
-    pixels       = 0;
-    pbuffer_pos  = 0;
-    pbuffer_sample = 0;
-    pbuffer[0]   = 0.f;
-    attcount     = 0;
-    attacked     = false;
+    active          = false;
+    clip_inL        = 0.f;
+    clip_inR        = 0.f;
+    clip_outL       = 0.f;
+    clip_outR       = 0.f;
+    meter_inL       = 0.f;
+    meter_inR       = 0.f;
+    meter_outL      = 0.f;
+    meter_outR      = 0.f;
+    envelope        = 0.f;
+    attack          = 0.f;
+    release         = 0.f;
+    attack_coef     = 0.f;
+    release_coef    = 0.f;
+    pixels          = 0;
+    pbuffer_pos     = 0;
+    pbuffer_sample  = 0;
+    pbuffer_size    = 0;
+    attcount        = 0;
+    attacked        = false;
+    display_old     = 0.f;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -1947,32 +1948,35 @@ void transientdesigner_audio_module::deactivate() {
 }
 
 void transientdesigner_audio_module::params_changed() {
-    
+    if (*params[param_display] != display_old) {
+        dsp::zero(pbuffer, (int)(pixels * 2));
+        display_old = *params[param_display];
+    }
 }
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         if(*params[param_bypass] > 0.5) {
-            outs[0][i] = ins[0][i];
-            outs[1][i] = ins[1][i];
+            outs[0][i]  = ins[0][i];
+            outs[1][i]  = ins[1][i];
             clip_inL    = 0.f;
             clip_inR    = 0.f;
             clip_outL   = 0.f;
             clip_outR   = 0.f;
-            meter_inL  = 0.f;
-            meter_inR  = 0.f;
-            meter_outL = 0.f;
-            meter_outR = 0.f;
+            meter_inL   = 0.f;
+            meter_inR   = 0.f;
+            meter_outL  = 0.f;
+            meter_outR  = 0.f;
         } else {
             // let meters fall a bit
             clip_inL    -= std::min(clip_inL,  numsamples);
             clip_inR    -= std::min(clip_inR,  numsamples);
             clip_outL   -= std::min(clip_outL, numsamples);
             clip_outR   -= std::min(clip_outR, numsamples);
-            meter_inL = 0.f;
-            meter_inR = 0.f;
-            meter_outL = 0.f;
-            meter_outR = 0.f;
+            meter_inL    = 0.f;
+            meter_inR    = 0.f;
+            meter_outL   = 0.f;
+            meter_outR   = 0.f;
             
             float L = ins[0][i];
             float R = ins[1][i];
@@ -2049,26 +2053,48 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             L *= *params[param_level_out];
             R *= *params[param_level_out];
             
+            // mix
+            L *= *params[param_mix] + ins[0][i] * (*params[param_mix] * -1 + 1);
+            R *= *params[param_mix] + ins[1][i] * (*params[param_mix] * -1 + 1);
+            
             // output
-            outs[0][i] = L * *params[param_mix] + ins[0][i] * (*params[param_mix] * -1 + 1);
-            outs[1][i] = R * *params[param_mix] + ins[1][i] * (*params[param_mix] * -1 + 1);
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // fill pixel buffer
+            if (pbuffer_size) {
+                // sanitize the buffer position if enough samples have
+                // been captured. This is recognized by a negative value
+                pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
+                pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos], 0.f);
+                
+                // add samples to the buffer at the actual address
+                pbuffer[pbuffer_pos]     += s;
+                pbuffer[pbuffer_pos + 1] += (fabs(L) + fabs(R));
+                
+                pbuffer_sample += 1;
+                
+                if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
+                    // we captured enough samples for one pixel on this
+                    // address. to keep track of the finalization invert
+                    // its values as a marker to sanitize in the next
+                    // cycle before adding samples again
+                    pbuffer[pbuffer_pos]     *= -1;
+                    pbuffer[pbuffer_pos + 1] *= -1;
+                    
+                    // advance the buffer position
+                    pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
+                    
+                    // reset sample counter
+                    pbuffer_sample = 0;
+                }
+            }
             
             // clip LED's
             if(L > 1.f) clip_outL = srate >> 3;
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
-            
-            // fill pixel buffer
-            if (pixels) {
-                pbuffer[pbuffer_pos] += s;
-                pbuffer[pbuffer_pos + 1] += (fabs(outs[0][i]) + fabs(outs[1][i]));
-                pbuffer_sample += 1;
-                if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
-                    pbuffer_pos = (pbuffer_pos + 2) % (pixels * 2);
-                    pbuffer_sample = 0;
-                }
-            }
         }
         attcount += 1;
         if (attcount >= srate / 5) {
@@ -2097,33 +2123,50 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if (points <= 0)
+        return false;
     float secs = *params[param_display] / 1000.f;
     if (points != pixels) {
+        // buffer size is the amount of pixels for the max display value
+        // if drawn in the min display zoom level multiplied by 2 for
+        // keeping the input and the output fabs signals
+        pbuffer_size = (int)(points * 2.f * 5000.f / 0.01);
         // create array
-        pixels = points;
-        pbuffer = (float*) calloc((int)(pixels * secs), sizeof(float));
-        dsp::zero(pbuffer, (int)(pixels * secs));
-        pbuffer_pos = 0;
+        pbuffer = (float*) calloc(pbuffer_size, sizeof(float));
+        dsp::zero(pbuffer, pbuffer_size);
+        
+        // sanitize some indexes and addresses
+        pbuffer_pos    = 0;
         pbuffer_sample = 0;
+        pbuffer_draw   = 0;
+        
+        pixels = points;
+        
+        printf("%d %d\n", pixels, pbuffer_size);
+    }
+    if (subindex == 0) {
+        // set the address to start from in both drawing cycles
+        // to amount of pixels before pbuffer_pos
+        pbuffer_draw = (pbuffer_size + pbuffer_pos - pixels * 2) % pbuffer_size;
     }
     switch (subindex) {
         default:
         case 2:
             return false;
         case 0:
-            // draw sample curve
+            // draw output
             for (int i = 0; i <= points; i++) {
-                int pos = (pbuffer_pos + i) % (pixels * 2);
-                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels), 256, 0.5);
+                int pos = (pbuffer_draw + i * 2) % pbuffer_size + 1;
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f, 256, 1);
             }
             break;
         case 1:
-            // draw output
+            // draw input
             *mode = 1;
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
-                int pos = (pbuffer_pos + i) % (pixels * 2) + 1;
-                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels) / 2.f, 256, 0.5);
+                int pos = (pbuffer_draw + i * 2) % pbuffer_size;
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels), 256, 1);
             }
             break;
     }
@@ -2131,5 +2174,21 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    return false;
+    // gain/dB grid
+    float gain = 16.0 / (1 << subindex);
+    pos = dB_grid(gain, 256, 1);
+
+    if (pos < -1 or subindex >= 21)
+        return false;
+
+    if (subindex != 4)
+        context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
+
+    if (!(subindex & 1))
+    {
+        std::stringstream ss;
+        ss << (24 - 6 * subindex) << " dB";
+        legend = ss.str();
+    }
+    return true;
 }

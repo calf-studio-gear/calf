@@ -402,10 +402,13 @@ class transientdesigner_audio_module:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     float envelope, attack, release;
     float attack_coef, release_coef;
+    int display_old;
     mutable int pixels;
     mutable float *pbuffer;
     mutable int pbuffer_pos;
+    mutable int pbuffer_size;
     mutable int pbuffer_sample;
+    mutable int pbuffer_draw;
     bool attacked;
     uint32_t attcount;
 public:
