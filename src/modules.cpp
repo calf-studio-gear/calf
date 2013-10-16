@@ -2093,11 +2093,12 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    float secs = *params[param_display] / 1000.f;
     if (points != pixels) {
         // create array
         pixels = points;
-        pbuffer = (float*) calloc(pixels * 2, sizeof(float));
-        dsp::zero(pbuffer, pixels * 2);
+        pbuffer = (float*) calloc((int)(pixels * secs), sizeof(float));
+        dsp::zero(pbuffer, (int)(pixels * secs));
         pbuffer_pos = 0;
         pbuffer_sample = 0;
     }
@@ -2109,7 +2110,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             // draw sample curve
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_pos + i) % (pixels * 2);
-                data[i] = dB_grid(pbuffer[pos] / (float)(srate * *params[param_display] / 1000.f / pixels), 256, 0.5);
+                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels), 256, 0.5);
             }
             break;
         case 1:
@@ -2118,7 +2119,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_pos + i) % (pixels * 2) + 1;
-                data[i] = dB_grid(pbuffer[pos] / (float)(srate * *params[param_display] / 1000.f / pixels), 256, 0.5);
+                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels), 256, 0.5);
             }
             break;
     }
