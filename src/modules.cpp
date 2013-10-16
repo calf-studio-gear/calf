@@ -2045,10 +2045,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             L *= sum;
             R *= sum;
             
-            // prevent a phase of 180°
-            if (ins[0][i] * L < 0) L = 0;
-            if (ins[1][i] * R < 0) R = 0;
-            
             // levels out
             L *= *params[param_level_out];
             R *= *params[param_level_out];
@@ -2066,7 +2062,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // fill pixel buffer
             if (pixels) {
                 pbuffer[pbuffer_pos] += s;
-                pbuffer[pbuffer_pos + 1] += (fabs(outs[0][i]) + fabs(outs[1][i])) / 2.f;
+                pbuffer[pbuffer_pos + 1] += (fabs(outs[0][i]) + fabs(outs[1][i]));
                 pbuffer_sample += 1;
                 if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
                     pbuffer_pos = (pbuffer_pos + 2) % (pixels * 2);
@@ -2127,7 +2123,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_pos + i) % (pixels * 2) + 1;
-                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels), 256, 0.5);
+                data[i] = dB_grid(pbuffer[pos] / (float)(srate * secs / pixels) / 2.f, 256, 0.5);
             }
             break;
     }

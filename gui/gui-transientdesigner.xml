@@ -32,70 +32,59 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
+        <if cond="directlink">
+            <frame label="Waveform">
+                <hbox>
+                    <vbox>
+                        <label text="Display"/>
+                        <knob param="display"/>
+                        <value param="display"/>
+                        <label text="Threshold"/>
+                        <knob param="display_threshold"/>
+                        <value param="display_threshold"/>
+                    </vbox>
+                    <line-graph refresh="1" width="400" height="150" param="sustain_threshold"/>
+                </hbox>
+            </frame>
+        </if>
+        
+    
         <frame label="Attack">
-            <hbox spacing="20">
-                <label/>
+            <hbox>
                 <vbox>
-                    <hbox spacing="20">
-                        <vbox spacing="5">
-                            <label text="Boost"/>
-                            <knob param="attack_boost" size="5" type="1"/>
-                            <value param="attack_boost"/>
-                        </vbox>
-                        <vbox spacing="8">
-                            <label text="Time"/>
-                            <knob param="attack_time" size="3"/>
-                            <value param="attack_time"/>
-                        </vbox>
-                    </hbox>
+                    <label text="Time"/>
+                    <knob param="attack_time" size="3"/>
+                    <value param="attack_time"/>
                 </vbox>
-                <label/>
+                <vbox>
+                    <label text="Boost"/>
+                    <knob param="attack_boost" size="5" type="1"/>
+                    <value param="attack_boost"/>
+                </vbox>
             </hbox>
         </frame>
         <frame label="Sustain">
-            <hbox spacing="20">
-                <label/>
+            <hbox>
                 <vbox>
-                    <vbox spacing="8" sexpand="1" fill="1">
-                        <label text="Threshold"/>
-                        <knob param="sustain_threshold" size="3"/>
-                        <value param="sustain_threshold"/>
-                    </vbox>
+                    <label text="Threshold"/>
+                    <knob param="sustain_threshold" size="3"/>
+                    <value param="sustain_threshold"/>
                 </vbox>
-                <label/>
             </hbox>
         </frame>
         <frame label="Release">
-            <hbox spacing="20">
-                <label/>
+            <hbox>
                 <vbox>
-                    <hbox spacing="20">
-                        <vbox spacing="8">
-                            <label text="Time"/>
-                            <knob param="release_time" size="3"/>
-                            <value param="release_time"/>
-                        </vbox>
-                        <vbox spacing="5">
-                            <label text="Boost"/>
-                            <knob param="release_boost" size="5" type="1"/>
-                            <value param="release_boost"/>
-                        </vbox>
-                    </hbox>
+                    <label text="Boost"/>
+                    <knob param="release_boost" size="5" type="1"/>
+                    <value param="release_boost"/>
                 </vbox>
-                <label/>
+                <vbox>
+                    <label text="Time"/>
+                    <knob param="release_time" size="3"/>
+                    <value param="release_time"/>
+                </vbox>
             </hbox>
         </frame>
     </hbox>
-    <if cond="directlink">
-        <frame label="Waveform">
-            <hbox>
-                <line-graph refresh="1" width="600" height="100" param="sustain_threshold"/>
-                <vbox>
-                    <label text="Display"/>
-                    <knob param="display"/>
-                    <value param="display"/>
-                </vbox>
-            </hbox>
-        </frame>
-    </if>
 </vbox>

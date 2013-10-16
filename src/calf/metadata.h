@@ -435,7 +435,7 @@ struct transientdesigner_metadata: public plugin_metadata<transientdesigner_meta
            STEREO_VU_METER_PARAMS, param_mix,
            param_attack_time, param_attack_boost,
            param_sustain_threshold, param_release_time, param_release_boost,
-           param_display,
+           param_display, param_display_threshold,
            param_count };
     PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
 };
