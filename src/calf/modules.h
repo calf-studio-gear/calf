@@ -402,9 +402,10 @@ class transientdesigner_audio_module:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     float envelope, attack, release;
     float attack_coef, release_coef;
-    int pixels;
-    float *pbuffer;
-    int pbuffer_pos;
+    mutable int pixels;
+    mutable float *pbuffer;
+    mutable int pbuffer_pos;
+    mutable int pbuffer_sample;
 public:
     transientdesigner_audio_module();
     void params_changed();
@@ -412,7 +413,7 @@ public:
     void set_sample_rate(uint32_t sr);
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     
 };

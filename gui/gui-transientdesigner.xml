@@ -87,6 +87,15 @@
         </frame>
     </hbox>
     <if cond="directlink">
-        <line-graph refresh="1" width="600" height="100" param="sustain_threshold"/>
+        <frame label="Waveform">
+            <hbox>
+                <line-graph refresh="1" width="600" height="100" param="sustain_threshold"/>
+                <vbox>
+                    <label text="Display"/>
+                    <knob param="display"/>
+                    <value param="display"/>
+                </vbox>
+            </hbox>
+        </frame>
     </if>
 </vbox>

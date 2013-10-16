@@ -1932,7 +1932,8 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     release_coef = 0.f;
     pixels       = 0;
     pbuffer_pos  = 0;
-    &pbuffer     = 0.f;
+    pbuffer_sample = 0;
+    pbuffer[0]   = 0.f;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2059,6 +2060,17 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
+            
+            // fill pixel buffer
+            if (pixels) {
+                pbuffer[pbuffer_pos] += s;
+                pbuffer[pbuffer_pos + 1] += (fabs(outs[0][i]) + fabs(outs[1][i])) / 2.f;
+                pbuffer_sample += 1;
+                if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
+                    pbuffer_pos = (pbuffer_pos + 2) % (pixels * 2);
+                    pbuffer_sample = 0;
+                }
+            }
         }
     }
     // draw meters
@@ -2079,14 +2091,15 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
     attack_coef  = exp(log(0.01) / (0.001 * srate));
     release_coef = exp(log(0.01) / (0.2f  * srate));
 }
-bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode)
+bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (points != pixels) {
         // create array
         pixels = points;
-        pbuffer = (float*) calloc(pixels, sizeof(float));
-        dsp::zero(pbuffer, pixels);
+        pbuffer = (float*) calloc(pixels * 2, sizeof(float));
+        dsp::zero(pbuffer, pixels * 2);
         pbuffer_pos = 0;
+        pbuffer_sample = 0;
     }
     switch (subindex) {
         default:
@@ -2094,11 +2107,19 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             return false;
         case 0:
             // draw sample curve
-            
+            for (int i = 0; i <= points; i++) {
+                int pos = (pbuffer_pos + i) % (pixels * 2);
+                data[i] = dB_grid(pbuffer[pos] / (float)(srate * *params[param_display] / 1000.f / pixels), 256, 0.5);
+            }
             break;
         case 1:
             // draw output
-            
+            *mode = 1;
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+            for (int i = 0; i <= points; i++) {
+                int pos = (pbuffer_pos + i) % (pixels * 2) + 1;
+                data[i] = dB_grid(pbuffer[pos] / (float)(srate * *params[param_display] / 1000.f / pixels), 256, 0.5);
+            }
             break;
     }
     return true;
