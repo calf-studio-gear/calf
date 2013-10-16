@@ -406,6 +406,8 @@ class transientdesigner_audio_module:
     mutable float *pbuffer;
     mutable int pbuffer_pos;
     mutable int pbuffer_sample;
+    bool attacked;
+    int attcount;
 public:
     transientdesigner_audio_module();
     void params_changed();

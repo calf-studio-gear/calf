@@ -1934,6 +1934,8 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     pbuffer_pos  = 0;
     pbuffer_sample = 0;
     pbuffer[0]   = 0.f;
+    attcount     = 0;
+    attacked     = false;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2072,6 +2074,11 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
                 }
             }
         }
+        attcount += 1;
+        if (attcount >= srate / 5) {
+            attcount = 0;
+            attacked = true;
+        }
     }
     // draw meters
     SET_IF_CONNECTED(clip_inL);
@@ -2090,6 +2097,7 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
     release_coef = exp(log(0.01) / (0.2f  * srate));
+    attcount = srate / 5;
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
