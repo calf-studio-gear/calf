@@ -46,7 +46,6 @@
                             <label text="Time"/>
                             <knob param="attack_time" size="3"/>
                             <value param="attack_time"/>
-                            <led param="attacking"/>
                         </vbox>
                     </hbox>
                 </vbox>
@@ -61,7 +60,6 @@
                         <label text="Threshold"/>
                         <knob param="sustain_threshold" size="3"/>
                         <value param="sustain_threshold"/>
-                        <led param="sustaining" expand="0" fill="0"/>
                     </vbox>
                 </vbox>
                 <label/>
@@ -76,7 +74,6 @@
                             <label text="Time"/>
                             <knob param="release_time" size="3"/>
                             <value param="release_time"/>
-                            <led param="releasing"/>
                         </vbox>
                         <vbox spacing="5">
                             <label text="Boost"/>

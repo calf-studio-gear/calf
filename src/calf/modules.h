@@ -401,9 +401,8 @@ class transientdesigner_audio_module:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     float envelope, attack, release;
-    bool _attacking, _sustaining, _releasing;
     float attack_coef, release_coef;
-    uint32_t attacking, sustaining, releasing;
+    
 public:
     transientdesigner_audio_module();
     void params_changed();

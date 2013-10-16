@@ -1930,12 +1930,6 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     release      = 0.f;
     attack_coef  = 0.f;
     release_coef = 0.f;
-    attacking    = 0.f;
-    sustaining   = 0.f;
-    releasing    = 0.f;
-    _attacking   = false;
-    _sustaining  = false;
-    _releasing   = false;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -1963,9 +1957,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR  = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
-            attacking  = 0.f;
-            sustaining = 0.f;
-            releasing  = 0.f;
         } else {
             // let meters fall a bit
             clip_inL    -= std::min(clip_inL,  numsamples);
@@ -1976,9 +1967,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
-            attacking  -= std::min(attacking,  numsamples);
-            sustaining -= std::min(sustaining, numsamples);
-            releasing  -= std::min(releasing,  numsamples);
             
             float L = ins[0][i];
             float R = ins[1][i];
@@ -2020,18 +2008,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // never raise above envelope
             attack = std::min(envelope, attack);
             
-            // check if we're in attack phase
-            if (attack < envelope) {
-                if (!_attacking) {
-                    _attacking = true;
-                    printf("attacking\n");
-                }
-            } else if (_attacking) {
-                _sustaining = true;
-                _attacking = false;
-                printf("sustaining\n");
-            }
-            
             // release follower
             // this is a curve which is always above the envelope. It
             // starts to fall when the envelope falls beneath the
@@ -2046,18 +2022,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             
             // never fall below envelope
             release = std::max(envelope, release);
-            
-            // check if we enter release phase
-            if (reldelta < 0 and !_releasing) {
-                _sustaining = false;
-                _releasing = true;
-                printf("releasing\n");
-            }
-            // check if releasing has ended
-            if (release == envelope and _releasing) {
-                _releasing = false;
-                printf("done\n");
-            }
             
             // difference between attack and envelope
             float attdiff = envelope - attack;
@@ -2092,11 +2056,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
-            
-            // action LED's
-            if (_attacking)  attacking  = srate >> 3;
-            if (_sustaining) sustaining = srate >> 3;
-            if (_releasing)  releasing  = srate >> 3;
         }
     }
     // draw meters
@@ -2108,9 +2067,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
     SET_IF_CONNECTED(meter_inR);
     SET_IF_CONNECTED(meter_outL);
     SET_IF_CONNECTED(meter_outR);
-    SET_IF_CONNECTED(attacking);
-    SET_IF_CONNECTED(sustaining);
-    SET_IF_CONNECTED(releasing);
     return outputs_mask;
 }
 
