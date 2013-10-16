@@ -1930,6 +1930,9 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     release      = 0.f;
     attack_coef  = 0.f;
     release_coef = 0.f;
+    pixels       = 0;
+    pbuffer_pos  = 0;
+    &pbuffer     = 0.f;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2075,4 +2078,32 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
     release_coef = exp(log(0.01) / (0.2f  * srate));
+}
+bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode)
+{
+    if (points != pixels) {
+        // create array
+        pixels = points;
+        pbuffer = (float*) calloc(pixels, sizeof(float));
+        dsp::zero(pbuffer, pixels);
+        pbuffer_pos = 0;
+    }
+    switch (subindex) {
+        default:
+        case 2:
+            return false;
+        case 0:
+            // draw sample curve
+            
+            break;
+        case 1:
+            // draw output
+            
+            break;
+    }
+    return true;
+}
+bool transientdesigner_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    return false;
 }

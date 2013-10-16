@@ -86,5 +86,7 @@
             </hbox>
         </frame>
     </hbox>
-    
+    <if cond="directlink">
+        <line-graph refresh="1" width="600" height="100" param="sustain_threshold"/>
+    </if>
 </vbox>
