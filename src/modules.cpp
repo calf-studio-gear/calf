@@ -2130,7 +2130,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         // buffer size is the amount of pixels for the max display value
         // if drawn in the min display zoom level multiplied by 2 for
         // keeping the input and the output fabs signals
-        pbuffer_size = (int)(points * 2.f * 5000.f / 0.01);
+        pbuffer_size = (int)(points * 2.f * 100.f);
         // create array
         pbuffer = (float*) calloc(pbuffer_size, sizeof(float));
         dsp::zero(pbuffer, pbuffer_size);
@@ -2157,7 +2157,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             // draw output
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size + 1;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f, 256, 1);
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f, 64, 1);
             }
             break;
         case 1:
@@ -2166,7 +2166,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels), 256, 1);
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels), 64, 1);
             }
             break;
     }
@@ -2174,20 +2174,20 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    // gain/dB grid
-    float gain = 16.0 / (1 << subindex);
-    pos = dB_grid(gain, 256, 1);
-
     if (pos < -1 or subindex >= 21)
         return false;
+    
+    // gain/dB grid
+    float gain = 1.f / (1 << subindex);
+    pos = dB_grid(gain, 64, 1);
 
-    if (subindex != 4)
-        context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
+    //if (subindex != 4)
+    context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
 
     if (!(subindex & 1))
     {
         std::stringstream ss;
-        ss << (24 - 6 * subindex) << " dB";
+        ss << (-6 * subindex) << " dB";
         legend = ss.str();
     }
     return true;
