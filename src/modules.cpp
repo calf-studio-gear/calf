@@ -1957,6 +1957,12 @@ void transientdesigner_audio_module::params_changed() {
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     for(uint32_t i = offset; i < offset + numsamples; i++) {
+        float L = ins[0][i];
+        float R = ins[1][i];
+        float Lin = ins[0][i];
+        float Rin = ins[1][i];
+        // get average value of input
+        float s = (fabs(L) + fabs(R)) / 2;
         if(*params[param_bypass] > 0.5) {
             outs[0][i]  = ins[0][i];
             outs[1][i]  = ins[1][i];
@@ -1979,11 +1985,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_outL   = 0.f;
             meter_outR   = 0.f;
             
-            float L = ins[0][i];
-            float R = ins[1][i];
-            float Lin = ins[0][i];
-            float Rin = ins[1][i];
-            
             // levels in
             L *= *params[param_level_in];
             R *= *params[param_level_in];
@@ -1993,9 +1994,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > meter_inR) meter_inR = R;
             if(L > 1.f) clip_inL  = srate >> 3;
             if(R > 1.f) clip_inR  = srate >> 3;
-            
-            // get average value of input
-            float s = (fabs(L) + fabs(R)) / 2;
             
             // envelope follower
             // this is the real envelope follower curve. It raises as
@@ -2064,41 +2062,41 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             outs[0][i] = L;
             outs[1][i] = R;
             
-            // fill pixel buffer
-            if (pbuffer_size) {
-                // sanitize the buffer position if enough samples have
-                // been captured. This is recognized by a negative value
-                pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
-                pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos + 1], 0.f);
-                
-                // add samples to the buffer at the actual address
-                pbuffer[pbuffer_pos]     += s;
-                pbuffer[pbuffer_pos + 1] += (fabs(L) + fabs(R));
-                
-                pbuffer_sample += 1;
-                
-                if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
-                    // we captured enough samples for one pixel on this
-                    // address. to keep track of the finalization invert
-                    // its values as a marker to sanitize in the next
-                    // cycle before adding samples again
-                    pbuffer[pbuffer_pos]     *= -1;
-                    pbuffer[pbuffer_pos + 1] *= -1;
-                    
-                    // advance the buffer position
-                    pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
-                    
-                    // reset sample counter
-                    pbuffer_sample = 0;
-                }
-            }
-            
             // clip LED's
             if(L > 1.f) clip_outL = srate >> 3;
             if(R > 1.f) clip_outR = srate >> 3;
             if(L > meter_outL) meter_outL = L;
             if(R > meter_outR) meter_outR = R;
         }
+        // fill pixel buffer
+        if (pbuffer_size) {
+            // sanitize the buffer position if enough samples have
+            // been captured. This is recognized by a negative value
+            pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
+            pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos + 1], 0.f);
+            
+            // add samples to the buffer at the actual address
+            pbuffer[pbuffer_pos]     += s;
+            pbuffer[pbuffer_pos + 1] += (fabs(L) + fabs(R));
+            
+            pbuffer_sample += 1;
+            
+            if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
+                // we captured enough samples for one pixel on this
+                // address. to keep track of the finalization invert
+                // its values as a marker to sanitize in the next
+                // cycle before adding samples again
+                pbuffer[pbuffer_pos]     *= -1;
+                pbuffer[pbuffer_pos + 1] *= -1;
+                
+                // advance the buffer position
+                pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
+                
+                // reset sample counter
+                pbuffer_sample = 0;
+            }
+        }
+        
         attcount += 1;
         if (attcount >= srate / 5 and !attacked) {
             attcount = 0;
