@@ -2066,7 +2066,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
                 // sanitize the buffer position if enough samples have
                 // been captured. This is recognized by a negative value
                 pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
-                pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos], 0.f);
+                pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos + 1], 0.f);
                 
                 // add samples to the buffer at the actual address
                 pbuffer[pbuffer_pos]     += s;
