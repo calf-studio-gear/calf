@@ -2159,7 +2159,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             // draw output
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size + 1;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f, 64, 1);
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f + 2.51e-10, 64, 1);
             }
             break;
         case 1:
@@ -2168,7 +2168,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels), 64, 1);
+                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) + 2.51e-10, 64, 1);
             }
             break;
     }
@@ -2176,18 +2176,11 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (pos < -1 or subindex >= 21)
-        return false;
-    
-    // gain/dB grid
+    if (subindex >= 12) return false;
     float gain = 1.f / (1 << subindex);
     pos = dB_grid(gain, 64, 1);
-
-    //if (subindex != 4)
     context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
-
-    if (!(subindex & 1))
-    {
+    if (!(subindex & 1) and subindex) {
         std::stringstream ss;
         ss << (-6 * subindex) << " dB";
         legend = ss.str();
