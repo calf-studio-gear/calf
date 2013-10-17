@@ -2124,7 +2124,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
 void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    attack_coef  = exp(log(0.01) / (0.001 * srate));
+    attack_coef  = exp(log(0.01) / (0.0001 * srate));
     release_coef = exp(log(0.01) / (0.2f  * srate));
     attcount = srate / 5;
 }
