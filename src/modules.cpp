@@ -2101,7 +2101,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         if ( envelope == release
         and envelope > *params[param_display_threshold]
         and attcount >= srate / 100) {
-            attack_pos = (pbuffer_size + pbuffer_pos - srate / 100 * 2) % pbuffer_size;
+            attack_pos = pbuffer_pos;
             attcount = 0;
         }
     }
@@ -2144,11 +2144,13 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         
         pixels = points;
     }
+    bool hold = *params[param_display_threshold] > 0;
     // set the address to start from in both drawing cycles
     // to amount of pixels before pbuffer_pos or to attack_pos
     if (subindex == 0) {
-        int pos = *params[param_display_threshold] ? attack_pos : pbuffer_pos;
-        pbuffer_draw = (pbuffer_size + pos - pixels * 2) % pbuffer_size;
+        int pos = hold ? attack_pos : pbuffer_pos;
+        pbuffer_draw = *params[param_display_threshold] ? pos
+                     : (pbuffer_size + pos - pixels * 2) % pbuffer_size;
     }
     float secs = *params[param_display] / 1000.f;
     switch (subindex) {
@@ -2159,7 +2161,13 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             // draw output
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size + 1;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f + 2.51e-10, 64, 1);
+                if (hold
+                and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
+                    or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
+                    data[i] = dB_grid(2.51e-10, 64, 1);
+                } else {
+                    data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f + 2.51e-10, 64, 1);
+                }
             }
             break;
         case 1:
@@ -2168,7 +2176,13 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
             context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
             for (int i = 0; i <= points; i++) {
                 int pos = (pbuffer_draw + i * 2) % pbuffer_size;
-                data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) + 2.51e-10, 64, 1);
+                if (hold
+                and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
+                    or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
+                    data[i] = dB_grid(2.51e-10, 64, 1);
+                } else {
+                    data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) + 2.51e-10, 64, 1);
+                };
             }
             break;
     }
