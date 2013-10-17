@@ -2161,10 +2161,11 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
     switch (subindex) {
         case 0:
             add = 1.f;
+            context->set_line_width(1.5);
             break;
         case 1:
             *mode = 1;
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.33);
             break;
         default:
         case 2:
