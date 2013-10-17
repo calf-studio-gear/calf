@@ -2098,9 +2098,11 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         }
         
         attcount += 1;
-        if (attcount >= srate / 5 and !attacked) {
+        if ( envelope == release
+        and envelope > *params[param_display_threshold]
+        and attcount >= srate / 100) {
+            attack_pos = (pbuffer_size + pbuffer_pos - srate / 100 * 2) % pbuffer_size;
             attcount = 0;
-            attacked = true;
         }
     }
     // draw meters
