@@ -2101,7 +2101,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         attcount += 1;
         if ( envelope == release
         and envelope > *params[param_display_threshold]
-        and attcount >= srate / 100) {
+        and attcount >= srate / 100
+        and pbuffer_available) {
             int diff = (int)(srate / 10 / pixels);
             diff += diff & 1;
             attack_pos = (pbuffer_pos - diff + pbuffer_size) % pbuffer_size;
