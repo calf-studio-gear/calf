@@ -24,7 +24,7 @@ $(document).ready(function () {
                 ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.png"],
                 ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
                 ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
-                ["(Compensation Delay Line)", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.png"],
+                ["Compensation Delay Line", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.png"],
             ]
         ],
         [
@@ -38,7 +38,8 @@ $(document).ready(function () {
                 ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"],
                 ["Gate", "Gate.html", "images/Calf - Gate.png"],
                 ["Sidechain Gate", "Sidechain Gate.html", "images/Calf - Sidechain Gate.png"],
-                ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.png"]
+                ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.png"],
+                ["Transient Designer", "Transient Designer.html", "images/Calf - Transient Designer.png"]
             ]
         ],
         [

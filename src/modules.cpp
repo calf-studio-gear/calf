@@ -1939,6 +1939,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     attack_pos      = 0;
     display_old     = 0.f;
     pbuffer_available = false;
+    display_max     = pow(2,-12);
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2148,12 +2149,12 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         pbuffer_available = true;
         pixels = points;
     }
-    bool hold = *params[param_display_threshold] > 0;
+    bool hold = *params[param_display_threshold] > display_max;
     // set the address to start from in both drawing cycles
     // to amount of pixels before pbuffer_pos or to attack_pos
     if (subindex == 0) {
         int pos = hold ? attack_pos : pbuffer_pos;
-        pbuffer_draw = *params[param_display_threshold] ? pos
+        pbuffer_draw = *params[param_display_threshold] > display_max ? pos
                      : (pbuffer_size + pos - pixels * 2) % pbuffer_size;
     }
     float secs = *params[param_display] / 1000.f;
