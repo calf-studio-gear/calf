@@ -1938,6 +1938,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     attacked        = false;
     attack_pos      = 0;
     display_old     = 0.f;
+    pbuffer_available = false;
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2069,7 +2070,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > meter_outR) meter_outR = R;
         }
         // fill pixel buffer
-        if (pbuffer_size) {
+        if (pbuffer_available) {
             // sanitize the buffer position if enough samples have
             // been captured. This is recognized by a negative value
             pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
@@ -2143,7 +2144,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         pbuffer_pos    = 0;
         pbuffer_sample = 0;
         pbuffer_draw   = 0;
-        
+        pbuffer_available = true;
         pixels = points;
     }
     bool hold = *params[param_display_threshold] > 0;
