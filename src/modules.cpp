@@ -1980,6 +1980,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             
             float L = ins[0][i];
             float R = ins[1][i];
+            float Lin = ins[0][i];
+            float Rin = ins[1][i];
             
             // levels in
             L *= *params[param_level_in];
@@ -2054,8 +2056,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             R *= *params[param_level_out];
             
             // mix
-            L *= *params[param_mix] + ins[0][i] * (*params[param_mix] * -1 + 1);
-            R *= *params[param_mix] + ins[1][i] * (*params[param_mix] * -1 + 1);
+            L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+            R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
             
             // output
             outs[0][i] = L;
@@ -2141,8 +2143,6 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         pbuffer_draw   = 0;
         
         pixels = points;
-        
-        printf("%d %d\n", pixels, pbuffer_size);
     }
     if (subindex == 0) {
         // set the address to start from in both drawing cycles
