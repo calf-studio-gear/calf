@@ -411,6 +411,7 @@ class transientdesigner_audio_module:
     mutable int pbuffer_draw;
     bool attacked;
     uint32_t attcount;
+    int attack_pos;
 public:
     transientdesigner_audio_module();
     void params_changed();

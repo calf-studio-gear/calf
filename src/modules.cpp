@@ -1936,6 +1936,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     pbuffer_size    = 0;
     attcount        = 0;
     attacked        = false;
+    attack_pos      = 0;
     display_old     = 0.f;
 }
 
@@ -2099,7 +2100,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(R > meter_outR) meter_outR = R;
         }
         attcount += 1;
-        if (attcount >= srate / 5) {
+        if (attcount >= srate / 5 and !attacked) {
             attcount = 0;
             attacked = true;
         }
@@ -2127,7 +2128,6 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
 {
     if (points <= 0)
         return false;
-    float secs = *params[param_display] / 1000.f;
     if (points != pixels) {
         // buffer size is the amount of pixels for the max display value
         // if drawn in the min display zoom level multiplied by 2 for
@@ -2144,11 +2144,13 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         
         pixels = points;
     }
+    // set the address to start from in both drawing cycles
+    // to amount of pixels before pbuffer_pos or to attack_pos
     if (subindex == 0) {
-        // set the address to start from in both drawing cycles
-        // to amount of pixels before pbuffer_pos
-        pbuffer_draw = (pbuffer_size + pbuffer_pos - pixels * 2) % pbuffer_size;
+        int pos = *params[param_display_threshold] ? attack_pos : pbuffer_pos;
+        pbuffer_draw = (pbuffer_size + pos - pixels * 2) % pbuffer_size;
     }
+    float secs = *params[param_display] / 1000.f;
     switch (subindex) {
         default:
         case 2:
