@@ -409,7 +409,7 @@ class transientdesigner_audio_module:
     mutable int pbuffer_size;
     mutable int pbuffer_sample;
     mutable int pbuffer_draw;
-    mutable bool pbuffer_available;s
+    mutable bool pbuffer_available;
     bool attacked;
     uint32_t attcount;
     int attack_pos;
