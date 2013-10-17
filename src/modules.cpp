@@ -2101,7 +2101,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         if ( envelope == release
         and envelope > *params[param_display_threshold]
         and attcount >= srate / 100) {
-            int diff = (int)(srate / 20 / pixels);
+            int diff = (int)(srate / 10 / pixels);
             diff += diff & 1;
             attack_pos = (pbuffer_pos - diff + pbuffer_size) % pbuffer_size;
             attcount = 0;
@@ -2155,38 +2155,29 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
                      : (pbuffer_size + pos - pixels * 2) % pbuffer_size;
     }
     float secs = *params[param_display] / 1000.f;
+    float add = 0.f;
     switch (subindex) {
+        case 0:
+            add = 1.f;
+            break;
+        case 1:
+            *mode = 1;
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+            break;
         default:
         case 2:
             return false;
-        case 0:
-            // draw output
-            for (int i = 0; i <= points; i++) {
-                int pos = (pbuffer_draw + i * 2) % pbuffer_size + 1;
-                if (hold
-                and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
-                    or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
-                    data[i] = dB_grid(2.51e-10, 64, 1);
-                } else {
-                    data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / 2.f + 2.51e-10, 64, 1);
-                }
-            }
-            break;
-        case 1:
-            // draw input
-            *mode = 1;
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
-            for (int i = 0; i <= points; i++) {
-                int pos = (pbuffer_draw + i * 2) % pbuffer_size;
-                if (hold
-                and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
-                    or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
-                    data[i] = dB_grid(2.51e-10, 64, 1);
-                } else {
-                    data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) + 2.51e-10, 64, 1);
-                };
-            }
-            break;
+    }
+    // draw curve
+    for (int i = 0; i <= points; i++) {
+        int pos = (pbuffer_draw + i * 2) % pbuffer_size + add;
+        if (hold
+        and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
+            or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
+            data[i] = dB_grid(2.51e-10, 64, 1);
+        } else {
+            data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / (add + 1.f) + 2.51e-10, 64, 1);
+        }
     }
     return true;
 }
