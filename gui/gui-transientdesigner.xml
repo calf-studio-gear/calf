@@ -32,25 +32,8 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
-        <if cond="directlink">
-            <frame label="Waveform">
-                <hbox>
-                    <vbox>
-                        <label text="Display"/>
-                        <knob param="display"/>
-                        <value param="display"/>
-                        <label text="Threshold"/>
-                        <knob param="display_threshold"/>
-                        <value param="display_threshold"/>
-                    </vbox>
-                    <line-graph refresh="1" width="400" height="150" param="sustain_threshold"/>
-                </hbox>
-            </frame>
-        </if>
-        
-    
         <frame label="Attack">
-            <hbox>
+            <hbox spacing="12">
                 <vbox>
                     <label text="Time"/>
                     <knob param="attack_time" size="3"/>
@@ -65,7 +48,7 @@
         </frame>
         
         <frame label="Release">
-            <hbox>
+            <hbox spacing="12">
                 <vbox>
                     <label text="Boost"/>
                     <knob param="release_boost" size="5" type="1"/>
@@ -88,5 +71,22 @@
                 </vbox>
             </hbox>
         </frame>
+        
+        <if cond="directlink">
+            <frame label="Waveform">
+                <hbox>
+                    <vbox>
+                        <label text="Display"/>
+                        <knob param="display"/>
+                        <value param="display"/>
+                        <label text="Threshold"/>
+                        <knob param="display_threshold"/>
+                        <value param="display_threshold"/>
+                    </vbox>
+                    <line-graph refresh="1" width="360" height="150" param="sustain_threshold"/>
+                </hbox>
+            </frame>
+        </if>
     </hbox>
+    
 </vbox>
