@@ -47,9 +47,9 @@ $(document).ready(function () {
             [
                 ["Filter", "Filter.html", "images/Calf - Filter.png"],
                 ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.png"],
-                ["Equalizer 5 Band", "Equalizer5band.html", "images/Calf - Equalizer 5 Band.png"],
-                ["Equalizer 8 Band", "Equalizer8band.html", "images/Calf - Equalizer 8 Band.png"],
-                ["Equalizer 12 Band", "Equalizer12band.html", "images/Calf - Equalizer 12 Band.png"],
+                ["Equalizer 5 Band", "Equalizer 5 Band.html", "images/Calf - Equalizer 5 Band.png"],
+                ["Equalizer 8 Band", "Equalizer 8 Band.html", "images/Calf - Equalizer 8 Band.png"],
+                ["Equalizer 12 Band", "Equalizer 12 Band.html", "images/Calf - Equalizer 12 Band.png"],
             ]
         ],
         [

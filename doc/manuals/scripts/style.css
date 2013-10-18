@@ -42,13 +42,15 @@ p, ul {
     background: #333;
     margin: 0 0 15px;
     padding: 10px;
-/*    border: 2px groove white;*/
+    border: 1px solid #444;
+/*
     -moz-border-radius: 12px;
     -webkit-border-radius: 12px;
     border-radius: 12px;
-    -moz-box-shadow:    0 3px 10px #111;
-    -webkit-box-shadow: 0 3px 10px #111;
-    box-shadow:         0 3px 10px #111;
+*/
+    -moz-box-shadow:    0 2px 5px #1f1f1f;
+    -webkit-box-shadow: 0 2px 5px #1f1f1f;
+    box-shadow:         0 2px 5px #1f1f1f;
 }
 ul {
 }
@@ -115,6 +117,9 @@ strong {
     background: none;
     color: #0af;
     border: none;
+    -moz-box-shadow:    none;
+    -webkit-box-shadow: none;
+    box-shadow:         none;
 }
 .header .menu ul li {
     margin: 0 10px;
