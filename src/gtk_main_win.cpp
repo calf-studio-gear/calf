@@ -441,7 +441,7 @@ void gtk_main_window::sort_strips()
             g_object_ref(i->second->strip_table);
             gtk_container_remove(GTK_CONTAINER(strips_table), GTK_WIDGET(i->second->strip_table));
         }
-        gtk_table_attach(GTK_TABLE(strips_table), i->second->strip_table, posx, posx + 1, posy, posy + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
+        gtk_table_attach(GTK_TABLE(strips_table), i->second->strip_table, posx, posx + 1, posy, posy + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), 0, 0);
         if(rem) g_object_unref(i->second->strip_table);
     }
 }

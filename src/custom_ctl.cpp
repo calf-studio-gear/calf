@@ -99,7 +99,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             default:
                 // we want to draw a line
                 if (i and (data[i] < INFINITY or i == sx - 1)) {
-                    cairo_line_to(c, ox + i, oy + y);
+                    cairo_line_to(c, ox + i, y);
                 } else if (i) {
                     continue;
                 }
@@ -109,7 +109,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             case 1:
                 // bars are used
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(c, ox + _last, oy + y, i - _last, sy - y);
+                    cairo_rectangle(c, ox + _last, y, i - _last, sy - y + oy);
                     _last = i;
                 } else {
                     continue;
@@ -118,7 +118,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             case 2:
                 // this one is drawing little boxes at the values position
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(c, ox + _last, oy + y, i - _last, 3);
+                    cairo_rectangle(c, ox + _last, y - 1, i - _last, 2);
                     _last = i;
                 } else {
                     continue;

@@ -2083,13 +2083,14 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             
             pbuffer_sample += 1;
             
-            if (pbuffer_sample > (int)(srate * *params[param_display] / 1000.f / pixels)) {
+            if (pbuffer_sample >= (int)(srate * *params[param_display] / 1000.f / pixels)) {
                 // we captured enough samples for one pixel on this
                 // address. to keep track of the finalization invert
                 // its values as a marker to sanitize in the next
                 // cycle before adding samples again
-                pbuffer[pbuffer_pos]     *= -1;
-                pbuffer[pbuffer_pos + 1] *= -1;
+                float secs = *params[param_display] / 1000.f;
+                pbuffer[pbuffer_pos]     = pbuffer[pbuffer_pos] / (float)(srate * secs / pixels) * -1.f;
+                pbuffer[pbuffer_pos + 1] = pbuffer[pbuffer_pos + 1] / (float)(srate * secs / pixels) / -2.f;
                 
                 // advance the buffer position
                 pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
@@ -2134,6 +2135,9 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
     if (points <= 0)
         return false;
     if (points != pixels) {
+        // the zoom level changed or it's the first time we want to draw
+        // some graphs
+        // 
         // buffer size is the amount of pixels for the max display value
         // if drawn in the min display zoom level multiplied by 2 for
         // keeping the input and the output fabs signals
@@ -2149,6 +2153,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         pbuffer_available = true;
         pixels = points;
     }
+    // check if threshold is above minimum - we want to see trigger hold
     bool hold = *params[param_display_threshold] > display_max;
     // set the address to start from in both drawing cycles
     // to amount of pixels before pbuffer_pos or to attack_pos
@@ -2157,7 +2162,10 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
         pbuffer_draw = *params[param_display_threshold] > display_max ? pos
                      : (pbuffer_size + pos - pixels * 2) % pbuffer_size;
     }
-    float secs = *params[param_display] / 1000.f;
+    // add is needed because we don't want to divide every single data
+    // entry of the output curve in the array inside ::process but do it
+    // in the drawing cycle (less cpu usage). So add is set to 1 while
+    // drawing the output
     float add = 0.f;
     switch (subindex) {
         case 0:
@@ -2176,11 +2184,15 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, float *d
     for (int i = 0; i <= points; i++) {
         int pos = (pbuffer_draw + i * 2) % pbuffer_size + add;
         if (hold
-        and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos) or (pbuffer_pos < attack_pos and pos < attack_pos)))
+        and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos)
+            or (pbuffer_pos < attack_pos and pos < attack_pos)))
             or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
+            // we are drawing trigger hold stuff outside the hold window
+            // so we don't want to see old data - zero it out.
             data[i] = dB_grid(2.51e-10, 64, 1);
         } else {
-            data[i] = dB_grid(fabs(pbuffer[pos]) / (float)(srate * secs / pixels) / (add + 1.f) + 2.51e-10, 64, 1);
+            // draw normally
+            data[i] = dB_grid(fabs(pbuffer[pos]) + 2.51e-10, 64, 1);
         }
     }
     return true;
