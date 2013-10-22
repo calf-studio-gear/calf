@@ -2078,8 +2078,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos + 1], 0.f);
             
             // add samples to the buffer at the actual address
-            pbuffer[pbuffer_pos]     += s;
-            pbuffer[pbuffer_pos + 1] += (fabs(L) + fabs(R));
+            pbuffer[pbuffer_pos]     = std::max(s, pbuffer[pbuffer_pos]);
+            pbuffer[pbuffer_pos + 1] = std::max((float)(fabs(L) + fabs(R)), (float)pbuffer[pbuffer_pos + 1]);
             
             pbuffer_sample += 1;
             
@@ -2088,9 +2088,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
                 // address. to keep track of the finalization invert
                 // its values as a marker to sanitize in the next
                 // cycle before adding samples again
-                float secs = *params[param_display] / 1000.f;
-                pbuffer[pbuffer_pos]     = pbuffer[pbuffer_pos] / (float)(srate * secs / pixels) * -1.f;
-                pbuffer[pbuffer_pos + 1] = pbuffer[pbuffer_pos + 1] / (float)(srate * secs / pixels) / -2.f;
+                pbuffer[pbuffer_pos]     *= -1.f * *params[param_level_in];
+                pbuffer[pbuffer_pos + 1] /= -2.f;
                 
                 // advance the buffer position
                 pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
