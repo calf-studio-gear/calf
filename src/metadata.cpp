@@ -1058,6 +1058,20 @@ CALF_PORT_PROPS(transientdesigner) = {
 
 CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Christian Holschuh, Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
 
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(tapesaturator) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(tapesaturator) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "value1", "Value 1" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "value2", "Value 2" },
+    {}
+};
+
+CALF_PLUGIN_INFO(tapesaturator) = { 0x8588, "TapeSaturator", "Calf Tape Saturator", "Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+
 
 ////////////////////////////////////////////////////////////////////////////
 

@@ -2209,3 +2209,112 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, float
     }
     return true;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+tapesaturator_audio_module::tapesaturator_audio_module() {
+    active          = false;
+    clip_inL        = 0.f;
+    clip_inR        = 0.f;
+    clip_outL       = 0.f;
+    clip_outR       = 0.f;
+    meter_inL       = 0.f;
+    meter_inR       = 0.f;
+    meter_outL      = 0.f;
+    meter_outR      = 0.f;
+}
+
+void tapesaturator_audio_module::activate() {
+    active = true;
+}
+
+void tapesaturator_audio_module::deactivate() {
+    active = false;
+}
+
+void tapesaturator_audio_module::params_changed() {
+    
+}
+
+uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        float L = ins[0][i];
+        float R = ins[1][i];
+        float Lin = ins[0][i];
+        float Rin = ins[1][i];
+        // get average value of input
+        float s = (fabs(L) + fabs(R)) / 2;
+        if(*params[param_bypass] > 0.5) {
+            outs[0][i]  = ins[0][i];
+            outs[1][i]  = ins[1][i];
+            clip_inL    = 0.f;
+            clip_inR    = 0.f;
+            clip_outL   = 0.f;
+            clip_outR   = 0.f;
+            meter_inL   = 0.f;
+            meter_inR   = 0.f;
+            meter_outL  = 0.f;
+            meter_outR  = 0.f;
+        } else {
+            // let meters fall a bit
+            clip_inL    -= std::min(clip_inL,  numsamples);
+            clip_inR    -= std::min(clip_inR,  numsamples);
+            clip_outL   -= std::min(clip_outL, numsamples);
+            clip_outR   -= std::min(clip_outR, numsamples);
+            meter_inL    = 0.f;
+            meter_inR    = 0.f;
+            meter_outL   = 0.f;
+            meter_outR   = 0.f;
+            
+            // levels in
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            ////////////////////////////////////////////
+            // DO STUFF WITH L AND R HERE
+            // USE s AS ABSOLUTE AVERAGE BETWEEN L AND R
+            ////////////////////////////////////////////
+            
+            
+            
+            
+            
+            
+            
+            
+            // levels out
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
+            
+            // mix
+            L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+            R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+            
+            // output
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // clip LED's
+            if(L > 1.f) clip_outL = srate >> 3;
+            if(R > 1.f) clip_outR = srate >> 3;
+            if(L > meter_outL) meter_outL = L;
+            if(R > meter_outR) meter_outR = R;
+        }
+    }
+    // draw meters
+    SET_IF_CONNECTED(clip_inL);
+    SET_IF_CONNECTED(clip_inR);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_inL);
+    SET_IF_CONNECTED(meter_inR);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
+    return outputs_mask;
+}
+
+void tapesaturator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}

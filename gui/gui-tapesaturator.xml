@@ -1,0 +1,51 @@
+<vbox spacing="8">
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label param="mix" attach-x="4" attach-y="0" expand-x="0" />
+        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <value param="mix" attach-x="4" attach-y="3" expand-x="0" />
+        
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+    </table>
+    <hbox spacing="10">
+        <frame label="Value 1">
+                <vbox>
+                    <label text="Value 1"/>
+                    <knob param="value1" size="3"/>
+                    <value param="value1"/>
+                </vbox>
+        </frame>
+        <frame label="Value 2">
+                <vbox>
+                    <label text="Value 2"/>
+                    <knob param="value2" size="3"/>
+                    <value param="value2"/>
+                </vbox>
+        </frame>
+    </hbox>
+    
+</vbox>
