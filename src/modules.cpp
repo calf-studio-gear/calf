@@ -1925,11 +1925,6 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     meter_inR       = 0.f;
     meter_outL      = 0.f;
     meter_outR      = 0.f;
-    envelope        = 0.f;
-    attack          = 0.f;
-    release         = 0.f;
-    attack_coef     = 0.f;
-    release_coef    = 0.f;
     pixels          = 0;
     pbuffer_pos     = 0;
     pbuffer_sample  = 0;
@@ -1955,6 +1950,11 @@ void transientdesigner_audio_module::params_changed() {
         dsp::zero(pbuffer, (int)(pixels * 2));
         display_old = *params[param_display];
     }
+    transients.set_params(*params[param_attack_time],
+                          *params[param_attack_boost],
+                          *params[param_release_time],
+                          *params[param_release_boost],
+                          *params[param_sustain_threshold]);
 }
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -1997,60 +1997,10 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             if(L > 1.f) clip_inL  = srate >> 3;
             if(R > 1.f) clip_inR  = srate >> 3;
             
-            // envelope follower
-            // this is the real envelope follower curve. It raises as
-            // fast as the signal is raising and falls much slower
-            // depending on the sample rate and the ffactor
-            // (the falling factor)
-            
-            if(s > envelope)
-                envelope = attack_coef * (envelope - s) + s;
-            else
-                envelope = release_coef * (envelope - s) + s;
-            
-            // attack follower
-            // this is a curve which follows the envelope slowly.
-            // It never can rise above the envelope. It reaches 70.7%
-            // of the envelope in a certain amount of time set by the user
-            
-            float attdelta = (envelope - attack)
-                           * 0.707
-                           / (srate * *params[param_attack_time] * 0.001);
-            attack += attdelta;
-            
-            // never raise above envelope
-            attack = std::min(envelope, attack);
-            
-            // release follower
-            // this is a curve which is always above the envelope. It
-            // starts to fall when the envelope falls beneath the
-            // sustain threshold
-            
-            float reldelta = (envelope / release - *params[param_sustain_threshold]) * 0.707
-                           / (*params[param_release_time] * srate * 0.001 * *params[param_sustain_threshold]);
-                           
-            // release delta can never raise above 0
-            reldelta = std::min(0.f, reldelta);
-            release += reldelta;
-            
-            // never fall below envelope
-            release = std::max(envelope, release);
-            
-            // difference between attack and envelope
-            float attdiff = envelope - attack;
-            
-            // difference between release and envelope
-            float reldiff = release - envelope;
-            
-            // amplification factor from attack and release curve
-            float ampfactor = attdiff
-                          * (*params[param_attack_boost] > 0 ? *params[param_attack_boost] * 6 : *params[param_attack_boost] * 6)
-                          + (*params[param_release_boost] > 0 ? *params[param_release_boost] * 2 : *params[param_release_boost] * 8)
-                          * ((*params[param_release_boost] > 0) ? ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1)) : reldiff);
-            
-            float sum = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
-            L *= sum;
-            R *= sum;
+            // transient designer
+            float trans = transients.process(s);
+            L *= trans;
+            R *= trans;
             
             // levels out
             L *= *params[param_level_out];
@@ -2100,8 +2050,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         }
         
         attcount += 1;
-        if ( envelope == release
-        and envelope > *params[param_display_threshold]
+        if ( transients.envelope == transients.release
+        and transients.envelope > *params[param_display_threshold]
         and attcount >= srate / 100
         and pbuffer_available) {
             int diff = (int)(srate / 10 / pixels);
@@ -2125,9 +2075,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
 void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    attack_coef  = exp(log(0.01) / (0.0001 * srate));
-    release_coef = exp(log(0.01) / (0.2f  * srate));
     attcount = srate / 5;
+    transients.set_sample_rate(srate);
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
@@ -2208,113 +2157,4 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, float
         legend = ss.str();
     }
     return true;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-tapesaturator_audio_module::tapesaturator_audio_module() {
-    active          = false;
-    clip_inL        = 0.f;
-    clip_inR        = 0.f;
-    clip_outL       = 0.f;
-    clip_outR       = 0.f;
-    meter_inL       = 0.f;
-    meter_inR       = 0.f;
-    meter_outL      = 0.f;
-    meter_outR      = 0.f;
-}
-
-void tapesaturator_audio_module::activate() {
-    active = true;
-}
-
-void tapesaturator_audio_module::deactivate() {
-    active = false;
-}
-
-void tapesaturator_audio_module::params_changed() {
-    
-}
-
-uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-    for(uint32_t i = offset; i < offset + numsamples; i++) {
-        float L = ins[0][i];
-        float R = ins[1][i];
-        float Lin = ins[0][i];
-        float Rin = ins[1][i];
-        // get average value of input
-        float s = (fabs(L) + fabs(R)) / 2;
-        if(*params[param_bypass] > 0.5) {
-            outs[0][i]  = ins[0][i];
-            outs[1][i]  = ins[1][i];
-            clip_inL    = 0.f;
-            clip_inR    = 0.f;
-            clip_outL   = 0.f;
-            clip_outR   = 0.f;
-            meter_inL   = 0.f;
-            meter_inR   = 0.f;
-            meter_outL  = 0.f;
-            meter_outR  = 0.f;
-        } else {
-            // let meters fall a bit
-            clip_inL    -= std::min(clip_inL,  numsamples);
-            clip_inR    -= std::min(clip_inR,  numsamples);
-            clip_outL   -= std::min(clip_outL, numsamples);
-            clip_outR   -= std::min(clip_outR, numsamples);
-            meter_inL    = 0.f;
-            meter_inR    = 0.f;
-            meter_outL   = 0.f;
-            meter_outR   = 0.f;
-            
-            // levels in
-            L *= *params[param_level_in];
-            R *= *params[param_level_in];
-            
-            ////////////////////////////////////////////
-            // DO STUFF WITH L AND R HERE
-            // USE s AS ABSOLUTE AVERAGE BETWEEN L AND R
-            ////////////////////////////////////////////
-            
-            
-            
-            
-            
-            
-            
-            
-            // levels out
-            L *= *params[param_level_out];
-            R *= *params[param_level_out];
-            
-            // mix
-            L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
-            R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
-            
-            // output
-            outs[0][i] = L;
-            outs[1][i] = R;
-            
-            // clip LED's
-            if(L > 1.f) clip_outL = srate >> 3;
-            if(R > 1.f) clip_outR = srate >> 3;
-            if(L > meter_outL) meter_outL = L;
-            if(R > meter_outR) meter_outR = R;
-        }
-    }
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
-    return outputs_mask;
-}
-
-void tapesaturator_audio_module::set_sample_rate(uint32_t sr)
-{
-    srate = sr;
 }

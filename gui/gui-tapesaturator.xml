@@ -32,19 +32,29 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
-        <frame label="Value 1">
+        <frame label="Distortion">
+            <hbox spacing="12">
                 <vbox>
-                    <label text="Value 1"/>
-                    <knob param="value1" size="3"/>
-                    <value param="value1"/>
+                    <label text="Dsitortion"/>
+                    <knob param="distortion" size="5"/>
+                    <value param="distortion"/>
                 </vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="240" height="150" param="distortion"/>
+                </if>
+            </hbox>
         </frame>
-        <frame label="Value 2">
+        <frame label="Filter">
+            <hbox spacing="12">
+                <if cond="directlink">
+                    <line-graph refresh="1" width="240" height="150" param="lowpass"/>
+                </if>
                 <vbox>
-                    <label text="Value 2"/>
-                    <knob param="value2" size="3"/>
-                    <value param="value2"/>
+                    <label text="Filter"/>
+                    <knob param="lowpass" size="5"/>
+                    <value param="lowpass"/>
                 </vbox>
+            </hbox>
         </frame>
     </hbox>
     

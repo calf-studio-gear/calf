@@ -400,8 +400,7 @@ class transientdesigner_audio_module:
     bool active;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
-    float envelope, attack, release;
-    float attack_coef, release_coef;
+    dsp::transients transients;
     int display_old;
     mutable int pixels;
     mutable float *pbuffer;
@@ -424,23 +423,6 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     
-};
-
-class tapesaturator_audio_module:
-    public audio_module<tapesaturator_metadata>
-{
-    typedef tapesaturator_audio_module AM;
-    uint32_t srate;
-    bool active;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
-    float meter_inL, meter_inR, meter_outL, meter_outR;
-public:
-    tapesaturator_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
 };

@@ -26,6 +26,9 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+#define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
+
+
 /// Saturator Band by Markus Schmidt
 ///
 /// This module is based on Krzysztof's filters and Tom Szilagyi's distortion routine.
@@ -641,4 +644,167 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
     }
     // whatever has to be returned x)
     return outputs_mask;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+tapesaturator_audio_module::tapesaturator_audio_module() {
+    active          = false;
+    clip_inL        = 0.f;
+    clip_inR        = 0.f;
+    clip_outL       = 0.f;
+    clip_outR       = 0.f;
+    meter_inL       = 0.f;
+    meter_inR       = 0.f;
+    meter_outL      = 0.f;
+    meter_outR      = 0.f;
+    lp_old          = -1.f;
+}
+
+void tapesaturator_audio_module::activate() {
+    active = true;
+}
+
+void tapesaturator_audio_module::deactivate() {
+    active = false;
+}
+
+void tapesaturator_audio_module::params_changed() {
+    if(*params[param_lp] != lp_old) {
+        lp[0][0].set_lp_rbj(*params[param_lp], 0.707, (float)srate);
+        if(in_count > 1 && out_count > 1)
+            lp[1][0].copy_coeffs(lp[0][0]);
+        lp[0][1].copy_coeffs(lp[0][0]);
+        if(in_count > 1 && out_count > 1)
+            lp[1][1].copy_coeffs(lp[0][0]);
+        lp_old = *params[param_lp];
+    }
+    transients.set_params(100.f,
+                          -0.5f,
+                          100.f,
+                          0.f,
+                          1.f);
+}
+
+uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        float L = ins[0][i];
+        float R = ins[1][i];
+        float Lin = ins[0][i];
+        float Rin = ins[1][i];
+        if(*params[param_bypass] > 0.5) {
+            outs[0][i]  = ins[0][i];
+            outs[1][i]  = ins[1][i];
+            clip_inL    = 0.f;
+            clip_inR    = 0.f;
+            clip_outL   = 0.f;
+            clip_outR   = 0.f;
+            meter_inL   = 0.f;
+            meter_inR   = 0.f;
+            meter_outL  = 0.f;
+            meter_outR  = 0.f;
+        } else {
+            // let meters fall a bit
+            clip_inL    -= std::min(clip_inL,  numsamples);
+            clip_inR    -= std::min(clip_inR,  numsamples);
+            clip_outL   -= std::min(clip_outL, numsamples);
+            clip_outR   -= std::min(clip_outR, numsamples);
+            meter_inL    = 0.f;
+            meter_inR    = 0.f;
+            meter_outL   = 0.f;
+            meter_outR   = 0.f;
+            
+            // levels in
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            // distrotion
+            L = L / fabs(L) * 
+                (1 - exp((-1) * *params[param_distortion] * 4 * fabs(L)));
+             
+            R = R / fabs(R) * 
+                (1 - exp((-1) * *params[param_distortion] * 4 * fabs(R)));
+            
+            // filter
+            L = lp[0][1].process(lp[0][0].process(L));
+            R = lp[1][1].process(lp[1][0].process(R));
+            
+            // levels out
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
+            
+            // mix
+            L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+            R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+            
+            // output
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // clip LED's
+            if(L > 1.f) clip_outL = srate >> 3;
+            if(R > 1.f) clip_outR = srate >> 3;
+            if(L > meter_outL) meter_outL = L;
+            if(R > meter_outR) meter_outR = R;
+            
+            // sanitize filters
+            lp[0][0].sanitize();
+            lp[1][0].sanitize();
+            lp[0][1].sanitize();
+            lp[1][1].sanitize();
+        }
+    }
+    // draw meters
+    SET_IF_CONNECTED(clip_inL);
+    SET_IF_CONNECTED(clip_inR);
+    SET_IF_CONNECTED(clip_outL);
+    SET_IF_CONNECTED(clip_outR);
+    SET_IF_CONNECTED(meter_inL);
+    SET_IF_CONNECTED(meter_inR);
+    SET_IF_CONNECTED(meter_outL);
+    SET_IF_CONNECTED(meter_outR);
+    return outputs_mask;
+}
+
+void tapesaturator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    transients.set_sample_rate(srate);
+}
+
+bool tapesaturator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if(index == param_lp && !subindex) {
+        context->set_line_width(1.5);
+        return ::get_graph(*this, subindex, data, points);
+    } else if (index == param_distortion) {
+        for (int i = 0; i <= points; i++) {
+            
+        }
+    }
+    return false;
+}
+bool tapesaturator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (index == param_distortion) {
+        return false;
+    } else if (index == param_lp) {
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
+    }
+    return false;
+}
+bool tapesaturator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (index == param_distortion) {
+        return false;
+    } else if (index == param_lp) {
+        return false;
+    }
+    return false;
+}
+
+float tapesaturator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+{
+    return lp[0][0].freq_gain(freq, sr) * lp[0][1].freq_gain(freq, sr);
 }

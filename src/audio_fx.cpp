@@ -859,3 +859,85 @@ bool lookahead_limiter::get_asc() {
     asc_active = false;
     return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+transients::transients() {
+    envelope        = 0.f;
+    attack          = 0.f;
+    release         = 0.f;
+    attack_coef     = 0.f;
+    release_coef    = 0.f;
+    att_time        = 0.f;
+    att_level       = 0.f;
+    rel_time        = 0.f;
+    rel_level       = 0.f;
+    sust_thres      = 0.f;
+}
+void transients::set_sample_rate(uint32_t sr) {
+    srate = sr;
+    attack_coef  = exp(log(0.01) / (0.0001 * srate));
+    release_coef = exp(log(0.01) / (0.2f  * srate));
+}
+void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th) {
+    att_time        = att_t;
+    att_level       = att_l;
+    rel_time        = rel_t;
+    rel_level       = rel_l;
+    sust_thres      = sust_th;
+}
+float transients::process(float s) {
+    // envelope follower
+    // this is the real envelope follower curve. It raises as
+    // fast as the signal is raising and falls much slower
+    // depending on the sample rate and the ffactor
+    // (the falling factor)
+    
+    if(s > envelope)
+        envelope = attack_coef * (envelope - s) + s;
+    else
+        envelope = release_coef * (envelope - s) + s;
+    
+    // attack follower
+    // this is a curve which follows the envelope slowly.
+    // It never can rise above the envelope. It reaches 70.7%
+    // of the envelope in a certain amount of time set by the user
+    
+    float attdelta = (envelope - attack)
+                   * 0.707
+                   / (srate * att_time * 0.001);
+    attack += attdelta;
+    
+    // never raise above envelope
+    attack = std::min(envelope, attack);
+    
+    // release follower
+    // this is a curve which is always above the envelope. It
+    // starts to fall when the envelope falls beneath the
+    // sustain threshold
+    
+    float reldelta = (envelope / release - sust_thres) * 0.707
+                   / (rel_time * srate * 0.001 * sust_thres);
+                   
+    // release delta can never raise above 0
+    reldelta = std::min(0.f, reldelta);
+    release += reldelta;
+    
+    // never fall below envelope
+    release = std::max(envelope, release);
+    
+    // difference between attack and envelope
+    float attdiff = envelope - attack;
+    
+    // difference between release and envelope
+    float reldiff = release - envelope;
+    
+    // amplification factor from attack and release curve
+    float ampfactor = attdiff
+                  * (att_level > 0 ? att_level * 6 : att_level * 6)
+                  + (rel_level > 0 ? rel_level * 2 : rel_level * 8)
+                  * ((rel_level > 0) ? ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1)) : reldiff);
+    
+    return 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+}

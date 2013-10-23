@@ -96,6 +96,32 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
+
+
+class tapesaturator_audio_module:
+    public audio_module<tapesaturator_metadata>, public frequency_response_line_graph
+{
+    typedef tapesaturator_audio_module AM;
+    bool active;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    dsp::biquad_d2<float> lp[2][2];
+    dsp::transients transients;
+    float lp_old;
+public:
+    uint32_t srate;
+    tapesaturator_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    float freq_gain(int index, double freq, uint32_t sr) const;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+};
+
 };
 
 #endif

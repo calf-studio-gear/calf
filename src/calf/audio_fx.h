@@ -602,8 +602,8 @@ public:
     float asc_coeff;
     bool _asc_used;
     static inline void denormal(volatile float *f) {
-	    *f += 1e-18;
-	    *f -= 1e-18;
+        *f += 1e-18;
+        *f -= 1e-18;
     }
     inline float get_rdelta(float peak, float _limit, float _att, bool _asc = true);
     void reset();
@@ -617,6 +617,19 @@ public:
     float get_attenuation();
     void activate();
     void deactivate();
+};
+
+class transients {
+private:
+public:
+    float envelope, attack, release;
+    float attack_coef, release_coef;
+    float att_time, att_level, rel_time, rel_level, sust_thres;
+    uint32_t srate;
+    float process(float s);
+    void set_sample_rate(uint32_t sr);
+    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th);
+    transients();
 };
 
 #if 0
