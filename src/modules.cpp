@@ -2002,13 +2002,13 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             L *= trans;
             R *= trans;
             
-            // levels out
-            L *= *params[param_level_out];
-            R *= *params[param_level_out];
-            
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
             R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+            
+            // levels out
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
             
             // output
             outs[0][i] = L;

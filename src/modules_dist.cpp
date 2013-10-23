@@ -660,6 +660,7 @@ tapesaturator_audio_module::tapesaturator_audio_module() {
     meter_outL      = 0.f;
     meter_outR      = 0.f;
     lp_old          = -1.f;
+    count = 0;
 }
 
 void tapesaturator_audio_module::activate() {
@@ -681,9 +682,9 @@ void tapesaturator_audio_module::params_changed() {
         lp_old = *params[param_lp];
     }
     transients.set_params(100.f,
-                          -0.5f,
+                          -1.f,
                           100.f,
-                          0.f,
+                          1.f,
                           1.f);
 }
 
@@ -719,24 +720,39 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
             L *= *params[param_level_in];
             R *= *params[param_level_in];
             
-            // distrotion
+            // GUI stuff
+            if(L > meter_inL) meter_inL = L;
+            if(R > meter_inR) meter_inR = R;
+            if(L > 1.f) clip_inL  = srate >> 3;
+            if(R > 1.f) clip_inR  = srate >> 3;
+            
+            // distortion
             L = L / fabs(L) * 
                 (1 - exp((-1) * *params[param_distortion] * 4 * fabs(L)));
              
             R = R / fabs(R) * 
                 (1 - exp((-1) * *params[param_distortion] * 4 * fabs(R)));
             
-            // filter
-            L = lp[0][1].process(lp[0][0].process(L));
-            R = lp[1][1].process(lp[1][0].process(R));
+            // transients
+            //float trans = transients.process((fabs(L) + fabs(R)) / 2);
             
-            // levels out
-            L *= *params[param_level_out];
-            R *= *params[param_level_out];
+            //if(!count % 50) printf("%.5f\n", trans);
+            //count += 1;
+            
+            //L *= trans;
+            //R *= trans;
+            
+            // filter
+            //L = lp[0][1].process(lp[0][0].process(L));
+            //R = lp[1][1].process(lp[1][0].process(R));
             
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
             R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+            
+            // levels out
+            L *= *params[param_level_out];
+            R *= *params[param_level_out];
             
             // output
             outs[0][i] = L;
