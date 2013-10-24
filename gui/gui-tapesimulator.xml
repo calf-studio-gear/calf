@@ -66,7 +66,7 @@
                     <value param="mechanical" attach-x="2" attach-y="3"/>
                     
                     <label text="Magnetical" attach-x="3" attach-y="1"/>
-                    <knob param="magnetical" attach-x="3" attach-y="2"/>
+                    <toggle param="magnetical" attach-x="3" attach-y="2"/>
                 </hbox>
             </vbox>
         </frame>
