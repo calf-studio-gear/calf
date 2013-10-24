@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Tape Simulator</h1>
+            <a href="images/Calf - Tape Simulator.png" title="Calf - Tape Simulator" class="thickbox"><img class="thumbnail" src="images/Calf - Tape Simulator.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+                Calf Tape Simulator modifies signals as if they were recorded on a tape machine or tape deck.
+                It is able to simulate different aspects of magnetical recordings like loss of brilliance, noise,
+                softer transients, distortion/compression of the signal and mechanical tape threading path problems.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                <li><strong>In L/In R:</strong> The level after the input knob</li>
+                <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
+                <li><strong>Mix:</strong> Decide how much of the processed signal should be mixed into the original signal</li>
+                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
+                <li><strong>0dB:</strong> Flashes if output level rises above 0dB</li>
+                <li><strong>Output:</strong> Control the output of the effect - clipping could destroy your signal</li>
+                <li><strong>Filter:</strong> The signal is sent to a filter stage. The filters are modulated depending on the tape speed if "Mechanical" is above 0%</li>
+                <li><strong>Tape Speed:</strong> The Tape Speed changes "Mechanical" and "Magnetical" effects</li>
+                <li><strong>Magnetical:</strong> Enable if transients should be flattened depending on the tape speed setting</li>
+                <li><strong>Mechanical:</strong> Left and right channels filters are modulated opposite in phase</li>
+                <li><strong>Noise:</strong> Add some filtered tape-like noise</li>
+            </ul>
+        </div>
+    </body>
+</html>

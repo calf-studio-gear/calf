@@ -47,7 +47,7 @@
                         <combo param="speed" attach-x="0" attach-y="2"/>
                         <label/>
                     </vbox>
-                    <vbox fill="0" expand="0">
+                    <vbox>
                         <label text="Magnetical" attach-x="3" attach-y="1"/>
                         <toggle param="magnetical" attach-x="3" attach-y="2"/>
                         <label/>
