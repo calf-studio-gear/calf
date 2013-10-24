@@ -65,7 +65,7 @@
                 </hbox>
             </vbox>
         </frame>
-        <frame label="Distortion">
+        <frame label="Saturation">
             <hbox spacing="12">
                 <vbox>
                     <label/>

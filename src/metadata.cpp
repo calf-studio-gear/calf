@@ -1064,7 +1064,7 @@ CALF_PORT_NAMES(tapesimulator) = {"In L", "In R", "Out L", "Out R"};
 const char *tapesimulator_speed_names[] = { "Slow", "Fast" };
 CALF_PORT_PROPS(tapesimulator) = {
     { 0,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
-    { 0.5,      0,     64, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
+    { 0.5,      0,     16, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
     { 1,        0,     64, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
     { 1,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },

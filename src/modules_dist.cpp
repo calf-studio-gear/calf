@@ -741,6 +741,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
                 R += Rnoise * *params[param_noise] / 20.f;
             }
             
+            // lfo filters
             if (*params[param_mechanical]) {
                 float freqL = *params[param_lp] * (1 - ((lfoL.get_value() + 1) * 0.2 * *params[param_mechanical]));
                 float freqR = *params[param_lp] * (1 - ((lfoR.get_value() + 1) * 0.2 * *params[param_mechanical]));
@@ -760,13 +761,13 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             float Lc = L;
             float Rc = R;
             
-            // distortion
-            if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
-            if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
-            
             // filter
             L = lp[0][1].process(lp[0][0].process(L));
             R = lp[1][1].process(lp[1][0].process(R));
+            
+            // distortion
+            if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
+            if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
             
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
@@ -850,7 +851,7 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data,
                 data[i] = dB_grid(input);
             } else {
                 float output = 1 - exp(-3 * (pow(2, -10 + 14 * (float)i / (float) points)));
-                data[i] = dB_grid(output);
+                data[i] = dB_grid(output * *params[param_level_out]);
             }
         }
     }
@@ -887,8 +888,6 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &po
 bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (index == param_level_in and !subindex) {
-        //x = 1.f / 84.f * 6.f * log(input) / log(2) + 60.f / 84.f;
-        //y = dB_grid(6.f * log(rms) / log(2));
         x = log(input) / log(2) / 14.f + 5.f / 7.f;
         y = dB_grid(rms);
         rms = 0.f;
