@@ -303,10 +303,10 @@ style "calf-rack"
     bg[SELECTED]      = shade (1.2, "#e8e7e2") # Gnome Appearances Preferences workaround
     bg[INSENSITIVE]   = shade (0.7, "#e8e7e2")
     
-    bg_pixmap[NORMAL]       = "background_light_alu.png"
-    bg_pixmap[SELECTED]     = "background_light_alu.png"
-    bg_pixmap[ACTIVE]       = "background_light_alu.png"
-    bg_pixmap[INSENSITIVE]  = "background_light_alu.png"
+    bg_pixmap[NORMAL]       = "background_light.png"
+    bg_pixmap[SELECTED]     = "background_light.png"
+    bg_pixmap[ACTIVE]       = "background_light.png"
+    bg_pixmap[INSENSITIVE]  = "background_light.png"
     
     font_name = "Sans 8"
 }
