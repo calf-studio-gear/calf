@@ -42,7 +42,7 @@
             </hbox>
         </frame>
         <frame label="Tape Simulation">
-            <table cols="2" rows="5">
+            <table cols="3" rows="5">
                 <if cond="directlink">
                     <line-graph refresh="1" width="240" height="80" param="lowpass" attach-x="0" attach-y="0"/>
                 </if>
@@ -51,11 +51,18 @@
                     <knob param="lowpass" size="3"/>
                     <value param="lowpass"/>
                 </vbox>
+                
                 <label text="Tape Speed Simulation" attach-x="0" attach-y="1"/>
                 <combo param="speed" attach-x="0" attach-y="2"/>
+                
                 <label text="Noise" attach-x="1" attach-y="1"/>
                 <knob param="noise" size="2" attach-x="1" attach-y="2"/>
                 <value param="noise" attach-x="1" attach-y="3"/>
+                
+                <label text="Mechanical" attach-x="2" attach-y="1"/>
+                <knob param="mechanical" attach-x="2" attach-y="2"/>
+                <value param="mechanical" attach-x="2" attach-y="3"/>
+                
             </table>
         </frame>
     </hbox>

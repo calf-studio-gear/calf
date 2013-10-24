@@ -105,9 +105,11 @@ class tapesimulator_audio_module:
     bool active;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
+    bool mech_old;
     dsp::biquad_d2<float> lp[2][2];
     dsp::biquad_d2<float> noisefilters[2][3];
     dsp::transients transients;
+    dsp::simple_lfo lfoL, lfoR;
     float lp_old;
     mutable float rms, input;
 public:

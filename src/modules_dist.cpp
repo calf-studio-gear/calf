@@ -661,6 +661,7 @@ tapesimulator_audio_module::tapesimulator_audio_module() {
     meter_outR      = 0.f;
     lp_old          = -1.f;
     rms             = 0.f;
+    mech_old        = false;
 }
 
 void tapesimulator_audio_module::activate() {
@@ -672,20 +673,21 @@ void tapesimulator_audio_module::deactivate() {
 }
 
 void tapesimulator_audio_module::params_changed() {
-    if(*params[param_lp] != lp_old) {
+    if(*params[param_lp] != lp_old or *params[param_mechanical] != mech_old) {
         lp[0][0].set_lp_rbj(*params[param_lp], 0.707, (float)srate);
-        if(in_count > 1 && out_count > 1)
-            lp[1][0].copy_coeffs(lp[0][0]);
         lp[0][1].copy_coeffs(lp[0][0]);
-        if(in_count > 1 && out_count > 1)
-            lp[1][1].copy_coeffs(lp[0][0]);
+        lp[1][0].copy_coeffs(lp[0][0]);
+        lp[1][1].copy_coeffs(lp[0][0]);
         lp_old = *params[param_lp];
+        mech_old = *params[param_mechanical] > 0.5;
     }
     transients.set_params(*params[param_speed] ? 50.f / *params[param_speed] : 1.f,
                           *params[param_speed] ? -0.05f / *params[param_speed] : 0.f,
                           100.f,
                           0.f,
                           1.f);
+    lfoL.set_params(*params[param_speed] ? *params[param_speed] : 1, 0, 0.f, srate, 1.f);
+    lfoR.set_params(*params[param_speed] ? *params[param_speed] : 1, 0, 0.5, srate, 1.f);
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -739,6 +741,17 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
                 R += Rnoise * *params[param_noise] / 20.f;
             }
             
+            if (*params[param_mechanical]) {
+                float freqL = *params[param_lp] * (1 - ((lfoL.get_value() + 1) * 0.2 * *params[param_mechanical]));
+                float freqR = *params[param_lp] * (1 - ((lfoR.get_value() + 1) * 0.2 * *params[param_mechanical]));
+                
+                lp[0][0].set_lp_rbj(freqL, 0.707, (float)srate);
+                lp[0][1].copy_coeffs(lp[0][0]);
+                    
+                lp[1][0].set_lp_rbj(freqR, 0.707, (float)srate);
+                lp[1][1].copy_coeffs(lp[1][0]);
+            }
+            
             // gain
             L *= *params[param_level_in];
             R *= *params[param_level_in];
@@ -775,6 +788,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             lp[0][1].sanitize();
             lp[1][1].sanitize();
             
+            // LFO's should go on
+            lfoL.advance(1);
+            lfoR.advance(1);
+        
             float s = (fabs(L) + fabs(R)) / 2;
             if (s > rms) {
                 rms = s;
@@ -810,8 +827,8 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data,
 {
     if (subindex > 1) // 1
         return false;
-    if(index == param_lp && !subindex) {
-        context->set_line_width(1.5);
+    if(index == param_lp) {
+        //context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
     } else if (index == param_level_in) {
         if (subindex == 0)
@@ -832,6 +849,11 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data,
     }
     return true;
 }
+float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+{
+    return lp[index][0].freq_gain(freq, sr) * lp[index][1].freq_gain(freq, sr);
+}
+
 bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (index == param_level_in) {
@@ -858,16 +880,13 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &po
 bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (index == param_level_in and !subindex) {
-        x = 1.f / 84.f * 6.f * log(input) / log(2) + 60.f / 84.f;
-        y = dB_grid(6.f * log(rms) / log(2));
+        //x = 1.f / 84.f * 6.f * log(input) / log(2) + 60.f / 84.f;
+        //y = dB_grid(6.f * log(rms) / log(2));
+        x = log(input) / log(2) / 14.f + 5.f / 7.f;
+        y = dB_grid(rms);
         rms = 0.f;
         input = 0.f;
         return true;
     }
     return false;
-}
-
-float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
-{
-    return lp[0][0].freq_gain(freq, sr) * lp[0][1].freq_gain(freq, sr);
 }
