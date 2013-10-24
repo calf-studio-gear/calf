@@ -1061,7 +1061,7 @@ CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Trans
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(tapesimulator) = {"In L", "In R", "Out L", "Out R"};
-const char *tapesimulator_speed_names[] = { "None", "Slow", "Fast" };
+const char *tapesimulator_speed_names[] = { "Slow", "Fast" };
 CALF_PORT_PROPS(tapesimulator) = {
     { 0,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 0.5,      0,     64, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
@@ -1069,9 +1069,10 @@ CALF_PORT_PROPS(tapesimulator) = {
     METERING_PARAMS
     { 1,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
     { 15000, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
-    { 2,        0,      2, 0,  PF_ENUM | PF_CTL_COMBO, tapesimulator_speed_names, "speed", "Speed Simulation" },
+    { 1,        0,      1, 0,  PF_ENUM | PF_CTL_COMBO, tapesimulator_speed_names, "speed", "Speed Simulation" },
     { 0.12,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "noise", "Noise" },
     { 0.12,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mechanical", "Mechanical" },
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "magnetical", "Magnetical" },
     {}
 };
 

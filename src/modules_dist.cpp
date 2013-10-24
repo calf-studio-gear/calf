@@ -681,13 +681,13 @@ void tapesimulator_audio_module::params_changed() {
         lp_old = *params[param_lp];
         mech_old = *params[param_mechanical] > 0.5;
     }
-    transients.set_params(*params[param_speed] ? 50.f / *params[param_speed] : 1.f,
-                          *params[param_speed] ? -0.05f / *params[param_speed] : 0.f,
+    transients.set_params(50.f / (*params[param_speed] + 1),
+                          -0.05f / (*params[param_speed] + 1),
                           100.f,
                           0.f,
                           1.f);
-    lfoL.set_params(*params[param_speed] ? *params[param_speed] : 1, 0, 0.f, srate, 1.f);
-    lfoR.set_params(*params[param_speed] ? *params[param_speed] : 1, 0, 0.5, srate, 1.f);
+    lfoL.set_params(*params[param_speed] + 1, 0, 0.f, srate, 1.f);
+    lfoR.set_params(*params[param_speed] + 1, 0, 0.5, srate, 1.f);
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -725,7 +725,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             if(R > 1.f) clip_inR  = srate >> 3;
             
             // transients
-            if(*params[param_speed]) {
+            if(*params[param_magnetical] > 0.5f) {
                 float trans = transients.process((fabs(L) + fabs(R)) / 2.f);
                 L *= trans;
                 R *= trans;
