@@ -756,6 +756,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             L *= *params[param_level_in];
             R *= *params[param_level_in];
             
+            // save for drawing input/output curve
+            float Lc = L;
+            float Rc = R;
+            
             // distortion
             if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
             if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
@@ -796,7 +800,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             if (s > rms) {
                 rms = s;
             }
-            float in = (fabs(Lin) + fabs(Rin)) / 2;
+            float in = (fabs(Lc) + fabs(Rc)) / 2;
             if (in > input) {
                 input = in;
             }
