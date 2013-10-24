@@ -43,7 +43,7 @@
                 </if>
             </hbox>
         </frame>
-        <frame label="Tape Simulation">
+        <frame label="Simulation">
             <vbox spacing="10">
                 <hbox spacing="6">
                     <if cond="directlink">

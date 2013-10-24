@@ -795,7 +795,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             float s = (fabs(L) + fabs(R)) / 2;
             if (s > rms) {
                 rms = s;
-                input = (fabs(Lin) + fabs(Rin)) / 2;
+            }
+            float in = (fabs(Lin) + fabs(Rin)) / 2;
+            if (in > input) {
+                input = in;
             }
         }
     }
