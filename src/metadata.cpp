@@ -1061,12 +1061,13 @@ CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Trans
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(tapesaturator) = {"In L", "In R", "Out L", "Out R"};
+const char *tapesaturator_speed_names[] = { "None", "Fast", "Slow" };
 CALF_PORT_PROPS(tapesaturator) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 1,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
-    { 0.25,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "distortion", "Distortion" },
-    { 10000, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
+    { 20000, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
+    { 0,        0,      2, 0,  PF_ENUM | PF_CTL_COMBO, tapesaturator_speed_names, "speed", "Speed Simulation" },
     {}
 };
 

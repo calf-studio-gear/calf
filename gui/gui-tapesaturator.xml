@@ -1,8 +1,8 @@
 <vbox spacing="8">
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
-        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
-        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
-        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label param="bypass" attach-x="0" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
@@ -11,9 +11,6 @@
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
-        
-        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label param="mix" attach-x="4" attach-y="0" expand-x="0" />
         <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
@@ -35,26 +32,32 @@
         <frame label="Distortion">
             <hbox spacing="12">
                 <vbox>
-                    <label text="Dsitortion"/>
-                    <knob param="distortion" size="5"/>
-                    <value param="distortion"/>
+                    <label text="Gain"/>
+                    <knob param="level_in" size="5"/>
+                    <value param="level_in"/>
                 </vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="240" height="150" param="distortion"/>
+                    <line-graph refresh="1" width="150" height="150" param="level_in" square="1"/>
                 </if>
             </hbox>
         </frame>
-        <frame label="Filter">
-            <hbox spacing="12">
-                <if cond="directlink">
-                    <line-graph refresh="1" width="240" height="150" param="lowpass"/>
-                </if>
-                <vbox>
-                    <label text="Filter"/>
-                    <knob param="lowpass" size="5"/>
-                    <value param="lowpass"/>
-                </vbox>
-            </hbox>
+        <frame label="Tape Simulation">
+            <vbox spacing="8">
+                <hbox>
+                    <combo param="speed"/>
+                    <label text="Speed" fill="0" expand="0"/>
+                </hbox>
+                <hbox spacing="12">
+                    <if cond="directlink">
+                        <line-graph refresh="1" width="240" height="80" param="lowpass"/>
+                    </if>
+                    <vbox>
+                        <label text="Filter"/>
+                        <knob param="lowpass" size="3"/>
+                        <value param="lowpass"/>
+                    </vbox>
+                </hbox>
+            </vbox>
         </frame>
     </hbox>
     

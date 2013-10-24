@@ -108,7 +108,6 @@ class tapesaturator_audio_module:
     dsp::biquad_d2<float> lp[2][2];
     dsp::transients transients;
     float lp_old;
-    int count;
 public:
     uint32_t srate;
     tapesaturator_audio_module();

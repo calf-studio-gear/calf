@@ -660,7 +660,6 @@ tapesaturator_audio_module::tapesaturator_audio_module() {
     meter_outL      = 0.f;
     meter_outR      = 0.f;
     lp_old          = -1.f;
-    count = 0;
 }
 
 void tapesaturator_audio_module::activate() {
@@ -681,10 +680,10 @@ void tapesaturator_audio_module::params_changed() {
             lp[1][1].copy_coeffs(lp[0][0]);
         lp_old = *params[param_lp];
     }
-    transients.set_params(100.f,
-                          -1.f,
+    transients.set_params(*params[param_speed] ? 100.f / *params[param_speed] : 1.f,
+                          *params[param_speed] ? -1.f / *params[param_speed] : 0.f,
                           100.f,
-                          1.f,
+                          0.f,
                           1.f);
 }
 
@@ -716,35 +715,30 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
             meter_outL   = 0.f;
             meter_outR   = 0.f;
             
-            // levels in
-            L *= *params[param_level_in];
-            R *= *params[param_level_in];
-            
             // GUI stuff
             if(L > meter_inL) meter_inL = L;
             if(R > meter_inR) meter_inR = R;
             if(L > 1.f) clip_inL  = srate >> 3;
             if(R > 1.f) clip_inR  = srate >> 3;
             
+            // gain
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
             // distortion
-            L = L / fabs(L) * 
-                (1 - exp((-1) * *params[param_distortion] * 4 * fabs(L)));
-             
-            R = R / fabs(R) * 
-                (1 - exp((-1) * *params[param_distortion] * 4 * fabs(R)));
+            if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
+            if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
             
             // transients
-            //float trans = transients.process((fabs(L) + fabs(R)) / 2);
-            
-            //if(!count % 50) printf("%.5f\n", trans);
-            //count += 1;
-            
-            //L *= trans;
-            //R *= trans;
+            if(*params[param_speed]) {
+                float trans = transients.process((fabs(L) + fabs(R)) / 2.f);
+                L *= trans;
+                R *= trans;
+            }
             
             // filter
-            //L = lp[0][1].process(lp[0][0].process(L));
-            //R = lp[1][1].process(lp[1][0].process(R));
+            L = lp[0][1].process(lp[0][0].process(L));
+            R = lp[1][1].process(lp[1][0].process(R));
             
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
@@ -791,20 +785,49 @@ void tapesaturator_audio_module::set_sample_rate(uint32_t sr)
 
 bool tapesaturator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if (subindex > 1) // 1
+        return false;
     if(index == param_lp && !subindex) {
         context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
-    } else if (index == param_distortion) {
-        for (int i = 0; i <= points; i++) {
-            
+    } else if (index == param_level_in) {
+        if (subindex == 0)
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+        else {
+            context->set_source_rgba(0.35, 0.4, 0.2, 1);
+            context->set_line_width(1.5);
+        }
+        for (int i = 0; i < points; i++) {
+            float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
+            if (subindex == 0) {
+                data[i] = dB_grid(input);
+            } else {
+                float out = 1 - exp(3 * (pow(2, -10 + 14 * (float)i / (float) points)));
+                printf("%.5f\n", out);
+                data[i] = dB_grid(out);
+            }
         }
     }
-    return false;
+    return true;
 }
 bool tapesaturator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (index == param_distortion) {
-        return false;
+    if (index == param_level_in) {
+        bool tmp;
+        vertical = (subindex & 1) != 0;
+        bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+        if (result && vertical) {
+            if ((subindex & 4) && !legend.empty()) {
+                legend = "";
+            }
+            else {
+                size_t pos = legend.find(" dB");
+                if (pos != std::string::npos)
+                    legend.erase(pos);
+            }
+            pos = 0.5 + 0.5 * pos;
+        }
+        return result;
     } else if (index == param_lp) {
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
@@ -812,7 +835,7 @@ bool tapesaturator_audio_module::get_gridline(int index, int subindex, float &po
 }
 bool tapesaturator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (index == param_distortion) {
+    if (index == param_level_in) {
         return false;
     } else if (index == param_lp) {
         return false;
