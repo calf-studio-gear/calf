@@ -29,6 +29,42 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
+        <frame label="Simulation">
+            <vbox spacing="10">
+                <hbox spacing="6">
+                    <if cond="directlink">
+                        <line-graph refresh="1" width="240" height="80" param="lowpass" attach-x="0" attach-y="0"/>
+                    </if>
+                    <vbox attach-x="1" attach-y="0">
+                        <label text="Filter"/>
+                        <knob param="lowpass" size="3"/>
+                        <value param="lowpass"/>
+                    </vbox>
+                </hbox>
+                <hbox>
+                    <vbox>
+                        <label text="Tape Speed" attach-x="0" attach-y="1"/>
+                        <combo param="speed" attach-x="0" attach-y="2"/>
+                        <label/>
+                    </vbox>
+                    <vbox fill="0" expand="0">
+                        <label text="Magnetical" attach-x="3" attach-y="1"/>
+                        <toggle param="magnetical" attach-x="3" attach-y="2"/>
+                        <label/>
+                    </vbox>
+                    <vbox>
+                        <label text="Mechanical" attach-x="2" attach-y="1"/>
+                        <knob param="mechanical" attach-x="2" attach-y="2"/>
+                        <value param="mechanical" attach-x="2" attach-y="3"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Noise" attach-x="1" attach-y="1"/>
+                        <knob param="noise" size="2" attach-x="1" attach-y="2"/>
+                        <value param="noise" attach-x="1" attach-y="3"/>
+                    </vbox>
+                </hbox>
+            </vbox>
+        </frame>
         <frame label="Distortion">
             <hbox spacing="12">
                 <vbox>
@@ -42,42 +78,6 @@
                     <line-graph refresh="1" width="166" height="166" param="level_in" square="1"/>
                 </if>
             </hbox>
-        </frame>
-        <frame label="Simulation">
-            <vbox spacing="10">
-                <hbox spacing="6">
-                    <if cond="directlink">
-                        <line-graph refresh="1" width="240" height="80" param="lowpass" attach-x="0" attach-y="0"/>
-                    </if>
-                    <vbox attach-x="1" attach-y="0">
-                        <label text="Filter"/>
-                        <knob param="lowpass" size="3"/>
-                        <value param="lowpass"/>
-                    </vbox>
-                </hbox>
-                <hbox spacing="6">
-                    <vbox>
-                        <label text="Tape Speed" attach-x="0" attach-y="1"/>
-                        <combo param="speed" attach-x="0" attach-y="2"/>
-                        <label/>
-                    </vbox>
-                    <vbox>
-                        <label text="Noise" attach-x="1" attach-y="1"/>
-                        <knob param="noise" size="2" attach-x="1" attach-y="2"/>
-                        <value param="noise" attach-x="1" attach-y="3"/>
-                    </vbox>
-                    <vbox>
-                        <label text="Mechanical" attach-x="2" attach-y="1"/>
-                        <knob param="mechanical" attach-x="2" attach-y="2"/>
-                        <value param="mechanical" attach-x="2" attach-y="3"/>
-                    </vbox>
-                    <vbox fill="0" expand="0">
-                        <label text="Magnetical" attach-x="3" attach-y="1"/>
-                        <toggle param="magnetical" attach-x="3" attach-y="2"/>
-                        <label/>
-                    </vbox>
-                </hbox>
-            </vbox>
         </frame>
     </hbox>
     
