@@ -439,15 +439,15 @@ struct transientdesigner_metadata: public plugin_metadata<transientdesigner_meta
            param_count };
     PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
 };
-/// Chrischi's Tape Saturator
-struct tapesaturator_metadata: public plugin_metadata<tapesaturator_metadata>
+/// Chrischi's and Markus's Tape Simulator
+struct tapesimulator_metadata: public plugin_metadata<tapesimulator_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS, param_mix, param_lp,
-           param_speed,
+           param_speed, param_noise,
            param_count };
-    PLUGIN_NAME_ID_LABEL("tapesaturator", "tapesaturator", "Tape Saturator")
+    PLUGIN_NAME_ID_LABEL("tapesimulator", "tapesimulator", "Tape Simulator")
 };
 /// Organ - enums for parameter IDs etc. (this mess is caused by organ split between plugin and generic class - which was
 /// a bad design decision and should be sorted out some day) XXXKF @todo

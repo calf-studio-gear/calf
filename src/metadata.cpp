@@ -1060,18 +1060,21 @@ CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Trans
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(tapesaturator) = {"In L", "In R", "Out L", "Out R"};
-const char *tapesaturator_speed_names[] = { "None", "Fast", "Slow" };
-CALF_PORT_PROPS(tapesaturator) = {
-    BYPASS_AND_LEVEL_PARAMS
+CALF_PORT_NAMES(tapesimulator) = {"In L", "In R", "Out L", "Out R"};
+const char *tapesimulator_speed_names[] = { "None", "Slow", "Fast" };
+CALF_PORT_PROPS(tapesimulator) = {
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 0.5,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
+    { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
     { 1,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
-    { 20000, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
-    { 0,        0,      2, 0,  PF_ENUM | PF_CTL_COMBO, tapesaturator_speed_names, "speed", "Speed Simulation" },
+    { 12000, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
+    { 2,        0,      2, 0,  PF_ENUM | PF_CTL_COMBO, tapesimulator_speed_names, "speed", "Speed Simulation" },
+    { 0.25,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "noise", "Noise" },
     {}
 };
 
-CALF_PLUGIN_INFO(tapesaturator) = { 0x8588, "TapeSaturator", "Calf Tape Saturator", "Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////

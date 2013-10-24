@@ -98,19 +98,21 @@ public:
 
 
 
-class tapesaturator_audio_module:
-    public audio_module<tapesaturator_metadata>, public frequency_response_line_graph
+class tapesimulator_audio_module:
+    public audio_module<tapesimulator_metadata>, public frequency_response_line_graph
 {
-    typedef tapesaturator_audio_module AM;
+    typedef tapesimulator_audio_module AM;
     bool active;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::biquad_d2<float> lp[2][2];
+    dsp::biquad_d2<float> noisefilters[2][3];
     dsp::transients transients;
     float lp_old;
+    mutable float rms, input;
 public:
     uint32_t srate;
-    tapesaturator_audio_module();
+    tapesimulator_audio_module();
     void params_changed();
     void activate();
     void set_sample_rate(uint32_t sr);

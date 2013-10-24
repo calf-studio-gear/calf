@@ -649,7 +649,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-tapesaturator_audio_module::tapesaturator_audio_module() {
+tapesimulator_audio_module::tapesimulator_audio_module() {
     active          = false;
     clip_inL        = 0.f;
     clip_inR        = 0.f;
@@ -660,17 +660,18 @@ tapesaturator_audio_module::tapesaturator_audio_module() {
     meter_outL      = 0.f;
     meter_outR      = 0.f;
     lp_old          = -1.f;
+    rms             = 0.f;
 }
 
-void tapesaturator_audio_module::activate() {
+void tapesimulator_audio_module::activate() {
     active = true;
 }
 
-void tapesaturator_audio_module::deactivate() {
+void tapesimulator_audio_module::deactivate() {
     active = false;
 }
 
-void tapesaturator_audio_module::params_changed() {
+void tapesimulator_audio_module::params_changed() {
     if(*params[param_lp] != lp_old) {
         lp[0][0].set_lp_rbj(*params[param_lp], 0.707, (float)srate);
         if(in_count > 1 && out_count > 1)
@@ -680,14 +681,14 @@ void tapesaturator_audio_module::params_changed() {
             lp[1][1].copy_coeffs(lp[0][0]);
         lp_old = *params[param_lp];
     }
-    transients.set_params(*params[param_speed] ? 100.f / *params[param_speed] : 1.f,
-                          *params[param_speed] ? -1.f / *params[param_speed] : 0.f,
+    transients.set_params(*params[param_speed] ? 50.f / *params[param_speed] : 1.f,
+                          *params[param_speed] ? -0.05f / *params[param_speed] : 0.f,
                           100.f,
                           0.f,
                           1.f);
 }
 
-uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
         float R = ins[1][i];
@@ -721,6 +722,23 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
             if(L > 1.f) clip_inL  = srate >> 3;
             if(R > 1.f) clip_inR  = srate >> 3;
             
+            // transients
+            if(*params[param_speed]) {
+                float trans = transients.process((fabs(L) + fabs(R)) / 2.f);
+                L *= trans;
+                R *= trans;
+            }
+            
+            // noise
+            if (*params[param_noise]) {
+                float Lnoise = rand() % 2 - 1;
+                float Rnoise = rand() % 2 - 1;
+                Lnoise = noisefilters[0][2].process(noisefilters[0][1].process(noisefilters[0][0].process(Lnoise)));
+                Rnoise = noisefilters[1][2].process(noisefilters[1][1].process(noisefilters[1][0].process(Rnoise)));
+                L += Lnoise * *params[param_noise] / 20.f;
+                R += Rnoise * *params[param_noise] / 20.f;
+            }
+            
             // gain
             L *= *params[param_level_in];
             R *= *params[param_level_in];
@@ -728,13 +746,6 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
             // distortion
             if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
             if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
-            
-            // transients
-            if(*params[param_speed]) {
-                float trans = transients.process((fabs(L) + fabs(R)) / 2.f);
-                L *= trans;
-                R *= trans;
-            }
             
             // filter
             L = lp[0][1].process(lp[0][0].process(L));
@@ -763,6 +774,12 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
             lp[1][0].sanitize();
             lp[0][1].sanitize();
             lp[1][1].sanitize();
+            
+            float s = (fabs(L) + fabs(R)) / 2;
+            if (s > rms) {
+                rms = s;
+                input = (fabs(Lin) + fabs(Rin)) / 2;
+            }
         }
     }
     // draw meters
@@ -777,13 +794,19 @@ uint32_t tapesaturator_audio_module::process(uint32_t offset, uint32_t numsample
     return outputs_mask;
 }
 
-void tapesaturator_audio_module::set_sample_rate(uint32_t sr)
+void tapesimulator_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     transients.set_sample_rate(srate);
+    noisefilters[0][0].set_hp_rbj(120.f, 0.707, (float)srate);
+    noisefilters[1][0].copy_coeffs(noisefilters[0][0]);
+    noisefilters[0][1].set_lp_rbj(5500.f, 0.707, (float)srate);
+    noisefilters[1][1].copy_coeffs(noisefilters[0][1]);
+    noisefilters[0][2].set_highshelf_rbj(1000.f, 0.707, 0.5, (float)srate);
+    noisefilters[1][2].copy_coeffs(noisefilters[0][2]);
 }
 
-bool tapesaturator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (subindex > 1) // 1
         return false;
@@ -798,19 +821,18 @@ bool tapesaturator_audio_module::get_graph(int index, int subindex, float *data,
             context->set_line_width(1.5);
         }
         for (int i = 0; i < points; i++) {
-            float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
             if (subindex == 0) {
+                float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
                 data[i] = dB_grid(input);
             } else {
-                float out = 1 - exp(3 * (pow(2, -10 + 14 * (float)i / (float) points)));
-                printf("%.5f\n", out);
-                data[i] = dB_grid(out);
+                float output = 1 - exp(-3 * (pow(2, -10 + 14 * (float)i / (float) points)));
+                data[i] = dB_grid(output);
             }
         }
     }
     return true;
 }
-bool tapesaturator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (index == param_level_in) {
         bool tmp;
@@ -833,17 +855,18 @@ bool tapesaturator_audio_module::get_gridline(int index, int subindex, float &po
     }
     return false;
 }
-bool tapesaturator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (index == param_level_in) {
-        return false;
-    } else if (index == param_lp) {
-        return false;
+    if (index == param_level_in and !subindex) {
+        x = 1.f / 84.f * 6.f * log(input) / log(2) + 60.f / 84.f;
+        y = dB_grid(6.f * log(rms) / log(2));
+        rms = 0.f;
+        return true;
     }
     return false;
 }
 
-float tapesaturator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
 {
     return lp[0][0].freq_gain(freq, sr) * lp[0][1].freq_gain(freq, sr);
 }
