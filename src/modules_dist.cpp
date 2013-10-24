@@ -861,6 +861,7 @@ bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, floa
         x = 1.f / 84.f * 6.f * log(input) / log(2) + 60.f / 84.f;
         y = dB_grid(6.f * log(rms) / log(2));
         rms = 0.f;
+        input = 0.f;
         return true;
     }
     return false;
