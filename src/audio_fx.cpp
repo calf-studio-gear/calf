@@ -877,8 +877,8 @@ transients::transients() {
 }
 void transients::set_sample_rate(uint32_t sr) {
     srate = sr;
-    attack_coef  = exp(log(0.01) / (0.0001 * srate));
-    release_coef = exp(log(0.01) / (0.2f  * srate));
+    attack_coef  = exp(log(0.01) / (0.001 * srate));
+    release_coef = exp(log(0.01) / (0.1f  * srate));
 }
 void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th) {
     att_time        = att_t;
