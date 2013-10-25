@@ -740,8 +740,8 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
                 float Rnoise = rand() % 2 - 1;
                 Lnoise = noisefilters[0][2].process(noisefilters[0][1].process(noisefilters[0][0].process(Lnoise)));
                 Rnoise = noisefilters[1][2].process(noisefilters[1][1].process(noisefilters[1][0].process(Rnoise)));
-                L += Lnoise * *params[param_noise] / 20.f;
-                R += Rnoise * *params[param_noise] / 20.f;
+                L += Lnoise * *params[param_noise] / 12.f;
+                R += Rnoise * *params[param_noise] / 12.f;
             }
             
             // lfo filters
@@ -775,6 +775,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
             if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
             
+            // save for drawing input/output curve
+            float Lo = L;
+            float Ro = R;
+            
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
             R = R * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
@@ -782,6 +786,9 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             // levels out
             L *= *params[param_level_out];
             R *= *params[param_level_out];
+            
+            Lo *= *params[param_level_out];
+            Ro *= *params[param_level_out];
             
             // output
             outs[0][i] = L;
@@ -805,7 +812,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             lfo[1][0].advance(1);
             lfo[1][1].advance(1);
         
-            float s = (fabs(L) + fabs(R)) / 2;
+            float s = (fabs(Lo) + fabs(Ro)) / 2;
             if (s > rms) {
                 rms = s;
             }
