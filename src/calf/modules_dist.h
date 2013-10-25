@@ -109,7 +109,7 @@ class tapesimulator_audio_module:
     dsp::biquad_d2<float> lp[2][2];
     dsp::biquad_d2<float> noisefilters[2][3];
     dsp::transients transients;
-    dsp::simple_lfo lfoL, lfoR;
+    dsp::simple_lfo lfo[2][2];
     float lp_old;
     mutable float rms, input;
 public:

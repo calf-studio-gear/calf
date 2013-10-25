@@ -686,8 +686,11 @@ void tapesimulator_audio_module::params_changed() {
                           100.f,
                           0.f,
                           1.f);
-    lfoL.set_params(*params[param_speed] + 1, 0, 0.f, srate, 1.f);
-    lfoR.set_params(*params[param_speed] + 1, 0, 0.5, srate, 1.f);
+    lfo[0][0].set_params(*params[param_speed] + 1, 0, 0.f, srate, 1.f);
+    lfo[0][1].set_params((*params[param_speed] + 1) / 4.69, 0, 0.f, srate, 1.f);
+    
+    lfo[1][0].set_params(*params[param_speed] + 1, 0, 0.5, srate, 1.f);
+    lfo[1][1].set_params((*params[param_speed] + 1) / 4.69, 0, 0.5, srate, 1.f);
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -743,14 +746,17 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             
             // lfo filters
             if (*params[param_mechanical]) {
-                float freqL = *params[param_lp] * (1 - ((lfoL.get_value() + 1) * 0.2 * *params[param_mechanical]));
-                float freqR = *params[param_lp] * (1 - ((lfoR.get_value() + 1) * 0.2 * *params[param_mechanical]));
+                float freqL1 = *params[param_lp] * (1 - ((lfo[0][0].get_value() + 1) * 0.25* *params[param_mechanical]));
+                float freqL2 = *params[param_lp] * (1 - ((lfo[0][1].get_value() + 1) * 0.1 * *params[param_mechanical]));
                 
-                lp[0][0].set_lp_rbj(freqL, 0.707, (float)srate);
-                lp[0][1].copy_coeffs(lp[0][0]);
+                float freqR1 = *params[param_lp] * (1 - ((lfo[1][0].get_value() + 1) * 0.25 * *params[param_mechanical]));
+                float freqR2 = *params[param_lp] * (1 - ((lfo[1][1].get_value() + 1) * 0.1 * *params[param_mechanical]));
+                
+                lp[0][0].set_lp_rbj(freqL1, 0.707, (float)srate);
+                lp[0][1].set_lp_rbj(freqL2, 0.707, (float)srate);
                     
-                lp[1][0].set_lp_rbj(freqR, 0.707, (float)srate);
-                lp[1][1].copy_coeffs(lp[1][0]);
+                lp[1][0].set_lp_rbj(freqR1, 0.707, (float)srate);
+                lp[1][1].set_lp_rbj(freqR2, 0.707, (float)srate);
             }
             
             // gain
@@ -794,8 +800,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             lp[1][1].sanitize();
             
             // LFO's should go on
-            lfoL.advance(1);
-            lfoR.advance(1);
+            lfo[0][0].advance(1);
+            lfo[0][1].advance(1);
+            lfo[1][0].advance(1);
+            lfo[1][1].advance(1);
         
             float s = (fabs(L) + fabs(R)) / 2;
             if (s > rms) {
