@@ -445,7 +445,7 @@ struct tapesimulator_metadata: public plugin_metadata<tapesimulator_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS, param_mix, param_lp,
-           param_speed, param_noise, param_mechanical, param_magnetical,
+           param_speed, param_noise, param_mechanical, param_magnetical, param_post,
            param_count };
     PLUGIN_NAME_ID_LABEL("tapesimulator", "tapesimulator", "Tape Simulator")
 };

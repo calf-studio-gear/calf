@@ -766,18 +766,27 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             // save for drawing input/output curve
             float Lc = L;
             float Rc = R;
+            float Lo = L;
+            float Ro = R;
             
             // filter
-            L = lp[0][1].process(lp[0][0].process(L));
-            R = lp[1][1].process(lp[1][0].process(R));
+            if (*params[param_post] < 0.5) {
+                L = lp[0][1].process(lp[0][0].process(L));
+                R = lp[1][1].process(lp[1][0].process(R));
+            }
             
             // distortion
             if (L) L = L / fabs(L) * (1 - exp((-1) * 3 * fabs(L)));
             if (R) R = R / fabs(R) * (1 - exp((-1) * 3 * fabs(R)));
             
-            // save for drawing input/output curve
-            float Lo = L;
-            float Ro = R;
+            if (Lo) Lo = Lo / fabs(Lo) * (1 - exp((-1) * 3 * fabs(Lo)));
+            if (Ro) Ro = Ro / fabs(Ro) * (1 - exp((-1) * 3 * fabs(Ro)));
+            
+            // filter
+            if (*params[param_post] >= 0.5) {
+                L = lp[0][1].process(lp[0][0].process(L));
+                R = lp[1][1].process(lp[1][0].process(R));
+            }
             
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);

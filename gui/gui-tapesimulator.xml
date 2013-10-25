@@ -68,11 +68,11 @@
         <frame label="Saturation">
             <hbox spacing="12">
                 <vbox>
-                    <label/>
                     <label text="Gain"/>
                     <knob param="level_in" size="5"/>
                     <value param="level_in"/>
-                    <label/>
+                    <toggle param="post"/>
+                    <label text="Muffle"/>
                 </vbox>
                 <if cond="directlink">
                     <line-graph refresh="1" width="190" height="190" param="level_in" square="1"/>

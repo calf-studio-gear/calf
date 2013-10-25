@@ -1073,6 +1073,7 @@ CALF_PORT_PROPS(tapesimulator) = {
     { 0.10,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "noise", "Noise" },
     { 0.30,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mechanical", "Mechanical" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "magnetical", "Magnetical" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "post", "Post-Filter" },
     {}
 };
 
