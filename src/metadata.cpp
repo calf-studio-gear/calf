@@ -1046,7 +1046,7 @@ CALF_PORT_PROPS(transientdesigner) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mix", "Mix" },
-    { 100.f,  1.f,   1000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack_time", "Attack Time (ms)" },
+    { 100.f,  1.f,   500.f,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack_time", "Attack Time (ms)" },
     { 0.f,   -1.f,   1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "attack_boost", "Attack Boost" },
     { 0.9f,   0.01f, 1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sustain_threshold", "Sustain Threshold" },
     { 300.f,  1.f,   5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release_time", "Release Time (ms)" },

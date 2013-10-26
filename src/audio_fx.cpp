@@ -934,10 +934,8 @@ float transients::process(float s) {
     float reldiff = release - envelope;
     
     // amplification factor from attack and release curve
-    float ampfactor = attdiff
-                  * (att_level > 0 ? att_level * 6 : att_level * 6)
-                  + (rel_level > 0 ? rel_level * 2 : rel_level * 8)
-                  * ((rel_level > 0) ? ((release - reldiff == 0) ? 0 : (release / (release - reldiff) - 1)) : reldiff);
+    float ampfactor = attdiff * (att_level > 0 ? 0.25f * pow(att_level * 8, 2) : -0.25f * pow(att_level * 8, 2))
+                    + reldiff * (rel_level > 0 ? 0.5f  * pow(rel_level * 8, 2) : -0.25f * pow(rel_level * 8, 2));
     
     return 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
 }
