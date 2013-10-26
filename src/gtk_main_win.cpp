@@ -383,7 +383,8 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             strip->audio_in.push_back(label);
         }
         
-        gtk_widget_show_all(strip->inBox);
+        if (get_config()->vu_meters)
+            gtk_widget_show_all(strip->inBox);
         gtk_table_attach(GTK_TABLE(strip->strip_table), strip->inBox, 3, 4, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
         
         gtk_widget_set_size_request(GTK_WIDGET(strip->inBox), 160, -1);
@@ -407,7 +408,8 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             strip->audio_out.push_back(label);
         }
         
-        gtk_widget_show_all(strip->outBox);
+        if (get_config()->vu_meters)
+            gtk_widget_show_all(strip->outBox);
         gtk_table_attach(GTK_TABLE(strip->strip_table), strip->outBox, 4, 5, row, row + 1, GTK_FILL, GTK_SHRINK, 5, 3);
         
         gtk_widget_set_size_request(GTK_WIDGET(strip->outBox), 160, -1);
