@@ -31,6 +31,14 @@
 
 namespace calf_plugins {
 
+class window_update_controller
+{
+    int refresh_counter;
+public:
+    window_update_controller() : refresh_counter() {}
+    bool check_redraw(GtkWidget *toplevel);
+};
+
 class plugin_gui;
 
 struct control_base
@@ -277,6 +285,7 @@ class plugin_gui_window: public calf_utils::config_listener_iface
 {
 private:
     void cleanup();
+    window_update_controller refresh_controller;
 public:
     plugin_gui *gui;
     GtkWindow *toplevel;
@@ -320,14 +329,6 @@ struct activate_command_params
 };
 
 void activate_command(GtkAction *action, activate_command_params *params);
-
-class window_update_controller
-{
-    int refresh_counter;
-public:
-    window_update_controller() : refresh_counter() {}
-    bool check_redraw(GtkWidget *toplevel);
-};
 
 };
 
