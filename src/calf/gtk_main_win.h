@@ -35,7 +35,7 @@ namespace calf_plugins {
             gtk_main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *strip_table, *name, *button, *midi_in, *extra, *leftBox, *rightBox;
+            GtkWidget *strip_table, *name, *button, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
             std::vector<GtkWidget *> audio_in, audio_out;
         };
         
@@ -93,6 +93,7 @@ namespace calf_plugins {
         bool save_file_as();
         void save_file_from_sighandler();
         void show_rack_ears(bool show);
+        void show_vu_meters(bool show);
         /// Implementation of progress_report_iface function
         virtual void report_progress(float percentage, const std::string &message);
         /// Mark condition as true
