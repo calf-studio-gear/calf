@@ -1071,7 +1071,7 @@ CALF_PORT_PROPS(tapesimulator) = {
     { 12500, 1000,  20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lowpass", "Filter" },
     { 1,        0,      1, 0,  PF_ENUM | PF_CTL_COMBO, tapesimulator_speed_names, "speed", "Speed Simulation" },
     { 0.10,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "noise", "Noise" },
-    { 0.30,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mechanical", "Mechanical" },
+    { 0.20,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mechanical", "Mechanical" },
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "magnetical", "Magnetical" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "post", "Post-Filter" },
     {}

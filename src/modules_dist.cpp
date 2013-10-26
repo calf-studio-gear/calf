@@ -744,11 +744,11 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             // lfo filters / phasing
             if (*params[param_mechanical]) {
                 // filtering
-                float freqL1 = *params[param_lp] * (1 - ((lfo1.get_value() + 1) * 0.25 * *params[param_mechanical]));
-                float freqL2 = *params[param_lp] * (1 - ((lfo2.get_value() + 1) * 0.1 * *params[param_mechanical]));
+                float freqL1 = *params[param_lp] * (1 - ((lfo1.get_value() + 1) * 0.3 * *params[param_mechanical]));
+                float freqL2 = *params[param_lp] * (1 - ((lfo2.get_value() + 1) * 0.2 * *params[param_mechanical]));
                 
-                float freqR1 = *params[param_lp] * (1 - ((lfo1.get_value() * -1 + 1) * 0.25 * *params[param_mechanical]));
-                float freqR2 = *params[param_lp] * (1 - ((lfo2.get_value() * -1 + 1) * 0.1 * *params[param_mechanical]));
+                float freqR1 = *params[param_lp] * (1 - ((lfo1.get_value() * -1 + 1) * 0.3 * *params[param_mechanical]));
+                float freqR2 = *params[param_lp] * (1 - ((lfo2.get_value() * -1 + 1) * 0.2 * *params[param_mechanical]));
                 
                 lp[0][0].set_lp_rbj(freqL1, 0.707, (float)srate);
                 lp[0][1].set_lp_rbj(freqL2, 0.707, (float)srate);
@@ -757,11 +757,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
                 lp[1][1].set_lp_rbj(freqR2, 0.707, (float)srate);
                 
                 // phasing
-                float _phaseL = lfo1.get_value() * lfo2.get_value() * *params[param_mechanical] * -36;
-                float _phaseR = lfo1.get_value() * lfo2.get_value() * *params[param_mechanical] * 36;
+                float _phase = lfo1.get_value() * *params[param_mechanical] * -36;
                 
-                float _phase_cos_coef = cos(_phaseL / 180 * M_PI);
-                float _phase_sin_coef = sin(_phaseR / 180 * M_PI);
+                float _phase_cos_coef = cos(_phase / 180 * M_PI);
+                float _phase_sin_coef = sin(_phase / 180 * M_PI);
                 
                 float _l = L * _phase_cos_coef - R * _phase_sin_coef;
                 float _r = L * _phase_sin_coef + R * _phase_cos_coef;
@@ -868,7 +867,11 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data,
     if (subindex > 1) // 1
         return false;
     if(index == param_lp) {
-        //context->set_line_width(1.5);
+        if (subindex == 0)
+            context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        else {
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
+        }
         return ::get_graph(*this, subindex, data, points);
     } else if (index == param_level_in) {
         if (subindex == 0)
