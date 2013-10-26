@@ -63,6 +63,7 @@ namespace calf_plugins {
 
     protected:
         GtkWidget *progress_window;
+        window_update_controller refresh_controller;
     
     protected:
         plugin_strip *create_strip(plugin_ctl_iface *plugin);

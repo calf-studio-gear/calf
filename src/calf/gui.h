@@ -321,6 +321,14 @@ struct activate_command_params
 
 void activate_command(GtkAction *action, activate_command_params *params);
 
+class window_update_controller
+{
+    int refresh_counter;
+public:
+    window_update_controller() : refresh_counter() {}
+    bool check_redraw(GtkWidget *toplevel);
+};
+
 };
 
 #endif

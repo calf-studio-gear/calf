@@ -635,7 +635,12 @@ static inline float LVL(float value)
 gboolean gtk_main_window::on_idle(void *data)
 {
     gtk_main_window *self = (gtk_main_window *)data;
+
     self->owner->on_idle();
+    
+    if (!self->refresh_controller.check_redraw(GTK_WIDGET(self->toplevel)))
+        return TRUE;
+
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
     {
         if (i->second)
