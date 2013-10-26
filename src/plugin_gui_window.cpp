@@ -309,6 +309,8 @@ void plugin_gui_window::fill_gui_presets(bool builtin, char &ch)
 gboolean plugin_gui_window::on_idle(void *data)
 {
     plugin_gui_window *self = (plugin_gui_window *)data;
+    if (!self->refresh_controller.check_redraw(GTK_WIDGET(self->toplevel)))
+        return TRUE;
     self->gui->on_idle();
     return TRUE;
 }
@@ -317,8 +319,9 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_icon_name(toplevel, "calf_plugin");
-    gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_DIALOG);
+    gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_NORMAL);
     gtk_window_set_role(toplevel, "plugin_ui");
+    
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
     gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Plugin");
     

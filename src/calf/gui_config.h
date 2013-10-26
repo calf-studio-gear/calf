@@ -80,6 +80,7 @@ struct gui_config
 {
     int rack_float, float_size;
     bool rack_ears;
+    bool vu_meters;
     
     gui_config();
     ~gui_config();

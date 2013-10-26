@@ -531,6 +531,26 @@ plugin_gui::~plugin_gui()
 
 /***************************** GUI environment ********************************************/
 
+bool window_update_controller::check_redraw(GtkWidget *toplevel)
+{
+    GdkWindow *gdkwin = gtk_widget_get_window(toplevel);
+    if (!gdkwin)
+        return false;
+
+    if (!gdk_window_is_viewable(gdkwin))
+        return false;
+    GdkWindowState state = gdk_window_get_state(gdkwin);
+    if (state & GDK_WINDOW_STATE_ICONIFIED)
+    {
+        ++refresh_counter;
+        if (refresh_counter & 15)
+            return false;
+    }
+    return true;
+}
+
+/***************************** GUI environment ********************************************/
+
 gui_environment::gui_environment()
 {
     keyfile = g_key_file_new();

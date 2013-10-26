@@ -247,6 +247,7 @@ calf_led_init (CalfLed *self)
     // GtkWidget *widget = GTK_WIDGET(self);
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->led_value = 0.f;
+    self->cache_surface = NULL;
     widget->requisition.width = 24;
     widget->requisition.height = 18;
 }
@@ -255,10 +256,14 @@ void calf_led_set_value(CalfLed *led, float value)
 {
     if (value != led->led_value)
     {
+        float old_value = led->led_value;
         led->led_value = value;
-        GtkWidget *widget = GTK_WIDGET (led);
-        if (GTK_WIDGET_REALIZED(widget))
-            gtk_widget_queue_draw (widget);
+        if (led->led_mode >= 2 || (old_value > 0) != (value > 0))
+        {
+            GtkWidget *widget = GTK_WIDGET (led);
+            if (GTK_WIDGET_REALIZED(widget))
+                gtk_widget_queue_draw (widget);
+        }
     }
 }
 
