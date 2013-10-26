@@ -648,11 +648,15 @@ gboolean gtk_main_window::on_idle(void *data)
                     calf_vumeter_set_value(CALF_VUMETER(strip->audio_in[i]), LVL(plugin->get_level(idx++)));
                 }
             }
+            else
+                idx += strip->audio_in.size();
             if (strip->outBox && gtk_widget_is_drawable (strip->outBox)) {
                 for (int i = 0; i < (int)strip->audio_out.size(); i++) {
                     calf_vumeter_set_value(CALF_VUMETER(strip->audio_out[i]), LVL(plugin->get_level(idx++)));
                 }
             }
+            else
+                idx += strip->audio_out.size();
             if (plugin->get_metadata_iface()->get_midi()) {
                 calf_led_set_value (CALF_LED (strip->midi_in), plugin->get_level(idx++));
             }
