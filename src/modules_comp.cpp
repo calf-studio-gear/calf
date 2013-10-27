@@ -176,11 +176,7 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
-    for(int i = 0; i < strips - 1; i ++) {
-        freq_old[i] = -1;
-        sep_old[i] = -1;
-        q_old[i] = -1;
-    }
+    for(int i = 0; i < strips - 1; i ++) freq_old[i] = -1;
     mode_old = -1;
 }
 
@@ -219,73 +215,88 @@ void multibandcompressor_audio_module::params_changed()
 
     mode_old = mode;
     mode = *params[param_mode];
-    int i;
-    int j1;
-    switch(mode) {
-        case 0:
-        default:
-            j1 = 0;
-            break;
-        case 1:
-            j1 = 2;
-            break;
-        case 2:
-            *params[param_sep0] = 0.0;
-            *params[param_sep1] = 0.0;
-            *params[param_sep2] = 0.0;
-            *params[param_q0] = 1.0 / 1.4142135;
-            *params[param_q1] = 1.0 / 1.4142135;
-            *params[param_q2] = 1.0 / 1.4142135;
-	    j1 = 1;
-            break;
-    }
+    float q1 = *params[param_mode] ? 0.54 : 0.7071068123730965;
+    float q2 = 1.34;
     // set the params of all filters
-    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0] or *params[param_mode] != mode_old) {
-        lpL[0][0].set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
-        hpL[0][0].set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
+    if(*params[param_freq0] != freq_old[0] or *params[param_mode] != mode_old) {
+        lpL[0][0].set_lp_rbj(*params[param_freq0], q1, (float)srate);
+        hpL[0][0].set_hp_rbj(*params[param_freq0], q1, (float)srate);
         lpR[0][0].copy_coeffs(lpL[0][0]);
         hpR[0][0].copy_coeffs(hpL[0][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[0][i].copy_coeffs(lpL[0][0]);
-            hpL[0][i].copy_coeffs(hpL[0][0]);
-            lpR[0][i].copy_coeffs(lpL[0][0]);
-            hpR[0][i].copy_coeffs(hpL[0][0]);
+        if (mode) {
+            lpL[0][1].set_lp_rbj(*params[param_freq0], q2, (float)srate);
+            hpL[0][1].set_hp_rbj(*params[param_freq0], q2, (float)srate);
+            lpR[0][1].copy_coeffs(lpL[0][1]);
+            hpR[0][1].copy_coeffs(hpL[0][1]);
+            lpL[0][2].copy_coeffs(lpL[0][0]);
+            hpL[0][2].copy_coeffs(hpL[0][0]);
+            lpR[0][2].copy_coeffs(lpL[0][0]);
+            hpR[0][2].copy_coeffs(hpL[0][0]);
+            lpL[0][3].copy_coeffs(lpL[0][1]);
+            hpL[0][3].copy_coeffs(hpL[0][1]);
+            lpR[0][3].copy_coeffs(lpL[0][1]);
+            hpR[0][3].copy_coeffs(hpL[0][1]);
+        } else {
+            lpL[0][1].copy_coeffs(lpL[0][0]);
+            hpL[0][1].copy_coeffs(hpL[0][0]);
+            lpR[0][1].copy_coeffs(lpL[0][0]);
+            hpR[0][1].copy_coeffs(hpL[0][0]);
         }
         freq_old[0] = *params[param_freq0];
-        sep_old[0]  = *params[param_sep0];
-        q_old[0]    = *params[param_q0];
         redraw_graph = true;
     }
-    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
-        lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
-        hpL[1][0].set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
+    if(*params[param_freq1] != freq_old[1] or *params[param_mode] != mode_old) {
+        lpL[1][0].set_lp_rbj(*params[param_freq1], q1, (float)srate);
+        hpL[1][0].set_hp_rbj(*params[param_freq1], q1, (float)srate);
         lpR[1][0].copy_coeffs(lpL[1][0]);
         hpR[1][0].copy_coeffs(hpL[1][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[1][i].copy_coeffs(lpL[1][0]);
-            hpL[1][i].copy_coeffs(hpL[1][0]);
-            lpR[1][i].copy_coeffs(lpL[1][0]);
-            hpR[1][i].copy_coeffs(hpL[1][0]);
+        if (mode) {
+            lpL[1][1].set_lp_rbj(*params[param_freq1], q2, (float)srate);
+            hpL[1][1].set_hp_rbj(*params[param_freq1], q2, (float)srate);
+            lpR[1][1].copy_coeffs(lpL[1][1]);
+            hpR[1][1].copy_coeffs(hpL[1][1]);
+            lpL[1][2].copy_coeffs(lpL[1][0]);
+            hpL[1][2].copy_coeffs(hpL[1][0]);
+            lpR[1][2].copy_coeffs(lpL[1][0]);
+            hpR[1][2].copy_coeffs(hpL[1][0]);
+            lpL[1][3].copy_coeffs(lpL[1][1]);
+            hpL[1][3].copy_coeffs(hpL[1][1]);
+            lpR[1][3].copy_coeffs(lpL[1][1]);
+            hpR[1][3].copy_coeffs(hpL[1][1]);
+        } else {
+            lpL[1][1].copy_coeffs(lpL[1][0]);
+            hpL[1][1].copy_coeffs(hpL[1][0]);
+            lpR[1][1].copy_coeffs(lpL[1][0]);
+            hpR[1][1].copy_coeffs(hpL[1][0]);
         }
         freq_old[1] = *params[param_freq1];
-        sep_old[1]  = *params[param_sep1];
-        q_old[1]    = *params[param_q1];
         redraw_graph = true;
     }
-    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
-        lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
-        hpL[2][0].set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
+    if(*params[param_freq2] != freq_old[2] or *params[param_mode] != mode_old) {
+        lpL[2][0].set_lp_rbj(*params[param_freq2], q1, (float)srate);
+        hpL[2][0].set_hp_rbj(*params[param_freq2], q1, (float)srate);
         lpR[2][0].copy_coeffs(lpL[2][0]);
         hpR[2][0].copy_coeffs(hpL[2][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[2][i].copy_coeffs(lpL[2][0]);
-            hpL[2][i].copy_coeffs(hpL[2][0]);
-            lpR[2][i].copy_coeffs(lpL[2][0]);
-            hpR[2][i].copy_coeffs(hpL[2][0]);
+        if (mode) {
+            lpL[2][1].set_lp_rbj(*params[param_freq2], q2, (float)srate);
+            hpL[2][1].set_hp_rbj(*params[param_freq2], q2, (float)srate);
+            lpR[2][1].copy_coeffs(lpL[2][1]);
+            hpR[2][1].copy_coeffs(hpL[2][1]);
+            lpL[2][2].copy_coeffs(lpL[2][0]);
+            hpL[2][2].copy_coeffs(hpL[2][0]);
+            lpR[2][2].copy_coeffs(lpL[2][0]);
+            hpR[2][2].copy_coeffs(hpL[2][0]);
+            lpL[2][3].copy_coeffs(lpL[2][1]);
+            hpL[2][3].copy_coeffs(hpL[2][1]);
+            lpR[2][3].copy_coeffs(lpL[2][1]);
+            hpR[2][3].copy_coeffs(hpL[2][1]);
+        } else {
+            lpL[2][1].copy_coeffs(lpL[2][0]);
+            hpL[2][1].copy_coeffs(hpL[2][0]);
+            lpR[2][1].copy_coeffs(lpL[2][0]);
+            hpR[2][1].copy_coeffs(hpL[2][0]);
         }
         freq_old[2] = *params[param_freq2];
-        sep_old[2]  = *params[param_sep2];
-        q_old[2]    = *params[param_q2];
         redraw_graph = true;
     }
 
@@ -378,13 +389,10 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
                     switch(mode) {
                         case 0:
                         default:
-                            j1 = 0;
+                            j1 = 1;
                             break;
                         case 1:
-                            j1 = 2;
-                            break;
-                        case 2:
-                            j1 = 1;
+                            j1 = 3;
                             break;
                     }
                     for (int j = 0; j <= j1; j++){
@@ -413,21 +421,6 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
 
 
             } // process single strip
-
-            // even out filters gain reduction
-            // 3dB - levelled manually (based on default sep and q settings)
-            switch(mode) {
-                case 0:
-                    outL *= 1.414213562;
-                    outR *= 1.414213562;
-                    break;
-                case 1:
-                    outL *= 0.88;
-                    outR *= 0.88;
-                    break;
-                case 2:
-		    break;
-            }
 
             // out level
             outL *= *params[param_level_out];
@@ -528,13 +521,10 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, float 
         switch(this->mode) {
             case 0:
             default:
-                j1 = 0;
+                j1 = 1;
                 break;
             case 1:
-                j1 = 2;
-                break;
-            case 2:
-                j1 = 1;
+                j1 = 3;
                 break;
         }
         for(int j = 0; j <= j1; j ++) {
@@ -2713,11 +2703,11 @@ void gain_reduction2_audio_module::process(float &left)
         cdb = -yl;
         gain = exp(cdb/20.f*log(10.f));
 
-	left *= gain * makeup;
-	meter_out = (fabs(left));
+    left *= gain * makeup;
+    meter_out = (fabs(left));
         meter_comp = gain;
-	detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
-	old_detected = detected;
+    detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
+    old_detected = detected;
 
         old_yl = yl;
         old_y1 = y1;
@@ -2734,8 +2724,8 @@ float gain_reduction2_audio_module::output_gain(float inputt) const {
 
         float xg, yg;
         yg=0.f;
-	xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
-	dsp::sanitize_denormal(xg);
+    xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
+    dsp::sanitize_denormal(xg);
 
         if (2.f*(xg-thresdb)<-width) {
             yg = xg;
@@ -2746,8 +2736,8 @@ float gain_reduction2_audio_module::output_gain(float inputt) const {
         if (2.f*(xg-thresdb)>width) {
             yg = thresdb + (xg-thresdb)/ratio;
         }
-	
-	return(exp(yg/20.f*log(10.f)));
+    
+    return(exp(yg/20.f*log(10.f)));
 }
 
 void gain_reduction2_audio_module::set_sample_rate(uint32_t sr)

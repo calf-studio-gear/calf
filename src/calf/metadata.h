@@ -200,8 +200,6 @@ struct multibandcompressor_metadata: public plugin_metadata<multibandcompressor_
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
            param_freq0, param_freq1, param_freq2,
-           param_sep0, param_sep1, param_sep2,
-           param_q0, param_q1, param_q2,
            param_mode,
            param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0,
            param_detection0, param_compression0, param_output0, param_bypass0, param_solo0,
