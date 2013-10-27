@@ -235,6 +235,34 @@ CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf MultiChorus", "Kr
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(monocompressor) = {"In", "Out"};
+
+const char *monocompressor_detection_names[] = { "RMS", "Peak" };
+const char *monocompressor_stereo_link_names[] = { "Average", "Maximum" };
+
+CALF_PORT_PROPS(monocompressor) = {
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 1,           0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
+    { 0,      0,  1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_in", "Input" },
+    { 0,      0,  1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_out", "Output" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_in", "0dB-In" },
+    { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_out", "0dB-Out" },
+    { 0.125,      0.000976563, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
+    { 2,      1, 20,  21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio", "Ratio" },
+    { 20,     0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 250,    0.01, 2000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
+    { 2,      1, 64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
+    { 2.828427125,      1,  8,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
+    //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_detection_names, "detection", "Detection" },
+    //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_stereo_link_names, "stereo_link", "Stereo Link" },
+    { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Reduction" },
+    {}
+};
+
+CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf MonoCompressor", "Damien Zammit", calf_plugins::calf_copyright_info, "MonoCompressorPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(compressor) = {"In L", "In R", "Out L", "Out R"};
 
 const char *compressor_detection_names[] = { "RMS", "Peak" };
@@ -319,7 +347,7 @@ CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "Sidechaincompressor", "Calf S
 CALF_PORT_NAMES(multibandcompressor) = {"In L", "In R", "Out L", "Out R"};
 
 const char *multibandcompressor_detection_names[] = { "RMS", "Peak" };
-const char *multibandcompressor_filter_choices[] = { "12dB", "36dB"};
+const char *multibandcompressor_filter_choices[] = { "LR4" };
 
 CALF_PORT_PROPS(multibandcompressor) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -346,7 +374,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
     { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
 
-    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
+    { 2,      2,  2,    0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
 
     { 0.25,      0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold0", "Threshold 1" },
     { 2,           1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio0", "Ratio 1" },
@@ -754,6 +782,22 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiba
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "p" #band "_level", "Level " #band }, \
     { frequency,   10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "p" #band "_freq", "Freq " #band }, \
     { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(phonoeq) = {"In L", "In R", "Out L", "Out R"};
+
+const char *phonoeq_filter_modes[] = { "Reproduction", "Production"};
+const char *phonoeq_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA"};
+
+CALF_PORT_PROPS(phonoeq) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, phonoeq_filter_modes, "mode", "Filter Mode" },
+    { 3,      0,  3,    0, PF_ENUM | PF_CTL_COMBO, phonoeq_filter_types, "type", "Filter Type" },
+    {}
+};
+CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "PhonoEQ", "Calf PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

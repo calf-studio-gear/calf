@@ -219,6 +219,17 @@ public:
         b2 = (ab0-ab1+ab2)*q;
     }
     
+    /// set digital filter parameters directly
+    void set_bilinear_direct(float aa0, float aa1, float aa2, float ab1, float ab2)
+    {
+        a0 = aa0;
+        a1 = aa1;
+        a2 = aa2;
+        b1 = ab1;
+        b2 = ab2;
+    }
+    
+    
     /// RBJ peaking EQ
     /// @param freq   peak frequency
     /// @param q      q (correlated to freq/bandwidth, @see set_bp_rbj)

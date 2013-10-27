@@ -84,6 +84,42 @@ public:
     }
 };
 
+/// Universal single stereo level metering for a specific plugin
+template<class Metadata>
+class mono_in_out_metering: public in_out_metering_base<dsp::vumeter>
+{
+public:
+    inline void process(float *const *params, const float *const *inputs, const float *const *outputs, unsigned int offset, unsigned int nsamples)
+    { 
+        if (params[Metadata::param_meter_in] || params[Metadata::param_clip_in]) {
+            if (inputs)
+                vumeter_in.update_stereo(inputs[0] ? inputs[0] + offset : NULL, NULL, nsamples);
+            else
+                vumeter_in.update_zeros(nsamples);
+            if (params[Metadata::param_meter_in])
+                *params[Metadata::param_meter_in] = vumeter_in.level;
+            if (params[Metadata::param_clip_in])
+                *params[Metadata::param_clip_in] = vumeter_in.clip > 0 ? 1.f : 0.f;             
+        }   
+        if (params[Metadata::param_meter_out] || params[Metadata::param_clip_out]) {        
+            if (outputs)
+                vumeter_out.update_stereo(outputs[0] ? outputs[0] + offset : NULL, NULL, nsamples);
+            else
+                vumeter_out.update_zeros(nsamples);
+            if (params[Metadata::param_meter_out])
+                *params[Metadata::param_meter_out] = vumeter_out.level;
+            if (params[Metadata::param_clip_out])
+                *params[Metadata::param_clip_out] = vumeter_out.clip > 0 ? 1.f : 0.f;           
+        }   
+    }           
+    void bypassed(float *const *params, unsigned int nsamples)
+    {           
+        reset();
+        process(params, NULL, NULL, 0, nsamples);
+    }
+};  
+
+
 /// Universal dual level metering for a specific plugin
 template<class Metadata>
 class dual_in_out_metering: public in_out_metering_base<dsp::dual_vumeter>

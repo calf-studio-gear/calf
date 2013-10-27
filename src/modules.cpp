@@ -35,6 +35,157 @@ using namespace calf_plugins;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+phonoeq_audio_module::phonoeq_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    last_generation = 0;
+    for (int i = 0; i < 1; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+}
+
+void phonoeq_audio_module::activate()
+{
+    is_active = true;
+    // set all filters
+    params_changed();
+    meters.reset();
+}
+
+void phonoeq_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void phonoeq_audio_module::params_changed()
+{
+    int mode = *params[param_mode];
+    int type = *params[param_type];
+    riaacurvL.set(srate, mode, type);        
+    riaacurvR.set(srate, mode, type);        
+}
+
+uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[AM::param_bypass] > 0.f;
+    if (!bypass)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+    }
+    uint32_t orig_offset = offset;
+    uint32_t orig_numsamples = numsamples;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+        // displays, too
+        meters.bypassed(params, orig_numsamples);
+    } else {
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            float outL = 0.f;
+            float outR = 0.f;
+            float inL = ins[0][offset];
+            float inR = ins[1][offset];
+            // in level
+            inR *= *params[AM::param_level_in];
+            inL *= *params[AM::param_level_in];
+            
+            float procL = inL;
+            float procR = inR;
+            
+            procL = riaacurvL.process(procL);
+            procR = riaacurvR.process(procR);
+
+            outL = procL * *params[AM::param_level_out];
+            outR = procR * *params[AM::param_level_out];
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+                        
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        meters.process(params, ins, outs, orig_offset, orig_numsamples);
+        // clean up
+        riaacurvL.sanitize();
+        riaacurvR.sanitize();
+    }
+    // whatever has to be returned x)
+    return outputs_mask;
+}
+
+bool phonoeq_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active)
+        return false;
+    if (!subindex) {
+        context->set_line_width(1.5);
+        return ::get_graph(*this, subindex, data, points, 32, 0);
+    }
+    return false;
+}
+
+bool phonoeq_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active) {
+        return false;
+    } else {
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
+    }
+}
+
+int phonoeq_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    if (!is_active) {
+        return false;
+    } else {
+        bool changed = true;
+        if (changed)
+        {
+            last_generation++;
+            subindex_graph = 0;
+            subindex_dot = INT_MAX;
+            subindex_gridline = INT_MAX;
+        }
+        else {
+            subindex_graph = 0;
+            subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
+        }
+        if (generation == last_calculated_generation)
+            subindex_graph = INT_MAX;
+        return last_generation;
+    }
+    return false;
+}
+
+float phonoeq_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+{
+    float ret;
+    ret = riaacurvL.r1.freq_gain(freq, sr);
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void reverb_audio_module::activate()
 {
     reverb.reset();
