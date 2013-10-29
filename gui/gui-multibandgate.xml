@@ -1,45 +1,25 @@
 <vbox>
     <hbox spacing="12" border="8">
-        <frame label="In- and Output">
-            <table expand-y="0" expand-x="1" spacing="8" rows="2" cols="4">
-                <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0" attach-h="2" pad-x="8">
-                    <label param="level_in" />
-                    <knob param="level_in" size="3" />
-                    <value param="level_in" />
-                    <label />
-                    <label param="bypass"/>
-                     <align><toggle param="bypass" shrink="1"/></align>
-                </vbox>
-                <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0" pad-y="12">
-                    <label param="meter_inL" />
-                    <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-                    <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-                    <label param="meter_inR" />
-                </vbox>
-                <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0" pad-y="12">
-                    <label text="0dB" expand="0" fill="0" />
-                    <led param="clip_inL" expand="0" fill="0" />
-                    <led param="clip_inR" expand="0" fill="0" />
-                    <label text="0dB" expand="0" fill="0" />
-                </vbox>
-                <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="1" pad-y="12">
-                    <label param="meter_outL" />
-                    <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-                    <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
-                    <label param="meter_outR" />
-                </vbox>
-                <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="1" pad-y="12">
-                    <label text="0dB" expand="0" fill="0" />
-                    <led param="clip_outL" expand="0" mode="1" fill="0" />
-                    <led param="clip_outR" expand="0" mode="1" fill="0" />
-                    <label text="0dB" expand="0" fill="0" />
-                </vbox>
-                <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="3" attach-y="0" attach-h="2" pad-x="8">
-                    <label param="level_out" />
-                    <knob param="level_out" size="3" />
-                    <value param="level_out" />
-                </vbox>
-            </table>
+        <frame label="Input">
+            <vbox>
+                <table rows="4" cols="2">
+                    <label param="meter_inL" attach-x="0" attach-y="0"/>
+                    <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5"  attach-x="0" attach-y="1" fill-x="1" expand-x="1" />
+                    <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5"  attach-x="0" attach-y="2" fill-x="1" expand-x="1" />
+                    <label param="meter_inR" attach-x="0" attach-y="3" />
+                    <label text="0dB" expand="0" fill="0" attach-x="1" attach-y="0" fill-x="0" expand-x="0" />
+                    <led param="clip_inL" expand="0" mode="1" fill="0" attach-x="1" attach-y="1" fill-x="0" expand-x="0" />
+                    <led param="clip_inR" expand="0" mode="1" fill="0" attach-x="1" attach-y="2" fill-x="0" expand-x="0" />
+                    <label text="0dB" expand="0" fill="0" attach-x="1" attach-y="3" fill-x="0" expand-x="0" />
+                </table>
+                <hbox>
+                    <label text="       "/>
+                    <label param="level_in" align-x="1" />
+                    <knob param="level_in" size="4" />
+                    <value param="level_in" align-x="0" />
+                    <label text="       "/>
+                </hbox>
+            </vbox>
         </frame>
         <frame label="X-Over">
             <vbox>
@@ -48,45 +28,45 @@
                     <combo param="mode"  expand="0" fill="0"/>
                 </hbox>
                 <if cond="directlink">
-                        <line-graph refresh="1" width="200" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
-                    </if>
+                    <line-graph refresh="1" width="300" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+                </if>
                 <hbox>
-                    <table rows="3" cols="2" attach-x="4" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                        <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="sep0" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q0" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q0" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q0" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    </table>
-                    <table rows="3" cols="2" attach-x="5" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                        <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="sep1" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q1" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q1" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q1" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    </table>
-                    <table rows="3" cols="2" attach-x="6" attach-y="0" spacing="0" border="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0">
-                        <hbox  attach-x="0" attach-y="1" border="0" fill-x="0">
-                            <knob param="sep2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="sep2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="sep2" attach-x="1" attach-y="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                        <hbox  attach-x="0" attach-y="2" border="0" fill-x="0">
-                            <knob param="q2" type="1" size="1" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                            <label param="q2" width="5" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" />
-                        </hbox>
-                        <value param="q2" attach-x="1" attach-y="2" border="0" expand="0" fill="0" expand-y="0" fill-y="0" expand-x="0" fill-x="0" width="2" align-x="0.0" />
-                    </table>
+                    <vbox>
+                        <knob param="freq0" size="1"/>
+                        <value param="freq0"/>
+                    </vbox>
+                    <vbox>
+                        <knob param="freq1" size="1"/>
+                        <value param="freq1"/>
+                    </vbox>
+                    <vbox>
+                        <knob param="freq2" size="1"/>
+                        <value param="freq2"/>
+                    </vbox>
+                </hbox>
+            </vbox>
+        </frame>
+        <frame label="output">
+            <vbox>
+                <table rows="4" cols="2">
+                    <label param="meter_outL" attach-x="0" attach-y="0"/>
+                    <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5"  attach-x="0" attach-y="1" fill-x="1" expand-x="1" />
+                    <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5"  attach-x="0" attach-y="2" fill-x="1" expand-x="1" />
+                    <label param="meter_outR" attach-x="0" attach-y="3" />
+                    <label text="0dB" expand="0" fill="0" attach-x="1" attach-y="0" fill-x="0" expand-x="0" />
+                    <led param="clip_outL" expand="0" mode="1" fill="0" attach-x="1" attach-y="1" fill-x="0" expand-x="0" />
+                    <led param="clip_outR" expand="0" mode="1" fill="0" attach-x="1" attach-y="2" fill-x="0" expand-x="0" />
+                    <label text="0dB" expand="0" fill="0" attach-x="1" attach-y="3" fill-x="0" expand-x="0" />
+                </table>
+                <hbox>
+                    <label param="level_out" align-x="1" />
+                    <knob param="level_out" size="4" />
+                    <value param="level_out" align-x="0" />
+                    <vbox>
+                        <label param="bypass"/>
+                        <toggle param="bypass" />
+                        <label/>
+                    </vbox>
                 </hbox>
             </vbox>
         </frame>

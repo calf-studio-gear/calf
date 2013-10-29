@@ -366,7 +366,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 1000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 6000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
 
-    { 0,           0,           1,     0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
+    { 1,           0,           1,     0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
 
     { 0.25,      0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold0", "Threshold 1" },
     { 2,           1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio0", "Ratio 1" },
@@ -543,7 +543,7 @@ CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "Sidechaingate", "Calf Sidechain Gat
 CALF_PORT_NAMES(multibandgate) = {"In L", "In R", "Out L", "Out R"};
 
 const char *multibandgate_detection_names[] = { "RMS", "Peak" };
-const char *multibandgate_filter_choices[] = { "12dB", "36dB"};
+const char *multibandgate_filter_choices[] = { "LR4", "LR8" };
 
 CALF_PORT_PROPS(multibandgate) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -561,14 +561,6 @@ CALF_PORT_PROPS(multibandgate) = {
     { 120,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq0", "Split 1/2" },
     { 1000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 6000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
-
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep0", "S1" },
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep1", "S2" },
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep2", "S3" },
-
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q0", "Q1" },
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
 
     { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandgate_filter_choices, "mode", "Filter Mode" },
 
@@ -665,7 +657,7 @@ CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Christian Hols
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(multibandlimiter) = {"In L", "In R", "Out L", "Out R"};
-const char *multibandlimiter_filter_choices[] = { "12dB", "36dB"};
+const char *multibandlimiter_filter_choices[] = { "LR4", "LR8" };
 
 CALF_PORT_PROPS(multibandlimiter) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -683,14 +675,6 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 100,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq0", "Split 1/2" },
     { 750,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 5000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
-
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep0", "S1" },
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep1", "S2" },
-    { -0.17,      -0.5,         0.5,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "sep2", "S3" },
-
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q0", "Q1" },
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q1", "Q2" },
-    { 0.7762471166286917,    0.25,        4,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_GRAPH, NULL, "q2", "Q3" },
 
     { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandlimiter_filter_choices, "mode", "Filter Mode" },
 

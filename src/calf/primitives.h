@@ -419,11 +419,10 @@ inline void sanitize(float &value)
  */
 inline bool is_nan(float& value )
 {
-	if (((*(uint32_t *) &value) & 0x7fffffff) > 0x7f800000) {
-		printf("NaN detected.\n");
-		return true;
-	}
-	return false;
+    if (((*(uint32_t *) &value) & 0x7fffffff) > 0x7f800000) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -433,10 +432,10 @@ inline void sanitize_denormal(float& value)
 {
 // old test:   if (((*(unsigned int *) &value) & 0x7f800000) == 0) {
     if (is_nan(value)) {
-	value = 0.f;
+        value = 0.f;
     }
 }
-	
+    
 /**
  * Force "small enough" double value to zero
  */

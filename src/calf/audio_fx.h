@@ -632,6 +632,25 @@ public:
     void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th);
 };
 
+
+class crossover {
+private:
+public:
+    int channels, bands, mode, mode_old;
+    float freq[8], freq_old[8], out[8][8];
+    dsp::biquad_d2<float> lp[8][8][4], hp[8][8][4];
+    mutable bool redraw_graph;
+    uint32_t srate;
+    crossover();
+    void process(float *data);
+    float get_value(int c, int b);
+    void set_sample_rate(uint32_t sr);
+    void set_filter(int b, float f);
+    void set_mode(int m) ;
+    void init(int c, int b, uint32_t sr);
+    virtual bool get_graph(int subindex, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
+};
+
 #if 0
 { to keep editor happy
 #endif

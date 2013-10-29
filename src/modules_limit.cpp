@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <memory.h>
 #include <calf/giface.h>
+#include <calf/audio_fx.h>
 #include <calf/modules_limit.h>
 
 using namespace dsp;
@@ -238,12 +239,6 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     buffer_size = 0;
     overall_buffer_size = 0;
     _sanitize = false;
-    for(int i = 0; i < strips - 1; i ++) {
-        freq_old[i] = -1;
-        sep_old[i] = -1;
-        q_old[i] = -1;
-    }
-    mode_old = 0;
     _mode = 0;
     for(int i = 0; i < strips; i ++) {
         weight_old[i] = -1.f;
@@ -292,73 +287,13 @@ void multibandlimiter_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    mode_old = _mode;
     _mode = *params[param_mode];
-    int i;
-    int j1;
-    switch(_mode) {
-        case 0:
-        default:
-            j1 = 0;
-            break;
-        case 1:
-            j1 = 2;
-            break;
-    }
-    // set the params of all filters
-    if(*params[param_freq0] != freq_old[0] or *params[param_sep0] != sep_old[0] or *params[param_q0] != q_old[0] or *params[param_mode] != mode_old) {
-        lpL[0][0].set_lp_rbj((float)(*params[param_freq0] * (1 - *params[param_sep0])), *params[param_q0], (float)srate);
-        hpL[0][0].set_hp_rbj((float)(*params[param_freq0] * (1 + *params[param_sep0])), *params[param_q0], (float)srate);
-        lpR[0][0].copy_coeffs(lpL[0][0]);
-        hpR[0][0].copy_coeffs(hpL[0][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[0][i].copy_coeffs(lpL[0][0]);
-            hpL[0][i].copy_coeffs(hpL[0][0]);
-            lpR[0][i].copy_coeffs(lpL[0][0]);
-            hpR[0][i].copy_coeffs(hpL[0][0]);
-        }
-        freq_old[0] = *params[param_freq0];
-        sep_old[0]  = *params[param_sep0];
-        q_old[0]    = *params[param_q0];
-        redraw_graph = true;
-    }
-    if(*params[param_freq1] != freq_old[1] or *params[param_sep1] != sep_old[1] or *params[param_q1] != q_old[1] or *params[param_mode] != mode_old) {
-        lpL[1][0].set_lp_rbj((float)(*params[param_freq1] * (1 - *params[param_sep1])), *params[param_q1], (float)srate);
-        hpL[1][0].set_hp_rbj((float)(*params[param_freq1] * (1 + *params[param_sep1])), *params[param_q1], (float)srate);
-        lpR[1][0].copy_coeffs(lpL[1][0]);
-        hpR[1][0].copy_coeffs(hpL[1][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[1][i].copy_coeffs(lpL[1][0]);
-            hpL[1][i].copy_coeffs(hpL[1][0]);
-            lpR[1][i].copy_coeffs(lpL[1][0]);
-            hpR[1][i].copy_coeffs(hpL[1][0]);
-        }
-        freq_old[1] = *params[param_freq1];
-        sep_old[1]  = *params[param_sep1];
-        q_old[1]    = *params[param_q1];
-        redraw_graph = true;
-    }
-    if(*params[param_freq2] != freq_old[2] or *params[param_sep2] != sep_old[2] or *params[param_q2] != q_old[2] or *params[param_mode] != mode_old) {
-        lpL[2][0].set_lp_rbj((float)(*params[param_freq2] * (1 - *params[param_sep2])), *params[param_q2], (float)srate);
-        hpL[2][0].set_hp_rbj((float)(*params[param_freq2] * (1 + *params[param_sep2])), *params[param_q2], (float)srate);
-        lpR[2][0].copy_coeffs(lpL[2][0]);
-        hpR[2][0].copy_coeffs(hpL[2][0]);
-        for(i = 1; i <= j1; i++) {
-            lpL[2][i].copy_coeffs(lpL[2][0]);
-            hpL[2][i].copy_coeffs(hpL[2][0]);
-            lpR[2][i].copy_coeffs(lpL[2][0]);
-            hpR[2][i].copy_coeffs(hpL[2][0]);
-        }
-        freq_old[2] = *params[param_freq2];
-        sep_old[2]  = *params[param_sep2];
-        q_old[2]    = *params[param_q2];
-        redraw_graph = true;
-    }
-    if ((*params[param_bypass] > 0.5) != old_bypass)
-    {
-        redraw_graph = true;
-        old_bypass = *params[param_bypass] > 0.5;
-    }
+    
+    crossover.set_mode(_mode);
+    crossover.set_filter(0, *params[param_freq0]);
+    crossover.set_filter(1, *params[param_freq1]);
+    crossover.set_filter(2, *params[param_freq2]);
+    
     // set the params of all strips
     float rel;
 
@@ -481,58 +416,24 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
-            // even out filters gain reduction
-            // 3dB - levelled manually (based on default sep and q settings)
-            switch(_mode) {
-                case 0:
-                    inL *= 1.414213562;
-                    inR *= 1.414213562;
-                    break;
-                case 1:
-                    inL *= 0.88;
-                    inR *= 0.88;
-                    break;
-            }
+            
+            // process crossover
+            xin[0] = inL;
+            xin[1] = inR;
+            crossover.process(xin);
+            
             // out vars
             float outL = 0.f;
             float outR = 0.f;
-            int j1;
             float left;
             float right;
             float sum_left = 0.f;
             float sum_right = 0.f;
             bool asc_active = false;
             for (int i = 0; i < strips; i++) {
-                left  = inL;
-                right = inR;
-                // send trough filters
-                switch(_mode) {
-                    // how many filter passes? (12/36dB)
-                    case 0:
-                    default:
-                        j1 = 0;
-                        break;
-                    case 1:
-                        j1 = 2;
-                        break;
-                }
-                for (int j = 0; j <= j1; j++){
-                    if(i + 1 < strips) {
-                        // do lowpass on all bands except most high
-                        left  = lpL[i][j].process(left);
-                        right = lpR[i][j].process(right);
-                        lpL[i][j].sanitize();
-                        lpR[i][j].sanitize();
-                    }
-                    if(i - 1 >= 0) {
-                        // do highpass on all bands except most low
-                        left  = hpL[i - 1][j].process(left);
-                        right = hpR[i - 1][j].process(right);
-                        hpL[i - 1][j].sanitize();
-                        hpR[i - 1][j].sanitize();
-                    }
-                }
-
+                left  = crossover.get_value(0, i);
+                right = crossover.get_value(1, i);
+                
                 // remember filtered values for limiting
                 // (we need multiband_coeff before we can call the limiter bands)
                 _tmpL[i] = left;
@@ -651,41 +552,14 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
 {
     if (!is_active or subindex > 3)
         return false;
-    float ret;
-    double freq;
-    int j1;
-    for (int i = 0; i < points; i++)
-    {
-        ret = 1.f;
-        freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        switch(_mode) {
-            case 0:
-            default:
-                j1 = 0;
-                break;
-            case 1:
-                j1 = 2;
-                break;
-        }
-        for(int j = 0; j <= j1; j ++) {
-            if(subindex == 0)
-                ret *= lpL[0][j].freq_gain(freq, (float)srate);
-            if(subindex > 0 and subindex < strips - 1) {
-                ret *= hpL[subindex - 1][j].freq_gain(freq, (float)srate);
-                ret *= lpL[subindex][j].freq_gain(freq, (float)srate);
-            }
-            if(subindex == strips - 1)
-                ret *= hpL[2][j].freq_gain(freq, (float)srate);
-        }
-        data[i] = dB_grid(ret);
-    }
+    
     if (*params[param_bypass] > 0.5f)
         context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     else {
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
         context->set_line_width(1.5);
     }
-    return true;
+    return crossover.get_graph(subindex, data, points, context, mode);
 }
 
 bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

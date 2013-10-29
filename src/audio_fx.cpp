@@ -939,3 +939,115 @@ float transients::process(float s) {
     
     return 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
 }
+
+
+//////////////////////////////////////////////////////////////////
+
+crossover::crossover() {
+    bands     = 0;
+    mode      = 0;
+    mode_old  = -1;
+}
+void crossover::set_sample_rate(uint32_t sr) {
+    srate = sr;
+}
+void crossover::init(int c, int b, uint32_t sr) {
+    channels = std::max(8, c);
+    bands    = std::max(8, b);
+    srate    = sr;
+    for(int b = 0; b < bands; b ++) {
+        // reset frequency settings
+        freq[b]     =  1;
+        freq_old[b] = -1;
+        for (int c = 0; c < channels; c ++) {
+            // reset outputs
+            out[c][b] = 0.f;
+        }
+    }
+}
+void crossover::set_mode(int m) {
+    mode = m;
+    if(mode == mode_old)
+        return;
+    mode_old = mode;
+    for(int i = 0; i < bands - 1; i ++) {
+        set_filter(i, freq[i]);
+    }
+}
+void crossover::set_filter(int b, float f) {
+    freq[b] = f;
+    if (freq[b] == freq_old[b])
+        return;
+    freq_old[b] = f;
+    float q = mode ? 0.54 : 0.7071068123730965;
+    for (int c = 0; c < channels; c ++) {
+        if (!c) {
+            lp[c][b][0].set_lp_rbj(freq[b], q, (float)srate);
+            hp[c][b][0].set_hp_rbj(freq[b], q, (float)srate);
+        } else {
+            lp[c][b][0].copy_coeffs(lp[c-1][b][0]);
+            hp[c][b][0].copy_coeffs(hp[c-1][b][0]);
+        }
+        if (mode) {
+            if (!c) {
+                lp[c][b][1].set_lp_rbj(freq[b], 1.34, (float)srate);
+                hp[c][b][1].set_hp_rbj(freq[b], 1.34, (float)srate);
+            } else {
+                lp[c][b][1].copy_coeffs(lp[c-1][b][1]);
+                hp[c][b][1].copy_coeffs(hp[c-1][b][1]);
+            }
+            lp[c][b][2].copy_coeffs(lp[c][b][0]);
+            hp[c][b][2].copy_coeffs(hp[c][b][0]);
+            lp[c][b][3].copy_coeffs(lp[c][b][1]);
+            hp[c][b][3].copy_coeffs(hp[c][b][1]);
+        } else {
+            lp[c][b][1].copy_coeffs(lp[c][b][0]);
+            hp[c][b][1].copy_coeffs(hp[c][b][0]);
+        }
+    }
+    redraw_graph = true;
+}
+void crossover::process(float *data) {
+    for (int c = 0; c < channels; c++) {
+        for(int b = 0; b < bands; b ++) {
+            for (int f = 0; f <= (mode ? 3 : 1); f++){
+                if(b + 1 < bands) {
+                    out[c][b] = lp[c][b][f].process(data[c]);
+                    lp[c][b][f].sanitize();
+                }
+                if(b - 1 >= 0) {
+                    out[c][b] = hp[c][b - 1][f].process(data[c]);
+                    hp[c][b - 1][f].sanitize();
+                }
+            }
+        }
+    }
+}
+float crossover::get_value(int c, int b) {
+    return out[c][b];
+}
+bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (subindex >= bands or !redraw_graph) {
+        redraw_graph = false;
+        return false;
+    }
+    float ret;
+    double freq;
+    for (int i = 0; i < points; i++) {
+        ret = 1.f;
+        freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        for(int f = 0; f <= (this->mode ? 3 : 1); f ++) {
+            if(subindex == 0)
+                ret *= lp[0][0][f].freq_gain(freq, (float)srate);
+            if(subindex > 0 and subindex < bands - 1) {
+                ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
+                ret *= lp[0][subindex][f].freq_gain(freq, (float)srate);
+            }
+            if(subindex == bands - 1)
+                ret *= hp[0][2][f].freq_gain(freq, (float)srate);
+        }
+        data[i] = dB_grid(ret);
+    }
+    return true;
+}

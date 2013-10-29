@@ -226,16 +226,15 @@ private:
     typedef multibandcompressor_audio_module AM;
     static const int strips = 4;
     bool solo[strips];
+    float xout[strips], xin[2];
     bool no_solo;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
-    dsp::biquad_d2<float> lpL[strips - 1][4], lpR[strips - 1][4], hpL[strips - 1][4], hpR[strips - 1][4];
-    float freq_old[strips - 1];
-    int mode, mode_old;
-    bool old_bypass;
-    mutable volatile int last_generation;
+    dsp::crossover crossover;
+    int mode;
     mutable bool redraw_graph;
+    mutable volatile int last_generation;
 public:
     uint32_t srate;
     bool is_active;
@@ -363,16 +362,15 @@ private:
     typedef multibandgate_audio_module AM;
     static const int strips = 4;
     bool solo[strips];
+    float xout[strips], xin[2];
     bool no_solo;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     expander_audio_module gate[strips];
-    dsp::biquad_d2<float> lpL[strips - 1][3], lpR[strips - 1][3], hpL[strips - 1][3], hpR[strips - 1][3];
-    float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
-    int mode, mode_old;
-    bool old_bypass;
-    mutable volatile int last_generation;
+    dsp::crossover crossover;
+    int mode;
     mutable bool redraw_graph;
+    mutable volatile int last_generation;
 public:
     uint32_t srate;
     bool is_active;

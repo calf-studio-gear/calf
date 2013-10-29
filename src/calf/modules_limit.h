@@ -66,8 +66,8 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;
-    dsp::biquad_d2<float> lpL[strips - 1][strips - 1], lpR[strips - 1][strips - 1], hpL[strips - 1][strips - 1], hpR[strips - 1][strips - 1];
-    float freq_old[strips - 1], sep_old[strips - 1], q_old[strips - 1];
+    float xout[strips], xin[2];
+    dsp::crossover crossover;
     unsigned int pos;
     unsigned int buffer_size;
     unsigned int overall_buffer_size;
@@ -80,9 +80,8 @@ private:
     bool asc_old;
     float attack_old;
     bool _sanitize;
-    bool old_bypass;
-    mutable volatile int last_generation;
     mutable bool redraw_graph;
+    mutable volatile int last_generation;
 public:
     uint32_t srate;
     bool is_active;
