@@ -1,5 +1,5 @@
 /* Calf DSP plugin pack
- * Assorted plugins
+ * Equalization related plugins
  *
  * Copyright (C) 2001-2010 Krzysztof Foltman, Markus Schmidt, Thor Harald Johansen and others
  *
@@ -18,24 +18,74 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02111-1307, USA.
  */
-#ifndef CALF_MODULES_H
-#define CALF_MODULES_H
+#ifndef CALF_MODULES_FILTER_H
+#define CALF_MODULES_FILTER_H
 
 #include <assert.h>
-#include <fftw3.h>
 #include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
 #include "audio_fx.h"
 #include "giface.h"
 #include "metadata.h"
-#include "loudness.h"
-#include <math.h>
 #include "plugin_tools.h"
+#include "loudness.h"
 
 namespace calf_plugins {
 
-struct ladspa_plugin_info;
+/// Equalizer N Band by Markus Schmidt (based on Krzysztof's filters)
+template<class BaseClass, bool has_lphp>
+class equalizerNband_audio_module: public audio_module<BaseClass>, public frequency_response_line_graph {
+public:
+    typedef audio_module<BaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+    using AM::PeakBands;
+private:
+    enum { graph_param_count = BaseClass::last_graph_param - BaseClass::first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
+    float hp_mode_old, hp_freq_old;
+    float lp_mode_old, lp_freq_old;
+    float ls_level_old, ls_freq_old;
+    float hs_level_old, hs_freq_old;
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    dual_in_out_metering<BaseClass> meters;
+    CalfEqMode hp_mode, lp_mode;
+    dsp::biquad_d2<float> hp[3][2], lp[3][2];
+    dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
+    dsp::biquad_d2<float> pL[PeakBands], pR[PeakBands];
+    int keep_gliding;
+    
+    inline void process_hplp(float &left, float &right);
+public:
+    typedef std::complex<double> cfloat;
+    uint32_t srate;
+    bool is_active;
+    mutable volatile int last_generation, last_calculated_generation;
+    equalizerNband_audio_module();
+    void activate();
+    void deactivate();
+
+    void params_changed();
+    float freq_gain(int index, double freq, uint32_t sr) const;
+    void set_sample_rate(uint32_t sr)
+    {
+        srate = sr;
+        meters.set_sample_rate(sr);
+    }
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+typedef equalizerNband_audio_module<equalizer5band_metadata, false> equalizer5band_audio_module;
+typedef equalizerNband_audio_module<equalizer8band_metadata, true> equalizer8band_audio_module;
+typedef equalizerNband_audio_module<equalizer12band_metadata, true> equalizer12band_audio_module;
 
 class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
 public:
@@ -71,87 +121,6 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
-};
-
-
-class reverb_audio_module: public audio_module<reverb_metadata>
-{
-public:    
-    dsp::reverb reverb;
-    dsp::simple_delay<16384, dsp::stereo_sample<float> > pre_delay;
-    dsp::onepole<float> left_lo, right_lo, left_hi, right_hi;
-    uint32_t srate;
-    dsp::gain_smoothing amount, dryamount;
-    int predelay_amt;
-    float meter_wet, meter_out;
-    uint32_t clip;
-    
-    void params_changed();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-};
-
-class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
-{
-public:    
-    // 1MB of delay memory per channel... uh, RAM is cheap
-    enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
-    enum { MIXMODE_STEREO, MIXMODE_PINGPONG, MIXMODE_LR, MIXMODE_RL }; 
-    float buffers[2][MAX_DELAY];
-    int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;
-    /// number of table entries written (value is only important when it is less than MAX_DELAY, which means that the buffer hasn't been totally filled yet)
-    int age;
-    
-    dsp::gain_smoothing amt_left, amt_right, fb_left, fb_right, dry, chmix;
-    
-    dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
-    
-    uint32_t srate;
-    
-    vintage_delay_audio_module();
-    
-    void params_changed();
-    void activate();
-    void deactivate();
-    void set_sample_rate(uint32_t sr);
-    void calc_filters();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    
-    long _tap_avg;
-    long _tap_last;
-};
-
-
-
-
-// The maximum distance for knobs
-#define COMP_DELAY_MAX_DISTANCE            (100.0 * 100.0 + 100.0 * 1.0 + 1.0)
-// The actual speed of sound in normal conditions
-#define COMP_DELAY_SOUND_SPEED_KM_H(temp)  1.85325 * (643.95 * std::pow(((temp + 273.15) / 273.15), 0.5))
-#define COMP_DELAY_SOUND_SPEED_CM_S(temp)  (COMP_DELAY_SOUND_SPEED_KM_H(temp) * (1000.0 * 100.0) /* cm/km */ / (60.0 * 60.0) /* s/h */)
-#define COMP_DELAY_SOUND_FRONT_DELAY(temp) (1.0 / COMP_DELAY_SOUND_SPEED_CM_S(temp))
-// The maximum delay may be reached by this plugin
-#define COMP_DELAY_MAX_DELAY               (COMP_DELAY_MAX_DISTANCE*COMP_DELAY_SOUND_FRONT_DELAY(50))
-
-class comp_delay_audio_module: public audio_module<comp_delay_metadata>
-{
-public:
-    float *buffer;
-    uint32_t srate;
-    uint32_t buf_size; // guaranteed to be power of 2
-    uint32_t delay;
-    uint32_t write_ptr;
-
-    comp_delay_audio_module();
-    virtual ~comp_delay_audio_module();
-
-    void params_changed();
-    void activate();
-    void deactivate();
-    void set_sample_rate(uint32_t sr);
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
 template<typename FilterClass, typename Metadata>
@@ -316,152 +285,6 @@ private:
 };
 
 
-#define MATH_E 2.718281828
-class mono_audio_module:
-    public audio_module<mono_metadata>
-{
-    typedef mono_audio_module AM;
-    uint32_t srate;
-    bool active;
-    
-    uint32_t clip_in, clip_outL, clip_outR;
-    float meter_in, meter_outL, meter_outR;
-    
-    float * buffer;
-    unsigned int pos;
-    unsigned int buffer_size;
-    static inline float sign(float x) {
-        if(x < 0) return -1.f;
-        if(x > 0) return 1.f;
-        return 0.f;
-    }
-    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
-public:
-    mono_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-class stereo_audio_module:
-    public audio_module<stereo_metadata>
-{
-    typedef stereo_audio_module AM;
-    float LL, LR, RL, RR;
-    uint32_t srate;
-    bool active;
-    
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
-    float meter_inL, meter_inR, meter_outL, meter_outR, meter_phase;
-    
-    float * buffer;
-    unsigned int pos;
-    unsigned int buffer_size;
-    static inline float sign(float x) {
-        if(x < 0) return -1.f;
-        if(x > 0) return 1.f;
-        return 0.f;
-    }
-    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
-public:
-    stereo_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-};
-
-class analyzer_audio_module:
-    public audio_module<analyzer_metadata>, public frequency_response_line_graph, public phase_graph_iface
-{
-    typedef analyzer_audio_module AM;
-    uint32_t srate;
-    bool active;
-    int _accuracy;
-    int _acc_old;
-    int _scale_old;
-    int _post_old;
-    int _hold_old;
-    int _smooth_old;
-    uint32_t clip_L, clip_R;
-    float meter_L, meter_R;
-    
-public:
-    analyzer_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_clear_all(int index) const;
-    ~analyzer_audio_module();
-    mutable int _mode_old;
-    mutable bool _falling;
-protected:
-    static const int max_phase_buffer_size = 8192;
-    int phase_buffer_size;
-    float *phase_buffer;
-    int fft_buffer_size;
-    float *fft_buffer;
-    int *spline_buffer;
-    int plength;
-    int ppos;
-    int fpos;
-    mutable fftwf_plan fft_plan;
-    static const int max_fft_cache_size = 32768;
-    static const int max_fft_buffer_size = max_fft_cache_size * 2;
-    float *fft_inL, *fft_outL;
-    float *fft_inR, *fft_outR;
-    float *fft_smoothL, *fft_smoothR;
-    float *fft_deltaL, *fft_deltaR;
-    float *fft_holdL, *fft_holdR;
-    float *fft_fallingL, *fft_fallingR;
-    float *fft_freezeL, *fft_freezeR;
-    mutable int lintrans;
-    mutable int ____analyzer_phase_was_drawn_here;
-    mutable int ____analyzer_sanitize;
-
-};
-
-
-class transientdesigner_audio_module:
-    public audio_module<transientdesigner_metadata>, public frequency_response_line_graph
-{
-    typedef transientdesigner_audio_module AM;
-    uint32_t srate;
-    bool active;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
-    float meter_inL, meter_inR, meter_outL, meter_outR;
-    dsp::transients transients;
-    int display_old;
-    mutable int pixels;
-    mutable float *pbuffer;
-    mutable int pbuffer_pos;
-    mutable int pbuffer_size;
-    mutable int pbuffer_sample;
-    mutable int pbuffer_draw;
-    mutable bool pbuffer_available;
-    bool attacked;
-    uint32_t attcount;
-    int attack_pos;
-    float display_max;
-public:
-    transientdesigner_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    
-};
-
-};
 #endif

@@ -387,6 +387,39 @@ public:
     virtual int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
+class transientdesigner_audio_module:
+    public audio_module<transientdesigner_metadata>, public frequency_response_line_graph
+{
+    typedef transientdesigner_audio_module AM;
+    uint32_t srate;
+    bool active;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    dsp::transients transients;
+    int display_old;
+    mutable int pixels;
+    mutable float *pbuffer;
+    mutable int pbuffer_pos;
+    mutable int pbuffer_size;
+    mutable int pbuffer_sample;
+    mutable int pbuffer_draw;
+    mutable bool pbuffer_available;
+    bool attacked;
+    uint32_t attcount;
+    int attack_pos;
+    float display_max;
+public:
+    transientdesigner_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    
+};
+
 };
 
 #endif

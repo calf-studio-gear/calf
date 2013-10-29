@@ -22,10 +22,11 @@
 
 #ifdef BENCHMARK_PLUGINS
 #include <calf/giface.h>
-#include <calf/modules.h>
+#include <calf/modules_tools.h>
+#include <calf/modules_delay.h>
 #include <calf/modules_comp.h>
 #include <calf/modules_dev.h>
-#include <calf/modules_eq.h>
+#include <calf/modules_filter.h>
 #include <calf/modules_mod.h>
 #else
 #include <config.h>

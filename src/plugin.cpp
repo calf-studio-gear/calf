@@ -20,12 +20,13 @@
  */
 #include <config.h>
 #include <calf/lv2wrap.h>
-#include <calf/modules.h>
+#include <calf/modules_tools.h>
+#include <calf/modules_delay.h>
 #include <calf/modules_comp.h>
 #include <calf/modules_limit.h>
 #include <calf/modules_dev.h>
 #include <calf/modules_dist.h>
-#include <calf/modules_eq.h>
+#include <calf/modules_filter.h>
 #include <calf/modules_mod.h>
 #include <calf/modules_synths.h>
 #include <calf/organ.h>
