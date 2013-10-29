@@ -38,7 +38,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     g_assert(CALF_IS_VUMETER(widget));
 
     CalfVUMeter *vu = CALF_VUMETER(widget);
-    GtkStyle	*style;
+    GtkStyle    *style;
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
@@ -269,8 +269,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
-            float draw = log10(1 + value * 9);
-            float draw_last = log10(1 + vu->last_value * 9);
+            draw = log10(1 + value * 9);
+            draw_last = log10(1 + vu->last_value * 9);
             
             // blinder left -> hold LED
             int hold_x = round((draw_last) * (led_w + led_m)); // add last led_m removed earlier
@@ -291,7 +291,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
-            float draw = log10(1 + value * 9);
+            draw = log10(1 + value * 9);
             int val_x = round((1 - draw) / 2.f * (led_w + led_m)); // add last led_m removed earlier
             cairo_rectangle(c, led_x, led_y, val_x, led_h);
             cairo_rectangle(c, led_x + led_w - val_x, led_y, val_x, led_h);
@@ -303,8 +303,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                 vu->last_hold = time;
                 vu->holding = true;
             }
-            float draw = log10(1 + value * 9);
-            float draw_last = log10(1 + vu->last_value * 9);
+            draw = log10(1 + value * 9);
+            draw_last = log10(1 + vu->last_value * 9);
             
             int hold_x = round((1 - draw_last) * (led_w + led_m)); // add last led_m removed earlier
             hold_x -= hold_x % led_s;

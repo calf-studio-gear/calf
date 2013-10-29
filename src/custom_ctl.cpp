@@ -866,7 +866,6 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
             }
         }
     }
-    event->direction;
     return TRUE;
 }
 

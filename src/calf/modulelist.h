@@ -39,7 +39,7 @@
     PER_MODULE_ITEM(equalizer12band, false, "eq12")
     PER_MODULE_ITEM(phonoeq, false, "phonoeq")
     
-    // distrotion
+    // distortion
     PER_MODULE_ITEM(saturator, false, "saturator")
     PER_MODULE_ITEM(exciter, false, "exciter")
     PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
