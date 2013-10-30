@@ -38,6 +38,8 @@
     PER_MODULE_ITEM(equalizer8band, false, "eq8")
     PER_MODULE_ITEM(equalizer12band, false, "eq12")
     PER_MODULE_ITEM(phonoeq, false, "phonoeq")
+    PER_MODULE_ITEM(xover2, false, "xover2")
+    PER_MODULE_ITEM(xover3, false, "xover3")
     PER_MODULE_ITEM(xover4, false, "xover4")
     
     // distortion

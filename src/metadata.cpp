@@ -839,7 +839,41 @@ CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "active" #band, "Active " #band }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L" #band, "Level L " #band }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R" #band, "Level R " #band },
-    
+   
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(xover2) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R"};
+
+CALF_PORT_PROPS(xover2) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level", "Gain" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Input L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Input R" },
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
+    { 1000,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
+    XOVER_BAND_PARAMS(1)
+    XOVER_BAND_PARAMS(2)
+    {}
+};
+CALF_PLUGIN_INFO(xover2) = { 0x8515, "XOver2Band", "Calf X-Over 2 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(xover3) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R"};
+
+CALF_PORT_PROPS(xover3) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level", "Gain" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Input L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Input R" },
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
+    { 300,        10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
+    { 3000,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq1", "Transition 2" },
+    XOVER_BAND_PARAMS(1)
+    XOVER_BAND_PARAMS(2)
+    XOVER_BAND_PARAMS(3)
+    {}
+};
+CALF_PLUGIN_INFO(xover3) = { 0x8515, "XOver3Band", "Calf X-Over 3 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
+
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(xover4) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R"};

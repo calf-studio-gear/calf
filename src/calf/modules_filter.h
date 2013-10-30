@@ -299,6 +299,52 @@ public:
 };
 
 /**********************************************************************
+ * CROSSOVER 2 BAND by Markus Schmidt
+**********************************************************************/
+
+class xover2_audio_module: public audio_module<xover2_metadata>, public frequency_response_line_graph {
+public:
+    typedef xover2_audio_module AM;
+    uint32_t srate;
+    bool is_active;
+    static const int channels = 2;
+    static const int bands = 2;
+    float xout[bands], xin[2];
+    dsp::crossover crossover;
+    xover2_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+/**********************************************************************
+ * CROSSOVER 3 BAND by Markus Schmidt
+**********************************************************************/
+
+class xover3_audio_module: public audio_module<xover3_metadata>, public frequency_response_line_graph {
+public:
+    typedef xover3_audio_module AM;
+    uint32_t srate;
+    bool is_active;
+    static const int channels = 2;
+    static const int bands = 3;
+    float xout[bands], xin[2];
+    dsp::crossover crossover;
+    xover3_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+/**********************************************************************
  * CROSSOVER 4 BAND by Markus Schmidt
 **********************************************************************/
 
@@ -318,6 +364,7 @@ public:
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
 };

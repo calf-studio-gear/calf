@@ -1,0 +1,80 @@
+<vbox>
+    <hbox spacing="10">
+        <frame label="Input">
+            <vbox attach-x="0">
+                <vumeter param="meter_L" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <hbox spacing="12">
+                    <label/>
+                    <vbox>
+                        <label/>
+                        <label param="level" />
+                        <knob param="level" size="5" />
+                        <value param="level" />
+                        <label/>
+                        <combo param="mode" fill="0" expand="0"/>
+                    </vbox>
+                    <label/>
+                </hbox>
+            </vbox>
+        </frame>
+        <frame label="X-Over">
+            <if cond="directlink">
+                <line-graph refresh="1" width="340" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="4" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1"/>
+            </if>
+        </frame>
+    </hbox>
+    <hbox spacing="10">
+        <frame label="Band 1">
+            <vbox>
+                <hbox>
+                    <vbox>
+                        <knob param="level1" type="1"/>
+                        <value param="level1"/>
+                    </vbox>
+                    <vbox>
+                        <toggle param="active1"/>
+                        <label text="Active"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R1" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 2">
+            <vbox>
+                <hbox>
+                    <vbox>
+                        <knob param="level2" type="1"/>
+                        <value param="level2"/>
+                    </vbox>
+                    <vbox>
+                        <toggle param="active2"/>
+                        <label text="Active"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R2" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 3">
+            <vbox>
+                <hbox>
+                    <vbox>
+                        <knob param="level3" type="1"/>
+                        <value param="level3"/>
+                    </vbox>
+                    <vbox>
+                        <toggle param="active3"/>
+                        <label text="Active"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R3" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+    </hbox>
+</vbox>

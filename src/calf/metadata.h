@@ -367,7 +367,28 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
     enum { PeakBands = 8, first_graph_param = param_hp_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("equalizer12band", "eq12", "Equalizer 12 Band")
 };
-/// Markus's X-Over
+/// Markus's X-Overs
+struct xover2_metadata: public plugin_metadata<xover2_metadata>
+{
+    enum { in_count = 2, out_count = 4, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level, param_meter_L, param_meter_R, param_mode,
+           param_freq0,
+           param_level1, param_active1, param_meter_L1, param_meter_R1,
+           param_level2, param_active2, param_meter_L2, param_meter_R2,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("xover2band", "xover2", "X-Over 2 Band")
+};
+struct xover3_metadata: public plugin_metadata<xover3_metadata>
+{
+    enum { in_count = 2, out_count = 6, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level, param_meter_L, param_meter_R, param_mode,
+           param_freq0, param_freq1,
+           param_level1, param_active1, param_meter_L1, param_meter_R1,
+           param_level2, param_active2, param_meter_L2, param_meter_R2,
+           param_level3, param_active3, param_meter_L3, param_meter_R3,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("xover3band", "xover3", "X-Over 3 Band")
+};
 struct xover4_metadata: public plugin_metadata<xover4_metadata>
 {
     enum { in_count = 2, out_count = 8, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
