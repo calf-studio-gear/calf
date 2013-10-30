@@ -37,6 +37,10 @@ namespace calf_plugins {
 
 struct ladspa_plugin_info;
 
+/**********************************************************************
+ * REVERB by Krzysztof Foltman
+**********************************************************************/
+
 class reverb_audio_module: public audio_module<reverb_metadata>
 {
 public:    
@@ -55,6 +59,10 @@ public:
     void set_sample_rate(uint32_t sr);
     void deactivate();
 };
+
+/**********************************************************************
+ * VINTAGE DELAY by Krzysztof Foltman
+**********************************************************************/
 
 class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
 {
@@ -85,6 +93,10 @@ public:
     long _tap_avg;
     long _tap_last;
 };
+
+/**********************************************************************
+ * COMPENSATION DELAY LINE by Vladimir Sadovnikov 
+**********************************************************************/
 
 // The maximum distance for knobs
 #define COMP_DELAY_MAX_DISTANCE            (100.0 * 100.0 + 100.0 * 1.0 + 1.0)

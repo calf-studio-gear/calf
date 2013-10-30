@@ -28,6 +28,7 @@ using namespace dsp;
 using namespace calf_plugins;
 
 const char *calf_plugins::calf_copyright_info = "(C) 2001-2009 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
+const char *crossover_filter_choices[] = { "LR4", "LR8" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -347,7 +348,6 @@ CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "Sidechaincompressor", "Calf S
 CALF_PORT_NAMES(multibandcompressor) = {"In L", "In R", "Out L", "Out R"};
 
 const char *multibandcompressor_detection_names[] = { "RMS", "Peak" };
-const char *multibandcompressor_filter_choices[] = { "LR4", "LR8" };
 
 CALF_PORT_PROPS(multibandcompressor) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -366,7 +366,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 1000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 6000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
 
-    { 1,           0,           1,     0, PF_ENUM | PF_CTL_COMBO, multibandcompressor_filter_choices, "mode", "Filter Mode" },
+    { 1,           0,           1,     0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
 
     { 0.25,      0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold0", "Threshold 1" },
     { 2,           1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio0", "Ratio 1" },
@@ -543,7 +543,6 @@ CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "Sidechaingate", "Calf Sidechain Gat
 CALF_PORT_NAMES(multibandgate) = {"In L", "In R", "Out L", "Out R"};
 
 const char *multibandgate_detection_names[] = { "RMS", "Peak" };
-const char *multibandgate_filter_choices[] = { "LR4", "LR8" };
 
 CALF_PORT_PROPS(multibandgate) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -562,7 +561,7 @@ CALF_PORT_PROPS(multibandgate) = {
     { 1000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 6000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
 
-    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandgate_filter_choices, "mode", "Filter Mode" },
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
 
     { 0.06125,   0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "range0", "Reduction 1" },
     { 0.25,      0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold0", "Threshold 1" },
@@ -657,7 +656,6 @@ CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Christian Hols
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(multibandlimiter) = {"In L", "In R", "Out L", "Out R"};
-const char *multibandlimiter_filter_choices[] = { "LR4", "LR8" };
 
 CALF_PORT_PROPS(multibandlimiter) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -676,7 +674,7 @@ CALF_PORT_PROPS(multibandlimiter) = {
     { 750,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
     { 5000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
 
-    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandlimiter_filter_choices, "mode", "Filter Mode" },
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
 
     { 1,      0.0625, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "limit", "Limit" },
     { 4,         0.1,        10,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Lookahead" },
@@ -833,6 +831,34 @@ CALF_PORT_PROPS(equalizer12band) = {
 };
 
 CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer 12 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EqualizerPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+#define XOVER_BAND_PARAMS(band) \
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level" #band, "Gain " #band }, \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "active" #band, "Active " #band }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meterL" #band, "Level L " #band }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meterR" #band, "Level R " #band },
+    
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(xover4) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R"};
+
+CALF_PORT_PROPS(xover4) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level", "Gain" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Input L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Input R" },
+    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
+    { 50,        10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
+    { 500,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq1", "Transition 2" },
+    { 5000,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq2", "Transition 3" },
+    XOVER_BAND_PARAMS(1)
+    XOVER_BAND_PARAMS(2)
+    XOVER_BAND_PARAMS(3)
+    XOVER_BAND_PARAMS(4)
+    {}
+};
+CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

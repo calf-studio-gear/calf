@@ -32,7 +32,9 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * REVERB by Krzysztof Foltman
+**********************************************************************/
 
 void reverb_audio_module::activate()
 {
@@ -103,7 +105,9 @@ uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint
     return outputs_mask;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * VINTAGE DELAY by Krzysztof Foltman
+**********************************************************************/
 
 vintage_delay_audio_module::vintage_delay_audio_module()
 {
@@ -337,7 +341,9 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
     return ostate;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * COMPENSATION DELAY LINE by Vladimir Sadovnikov 
+**********************************************************************/
 
 comp_delay_audio_module::comp_delay_audio_module()
 {

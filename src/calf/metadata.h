@@ -367,6 +367,19 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
     enum { PeakBands = 8, first_graph_param = param_hp_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("equalizer12band", "eq12", "Equalizer 12 Band")
 };
+/// Markus's X-Over
+struct xover4_metadata: public plugin_metadata<xover4_metadata>
+{
+    enum { in_count = 2, out_count = 8, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level, param_meter_L, param_meter_R, param_mode,
+           param_freq0, param_freq1, param_freq2,
+           param_level1, param_active1, param_meterL1, param_meterR1,
+           param_level2, param_active2, param_meterL2, param_meterR2,
+           param_level3, param_active3, param_meterL3, param_meterR3,
+           param_level4, param_active4, param_meterL4, param_meterR4,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("xover4band", "xover4", "X-Over 4 Band")
+};
 
 /// Markus's Pulsator - metadata
 struct pulsator_metadata: public plugin_metadata<pulsator_metadata>

@@ -28,7 +28,9 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * FLANGER by Krzysztof Foltman
+**********************************************************************/
 
 void flanger_audio_module::activate() {
     left.reset();
@@ -103,7 +105,10 @@ void flanger_audio_module::params_reset()
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * PHASER by Krzysztof Foltman
+**********************************************************************/
+
 
 phaser_audio_module::phaser_audio_module()
 : left(MaxStages, x1vals[0], y1vals[0])
@@ -195,7 +200,9 @@ void phaser_audio_module::params_reset()
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * ROTARY SPEAKER by Krzysztof Foltman
+**********************************************************************/
 
 rotary_speaker_audio_module::rotary_speaker_audio_module()
 {
@@ -400,7 +407,9 @@ uint32_t rotary_speaker_audio_module::process(uint32_t offset, uint32_t nsamples
     return outputs_mask;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * MULTI CHORUS by Krzysztof Foltman
+**********************************************************************/
 
 multichorus_audio_module::multichorus_audio_module()
 {
@@ -540,11 +549,9 @@ uint32_t multichorus_audio_module::process(uint32_t offset, uint32_t numsamples,
     return outputs_mask; // XXXKF allow some delay after input going blank
 }
 
-/// Pulsator by Markus Schmidt
-///
-/// This module provides a couple
-/// of different LFO's for modulating the level of a signal.
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * PULSATOR by Markus Schmidt
+**********************************************************************/
 
 pulsator_audio_module::pulsator_audio_module()
 {

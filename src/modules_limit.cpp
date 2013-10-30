@@ -29,11 +29,9 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-/// Limiter by Markus Schmidt and Christian Holschuh
-///
-/// This module provides the lookahead limiter as a simple audio module
-/// with choosable lookahead and release time.
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * LIMITER by Christian Holschuh and Markus Schmidt
+**********************************************************************/
 
 limiter_audio_module::limiter_audio_module()
 {
@@ -212,13 +210,9 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     return outputs_mask;
 }
 
-/// Multiband Limiter by Markus Schmidt and Christian Holschuh
-///
-/// This module splits the signal in four different bands
-/// and sends them through multiple filters (implemented by
-/// Krzysztof). They are processed by a lookahead limiter module afterwards
-/// and summed up to the final output again.
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * MULTIBAND LIMITER by Markus Schmidt and Christian Holschuh 
+**********************************************************************/
 
 multibandlimiter_audio_module::multibandlimiter_audio_module()
 {

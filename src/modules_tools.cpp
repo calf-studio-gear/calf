@@ -33,7 +33,9 @@ using namespace calf_plugins;
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 #define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * STEREO TOOLS by Markus Schmidt 
+**********************************************************************/
 
 stereo_audio_module::stereo_audio_module() {
     active = false;
@@ -286,7 +288,9 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
     pos = 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * MONO INPUT by Markus Schmidt
+**********************************************************************/
 
 mono_audio_module::mono_audio_module() {
     active = false;
@@ -435,7 +439,10 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
     pos = 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * ANALYZER by Markus Schmidt and Christian Holschuh
+**********************************************************************/
+
 analyzer_audio_module::analyzer_audio_module() {
 
     active = false;

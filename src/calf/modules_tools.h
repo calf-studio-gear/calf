@@ -37,34 +37,12 @@ namespace calf_plugins {
 
 struct ladspa_plugin_info;
 
+
 #define MATH_E 2.718281828
-class mono_audio_module:
-    public audio_module<mono_metadata>
-{
-    typedef mono_audio_module AM;
-    uint32_t srate;
-    bool active;
-    
-    uint32_t clip_in, clip_outL, clip_outR;
-    float meter_in, meter_outL, meter_outR;
-    
-    float * buffer;
-    unsigned int pos;
-    unsigned int buffer_size;
-    static inline float sign(float x) {
-        if(x < 0) return -1.f;
-        if(x > 0) return 1.f;
-        return 0.f;
-    }
-    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
-public:
-    mono_audio_module();
-    void params_changed();
-    void activate();
-    void set_sample_rate(uint32_t sr);
-    void deactivate();
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-};
+
+/**********************************************************************
+ * STEREO TOOLS by Markus Schmidt 
+**********************************************************************/
 
 class stereo_audio_module:
     public audio_module<stereo_metadata>
@@ -94,6 +72,42 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
+
+/**********************************************************************
+ * MONO INPUT by Markus Schmidt
+**********************************************************************/
+
+class mono_audio_module:
+    public audio_module<mono_metadata>
+{
+    typedef mono_audio_module AM;
+    uint32_t srate;
+    bool active;
+    
+    uint32_t clip_in, clip_outL, clip_outR;
+    float meter_in, meter_outL, meter_outR;
+    
+    float * buffer;
+    unsigned int pos;
+    unsigned int buffer_size;
+    static inline float sign(float x) {
+        if(x < 0) return -1.f;
+        if(x > 0) return 1.f;
+        return 0.f;
+    }
+    float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
+public:
+    mono_audio_module();
+    void params_changed();
+    void activate();
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/**********************************************************************
+ * ANALYZER by Markus Schmidt and Christian Holschuh
+**********************************************************************/
 
 class analyzer_audio_module:
     public audio_module<analyzer_metadata>, public frequency_response_line_graph, public phase_graph_iface

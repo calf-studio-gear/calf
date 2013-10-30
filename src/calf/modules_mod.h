@@ -32,6 +32,10 @@
 
 namespace calf_plugins {
 
+/**********************************************************************
+ * FLANGER by Krzysztof Foltman
+**********************************************************************/
+
 class flanger_audio_module: public audio_module<flanger_metadata>, public frequency_response_line_graph
 {
 public:
@@ -57,6 +61,10 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
+
+/**********************************************************************
+ * PHASER by Krzysztof Foltman
+**********************************************************************/
 
 class phaser_audio_module: public audio_module<phaser_metadata>, public frequency_response_line_graph
 {
@@ -84,6 +92,10 @@ public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
+
+/**********************************************************************
+ * ROTARY SPEAKER by Krzysztof Foltman
+**********************************************************************/
 
 class rotary_speaker_audio_module: public audio_module<rotary_speaker_metadata>
 {
@@ -131,7 +143,10 @@ public:
     virtual void control_change(int channel, int ctl, int val);
 };
 
-/// A multitap stereo chorus thing
+/**********************************************************************
+ * MULTI CHORUS by Krzysztof Foltman
+**********************************************************************/
+
 class multichorus_audio_module: public audio_module<multichorus_metadata>, public frequency_response_line_graph
 {
 public:
@@ -154,7 +169,10 @@ public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
 };
 
-/// Pulsator by Markus Schmidt
+/**********************************************************************
+ * PULSATOR by Markus Schmidt
+**********************************************************************/
+
 class pulsator_audio_module: public audio_module<pulsator_metadata>, public frequency_response_line_graph  {
 private:
     typedef pulsator_audio_module AM;

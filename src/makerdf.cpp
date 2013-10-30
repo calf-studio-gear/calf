@@ -73,19 +73,19 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     if (!strcmp(type, "lv2ev:EventPort")) {
         ss << ind << "lv2ev:supportsEvent lv2midi:MidiEvent ;\n";
     }
-    if (!strcmp(symbol, "in_l")) 
+    if (!strcmp(std::string(symbol, 0, 4).c_str(), "in_l")) 
         ss << ind << "lv2:designation pg:left ;\n"
            << ind << "pg:group :in ;" << endl;
     else
-    if (!strcmp(symbol, "in_r")) 
+    if (!strcmp(std::string(symbol, 0, 4).c_str(), "in_r")) 
         ss << ind << "lv2:designation pg:right ;\n"
            << ind << "pg:group :in ;" << endl;
     else
-    if (!strcmp(symbol, "out_l")) 
+    if (!strcmp(std::string(symbol, 0, 5).c_str(), "out_l")) 
         ss << ind << "lv2:designation pg:left ;\n"
            << ind << "pg:group :out ;" << endl;
     else
-    if (!strcmp(symbol, "out_r")) 
+    if (!strcmp(std::string(symbol, 0, 5).c_str(), "out_r")) 
         ss << ind << "lv2:designation pg:right ;\n"
            << ind << "pg:group :out ;" << endl;
     ss << "    ]";
@@ -325,18 +325,20 @@ void make_ttl(string path_prefix)
 
         string ports = "";
         int pn = 0;
-        const char *in_names[] = { "in_l", "in_r", "sidechain" };
-        const char *out_names[] = { "out_l", "out_r" };
+        const char *in_symbols[] = { "in_l", "in_r", "sidechain" };
+        const char *in_names[] = { "In L", "In R", "Sidechain" };
+        const char *out_symbols[] = { "out_l", "out_r", "out_l_2", "out_r_2", "out_l_3", "out_r_3", "out_l_4", "out_r_4" };
+        const char *out_names[] = { "Out L", "Out R", "Out L 2", "Out R 2", "Out L 3", "Out R 3", "Out L 4", "Out R 4" };
         for (int i = 0; i < pi->get_input_count(); i++)
             if(i <= pi->get_input_count() - pi->get_inputs_optional() - 1)
-                add_port(ports, in_names[i], in_names[i], "Input", pn++);
+                add_port(ports, in_symbols[i], in_names[i], "Input", pn++);
             else
-                add_port(ports, in_names[i], in_names[i], "Input", pn++, "lv2:AudioPort", true);
+                add_port(ports, in_symbols[i], in_names[i], "Input", pn++, "lv2:AudioPort", true);
         for (int i = 0; i < pi->get_output_count(); i++)
             if(i <= pi->get_output_count() - pi->get_outputs_optional() - 1)
-                add_port(ports, out_names[i], out_names[i], "Output", pn++);
+                add_port(ports, out_symbols[i], out_names[i], "Output", pn++);
             else
-                add_port(ports, out_names[i], out_names[i], "Output", pn++, "lv2:AudioPort", true);
+                add_port(ports, out_symbols[i], out_names[i], "Output", pn++, "lv2:AudioPort", true);
         for (int i = 0; i < pi->get_param_count(); i++)
             if (add_ctl_port(ports, *pi->get_param_props(i), pn, pi, i))
                 pn++;
@@ -425,9 +427,9 @@ void make_ttl(string path_prefix)
         string label = plugins[i]->get_plugin_info().label;
         ttl += string("<" + plugin_uri_prefix) 
             + string(plugins[i]->get_plugin_info().label)
-	        + "> a lv2:Plugin ;\n    dct:replaces <urn:ladspa:"
-	        + i2s(plugins[i]->get_plugin_info().unique_id) + "> ;\n    "
-	        + "lv2:binary <calf.so> ; rdfs:seeAlso <" + label + ".ttl> ";
+            + "> a lv2:Plugin ;\n    dct:replaces <urn:ladspa:"
+            + i2s(plugins[i]->get_plugin_info().unique_id) + "> ;\n    "
+            + "lv2:binary <calf.so> ; rdfs:seeAlso <" + label + ".ttl> ";
         if (preset_data.count(label))
             ttl += ", <presets-" + label + ".ttl>";
         ttl += ".\n";

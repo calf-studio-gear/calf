@@ -32,7 +32,10 @@
 
 namespace calf_plugins {
 
-/// Saturator by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
+/**********************************************************************
+ * SATURATOR by Markus Schmidt
+**********************************************************************/
+
 class saturator_audio_module: public audio_module<saturator_metadata> {
 private:
     float hp_pre_freq_old, lp_pre_freq_old;
@@ -54,7 +57,10 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-/// Exciter by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
+/**********************************************************************
+ * EXCITER by Markus Schmidt
+**********************************************************************/
+
 class exciter_audio_module: public audio_module<exciter_metadata> {
 private:
     float freq_old, ceil_old;
@@ -75,7 +81,10 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-/// Bass Enhancer by Markus Schmidt (based on Krzysztof's filters and Tom's distortion algorythm)
+/**********************************************************************
+ * BASS ENHANCER by Markus Schmidt
+**********************************************************************/
+
 class bassenhancer_audio_module: public audio_module<bassenhancer_metadata> {
 private:
     float freq_old, floor_old;
@@ -96,7 +105,9 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-
+/**********************************************************************
+ * TAPESIMULATOR by Markus Schmidt
+**********************************************************************/
 
 class tapesimulator_audio_module:
     public audio_module<tapesimulator_metadata>, public frequency_response_line_graph

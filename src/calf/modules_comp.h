@@ -33,9 +33,9 @@
 
 namespace calf_plugins {
 
-/// Not a true _audio_module style class, just pretends to be one!
-/// Main gain reduction routine by Thor called by various audio modules
-
+/**********************************************************************
+ * GAIN REDUCTION by Thor Harald Johanssen
+**********************************************************************/
 class gain_reduction_audio_module
 {
 private:
@@ -65,6 +65,9 @@ public:
     int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
+/**********************************************************************
+ * GAIN REDUCTION 2 by Damien Zamit
+**********************************************************************/
 
 class gain_reduction2_audio_module
 {
@@ -96,8 +99,10 @@ public:
     int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Not a true _audio_module style class, just pretends to be one!
-/// Main gate routine by Damien called by various audio modules
+/**********************************************************************
+ * EXPANDER by Damien Zamit
+**********************************************************************/
+
 class expander_audio_module {
 private:
     float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
@@ -126,7 +131,10 @@ public:
     int  get_changed_offsets(int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Compressor by Thor
+/**********************************************************************
+ * COMPRESSOR by Thor Harald Johanssen
+**********************************************************************/
+
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface  {
 private:
     typedef compressor_audio_module AM;
@@ -149,30 +157,10 @@ public:
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// monoCompressor by DZ
-class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
-private:
-    typedef monocompressor_audio_module AM;
-    mono_in_out_metering<monocompressor_metadata> meters;
-    gain_reduction2_audio_module monocompressor;
-public:
-    typedef std::complex<double> cfloat;
-    uint32_t srate;
-    bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
-    monocompressor_audio_module();
-    void activate();
-    void deactivate();
-    void params_changed();
-    void set_sample_rate(uint32_t sr);
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
-};
+/**********************************************************************
+ * SIDECHAIN COMPRESSOR by Markus Schmidt
+**********************************************************************/
 
-/// Sidecain Compressor by Markus Schmidt (based on Thor's compressor and Krzysztof's filters)
 class sidechaincompressor_audio_module: public audio_module<sidechaincompressor_metadata>, public frequency_response_line_graph  {
 private:
     typedef sidechaincompressor_audio_module AM;
@@ -220,7 +208,10 @@ public:
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Multibandcompressor by Markus Schmidt (based on Thor's compressor and Krzysztof's filters)
+/**********************************************************************
+ * MULTIBAND COMPRESSOR by Markus Schmidt
+**********************************************************************/
+
 class multibandcompressor_audio_module: public audio_module<multibandcompressor_metadata>, public line_graph_iface {
 private:
     typedef multibandcompressor_audio_module AM;
@@ -251,7 +242,36 @@ public:
     virtual int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Deesser by Markus Schmidt (based on Thor's compressor and Krzyexpander_audio_modulesztof's filters)
+/**********************************************************************
+ * MONO COMPRESSOR by Damien Zamit
+**********************************************************************/
+
+class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
+private:
+    typedef monocompressor_audio_module AM;
+    mono_in_out_metering<monocompressor_metadata> meters;
+    gain_reduction2_audio_module monocompressor;
+public:
+    typedef std::complex<double> cfloat;
+    uint32_t srate;
+    bool is_active;
+    mutable volatile int last_generation, last_calculated_generation;
+    monocompressor_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+};
+
+/**********************************************************************
+ * DEESSER by Markus Schmidt
+**********************************************************************/
+
 class deesser_audio_module: public audio_module<deesser_metadata>, public frequency_response_line_graph  {
 private:
     enum CalfDeessModes {
@@ -284,7 +304,10 @@ public:
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Gate by Damien
+/**********************************************************************
+ * GATE AUDIO MODULE Damien Zamit
+**********************************************************************/
+
 class gate_audio_module: public audio_module<gate_metadata>, public line_graph_iface  {
 private:
     typedef gate_audio_module AM;
@@ -307,7 +330,10 @@ public:
     int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/// Sidecain Gate by Markus Schmidt (based on Damiens's gate and Krzysztof's filters)
+/**********************************************************************
+ * SIDECHAIN GATE by Markus Schmidt
+**********************************************************************/
+
 class sidechaingate_audio_module: public audio_module<sidechaingate_metadata>, public frequency_response_line_graph  {
 private:
     typedef sidechaingate_audio_module AM;
@@ -356,7 +382,10 @@ public:
 };
 
 
-/// Multibandgate by Markus Schmidt (based on Damiens's gate and Krzysztof's filters)
+/**********************************************************************
+ * MULTIBAND GATE by Markus Schmidt
+**********************************************************************/
+
 class multibandgate_audio_module: public audio_module<multibandgate_metadata>, public line_graph_iface {
 private:
     typedef multibandgate_audio_module AM;
@@ -386,6 +415,10 @@ public:
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     virtual int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
+
+/**********************************************************************
+ * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt
+**********************************************************************/
 
 class transientdesigner_audio_module:
     public audio_module<transientdesigner_metadata>, public frequency_response_line_graph

@@ -32,7 +32,10 @@
 
 namespace calf_plugins {
 
-/// Limiter by Markus Schmidt and Christian Holschuh
+/**********************************************************************
+ * LIMITER by Christian Holschuh and Markus Schmidt
+**********************************************************************/
+
 class limiter_audio_module: public audio_module<limiter_metadata>, public line_graph_iface {
 private:
     typedef limiter_audio_module AM;
@@ -54,7 +57,10 @@ public:
     void set_sample_rate(uint32_t sr);
 };
 
-/// Multiband Limiter by Markus Schmidt and Christian Holschuh
+/**********************************************************************
+ * MULTIBAND LIMITER by Markus Schmidt and Christian Holschuh 
+**********************************************************************/
+
 class multibandlimiter_audio_module: public audio_module<multibandlimiter_metadata>, public line_graph_iface {
 private:
     typedef multibandlimiter_audio_module AM;

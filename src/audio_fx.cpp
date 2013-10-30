@@ -946,19 +946,19 @@ float transients::process(float s) {
 crossover::crossover() {
     bands     = 0;
     mode      = 0;
-    mode_old  = -1;
 }
 void crossover::set_sample_rate(uint32_t sr) {
     srate = sr;
 }
 void crossover::init(int c, int b, uint32_t sr) {
-    channels = std::max(8, c);
-    bands    = std::max(8, b);
+    channels = std::min(8, c);
+    bands    = std::min(8, b);
     srate    = sr;
     for(int b = 0; b < bands; b ++) {
         // reset frequency settings
-        freq[b]     =  1;
-        freq_old[b] = -1;
+        freq[b]     = 1.0;
+        active[b]   = true;
+        level[b]    = 1.0;
         for (int c = 0; c < channels; c ++) {
             // reset outputs
             out[c][b] = 0.f;
@@ -966,19 +966,25 @@ void crossover::init(int c, int b, uint32_t sr) {
     }
 }
 void crossover::set_mode(int m) {
-    mode = m;
-    if(mode == mode_old)
+    if(mode == m)
         return;
-    mode_old = mode;
+    mode = m;
     for(int i = 0; i < bands - 1; i ++) {
         set_filter(i, freq[i]);
     }
 }
-void crossover::set_filter(int b, float f) {
+float crossover::set_filter(int b, float f) {
+    // keep between neighbour bands
+    if (b)
+        f = std::max((float)freq[b-1] * 1.1f, f);
+    if (b < bands - 2)
+        f = std::min((float)freq[b+1] * 0.9f, f);
+    // restrict to 10-20k
+    f = std::max(10.f, std::min(20000.f, f));
+    // nothing changed? return
+    if (freq[b] == f)
+        return freq[b];
     freq[b] = f;
-    if (freq[b] == freq_old[b])
-        return;
-    freq_old[b] = f;
     float q = mode ? 0.54 : 0.7071068123730965;
     for (int c = 0; c < channels; c ++) {
         if (!c) {
@@ -1005,6 +1011,19 @@ void crossover::set_filter(int b, float f) {
             hp[c][b][1].copy_coeffs(hp[c][b][0]);
         }
     }
+    redraw_graph = true;
+    return freq[b];
+}
+void crossover::set_active(int b, bool a) {
+    if (active[b] == a)
+        return;
+    active[b] = a;
+    redraw_graph = true;
+}
+void crossover::set_level(int b, float l) {
+    if (level[b] == l)
+        return;
+    level[b] = l;
     redraw_graph = true;
 }
 void crossover::process(float *data) {
@@ -1047,6 +1066,9 @@ bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *co
             if(subindex == bands - 1)
                 ret *= hp[0][2][f].freq_gain(freq, (float)srate);
         }
+        ret *= level[subindex];
+        context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.3 : 1);
+        context->set_line_width(1.5);
         data[i] = dB_grid(ret);
     }
     return true;

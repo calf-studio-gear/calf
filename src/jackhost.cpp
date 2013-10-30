@@ -97,7 +97,7 @@ void jack_host::create_ports() {
     char buf[32];
     char buf2[64];
     string prefix = client->name + ":";
-    static const char *suffixes[] = { "l", "r", "2l", "2r" };
+    static const char *suffixes[] = { "l", "r", "2_l", "2_r", "3_l", "3_r", "4_l", "4_r" };
     port *inputs = get_inputs();
     port *outputs = get_outputs();
     int in_count = metadata->get_input_count(), out_count = metadata->get_output_count();

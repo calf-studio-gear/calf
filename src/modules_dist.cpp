@@ -28,12 +28,9 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
-
-/// Saturator Band by Markus Schmidt
-///
-/// This module is based on Krzysztof's filters and Tom Szilagyi's distortion routine.
-/// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * SATURATOR by Markus Schmidt
+**********************************************************************/
 
 saturator_audio_module::saturator_audio_module()
 {
@@ -257,11 +254,9 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
     return outputs_mask;
 }
 
-/// Exciter by Markus Schmidt
-///
-/// This module is based on Krzysztof's filters and Tom Szilagyi's distortion routine.
-/// It provides a blendable saturation stage followed by a highpass, a lowpass and a peak filter
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * EXCITER by Markus Schmidt
+**********************************************************************/
 
 exciter_audio_module::exciter_audio_module()
 {
@@ -445,11 +440,9 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     return outputs_mask;
 }
 
-/// Bass Enhancer by Markus Schmidt
-///
-/// This module is based on Krzysztof's filters and Tom's distortion routine.
-/// It sends the signal through a lowpass, saturates it and sends it through a lowpass again
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * BASS ENHANCER by Markus Schmidt
+**********************************************************************/
 
 bassenhancer_audio_module::bassenhancer_audio_module()
 {
@@ -646,8 +639,9 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
     return outputs_mask;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////
+/**********************************************************************
+ * TAPESIMULATOR by Markus Schmidt
+**********************************************************************/
 
 tapesimulator_audio_module::tapesimulator_audio_module() {
     active          = false;
