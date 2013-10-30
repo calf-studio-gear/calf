@@ -1363,12 +1363,22 @@ void multibandcompressor_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    mode = *params[param_mode];
+    
+    int m = *params[param_mode];
+    if (m != mode) {
+        mode = *params[param_mode];
+        redraw_graph = true;
+    }
     
     crossover.set_mode(mode);
-    crossover.set_filter(0, *params[param_freq0]);
+    float r = crossover.set_filter(0, *params[param_freq0]);
+    if(r != *params[param_freq0]) redraw_graph = true;
+    
     crossover.set_filter(1, *params[param_freq1]);
+    if(r != *params[param_freq1]) redraw_graph = true;
+    
     crossover.set_filter(2, *params[param_freq2]);
+    if(r != *params[param_freq2]) redraw_graph = true;
 
     // set the params of all strips
     strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo));
@@ -2568,12 +2578,21 @@ void multibandgate_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    mode = *params[param_mode];
+    int m = *params[param_mode];
+    if (m != mode) {
+        mode = *params[param_mode];
+        redraw_graph = true;
+    }
     
     crossover.set_mode(mode);
-    crossover.set_filter(0, *params[param_freq0]);
+    float r = crossover.set_filter(0, *params[param_freq0]);
+    if(r != *params[param_freq0]) redraw_graph = true;
+    
     crossover.set_filter(1, *params[param_freq1]);
+    if(r != *params[param_freq1]) redraw_graph = true;
+    
     crossover.set_filter(2, *params[param_freq2]);
+    if(r != *params[param_freq2]) redraw_graph = true;
 
     // set the params of all strips
     gate[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo), *params[param_range0]);

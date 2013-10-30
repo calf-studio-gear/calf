@@ -242,6 +242,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     asc_old = true;
     last_generation = 0;
     redraw_graph = false;
+    crossover.init(2, 4, 441000);
 }
 
 void multibandlimiter_audio_module::activate()
@@ -281,12 +282,21 @@ void multibandlimiter_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    _mode = *params[param_mode];
+    int m = *params[param_mode];
+    if (m != _mode) {
+        _mode = *params[param_mode];
+        redraw_graph = true;
+    }
     
     crossover.set_mode(_mode);
-    crossover.set_filter(0, *params[param_freq0]);
+    float r = crossover.set_filter(0, *params[param_freq0]);
+    if(r != *params[param_freq0]) redraw_graph = true;
+    
     crossover.set_filter(1, *params[param_freq1]);
+    if(r != *params[param_freq1]) redraw_graph = true;
+    
     crossover.set_filter(2, *params[param_freq2]);
+    if(r != *params[param_freq2]) redraw_graph = true;
     
     // set the params of all strips
     float rel;
@@ -351,6 +361,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
         strip[j].set_sample_rate(srate);
     }
     broadband.set_sample_rate(srate);
+    crossover.set_sample_rate(srate);
 }
 
 #define BYPASSED_COMPRESSION(index) \
@@ -546,7 +557,6 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
 {
     if (!is_active or subindex > 3)
         return false;
-    
     if (*params[param_bypass] > 0.5f)
         context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     else {
@@ -569,7 +579,7 @@ bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float 
 int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
-    subindex_dot = 0;
+    subindex_dot = INT_MAX;
     subindex_gridline = generation ? INT_MAX : 0;
 
     if (redraw_graph)
@@ -580,8 +590,6 @@ int multibandlimiter_audio_module::get_changed_offsets(int index, int generation
     else
     {
         subindex_graph = INT_MAX;
-        subindex_dot = INT_MAX;
-        subindex_gridline = INT_MAX;
     }
     return last_generation;
 }
