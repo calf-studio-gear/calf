@@ -1029,16 +1029,18 @@ void crossover::set_level(int b, float l) {
 void crossover::process(float *data) {
     for (int c = 0; c < channels; c++) {
         for(int b = 0; b < bands; b ++) {
+            out[c][b] = data[c];
             for (int f = 0; f <= (mode ? 3 : 1); f++){
                 if(b + 1 < bands) {
-                    out[c][b] = lp[c][b][f].process(data[c]);
+                    out[c][b] = lp[c][b][f].process(out[c][b]);
                     lp[c][b][f].sanitize();
                 }
                 if(b - 1 >= 0) {
-                    out[c][b] = hp[c][b - 1][f].process(data[c]);
+                    out[c][b] = hp[c][b - 1][f].process(out[c][b]);
                     hp[c][b - 1][f].sanitize();
                 }
             }
+            out[c][b] *= level[b];
         }
     }
 }

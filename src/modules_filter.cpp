@@ -761,7 +761,8 @@ void xover4_audio_module::params_changed()
 
 uint32_t xover4_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    while(offset < numsamples) {
+    unsigned int targ = numsamples + offset;
+    while(offset < targ) {
         // cycle through samples
         float inL = ins[0][offset];
         float inR = ins[1][offset];
