@@ -28,22 +28,8 @@
                     <combo param="mode"  expand="0" fill="0"/>
                 </hbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="300" height="100" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+                    <line-graph refresh="1" width="300" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
                 </if>
-                <hbox>
-                    <vbox>
-                        <knob param="freq0" size="1"/>
-                        <value param="freq0"/>
-                    </vbox>
-                    <vbox>
-                        <knob param="freq1" size="1"/>
-                        <value param="freq1"/>
-                    </vbox>
-                    <vbox>
-                        <knob param="freq2" size="1"/>
-                        <value param="freq2"/>
-                    </vbox>
-                </hbox>
             </vbox>
         </frame>
         <frame label="output">

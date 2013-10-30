@@ -4,39 +4,27 @@
             <vbox attach-x="0">
                 <vumeter param="meter_L" mode="0" position="2" hold="1.5" falloff="2.5"/>
                 <vumeter param="meter_R" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <label param="level" />
-                <knob param="level" size="5" />
-                <value param="level" />
-            </vbox>
-        </frame>
-        <frame label="X-Over">
-            <vbox>
-                <if cond="directlink">
-                    <line-graph refresh="1" width="440" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
-                </if>
-                <hbox>
+                <hbox spacing="12">
+                    <label/>
                     <vbox>
-                        <knob param="freq0" size="3"/>
-                        <value param="freq0"/>
-                    </vbox>
-                    <vbox>
-                        <knob param="freq1" size="3"/>
-                        <value param="freq1"/>
-                    </vbox>
-                    <vbox>
-                        <knob param="freq2" size="3"/>
-                        <value param="freq2"/>
-                    </vbox>
-                    <vbox>
-                        <combo param="mode" fill="0" expand="0"/>
                         <label/>
-                        <label text="Filter Mode"/>
+                        <label param="level" />
+                        <knob param="level" size="5" />
+                        <value param="level" />
+                        <label/>
+                        <combo param="mode" fill="0" expand="0"/>
                     </vbox>
+                    <label/>
                 </hbox>
             </vbox>
         </frame>
+        <frame label="X-Over">
+            <if cond="directlink">
+                <line-graph refresh="1" width="440" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+            </if>
+        </frame>
     </hbox>
-    <hbox>
+    <hbox spacing="10">
         <frame label="Band 1">
             <vbox>
                 <hbox>
@@ -49,9 +37,8 @@
                         <label text="Active"/>
                     </vbox>
                 </hbox>
-                <label/>
-                <vumeter param="meterL1" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meterR1" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_L1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R1" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -67,9 +54,8 @@
                         <label text="Active"/>
                     </vbox>
                 </hbox>
-                <label/>
-                <vumeter param="meterL2" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meterR2" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_L2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R2" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -85,9 +71,8 @@
                         <label text="Active"/>
                     </vbox>
                 </hbox>
-                <label/>
-                <vumeter param="meterL3" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meterR3" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_L3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R3" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -103,9 +88,8 @@
                         <label text="Active"/>
                     </vbox>
                 </hbox>
-                <label/>
-                <vumeter param="meterL4" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meterR4" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_L4" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R4" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
     </hbox>

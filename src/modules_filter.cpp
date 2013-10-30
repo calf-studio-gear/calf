@@ -26,6 +26,8 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+#define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
+
 /**********************************************************************
  * EQUALIZER N BAND by Markus Schmidt and Krzysztof Foltman
 **********************************************************************/
@@ -749,23 +751,35 @@ void xover4_audio_module::params_changed()
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);
-    crossover.set_active(0, *params[param_active1] > 0.5);
-    crossover.set_active(1, *params[param_active2] > 0.5);
-    crossover.set_active(2, *params[param_active3] > 0.5);
-    crossover.set_active(3, *params[param_active4] > 0.5);
     crossover.set_level(0, *params[param_level1]);
     crossover.set_level(1, *params[param_level2]);
     crossover.set_level(2, *params[param_level3]);
     crossover.set_level(3, *params[param_level4]);
+    crossover.set_active(0, *params[param_active1] > 0.5);
+    crossover.set_active(1, *params[param_active2] > 0.5);
+    crossover.set_active(2, *params[param_active3] > 0.5);
+    crossover.set_active(3, *params[param_active4] > 0.5);
 }
 
 uint32_t xover4_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    float meter_L  = 0.f;
+    float meter_R  = 0.f;
+    float meter_L1 = 0.f;
+    float meter_R1 = 0.f;
+    float meter_L2 = 0.f;
+    float meter_R2 = 0.f;
+    float meter_L3 = 0.f;
+    float meter_R3 = 0.f;
+    float meter_L4 = 0.f;
+    float meter_R4 = 0.f;
+    
     unsigned int targ = numsamples + offset;
     while(offset < targ) {
         // cycle through samples
         float inL = ins[0][offset];
         float inR = ins[1][offset];
+        
         // in level
         inR *= *params[param_level];
         inL *= *params[param_level];
@@ -775,6 +789,7 @@ uint32_t xover4_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         xin[1] = inR;
         crossover.process(xin);
         
+        // set output from crossover module
         outs[0][offset] = *params[param_active1] > 0.5 ? crossover.get_value(0, 0) : 0.f;
         outs[1][offset] = *params[param_active1] > 0.5 ? crossover.get_value(1, 0) : 0.f;
         outs[2][offset] = *params[param_active2] > 0.5 ? crossover.get_value(0, 1) : 0.f;
@@ -784,9 +799,33 @@ uint32_t xover4_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         outs[6][offset] = *params[param_active4] > 0.5 ? crossover.get_value(0, 3) : 0.f;
         outs[7][offset] = *params[param_active4] > 0.5 ? crossover.get_value(1, 3) : 0.f;
         
+        // metering
+        if (inL > meter_L) meter_L = inL;
+        if (inR > meter_R) meter_R = inR;
+        if (outs[0][offset] > meter_L1) meter_L1 = outs[0][offset];
+        if (outs[1][offset] > meter_R1) meter_R1 = outs[1][offset];
+        if (outs[2][offset] > meter_L2) meter_L2 = outs[2][offset];
+        if (outs[3][offset] > meter_R2) meter_R2 = outs[3][offset];
+        if (outs[4][offset] > meter_L3) meter_L3 = outs[4][offset];
+        if (outs[5][offset] > meter_R3) meter_R3 = outs[5][offset];
+        if (outs[6][offset] > meter_L4) meter_L4 = outs[6][offset];
+        if (outs[7][offset] > meter_R4) meter_R4 = outs[7][offset];
+        
         // next sample
         ++offset;
     } // cycle trough samples
+    
+    SET_IF_CONNECTED(meter_L);
+    SET_IF_CONNECTED(meter_R);
+    SET_IF_CONNECTED(meter_L1);
+    SET_IF_CONNECTED(meter_R1);
+    SET_IF_CONNECTED(meter_L2);
+    SET_IF_CONNECTED(meter_R2);
+    SET_IF_CONNECTED(meter_L3);
+    SET_IF_CONNECTED(meter_R3);
+    SET_IF_CONNECTED(meter_L4);
+    SET_IF_CONNECTED(meter_R4);
+    
     return outputs_mask;
 }
 
