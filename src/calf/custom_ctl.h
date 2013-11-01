@@ -73,16 +73,18 @@ struct CalfLineGraph
     const calf_plugins::line_graph_iface *source;
     int source_id;
     bool is_square;
-    bool use_fade;
+    bool spectrum;
     float fade;
     int mode;
+    
+    cairo_surface_t *background_surface;
+    cairo_surface_t *grid_surface;
     cairo_surface_t *cache_surface;
-    cairo_surface_t *master_surface;
-    cairo_surface_t *spec_surface;
-    cairo_surface_t *specc_surface;
-    //GdkPixmap *cache_pixmap;
+    cairo_surface_t *moving_surface;
+    cairo_surface_t *handles_surface;
+    cairo_surface_t *final_surface;
+    
     int last_generation;
-    bool spectrum;
 
     // crosshairs and FreqHandles
     gdouble mouse_x, mouse_y;

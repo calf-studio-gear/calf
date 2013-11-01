@@ -304,7 +304,7 @@ bool frequency_response_line_graph::get_gridline(int index, int subindex, float 
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
-int frequency_response_line_graph::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int frequency_response_line_graph::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     subindex_dot = 0;

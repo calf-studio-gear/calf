@@ -431,7 +431,7 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
     return false;
 }
 
-int filter_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int filter_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     if (fabs(inertia_cutoff.get_last() - old_cutoff) + 100 * fabs(inertia_resonance.get_last() - old_resonance) + fabs(*params[par_mode] - old_mode) > 0.1f)
     {
@@ -686,7 +686,7 @@ bool phonoeq_audio_module::get_gridline(int index, int subindex, float &pos, boo
     }
 }
 
-int phonoeq_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int phonoeq_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     if (!is_active) {
         return false;
@@ -813,7 +813,7 @@ bool xover2_audio_module::get_graph(int index, int subindex, float *data, int po
         return false;
     return crossover.get_graph(subindex, data, points, context, mode);
 }
-int xover2_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int xover2_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     return false;
@@ -926,7 +926,7 @@ bool xover3_audio_module::get_graph(int index, int subindex, float *data, int po
         return false;
     return crossover.get_graph(subindex, data, points, context, mode);
 }
-int xover3_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int xover3_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     return false;
@@ -1050,7 +1050,7 @@ bool xover4_audio_module::get_graph(int index, int subindex, float *data, int po
         return false;
     return crossover.get_graph(subindex, data, points, context, mode);
 }
-int xover4_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int xover4_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     return false;

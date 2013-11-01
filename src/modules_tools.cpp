@@ -1371,10 +1371,12 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     }
     return out;
 }
-bool analyzer_audio_module::get_clear_all(int index) const {
+int analyzer_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+{
+    subindex_graph = 0;
     if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level]) {
         _mode_old = *params[param_analyzer_mode];
-        return true;
+        return generation++;
     }
-    return false;
+    return generation;
 }

@@ -194,15 +194,12 @@ struct line_graph_iface
     /// Return which graphs need to be redrawn and which can be cached for later reuse
     /// @param index Parameter/graph number (usually tied to particular plugin control port)
     /// @param generation 0 (at start) or the last value returned by the function (corresponds to a set of input values)
+    /// @param force_cache If the plugin wants to redraw the cache this one is set to 1 otherwise 0
     /// @param subindex_graph First graph that has to be redrawn (because it depends on values that might have changed)
     /// @param subindex_dot First dot that has to be redrawn
     /// @param subindex_gridline First gridline/legend that has to be redrawn
     /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
-    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
-    
-    /// Return if a graph should redraw completely
-    /// @param index Parameter/graph number (usually tied to particular plugin control port)
-    virtual bool get_clear_all(int index) const { return false; }
+    virtual int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
     
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
@@ -688,7 +685,7 @@ class frequency_response_line_graph: public line_graph_iface
 {
 public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    virtual int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
 /// set drawing color based on channel index (0 or 1)

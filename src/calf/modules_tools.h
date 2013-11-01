@@ -123,7 +123,6 @@ class analyzer_audio_module:
     int _smooth_old;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
-    
 public:
     analyzer_audio_module();
     void params_changed();
@@ -134,7 +133,7 @@ public:
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_clear_all(int index) const;
+    int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
     ~analyzer_audio_module();
     mutable int _mode_old;
     mutable bool _falling;
