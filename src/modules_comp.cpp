@@ -1370,7 +1370,7 @@ void multibandcompressor_audio_module::params_changed()
         redraw_graph = true;
     }
     
-    crossover.set_mode(mode);
+    crossover.set_mode(mode + 1);
     float r = crossover.set_filter(0, *params[param_freq0]);
     if(r != *params[param_freq0]) redraw_graph = true;
     
@@ -2584,7 +2584,7 @@ void multibandgate_audio_module::params_changed()
         redraw_graph = true;
     }
     
-    crossover.set_mode(mode);
+    crossover.set_mode(mode + 1);
     float r = crossover.set_filter(0, *params[param_freq0]);
     if(r != *params[param_freq0]) redraw_graph = true;
     

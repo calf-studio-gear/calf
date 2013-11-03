@@ -718,340 +718,148 @@ float phonoeq_audio_module::freq_gain(int index, double freq, uint32_t sr) const
 }
 
 /**********************************************************************
- * CROSSOVER 2 BAND by Markus Schmidt
+ * CROSSOVER N BAND by Markus Schmidt
 **********************************************************************/
 
-xover2_audio_module::xover2_audio_module()
+template<class XoverBaseClass>
+xover_audio_module<XoverBaseClass>::xover_audio_module()
 {
     is_active = false;
     srate = 0;
-    crossover.init(channels, bands, 44100);
+    crossover.init(AM::channels, AM::bands, 44100);
 }
 
-void xover2_audio_module::activate()
+template<class XoverBaseClass>
+void xover_audio_module<XoverBaseClass>::activate()
 {
     is_active = true;
     params_changed();
 }
 
-void xover2_audio_module::deactivate()
+template<class XoverBaseClass>
+void xover_audio_module<XoverBaseClass>::deactivate()
 {
     is_active = false;
 }
-void xover2_audio_module::set_sample_rate(uint32_t sr)
+template<class XoverBaseClass>
+void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     // set srate of crossover
     crossover.set_sample_rate(srate);
+    // rebuild buffer
+    buffer_size = (int)(srate / 10 * AM::channels * AM::bands + AM::channels * AM::bands); // buffer size attack rate multiplied by channels and bands
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    dsp::zero(buffer, buffer_size); // reset buffer to zero
+    pos = 0;
+    cnt = 0;
 }
-void xover2_audio_module::params_changed()
+template<class XoverBaseClass>
+void xover_audio_module<XoverBaseClass>::params_changed()
 {
-    int mode = *params[param_mode];
+    int mode = *params[AM::param_mode];
     crossover.set_mode(mode);
-    crossover.set_filter(0, *params[param_freq0]);
-    crossover.set_level(0, *params[param_level1]);
-    crossover.set_level(1, *params[param_level2]);
-    crossover.set_active(0, *params[param_active1] > 0.5);
-    crossover.set_active(1, *params[param_active2] > 0.5);
+    for (int i = 0; i < AM::bands - 1; i++) {
+        crossover.set_filter(i,  *params[AM::param_freq0 + i]);
+    }
+    for (int i = 0; i < AM::bands; i++) {
+        int offset = i * params_per_band;
+        crossover.set_level(i, *params[AM::param_level1 + offset]);
+        crossover.set_active(i, *params[AM::param_active1 + offset] > 0.5);
+    }
 }
 
-uint32_t xover2_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+template<class XoverBaseClass>
+uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    float meter_L  = 0.f;
-    float meter_R  = 0.f;
-    float meter_L1 = 0.f;
-    float meter_R1 = 0.f;
-    float meter_L2 = 0.f;
-    float meter_R2 = 0.f;
+    // input meter reset
+    for (int c = 0; c < AM::channels; c++) {
+        meter_in[c] = 0.f;
+    }
+    
+    // reset all band meters
+    for (int b = 0; b < AM::bands; b++) {
+        for (int c = 0; c < AM::channels; c++) {
+            meter[c][b] = 0.f;
+        }
+    }
     
     unsigned int targ = numsamples + offset;
+    float xval;
+    
     while(offset < targ) {
         // cycle through samples
-        float inL = ins[0][offset];
-        float inR = ins[1][offset];
         
-        // in level
-        inR *= *params[param_level];
-        inL *= *params[param_level];
+        // level and in meters
+        for (int c = 0; c < AM::channels; c++) {
+            in[c] = ins[c][offset] * *params[AM::param_level];
+            meter_in[c] = std::max(meter_in[c], in[c]);
+        }
+        crossover.process(in);
         
-        // process crossover
-        xin[0] = inL;
-        xin[1] = inR;
-        crossover.process(xin);
-        
-        // set output from crossover module
-        outs[0][offset] = *params[param_active1] > 0.5 ? crossover.get_value(0, 0) : 0.f;
-        outs[1][offset] = *params[param_active1] > 0.5 ? crossover.get_value(1, 0) : 0.f;
-        outs[2][offset] = *params[param_active2] > 0.5 ? crossover.get_value(0, 1) : 0.f;
-        outs[3][offset] = *params[param_active2] > 0.5 ? crossover.get_value(1, 1) : 0.f;
-        
-        // metering
-        if (inL > meter_L) meter_L = inL;
-        if (inR > meter_R) meter_R = inR;
-        if (outs[0][offset] > meter_L1) meter_L1 = outs[0][offset];
-        if (outs[1][offset] > meter_R1) meter_R1 = outs[1][offset];
-        if (outs[2][offset] > meter_L2) meter_L2 = outs[2][offset];
-        if (outs[3][offset] > meter_R2) meter_R2 = outs[3][offset];
-        
+        for (int b = 0; b < AM::bands; b++) {
+            int nbuf = 0;
+            int off = b * params_per_band;
+            // calc position in delay buffer
+            if (*params[AM::param_delay1 + off]) {
+                nbuf = srate * (fabs(*params[AM::param_delay1 + off]) / 1000.f) * AM::bands * AM::channels;
+                nbuf -= nbuf % (AM::bands * AM::channels);
+            }
+            for (int c = 0; c < AM::channels; c++) {
+                // define a pointer between 0 and channels * bands
+                int ptr = b * AM::channels + c;
+                
+                // get output from crossover module if active
+                xval = *params[AM::param_active1 + off] > 0.5 ? crossover.get_value(c, b) : 0.f;
+                
+                // fill delay buffer
+                buffer[pos + ptr] = xval;
+                
+                // get value from delay buffer if neccessary
+                if (*params[AM::param_delay1 + off])
+                    xval = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                
+                // set value with phase to output
+                outs[ptr][offset] = *params[AM::param_phase1 + off] > 0.5 ? xval * -1 : xval;
+                
+                // metering
+                if (outs[ptr][offset] > meter[c][b])
+                    meter[c][b] = outs[ptr][offset];
+            }
+        }
         // next sample
         ++offset;
+        cnt ++;
+        // delay buffer pos forward
+        pos = (pos + AM::channels * AM::bands) % buffer_size;
+        
     } // cycle trough samples
     
-    SET_IF_CONNECTED(meter_L);
-    SET_IF_CONNECTED(meter_R);
-    SET_IF_CONNECTED(meter_L1);
-    SET_IF_CONNECTED(meter_R1);
-    SET_IF_CONNECTED(meter_L2);
-    SET_IF_CONNECTED(meter_R2);
-    
+    // set all meters
+    for (int c = 0; c < AM::channels; c++) {
+        *params[AM::param_meter_0 + c] = meter_in[c];
+        for (int b = 0; b < AM::bands; b++) {
+            int off = b * params_per_band;
+            *params[AM::param_meter_01 + off + c] = meter[c][b];
+        }
+    }
     return outputs_mask;
 }
 
-bool xover2_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+template<class XoverBaseClass>
+bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
     return crossover.get_graph(subindex, data, points, context, mode);
 }
-int xover2_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+template<class XoverBaseClass>
+int xover_audio_module<XoverBaseClass>::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
 {
     subindex_graph = 0;
     return false;
 }
 
-/**********************************************************************
- * CROSSOVER 3 BAND by Markus Schmidt
-**********************************************************************/
-
-xover3_audio_module::xover3_audio_module()
-{
-    is_active = false;
-    srate = 0;
-    crossover.init(channels, bands, 44100);
-}
-
-void xover3_audio_module::activate()
-{
-    is_active = true;
-    params_changed();
-}
-
-void xover3_audio_module::deactivate()
-{
-    is_active = false;
-}
-void xover3_audio_module::set_sample_rate(uint32_t sr)
-{
-    srate = sr;
-    // set srate of crossover
-    crossover.set_sample_rate(srate);
-}
-void xover3_audio_module::params_changed()
-{
-    int mode = *params[param_mode];
-    crossover.set_mode(mode);
-    crossover.set_filter(0, *params[param_freq0]);
-    crossover.set_filter(1, *params[param_freq1]);
-    crossover.set_level(0, *params[param_level1]);
-    crossover.set_level(1, *params[param_level2]);
-    crossover.set_level(2, *params[param_level3]);
-    crossover.set_active(0, *params[param_active1] > 0.5);
-    crossover.set_active(1, *params[param_active2] > 0.5);
-    crossover.set_active(2, *params[param_active3] > 0.5);
-}
-
-uint32_t xover3_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
-{
-    float meter_L  = 0.f;
-    float meter_R  = 0.f;
-    float meter_L1 = 0.f;
-    float meter_R1 = 0.f;
-    float meter_L2 = 0.f;
-    float meter_R2 = 0.f;
-    float meter_L3 = 0.f;
-    float meter_R3 = 0.f;
-    
-    unsigned int targ = numsamples + offset;
-    while(offset < targ) {
-        // cycle through samples
-        float inL = ins[0][offset];
-        float inR = ins[1][offset];
-        
-        // in level
-        inR *= *params[param_level];
-        inL *= *params[param_level];
-        
-        // process crossover
-        xin[0] = inL;
-        xin[1] = inR;
-        crossover.process(xin);
-        
-        // set output from crossover module
-        outs[0][offset] = *params[param_active1] > 0.5 ? crossover.get_value(0, 0) : 0.f;
-        outs[1][offset] = *params[param_active1] > 0.5 ? crossover.get_value(1, 0) : 0.f;
-        outs[2][offset] = *params[param_active2] > 0.5 ? crossover.get_value(0, 1) : 0.f;
-        outs[3][offset] = *params[param_active2] > 0.5 ? crossover.get_value(1, 1) : 0.f;
-        outs[4][offset] = *params[param_active3] > 0.5 ? crossover.get_value(0, 2) : 0.f;
-        outs[5][offset] = *params[param_active3] > 0.5 ? crossover.get_value(1, 2) : 0.f;
-        
-        // metering
-        if (inL > meter_L) meter_L = inL;
-        if (inR > meter_R) meter_R = inR;
-        if (outs[0][offset] > meter_L1) meter_L1 = outs[0][offset];
-        if (outs[1][offset] > meter_R1) meter_R1 = outs[1][offset];
-        if (outs[2][offset] > meter_L2) meter_L2 = outs[2][offset];
-        if (outs[3][offset] > meter_R2) meter_R2 = outs[3][offset];
-        if (outs[4][offset] > meter_L3) meter_L3 = outs[4][offset];
-        if (outs[5][offset] > meter_R3) meter_R3 = outs[5][offset];
-        
-        // next sample
-        ++offset;
-    } // cycle trough samples
-    
-    SET_IF_CONNECTED(meter_L);
-    SET_IF_CONNECTED(meter_R);
-    SET_IF_CONNECTED(meter_L1);
-    SET_IF_CONNECTED(meter_R1);
-    SET_IF_CONNECTED(meter_L2);
-    SET_IF_CONNECTED(meter_R2);
-    SET_IF_CONNECTED(meter_L3);
-    SET_IF_CONNECTED(meter_R3);
-    
-    return outputs_mask;
-}
-
-bool xover3_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active)
-        return false;
-    return crossover.get_graph(subindex, data, points, context, mode);
-}
-int xover3_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
-{
-    subindex_graph = 0;
-    return false;
-}
-
-/**********************************************************************
- * CROSSOVER 4 BAND by Markus Schmidt
-**********************************************************************/
-
-xover4_audio_module::xover4_audio_module()
-{
-    is_active = false;
-    srate = 0;
-    crossover.init(channels, bands, 44100);
-}
-
-void xover4_audio_module::activate()
-{
-    is_active = true;
-    params_changed();
-}
-
-void xover4_audio_module::deactivate()
-{
-    is_active = false;
-}
-void xover4_audio_module::set_sample_rate(uint32_t sr)
-{
-    srate = sr;
-    // set srate of crossover
-    crossover.set_sample_rate(srate);
-}
-void xover4_audio_module::params_changed()
-{
-    int mode = *params[param_mode];
-    crossover.set_mode(mode);
-    crossover.set_filter(0, *params[param_freq0]);
-    crossover.set_filter(1, *params[param_freq1]);
-    crossover.set_filter(2, *params[param_freq2]);
-    crossover.set_level(0, *params[param_level1]);
-    crossover.set_level(1, *params[param_level2]);
-    crossover.set_level(2, *params[param_level3]);
-    crossover.set_level(3, *params[param_level4]);
-    crossover.set_active(0, *params[param_active1] > 0.5);
-    crossover.set_active(1, *params[param_active2] > 0.5);
-    crossover.set_active(2, *params[param_active3] > 0.5);
-    crossover.set_active(3, *params[param_active4] > 0.5);
-}
-
-uint32_t xover4_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
-{
-    float meter_L  = 0.f;
-    float meter_R  = 0.f;
-    float meter_L1 = 0.f;
-    float meter_R1 = 0.f;
-    float meter_L2 = 0.f;
-    float meter_R2 = 0.f;
-    float meter_L3 = 0.f;
-    float meter_R3 = 0.f;
-    float meter_L4 = 0.f;
-    float meter_R4 = 0.f;
-    
-    unsigned int targ = numsamples + offset;
-    while(offset < targ) {
-        // cycle through samples
-        float inL = ins[0][offset];
-        float inR = ins[1][offset];
-        
-        // in level
-        inR *= *params[param_level];
-        inL *= *params[param_level];
-        
-        // process crossover
-        xin[0] = inL;
-        xin[1] = inR;
-        crossover.process(xin);
-        
-        // set output from crossover module
-        outs[0][offset] = *params[param_active1] > 0.5 ? crossover.get_value(0, 0) : 0.f;
-        outs[1][offset] = *params[param_active1] > 0.5 ? crossover.get_value(1, 0) : 0.f;
-        outs[2][offset] = *params[param_active2] > 0.5 ? crossover.get_value(0, 1) : 0.f;
-        outs[3][offset] = *params[param_active2] > 0.5 ? crossover.get_value(1, 1) : 0.f;
-        outs[4][offset] = *params[param_active3] > 0.5 ? crossover.get_value(0, 2) : 0.f;
-        outs[5][offset] = *params[param_active3] > 0.5 ? crossover.get_value(1, 2) : 0.f;
-        outs[6][offset] = *params[param_active4] > 0.5 ? crossover.get_value(0, 3) : 0.f;
-        outs[7][offset] = *params[param_active4] > 0.5 ? crossover.get_value(1, 3) : 0.f;
-        
-        // metering
-        if (inL > meter_L) meter_L = inL;
-        if (inR > meter_R) meter_R = inR;
-        if (outs[0][offset] > meter_L1) meter_L1 = outs[0][offset];
-        if (outs[1][offset] > meter_R1) meter_R1 = outs[1][offset];
-        if (outs[2][offset] > meter_L2) meter_L2 = outs[2][offset];
-        if (outs[3][offset] > meter_R2) meter_R2 = outs[3][offset];
-        if (outs[4][offset] > meter_L3) meter_L3 = outs[4][offset];
-        if (outs[5][offset] > meter_R3) meter_R3 = outs[5][offset];
-        if (outs[6][offset] > meter_L4) meter_L4 = outs[6][offset];
-        if (outs[7][offset] > meter_R4) meter_R4 = outs[7][offset];
-        
-        // next sample
-        ++offset;
-    } // cycle trough samples
-    
-    SET_IF_CONNECTED(meter_L);
-    SET_IF_CONNECTED(meter_R);
-    SET_IF_CONNECTED(meter_L1);
-    SET_IF_CONNECTED(meter_R1);
-    SET_IF_CONNECTED(meter_L2);
-    SET_IF_CONNECTED(meter_R2);
-    SET_IF_CONNECTED(meter_L3);
-    SET_IF_CONNECTED(meter_R3);
-    SET_IF_CONNECTED(meter_L4);
-    SET_IF_CONNECTED(meter_R4);
-    
-    return outputs_mask;
-}
-
-bool xover4_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active)
-        return false;
-    return crossover.get_graph(subindex, data, points, context, mode);
-}
-int xover4_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
-{
-    subindex_graph = 0;
-    return false;
-}
+template class xover_audio_module<xover2_metadata>;
+template class xover_audio_module<xover3_metadata>;
+template class xover_audio_module<xover4_metadata>;

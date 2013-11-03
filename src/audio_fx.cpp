@@ -985,7 +985,19 @@ float crossover::set_filter(int b, float f) {
     if (freq[b] == f)
         return freq[b];
     freq[b] = f;
-    float q = mode ? 0.54 : 0.7071068123730965;
+    float q;
+    switch (mode) {
+        case 0:
+        default:
+            q = 0.5;
+            break;
+        case 1:
+            q = 0.7071068123730965;
+            break;
+        case 2:
+            q = 0.54;
+            break;
+    }
     for (int c = 0; c < channels; c ++) {
         if (!c) {
             lp[c][b][0].set_lp_rbj(freq[b], q, (float)srate);
@@ -994,7 +1006,7 @@ float crossover::set_filter(int b, float f) {
             lp[c][b][0].copy_coeffs(lp[c-1][b][0]);
             hp[c][b][0].copy_coeffs(hp[c-1][b][0]);
         }
-        if (mode) {
+        if (mode > 1) {
             if (!c) {
                 lp[c][b][1].set_lp_rbj(freq[b], 1.34, (float)srate);
                 hp[c][b][1].set_hp_rbj(freq[b], 1.34, (float)srate);
@@ -1030,7 +1042,7 @@ void crossover::process(float *data) {
     for (int c = 0; c < channels; c++) {
         for(int b = 0; b < bands; b ++) {
             out[c][b] = data[c];
-            for (int f = 0; f <= (mode ? 3 : 1); f++){
+            for (int f = 0; f < get_filter_count(); f++){
                 if(b + 1 < bands) {
                     out[c][b] = lp[c][b][f].process(out[c][b]);
                     lp[c][b][f].sanitize();
@@ -1058,15 +1070,16 @@ bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *co
     for (int i = 0; i < points; i++) {
         ret = 1.f;
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        for(int f = 0; f <= (this->mode ? 3 : 1); f ++) {
+        for(int f = 0; f < get_filter_count(); f ++) {
             if(subindex == 0)
                 ret *= lp[0][0][f].freq_gain(freq, (float)srate);
             if(subindex > 0 and subindex < bands - 1) {
                 ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
                 ret *= lp[0][subindex][f].freq_gain(freq, (float)srate);
             }
-            if(subindex == bands - 1)
-                ret *= hp[0][2][f].freq_gain(freq, (float)srate);
+            if(subindex == bands - 1) {
+                ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
+            }
         }
         ret *= level[subindex];
         context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.3 : 1);
@@ -1074,4 +1087,16 @@ bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *co
         data[i] = dB_grid(ret);
     }
     return true;
+}
+int crossover::get_filter_count() const
+{
+    switch (mode) {
+        case 0:
+        default:
+            return 1;
+        case 1:
+            return 2;
+        case 2:
+            return 4;
+    }
 }

@@ -20,7 +20,7 @@
         </frame>
         <frame label="X-Over">
             <if cond="directlink">
-                <line-graph refresh="1" width="240" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="3" enforce-handle-order="1" handle1-x="freq0"/>
+                <line-graph refresh="1" width="350" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="3" enforce-handle-order="1" handle1-x="freq0"/>
             </if>
         </frame>
     </hbox>
@@ -28,13 +28,21 @@
         <frame label="Band 1">
             <vbox>
                 <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active1" size="1"/>
+                        <toggle param="phase1" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
                     <vbox>
+                        <label text="Level"/>
                         <knob param="level1" type="1"/>
                         <value param="level1"/>
                     </vbox>
                     <vbox>
-                        <toggle param="active1"/>
-                        <label text="Active"/>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay1"/>
+                        <value param="delay1"/>
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
@@ -45,13 +53,21 @@
         <frame label="Band 2">
             <vbox>
                 <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active2" size="1"/>
+                        <toggle param="phase2" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
                     <vbox>
+                        <label text="Level"/>
                         <knob param="level2" type="1"/>
                         <value param="level2"/>
                     </vbox>
                     <vbox>
-                        <toggle param="active2"/>
-                        <label text="Active"/>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay2"/>
+                        <value param="delay2"/>
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
