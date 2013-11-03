@@ -830,6 +830,9 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             float outR = 0.f;
             float inL = ins[0][offset];
             float inR = ins[1][offset];
+            float Lin = ins[0][offset];
+            float Rin = ins[1][offset];
+            
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
@@ -842,6 +845,10 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             outL = leftAC;
             outR = rightAC;
 
+            // mix
+            outL = outL * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+            outR = outR * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+                
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
@@ -1113,6 +1120,9 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             float outR = 0.f;
             float inL = ins[0][offset];
             float inR = ins[1][offset];
+            float Lin = ins[0][offset];
+            float Rin = ins[1][offset];
+            
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
@@ -1210,6 +1220,9 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             } else {
                 outL = leftAC;
                 outR = rightAC;
+                // mix
+                outL = outL * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+                outR = outR * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
             }
 
             // send to output
@@ -1682,6 +1695,9 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
             //float outR = 0.f;
             float inL = ins[0][offset];
             //float inR = ins[1][offset];
+            float Lin = ins[0][offset];
+            //float Rin = ins[1][offset];
+            
             // in level
             //inR *= *params[param_level_in];
             inL *= *params[param_level_in];
@@ -1693,7 +1709,11 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
 
             outL = leftAC;
             //outR = rightAC;
-
+            
+            // mix
+            outL = outL * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);
+            //outR = outR * *params[param_mix] + Rin * (*params[param_mix] * -1 + 1);
+                
             // send to output
             outs[0][offset] = outL;
             //outs[1][offset] = 0.f;

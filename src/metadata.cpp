@@ -258,6 +258,7 @@ CALF_PORT_PROPS(monocompressor) = {
     //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_detection_names, "detection", "Detection" },
     //{ 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, monocompressor_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Reduction" },
+    { 1,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "mix", "Mix" },
     {}
 };
 
@@ -286,6 +287,7 @@ CALF_PORT_PROPS(compressor) = {
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, compressor_detection_names, "detection", "Detection" },
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, compressor_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "compression", "Reduction" },
+    { 1,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "mix", "Mix" },
     {}
 };
 
@@ -339,6 +341,7 @@ CALF_PORT_PROPS(sidechaincompressor) = {
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "f2_active", "F2 Active" },
     { 0,      0,  2,    0, PF_ENUM | PF_CTL_COMBO, sidechaincompressor_route_names, "sc_route", "S/C Route" },
     { 1,           0.015625,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "sc_level", "S/C Level" },
+    { 1,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "mix", "Mix" },
     {}
 };
 

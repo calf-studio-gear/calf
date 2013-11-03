@@ -166,7 +166,7 @@ struct compressor_metadata: public plugin_metadata<compressor_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
-           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
+           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression, param_mix,
            param_count };
     PLUGIN_NAME_ID_LABEL("compressor", "compressor", "Compressor")
 };
@@ -177,7 +177,7 @@ struct monocompressor_metadata: public plugin_metadata<monocompressor_metadata>
 {
     enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
-           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression,
+           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression, param_mix,
            param_count };
     PLUGIN_NAME_ID_LABEL("monocompressor", "monocompressor", "MonoCompressor")
 };
@@ -189,7 +189,7 @@ struct sidechaincompressor_metadata: public plugin_metadata<sidechaincompressor_
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
-           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_count };
+           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_mix, param_count };
     PLUGIN_NAME_ID_LABEL("sidechaincompressor", "sidechaincompressor", "Sidechain Compressor")
 };
 

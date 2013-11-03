@@ -10,7 +10,13 @@
             <knob param="level_in" size="5" expand="1" fill="1" />
             <value param="level_in" />
         </vbox>
-
+        
+        <vbox expand="0" fill="0" spacing="7" >
+            <label param="mix" expand="0" fill="0" />
+            <knob param="mix" size="3" expand="1" fill="1" />
+            <value param="mix" />
+        </vbox>
+        
         <vbox >
             <if cond="directlink">
                 <line-graph refresh="1" width="150" height="150" param="compression" square="1" expand="1" fill="1"/>
