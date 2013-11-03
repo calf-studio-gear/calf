@@ -460,6 +460,8 @@ analyzer_audio_module::analyzer_audio_module() {
     ppos = 0;
     plength = 0;
     fpos = 0;
+    envelope = 0.f;
+    
     
     spline_buffer = (int*) calloc(200, sizeof(int));
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
@@ -597,8 +599,23 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         if(R > 1.f) clip_R = srate >> 3;
         
         // goniometer
-        phase_buffer[ppos] = L * *params[param_gonio_level];
-        phase_buffer[ppos + 1] = R * *params[param_gonio_level];
+        //the goniometer tries to show the signal in maximum
+        //size. therefor an envelope with fast attack and slow
+        //release is calculated with the max value of left and right.
+        float lemax = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
+        attack_coef = exp(log(0.01)/(0.01 * srate * 0.001));
+        release_coef = exp(log(0.01)/(2000 * srate * 0.001));
+        if( lemax > envelope)
+           envelope = lemax; //attack_coef * (envelope - lemax) + lemax;
+        else
+           envelope = release_coef * (envelope - lemax) + lemax;
+        
+        //use the envelope to bring biggest signal to 1. the biggest
+        //enlargement of the signal is 4.
+        
+        phase_buffer[ppos]     = L / std::max(0.25f , (envelope));
+        phase_buffer[ppos + 1] = R / std::max(0.25f , (envelope));
+        
         
         plength = std::min(phase_buffer_size, plength + 2);
         ppos += 2;
@@ -1000,14 +1017,14 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // absolute values in left and right if frequencies are
                         // skipped.
                         // this is additive mode - no other mode is available
-                        for(int j = iter + 1; j < _iter; j++) {
-                            fft_outL[_iter] += fabs(fft_outL[j]);
-                            fft_outR[_iter] += fabs(fft_outR[j]);
-                        }
+                        //for(int j = iter + 1; j < _iter; j++) {
+                        //    fft_outL[_iter] += fabs(fft_outL[j]);
+                        //    fft_outR[_iter] += fabs(fft_outR[j]);
+                        //}
                         //calculate difference between left an right channel                        
                         diff_fft = fabs(fft_outL[_iter]) - fabs(fft_outR[_iter]);
                         posneg = fabs(diff_fft) / diff_fft;
-                        fft_outL[_iter] = diff_fft / _accuracy;
+                        //fft_outL[_iter] = diff_fft / _accuracy;
                         break;
                 }
             }
@@ -1133,6 +1150,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // according to mode setting but only if
                 // we are drawing lines or boxes
                 // #####################################
+                float dummy;
                 switch(_param_mode) {
                     case 3:
                         // stereo analyzer
@@ -1146,18 +1164,28 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                         // we want to draw Stereo Image
                         if(subindex == 0 or subindex == 2) {
                             // Left channel signal
-                            data[i] = fabs(valL) * stereo_coeff * 0.0001;
+                            dummy = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 1.f);
+                            //only signals above the middle are interesting
+                            data[i] = dummy < 0 ? 0 : dummy;
                         } else if (subindex == 1 or subindex == 3) {
                             // Right channel signal
-                            data[i] = fabs(valR) * stereo_coeff * -0.0001f;
+                            dummy = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 1.f);
+                            //only signals above the middle are interesting. after cutting away
+                            //the unneeded stuff, the curve is flipped vertical at the middle.
+                            if(dummy < 0) dummy = 0;
+                            data[i] = -1.f * dummy;
                         }
                         break;
                     case 5:
                         // We want to draw Stereo Difference
                         if(i) {
-                            
-                            //data[i] = stereo_coeff * valL * 2.f;
-                            data[i] = (0.2f * (1.f - stereo_coeff) * pow(valL, 5.f) + 0.8f * ( 1.f - stereo_coeff) * pow(valL, 3.f) + valL * stereo_coeff) * 1.8f;
+                            float levelanpassung = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
+                            dummy = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, pow(64, 2 * levelanpassung), 1.f / levelanpassung);
+                            //only show differences above a threshhold which results from the db_grid-calculation
+                            if (dummy < 0) dummy=0;
+                            //bring right signals below the middle
+                            dummy *= fabs(valL) < fabs(valR) ? -1.f : 1.f;
+                            data[i] = dummy;
                         }
                         else data[i] = 0.f;
                         break;
@@ -1351,8 +1379,14 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     bool out;
     if(*params[param_analyzer_mode] <= 3)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 0.5f);
-    else if (*params[param_analyzer_mode] < 6)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 16, 0.f);
+    else if (*params[param_analyzer_mode] < 5)
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 1);
+    else if (*params[param_analyzer_mode] < 6) {
+        
+        //create a grid in which the middle is fix while rest is sizeable
+        float levelanpassung = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, 2 * levelanpassung), 1.f / levelanpassung);
+        }
     else if (*params[param_analyzer_mode] < 9)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 0, 1.1f);
     else
@@ -1363,8 +1397,8 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
             legend="L";
         else if(subindex == 34)
             legend="R";
-        else
-            legend = "";
+    //    else
+    //        legend = "";
     }
     if(*params[param_analyzer_mode] > 5 and *params[param_analyzer_mode] < 9 and not vertical) {
         legend = "";

@@ -127,7 +127,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             case 3:
                 // this one is drawing bars centered on the x axis
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sx / 2));
+                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
                     _last = i;
                 } else {
                     continue;
