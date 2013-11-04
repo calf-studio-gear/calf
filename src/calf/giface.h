@@ -168,7 +168,7 @@ struct line_graph_iface
     /// @param context cairo context to adjust (for multicolour graphs etc.)
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode = 0) const { return false; }
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode = 0, int *moving = 0) const { return false; }
 
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
@@ -199,7 +199,14 @@ struct line_graph_iface
     /// @param subindex_dot First dot that has to be redrawn
     /// @param subindex_gridline First gridline/legend that has to be redrawn
     /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
-    virtual int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
+    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const { subindex_graph = subindex_dot = subindex_gridline = 0; return 0; }
+    
+    /// Return a label for the crosshairs they are enabled
+    /// @param x Position of the mouse pointer in x direction
+    /// @param y Position of the mouse pointer in y direction
+    /// @param sx Horizontal size of the widget in pixels
+    /// @param sy Vertical size of the widget in pixels
+    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const { std::string s = ""; return s; }
     
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
@@ -685,7 +692,8 @@ class frequency_response_line_graph: public line_graph_iface
 {
 public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    virtual int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 
 /// set drawing color based on channel index (0 or 1)

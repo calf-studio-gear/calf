@@ -1261,6 +1261,7 @@ void line_graph_param_control::set()
                     float value_y = gui->plugin->get_param_value(handle->param_y_no);
                     handle->value_y = to_y_pos(value_y);
                 }
+                clg->handle_redraw = true;
             }
 
             if(handle->dimensions == 3 && handle->param_z_no >= 0) {

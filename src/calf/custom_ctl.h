@@ -72,15 +72,16 @@ struct CalfLineGraph
     GtkDrawingArea parent;
     const calf_plugins::line_graph_iface *source;
     int source_id;
+    int force_cache;
+    int recreate_surfaces;
     bool is_square;
     bool spectrum;
     float fade;
-    int mode;
+    int mode, moving, movesurf;
     
     cairo_surface_t *background_surface;
-    cairo_surface_t *grid_surface;
     cairo_surface_t *cache_surface;
-    cairo_surface_t *moving_surface;
+    cairo_surface_t *moving_surface[2];
     cairo_surface_t *handles_surface;
     cairo_surface_t *final_surface;
     
@@ -97,6 +98,7 @@ struct CalfLineGraph
     float min_handle_distance;
     int handle_grabbed;
     int handle_hovered;
+    int handle_redraw;
     FreqHandle freq_handles[FREQ_HANDLES];  
     /// Cached hand (drag) cursor
     GdkCursor *hand_cursor;
