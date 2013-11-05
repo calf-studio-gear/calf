@@ -52,7 +52,12 @@ p, ul {
     -webkit-box-shadow: 0 2px 5px #1f1f1f;
     box-shadow:         0 2px 5px #1f1f1f;
 }
-ul {
+ul ul {
+    border: none;
+    -moz-box-shadow:    none;
+    -webkit-box-shadow: none;
+    box-shadow:         none;
+    margin: 0;
 }
 li {
     padding: 0;

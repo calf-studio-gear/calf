@@ -26,17 +26,30 @@
                 a signal with a wide spread from left to right displays a signal with a high
                 amount of stereo (phase shift) signal. A signal only audible on the right
                 speaker will produce a line from south west to north east and vice versa.
+                The Calf Goniometer will adapt to the amount of the incoming audio signal 
+                by zooming in or out automatically.
             </p>
             <h2>Controls</h2>
             <ul>
-                <li><strong>Source:</strong> Select the source for the frequency response graph.</li>
-                <li><strong>Mode:</strong> Set a mode for the behavior of the frequency response graph.</li>
-                <li><strong>Accuracy:</strong> The amount of visible frequencies. It also raises the delay of the displayed signal.</li>
+                <li><strong>Accuracy:</strong> The amount of visible frequencies. It also raises the time, in which audio samples are collected to calculate the frequency response. The higher Accuracy is set, the less responsive to short attacks the graph is.</li>
                 <li><strong>Speed:</strong> How often a FFT is calculated and displayed.</li>
                 <li><strong>Hold:</strong> Draw a maximum peak graph above the output graph.</li>
                 <li><strong>Freeze:</strong> Freeze the graph in the actual state. An eventually displayed peak hold will continue in being pushed to the limit.</li>
                 <li><strong>Display:</strong> Stop displaying this widget.</li>
-                <li><strong>Level:</strong> Raise the level of the displayed signal.</li>
+                <li><strong>Mode:</strong> Select the analyzers working mode and sources.</li>
+                <li><strong>Zoom:</strong> Changes the zoom for the displayed frequency response. In mode "Stereo Image" it effects the offset above which values will be displayed.</li>
+                <li><strong>Windowing:</strong> Select a window to be used to weight the incoming samples.</li>
+                <li><strong>Smoothing:</strong> Select a method to smooth the transition from one FFT to the next.</li>
+                <li><strong>Post Processing:</strong> Select a calculation, which will be done after the FFT is done. Due to the logarithmic frequency scale, not every value in the FFT can be shown in the graph. The higher the frequency, the more values are left out. Here you can decide what to do with those.
+                <ul>
+                <li><strong>Normalized</strong> will leave out the values between points on your monitor and instead normalize the values shown.</li>
+                <li><strong>Average</strong> will calculate the average of the not-shown values and display it.</li>
+                <li><strong>Additive</strong> will sum up the left-out values.</li>
+                <li><strong>Denoised Peaks</strong> will try to filter out noise in the FFT to leave blank peaks. This does not represent the actual music signal but can help to detect an important frequency.</li></ul></li>
+                <li><strong>Scale:</strong> Select if a linear or logarithmic scale is used for the shown values. The latter works well with <strong>View Mode Bars</strong>.</li>
+                <li><strong>View Mode:</strong> Select if bars or lines are drawn.</li>
+                
+                
                 <li><strong>Dots:</strong> The amount of dots shown on the canvas.</li>
                 <li><strong>Fade:</strong> Choose if a fade out effect should be drawn (doesn't raise the overall CPU consumption) and how fast it should disappear.</li>
             </ul>
