@@ -649,6 +649,7 @@ public:
     void set_level(int b, float l);
     void set_active(int b, bool a);
     void set_mode(int m) ;
+    int get_filter_count() const;
     void init(int c, int b, uint32_t sr);
     virtual bool get_graph(int subindex, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
 };

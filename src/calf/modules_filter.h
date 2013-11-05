@@ -299,19 +299,39 @@ public:
 };
 
 /**********************************************************************
- * CROSSOVER 2 BAND by Markus Schmidt
+ * CROSSOVER MODULES by Markus Schmidt
 **********************************************************************/
 
-class xover2_audio_module: public audio_module<xover2_metadata>, public frequency_response_line_graph {
+template<class XoverBaseClass>
+class xover_audio_module: public audio_module<XoverBaseClass>, public frequency_response_line_graph {
 public:
-    typedef xover2_audio_module AM;
+    typedef audio_module<XoverBaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+    using AM::bands;
+    using AM::channels;
+    enum { params_per_band = AM::param_level2 - AM::param_level1 };
+    int cnt;
     uint32_t srate;
     bool is_active;
-    static const int channels = 2;
-    static const int bands = 2;
-    float xout[bands], xin[2];
+    float * buffer;
+    float in[channels];
+    float meter[channels][bands];
+    float meter_in[channels];
+    unsigned int pos;
+    unsigned int buffer_size;
+    mutable int redraw_graph;
+    static inline float sign(float x) {
+        if(x < 0) return -1.f;
+        if(x > 0) return 1.f;
+        return 0.f;
+    }
     dsp::crossover crossover;
-    xover2_audio_module();
+    xover_audio_module();
     void activate();
     void deactivate();
     void params_changed();
@@ -321,51 +341,9 @@ public:
     int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
 };
 
-/**********************************************************************
- * CROSSOVER 3 BAND by Markus Schmidt
-**********************************************************************/
-
-class xover3_audio_module: public audio_module<xover3_metadata>, public frequency_response_line_graph {
-public:
-    typedef xover3_audio_module AM;
-    uint32_t srate;
-    bool is_active;
-    static const int channels = 2;
-    static const int bands = 3;
-    float xout[bands], xin[2];
-    dsp::crossover crossover;
-    xover3_audio_module();
-    void activate();
-    void deactivate();
-    void params_changed();
-    void set_sample_rate(uint32_t sr);
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
-};
-
-/**********************************************************************
- * CROSSOVER 4 BAND by Markus Schmidt
-**********************************************************************/
-
-class xover4_audio_module: public audio_module<xover4_metadata>, public frequency_response_line_graph {
-public:
-    typedef xover4_audio_module AM;
-    uint32_t srate;
-    bool is_active;
-    static const int channels = 2;
-    static const int bands = 4;
-    float xout[bands], xin[2];
-    dsp::crossover crossover;
-    xover4_audio_module();
-    void activate();
-    void deactivate();
-    void params_changed();
-    void set_sample_rate(uint32_t sr);
-    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
-};
+typedef xover_audio_module<xover2_metadata> xover2_audio_module;
+typedef xover_audio_module<xover3_metadata> xover3_audio_module;
+typedef xover_audio_module<xover4_metadata> xover4_audio_module;
 
 };
 

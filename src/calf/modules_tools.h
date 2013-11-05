@@ -137,6 +137,9 @@ public:
     ~analyzer_audio_module();
     mutable int _mode_old;
     mutable bool _falling;
+    float envelope;
+    float attack_coef;
+    float release_coef;
 protected:
     static const int max_phase_buffer_size = 8192;
     int phase_buffer_size;
@@ -160,6 +163,7 @@ protected:
     mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
     mutable int ____analyzer_sanitize;
+
 
 };
 

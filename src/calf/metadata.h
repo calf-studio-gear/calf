@@ -166,7 +166,7 @@ struct compressor_metadata: public plugin_metadata<compressor_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
-           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
+           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression, param_mix,
            param_count };
     PLUGIN_NAME_ID_LABEL("compressor", "compressor", "Compressor")
 };
@@ -177,7 +177,7 @@ struct monocompressor_metadata: public plugin_metadata<monocompressor_metadata>
 {
     enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
-           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression,
+           param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression, param_mix,
            param_count };
     PLUGIN_NAME_ID_LABEL("monocompressor", "monocompressor", "MonoCompressor")
 };
@@ -189,7 +189,7 @@ struct sidechaincompressor_metadata: public plugin_metadata<sidechaincompressor_
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
-           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_count };
+           param_sc_listen, param_f1_active, param_f2_active, param_sc_route, param_sc_level, param_mix, param_count };
     PLUGIN_NAME_ID_LABEL("sidechaincompressor", "sidechaincompressor", "Sidechain Compressor")
 };
 
@@ -371,34 +371,37 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
 struct xover2_metadata: public plugin_metadata<xover2_metadata>
 {
     enum { in_count = 2, out_count = 4, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_level, param_meter_L, param_meter_R, param_mode,
+    enum { param_level, param_meter_0, param_meter_1, param_mode,
            param_freq0,
-           param_level1, param_active1, param_meter_L1, param_meter_R1,
-           param_level2, param_active2, param_meter_L2, param_meter_R2,
+           param_level1, param_active1, param_phase1, param_delay1, param_meter_01, param_meter_11,
+           param_level2, param_active2, param_phase2, param_delay2, param_meter_02, param_meter_12,
            param_count };
+    enum { channels = 2, bands = 2 };
     PLUGIN_NAME_ID_LABEL("xover2band", "xover2", "X-Over 2 Band")
 };
 struct xover3_metadata: public plugin_metadata<xover3_metadata>
 {
     enum { in_count = 2, out_count = 6, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_level, param_meter_L, param_meter_R, param_mode,
+    enum { param_level, param_meter_0, param_meter_1, param_mode,
            param_freq0, param_freq1,
-           param_level1, param_active1, param_meter_L1, param_meter_R1,
-           param_level2, param_active2, param_meter_L2, param_meter_R2,
-           param_level3, param_active3, param_meter_L3, param_meter_R3,
+           param_level1, param_active1, param_phase1, param_delay1, param_meter_01, param_meter_11,
+           param_level2, param_active2, param_phase2, param_delay2, param_meter_02, param_meter_12,
+           param_level3, param_active3, param_phase3, param_delay3, param_meter_03, param_meter_13,
            param_count };
+    enum { channels = 2, bands = 3 };
     PLUGIN_NAME_ID_LABEL("xover3band", "xover3", "X-Over 3 Band")
 };
 struct xover4_metadata: public plugin_metadata<xover4_metadata>
 {
     enum { in_count = 2, out_count = 8, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_level, param_meter_L, param_meter_R, param_mode,
+    enum { param_level, param_meter_0, param_meter_1, param_mode,
            param_freq0, param_freq1, param_freq2,
-           param_level1, param_active1, param_meter_L1, param_meter_R1,
-           param_level2, param_active2, param_meter_L2, param_meter_R2,
-           param_level3, param_active3, param_meter_L3, param_meter_R3,
-           param_level4, param_active4, param_meter_L4, param_meter_R4,
+           param_level1, param_active1, param_phase1, param_delay1, param_meter_01, param_meter_11,
+           param_level2, param_active2, param_phase2, param_delay2, param_meter_02, param_meter_12,
+           param_level3, param_active3, param_phase3, param_delay3, param_meter_03, param_meter_13,
+           param_level4, param_active4, param_phase4, param_delay4, param_meter_04, param_meter_14,
            param_count };
+    enum { channels = 2, bands = 4 };
     PLUGIN_NAME_ID_LABEL("xover4band", "xover4", "X-Over 4 Band")
 };
 

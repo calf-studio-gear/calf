@@ -119,7 +119,7 @@ calf_line_graph_draw_graph( cairo_t *c, float *data, int sx, int sy, int mode = 
             case 3:
                 // this one is drawing bars centered on the x axis
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sx / 2));
+                    cairo_rectangle(c, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
                     _last = i;
                     if (startdraw < 0)
                         startdraw = ox + _last;
@@ -610,7 +610,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // memory allocation for the values which a plugin is expected
     // to set as offsets
-    int cache_graph_index, cache_dot_index, cache_grid_index;
+    int cache_graph_index = 0, cache_dot_index = 0, cache_grid_index = 0;
     
     // Ask plugin if we need to redraw the cache surface. We send a
     // generation index which may be altered (e.g. ++) by the plugin.
@@ -666,6 +666,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     for (int i = cache_cycle; i < 2; i++) {
         printf("drawing %d/%d\n", i, cache_cycle);
+        printf("grid_n: %d graph_n: %d dot_n: %d\n", grid_n, graph_n, dot_n);
+        printf("grid_max: %d graph_max: %d dot_max: %d\n", grid_max, graph_max, dot_max);
         // draw elements on the final and/or the cache surface
         
         // grid
@@ -771,20 +773,19 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     printf("4\n");
     // if someone changed the handles via drag'n'drop or externally we
     // need a redraw of the handles surface
-    if (lg->freqhandles and (lg->handle_grabbed >= 0 or lg->handle_redraw == 1)) {
+    if (lg->freqhandles and lg->handle_redraw) {
         cairo_t *hs = cairo_create(lg->handles_surface);
         calf_line_graph_clear(hs);
         calf_line_graph_draw_freqhandles(lg, hs, ox, oy, sy, sx);
         cairo_destroy(hs);
-        lg->handle_redraw = 0;
     }
     printf("5\n");
     // if the final surface has changed we need to copy the handles
     // onto it
-    if (final_drawn and lg->freqhandles) {
+    if (final_drawn or lg->handle_redraw) {
         printf("copy handles\n");
         cairo_set_source_surface(ctx, lg->handles_surface, 0, 0);
-        cairo_paint(ctx);
+        //cairo_paint(ctx);
     }
     printf("6\n");
     // whatever happened - we need to copy the final surface to the
@@ -800,10 +801,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         std::string s;
         s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, &cimpl);
+        cairo_set_line_width(ctx, 1),
         calf_line_graph_draw_crosshairs(lg, ctx, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s, ox, oy, sx, sy);
     }
     printf("8\n");
-    lg->force_cache = 0;
+    lg->force_cache   = 0;
+    lg->handle_redraw = 0;
     
     // destroy all temporarily created cairo contexts
     cairo_destroy(c);
@@ -887,6 +890,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 
             g_signal_emit_by_name(widget, "freqhandle-changed", handle);
         }
+        lg->handle_redraw = 1;
     }
     if (event->is_hint)
     {
@@ -906,8 +910,6 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         lg->handle_redraw = 1;
     }
     
-    
-    lg->handle_redraw = 1;
     gtk_widget_queue_draw (widget);
 
     return TRUE;
@@ -965,7 +967,8 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
     if(!inside_handle) {
         lg->crosshairs_active = !lg->crosshairs_active;
     }
-
+    
+    gtk_widget_queue_draw (widget);
     gtk_widget_grab_focus(widget);
     gtk_grab_add(widget);
     
@@ -1010,6 +1013,7 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
                 }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             }
+            lg->handle_redraw = 1;
         }
     }
     return TRUE;

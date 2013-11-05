@@ -1,14 +1,19 @@
 <hbox spacing="6">
 
     <vbox spacing="20" expand="0" fill="0">
-        <vbox attach-x="0" attach-y="0" expand="0" fill="0" pad-x="7" pad-y="7" spacing="7" >
+        <vbox expand="0" fill="0" spacing="7" >
             <label param="bypass" expand="0" fill="0" />
             <align><toggle param="bypass" shrink="1" size="2"/></align>
         </vbox>
-        <vbox attach-x="0" attach-y="1" expand="0" fill="0" pad-y="20" pad-x="7">
+        <vbox expand="0" fill="0">
             <label param="level_in" expand="0" fill="0" expand-y="0" fill-y="0" />
             <knob param="level_in" size="5" expand="1" fill="1" />
             <value param="level_in" />
+        </vbox>
+        <vbox expand="0" fill="0" spacing="7" >
+            <label param="mix" expand="0" fill="0" />
+            <knob param="mix" size="3" expand="1" fill="1" />
+            <value param="mix" />
         </vbox>
     </vbox>
 
