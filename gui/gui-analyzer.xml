@@ -75,14 +75,9 @@
                             <label text="Display" expand="0" fill="0"/>
                             <toggle param="gonio_display" size="1" expand="0" fill="0" />
                         </hbox>
-                        <phase-graph refresh="1" size="240" param="gonio_level" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="240" param="gonio_display" expand="1" fill="1"/>
                         <combo param="gonio_mode" expand="0" fill="0"/>
                         <label text="Display Mode" expand="0" fill="0"/>
-                    </vbox>
-                    <vbox spacing="3">
-                        <label text="Level" />
-                        <vscale param="gonio_level" inverted="1"/>
-                        <value param="gonio_level" />
                     </vbox>
                 </hbox>
             </frame>
