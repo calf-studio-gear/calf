@@ -40,6 +40,8 @@ using namespace calf_plugins;
 using namespace calf_utils;
 using namespace std;
 
+#define SANITIZE(value) (std::abs(value) < small_value<float>()) ? 0.f : value
+
 /******************************** control/container base class **********************/
 
 void control_base::require_attribute(const char *name)
@@ -1110,24 +1112,28 @@ static float from_y_pos(float pos)
 
 GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
 {
-    gui = a_gui;
-    param_no = a_param_no;
-    last_generation = -1;
+    gui             = a_gui;
+    param_no        = a_param_no;
+    //last_generation = -1;
     
-    widget = calf_line_graph_new ();
+    widget                     = calf_line_graph_new ();
+    
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-graph");
-    CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
-    widget->requisition.width = get_int("width", 40);
+    
+    CalfLineGraph *clg         = CALF_LINE_GRAPH(widget);
+    widget->requisition.width  = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
+    
     calf_line_graph_set_square(clg, get_int("square", 0));
-    clg->source = gui->plugin->get_line_graph_iface();
-    clg->source_id = param_no;
-    clg->fade = get_float("fade", 1.0);
-    clg->mode = get_int("mode", 0);
-    clg->use_crosshairs = get_int("crosshairs", 0);
-    clg->freqhandles = get_int("freqhandles", 0);
-    clg->enforce_handle_order = get_int("enforce-handle-order", 0);
-    clg->min_handle_distance = get_float("min-handle-distance", 0.01);
+    
+    clg->source                = gui->plugin->get_line_graph_iface();
+    clg->source_id             = param_no;
+    clg->fade                  = get_float("fade", 1.0);
+    clg->mode                  = get_int("mode", 0);
+    clg->use_crosshairs        = get_int("crosshairs", 0);
+    clg->freqhandles           = get_int("freqhandles", 0);
+    clg->enforce_handle_order  = get_int("enforce-handle-order", 0);
+    clg->min_handle_distance   = get_float("min-handle-distance", 0.01);
     if (clg->freqhandles > 0)
     {
         for(int i = 0; i < clg->freqhandles; i++)
@@ -1257,17 +1263,28 @@ void line_graph_param_control::set()
             {
                 float value_x = gui->plugin->get_param_value(handle->param_x_no);
                 handle->value_x = to_x_pos(value_x);
+                if (dsp::_sanitize(handle->value_x - handle->last_value_x)) {
+                    clg->handle_redraw = 1;
+                }
+                handle->last_value_x = handle->value_x;
                 if(handle->dimensions >= 2 && handle->param_y_no >= 0) {
                     float value_y = gui->plugin->get_param_value(handle->param_y_no);
                     handle->value_y = to_y_pos(value_y);
+                    if (dsp::_sanitize(handle->value_y - handle->last_value_y)) {
+                        clg->handle_redraw = 1;
+                    }
+                    handle->last_value_y = handle->value_y;
                 }
-                clg->handle_redraw = true;
             }
 
             if(handle->dimensions == 3 && handle->param_z_no >= 0) {
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(handle->param_z_no);
                 float value_z = gui->plugin->get_param_value(handle->param_z_no);
                 handle->value_z = handle_z_props.to_01(value_z);
+                if (dsp::_sanitize(handle->value_z - handle->last_value_z)) {
+                    clg->handle_redraw = 1;
+                }
+                handle->last_value_z = handle->value_z;
             }
 
             if(handle->param_active_no >= 0) {

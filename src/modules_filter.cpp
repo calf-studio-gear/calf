@@ -347,36 +347,28 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, i
 }
 
 template<class BaseClass, bool has_lphp>
-int equalizerNband_audio_module<BaseClass, has_lphp>::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int equalizerNband_audio_module<BaseClass, has_lphp>::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
 {
-    if (!is_active) {
+    if (!is_active)
         return false;
-    } else {
-        bool changed = false;
-        for (int i = 0; i < graph_param_count && !changed; i++)
-        {
-            if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
-                changed = true;
-        }
-        if (changed)
-        {
-            for (int i = 0; i < graph_param_count; i++)
-                old_params_for_graph[i] = *params[AM::first_graph_param + i];
-            
-            last_generation++;
-            subindex_graph = 0;
-            subindex_dot = INT_MAX;
-            subindex_gridline = INT_MAX;
-        }
-        else {
-            subindex_graph = 0;
-            subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
-        }
-        if (generation == last_calculated_generation)
-            subindex_graph = INT_MAX;
-        return last_generation;
+    
+    bool changed = false;
+    
+    for (int i = 0; i < graph_param_count && !changed; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
+            changed = true;
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
-    return false;
+    
+    dot_from   = INT_MAX;
+    graph_from = (changed or cache) ? 0 : INT_MAX;
+    grid_from  = (generation and !cache) ? INT_MAX : 0;
+    
+    if (changed or cache) {
+        cache = true;
+        last_generation++;
+    }
+    return last_generation;
 }
 
 static inline float adjusted_lphp_gain(const float *const *params, int param_active, int param_mode, const biquad_d2<float> &filter, float freq, float srate)
@@ -425,30 +417,28 @@ bool filter_audio_module::get_graph(int index, int subindex, float *data, int po
     if (!is_active)
         return false;
     if (index == par_cutoff && !subindex) {
-        context->set_line_width(1.5);
         return ::get_graph(*this, subindex, data, points);
     }
     return false;
 }
 
-int filter_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int filter_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int&grid_to) const
 {
+    dot_from   = INT_MAX;
+    grid_from  = (generation and !cache) ? INT_MAX : 0;
+    graph_from = INT_MAX;
+    
     if (fabs(inertia_cutoff.get_last() - old_cutoff) + 100 * fabs(inertia_resonance.get_last() - old_resonance) + fabs(*params[par_mode] - old_mode) > 0.1f)
     {
         old_cutoff = inertia_cutoff.get_last();
         old_resonance = inertia_resonance.get_last();
         old_mode = *params[par_mode];
         last_generation++;
-        subindex_graph = 0;
-        subindex_dot = INT_MAX;
-        subindex_gridline = INT_MAX;
-    }
-    else {
-        subindex_graph = 0;
-        subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
+        graph_from = 0;
+        cache = true;
     }
     if (generation == last_calculated_generation)
-        subindex_graph = INT_MAX;
+        graph_from = INT_MAX;
     return last_generation;
 }
 
@@ -559,7 +549,8 @@ bool filterclavier_audio_module::get_graph(int index, int subindex, float *data,
     }
     if (!subindex) {
         context->set_line_width(1.5);
-        return ::get_graph(*this, subindex, data, points);
+        ::get_graph(*this, subindex, data, points);
+        return true;
     }
     return false;
 }
@@ -572,7 +563,7 @@ phonoeq_audio_module::phonoeq_audio_module()
 {
     is_active = false;
     srate = 0;
-    last_generation = 0;
+    redraw_graph = true;
     for (int i = 0; i < 1; i++)
     {
         p_freq_old[i] = 0;
@@ -598,8 +589,9 @@ void phonoeq_audio_module::params_changed()
 {
     int mode = *params[param_mode];
     int type = *params[param_type];
-    riaacurvL.set(srate, mode, type);        
-    riaacurvR.set(srate, mode, type);        
+    riaacurvL.set(srate, mode, type);
+    riaacurvR.set(srate, mode, type);
+    
 }
 
 uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -679,35 +671,25 @@ bool phonoeq_audio_module::get_graph(int index, int subindex, float *data, int p
 
 bool phonoeq_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active) {
+    if (!is_active)
         return false;
-    } else {
-        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
-    }
+    
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
 }
 
-int phonoeq_audio_module::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int phonoeq_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
 {
-    if (!is_active) {
-        return false;
-    } else {
-        bool changed = true;
-        if (changed)
-        {
-            last_generation++;
-            subindex_graph = 0;
-            subindex_dot = INT_MAX;
-            subindex_gridline = INT_MAX;
-        }
-        else {
-            subindex_graph = 0;
-            subindex_dot = subindex_gridline = generation ? INT_MAX : 0;
-        }
-        if (generation == last_calculated_generation)
-            subindex_graph = INT_MAX;
-        return last_generation;
+    dot_from   = INT_MAX;
+    graph_from = (redraw_graph or cache) ? 0 : INT_MAX;
+    grid_from  = (generation and !cache) ? INT_MAX : 0;
+    
+    if (redraw_graph or cache) {
+        generation++;
+        redraw_graph = false;
+        cache = true;
     }
-    return false;
+    
+    return generation;
 }
 
 float phonoeq_audio_module::freq_gain(int index, double freq, uint32_t sr) const
@@ -726,7 +708,7 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
 {
     is_active = false;
     srate = 0;
-    redraw_graph = 1;
+    redraw_graph = true;
     crossover.init(AM::channels, AM::bands, 44100);
 }
 
@@ -753,7 +735,6 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
-    cnt = 0;
 }
 template<class XoverBaseClass>
 void xover_audio_module<XoverBaseClass>::params_changed()
@@ -768,7 +749,7 @@ void xover_audio_module<XoverBaseClass>::params_changed()
         crossover.set_level(i, *params[AM::param_level1 + offset]);
         crossover.set_active(i, *params[AM::param_active1 + offset] > 0.5);
     }
-    redraw_graph = 1;
+    redraw_graph = true;
 }
 
 template<class XoverBaseClass>
@@ -831,7 +812,6 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
         }
         // next sample
         ++offset;
-        cnt ++;
         // delay buffer pos forward
         pos = (pos + AM::channels * AM::bands) % buffer_size;
         
@@ -849,27 +829,25 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
 }
 
 template<class XoverBaseClass>
-bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
 {
     if (!is_active)
         return false;
     return crossover.get_graph(subindex, data, points, context, mode);
 }
 template<class XoverBaseClass>
-int xover_audio_module<XoverBaseClass>::get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int xover_audio_module<XoverBaseClass>::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
 {
-    int gen = generation;
-    subindex_dot = INT_MAX;
-    if (redraw_graph) {
-        subindex_gridline = INT_MAX;
-        subindex_graph    = INT_MAX;
-        redraw_graph      = 0;
-        gen++;
-    } else {
-        subindex_gridline = INT_MAX;
-        subindex_graph    = INT_MAX;
+    dot_from   = INT_MAX;
+    grid_from  = (generation and !cache) ? INT_MAX : 0;
+    graph_from = (redraw_graph or cache) ? 0 : INT_MAX;
+    
+    if (redraw_graph or cache) {
+        generation++;
+        redraw_graph = false;
+        cache = true;
     }
-    return gen;
+    return generation;
 }
 
 template class xover_audio_module<xover2_metadata>;

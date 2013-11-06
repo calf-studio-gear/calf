@@ -413,7 +413,12 @@ inline void sanitize(float &value)
     if (std::abs(value) < small_value<float>())
         value = 0.f;
 }
-
+inline float _sanitize(float value)
+{
+    if (std::abs(value) < small_value<float>())
+        return 0.f;
+    return value;
+}
 /**
  * Works on little-endian machines only, but detects NaN better now!
  */
@@ -444,7 +449,12 @@ inline void sanitize(double &value)
     if (std::abs(value) < small_value<double>())
         value = 0.0;
 }
-
+inline double _sanitize(double value)
+{
+    if (std::abs(value) < small_value<double>())
+        return 0.0;
+    return value;
+}
 /**
  * Force "small enough" stereo value to zero
  */

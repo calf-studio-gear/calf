@@ -83,7 +83,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int&grid_to) const;
 };
 
 typedef equalizerNband_audio_module<equalizer5band_metadata, false> equalizer5band_audio_module;
@@ -223,7 +223,7 @@ public:
     }
         
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    int get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
 };
 
 /**********************************************************************
@@ -281,7 +281,7 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
+    mutable bool redraw_graph;
     phonoeq_audio_module();
     void activate();
     void deactivate();
@@ -295,7 +295,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
 };
 
 /**********************************************************************
@@ -315,7 +315,6 @@ public:
     using AM::bands;
     using AM::channels;
     enum { params_per_band = AM::param_level2 - AM::param_level1 };
-    int cnt;
     uint32_t srate;
     bool is_active;
     float * buffer;
@@ -324,7 +323,7 @@ public:
     float meter_in[channels];
     unsigned int pos;
     unsigned int buffer_size;
-    mutable int redraw_graph;
+    mutable bool redraw_graph;
     static inline float sign(float x) {
         if(x < 0) return -1.f;
         if(x > 0) return 1.f;
@@ -337,8 +336,8 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    int get_changed_offsets(int index, int generation, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
+    int get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
 };
 
 typedef xover_audio_module<xover2_metadata> xover2_audio_module;

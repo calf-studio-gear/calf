@@ -133,9 +133,10 @@ public:
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const;
+    int get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
     ~analyzer_audio_module();
     mutable int _mode_old;
+    mutable int _level_old;
     mutable bool _falling;
     float envelope;
     float attack_coef;
@@ -163,8 +164,6 @@ protected:
     mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
     mutable int ____analyzer_sanitize;
-
-
 };
 
 };

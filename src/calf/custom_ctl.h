@@ -50,13 +50,19 @@ struct FreqHandle
     int param_x_no;
     int param_y_no;
     int param_z_no;
-    float value_x;
-    float value_y;
-    float value_z;
-    float default_value_x;
-    float default_value_y;
-    float default_value_z;
-
+    double value_x;
+    double value_y;
+    double value_z;
+    double last_value_x;
+    double last_value_y;
+    double last_value_z;
+    double default_value_x;
+    double default_value_y;
+    double default_value_z;
+    double pos_x;
+    double pos_y;
+    double pos_z;
+    
     float left_bound;
     float right_bound;
     gpointer data;
@@ -69,17 +75,23 @@ struct FreqHandle
 
 struct CalfLineGraph
 {
+    static const int debug = 1;
+    
     GtkDrawingArea parent;
     const calf_plugins::line_graph_iface *source;
     int source_id;
-    int force_cache;
+    bool force_cache;
     int recreate_surfaces;
     bool is_square;
-    bool spectrum;
     float fade;
     int mode, moving, movesurf;
+    int count;
+    
+    static const int pad_x = 5, pad_y = 5;
+    int size_x, size_y;
     
     cairo_surface_t *background_surface;
+    cairo_surface_t *grid_surface;
     cairo_surface_t *cache_surface;
     cairo_surface_t *moving_surface[2];
     cairo_surface_t *handles_surface;

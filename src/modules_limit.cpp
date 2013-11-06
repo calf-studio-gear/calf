@@ -576,20 +576,17 @@ bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float 
     }
 }
 
-int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
 {
-    subindex_graph = 0;
-    subindex_dot = INT_MAX;
-    subindex_gridline = generation ? INT_MAX : 0;
+    dot_from   = INT_MAX;
+    grid_from  = (generation and !cache) ? INT_MAX : 0;
+    graph_from = (redraw_graph or cache) ? 0 : INT_MAX;
 
-    if (redraw_graph)
-    {
+    if (redraw_graph or cache) {
         redraw_graph = false;
+        cache = true;
         last_generation++;
     }
-    else
-    {
-        subindex_graph = INT_MAX;
-    }
+    
     return last_generation;
 }

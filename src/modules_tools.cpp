@@ -446,21 +446,22 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
 analyzer_audio_module::analyzer_audio_module() {
 
     active = false;
-    clip_L   = 0.f;
-    clip_R   = 0.f;
-    meter_L = 0.f;
-    meter_R = 0.f;
-    _accuracy = -1;
-    _acc_old = -1;
-    _scale_old = -1;
-    _mode_old = -1;
-    _post_old = -1;
-    _hold_old = -1;
+    clip_L      = 0.f;
+    clip_R      = 0.f;
+    meter_L     = 0.f;
+    meter_R     = 0.f;
+    _accuracy   = -1;
+    _acc_old    = -1;
+    _scale_old  = -1;
+    _mode_old   = -1;
+    _level_old  = -1;
+    _post_old   = -1;
+    _hold_old   = -1;
     _smooth_old = -1;
-    ppos = 0;
-    plength = 0;
-    fpos = 0;
-    envelope = 0.f;
+    ppos        = 0;
+    plength     = 0;
+    fpos        = 0;
+    envelope    = 0.f;
     
     
     spline_buffer = (int*) calloc(200, sizeof(int));
@@ -566,16 +567,16 @@ void analyzer_audio_module::params_changed() {
     }
     if(___sanitize) {
         // null the overall buffer
-        dsp::zero(fft_inL, max_fft_cache_size);
-        dsp::zero(fft_inR, max_fft_cache_size);
-        dsp::zero(fft_outL, max_fft_cache_size);
-        dsp::zero(fft_outR, max_fft_cache_size);
-        dsp::zero(fft_holdL, max_fft_cache_size);
-        dsp::zero(fft_holdR, max_fft_cache_size);
+        dsp::zero(fft_inL,     max_fft_cache_size);
+        dsp::zero(fft_inR,     max_fft_cache_size);
+        dsp::zero(fft_outL,    max_fft_cache_size);
+        dsp::zero(fft_outR,    max_fft_cache_size);
+        dsp::zero(fft_holdL,   max_fft_cache_size);
+        dsp::zero(fft_holdR,   max_fft_cache_size);
         dsp::zero(fft_smoothL, max_fft_cache_size);
         dsp::zero(fft_smoothR, max_fft_cache_size);
-        dsp::zero(fft_deltaL, max_fft_cache_size);
-        dsp::zero(fft_deltaR, max_fft_cache_size);
+        dsp::zero(fft_deltaL,  max_fft_cache_size);
+        dsp::zero(fft_deltaR,  max_fft_cache_size);
 //        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
 //        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
         dsp::zero(spline_buffer, 200);
@@ -602,13 +603,13 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         //the goniometer tries to show the signal in maximum
         //size. therefor an envelope with fast attack and slow
         //release is calculated with the max value of left and right.
-        float lemax = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
-        attack_coef = exp(log(0.01)/(0.01 * srate * 0.001));
+        float lemax  = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
+        attack_coef  = exp(log(0.01)/(0.01 * srate * 0.001));
         release_coef = exp(log(0.01)/(2000 * srate * 0.001));
         if( lemax > envelope)
-           envelope = lemax; //attack_coef * (envelope - lemax) + lemax;
+           envelope  = lemax; //attack_coef * (envelope - lemax) + lemax;
         else
-           envelope = release_coef * (envelope - lemax) + lemax;
+           envelope  = release_coef * (envelope - lemax) + lemax;
         
         //use the envelope to bring biggest signal to 1. the biggest
         //enlargement of the signal is 4.
@@ -653,13 +654,13 @@ void analyzer_audio_module::set_sample_rate(uint32_t sr)
 }
 
 bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
-    *_buffer = &phase_buffer[0];
-    *_length = plength;
+    *_buffer   = &phase_buffer[0];
+    *_length   = plength;
     *_use_fade = *params[param_gonio_use_fade];
-    *_fade = *params[param_gonio_fade];
-    *_mode = *params[param_gonio_mode];
+    *_fade     = *params[param_gonio_fade];
+    *_mode     = *params[param_gonio_mode];
     *_accuracy = *params[param_gonio_accuracy];
-    *_display = *params[param_gonio_display];
+    *_display  = *params[param_gonio_display];
     return false;
 }
 
@@ -1405,12 +1406,18 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     }
     return out;
 }
-int analyzer_audio_module::get_changed_offsets(int index, int generation, int force_cache, int &subindex_graph, int &subindex_dot, int &subindex_gridline) const
+int analyzer_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
 {
-    subindex_graph = 0;
-    if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level]) {
-        _mode_old = *params[param_analyzer_mode];
-        return generation++;
+    if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level] != _level_old) {
+        _mode_old  = *params[param_analyzer_mode];
+        _level_old = *params[param_analyzer_level];
+        generation++;
+        cache = true;
     }
+    
+    dot_from   = INT_MAX;
+    grid_from  = (!generation or cache) ? 0 : INT_MAX;
+    graph_from = !cache ? 0 : INT_MAX;
+    
     return generation;
 }
