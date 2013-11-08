@@ -1293,7 +1293,7 @@ void line_graph_param_control::set()
                 handle->active = true;
             }
         }
-        //gtk_widget_queue_draw(widget);
+        gtk_widget_queue_draw(widget);
         //last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
     }
 }

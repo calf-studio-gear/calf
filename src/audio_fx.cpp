@@ -21,6 +21,7 @@
 
 #include <calf/audio_fx.h>
 #include <calf/giface.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -944,8 +945,8 @@ float transients::process(float s) {
 //////////////////////////////////////////////////////////////////
 
 crossover::crossover() {
-    bands     = 0;
-    mode      = 0;
+    bands     = -1;
+    mode      = -1;
 }
 void crossover::set_sample_rate(uint32_t sr) {
     srate = sr;
@@ -965,15 +966,7 @@ void crossover::init(int c, int b, uint32_t sr) {
         }
     }
 }
-void crossover::set_mode(int m) {
-    if(mode == m)
-        return;
-    mode = m;
-    for(int i = 0; i < bands - 1; i ++) {
-        set_filter(i, freq[i]);
-    }
-}
-float crossover::set_filter(int b, float f) {
+float crossover::set_filter(int b, float f, bool force) {
     // keep between neighbour bands
     if (b)
         f = std::max((float)freq[b-1] * 1.1f, f);
@@ -982,7 +975,7 @@ float crossover::set_filter(int b, float f) {
     // restrict to 10-20k
     f = std::max(10.f, std::min(20000.f, f));
     // nothing changed? return
-    if (freq[b] == f)
+    if (freq[b] == f and !force)
         return freq[b];
     freq[b] = f;
     float q;
@@ -1026,6 +1019,15 @@ float crossover::set_filter(int b, float f) {
     redraw_graph = true;
     return freq[b];
 }
+void crossover::set_mode(int m) {
+    if(mode == m)
+        return;
+    mode = m;
+    for(int i = 0; i < bands - 1; i ++) {
+        set_filter(i, freq[i], true);
+    }
+    redraw_graph = true;
+}
 void crossover::set_active(int b, bool a) {
     if (active[b] == a)
         return;
@@ -1061,8 +1063,7 @@ float crossover::get_value(int c, int b) {
 }
 bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (subindex >= bands or !redraw_graph) {
-        redraw_graph = false;
+    if (subindex >= bands) {
         return false;
     }
     float ret;
@@ -1099,4 +1100,12 @@ int crossover::get_filter_count() const
         case 2:
             return 4;
     }
+}
+int crossover::get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
+{
+    int draw       = (generation and !redraw_graph) ? 0 : 1;
+    subindex_grid  = INT_MAX;
+    subindex_dot   = INT_MAX;
+    redraw_graph   = 0;
+    return draw;
 }

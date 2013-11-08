@@ -504,6 +504,10 @@ calf_line_graph_create_surfaces (GtkWidget *widget)
     int width  = widget->allocation.width;
     int height = widget->allocation.height;
     
+    // the size of the "real" drawing area
+    lg->size_x = width  - lg->pad_x * 2;
+    lg->size_y = height - lg->pad_y * 2;
+        
     calf_line_graph_destroy_surfaces(widget);
     // create the background surface.
     // background holds the graphics of the frame and the yellowish
@@ -579,7 +583,8 @@ calf_line_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, float fade =
 }
 
 static void
-calf_line_graph_clear(cairo_t *ctx) {
+calf_line_graph_clear(cairo_t *ctx)
+{
     // clears a surface to transparent
     cairo_save (ctx);
     cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
@@ -596,7 +601,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // quit if no source available
     if (!lg->source) return FALSE;
     
-    // maximum indices, can be changed by the plugin via
+    // subindices, can be changed by the plugin via
     // get_changed_offsets
     int subindex_graph = 0, subindex_dot = 0, subindex_grid = 0;
     
@@ -615,15 +620,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if (lg->debug) printf("\n\n####### expose %d #######\n", lg->count);
     
-    // the size of the "real" drawing area
-    lg->size_x = widget->allocation.width  - lg->pad_x * 2;
-    lg->size_y = widget->allocation.height - lg->pad_y * 2;
-    
-    int sx = lg->size_x;
-    int sy = lg->size_y;
-    int ox = lg->pad_x;
-    int oy = lg->pad_y;
-    
     // the colors to reset to between the drawing cycles
     GdkColor grid_color   = { (int)(1 * 65535), (int)(0.15 * 65535),
                               (int)(0.2 * 65535), (int)(0.0 * 65535) };
@@ -637,11 +633,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // cairo context of the window
     cairo_t *c            = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
-    // the cache, grid and final surface wrapped in a cairo context
-    cairo_t *grid_c       = cairo_create( lg->grid_surface );
-    cairo_t *cache_c      = cairo_create( lg->cache_surface );
-    cairo_t *final_c      = cairo_create( lg->final_surface );
-    
     // the contexts for both moving curve caches
     cairo_t *moving_c[2];
     moving_c[0]           = cairo_create( lg->moving_surface[0] );
@@ -652,15 +643,23 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_t *ctx, *_ctx;
     
     // recreate surfaces if someone needs it (init of the widget,
-    // resizing of the window..)
+    // resizing the window..)
     if (lg->recreate_surfaces) {
-        printf("recreation...\n");
+        if (lg->debug) printf("recreation...\n");
         calf_line_graph_create_surfaces(widget);
         // all surfaces were recreated, so background is empty.
         // draw the yellowish lighting on the background surface
         cairo_t *bg = cairo_create(lg->background_surface);
         calf_line_graph_draw_background(lg, bg);
         cairo_destroy(bg);
+    }
+    
+    // the cache, grid and final surface wrapped in a cairo context
+    cairo_t *grid_c       = cairo_create( lg->grid_surface );
+    cairo_t *cache_c      = cairo_create( lg->cache_surface );
+    cairo_t *final_c      = cairo_create( lg->final_surface );
+    
+    if (lg->recreate_surfaces) {
         // and copy it to the grid surface in case no grid is drawn
         if (lg->debug) printf("copy bg->grid\n");
         calf_line_graph_copy_surface(grid_c, lg->background_surface);
@@ -671,6 +670,13 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         if (lg->debug) printf("copy bg->final\n");
         calf_line_graph_copy_surface(final_c, lg->background_surface);
     }
+    
+    int sx = lg->size_x;
+    int sy = lg->size_y;
+    int ox = lg->pad_x;
+    int oy = lg->pad_y;
+    
+    if (lg->debug) printf("width: %d height: %d x: %d y: %d\n", sx, sy, ox, oy);
     
     // more vars we have to initialize, mainly stuff we use in callback
     // functions
@@ -684,6 +690,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int drawing_phase;
     int grid_from, grid_to, graph_from, graph_to, dot_from, dot_to;
     
+    // some state variables used to determine what has happened
     bool final_drawn = false;
     bool cache_drawn = false;
     bool grid_drawn  = false;
@@ -729,13 +736,17 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     }
     
     for (int i = drawing_phase; i < 2; i++) {
+        // draw elements on the final and/or the cache surface
+        
         if (lg->debug) printf("\n### drawing phase %d\n", i);
         if (lg->debug) printf("grid_from: %d grid_to: %d\n", grid_from, grid_to);
         if (lg->debug) printf("graph_from: %d graph_to: %d\n", graph_from, graph_to);
         if (lg->debug) printf("dot_from: %d dot_to: %d\n", dot_from, dot_to);
-        // draw elements on the final and/or the cache surface
         
-        // grid
+        ///////////////////////////////////////////////////////////////
+        /// GRID
+        ///////////////////////////////////////////////////////////////
+        
         // The plugin can set "vertical" to 1
         // to force drawing of vertical lines instead of horizontal ones
         // (which is the default)
@@ -783,7 +794,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
         }
         
-        // curve
+        ///////////////////////////////////////////////////////////////
+        /// GRAPHS
+        ///////////////////////////////////////////////////////////////
+        
         // Cycle through all graphs and hand over the amount of horizontal
         // pixels. The plugin is expected to set all corresponding vertical
         // values in an array.
@@ -855,7 +869,11 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             cairo_restore(ctx);
         }
-        // dot
+        
+        ///////////////////////////////////////////////////////////////
+        /// DOTS
+        ///////////////////////////////////////////////////////////////
+        
         // Cycle through all dots. The plugin is expected to set the x
         // and y value of the dot.
         // color of the dot (which can be set by the plugin
@@ -953,21 +971,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     lg->force_cache       = false;
     lg->handle_redraw     = 0;
     lg->recreate_surfaces = 0;
-    
-    //cairo_save(cache_c);
-    //cairo_set_source_surface(cache_c, lg->background_surface, 0, 0);
-    //cairo_paint(cache_c);
-    //cairo_restore(cache_c);
-    
-    //cairo_arc(cache_c, 100, 100, 50, 0, 2 * M_PI);
-    //cairo_set_source_rgb(cache_c,0,0,0);
-    //cairo_fill(cache_c);
-            
-    //cairo_save(ctx);
-    //cairo_set_source_surface(ctx, lg->cache_surface, 0, 0);
-    //cairo_paint(ctx);
-    //cairo_restore(ctx);
-    
+
     // destroy all temporarily created cairo contexts
     cairo_destroy(c);
     cairo_destroy(final_c);
