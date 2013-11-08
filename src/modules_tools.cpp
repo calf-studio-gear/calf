@@ -1406,18 +1406,15 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     }
     return out;
 }
-int analyzer_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
+int analyzer_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
 {
+    bool redraw = false;
     if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level] != _level_old) {
         _mode_old  = *params[param_analyzer_mode];
         _level_old = *params[param_analyzer_level];
-        generation++;
-        cache = true;
+        redraw = true;
     }
-    
-    dot_from   = INT_MAX;
-    grid_from  = (!generation or cache) ? 0 : INT_MAX;
-    graph_from = !cache ? 0 : INT_MAX;
-    
-    return generation;
+    subindex_grid  = (generation and !force_cache and !redraw) ? INT_MAX : 0;
+    subindex_dot   = INT_MAX;
+    return 1;
 }

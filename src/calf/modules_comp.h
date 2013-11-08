@@ -43,7 +43,6 @@ private:
     float compressedKneeStop, adjKneeStart, thres;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
     mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
-    mutable volatile int last_generation;
     uint32_t srate;
     bool is_active;
     inline float output_level(float slope) const;
@@ -62,7 +61,7 @@ public:
     bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -76,7 +75,6 @@ private:
     float compressedKneeStop, adjKneeStart, thres;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
     mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
-    mutable volatile int last_generation;
     float old_y1,old_yl,old_detected;
     uint32_t srate;
     bool is_active;
@@ -96,7 +94,7 @@ public:
     bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -109,7 +107,6 @@ private:
     float compressedKneeStop, adjKneeStart, range, thres, attack_coeff, release_coeff;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_gate;
     mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;
-    mutable volatile int last_generation;
     inline float output_level(float slope) const;
     inline float output_gain(float linSlope, bool rms) const;
 public:
@@ -128,7 +125,7 @@ public:
     bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -144,7 +141,6 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     compressor_audio_module();
     void activate();
     void deactivate();
@@ -154,7 +150,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -193,7 +189,6 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     sidechaincompressor_audio_module();
     void activate();
     void deactivate();
@@ -205,7 +200,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -225,7 +220,6 @@ private:
     dsp::crossover crossover;
     int mode;
     mutable bool redraw_graph;
-    mutable volatile int last_generation;
 public:
     uint32_t srate;
     bool is_active;
@@ -239,7 +233,7 @@ public:
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    virtual int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -255,7 +249,6 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     monocompressor_audio_module();
     void activate();
     void deactivate();
@@ -265,7 +258,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -288,7 +281,6 @@ private:
 public:
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     deesser_audio_module();
     void activate();
     void deactivate();
@@ -301,7 +293,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -317,7 +309,6 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     gate_audio_module();
     void activate();
     void deactivate();
@@ -327,7 +318,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -366,7 +357,6 @@ public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable volatile int last_generation, last_calculated_generation;
     sidechaingate_audio_module();
     void activate();
     void deactivate();
@@ -378,7 +368,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 
@@ -399,7 +389,6 @@ private:
     dsp::crossover crossover;
     int mode;
     mutable bool redraw_graph;
-    mutable volatile int last_generation;
 public:
     uint32_t srate;
     bool is_active;
@@ -413,7 +402,7 @@ public:
     virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    virtual int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -450,7 +439,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 };

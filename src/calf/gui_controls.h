@@ -223,7 +223,7 @@ struct line_graph_param_control: public param_control
 /// Phase graph
 struct phase_graph_param_control: public param_control
 {
-    int last_generation;
+    //int last_generation;
 
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}

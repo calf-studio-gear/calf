@@ -304,10 +304,10 @@ bool frequency_response_line_graph::get_gridline(int index, int subindex, float 
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
-int frequency_response_line_graph::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
+int frequency_response_line_graph::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
 {
-    dot_from = INT_MAX;
-    grid_from = (cache or !generation) ? 0 : INT_MAX;
+    subindex_dot  = INT_MAX;
+    subindex_grid = (force_cache) ? 0 : INT_MAX;
     return generation;
 }
 

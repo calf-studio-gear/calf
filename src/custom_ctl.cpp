@@ -403,7 +403,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c) {
     }
 }
 
-void calf_line_graph_draw_background_and_frame(CalfLineGraph* lg, cairo_t* c) 
+void calf_line_graph_draw_background(CalfLineGraph* lg, cairo_t* c) 
 {
     if (lg->debug) printf("(draw background)\n");
     // outer frame (black)
@@ -549,7 +549,6 @@ calf_line_graph_create_surfaces (GtkWidget *widget)
         CAIRO_FORMAT_ARGB32, width, height );
         
     lg->force_cache = true;
-    lg->recreate_surfaces = 0;
 }
 
 static cairo_t
@@ -562,22 +561,26 @@ static cairo_t
     cairo_set_font_size(ctx, 9);
     cairo_rectangle(ctx, lg->pad_x, lg->pad_y, lg->size_x, lg->size_y);
     cairo_clip(ctx);
-    
     return ctx;
 }
 
 static void
-calf_line_graph_copy_cache_to_final(cairo_t *ctx, cairo_surface_t *source, float fade)
+calf_line_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, float fade = 1.f)
 {
+    // copy a surface to a cairo context
+    cairo_save(ctx);
     cairo_set_source_surface(ctx, source, 0, 0);
-    if (fade < 1.0)
+    if (fade < 1.0) {
         cairo_paint_with_alpha(ctx, fade * 0.35 + 0.05);
-    else
+    } else {
         cairo_paint(ctx);
+    }
+    cairo_restore(ctx);
 }
 
 static void
 calf_line_graph_clear(cairo_t *ctx) {
+    // clears a surface to transparent
     cairo_save (ctx);
     cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
     cairo_paint (ctx);
@@ -589,32 +592,50 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
-    if (lg->debug) printf("\n\n### expose %d ########################\n", lg->count);
+    
     // quit if no source available
     if (!lg->source) return FALSE;
     
-    // recreate surfaces if someone needs it (init of the widget,
-    // resizing of the window..)
-    if (lg->recreate_surfaces)
-        calf_line_graph_create_surfaces(widget);
+    // maximum indices, can be changed by the plugin via
+    // get_changed_offsets
+    int subindex_graph = 0, subindex_dot = 0, subindex_grid = 0;
+    
+    // Get the indices to start drawing from for dots, graphs and
+    // gridlines. Additionally ask the plugin if the cache should be
+    // renewed. The line graph may force redrawing the cache, too via
+    // force_cache. Then the plugin is expected to set the subindices
+    // for all elements to the cached ones. If caching is forced, the
+    // drawing cycle is executed once more.
+    int draw = lg->source->get_changed_offsets( lg->source_id,
+                                                lg->count,
+                                                lg->force_cache,
+                                                subindex_graph,
+                                                subindex_dot,
+                                                subindex_grid );
+    
+    if (lg->debug) printf("\n\n####### expose %d #######\n", lg->count);
     
     // the size of the "real" drawing area
     lg->size_x = widget->allocation.width  - lg->pad_x * 2;
     lg->size_y = widget->allocation.height - lg->pad_y * 2;
     
+    int sx = lg->size_x;
+    int sy = lg->size_y;
+    int ox = lg->pad_x;
+    int oy = lg->pad_y;
+    
     // the colors to reset to between the drawing cycles
-    GdkColor grid_color  = { (int)(1 * 65535), (int)(0.15 * 65535), (int)(0.2 * 65535), (int)(0.0 * 65535) };
-    GdkColor graph_color = { (int)(1 * 65535), (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    GdkColor dot_color   = { (int)(1 * 65535), (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
+    GdkColor grid_color   = { (int)(1 * 65535), (int)(0.15 * 65535),
+                              (int)(0.2 * 65535), (int)(0.0 * 65535) };
+    GdkColor graph_color  = { (int)(1 * 65535), (int)(0.35 * 65535),
+                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
+    GdkColor dot_color    = { (int)(1 * 65535), (int)(0.35 * 65535),
+                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
     
     cairo_impl cimpl;
     
     // cairo context of the window
-    cairo_t *c       = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    
-    // context used for the actual surface we want to draw on. It is
-    // switched over the drawing process via calf_line_graph_switch_context
-    cairo_t *ctx, *_ctx;
+    cairo_t *c            = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
     // the cache, grid and final surface wrapped in a cairo context
     cairo_t *grid_c       = cairo_create( lg->grid_surface );
@@ -626,68 +647,80 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     moving_c[0]           = cairo_create( lg->moving_surface[0] );
     moving_c[1]           = cairo_create( lg->moving_surface[1] );
     
-    // more vars we have to initialize, mainly stuff we use in callback
-    // functions
-    float pos = 0;
-    bool vertical = false;
-    std::string legend = "";
-    float *data = new float[2 * lg->size_x];
-    float x, y;
-    int size = 0;
-    int gen_index = 0;
+    // context used for the actual surface we want to draw on. It is
+    // switched over the drawing process via calf_line_graph_switch_context
+    cairo_t *ctx, *_ctx;
     
-    int sx = lg->size_x;
-    int sy = lg->size_y;
-    int ox = lg->pad_x;
-    int oy = lg->pad_y;
-    
-    // the indices where all drawing functions start. these ones are
-    // reset by the plugin via get_changed_offset
-    int graph_from = 0, grid_from = 0, dot_from = 0, cache_cycle = 1;
-    
-    // maximum indices, can be changed by the plugin via
-    // get_changed_offsets
-    int graph_to = INT_MAX, grid_to = INT_MAX, dot_to = INT_MAX;
-    
-    bool final_drawn = false;
-    bool cache_drawn = false;
-    
-    if (lg->force_cache) {
+    // recreate surfaces if someone needs it (init of the widget,
+    // resizing of the window..)
+    if (lg->recreate_surfaces) {
+        printf("recreation...\n");
+        calf_line_graph_create_surfaces(widget);
         // all surfaces were recreated, so background is empty.
         // draw the yellowish lighting on the background surface
         cairo_t *bg = cairo_create(lg->background_surface);
-        calf_line_graph_draw_background_and_frame(lg, bg);
+        calf_line_graph_draw_background(lg, bg);
         cairo_destroy(bg);
         // and copy it to the grid surface in case no grid is drawn
-        cairo_set_source_surface(grid_c, lg->background_surface, 0, 0);
-        cairo_paint(grid_c);
+        if (lg->debug) printf("copy bg->grid\n");
+        calf_line_graph_copy_surface(grid_c, lg->background_surface);
+        // and copy it to the cache surface in case no cache is drawn
+        if (lg->debug) printf("copy bg->cache\n");
+        calf_line_graph_copy_surface(cache_c, lg->background_surface);
+        // and copy it to the final surface in case no final is drawn
+        if (lg->debug) printf("copy bg->final\n");
+        calf_line_graph_copy_surface(final_c, lg->background_surface);
     }
     
-    // Get the indices to start drawing from for dots, graphs and
-    // gridlines. Additionally ask the plugin if the cache should be
-    // renewed. The line graph may force redrawing the cache, too via
-    // force_cache. Then the plugin is expected to set the subindices
-    // for all elements to the cached ones. If caching is forced, the
-    // drawing cycle is executed once more with a new call to
-    // get_changed_offsets beforehand.
-    gen_index = lg->source->get_changed_offsets( lg->source_id, lg->last_generation, lg->force_cache, graph_from, graph_to, dot_from, dot_to, grid_from, grid_to );
+    // more vars we have to initialize, mainly stuff we use in callback
+    // functions
+    float *data        = new float[2 * lg->size_x];
+    float pos          = 0;
+    bool vertical      = false;
+    std::string legend = "";
+    int size           = 0;
+    float x, y;
     
-    if (lg->debug) printf("get_changed_offsets lg: %d, gen: %d, cache: %d\n", lg->last_generation, gen_index, lg->force_cache);
+    int drawing_phase;
+    int grid_from, grid_to, graph_from, graph_to, dot_from, dot_to;
     
+    bool final_drawn = false;
+    bool cache_drawn = false;
+    bool grid_drawn  = false;
+    
+    // check if we can skip the whole drawing stuff and go on with
+    // copying everything we drawed before
+    if (!draw and !lg->force_cache)
+        goto finalize;
+        
     if ( lg->force_cache ) {
-        if (lg->debug) printf("->cache\n");
-        // someone needs a complete redraw of the cache
-        // we want to repeat drawing grids, graphs and dots on the final
-        // surface after the cache was created
-        cache_cycle = 0; 
+        if (lg->debug) printf("\n->cache\n");
+        // someone needs a redraw of the cache so start with the cache
+        // phase
+        drawing_phase = 0; 
+        // set the right loop values
+        grid_from  = 0;
+        graph_from = 0;
+        dot_from   = 0;
+        grid_to    = subindex_grid;
+        graph_to   = subindex_graph;
+        dot_to     = subindex_dot;
         // set the right context to work with
         _ctx = cache_c;
         // and switch to grid surface in case we want to draw on it
         if (lg->debug) printf("switch to grid\n");
         ctx = calf_line_graph_switch_context(lg, grid_c, &cimpl);
     } else {
-        if (lg->debug) printf("->final\n");
-        // no cache drawing neccessary.
+        if (lg->debug) printf("\n->final\n");
+        // no cache drawing neccessary, so skip the first drawing phase
+        drawing_phase = 1;
+        // set the right loop values
+        grid_from  = subindex_grid;
+        graph_from = subindex_graph;
+        dot_from   = subindex_dot;
+        grid_to    = INT_MAX;
+        graph_to   = INT_MAX;
+        dot_to     = INT_MAX;
         // set the right context to work with
         _ctx        = final_c;
         // and switch to the final surface
@@ -695,10 +728,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         ctx = calf_line_graph_switch_context(lg, final_c, &cimpl);
     }
     
-    lg->last_generation = gen_index;
-    
-    for (int i = cache_cycle; i < 2; i++) {
-        if (lg->debug) printf("\n### drawing %d/%d\n", i, cache_cycle);
+    for (int i = drawing_phase; i < 2; i++) {
+        if (lg->debug) printf("\n### drawing phase %d\n", i);
         if (lg->debug) printf("grid_from: %d grid_to: %d\n", grid_from, grid_to);
         if (lg->debug) printf("graph_from: %d graph_to: %d\n", graph_from, graph_to);
         if (lg->debug) printf("dot_from: %d dot_to: %d\n", dot_from, dot_to);
@@ -722,8 +753,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // draw new grid lines. so "clear" the grid surface
                 // with a pure background
                 if (lg->debug) printf("copy bg->grid\n");
-                cairo_set_source_surface(ctx, lg->background_surface, 0, 0);
-                cairo_paint(ctx);
+                calf_line_graph_copy_surface(ctx, lg->background_surface);
+                grid_drawn = true;
             }
             if (!final_drawn and i and a == grid_from) {
                 // we're in final phase and the final surface wasn't
@@ -731,10 +762,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase) and it seems we want to draw new realtime grid
                 // lines. so "clear" the final surface with the cache
                 if (lg->debug) printf("copy cache->final\n");
-                cairo_set_source_surface(ctx, lg->cache_surface, 0, 0);
-                cairo_paint(ctx);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
                 final_drawn = true;
             }
+            
             if (a == grid_from and lg->debug) printf("(draw grid)\n");
             calf_line_graph_draw_grid( lg, ctx, legend, vertical, pos );
         }
@@ -744,6 +775,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             // the cache surface after drawing the grid on its surface
             if (lg->debug) printf("switch to cache\n");
             ctx = calf_line_graph_switch_context(lg, _ctx, &cimpl);
+            // if a grid was drawn copy it to cache
+            if (grid_drawn) {
+                if (lg->debug) printf("copy grid->cache\n");
+                calf_line_graph_copy_surface(ctx, lg->grid_surface);
+                cache_drawn = true;
+            }
         }
         
         // curve
@@ -767,10 +804,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // we are drawing the first graph in cache phase, so
                 // prepare the cache surface with the grid surface
                 if (lg->debug) printf("copy grid->cache\n");
-                cairo_save(ctx);
-                cairo_set_source_surface(ctx, lg->grid_surface, 0, 0);
-                cairo_paint(ctx);
-                cairo_restore(ctx);
+                calf_line_graph_copy_surface(ctx, lg->grid_surface);
                 cache_drawn = true;
             }
             if (!final_drawn and i and a == graph_from) {
@@ -779,10 +813,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid was drawn)
                 // so "clear" the final surface with the cache
                 if (lg->debug) printf("copy cache->final\n");
-                cairo_save(ctx);
-                cairo_set_source_surface(ctx, lg->cache_surface, 0, 0);
-                cairo_paint(ctx);
-                cairo_restore(ctx);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
                 final_drawn = true;
             }
             if (lg->moving) {
@@ -817,8 +848,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 if (lg->debug) printf("switch to final/cache\n");
                 ctx = calf_line_graph_switch_context(lg, _ctx, &cimpl);
                 // copy the cache to the final surface
-                cairo_set_source_surface(ctx, lg->moving_surface[lg->movesurf], 0, 0);
-                cairo_paint(ctx);
+                if (lg->debug) printf("copy moving->cache/final\n");
+                calf_line_graph_copy_surface(ctx, lg->moving_surface[lg->movesurf]);
                 // toggle the moving cache
                 lg->movesurf = lg->movesurf ? 0 : 1;
             }
@@ -841,10 +872,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // the cache wasn't renewed (no graph was drawn), so
                 // prepare the cache surface with the grid surface
                 if (lg->debug) printf("copy grid->cache\n");
-                cairo_save(ctx);
-                cairo_set_source_surface(ctx, lg->grid_surface, 0, 0);
-                cairo_paint(ctx);
-                cairo_restore(ctx);
+                calf_line_graph_copy_surface(ctx, lg->grid_surface);
                 cache_drawn = true;
             }
             if (!final_drawn and i and a == dot_from) {
@@ -853,10 +881,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid or graph was drawn)
                 // so "clear" the final surface with the cache
                 if (lg->debug) printf("copy cache->final\n");
-                cairo_save(ctx);
-                cairo_set_source_surface(ctx, lg->cache_surface, 0, 0);
-                cairo_paint(ctx);
-                cairo_restore(ctx);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
                 final_drawn = true;
             }
             int yv = (int)(oy + sy / 2 - (sy / 2 - 1) * y);
@@ -870,33 +895,35 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             // cache to the final and switch the target surface
             // and set the offsets for the subindices of the
             // elements to draw (all non-cached elements)
-            
-            // we want to draw the final stuff onto the cache so get the
-            // subindices for this phase
-            lg->force_cache = false;
-            gen_index = lg->source->get_changed_offsets( lg->source_id, lg->last_generation, lg->force_cache, graph_from, graph_to, dot_from, dot_to, grid_from, grid_to );
-            // if the plugin asks for cache again, we give a shit
-            lg->force_cache = false;
-            lg->last_generation = gen_index;
+            // set the right loop values
+            grid_from  = subindex_grid;
+            graph_from = subindex_graph;
+            dot_from   = subindex_dot;
+            grid_to    = INT_MAX;
+            graph_to   = INT_MAX;
+            dot_to     = INT_MAX;
             if (lg->debug) printf("switch to final\n");
             ctx  = calf_line_graph_switch_context(lg, final_c, &cimpl);
             _ctx = final_c;
             
             if (cache_drawn) {
                 // copy the cache to the final if it was changed
-                calf_line_graph_copy_cache_to_final(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                if (lg->debug) printf("copy cache->final\n");
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
                 final_drawn = true;
             }
         }
     } // one or two cycles for drawing cached and non-cached elements
+    
+    finalize:
+    if (lg->debug) printf("\n### finalize\n");
     
     // whatever happened - we need to copy the final surface to the
     // window surface
     if (lg->debug) printf("switch to window\n");
     ctx = calf_line_graph_switch_context(lg, c, &cimpl);
     if (lg->debug) printf("copy final->window\n");
-    cairo_set_source_surface(ctx, lg->final_surface, 0, 0);
-    cairo_paint(ctx);
+    calf_line_graph_copy_surface(ctx, lg->final_surface);
     
     // if someone changed the handles via drag'n'drop or externally we
     // need a redraw of the handles surface
@@ -911,8 +938,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // window
     if (lg->freqhandles) {
         if (lg->debug) printf("copy handles->window\n");
-        cairo_set_source_surface(ctx, lg->handles_surface, 0, 0);
-        cairo_paint(ctx);
+        calf_line_graph_copy_surface(ctx, lg->handles_surface);
     }
     
     // and draw the crosshairs on top if neccessary
@@ -924,8 +950,23 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         calf_line_graph_draw_crosshairs(lg, ctx, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s);
     }
     
-    lg->force_cache   = false;
-    lg->handle_redraw = 0;
+    lg->force_cache       = false;
+    lg->handle_redraw     = 0;
+    lg->recreate_surfaces = 0;
+    
+    //cairo_save(cache_c);
+    //cairo_set_source_surface(cache_c, lg->background_surface, 0, 0);
+    //cairo_paint(cache_c);
+    //cairo_restore(cache_c);
+    
+    //cairo_arc(cache_c, 100, 100, 50, 0, 2 * M_PI);
+    //cairo_set_source_rgb(cache_c,0,0,0);
+    //cairo_fill(cache_c);
+            
+    //cairo_save(ctx);
+    //cairo_set_source_surface(ctx, lg->cache_surface, 0, 0);
+    //cairo_paint(ctx);
+    //cairo_restore(ctx);
     
     // destroy all temporarily created cairo contexts
     cairo_destroy(c);
@@ -937,7 +978,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     lg->count += 1;
     
-    // we want to go on drawing
     return TRUE;
 }
 
@@ -1182,22 +1222,6 @@ void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square)
     graph->is_square = is_square;
 }
 
-int calf_line_graph_update_if(CalfLineGraph *graph, int last_drawn_generation)
-{
-    g_assert(CALF_IS_LINE_GRAPH(graph));
-    int generation = last_drawn_generation;
-    if (graph->source)
-    {
-        int graph_from, graph_to, grid_from, grid_to, dot_from, dot_to;
-        bool cache = false;
-        generation = graph->source->get_changed_offsets(graph->source_id, generation, cache, graph_from, graph_to, grid_from, grid_to, dot_from, dot_to);
-        if (graph_from == INT_MAX && dot_from == INT_MAX && grid_from == INT_MAX && generation == last_drawn_generation)
-            return generation;
-        gtk_widget_queue_draw(GTK_WIDGET(graph));
-    }
-    return generation;
-}
-
 static void
 calf_line_graph_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
@@ -1290,7 +1314,6 @@ calf_line_graph_init (CalfLineGraph *lg)
     widget->requisition.height = 40;
     lg->force_cache          = true;
     lg->recreate_surfaces    = 1;
-    lg->last_generation      = 0;
     lg->mode                 = 0;
     lg->movesurf             = 0;
     lg->count                = 0;

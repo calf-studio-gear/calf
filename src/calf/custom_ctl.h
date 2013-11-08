@@ -96,8 +96,6 @@ struct CalfLineGraph
     cairo_surface_t *moving_surface[2];
     cairo_surface_t *handles_surface;
     cairo_surface_t *final_surface;
-    
-    int last_generation;
 
     // crosshairs and FreqHandles
     gdouble mouse_x, mouse_y;

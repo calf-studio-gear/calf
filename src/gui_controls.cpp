@@ -1293,8 +1293,8 @@ void line_graph_param_control::set()
                 handle->active = true;
             }
         }
-
-        last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
+        //gtk_widget_queue_draw(widget);
+        //last_generation = calf_line_graph_update_if(CALF_LINE_GRAPH(widget), last_generation);
     }
 }
 
@@ -1323,7 +1323,7 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    last_generation = -1;
+    //last_generation = -1;
     
     widget = calf_phase_graph_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-phase");

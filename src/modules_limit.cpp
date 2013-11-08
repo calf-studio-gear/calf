@@ -240,7 +240,6 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
-    last_generation = 0;
     redraw_graph = false;
     crossover.init(2, 4, 441000);
 }
@@ -576,17 +575,11 @@ bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float 
     }
 }
 
-int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const
+int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
 {
-    dot_from   = INT_MAX;
-    grid_from  = (generation and !cache) ? INT_MAX : 0;
-    graph_from = (redraw_graph or cache) ? 0 : INT_MAX;
-
-    if (redraw_graph or cache) {
-        redraw_graph = false;
-        cache = true;
-        last_generation++;
-    }
-    
-    return last_generation;
+    int draw       = (generation and !redraw_graph) ? 0 : 1;
+    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+    subindex_dot   = INT_MAX;
+    redraw_graph   = 0;
+    return draw;
 }

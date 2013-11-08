@@ -199,9 +199,7 @@ struct line_graph_iface
     /// @param subindex_dot First dot that has to be redrawn
     /// @param subindex_gridline First gridline/legend that has to be redrawn
     /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
-    virtual int get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const {
-        return generation;
-    }
+    virtual int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const { return 1; }
     
     /// Return a label for the crosshairs they are enabled
     /// @param x Position of the mouse pointer in x direction
@@ -694,7 +692,7 @@ class frequency_response_line_graph: public line_graph_iface
 {
 public:
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int get_changed_offsets(int index, int generation, bool &cache, int &graph_from, int &graph_to, int &dot_from, int &dot_to, int &grid_from, int &grid_to) const;
+    virtual int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 

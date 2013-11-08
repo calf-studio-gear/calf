@@ -557,7 +557,6 @@ pulsator_audio_module::pulsator_audio_module()
 {
     is_active = false;
     srate = 0;
-//    last_generation = 0;
     clip_inL    = 0.f;
     clip_inR    = 0.f;
     clip_outL   = 0.f;
