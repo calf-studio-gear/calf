@@ -187,7 +187,7 @@ float gain_reduction_audio_module::get_comp_level() {
 }
 
 bool gain_reduction_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
-{printf("ha\n");
+{
     if (!is_active or subindex > 1)
         return false;
     
@@ -840,7 +840,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
     return outputs_mask;
 }
 bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
-{printf("ho\n");
+{
     if (!is_active)
         return false;
     return compressor.get_graph(subindex, data, points, context, mode, moving);
@@ -1272,7 +1272,7 @@ int sidechaincompressor_audio_module::get_changed_offsets(int index, int generat
             sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
             draw = 1;
         }
-        subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+        subindex_grid  = INT_MAX;
         subindex_dot   = INT_MAX;
         return draw;
     }
@@ -1571,7 +1571,7 @@ int multibandcompressor_audio_module::get_changed_offsets(int index, int generat
         return m->get_changed_offsets(generation, force_cache, subindex_graph, subindex_dot, subindex_grid);
 
     int draw       = (generation and !redraw_graph) ? 0 : 1;
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+    subindex_grid  = INT_MAX;
     subindex_dot   = INT_MAX;
     redraw_graph   = 0;
     return draw;
@@ -1929,7 +1929,7 @@ int deesser_audio_module::get_changed_offsets(int index, int generation, bool &f
         f2_q_old1 = *params[param_f2_q];
         draw = 1;
     }
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+    subindex_grid  = INT_MAX;
     subindex_dot   = INT_MAX;
     return draw;
 }
@@ -2454,7 +2454,7 @@ int sidechaingate_audio_module::get_changed_offsets(int index, int generation, b
             sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
             draw = 1;
         }
-        subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+        subindex_grid  = INT_MAX;
         subindex_dot   = INT_MAX;
         return draw;
     }
@@ -2751,7 +2751,7 @@ int multibandgate_audio_module::get_changed_offsets(int index, int generation, b
         return m->get_changed_offsets(generation, force_cache, subindex_graph, subindex_dot, subindex_grid);
 
     int draw       = (generation and !redraw_graph) ? 0 : 1;
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+    subindex_grid  = INT_MAX;
     subindex_dot   = INT_MAX;
     redraw_graph   = 0;
     return draw;
@@ -3010,7 +3010,7 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, float
 
 int transientdesigner_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
 {
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
+    subindex_grid  = INT_MAX;
     subindex_dot   = INT_MAX;
     return 1;
 }

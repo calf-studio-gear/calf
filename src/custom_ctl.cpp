@@ -1189,7 +1189,7 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
                 }
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             }
-            //lg->handle_redraw = 1;
+            lg->handle_redraw = 1;
         }
     }
     return TRUE;
