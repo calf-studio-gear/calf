@@ -87,11 +87,11 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
     int oy = lg->pad_y;
     
     int _last = 0;
-    int y = 0;
+    float y = 0.f;
     int startdraw = -1;
     
     for (int i = 0; i < sx; i++) {
-        y = (int)(oy + sy / 2 - (sy / 2 - 1) * data[i]);
+        y = (oy + sy / 2 - (sy / 2 - 1) * data[i]);
         if (lg->debug > 1) printf("* graph x: %d, y: %d, data: %.5f\n", i, y, data[i]);
         switch (mode) {
             case 0:
@@ -110,7 +110,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
             case 1:
                 // bars are used
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, y, i - _last, sy - y + oy);
+                    cairo_rectangle(ctx, ox + _last, (int)y, i - _last, sy - (int)y + oy);
                     _last = i;
                     if (startdraw < 0)
                         startdraw = ox + _last;
@@ -121,7 +121,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
             case 2:
                 // this one is drawing little boxes at the values position
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, y - 1, i - _last, 2);
+                    cairo_rectangle(ctx, ox + _last, (int)y - 1, i - _last, 2);
                     _last = i;
                     if (startdraw < 0)
                         startdraw = ox + _last;
@@ -299,7 +299,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c) {
                 float pat_alpha;
                 bool grad;
                 // choose colors between dragged and normal state
-                if (lg->handle_grabbed == i) {
+                if (lg->handle_hovered == i) {
                     pat_alpha = 0.3;
                     grad = false;
                     cairo_set_source_rgba(c, 0, 0, 0, 0.7);
@@ -583,7 +583,7 @@ calf_line_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, float fade =
 }
 
 static void
-calf_line_graph_clear(cairo_t *ctx)
+calf_line_graph_clear_surface(cairo_t *ctx)
 {
     // clears a surface to transparent
     cairo_save (ctx);
@@ -835,7 +835,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // clear it before we start to draw
                  if (lg->debug) printf("switch to moving %d\n", lg->movesurf);
                 ctx = calf_line_graph_switch_context(lg, moving_c[lg->movesurf], &cimpl);
-                calf_line_graph_clear(ctx);
+                calf_line_graph_clear_surface(ctx);
             }
             
             int sd = calf_line_graph_draw_graph( lg, ctx, data, lg->mode );
@@ -938,16 +938,16 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // whatever happened - we need to copy the final surface to the
     // window surface
-    if (lg->debug) printf("switch to window\n");
-    ctx = calf_line_graph_switch_context(lg, c, &cimpl);
+    //if (lg->debug) printf("switch to window\n");
+    //ctx = calf_line_graph_switch_context(lg, c, &cimpl);
     if (lg->debug) printf("copy final->window\n");
-    calf_line_graph_copy_surface(ctx, lg->final_surface);
+    calf_line_graph_copy_surface(c, lg->final_surface);
     
     // if someone changed the handles via drag'n'drop or externally we
     // need a redraw of the handles surface
     if (lg->freqhandles and lg->handle_redraw) {
         cairo_t *hs = cairo_create(lg->handles_surface);
-        calf_line_graph_clear(hs);
+        calf_line_graph_clear_surface(hs);
         calf_line_graph_draw_freqhandles(lg, hs);
         cairo_destroy(hs);
     }
@@ -956,7 +956,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // window
     if (lg->freqhandles) {
         if (lg->debug) printf("copy handles->window\n");
-        calf_line_graph_copy_surface(ctx, lg->handles_surface);
+        calf_line_graph_copy_surface(c, lg->handles_surface);
     }
     
     // and draw the crosshairs on top if neccessary
@@ -964,8 +964,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         std::string s;
         s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, &cimpl);
-        cairo_set_line_width(ctx, 1),
-        calf_line_graph_draw_crosshairs(lg, ctx, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s);
+        cairo_set_line_width(c, 1),
+        calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s);
     }
     
     lg->force_cache       = false;
@@ -1341,6 +1341,7 @@ calf_line_graph_init (CalfLineGraph *lg)
     }
 
     lg->handle_grabbed      = -1;
+    lg->handle_hovered      = -1;
     lg->handle_redraw       = 1;
     lg->min_handle_distance = 0.025;
     

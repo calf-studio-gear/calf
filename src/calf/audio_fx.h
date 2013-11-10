@@ -651,7 +651,7 @@ public:
     void set_mode(int m) ;
     int get_filter_count() const;
     void init(int c, int b, uint32_t sr);
-    virtual bool get_graph(int subindex, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
+    virtual bool get_graph(int subindex, float *data, int points, calf_plugins::cairo_iface *context, int *mode, int *moving) const;
     virtual int get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 

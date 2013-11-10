@@ -75,7 +75,7 @@ struct FreqHandle
 
 struct CalfLineGraph
 {
-    static const int debug = 0;
+    static const int debug = 1;
     
     GtkDrawingArea parent;
     const calf_plugins::line_graph_iface *source;
@@ -200,6 +200,7 @@ public:
     cairo_t *context;
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) { cairo_set_source_rgba(context, r, g, b, a); }
     virtual void set_line_width(float width) { cairo_set_line_width(context, width); }
+    virtual void set_dash(const double *dash, int length) { cairo_set_dash(context, dash, length, 0); }
 };
 
 #endif

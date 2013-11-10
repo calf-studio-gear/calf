@@ -148,6 +148,7 @@ struct cairo_iface
 {
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
     virtual void set_line_width(float width) = 0;
+    virtual void set_dash(const double *dash, int length) = 0;
     virtual ~cairo_iface() {}
 };
 

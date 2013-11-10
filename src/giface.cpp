@@ -242,11 +242,13 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
 {
     if (subindex < 0 )
     return false;
+    static const double dash[] = {2.0};
     // frequency grid
     if (use_frequencies)
     {
         if (subindex < 28)
         {
+            
             vertical = true;
             if (subindex == 9) legend = "100 Hz";
             if (subindex == 18) legend = "1 kHz";
@@ -255,10 +257,13 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
             float freq = subindex_to_freq(subindex);
             pos = log(freq / 20.0) / log(1000);
 
-            if (!legend.empty())
+            if (!legend.empty()) {
                 context->set_source_rgba(0, 0, 0, 0.2);
-            else
+                context->set_dash(dash, 0);
+            } else {
                 context->set_source_rgba(0, 0, 0, 0.1);
+                context->set_dash(dash, 0);
+            }
             return true;
         }
         subindex -= 28;
@@ -282,8 +287,10 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         std::stringstream ss;
         ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();
+        context->set_dash(dash, 0);
+    } else {
+        context->set_dash(dash, 0);
     }
-
     vertical = false;
     return true;
 }

@@ -552,7 +552,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
 {
     if (!is_active or subindex > 3)
         return false;
@@ -562,7 +562,7 @@ bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *da
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
         context->set_line_width(1.5);
     }
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, data, points, context, mode, moving);
 }
 
 bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

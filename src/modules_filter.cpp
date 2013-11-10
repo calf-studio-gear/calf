@@ -812,7 +812,7 @@ bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, floa
 {
     if (!is_active)
         return false;
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, data, points, context, mode, moving);
 }
 template<class XoverBaseClass>
 int xover_audio_module<XoverBaseClass>::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const

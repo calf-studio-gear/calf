@@ -1061,7 +1061,7 @@ void crossover::process(float *data) {
 float crossover::get_value(int c, int b) {
     return out[c][b];
 }
-bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
 {
     if (subindex >= bands) {
         return false;
@@ -1083,7 +1083,7 @@ bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *co
             }
         }
         ret *= level[subindex];
-        context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.3 : 1);
+        context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.4 : 1);
         context->set_line_width(1.5);
         data[i] = dB_grid(ret);
     }
