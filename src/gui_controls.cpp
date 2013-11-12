@@ -27,6 +27,7 @@
 #include <calf/ctl_tube.h>
 #include <calf/ctl_vumeter.h>
 #include <calf/custom_ctl.h>
+#include <calf/ctl_linegraph.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/gui_controls.h>

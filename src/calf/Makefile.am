@@ -1,4 +1,4 @@
-noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
+noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h ctl_linegraph.h \
     ctl_curve.h ctl_keyboard.h ctl_knob.h ctl_led.h ctl_tube.h ctl_vumeter.h \
     delay.h envelope.h fft.h fixed_point.h giface.h gtk_session_env.h gtk_main_win.h \
     gui.h gui_config.h gui_controls.h inertia.h jackhost.h \
@@ -11,4 +11,3 @@ noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h custom_ctl.h \
     modulelist.h \
     multichorus.h onepole.h organ.h osc.h osctl.h plugin_tools.h preset.h \
     preset_gui.h primitives.h session_mgr.h synth.h utils.h vumeter.h wave.h waveshaping.h wavetable.h
-
