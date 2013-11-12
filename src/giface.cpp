@@ -306,16 +306,19 @@ void calf_plugins::set_channel_color(cairo_iface *context, int channel)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool frequency_response_line_graph::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool frequency_response_line_graph::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 { 
+    if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
-int frequency_response_line_graph::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
+int frequency_response_line_graph::get_layers(int index, int generation, unsigned int &layers) const
 {
-    subindex_dot  = INT_MAX;
-    subindex_grid = (force_cache) ? 0 : INT_MAX;
-    return generation;
+    if (!generation) {
+        layers |= LG_CACHE_GRID;
+    }
+    layers |= LG_REALTIME_GRAPH;
+    return true;
 }
 
 std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const

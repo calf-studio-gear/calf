@@ -34,6 +34,20 @@ namespace osctl {
 
 namespace calf_plugins {
 
+/// possible bit masks for get_layers
+enum layers_flags {
+    LG_CACHE           = 0x100000;
+    LG_REALTIME        = 0x200000;
+    LG_CACHE_GRID      = 0x100001;
+    LG_REALTIME_GRID   = 0x200001;
+    LG_CACHE_GRAPH     = 0x100002;
+    LG_REALTIME_GRAPH  = 0x200002;
+    LG_CACHE_DOT       = 0x100004;
+    LG_REALTIME_DOT    = 0x200004;
+    LG_CACHE_MOVING    = 0x100008;
+    LG_REALTIME_MOVING = 0x200008;
+}
+
 enum {
     MAX_SAMPLE_RUN = 256
 };
@@ -164,43 +178,32 @@ struct line_graph_iface
     /// Obtain subindex'th graph of parameter 'index'
     /// @param index parameter/graph number (usually tied to particular plugin control port)
     /// @param subindex graph number (there may be multiple overlaid graphs for one parameter, eg. for monosynth 2x12dB filters)
+    /// @param phase 0 if in cache phase or 1 if in realtime phase
     /// @param data buffer for normalized output values
     /// @param points number of points to fill
     /// @param context cairo context to adjust (for multicolour graphs etc.)
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode = 0, int *moving = 0) const { return false; }
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode = 0) const { return false; }
 
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const { return false; }
+    /// @param phase 0 if in cache phase or 1 if in realtime phase
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const { return false; }
     
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const { return false; }
+    /// @param phase 0 if in cache phase or 1 if in realtime phase
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const { return false; }
     
-    /// Obtain subindex'th static graph of parameter index (static graphs are only dependent on parameter value, not plugin state)
-    /// @param index parameter/graph number (usually tied to particular plugin control port)
-    /// @param subindex graph number (there may be multiple overlaid graphs for one parameter, eg. for monosynth 2x12dB filters)
-    /// @param value parameter value to pick the graph for
-    /// @param data buffer for normalized output values
-    /// @param points number of points to fill
-    /// @param context cairo context to adjust (for multicolour graphs etc.)
-    /// @retval true graph data was returned; subindex+1 graph may or may not be available
-    /// @retval false graph data was not returned; subindex+1 graph does not exist either
-    virtual bool get_static_graph(int index, int subindex, float value, float *data, int points, cairo_iface *context) const { return false; }
-    
-    /// Return which graphs need to be redrawn and which can be cached for later reuse
-    /// @param index Parameter/graph number (usually tied to particular plugin control port)
-    /// @param generation 0 (at start) or the last value returned by the function (corresponds to a set of input values)
-    /// @param force_cache If the plugin wants to redraw the cache this one is set to 1 otherwise 0
-    /// @param subindex_graph First graph that has to be redrawn (because it depends on values that might have changed)
-    /// @param subindex_dot First dot that has to be redrawn
-    /// @param subindex_gridline First gridline/legend that has to be redrawn
-    /// @retval Current generation (to pass when calling the function next time); if different than passed generation value, call the function again to retrieve which graph offsets should be put into cache
-    virtual int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const { return 1; }
+    /// Retrun which layers need to be redrawn in the next GTK drawing cycle
+    /// @param index Parameter/graph identifier (usually tied to particular plugin control port)
+    /// @param generation The overall amount of drawing cycles
+    /// @param layers Bitmask defining the layers to be redrawn (see layers_flags)
+    /// @retval true there's at least one layer to be redrawn; false nothing to draw in this cycle
+    virtual bool get_layers(int index, int generation, unsigned int &layers) { return false; }
     
     /// Return a label for the crosshairs they are enabled
     /// @param x Position of the mouse pointer in x direction
@@ -692,8 +695,8 @@ static inline float dB_grid_inv(float pos)
 class frequency_response_line_graph: public line_graph_iface 
 {
 public:
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    virtual int get_layers(int index, int generation, unsigned int &layers) const;
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 

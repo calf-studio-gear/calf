@@ -84,7 +84,7 @@ struct CalfLineGraph
     int recreate_surfaces;
     bool is_square;
     float fade;
-    int mode, moving, movesurf;
+    int mode, movesurf;
     int count;
     
     static const int pad_x = 5, pad_y = 5;
