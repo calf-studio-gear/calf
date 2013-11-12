@@ -445,23 +445,26 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
 
 analyzer_audio_module::analyzer_audio_module() {
 
-    active = false;
-    clip_L   = 0.f;
-    clip_R   = 0.f;
-    meter_L = 0.f;
-    meter_R = 0.f;
-    _accuracy = -1;
-    _acc_old = -1;
-    _scale_old = -1;
-    _mode_old = -1;
-    _post_old = -1;
-    _hold_old = -1;
-    _smooth_old = -1;
-    ppos = 0;
-    plength = 0;
-    fpos = 0;
-    envelope = 0.f;
-    
+    active          = false;
+    clip_L          = 0.f;
+    clip_R          = 0.f;
+    meter_L         = 0.f;
+    meter_R         = 0.f;
+    _accuracy       = -1;
+    _acc_old        = -1;
+    _scale_old      = -1;
+    _mode_old       = -1;
+    _post_old       = -1;
+    _hold_old       = -1;
+    _smooth_old     = -1;
+    _level_old      = -1.f;
+    ppos            = 0;
+    plength         = 0;
+    fpos            = 0;
+    envelope        = 0.f;
+    db_level_coeff1 = -1;
+    db_level_coeff2 = -1;
+    leveladjust     = -1;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
@@ -580,6 +583,12 @@ void analyzer_audio_module::params_changed() {
 //        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
         dsp::zero(spline_buffer, 200);
         ____analyzer_phase_was_drawn_here = 0;
+    }
+    if(*params[param_analyzer_level] != _level_old) {
+        _level_old = *params[param_analyzer_level];
+        leveladjust     = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
+        db_level_coeff1 = pow(64, *params[param_analyzer_level]);
+        db_level_coeff2 = pow(64, 2 * leveladjust);
     }
 }
 
@@ -701,7 +710,6 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     }
     bool fftdone = false; // if fft was renewed, this one is set to true
     double freq; // here the frequency of the actual drawn pixel gets stored
-    float stereo_coeff = pow(2, 4 * *params[param_analyzer_level] - 2);
     int iter = 0; // this is the pixel we have been drawing the last box/bar/line
     int _iter = 1; // this is the next pixel we want to draw a box/bar/line
     float posneg = 1;
@@ -1150,48 +1158,47 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
                 // according to mode setting but only if
                 // we are drawing lines or boxes
                 // #####################################
-                float dummy;
+                float tmp;
                 switch(_param_mode) {
                     case 3:
                         // stereo analyzer
                         if(subindex == 0 or subindex == 2) {
-                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
                         } else {
-                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
                         }
                         break;
                     case 4:
                         // we want to draw Stereo Image
                         if(subindex == 0 or subindex == 2) {
                             // Left channel signal
-                            dummy = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 1.f);
+                            tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 1.f);
                             //only signals above the middle are interesting
-                            data[i] = dummy < 0 ? 0 : dummy;
+                            data[i] = tmp < 0 ? 0 : tmp;
                         } else if (subindex == 1 or subindex == 3) {
                             // Right channel signal
-                            dummy = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 1.f);
+                            tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 1.f);
                             //only signals above the middle are interesting. after cutting away
                             //the unneeded stuff, the curve is flipped vertical at the middle.
-                            if(dummy < 0) dummy = 0;
-                            data[i] = -1.f * dummy;
+                            if(tmp < 0) tmp = 0;
+                            data[i] = -1.f * tmp;
                         }
                         break;
                     case 5:
                         // We want to draw Stereo Difference
                         if(i) {
-                            float levelanpassung = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
-                            dummy = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, pow(64, 2 * levelanpassung), 1.f / levelanpassung);
+                            tmp = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, db_level_coeff2, 1.f / leveladjust);
                             //only show differences above a threshhold which results from the db_grid-calculation
-                            if (dummy < 0) dummy=0;
+                            if (tmp < 0) tmp=0;
                             //bring right signals below the middle
-                            dummy *= fabs(valL) < fabs(valR) ? -1.f : 1.f;
-                            data[i] = dummy;
+                            tmp *= fabs(valL) < fabs(valR) ? -1.f : 1.f;
+                            data[i] = tmp;
                         }
                         else data[i] = 0.f;
                         break;
                     default:
                         // normal analyzer behavior
-                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, pow(64, *params[param_analyzer_level]), 0.5f);
+                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
                         break;
                 }
             }
@@ -1378,14 +1385,13 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
 { 
     bool out;
     if(*params[param_analyzer_mode] <= 3)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 0.5f);
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.5f);
     else if (*params[param_analyzer_mode] < 5)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, *params[param_analyzer_level]), 1);
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 1);
     else if (*params[param_analyzer_mode] < 6) {
         
         //create a grid in which the middle is fix while rest is sizeable
-        float levelanpassung = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, pow(64, 2 * levelanpassung), 1.f / levelanpassung);
+        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff2, 1.f / leveladjust);
         }
     else if (*params[param_analyzer_mode] < 9)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 0, 1.1f);
