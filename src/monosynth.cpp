@@ -183,8 +183,10 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
     
 }
 
-bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool monosynth_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if (!phase)
+        return false;
     monosynth_audio_module::precalculate_waves(NULL);
     // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
     if (index == par_wave1 || index == par_wave2) {
@@ -245,7 +247,7 @@ bool monosynth_audio_module::get_graph(int index, int subindex, float *data, int
         }
         return true;
     }
-    return get_static_graph(index, subindex, *params[index], data, points, context);
+    return false;
 }
 
 void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
@@ -784,4 +786,3 @@ uint32_t monosynth_audio_module::process(uint32_t offset, uint32_t nsamples, uin
         
     return had_data;
 }
-
