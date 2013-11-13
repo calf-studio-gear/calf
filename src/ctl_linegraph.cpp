@@ -478,9 +478,7 @@ calf_line_graph_destroy_surfaces (GtkWidget *widget)
     
     if (lg->debug) printf("{destroy surfaces}\n");
     
-    // destroy all surfaces
-    // set background_surface to NULL to set a signal for the expose
-    // event to redraw the whole thing
+    // destroy all surfaces - and don't tell anybody about it - hehe
     if( lg->background_surface )
         cairo_surface_destroy( lg->background_surface );
     if( lg->grid_surface )
@@ -598,7 +596,44 @@ calf_line_graph_clear_surface(cairo_t *ctx)
 }
 
 static gboolean
-calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
+calf_line_graph_expose_request (GtkWidget *widget, bool force = false)
+{
+    // someone thinks we should redraw the line graph. let's see what
+    // the plugin thinks about. To do that a bitmask is sent to the
+    // plugin which can be changed. If the plugin returns true or if
+    // the request is in response of something like dragged handles, an
+    // exposition of the widget is requested from GTK
+    
+    g_assert(CALF_IS_LINE_GRAPH(widget));
+    CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+    
+    // quit if no source available
+    if (!lg->source) return FALSE;
+    
+    if (lg->debug) printf("\n\n### expose request %d ###\n", lg->count);
+    
+    // let a bitmask be switched by the plugin to determine the layers
+    // we want to draw. We set all cache layers to true if force_cache
+    // is set otherwise default is to draw nothing. The return value
+    // tells us whether the plugin wants to draw at all or not.
+    if (lg->force_cache || lg->recreate_surfaces)
+        lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE MOVING;
+    
+    if (lg->debug) {
+        printf("bitmask ");
+        print_bits(sizeof(lg->layers), &lg-layers);
+        printf("\n");
+    }
+    
+    // if plugin returns true (something has obviously changed) or if
+    // the requestor forces a redraw, request an exposition of the widget
+    // from GTK
+    if (lg->source->get_layers(lg->source_id, lg->generation, lg->layers) or force)
+        gtk_widget_queue_draw(widget);
+}
+
+static gboolean
+calf_line_graph_expose (GtkWidget *widget)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
@@ -606,7 +641,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // quit if no source available
     if (!lg->source) return FALSE;
     
-    if (lg->debug) printf("\n\n####### expose %d #######\n", lg->count);
+    if (lg->debug) printf("\n\n####### exposing %d #######\n", lg->count);
     
     // cairo context of the window
     cairo_t *c            = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -622,6 +657,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_t *bg = cairo_create(lg->background_surface);
         calf_line_graph_draw_background(lg, bg);
         cairo_destroy(bg);
+        
+        // reset the generation
+        lg->generation = 0;
     }
     
     // the cache, grid and realtime surface wrapped in a cairo context
@@ -650,18 +688,16 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if (lg->debug) printf("width: %d height: %d x: %d y: %d\n", sx, sy, ox, oy);
     
-    // let a bitmask be switched by the plugin to determine the layers
-    // we want to draw. We set all cache layers to true if force_cache
-    // is set otherwise default is to draw nothing. The return value
-    // tells us whether we want to draw at all or not.
-    unsigned int layers = lg->force_cache ? LG_CACHE_GRID | LG_CACHE_GRAPH
-                                          | LG_CACHE_DOT | LG_CACHE MOVING
-                                          : 0;
+    if (lg->debug) {
+        printf("bitmask ");
+        print_bits(sizeof(lg->layers), &lg-layers);
+        printf("\n");
+    }
+    
     // check if we can skip the whole drawing stuff and go on with
     // copying everything we drawed before
     
-    if (!lg->source->get_layers( lg->source_id, lg->count, layers )
-    and !lg->force_cache)
+    if (!(lg->layers & LG_CACHE) and !(lg->layers & LG_REALTIME))
         goto finalize;
     
     
@@ -893,7 +929,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             for (int a = 0;
                 gdk_cairo_set_source_color(ctx, &dot_color),
                 cairo_set_line_width(ctx, dot_width),
-                lg->source->get_dot(lg->source_id, a, x, y, size = 3, &cimpl);
+                lg->source->get_dot(lg->source_id, a, phase, x, y, size = 3, &cimpl);
                 a++)
             {
                 if (lg->debug) printf("dot %d\n", a);
@@ -967,7 +1003,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     lg->force_cache       = false;
     lg->handle_redraw     = 0;
     lg->recreate_surfaces = 0;
-
+    lg->layers            = 0;
+    
     // destroy all temporarily created cairo contexts
     cairo_destroy(c);
     cairo_destroy(realtime_c);
@@ -976,7 +1013,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_destroy(moving_c[0]);
     cairo_destroy(moving_c[1]);
     
-    lg->count += 1;
+    lg->generation += 1;
     
     return TRUE;
 }
@@ -1059,7 +1096,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
             g_signal_emit_by_name(widget, "freqhandle-changed", handle);
         }
         lg->handle_redraw = 1;
-        gtk_widget_queue_draw (widget);
+        calf_line_graph_expose_request(widget, true);
     }
     if (event->is_hint)
     {
@@ -1077,10 +1114,10 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
             lg->handle_hovered = -1;
         }
         lg->handle_redraw = 1;
-        gtk_widget_queue_draw (widget);
+        calf_line_graph_expose_request(widget, true);
     }
     if(lg->crosshairs_active) {
-        gtk_widget_queue_draw (widget);
+        calf_line_graph_expose_request(widget, true);
     }
     return TRUE;
 }
@@ -1136,10 +1173,9 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
 
     if(!inside_handle) {
         lg->crosshairs_active = !lg->crosshairs_active;
-        gtk_widget_queue_draw (widget);
     }
     
-    gtk_widget_queue_draw (widget);
+    calf_line_graph_expose_request(widget, true);
     gtk_widget_grab_focus(widget);
     gtk_grab_add(widget);
     
@@ -1157,7 +1193,7 @@ calf_line_graph_button_release (GtkWidget *widget, GdkEventButton *event)
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
         
-    gtk_widget_queue_draw (widget);
+    calf_line_graph_expose_request(widget, true);
     return TRUE;
 }
 
@@ -1316,9 +1352,13 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->recreate_surfaces    = 1;
     lg->mode                 = 0;
     lg->movesurf             = 0;
-    lg->count                = 0;
+    lg->generation           = 0;
     lg->arrow_cursor         = gdk_cursor_new(GDK_RIGHT_PTR);
     lg->hand_cursor          = gdk_cursor_new(GDK_FLEUR);
+    lg->layers               = LG_CACHE_GRID    | LG_CACHE_GRAPH
+                             | LG_CACHE_DOT     | LG_CACHE MOVING
+                             | LG_REALTIME_GRID | LG_REALTIME_GRAPH
+                             | LG_REALTIME_DOT  | LG_REALTIME_MOVING;
     
     g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_line_graph_unrealize), (gpointer)lg);
     

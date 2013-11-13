@@ -1061,7 +1061,7 @@ void crossover::process(float *data) {
 float crossover::get_value(int c, int b) {
     return out[c][b];
 }
-bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
+bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (subindex >= bands) {
         return false;
@@ -1100,12 +1100,4 @@ int crossover::get_filter_count() const
         case 2:
             return 4;
     }
-}
-int crossover::get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    int draw       = (generation and !redraw_graph) ? 0 : 1;
-    subindex_grid  = INT_MAX;
-    subindex_dot   = INT_MAX;
-    redraw_graph   = 0;
-    return draw;
 }

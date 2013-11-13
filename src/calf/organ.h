@@ -322,6 +322,8 @@ public:
     dsp::organ_parameters par_values;
     uint32_t srate;
     bool panic_flag;
+    mutable bool redraw;
+    
     /// Value for configure variable map_curve
     std::string var_map_curve;
 
@@ -333,7 +335,7 @@ public:
         srate = sr;
     }
     void params_changed();
-
+    
     void activate();
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);

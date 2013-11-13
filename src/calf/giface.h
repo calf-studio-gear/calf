@@ -34,20 +34,6 @@ namespace osctl {
 
 namespace calf_plugins {
 
-/// possible bit masks for get_layers
-enum layers_flags {
-    LG_CACHE           = 0x100000;
-    LG_REALTIME        = 0x200000;
-    LG_CACHE_GRID      = 0x100001;
-    LG_REALTIME_GRID   = 0x200001;
-    LG_CACHE_GRAPH     = 0x100002;
-    LG_REALTIME_GRAPH  = 0x200002;
-    LG_CACHE_DOT       = 0x100004;
-    LG_REALTIME_DOT    = 0x200004;
-    LG_CACHE_MOVING    = 0x100008;
-    LG_REALTIME_MOVING = 0x200008;
-}
-
 enum {
     MAX_SAMPLE_RUN = 256
 };
@@ -172,6 +158,20 @@ struct progress_report_iface
     virtual ~progress_report_iface() {}
 };
 
+/// possible bit masks for get_layers
+enum layers_flags {
+    LG_CACHE           = 0x100000;
+    LG_REALTIME        = 0x200000;
+    LG_CACHE_GRID      = 0x100001;
+    LG_REALTIME_GRID   = 0x200001;
+    LG_CACHE_GRAPH     = 0x100002;
+    LG_REALTIME_GRAPH  = 0x200002;
+    LG_CACHE_DOT       = 0x100004;
+    LG_REALTIME_DOT    = 0x200004;
+    LG_CACHE_MOVING    = 0x100008;
+    LG_REALTIME_MOVING = 0x200008;
+}
+
 /// 'provides live line graph values' interface
 struct line_graph_iface
 {
@@ -200,10 +200,10 @@ struct line_graph_iface
     
     /// Retrun which layers need to be redrawn in the next GTK drawing cycle
     /// @param index Parameter/graph identifier (usually tied to particular plugin control port)
-    /// @param generation The overall amount of drawing cycles
-    /// @param layers Bitmask defining the layers to be redrawn (see layers_flags)
+    /// @param generation The overall amount of drawing cycles since the last full refresh of all surfaces
+    /// @param layers Bitmask defining the layers to be redrawn (see layers_flags above)
     /// @retval true there's at least one layer to be redrawn; false nothing to draw in this cycle
-    virtual bool get_layers(int index, int generation, unsigned int &layers) { return false; }
+    virtual bool get_layers(int index, int generation, unsigned int &layers) const { return false; }
     
     /// Return a label for the crosshairs they are enabled
     /// @param x Position of the mouse pointer in x direction
@@ -694,9 +694,11 @@ static inline float dB_grid_inv(float pos)
 /// Line graph interface implementation for frequency response graphs
 class frequency_response_line_graph: public line_graph_iface 
 {
+    mutable bool redraw_graph;
 public:
-    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int get_layers(int index, int generation, unsigned int &layers) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_layers(int index, int generation, unsigned int &layers) const;
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 

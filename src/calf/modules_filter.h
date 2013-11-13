@@ -81,9 +81,6 @@ public:
         meters.set_sample_rate(sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 typedef equalizerNband_audio_module<equalizer5band_metadata, false> equalizer5band_audio_module;
@@ -214,16 +211,15 @@ public:
     {
         last_generation = 0;
         old_mode = old_resonance = old_cutoff = -1;
+        redraw_graph = true;
     }
     void params_changed()
     { 
         inertia_cutoff.set_inertia(*params[par_cutoff]);
         inertia_resonance.set_inertia(*params[par_resonance]);
-        inertia_filter_module::params_changed(); 
+        inertia_filter_module::params_changed();
+        redraw_graph = true;
     }
-        
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -243,7 +239,6 @@ class filterclavier_audio_module:
     
     int last_note;
     int last_velocity;
-        
 public:    
     filterclavier_audio_module();
     void params_changed();
@@ -254,9 +249,7 @@ public:
     /// MIDI control
     virtual void note_on(int channel, int note, int vel);
     virtual void note_off(int channel, int note, int vel);
-    
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    
+
 private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
@@ -267,21 +260,11 @@ private:
 
 class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
 public:
-    typedef audio_module<phonoeq_metadata> AM;
-    using AM::ins;
-    using AM::outs;
-    using AM::params;
-    using AM::in_count;
-    using AM::out_count;
-    using AM::param_count;
-    float p_level_old[1], p_freq_old[1], p_q_old[1];
-    mutable float old_params_for_graph[1];
     dual_in_out_metering<phonoeq_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    mutable bool redraw_graph;
     phonoeq_audio_module();
     void activate();
     void deactivate();
@@ -293,9 +276,6 @@ public:
         meters.set_sample_rate(sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -323,7 +303,6 @@ public:
     float meter_in[channels];
     unsigned int pos;
     unsigned int buffer_size;
-    mutable bool redraw_graph;
     static inline float sign(float x) {
         if(x < 0) return -1.f;
         if(x > 0) return 1.f;
@@ -336,8 +315,7 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    int get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 typedef xover_audio_module<xover2_metadata> xover2_audio_module;

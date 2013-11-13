@@ -84,8 +84,8 @@ struct CalfLineGraph
     bool is_square;
     float fade;
     int mode, movesurf;
-    int count;
-    
+    int generation;
+    unsigned int layers;
     static const int pad_x = 5, pad_y = 5;
     int size_x, size_y;
     

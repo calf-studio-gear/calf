@@ -59,6 +59,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
         p_level_old[i] = 0;
         p_q_old[i] = 0;
     }
+    redraw_graph = true;
 }
 
 template<class BaseClass, bool has_lphp>
@@ -155,6 +156,12 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
             p_level_old[i] = level;
             p_q_old[i] = q;
         }
+    }
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
+            redraw_graph = true;
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
 }
 
@@ -324,43 +331,6 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
     return outputs_mask;
 }
 
-template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active)
-        return false;
-    if (index == AM::param_p1_freq && !subindex) {
-        context->set_line_width(1.5);
-        return ::get_graph(*this, subindex, data, points, 32, 0);
-    }
-    return false;
-}
-
-template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{
-    if (!is_active) {
-        return false;
-    } else {
-        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
-    }
-}
-
-template<class BaseClass, bool has_lphp>
-int equalizerNband_audio_module<BaseClass, has_lphp>::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    bool redraw = false;
-    for (int i = 0; i < graph_param_count && !redraw; i++) {
-        if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
-            redraw = true;
-        old_params_for_graph[i] = *params[AM::first_graph_param + i];
-    }
-    
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
-    subindex_dot   = INT_MAX;
-    return ((generation and !redraw) ? 0 : 1);
-}
-
 static inline float adjusted_lphp_gain(const float *const *params, int param_active, int param_mode, const biquad_d2<float> &filter, float freq, float srate)
 {
     if(*params[param_active] > 0.f) {
@@ -399,36 +369,6 @@ template class equalizerNband_audio_module<equalizer12band_metadata, true>;
 
 
 /**********************************************************************
- * FILTER by Krzysztof Foltman
-**********************************************************************/
-
-bool filter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active)
-        return false;
-    if (index == par_cutoff && !subindex) {
-        return ::get_graph(*this, subindex, data, points);
-    }
-    return false;
-}
-
-int filter_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    bool redraw = false;
-    if (fabs(inertia_cutoff.get_last() - old_cutoff) + 100 * fabs(inertia_resonance.get_last() - old_resonance) + fabs(*params[par_mode] - old_mode) > 0.1f)
-    {
-        old_cutoff = inertia_cutoff.get_last();
-        old_resonance = inertia_resonance.get_last();
-        old_mode = *params[par_mode];
-        redraw = true;
-    }
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
-    subindex_dot   = INT_MAX;
-    return ((generation and !redraw) ? 0 : 1);
-}
-
-
-/**********************************************************************
  * FILTERKLAVIER by Hans Baier 
 **********************************************************************/
 
@@ -455,7 +395,8 @@ void filterclavier_audio_module::params_changed()
          
     adjust_gain_according_to_filter_mode(last_velocity);
     
-    inertia_filter_module::calculate_filter(); 
+    inertia_filter_module::calculate_filter();
+    redraw_graph = true;
 }
 
 void filterclavier_audio_module::activate()
@@ -493,6 +434,7 @@ void filterclavier_audio_module::note_on(int channel, int note, int vel)
     adjust_gain_according_to_filter_mode(vel);
     
     inertia_filter_module::calculate_filter();
+    redraw_graph = true;
 }
 
 void filterclavier_audio_module::note_off(int channel, int note, int vel)
@@ -502,6 +444,7 @@ void filterclavier_audio_module::note_off(int channel, int note, int vel)
         inertia_filter_module::inertia_gain.set_inertia(min_gain);
         inertia_filter_module::calculate_filter();
         last_velocity = 0;
+        redraw_graph = true;
     }
 }
 
@@ -527,19 +470,6 @@ void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int veloci
     }
 }
 
-bool filterclavier_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active || index != par_mode) {
-        return false;
-    }
-    if (!subindex) {
-        context->set_line_width(1.5);
-        ::get_graph(*this, subindex, data, points);
-        return true;
-    }
-    return false;
-}
-
 /**********************************************************************
  * PHONO EQ by Damien Zamit 
 **********************************************************************/
@@ -549,12 +479,6 @@ phonoeq_audio_module::phonoeq_audio_module()
     is_active = false;
     srate = 0;
     redraw_graph = true;
-    for (int i = 0; i < 1; i++)
-    {
-        p_freq_old[i] = 0;
-        p_level_old[i] = 0;
-        p_q_old[i] = 0;
-    }
 }
 
 void phonoeq_audio_module::activate()
@@ -576,7 +500,7 @@ void phonoeq_audio_module::params_changed()
     int type = *params[param_type];
     riaacurvL.set(srate, mode, type);
     riaacurvR.set(srate, mode, type);
-    
+    redraw_graph = true;
 }
 
 uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -641,41 +565,6 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     }
     // whatever has to be returned x)
     return outputs_mask;
-}
-
-bool phonoeq_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active)
-        return false;
-    if (!subindex) {
-        context->set_line_width(1.5);
-        return ::get_graph(*this, subindex, data, points, 32, 0);
-    }
-    return false;
-}
-
-bool phonoeq_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{
-    if (!is_active)
-        return false;
-    
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
-}
-
-int phonoeq_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    int draw       = (generation and !redraw_graph) ? 0 : 1;
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
-    subindex_dot   = INT_MAX;
-    redraw_graph   = 0;
-    return draw;
-}
-
-float phonoeq_audio_module::freq_gain(int index, double freq, uint32_t sr) const
-{
-    float ret;
-    ret = riaacurvL.r1.freq_gain(freq, sr);
-    return ret;
 }
 
 /**********************************************************************
@@ -808,16 +697,11 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
 }
 
 template<class XoverBaseClass>
-bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
+bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active)
+    if (!is_active or phase or subindex >= AM::bands)
         return false;
-    return crossover.get_graph(subindex, data, points, context, mode, moving);
-}
-template<class XoverBaseClass>
-int xover_audio_module<XoverBaseClass>::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    return crossover.get_changed_offsets(generation, force_cache, subindex_graph, subindex_dot, subindex_grid);
+    return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 
 template class xover_audio_module<xover2_metadata>;

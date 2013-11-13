@@ -562,5 +562,21 @@ inline float dB2amp(float db)
     return exp((db / 20.0) * log(10.0));
 }
 
+/// print binary of any data type
+/// assumes little endian
+void print_bits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    for (int i = size - 1; i >=0 ; i--) {
+        for (int j = 7; j >= 0; j--) {
+            byte = b[i] & (1<<j);
+            byte >>= j;
+            printf("%u", byte);
+        }
+    }
+    puts("");
+}
+
 };
 #endif

@@ -69,47 +69,52 @@ void organ_audio_module::params_changed() {
     polyphony_limit = dsp::clip(dsp::fastf2i_drm(*params[par_polyphony]), 1, 32);
     if (polyphony_limit < old_poly)
         trim_voices();
-    
+    redraw = true;
     update_params();
 }
-
-bool organ_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool organ:audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    if (index == par_master) {
-        organ_voice_base::precalculate_waves(progress_report);
-        if (subindex)
-            return false;
-        float *waveforms[9];
-        int S[9], S2[9];
-        enum { small_waves = organ_voice_base::wave_count_small};
-        for (int i = 0; i < 9; i++)
+    bool r = redraw;
+    redraw = false;
+    layers = LG_REALTIME_GRAPH;
+    return r;
+}
+bool organ_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (index != par_master or subindex or !phase)
+        return false;
+    
+    organ_voice_base::precalculate_waves(progress_report);
+    float *waveforms[9];
+    int S[9], S2[9];
+    enum { small_waves = organ_voice_base::wave_count_small};
+    for (int i = 0; i < 9; i++)
+    {
+        int wave = dsp::clip((int)(parameters->waveforms[i]), 0, (int)organ_voice_base::wave_count - 1);
+        if (wave >= small_waves)
         {
-            int wave = dsp::clip((int)(parameters->waveforms[i]), 0, (int)organ_voice_base::wave_count - 1);
-            if (wave >= small_waves)
-            {
-                waveforms[i] = organ_voice_base::get_big_wave(wave - small_waves).original;
-                S[i] = ORGAN_BIG_WAVE_SIZE;
-                S2[i] = ORGAN_WAVE_SIZE / 64;
-            }
-            else
-            {
-                waveforms[i] = organ_voice_base::get_wave(wave).original;
-                S[i] = S2[i] = ORGAN_WAVE_SIZE;
-            }
+            waveforms[i] = organ_voice_base::get_big_wave(wave - small_waves).original;
+            S[i] = ORGAN_BIG_WAVE_SIZE;
+            S2[i] = ORGAN_WAVE_SIZE / 64;
         }
-        for (int i = 0; i < points; i++)
+        else
         {
-            float sum = 0.f;
-            for (int j = 0; j < 9; j++)
-            {
-                float shift = parameters->phase[j] * S[j] / 360.0;
-                sum += parameters->drawbars[j] * waveforms[j][int(parameters->harmonics[j] * i * S2[j] / points + shift) & (S[j] - 1)];
-            }
-            data[i] = sum * 2 / (9 * 8);
+            waveforms[i] = organ_voice_base::get_wave(wave).original;
+            S[i] = S2[i] = ORGAN_WAVE_SIZE;
         }
-        return true;
     }
-    return false;
+    for (int i = 0; i < points; i++)
+    {
+        float sum = 0.f;
+        for (int j = 0; j < 9; j++)
+        {
+            float shift = parameters->phase[j] * S[j] / 360.0;
+            sum += parameters->drawbars[j] * waveforms[j][int(parameters->harmonics[j] * i * S2[j] / points + shift) & (S[j] - 1)];
+        }
+        data[i] = sum * 2 / (9 * 8);
+    }
+    return true;
+    
 }
 
 uint32_t organ_audio_module::message_run(const void *valid_inputs, void *output_ports)

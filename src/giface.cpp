@@ -306,19 +306,25 @@ void calf_plugins::set_channel_color(cairo_iface *context, int channel)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool frequency_response_line_graph::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{ 
-    if (phase) return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context);
-}
-
-int frequency_response_line_graph::get_layers(int index, int generation, unsigned int &layers) const
+bool frequency_response_line_graph::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!generation) {
-        layers |= LG_CACHE_GRID;
-    }
-    layers |= LG_REALTIME_GRAPH;
-    return true;
+    if (!is_active or phase or subindex)
+        return false;
+    return ::get_graph(*this, subindex, data, points, 32, 0);
+}
+bool frequency_response_line_graph::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active or phase)
+        return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
+}
+bool frequency_response_line_graph::get_layers(int index, int generation, unsigned int &layers) const
+{
+    redraw_graph = redraw_graph || !generation;
+    layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    bool r = redraw_graph;
+    redraw_graph = false;
+    return r;
 }
 
 std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const
@@ -328,6 +334,8 @@ std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int
     ss << int(freq) << " Hz";
     return ss.str();
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
