@@ -135,6 +135,7 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 };

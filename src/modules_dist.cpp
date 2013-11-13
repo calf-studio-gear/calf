@@ -858,24 +858,20 @@ void tapesimulator_audio_module::set_sample_rate(uint32_t sr)
 
 bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (subindex > 1) // 1
+    if (subindex > 1)
         return false;
-    if(index == param_lp) {
+    if(index == param_lp and phase) {
         if (subindex == 0)
             context->set_source_rgba(0.35, 0.4, 0.2, 1);
         else {
             context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
         }
         return ::get_graph(*this, subindex, data, points);
-    } else if (index == param_level_in) {
-        if (subindex == 0)
+    } else if (index == param_level_in and !phase) {
+        if (!subindex)
             context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
-        else {
-            context->set_source_rgba(0.35, 0.4, 0.2, 1);
-            context->set_line_width(1.5);
-        }
         for (int i = 0; i < points; i++) {
-            if (subindex == 0) {
+            if (!subindex) {
                 float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
                 data[i] = dB_grid(input);
             } else {
@@ -893,6 +889,8 @@ float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr)
 
 bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
+    if(!active or phase)
+        return false;
     if (index == param_level_in) {
         bool tmp;
         vertical = (subindex & 1) != 0;
@@ -916,7 +914,7 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &po
 }
 bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (index == param_level_in and !subindex) {
+    if (index == param_level_in and !subindex and phase) {
         x = log(input) / log(2) / 14.f + 5.f / 7.f;
         y = dB_grid(rms);
         rms = 0.f;
@@ -924,4 +922,21 @@ bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, floa
         return true;
     }
     return false;
+}
+bool phonoeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = 0;
+    // always draw grid on cache if surfaces are new on both widgets
+    if (!phase and !generation)
+        layers = LG_CACHE_GRID;
+    // compression: dot in realtime, graphs as cache on new surfaces
+    if (index == param_level and !subindex and !phase)
+        layers |= LG_CACHE_GRAPH;
+    if (index == param_level and phase)
+        layers |= LG_REALTIME_DOT;
+    // frequency: both graphs in realtime
+    if (index == param_level and phase)
+        layers |= LG_REALTIME_GRAPH;
+    // draw always
+    return true;
 }
