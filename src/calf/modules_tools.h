@@ -121,8 +121,10 @@ class analyzer_audio_module:
     int _post_old;
     int _hold_old;
     int _smooth_old;
+    float _level_old;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
+    float db_level_coeff1, db_level_coeff2, leveladjust;
 public:
     analyzer_audio_module();
     void params_changed();
