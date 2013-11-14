@@ -59,6 +59,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
 
@@ -89,7 +90,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
 };
 
@@ -179,7 +180,8 @@ private:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     float offset_old;
-    int mode_old;
+    int mode_old, level_old;
+    bool redraw_graph;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
 public:
@@ -198,9 +200,10 @@ public:
         }
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 };

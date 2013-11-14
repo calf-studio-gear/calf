@@ -51,18 +51,18 @@ void flanger_audio_module::deactivate() {
     is_active = false;
 }
 
-bool flanger_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool flanger_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active)
+    if (!is_active or subindex >= 2 or index != par_delay or !phase)
         return false;
-    if (index == par_delay && subindex < 2) 
-    {
-        set_channel_color(context, subindex);
-        return ::get_graph(*this, subindex, data, points);
-    }
-    return false;
+    set_channel_color(context, subindex);
+    return ::get_graph(*this, subindex, data, points);
 }
-
+bool flanger_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_GRAPH | (generation ? 0 : LG_CACHE_GRID);
+    return true;
+}
 float flanger_audio_module::freq_gain(int subindex, float freq, float srate) const
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
@@ -139,26 +139,22 @@ void phaser_audio_module::deactivate()
     is_active = false;
 }
 
-bool phaser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool phaser_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active)
+    if (!is_active or subindex >= 2 or index != par_delay or !phase)
         return false;
-    if (subindex < 2) 
-    {
-        set_channel_color(context, subindex);
-        return ::get_graph(*this, subindex, data, points);
-    }
-    return false;
+    set_channel_color(context, subindex);
+    return ::get_graph(*this, subindex, data, points);
+}
+bool phaser_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_GRAPH | (generation ? 0 : LG_CACHE_GRID);
+    return true;
 }
 
 float phaser_audio_module::freq_gain(int subindex, float freq, float srate) const
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
-}
-
-bool phaser_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{
-    return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
 void phaser_audio_module::params_changed()
@@ -561,10 +557,13 @@ pulsator_audio_module::pulsator_audio_module()
     clip_inR    = 0.f;
     clip_outL   = 0.f;
     clip_outR   = 0.f;
-    meter_inL  = 0.f;
-    meter_inR  = 0.f;
-    meter_outL = 0.f;
-    meter_outR = 0.f;
+    meter_inL   = 0.f;
+    meter_inR   = 0.f;
+    meter_outL  = 0.f;
+    meter_outR  = 0.f;
+    mode_old    = -1;
+    level_old   = -1;
+    offset_old  = -1;
 }
 
 void pulsator_audio_module::activate()
@@ -590,6 +589,15 @@ void pulsator_audio_module::params_changed()
         clear_reset = true;
         lfoL.set_phase(0.f);
         lfoR.set_phase(0.f);
+    }
+    if (*params[param_mode]   != mode_old
+     or *params[param_level]  != level_old
+     or *params[param_offset] != offset_old
+     or clear_reset) {
+        mode_old     = *params[param_mode];
+        level_old    = *params[param_level];
+        offset_old   = *params[param_offset];
+        redraw_graph = true;
     }
 }
 
@@ -713,48 +721,33 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
     return outputs_mask;
 }
 
-bool pulsator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool pulsator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active) {
+    if (!is_active or phase or subindex > 1) {
         return false;
-    } else if(index == param_freq) {
-        if(subindex == 0) {
-            context->set_source_rgba(0.35, 0.4, 0.2, 1);
-            return lfoL.get_graph(data, points, context, mode);
-        }
-        if(subindex == 1) {
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
-            return lfoR.get_graph(data, points, context, mode);
-        }
-    }
-    return false;
+    set_channel_color(context, subindex);
+    return (subindex ? lfoR : lfoL).get_graph(data, points, context, mode);
 }
 
-bool pulsator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool pulsator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active) {
+    if (!is_active or !phase or subindex > 1) {
         return false;
-    } else if(index == param_freq) {
-        if(subindex == 0) {
-            context->set_source_rgba(0.35, 0.4, 0.2, 1);
-            return lfoL.get_dot(x, y, size, context);
-        }
-        if(subindex == 1) {
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
-            return lfoR.get_dot(x, y, size, context);
-        }
-        return false;
-    }
-    return false;
+    set_channel_color(context, subindex);
+    return (subindex ? lfoR : lfoL).get_dot(x, y, size, context);
 }
 
-bool pulsator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool pulsator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-   if (index == param_freq && !subindex)
-    {
-        pos = 0;
-        vertical = false;
-        return true;
-    }
-    return false;
+    if (phase or subindex)
+        return false;
+    pos = 0;
+    vertical = false;
+    return true;
+}
+bool pulsator_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
+    return true;
 }

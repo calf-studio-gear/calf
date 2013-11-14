@@ -301,7 +301,6 @@ void calf_plugins::set_channel_color(cairo_iface *context, int channel)
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
     else
         context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
-    context->set_line_width(1.5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
