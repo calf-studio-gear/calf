@@ -58,10 +58,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_comp_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
+    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -91,10 +91,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_comp_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
+    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -122,10 +122,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_expander_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
+    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -147,10 +147,10 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -197,10 +197,10 @@ public:
     float freq_gain(int index, double freq, uint32_t sr) const;
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -230,10 +230,10 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
     const gain_reduction_audio_module *get_strip_by_param_index(int index) const;
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -255,10 +255,10 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -291,9 +291,6 @@ public:
     }
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
 };
 
 /**********************************************************************
@@ -315,10 +312,10 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -365,10 +362,10 @@ public:
     float freq_gain(int index, double freq, uint32_t sr) const;
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 
@@ -399,10 +396,10 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
     const expander_audio_module *get_strip_by_param_index(int index) const;
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    virtual bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    virtual bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -437,9 +434,9 @@ public:
     void set_sample_rate(uint32_t sr);
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 };

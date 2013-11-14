@@ -160,16 +160,14 @@ struct progress_report_iface
 
 /// possible bit masks for get_layers
 enum layers_flags {
-    LG_CACHE           = 0x100000;
-    LG_REALTIME        = 0x200000;
-    LG_CACHE_GRID      = 0x100001;
-    LG_REALTIME_GRID   = 0x200001;
-    LG_CACHE_GRAPH     = 0x100002;
-    LG_REALTIME_GRAPH  = 0x200002;
-    LG_CACHE_DOT       = 0x100004;
-    LG_REALTIME_DOT    = 0x200004;
-    LG_CACHE_MOVING    = 0x100008;
-    LG_REALTIME_MOVING = 0x200008;
+    LG_CACHE_GRID      = 0x000001;
+    LG_REALTIME_GRID   = 0x000002;
+    LG_CACHE_GRAPH     = 0x000004;
+    LG_REALTIME_GRAPH  = 0x000008;
+    LG_CACHE_DOT       = 0x000010;
+    LG_REALTIME_DOT    = 0x000020;
+    LG_CACHE_MOVING    = 0x000040;
+    LG_REALTIME_MOVING = 0x000080;
 }
 
 /// 'provides live line graph values' interface

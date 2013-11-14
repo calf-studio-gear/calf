@@ -858,11 +858,7 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data,
     if (subindex > 1)
         return false;
     if(index == param_lp and phase) {
-        if (subindex == 0)
-            context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        else {
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
-        }
+        set_channel_color(context, subindex);
         return ::get_graph(*this, subindex, data, points);
     } else if (index == param_level_in and !phase) {
         if (!subindex)
