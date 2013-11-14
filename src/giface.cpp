@@ -298,11 +298,35 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
 void calf_plugins::set_channel_color(cairo_iface *context, int channel)
 {
     if (channel & 1)
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
     else
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.5);
+        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
 }
-
+void calf_plugins::set_channel_dash(cairo_iface *context, int channel)
+{
+    static const double dash[];
+    int length;
+    switch (channel) {
+        case 0:
+        default:
+            dash = {1, 2, 8, 2};
+            length = 4;
+            break;
+        case 1:
+            dash = {1, 2, 1, 2, 6, 2};
+            length = 6;
+            break;
+        case 2:
+            dash = {1, 2, 1, 2, 1, 2, 4, 2};
+            length = 8;
+            break;
+        case 3:
+            dash = {1, 2};
+            length = 2;
+            break;
+    }
+    context->set_dash(dash, length);
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool frequency_response_line_graph::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
