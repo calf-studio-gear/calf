@@ -772,7 +772,7 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
     SET_IF_CONNECTED(meter_inR)
     SET_IF_CONNECTED(meter_outL)
     SET_IF_CONNECTED(meter_outR)
-    // whatever has to be returned x)
+    
     return outputs_mask;
 }
 

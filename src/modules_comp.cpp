@@ -836,7 +836,6 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             *params[param_compression] = compressor.get_comp_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool compressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -1213,7 +1212,6 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             *params[param_compression] = compressor.get_comp_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool sidechaincompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -1504,7 +1502,6 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
         ACTIVE_COMPRESSION(2)
         ACTIVE_COMPRESSION(3)
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
@@ -1679,7 +1676,6 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
             *params[param_compression] = monocompressor.get_comp_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool monocompressor_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -1893,7 +1889,6 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             *params[param_compression] = compressor.get_comp_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool deesser_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -2027,7 +2022,6 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             *params[param_gating] = gate.get_expander_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool gate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -2396,7 +2390,6 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             *params[param_gating] = gate.get_expander_level();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 bool sidechaingate_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
@@ -2684,7 +2677,6 @@ uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsample
         ACTIVE_GATING(2)
         ACTIVE_GATING(3)
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 

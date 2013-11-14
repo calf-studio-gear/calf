@@ -327,7 +327,6 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             pR[i].sanitize();
         }
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
@@ -578,7 +577,6 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         riaacurvL.sanitize();
         riaacurvR.sanitize();
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 

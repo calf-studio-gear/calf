@@ -206,7 +206,6 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             *params[param_att] = limiter.get_attenuation();
     }
 
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
@@ -548,7 +547,6 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         if(params[param_att2] != NULL) *params[param_att2] = strip[2].get_attenuation() * batt;
         if(params[param_att3] != NULL) *params[param_att3] = strip[3].get_attenuation() * batt;
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 

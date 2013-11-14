@@ -250,7 +250,6 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
     if(params[param_meter_drive] != NULL) {
         *params[param_meter_drive] = meter_drive;
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
@@ -436,7 +435,6 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     if(params[param_meter_drive] != NULL) {
         *params[param_meter_drive] = meter_drive;
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
@@ -635,7 +633,6 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
     if(params[param_meter_drive] != NULL) {
         *params[param_meter_drive] = meter_drive;
     }
-    // whatever has to be returned x)
     return outputs_mask;
 }
 
