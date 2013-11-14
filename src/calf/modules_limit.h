@@ -61,7 +61,7 @@ public:
  * MULTIBAND LIMITER by Markus Schmidt and Christian Holschuh 
 **********************************************************************/
 
-class multibandlimiter_audio_module: public audio_module<multibandlimiter_metadata>, public line_graph_iface {
+class multibandlimiter_audio_module: public audio_module<multibandlimiter_metadata>, public frequency_response_line_graph {
 private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
@@ -96,9 +96,7 @@ public:
     void params_changed();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    int  get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 };

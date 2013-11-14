@@ -701,7 +701,7 @@ bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, int 
 {
     if (!is_active or phase or subindex >= AM::bands)
         return false;
-    return ::get_graph(*this, subindex, data, points, 32, 0);
+    return crossover.get_graph(*this, subindex, data, points, 32, 0);
 }
 
 template class xover_audio_module<xover2_metadata>;

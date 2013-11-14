@@ -240,7 +240,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
-    redraw_graph = false;
+    redraw_graph = true;
     crossover.init(2, 4, 441000);
 }
 
@@ -552,34 +552,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-bool multibandlimiter_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode, int *moving) const
+int multibandlimiter_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or subindex > 3)
+    if (!redraw_graph or !is_active or phase or subindex >= strips)
         return false;
-    if (*params[param_bypass] > 0.5f)
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
-    else {
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        context->set_line_width(1.5);
-    }
-    return crossover.get_graph(subindex, data, points, context, mode, moving);
-}
-
-bool multibandlimiter_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{
-    if (!is_active) {
-        return false;
-    } else {
-        vertical = (subindex & 1) != 0;
-        return get_freq_gridline(subindex, pos, vertical, legend, context);
-    }
-}
-
-int multibandlimiter_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
-{
-    int draw       = (generation and !redraw_graph) ? 0 : 1;
-    subindex_grid  = (generation and !force_cache) ? INT_MAX : 0;
-    subindex_dot   = INT_MAX;
-    redraw_graph   = 0;
-    return draw;
+    redraw_graph = false;
+    return crossover.get_graph(subindex, data, points, context, mode);
 }
