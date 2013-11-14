@@ -309,13 +309,13 @@ bool frequency_response_line_graph::get_graph(int index, int subindex, int phase
 {
     if (!is_active or phase or subindex)
         return false;
-    return ::get_graph(*this, subindex, data, points, 32, 0);
+    return ::get_graph(*this, subindex, data, points);
 }
 bool frequency_response_line_graph::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!is_active or phase)
         return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true);
 }
 bool frequency_response_line_graph::get_layers(int index, int generation, unsigned int &layers) const
 {

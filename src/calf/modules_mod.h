@@ -61,6 +61,8 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 /**********************************************************************
@@ -92,6 +94,8 @@ public:
     bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 /**********************************************************************

@@ -104,6 +104,18 @@ void flanger_audio_module::params_reset()
         clear_reset = false;
     }
 }
+bool flanger_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active or phase or subindex)
+        return false;
+    return ::get_graph(*this, subindex, data, points, 32, 0);
+}
+bool flanger_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active or phase)
+        return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
+}
 
 /**********************************************************************
  * PHASER by Krzysztof Foltman
@@ -194,6 +206,18 @@ void phaser_audio_module::params_reset()
         *params[par_reset] = 0.f;
         clear_reset = false;
     }
+}
+bool flanger_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active or phase or subindex)
+        return false;
+    return ::get_graph(*this, subindex, data, points, 32, 0);
+}
+bool flanger_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active or phase)
+        return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
 }
 
 /**********************************************************************
