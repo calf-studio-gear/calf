@@ -672,8 +672,10 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
     return false;
 }
 
-bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if (!phase)
+        return;
     if(____analyzer_sanitize) {
         // null the overall buffer to feed the fft with if someone requested so
         // in the last cycle
@@ -1381,8 +1383,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, float *data, int 
     return true;
 }
 
-bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 { 
+    if (phase)
+        return;
     bool out;
     if(*params[param_analyzer_mode] <= 3)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.5f);
@@ -1411,7 +1415,8 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, float &pos, bo
     }
     return out;
 }
-int analyzer_audio_module::get_changed_offsets(int index, int generation, bool &force_cache, int &subindex_graph, int &subindex_dot, int &subindex_grid) const
+
+bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     bool redraw = false;
     if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level] != _level_old) {
@@ -1419,7 +1424,6 @@ int analyzer_audio_module::get_changed_offsets(int index, int generation, bool &
         _level_old = *params[param_analyzer_level];
         redraw = true;
     }
-    subindex_grid  = (generation and !force_cache and !redraw) ? INT_MAX : 0;
-    subindex_dot   = INT_MAX;
-    return 1;
+    layers = LG_REALTIME_GRAPH | (!generation or redraw ? LG_CACHE_GRID : 0);
+    return true;
 }
