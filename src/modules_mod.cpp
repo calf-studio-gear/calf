@@ -435,6 +435,9 @@ multichorus_audio_module::multichorus_audio_module()
 {
     is_active = false;
     last_r_phase = -1;
+    freq_old = freq2_old = q_old = -1;
+    redraw_graph = true;
+    redraw_sine = true;
 }
 
 void multichorus_audio_module::activate()
@@ -455,27 +458,43 @@ void multichorus_audio_module::set_sample_rate(uint32_t sr) {
     right.setup(sr);
 }
 
-bool multichorus_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool multichorus_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = 0;
+    if (index == par_delay)
+        layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0) | LG_REALTIME_GRAPH;
+    if (index == par_rate)
+        layers = LG_REALTIME_DOT | (redraw_sine ? LG_CACHE_GRAPH : 0);
+    if (index == par_depth)
+        layers = LG_REALTIME_DOT;
+    redraw_graph = false;
+    redraw_sine = false;
+    return true;
+}
+
+bool multichorus_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
-    int nvoices = (int)*params[par_voices];
-    if (index == par_delay && subindex < 3) 
-    {
-        if (subindex < 2)
-            set_channel_color(context, subindex);
-        else {
-            context->set_source_rgba(0.35, 0.4, 0.2);
-            context->set_line_width(1.0);
-        }
-        return ::get_graph(*this, subindex, data, points);
+    
+    // the filter graph (cached) in frequency response
+    if (index == par_delay and subindex == 2 and !phase) {
+        context->set_source_rgba(0.35, 0.4, 0.2);
+        return ::get_graph(*this, subindex, data, points, 32, 0);
     }
-    if (index == par_rate && subindex < nvoices) {
+    // the realtime graphs in frequency response
+    if (index == par_delay and subindex < 2 and phase) {
+        set_channel_color(context, subindex);
+        return ::get_graph(*this, subindex, data, points, 32, 0);
+    }
+    
+    // the sine curves in modulation display
+    if (index == par_rate && subindex < (int)*params[par_voices] and !phase) {
         const sine_multi_lfo<float, 8> &lfo = left.lfo;
         for (int i = 0; i < points; i++) {
-            float phase = i * 2 * M_PI / points;
+            float _phase = i * 2 * M_PI / points;
             // original -65536 to 65535 value
-            float orig = subindex * lfo.voice_offset + ((lfo.voice_depth >> (30-13)) * 65536.0 * (0.95 * sin(phase) + 1)/ 8192.0) - 65536;
+            float orig = subindex * lfo.voice_offset + ((lfo.voice_depth >> (30-13)) * 65536.0 * (0.95 * sin(_phase) + 1)/ 8192.0) - 65536;
             // scale to -1..1
             data[i] = orig / 65536.0;
         }
@@ -484,43 +503,48 @@ bool multichorus_audio_module::get_graph(int index, int subindex, float *data, i
     return false;
 }
 
-bool multichorus_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
     int voice = subindex >> 1;
     int nvoices = (int)*params[par_voices];
-    if ((index != par_rate && index != par_depth) || voice >= nvoices)
+    if (!is_active
+     or !phase
+     or (index != par_rate and index != par_depth)
+     or voice >= nvoices)
         return false;
 
     float unit = (1 - *params[par_overlap]);
     float scw = 1 + unit * (nvoices - 1);
     set_channel_color(context, subindex);
     const sine_multi_lfo<float, 8> &lfo = (subindex & 1 ? right : left).lfo;
-    if (index == par_rate)
-    {
+    
+    // the display with the sine curves
+    if (index == par_rate) {
         x = (double)(lfo.phase + lfo.vphase * voice) / 4096.0;
         y = 0.95 * sin(x * 2 * M_PI);
         y = (voice * unit + (y + 1) / 2) / scw * 2 - 1;
     }
-    else
-    {
+    // the tiny dot display
+    if (index == par_depth) {
         double ph = (double)(lfo.phase + lfo.vphase * voice) / 4096.0;
         x = 0.5 + 0.5 * sin(ph * 2 * M_PI);
-        y = subindex & 1 ? -0.75 : 0.75;
+        y = subindex & 1 ? -0.7 : 0.7;
         x = (voice * unit + x) / scw;
     }
     return true;
 }
 
-bool multichorus_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (index == par_rate && !subindex)
-    {
+    if (!is_active or generation or phase)
+        return false
+    if (index == par_rate && !subindex) {
         pos = 0;
         vertical = false;
         return true;
     }
     if (index == par_delay)
-        return get_freq_gridline(subindex, pos, vertical, legend, context);
+        return get_freq_gridline(subindex, pos, vertical, legend, context, 32, 0);
     return false;
 }
 
@@ -556,10 +580,17 @@ void multichorus_audio_module::params_changed()
         right.lfo.phase += chorus_phase(r_phase * 4096);
         last_r_phase = r_phase;
     }
-    left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
-    left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
-    right.post.f1.copy_coeffs(left.post.f1);
-    right.post.f2.copy_coeffs(left.post.f2);
+    if (*params[par_freq] != freq_old or *params[par_freq2] != freq2_old or *params[par_q] != q_old) {
+        left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
+        left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
+        right.post.f1.copy_coeffs(left.post.f1);
+        right.post.f2.copy_coeffs(left.post.f2);
+        freq_old = *params[par_freq];
+        freq2_old = *params[par_freq2];
+        q_old = *params[par_q];
+        redraw_graph = true;
+    }
+    redraw_sine = true;
 }
 
 uint32_t multichorus_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)

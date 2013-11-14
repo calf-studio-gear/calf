@@ -58,11 +58,10 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 /**********************************************************************
@@ -91,11 +90,10 @@ public:
         right.process(outs[1] + offset, ins[1] + offset, nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int subindex, float freq, float srate) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
 
 /**********************************************************************
@@ -160,7 +158,8 @@ public:
     float last_r_phase;
     float cutoff;
     bool is_active;
-    
+    float freq_old, freq2_old, q_old;
+    mutable bool redraw_sine;
 public:    
     multichorus_audio_module();
     void params_changed();
@@ -168,10 +167,11 @@ public:
     void activate();
     void deactivate();
     void set_sample_rate(uint32_t sr);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     float freq_gain(int subindex, float freq, float srate) const;
-    bool get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
