@@ -675,7 +675,7 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
 bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!phase)
-        return;
+        return false;
     if(____analyzer_sanitize) {
         // null the overall buffer to feed the fft with if someone requested so
         // in the last cycle
@@ -1386,7 +1386,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float 
 bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 { 
     if (phase)
-        return;
+        return false;
     bool out;
     if(*params[param_analyzer_mode] <= 3)
         out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.5f);

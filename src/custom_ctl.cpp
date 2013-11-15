@@ -19,6 +19,7 @@
  * Boston, MA  02110-1301  USA
  */
 #include "config.h"
+#include <calf/giface.h>
 #include <calf/custom_ctl.h>
 #include <gdk/gdkkeysyms.h>
 #include <cairo/cairo.h>
@@ -27,6 +28,9 @@
 #include <sys/time.h>
 
 #include <iostream>
+
+using namespace calf_plugins;
+using namespace dsp;
 
 ///////////////////////////////////////// phase graph ///////////////////////////////////////////////
 

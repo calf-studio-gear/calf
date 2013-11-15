@@ -197,6 +197,8 @@ float parameter_properties::string_to_value(const char* string) const
     return value;
 }
 
+////////////////////////////////////////////////////////////////////////
+
 void calf_plugins::plugin_ctl_iface::clear_preset() {
     int param_count = get_metadata_iface()->get_param_count();
     for (int i = 0; i < param_count; i++)
@@ -304,40 +306,56 @@ void calf_plugins::set_channel_color(cairo_iface *context, int channel)
 }
 void calf_plugins::set_channel_dash(cairo_iface *context, int channel)
 {
-    static const double dash[];
+    double dash[] = {1, 2, 1, 2, 1, 2, 4, 2};
     int length;
     switch (channel) {
         case 0:
         default:
-            dash = {1, 2, 8, 2};
+            dash[0] = 1;
+            dash[1] = 2;
+            dash[2] = 8;
+            dash[3] = 2;
             length = 4;
             break;
         case 1:
-            dash = {1, 2, 1, 2, 6, 2};
+            dash[0] = 1;
+            dash[1] = 2;
+            dash[2] = 1;
+            dash[3] = 2;
+            dash[4] = 6;
+            dash[5] = 2;
             length = 6;
             break;
         case 2:
-            dash = {1, 2, 1, 2, 1, 2, 4, 2};
+            dash[0] = 1;
+            dash[1] = 2;
+            dash[2] = 1;
+            dash[3] = 2;
+            dash[4] = 1;
+            dash[5] = 2;
+            dash[6] = 4;
+            dash[7] = 2;
             length = 8;
             break;
         case 3:
-            dash = {1, 2};
+            dash[0] = 1;
+            dash[1] = 2;
             length = 2;
             break;
     }
     context->set_dash(dash, length);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 bool frequency_response_line_graph::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase or subindex)
+    if (phase or subindex)
         return false;
     return ::get_graph(*this, subindex, data, points);
 }
 bool frequency_response_line_graph::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
+    if (phase)
         return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context, true);
 }
@@ -360,7 +378,7 @@ std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 calf_plugins::plugin_registry &calf_plugins::plugin_registry::instance()
 {
@@ -394,7 +412,7 @@ const plugin_metadata_iface *calf_plugins::plugin_registry::get_by_id(const char
     return NULL;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 bool calf_plugins::parse_table_key(const char *key, const char *prefix, bool &is_rows, int &row, int &column)
 {
@@ -425,7 +443,7 @@ bool calf_plugins::parse_table_key(const char *key, const char *prefix, bool &is
     return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 const char *mod_mapping_names[] = { "0..1", "-1..1", "-1..0", "x^2", "2x^2-1", "ASqr", "ASqrBip", "Para", NULL };
 
@@ -456,7 +474,7 @@ uint32_t mod_matrix_metadata::get_table_rows() const
     return matrix_rows;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 #if USE_EXEC_GUI
 

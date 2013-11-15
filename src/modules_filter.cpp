@@ -331,14 +331,14 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
 }
 
 template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, use_hplp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode)
 {
     if (!is_active or phase or subindex)
         return false;
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, use_hplp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
     if (!is_active or phase)
         return false;
@@ -362,7 +362,7 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 }
 
 template<class BaseClass, bool use_hplp>
-float equalizerNband_audio_module<BaseClass, use_hplp>::freq_gain(int index, double freq, uint32_t sr) const
+float equalizerNband_audio_module<BaseClass, use_hplp>::freq_gain(int index, double freq, uint32_t sr)
 {
     float ret = 1.f;
     if (use_hplp)
@@ -519,7 +519,7 @@ void phonoeq_audio_module::params_changed()
 
 uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[AM::param_bypass] > 0.f;
+    bool bypass = *params[param_bypass] > 0.f;
     if (!bypass)
     {
         // ensure that if params have changed, the params_changed method is
@@ -553,8 +553,8 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             float inL = ins[0][offset];
             float inR = ins[1][offset];
             // in level
-            inR *= *params[AM::param_level_in];
-            inL *= *params[AM::param_level_in];
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
             
             float procL = inL;
             float procR = inR;
@@ -562,8 +562,8 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             procL = riaacurvL.process(procL);
             procR = riaacurvR.process(procR);
 
-            outL = procL * *params[AM::param_level_out];
-            outR = procR * *params[AM::param_level_out];
+            outL = procL * *params[param_level_out];
+            outR = procR * *params[param_level_out];
             
             // send to output
             outs[0][offset] = outL;
@@ -714,7 +714,7 @@ bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, int 
 {
     if (!is_active or phase or subindex >= AM::bands)
         return false;
-    return crossover.get_graph(*this, subindex, data, points, 32, 0);
+    return crossover.get_graph(subindex, data, points, context, mode);
 }
 
 template class xover_audio_module<xover2_metadata>;

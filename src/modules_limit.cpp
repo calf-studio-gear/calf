@@ -550,7 +550,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     return outputs_mask;
 }
 
-int multibandlimiter_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool multibandlimiter_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!redraw_graph or !is_active or phase or subindex >= strips)
         return false;

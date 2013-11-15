@@ -564,7 +564,7 @@ inline float dB2amp(float db)
 
 /// print binary of any data type
 /// assumes little endian
-void print_bits(size_t const size, void const * const ptr)
+inline void print_bits(size_t const size, void const * const ptr)
 {
     unsigned char *b = (unsigned char*) ptr;
     unsigned char byte;

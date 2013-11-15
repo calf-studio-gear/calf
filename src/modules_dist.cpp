@@ -853,7 +853,7 @@ void tapesimulator_audio_module::set_sample_rate(uint32_t sr)
     noisefilters[1][2].copy_coeffs(noisefilters[0][2]);
 }
 
-bool tapesimulator_audio_module::get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (subindex > 1)
         return false;
@@ -880,7 +880,7 @@ float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr)
     return lp[index][0].freq_gain(freq, sr) * lp[index][1].freq_gain(freq, sr);
 }
 
-bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if(!active or phase)
         return false;
@@ -905,7 +905,7 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, float &po
     }
     return false;
 }
-bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool tapesimulator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (index == param_level_in and !subindex and phase) {
         x = log(input) / log(2) / 14.f + 5.f / 7.f;
@@ -916,19 +916,19 @@ bool tapesimulator_audio_module::get_dot(int index, int subindex, float &x, floa
     }
     return false;
 }
-bool phonoeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = 0;
     // always draw grid on cache if surfaces are new on both widgets
-    if (!phase and !generation)
+    if (!generation)
         layers = LG_CACHE_GRID;
     // compression: dot in realtime, graphs as cache on new surfaces
-    if (index == param_level and !subindex and !phase)
+    if (index == param_level_in and !generation)
         layers |= LG_CACHE_GRAPH;
-    if (index == param_level and phase)
+    if (index == param_level_in)
         layers |= LG_REALTIME_DOT;
     // frequency: both graphs in realtime
-    if (index == param_level and phase)
+    if (index == param_level_in)
         layers |= LG_REALTIME_GRAPH;
     // draw always
     return true;

@@ -344,7 +344,8 @@ public:
     /// Practically all the stuff here is noisy
     bool is_noisy(int param_no) { return true; }
     void execute(int cmd_no);
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
     char *configure(const char *key, const char *value);
     void send_configures(send_configure_iface *);
     uint32_t message_run(const void *valid_inputs, void *output_ports);

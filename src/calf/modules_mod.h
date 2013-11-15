@@ -184,8 +184,7 @@ private:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     float offset_old;
-    int mode_old, level_old;
-    bool redraw_graph;
+    int mode_old, amount_old;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
 public:

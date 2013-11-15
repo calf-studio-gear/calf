@@ -74,9 +74,9 @@ public:
     void deactivate();
 
     void params_changed();
-    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    float freq_gain(int index, double freq, uint32_t sr) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode);
+    float freq_gain(int index, double freq, uint32_t sr);
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;

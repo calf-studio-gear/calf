@@ -94,7 +94,7 @@ struct CalfLineGraph
     cairo_surface_t *cache_surface;
     cairo_surface_t *moving_surface[2];
     cairo_surface_t *handles_surface;
-    cairo_surface_t *final_surface;
+    cairo_surface_t *realtime_surface;
 
     // crosshairs and FreqHandles
     gdouble mouse_x, mouse_y;
@@ -113,6 +113,7 @@ struct CalfLineGraph
     GdkCursor *hand_cursor;
     /// Cached arrow (drag) cursor
     GdkCursor *arrow_cursor;
+    static void calf_line_graph_expose_request (GtkWidget *widget, bool force = false);
 };
 
 struct CalfLineGraphClass
@@ -128,11 +129,6 @@ extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
 extern int calf_line_graph_update_if(CalfLineGraph *graph, int generation);
 
-#define CALF_TYPE_PHASE_GRAPH           (calf_phase_graph_get_type())
-#define CALF_PHASE_GRAPH(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_PHASE_GRAPH, CalfPhaseGraph))
-#define CALF_IS_PHASE_GRAPH(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_PHASE_GRAPH))
-#define CALF_PHASE_GRAPH_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_PHASE_GRAPH, CalfPhaseGraphClass))
-#define CALF_IS_PHASE_GRAPH_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_PHASE_GRAPH))
-#define CALF_PHASE_GRAPH_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_PHASE_GRAPH, CalfPhaseGraphClass))
+G_END_DECLS
 
 #endif

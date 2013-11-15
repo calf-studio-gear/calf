@@ -27,6 +27,7 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <cairo/cairo.h>
 
 namespace osctl {
     struct osc_client;
@@ -146,10 +147,19 @@ struct parameter_properties
 
 struct cairo_iface
 {
-    virtual void set_source_set_channel(float r, float g, float b, float a = 1.f) = 0;
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
     virtual void set_line_width(float width) = 0;
     virtual void set_dash(const double *dash, int length) = 0;
     virtual ~cairo_iface() {}
+};
+
+class cairo_impl: public calf_plugins::cairo_iface
+{
+public:
+    cairo_t *context;
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f) { cairo_set_source_rgba(context, r, g, b, a); }
+    virtual void set_line_width(float width) { cairo_set_line_width(context, width); }
+    virtual void set_dash(const double *dash, int length) { cairo_set_dash(context, dash, length, 0); }
 };
 
 struct progress_report_iface
@@ -160,15 +170,15 @@ struct progress_report_iface
 
 /// possible bit masks for get_layers
 enum layers_flags {
-    LG_CACHE_GRID      = 0x000001;
-    LG_REALTIME_GRID   = 0x000002;
-    LG_CACHE_GRAPH     = 0x000004;
-    LG_REALTIME_GRAPH  = 0x000008;
-    LG_CACHE_DOT       = 0x000010;
-    LG_REALTIME_DOT    = 0x000020;
-    LG_CACHE_MOVING    = 0x000040;
-    LG_REALTIME_MOVING = 0x000080;
-}
+    LG_CACHE_GRID      = 0x000001,
+    LG_REALTIME_GRID   = 0x000002,
+    LG_CACHE_GRAPH     = 0x000004,
+    LG_REALTIME_GRAPH  = 0x000008,
+    LG_CACHE_DOT       = 0x000010,
+    LG_REALTIME_DOT    = 0x000020,
+    LG_CACHE_MOVING    = 0x000040,
+    LG_REALTIME_MOVING = 0x000080
+};
 
 /// 'provides live line graph values' interface
 struct line_graph_iface
@@ -692,11 +702,13 @@ static inline float dB_grid_inv(float pos)
 /// Line graph interface implementation for frequency response graphs
 class frequency_response_line_graph: public line_graph_iface 
 {
-    mutable bool redraw_graph;
 public:
+    uint32_t srate;
+    mutable bool redraw_graph;
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    virtual bool get_graph(int index, int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_layers(int index, int generation, unsigned int &layers) const;
+    virtual float freq_gain(int index, double freq, uint32_t sr) const { return 0; };
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 

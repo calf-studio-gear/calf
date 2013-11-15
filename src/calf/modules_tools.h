@@ -121,7 +121,6 @@ class analyzer_audio_module:
     int _post_old;
     int _hold_old;
     int _smooth_old;
-    float _level_old;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
     float db_level_coeff1, db_level_coeff2, leveladjust;
@@ -138,7 +137,7 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
     ~analyzer_audio_module();
     mutable int _mode_old;
-    mutable int _level_old;
+    mutable float _level_old;
     mutable bool _falling;
     float envelope;
     float attack_coef;

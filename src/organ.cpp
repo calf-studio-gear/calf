@@ -72,12 +72,10 @@ void organ_audio_module::params_changed() {
     redraw = true;
     update_params();
 }
-bool organ:audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool organ_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    bool r = redraw;
-    redraw = false;
     layers = LG_REALTIME_GRAPH;
-    return r;
+    return true;
 }
 bool organ_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {

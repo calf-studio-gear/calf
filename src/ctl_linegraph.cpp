@@ -27,6 +27,9 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 #include <iostream>
+#include <calf/giface.h>
+
+using namespace calf_plugins;
 
 static void
 calf_line_graph_draw_grid( CalfLineGraph* lg, cairo_t *ctx, std::string &legend, bool vertical, float pos )
@@ -92,7 +95,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
     
     for (int i = 0; i < sx; i++) {
         y = (oy + sy / 2 - (sy / 2 - 1) * data[i]);
-        if (lg->debug > 1) printf("* graph x: %d, y: %d, data: %.5f\n", i, y, data[i]);
+        if (lg->debug > 1) printf("* graph x: %d, y: %.5f, data: %.5f\n", i, y, data[i]);
         switch (mode) {
             case 0:
             default:
@@ -163,7 +166,8 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
     return startdraw;
 }
 
-void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, std::string label) {
+void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, std::string label)
+{
     if (lg->debug) printf("(draw crosshairs)\n");
     // crosshairs
     
@@ -274,7 +278,8 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
 }
 
 
-void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c) {
+void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
+{
     // freq_handles
     if (lg->debug) printf("(draw handles)\n");
     
@@ -595,7 +600,7 @@ calf_line_graph_clear_surface(cairo_t *ctx)
     cairo_restore (ctx);
 }
 
-static gboolean
+static void
 calf_line_graph_expose_request (GtkWidget *widget, bool force = false)
 {
     // someone thinks we should redraw the line graph. let's see what
@@ -608,20 +613,20 @@ calf_line_graph_expose_request (GtkWidget *widget, bool force = false)
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     
     // quit if no source available
-    if (!lg->source) return FALSE;
+    if (!lg->source) return;
     
-    if (lg->debug) printf("\n\n### expose request %d ###\n", lg->count);
+    if (lg->debug) printf("\n\n### expose request %d ###\n", lg->generation);
     
     // let a bitmask be switched by the plugin to determine the layers
     // we want to draw. We set all cache layers to true if force_cache
     // is set otherwise default is to draw nothing. The return value
     // tells us whether the plugin wants to draw at all or not.
     if (lg->force_cache || lg->recreate_surfaces)
-        lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE MOVING;
+        lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE_MOVING;
     
     if (lg->debug) {
         printf("bitmask ");
-        print_bits(sizeof(lg->layers), &lg-layers);
+        dsp::print_bits(sizeof(lg->layers), &lg->layers);
         printf("\n");
     }
     
@@ -633,7 +638,7 @@ calf_line_graph_expose_request (GtkWidget *widget, bool force = false)
 }
 
 static gboolean
-calf_line_graph_expose (GtkWidget *widget)
+calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
@@ -641,7 +646,7 @@ calf_line_graph_expose (GtkWidget *widget)
     // quit if no source available
     if (!lg->source) return FALSE;
     
-    if (lg->debug) printf("\n\n####### exposing %d #######\n", lg->count);
+    if (lg->debug) printf("\n\n####### exposing %d #######\n", lg->generation);
     
     // cairo context of the window
     cairo_t *c            = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -690,18 +695,9 @@ calf_line_graph_expose (GtkWidget *widget)
     
     if (lg->debug) {
         printf("bitmask ");
-        print_bits(sizeof(lg->layers), &lg-layers);
+        dsp::print_bits(sizeof(lg->layers), &lg->layers);
         printf("\n");
     }
-    
-    // check if we can skip the whole drawing stuff and go on with
-    // copying everything we drawed before
-    
-    if (!(lg->layers & LG_CACHE) and !(lg->layers & LG_REALTIME))
-        goto finalize;
-    
-    
-    // 
     
     // context used for the actual surface we want to draw on. It is
     // switched over the drawing process via calf_line_graph_switch_context
@@ -740,12 +736,21 @@ calf_line_graph_expose (GtkWidget *widget)
     
     // some state variables used to determine what has happened
     bool realtime_drawn = false;
-    bool cache_drawn = false;
-    bool grid_drawn  = false;
-    
-    
+    bool cache_drawn    = false;
+    bool grid_drawn     = false;
     
     int drawing_phase;
+    
+    // check if we can skip the whole drawing stuff and go on with
+    // copying everything we drawed before
+    
+    if (!lg->layers)
+        goto finalize;
+    
+    
+    // 
+    
+    
         
     if ( lg->force_cache ) {
         if (lg->debug) printf("\n->cache\n");
@@ -776,16 +781,16 @@ calf_line_graph_expose (GtkWidget *widget)
     
     
     
-    for (int phase = drawing_phase; phase < 2; i++) {
+    for (int phase = drawing_phase; phase < 2; phase++) {
         // draw elements on the realtime and/or the cache surface
         
-        if (lg->debug) printf("\n### drawing phase %d\n", i);
+        if (lg->debug) printf("\n### drawing phase %d\n", phase);
         
         ///////////////////////////////////////////////////////////////
         // GRID
         ///////////////////////////////////////////////////////////////
         
-        if (layers & LG_CACHE_GRID || layers & LG_REALTIME_GRID) {
+        if (lg->layers & LG_CACHE_GRID || lg->layers & LG_REALTIME_GRID) {
             // The plugin can set "vertical" to 1
             // to force drawing of vertical lines instead of horizontal ones
             // (which is the default)
@@ -827,7 +832,7 @@ calf_line_graph_expose (GtkWidget *widget)
         // GRAPHS
         ///////////////////////////////////////////////////////////////
         
-        if (layers & LG_CACHE_GRAPH || layers & LG_REALTIME_GRAPH) {
+        if (lg->layers & LG_CACHE_GRAPH || lg->layers & LG_REALTIME_GRAPH) {
             // Cycle through all graphs and hand over the amount of horizontal
             // pixels. The plugin is expected to set all corresponding vertical
             // values in an array.
@@ -903,7 +908,7 @@ calf_line_graph_expose (GtkWidget *widget)
         // DOTS
         ///////////////////////////////////////////////////////////////
         
-        if (layers & LG_CACHE_DOT || layers & LG_REALTIME_DOT) {s
+        if (lg->layers & LG_CACHE_DOT || lg->layers & LG_REALTIME_DOT) {
             // Cycle through all dots. The plugin is expected to set the x
             // and y value of the dot.
             // color of the dot (which can be set by the plugin
@@ -939,7 +944,7 @@ calf_line_graph_expose (GtkWidget *widget)
             }
         }
         
-        if (!phases) {
+        if (!phase) {
             // if we have a second cycle for drawing on the realtime
             // after the cache was renewed it's time to copy the
             // cache to the realtime and switch the target surface
@@ -1356,7 +1361,7 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->arrow_cursor         = gdk_cursor_new(GDK_RIGHT_PTR);
     lg->hand_cursor          = gdk_cursor_new(GDK_FLEUR);
     lg->layers               = LG_CACHE_GRID    | LG_CACHE_GRAPH
-                             | LG_CACHE_DOT     | LG_CACHE MOVING
+                             | LG_CACHE_DOT     | LG_CACHE_MOVING
                              | LG_REALTIME_GRID | LG_REALTIME_GRAPH
                              | LG_REALTIME_DOT  | LG_REALTIME_MOVING;
     
@@ -1387,7 +1392,7 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->moving_surface[0]  = NULL;
     lg->moving_surface[1]  = NULL;
     lg->handles_surface    = NULL;
-    lg->final_surface      = NULL;
+    lg->realtime_surface   = NULL;
 }
 
 GtkWidget *

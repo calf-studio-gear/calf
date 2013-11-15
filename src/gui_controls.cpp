@@ -27,14 +27,13 @@
 #include <calf/ctl_tube.h>
 #include <calf/ctl_vumeter.h>
 #include <calf/custom_ctl.h>
-#include <calf/ctl_linegraph.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/gui_controls.h>
 #include <calf/utils.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
-
+#include <calf/ctl_linegraph.h>
 #include <iostream>
 
 using namespace calf_plugins;
@@ -262,9 +261,7 @@ void param_control::create_value_entry(GtkWidget *widget, int x, int y)
 }
 
 
-/******************************** controls ********************************/
-
-// combo box
+/******************************** Combo Box ********************************/
 
 GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -373,7 +370,7 @@ void combo_box_param_control::set_to_last_key()
         gtk_combo_box_set_active (GTK_COMBO_BOX (widget), -1);
 }
 
-// horizontal fader
+/******************************** Horizontal Fader ********************************/
 
 static gboolean
 scale_to_default (gpointer data)
@@ -470,7 +467,8 @@ gchar *hscale_param_control::hscale_format_value(GtkScale *widget, double arg1, 
     return g_strdup (props.to_string (cvalue).c_str());
 }
 
-// vertical fader
+/******************************** Vertical Fader ********************************/
+
 GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
@@ -523,7 +521,7 @@ void vscale_param_control::vscale_value_changed(GtkHScale *widget, gpointer valu
     jhp->get();
 }
 
-// label
+/******************************** Label ********************************/
 
 GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -539,7 +537,7 @@ GtkWidget *label_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
-// value
+/******************************** Value ********************************/
 
 GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -587,7 +585,7 @@ void value_param_control::send_status(const char *key, const char *value)
     }
 }
 
-// VU meter
+/******************************** VU Meter ********************************/
 
 GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -659,7 +657,7 @@ void tube_param_control::set()
         update_label();
 }
 
-// check box
+/******************************** Check Box ********************************/
 
 GtkWidget *check_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -691,7 +689,7 @@ void check_param_control::set()
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
 }
 
-// radio button
+/******************************** Radio Button ********************************/
 
 GtkWidget *radio_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -749,7 +747,7 @@ void radio_param_control::set()
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value == ((int)gui->plugin->get_param_value(param_no) - (int)props.min));
 }
 
-// spin button
+/******************************** Spin Button ********************************/
 
 GtkWidget *spin_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -788,7 +786,7 @@ void spin_param_control::set()
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (widget), gui->plugin->get_param_value(param_no));
 }
 
-// button
+/******************************** Button ********************************/
 
 GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -838,7 +836,7 @@ void button_param_control::set()
         gtk_button_clicked (GTK_BUTTON (widget));
 }
 
-// knob
+/******************************** Knob ********************************/
 
 GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -887,7 +885,7 @@ void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
     jhp->get();
 }
 
-// Toggle Button
+/******************************** Toggle Button ********************************/
 
 GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -931,7 +929,7 @@ void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer valu
     jhp->get();
 }
 
-// keyboard
+/******************************** Keyboard ********************************/
 
 GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -947,7 +945,7 @@ GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
     return widget;
 }
 
-// curve
+/******************************** Curve ********************************/
 
 struct curve_param_control_callback: public CalfCurve::EventAdapter
 {
@@ -1008,7 +1006,7 @@ void curve_param_control::send_configure(const char *key, const char *value)
     }
 }
 
-// entry
+/******************************** Entry ********************************/
 
 GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -1039,7 +1037,7 @@ void entry_param_control::entry_value_changed(GtkWidget *widget, gpointer value)
     ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), gtk_entry_get_text(ctl->entry));
 }
 
-// filechooser
+/******************************** File Chooser ********************************/
 
 GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
 {
@@ -1078,7 +1076,7 @@ void filechooser_param_control::filechooser_value_changed(GtkWidget *widget, gpo
         ctl->gui->plugin->configure(ctl->attribs["key"].c_str(), filename);
 }
 
-// line graph
+/******************************** Line Graph ********************************/
 
 void line_graph_param_control::on_idle()
 {
@@ -1294,7 +1292,7 @@ void line_graph_param_control::set()
                 handle->active = true;
             }
         }
-        clg->calf_line_graph_expose_request(widget)
+        clg->calf_line_graph_expose_request(widget);
     }
 }
 
@@ -1309,9 +1307,10 @@ void line_graph_param_control::freqhandle_value_changed(GtkWidget *widget, gpoin
 
 line_graph_param_control::~line_graph_param_control()
 {
+    
 }
 
-// phase graph
+/******************************** Phase Graph ********************************/
 
 void phase_graph_param_control::on_idle()
 {
@@ -1353,7 +1352,7 @@ phase_graph_param_control::~phase_graph_param_control()
 {
 }
 
-// list view
+/******************************** List View ********************************/
 
 GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)
 {
