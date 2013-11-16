@@ -1677,43 +1677,7 @@ style "calf-notebook"
             stretch         = TRUE
             gap_side        = LEFT
         }
-        
-        image
-        {
-            function        = BOX_GAP
-            recolorable     = FALSE
-            file            = "notebook_top.png"
-            border          = { 21, 21, 21, 21 }
-            stretch         = TRUE
-            gap_side        = TOP
-        }
-        image
-        {
-            function        = BOX_GAP
-            recolorable     = FALSE
-            file            = "notebook_bottom.png"
-            border          = { 21, 21, 21, 21 }
-            stretch         = TRUE
-            gap_side        = BOTTOM
-        }
-        image
-        {
-            function        = BOX_GAP
-            recolorable     = FALSE
-            file            = "notebook_left.png"
-            border          = { 21, 21, 21, 21 }
-            stretch         = TRUE
-            gap_side        = LEFT
-        }
-        image
-        {
-            function        = BOX_GAP
-            recolorable     = FALSE
-            file            = "notebook_right.png"
-            border          = { 21, 21, 21, 21 }
-            stretch         = TRUE
-            gap_side        = RIGHT
-        }
+      
         image
         {
             function        = BOX_GAP
