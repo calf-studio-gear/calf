@@ -105,7 +105,7 @@ bool flanger_audio_module::get_layers(int index, int generation, unsigned int &l
     layers = LG_REALTIME_GRAPH | (generation ? 0 : LG_CACHE_GRID);
     return true;
 }
-float flanger_audio_module::freq_gain(int subindex, float freq, float srate) const
+float flanger_audio_module::freq_gain(int subindex, float freq) const
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
@@ -202,7 +202,7 @@ bool phaser_audio_module::get_layers(int index, int generation, unsigned int &la
     return true;
 }
 
-float phaser_audio_module::freq_gain(int subindex, float freq, float srate) const
+float phaser_audio_module::freq_gain(int subindex, float freq) const
 {
     return (subindex ? right : left).freq_gain(freq, srate);                
 }
@@ -536,7 +536,7 @@ bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, 
     return false;
 }
 
-float multichorus_audio_module::freq_gain(int subindex, float freq, float srate) const
+float multichorus_audio_module::freq_gain(int subindex, float freq) const
 {
     if (subindex == 2)
         return *params[par_amount] * left.post.freq_gain(freq, srate);

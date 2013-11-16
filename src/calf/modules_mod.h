@@ -59,7 +59,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_layers(int index, int generation, unsigned int &layers) const;
-    float freq_gain(int subindex, float freq, float srate) const;
+    float freq_gain(int subindex, float freq) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
@@ -91,7 +91,7 @@ public:
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_layers(int index, int generation, unsigned int &layers) const;
-    float freq_gain(int subindex, float freq, float srate) const;
+    float freq_gain(int subindex, float freq) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
 };
@@ -168,7 +168,7 @@ public:
     void deactivate();
     void set_sample_rate(uint32_t sr);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
-    float freq_gain(int subindex, float freq, float srate) const;
+    float freq_gain(int subindex, float freq) const;
     bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;

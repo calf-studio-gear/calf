@@ -113,7 +113,6 @@ struct CalfLineGraph
     GdkCursor *hand_cursor;
     /// Cached arrow (drag) cursor
     GdkCursor *arrow_cursor;
-    static void calf_line_graph_expose_request (GtkWidget *widget, bool force = false);
 };
 
 struct CalfLineGraphClass
@@ -127,7 +126,7 @@ extern GType calf_line_graph_get_type();
 
 extern void calf_line_graph_set_square(CalfLineGraph *graph, bool is_square);
 
-extern int calf_line_graph_update_if(CalfLineGraph *graph, int generation);
+extern void calf_line_graph_expose_request (GtkWidget *widget, bool force = false);
 
 G_END_DECLS
 

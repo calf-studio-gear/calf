@@ -362,18 +362,18 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 }
 
 template<class BaseClass, bool use_hplp>
-float equalizerNband_audio_module<BaseClass, use_hplp>::freq_gain(int index, double freq, uint32_t sr)
+float equalizerNband_audio_module<BaseClass, use_hplp>::freq_gain(int index, double freq)
 {
     float ret = 1.f;
     if (use_hplp)
     {
-        ret *= adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)sr);
-        ret *= adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)sr);
+        ret *= adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
+        ret *= adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
     }
-    ret *= (*params[AM::param_ls_active] > 0.f) ? lsL.freq_gain(freq, sr) : 1;
-    ret *= (*params[AM::param_hs_active] > 0.f) ? hsL.freq_gain(freq, sr) : 1;
+    ret *= (*params[AM::param_ls_active] > 0.f) ? lsL.freq_gain(freq, (float)srate) : 1;
+    ret *= (*params[AM::param_hs_active] > 0.f) ? hsL.freq_gain(freq, (float)srate) : 1;
     for (int i = 0; i < PeakBands; i++)
-        ret *= (*params[AM::param_p1_active + i * params_per_band] > 0.f) ? pL[i].freq_gain(freq, (float)sr) : 1;
+        ret *= (*params[AM::param_p1_active + i * params_per_band] > 0.f) ? pL[i].freq_gain(freq, (float)srate) : 1;
     return ret;
 }
 
@@ -578,6 +578,11 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         riaacurvR.sanitize();
     }
     return outputs_mask;
+}
+
+float phonoeq_audio_module::freq_gain(int index, double freq)
+{
+    return riaacurvL.freq_gain(freq, (float)srate);
 }
 
 /**********************************************************************

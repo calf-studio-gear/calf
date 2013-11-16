@@ -209,5 +209,3 @@ public:
 };
 
 #endif
-
-

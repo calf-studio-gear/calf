@@ -367,7 +367,6 @@ bool frequency_response_line_graph::get_layers(int index, int generation, unsign
     redraw_graph = false;
     return r;
 }
-
 std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const
 { 
     std::stringstream ss;

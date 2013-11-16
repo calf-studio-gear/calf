@@ -688,7 +688,7 @@ static bool get_graph(Fx &fx, int subindex, float *data, int points, float res =
     {
         //typedef std::complex<double> cfloat;
         double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        data[i] = dB_grid(fx.freq_gain(subindex, freq, fx.srate), res, ofs);
+        data[i] = dB_grid(fx.freq_gain(subindex, freq), res, ofs);
     }
     return true;
 }
@@ -703,12 +703,11 @@ static inline float dB_grid_inv(float pos)
 class frequency_response_line_graph: public line_graph_iface 
 {
 public:
-    uint32_t srate;
     mutable bool redraw_graph;
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_layers(int index, int generation, unsigned int &layers) const;
-    virtual float freq_gain(int index, double freq, uint32_t sr) const { return 0; };
+    virtual float freq_gain(int index, double freq) const { return 0; };
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
 

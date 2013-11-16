@@ -519,7 +519,7 @@ bool simple_lfo::get_graph(float *data, int points, cairo_iface *context, int *m
         return false;
     for (int i = 0; i < points; i++) {
         float ph = (float)i / (float)points;
-        data[i] = get_value_from_phase(ph, offset) * amount;
+        data[i] = get_value_from_phase(ph, offset) * amount * 0.8 + 0.1;
     }
     return true;
 }
@@ -532,7 +532,7 @@ bool simple_lfo::get_dot(float &x, float &y, int &size, cairo_iface *context) co
     if (phs >= 1.0)
         phs = fmod(phs, 1.f);
     x = phase;
-    y = get_value_from_phase(phase, offset) * amount;
+    y = get_value_from_phase(phase, offset) * amount * 0.8 + 0.1;
     return true;
 }
 

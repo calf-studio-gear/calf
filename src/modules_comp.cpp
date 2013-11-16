@@ -915,10 +915,10 @@ sidechaincompressor_audio_module::cfloat sidechaincompressor_audio_module::h_z(c
     }
 }
 
-float sidechaincompressor_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+float sidechaincompressor_audio_module::freq_gain(int index, double freq) const
 {
     typedef std::complex<double> cfloat;
-    freq *= 2.0 * M_PI / sr;
+    freq *= 2.0 * M_PI / srate;
     cfloat z = 1.0 / exp(cfloat(0.0, freq));
 
     return std::abs(h_z(z));
@@ -2046,10 +2046,10 @@ sidechaingate_audio_module::cfloat sidechaingate_audio_module::h_z(const cfloat 
     }
 }
 
-float sidechaingate_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+float sidechaingate_audio_module::freq_gain(int index, double freq) const
 {
     typedef std::complex<double> cfloat;
-    freq *= 2.0 * M_PI / sr;
+    freq *= 2.0 * M_PI / srate;
     cfloat z = 1.0 / exp(cfloat(0.0, freq));
 
     return std::abs(h_z(z));

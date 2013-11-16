@@ -194,7 +194,7 @@ public:
     void deactivate();
     void params_changed();
     cfloat h_z(const cfloat &z) const;
-    float freq_gain(int index, double freq, uint32_t sr) const;
+    float freq_gain(int index, double freq) const;
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
@@ -285,9 +285,9 @@ public:
     void activate();
     void deactivate();
     void params_changed();
-    float freq_gain(int index, double freq, uint32_t sr) const
+    float freq_gain(int index, double freq) const
     {
-        return hpL.freq_gain(freq, sr) * pL.freq_gain(freq, sr);
+        return hpL.freq_gain(freq, srate) * pL.freq_gain(freq, srate);
     }
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
@@ -359,7 +359,7 @@ public:
     void deactivate();
     void params_changed();
     cfloat h_z(const cfloat &z) const;
-    float freq_gain(int index, double freq, uint32_t sr) const;
+    float freq_gain(int index, double freq) const;
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;

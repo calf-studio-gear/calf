@@ -600,8 +600,7 @@ calf_line_graph_clear_surface(cairo_t *ctx)
     cairo_restore (ctx);
 }
 
-static void
-calf_line_graph_expose_request (GtkWidget *widget, bool force = false)
+void calf_line_graph_expose_request (GtkWidget *widget, bool force)
 {
     // someone thinks we should redraw the line graph. let's see what
     // the plugin thinks about. To do that a bitmask is sent to the

@@ -875,9 +875,9 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, f
     }
     return true;
 }
-float tapesimulator_audio_module::freq_gain(int index, double freq, uint32_t sr) const
+float tapesimulator_audio_module::freq_gain(int index, double freq) const
 {
-    return lp[index][0].freq_gain(freq, sr) * lp[index][1].freq_gain(freq, sr);
+    return lp[index][0].freq_gain(freq, srate) * lp[index][1].freq_gain(freq, srate);
 }
 
 bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

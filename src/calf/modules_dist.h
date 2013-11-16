@@ -130,7 +130,7 @@ public:
     void activate();
     void set_sample_rate(uint32_t sr);
     void deactivate();
-    float freq_gain(int index, double freq, uint32_t sr) const;
+    float freq_gain(int index, double freq) const;
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;

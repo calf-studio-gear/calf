@@ -1292,7 +1292,7 @@ void line_graph_param_control::set()
                 handle->active = true;
             }
         }
-        clg->calf_line_graph_expose_request(widget);
+        calf_line_graph_expose_request(widget);
     }
 }
 
