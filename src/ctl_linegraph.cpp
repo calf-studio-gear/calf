@@ -620,8 +620,9 @@ void calf_line_graph_expose_request (GtkWidget *widget, bool force)
     // we want to draw. We set all cache layers to true if force_cache
     // is set otherwise default is to draw nothing. The return value
     // tells us whether the plugin wants to draw at all or not.
-    if (lg->force_cache || lg->recreate_surfaces)
-        lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE_MOVING;
+    lg->layers = 0;
+    //if (lg->force_cache || lg->recreate_surfaces)
+        //lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE_MOVING;
     
     if (lg->debug) {
         printf("bitmask ");
@@ -792,7 +793,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // GRID
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_GRID and !phase || lg->layers & LG_REALTIME_GRID and phase) {
+        if ((lg->layers & LG_CACHE_GRID and !phase) || (lg->layers & LG_REALTIME_GRID and phase)) {
             // The plugin can set "vertical" to 1
             // to force drawing of vertical lines instead of horizontal ones
             // (which is the default)
@@ -834,7 +835,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // GRAPHS
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_GRAPH and !phase || lg->layers & LG_REALTIME_GRAPH and phase) {
+        if ((lg->layers & LG_CACHE_GRAPH and !phase) || (lg->layers & LG_REALTIME_GRAPH and phase)) {
             // Cycle through all graphs and hand over the amount of horizontal
             // pixels. The plugin is expected to set all corresponding vertical
             // values in an array.
@@ -910,7 +911,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // DOTS
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_DOT and !phase || lg->layers & LG_REALTIME_DOT and phase) {
+        if ((lg->layers & LG_CACHE_DOT and !phase) || (lg->layers & LG_REALTIME_DOT and phase)) {
             // Cycle through all dots. The plugin is expected to set the x
             // and y value of the dot.
             // color of the dot (which can be set by the plugin

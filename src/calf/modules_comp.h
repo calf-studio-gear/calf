@@ -180,10 +180,11 @@ private:
         RIGHT_LEFT,
         LEFT_RIGHT
     };
-    mutable float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
-    mutable float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
+    float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
+    float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
     CalfScModes sc_mode;
-    mutable CalfScModes sc_mode_old, sc_mode_old1;
+    CalfScModes sc_mode_old, sc_mode_old1;
+    mutable bool redraw_graph;
     float f1_active, f2_active;
     stereo_in_out_metering<sidechaincompressor_metadata> meters;
     gain_reduction_audio_module compressor;
@@ -344,10 +345,11 @@ private:
         RIGHT_LEFT,
         LEFT_RIGHT
     };
-    mutable float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
-    mutable float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
+    float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
+    float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
     CalfScModes sc_mode;
-    mutable CalfScModes sc_mode_old, sc_mode_old1;
+    CalfScModes sc_mode_old, sc_mode_old1;
+    mutable bool redraw_graph;
     float f1_active, f2_active;
     stereo_in_out_metering<sidechaingate_metadata> meters;
     expander_audio_module gate;

@@ -1251,6 +1251,7 @@ void line_graph_param_control::set()
     CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
     if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
     {
+        bool force = false;
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
@@ -1285,14 +1286,18 @@ void line_graph_param_control::set()
                 }
                 handle->last_value_z = handle->value_z;
             }
-
+            bool _a = handle->active;
             if(handle->param_active_no >= 0) {
                 handle->active = bool(gui->plugin->get_param_value(handle->param_active_no));
             } else {
                 handle->active = true;
             }
+            if (handle->active != _a) {
+                force = true;
+                clg->handle_redraw = true;
+            }
         }
-        calf_line_graph_expose_request(widget);
+        calf_line_graph_expose_request(widget, force);
     }
 }
 

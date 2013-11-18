@@ -877,6 +877,7 @@ sidechaincompressor_audio_module::sidechaincompressor_audio_module()
     f2_level_old = 0.f;
     sc_mode_old1  = WIDEBAND;
     meters.reset();
+    redraw_graph = true;
 }
 
 void sidechaincompressor_audio_module::activate()
@@ -1032,6 +1033,20 @@ void sidechaincompressor_audio_module::params_changed()
     }
     // and set the compressor module
     compressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f);
+    
+    if (*params[param_f1_freq] != f1_freq_old1
+        or *params[param_f2_freq] != f2_freq_old1
+        or *params[param_f1_level] != f1_level_old1
+        or *params[param_f2_level] != f2_level_old1
+        or *params[param_sc_mode] != sc_mode_old1)
+    {
+        f1_freq_old1 = *params[param_f1_freq];
+        f2_freq_old1 = *params[param_f2_freq];
+        f1_level_old1 = *params[param_f1_level];
+        f2_level_old1 = *params[param_f2_level];
+        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        redraw_graph = true;
+    }
 }
 
 void sidechaincompressor_audio_module::set_sample_rate(uint32_t sr)
@@ -1211,12 +1226,11 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
 }
 bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active)
+    if (!is_active or phase)
         return false;
-    if (index == param_f1_freq && !subindex) {
-        context->set_line_width(1.5);
+    if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
-    } else if(index == param_compression) {
+    } else if(index == param_bypass) {
         return compressor.get_graph(subindex, data, points, context, mode);
     }
     return false;
@@ -1224,9 +1238,9 @@ bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int ph
 
 bool sidechaincompressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active)
+    if (!is_active or !phase)
         return false;
-    if (index == param_compression) {
+    if (index == param_bypass) {
         return compressor.get_dot(subindex, x, y, size, context);
     }
     return false;
@@ -1234,39 +1248,24 @@ bool sidechaincompressor_audio_module::get_dot(int index, int subindex, int phas
 
 bool sidechaincompressor_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active)
+    if (!is_active or phase)
         return false;
-    if (index == param_compression) {
+    if (index == param_bypass) {
         return compressor.get_gridline(subindex, pos, vertical, legend, context);
     } else {
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
-//    return false;
+    return false;
 }
 
 bool sidechaincompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    if(index == param_compression) {
+    if(index == param_bypass)
         return compressor.get_layers(index, generation, layers);
-    } else {
-        bool draw = false;
-        if (*params[param_f1_freq] != f1_freq_old1
-            or *params[param_f2_freq] != f2_freq_old1
-            or *params[param_f1_level] != f1_level_old1
-            or *params[param_f2_level] != f2_level_old1
-            or *params[param_sc_mode] !=sc_mode_old1)
-        {
-            f1_freq_old1 = *params[param_f1_freq];
-            f2_freq_old1 = *params[param_f2_freq];
-            f1_level_old1 = *params[param_f1_level];
-            f2_level_old1 = *params[param_f2_level];
-            sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
-            draw = true;
-        }
-        layers = (generation ? 0 : LG_CACHE_GRID) | (draw ? LG_CACHE_GRAPH : 0);
-        return draw;
-    }
-    return false;
+    bool redraw = redraw_graph || !generation;
+    layers = 0 | (generation ? 0 : LG_CACHE_GRID) | (redraw ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
+    return redraw;
 }
 
 /**********************************************************************
@@ -1527,17 +1526,15 @@ bool multibandcompressor_audio_module::get_gridline(int index, int subindex, int
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_gridline(subindex, pos, vertical, legend, context);
+    if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
 bool multibandcompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_layers(index, generation, layers);
-        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     return crossover.get_layers(index, generation, layers);
 }
 
@@ -1991,7 +1988,7 @@ sidechaingate_audio_module::sidechaingate_audio_module()
 {
     is_active = false;
     srate = 0;
-
+    redraw_graph = true;
     f1_freq_old = f2_freq_old = f1_level_old = f2_level_old = 0;
     f1_freq_old1 = f2_freq_old1 = f1_level_old1 = f2_level_old1 = 0;
     sc_mode_old = sc_mode_old1 = WIDEBAND; // doesn't matter as long as it's sane
@@ -2151,6 +2148,20 @@ void sidechaingate_audio_module::params_changed()
     }
     // and set the expander module
     gate.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f, *params[param_range]);
+    
+    if (*params[param_f1_freq] != f1_freq_old1
+        or *params[param_f2_freq] != f2_freq_old1
+        or *params[param_f1_level] != f1_level_old1
+        or *params[param_f2_level] != f2_level_old1
+        or *params[param_sc_mode] != sc_mode_old1)
+    {
+        f1_freq_old1 = *params[param_f1_freq];
+        f2_freq_old1 = *params[param_f2_freq];
+        f1_level_old1 = *params[param_f1_level];
+        f2_level_old1 = *params[param_f2_level];
+        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        redraw_graph = true;
+    }
 }
 
 void sidechaingate_audio_module::set_sample_rate(uint32_t sr)
@@ -2327,12 +2338,11 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
 }
 bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active)
+    if (!is_active or phase)
         return false;
-    if (index == param_f1_freq && !subindex) {
-        context->set_line_width(1.5);
+    if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
-    } else if(index == param_gating) {
+    } else if(index == param_bypass) {
         return gate.get_graph(subindex, data, points, context, mode);
     }
     return false;
@@ -2340,9 +2350,9 @@ bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, f
 
 bool sidechaingate_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active)
+    if (!is_active or !phase)
         return false;
-    if (index == param_gating) {
+    if (index == param_bypass) {
         return gate.get_dot(subindex, x, y, size, context);
     }
     return false;
@@ -2350,38 +2360,23 @@ bool sidechaingate_audio_module::get_dot(int index, int subindex, int phase, flo
 
 bool sidechaingate_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active)
+    if (!is_active or phase)
         return false;
-    if (index == param_gating) {
+    if (index == param_bypass) {
         return gate.get_gridline(subindex, pos, vertical, legend, context);
     } else {
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
-//    return false;
+    return false;
 }
 bool sidechaingate_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    if(index == param_gating) {
+    if(index == param_bypass)
         return gate.get_layers(index, generation, layers);
-    } else {
-        bool draw = false;
-        if (*params[param_f1_freq] != f1_freq_old1
-            or *params[param_f2_freq] != f2_freq_old1
-            or *params[param_f1_level] != f1_level_old1
-            or *params[param_f2_level] != f2_level_old1
-            or *params[param_sc_mode] !=sc_mode_old1)
-        {
-            f1_freq_old1 = *params[param_f1_freq];
-            f2_freq_old1 = *params[param_f2_freq];
-            f1_level_old1 = *params[param_f1_level];
-            f2_level_old1 = *params[param_f2_level];
-            sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
-            draw = true;
-        }
-        layers = (generation ? 0 : LG_CACHE_GRID) | (draw ? LG_CACHE_GRAPH : 0);
-        return draw;
-    }
-    return false;
+    bool redraw = redraw_graph || !generation;
+    layers = 0 | (generation ? 0 : LG_CACHE_GRID) | (redraw ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
+    return redraw;
 }
 
 
@@ -2640,6 +2635,7 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, int phase
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_gridline(subindex, pos, vertical, legend, context);
+    if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 

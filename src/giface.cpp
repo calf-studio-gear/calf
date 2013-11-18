@@ -242,7 +242,7 @@ static float subindex_to_freq(int subindex)
 
 bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies, float res, float ofs)
 {
-    if (subindex < 0 )
+    if (subindex < 0)
     return false;
     static const double dash[] = {2.0};
     // frequency grid

@@ -1064,9 +1064,8 @@ float crossover::get_value(int c, int b) {
 }
 bool crossover::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (subindex >= bands) {
+    if (subindex >= bands)
         return false;
-    }
     float ret;
     double freq;
     for (int i = 0; i < points; i++) {
