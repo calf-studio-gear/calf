@@ -60,7 +60,7 @@
     <table fill="1" rows="1" cols="4">
         <frame label="Sub band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="0" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
-                <line-graph refresh="1" width="210" height="210" param="compression0" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
+                <line-graph refresh="1" width="210" height="210" param="solo0" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
             <vumeter param="compression0" position="2" mode="2" hold="1.5" falloff="2.5" />
             <vumeter param="output0" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
@@ -112,7 +112,7 @@
         </vbox></frame>
         <frame label="Low band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="1" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
-                <line-graph refresh="1" width="210" height="210" param="compression1" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
+                <line-graph refresh="1" width="210" height="210" param="solo1" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
             <vumeter param="compression1" position="2" mode="2" hold="1.5" falloff="2.5" />
             <vumeter param="output1" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
@@ -164,7 +164,7 @@
         </vbox></frame>
         <frame label="Mid band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="2" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
-                <line-graph refresh="1" width="210" height="210" param="compression2" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
+                <line-graph refresh="1" width="210" height="210" param="solo2" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
             <vumeter param="compression2" position="2" mode="2" hold="1.5" falloff="2.5" />
             <vumeter param="output2" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
@@ -216,7 +216,7 @@
         </vbox></frame>
         <frame label="High band" expand-x="1" expand-y="1" shrink-x="1" shrink-y="1" attach-x="3" attach-y="0" fill="1" pad-x="4"><vbox spacing="4">
             <if cond="directlink">
-                <line-graph refresh="1" width="210" height="210" param="compression3" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
+                <line-graph refresh="1" width="210" height="210" param="solo3" expand-y="1" fill-y="1" expand-x="1" fill-x="1"/>
             </if>
             <vumeter param="compression3" position="2" mode="2" hold="1.5" falloff="2.5" />
             <vumeter param="output3" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />

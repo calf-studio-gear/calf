@@ -56,6 +56,7 @@ gain_reduction_audio_module::gain_reduction_audio_module()
     makeup          = -1;
     bypass          = -1;
     mute            = -1;
+    redraw_graph    = true;
 }
 
 void gain_reduction_audio_module::activate()
@@ -176,6 +177,17 @@ void gain_reduction_audio_module::set_params(float att, float rel, float thr, fl
         meter_out  = 0.f;
         meter_comp = 1.f;
     }
+    
+    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
+        old_threshold = threshold;
+        old_ratio     = ratio;
+        old_knee      = knee;
+        old_makeup    = makeup;
+        old_detection = detection;
+        old_bypass    = bypass;
+        old_mute      = mute;
+        redraw_graph  = true;
+    }
 }
 float gain_reduction_audio_module::get_output_level() {
     // returns output level (max(left, right))
@@ -208,7 +220,6 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
         context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     else {
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        context->set_line_width(1.5);
     }
     return true;
 }
@@ -248,18 +259,8 @@ bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &v
 
 bool gain_reduction_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    bool redraw_graph = !generation ? true : false;
-    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
-        old_threshold = threshold;
-        old_ratio     = ratio;
-        old_knee      = knee;
-        old_makeup    = makeup;
-        old_detection = detection;
-        old_bypass    = bypass;
-        old_mute      = mute;
-        redraw_graph  = true;
-    }
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
     return true;
 }
 
@@ -292,6 +293,7 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
     old_y1          = 0.f;
     old_yl          = 0.f;
     old_detected    = 0.f;
+    redraw_graph    = true;
 }
 
 void gain_reduction2_audio_module::activate()
@@ -415,6 +417,16 @@ void gain_reduction2_audio_module::set_params(float att, float rel, float thr, f
         meter_out  = 0.f;
         meter_comp = 1.f;
     }
+    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
+        old_threshold = threshold;
+        old_ratio     = ratio;
+        old_knee      = knee;
+        old_makeup    = makeup;
+        old_detection = detection;
+        old_bypass    = bypass;
+        old_mute      = mute;
+        redraw_graph  = true;
+    }
 }
 float gain_reduction2_audio_module::get_output_level() {
     // returns output level (max(left, right))
@@ -485,18 +497,8 @@ bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &
 
 bool gain_reduction2_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    bool redraw_graph = !generation ? true : false;
-    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
-        old_threshold = threshold;
-        old_ratio     = ratio;
-        old_knee      = knee;
-        old_makeup    = makeup;
-        old_detection = detection;
-        old_bypass    = bypass;
-        old_mute      = mute;
-        redraw_graph  = true;
-    }
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
     return true;
 }
 
@@ -530,6 +532,7 @@ expander_audio_module::expander_audio_module()
     old_stereo_link = 0.f;
     linSlope      = -1;
     linKneeStop   = 0;
+    redraw_graph  = true;
 }
 
 void expander_audio_module::activate()
@@ -647,6 +650,17 @@ void expander_audio_module::set_params(float att, float rel, float thr, float ra
         meter_out  = 0.f;
         meter_gate = 1.f;
     }
+    if (fabs(range - old_range) + fabs(threshold - old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
+        old_range     = range;
+        old_threshold = threshold;
+        old_ratio     = ratio;
+        old_knee      = knee;
+        old_makeup    = makeup;
+        old_detection = detection;
+        old_bypass    = bypass;
+        old_mute      = mute;
+        redraw_graph  = true;
+    }
 }
 float expander_audio_module::get_output_level() {
     // returns output level (max(left, right))
@@ -716,19 +730,8 @@ bool expander_audio_module::get_gridline(int subindex, float &pos, bool &vertica
 
 bool expander_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    bool redraw_graph = !generation ? true : false;
-    if (fabs(range - old_range) + fabs(threshold - old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) > 0.000001f) {
-        old_range     = range;
-        old_threshold = threshold;
-        old_ratio     = ratio;
-        old_knee      = knee;
-        old_makeup    = makeup;
-        old_detection = detection;
-        old_bypass    = bypass;
-        old_mute      = mute;
-        redraw_graph  = true;
-    }
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    redraw_graph = false;
     return true;
 }
 
@@ -1491,13 +1494,13 @@ const gain_reduction_audio_module *multibandcompressor_audio_module::get_strip_b
 {
     // let's handle by the corresponding strip
     switch (index) {
-        case param_compression0:
+        case param_solo0:
             return &strip[0];
-        case param_compression1:
+        case param_solo1:
             return &strip[1];
-        case param_compression2:
+        case param_solo2:
             return &strip[2];
-        case param_compression3:
+        case param_solo3:
             return &strip[3];
     }
     return NULL;
@@ -1508,7 +1511,6 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, int ph
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_graph(subindex, data, points, context, mode);
-    context->set_source_rgba(0.35, 0.4, 0.2, *params[param_bypass] > 0.5f ? 0.3 : 1);
     return crossover.get_graph(subindex, phase, data, points, context, mode);
 }
 
@@ -1530,9 +1532,12 @@ bool multibandcompressor_audio_module::get_gridline(int index, int subindex, int
 
 bool multibandcompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
+    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_layers(index, generation, layers);
+        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     return crossover.get_layers(index, generation, layers);
 }
 
@@ -2602,13 +2607,13 @@ const expander_audio_module *multibandgate_audio_module::get_strip_by_param_inde
 {
     // let's handle by the corresponding strip
     switch (index) {
-        case param_gating0:
+        case param_solo0:
             return &gate[0];
-        case param_gating1:
+        case param_solo1:
             return &gate[1];
-        case param_gating2:
+        case param_solo2:
             return &gate[2];
-        case param_gating3:
+        case param_solo3:
             return &gate[3];
     }
     return NULL;
@@ -2619,7 +2624,6 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, f
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_graph(subindex, data, points, context, mode);
-    context->set_source_rgba(0.35, 0.4, 0.2, *params[param_bypass] > 0.5f ? 0.3 : 1);
     return crossover.get_graph(subindex, phase, data, points, context, mode);
 }
 

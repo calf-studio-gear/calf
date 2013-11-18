@@ -42,7 +42,8 @@ private:
     float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
     float compressedKneeStop, adjKneeStart, thres;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
-    mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    mutable bool redraw_graph;
     uint32_t srate;
     bool is_active;
     inline float output_level(float slope) const;
@@ -74,7 +75,8 @@ private:
     float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
     float compressedKneeStop, adjKneeStart, thres;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
-    mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    mutable bool redraw_graph;
     float old_y1,old_yl,old_detected;
     uint32_t srate;
     bool is_active;
@@ -106,7 +108,8 @@ private:
     float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
     float compressedKneeStop, adjKneeStart, range, thres, attack_coeff, release_coeff;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_gate;
-    mutable float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;
+    mutable bool redraw_graph;
     inline float output_level(float slope) const;
     inline float output_gain(float linSlope, bool rms) const;
 public:
@@ -207,7 +210,7 @@ public:
  * MULTIBAND COMPRESSOR by Markus Schmidt
 **********************************************************************/
 
-class multibandcompressor_audio_module: public audio_module<multibandcompressor_metadata>, public line_graph_iface {
+class multibandcompressor_audio_module: public audio_module<multibandcompressor_metadata>, public frequency_response_line_graph {
 private:
     typedef multibandcompressor_audio_module AM;
     static const int strips = 4;
@@ -232,7 +235,7 @@ public:
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_layers(int index, int generation, unsigned int &layers) const;
+    virtual bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -372,7 +375,7 @@ public:
  * MULTIBAND GATE by Markus Schmidt
 **********************************************************************/
 
-class multibandgate_audio_module: public audio_module<multibandgate_metadata>, public line_graph_iface {
+class multibandgate_audio_module: public audio_module<multibandgate_metadata>, public frequency_response_line_graph {
 private:
     typedef multibandgate_audio_module AM;
     static const int strips = 4;

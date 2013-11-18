@@ -792,7 +792,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // GRID
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_GRID || lg->layers & LG_REALTIME_GRID) {
+        if (lg->layers & LG_CACHE_GRID and !phase || lg->layers & LG_REALTIME_GRID and phase) {
             // The plugin can set "vertical" to 1
             // to force drawing of vertical lines instead of horizontal ones
             // (which is the default)
@@ -834,7 +834,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // GRAPHS
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_GRAPH || lg->layers & LG_REALTIME_GRAPH) {
+        if (lg->layers & LG_CACHE_GRAPH and !phase || lg->layers & LG_REALTIME_GRAPH and phase) {
             // Cycle through all graphs and hand over the amount of horizontal
             // pixels. The plugin is expected to set all corresponding vertical
             // values in an array.
@@ -910,7 +910,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // DOTS
         ///////////////////////////////////////////////////////////////
         
-        if (lg->layers & LG_CACHE_DOT || lg->layers & LG_REALTIME_DOT) {
+        if (lg->layers & LG_CACHE_DOT and !phase || lg->layers & LG_REALTIME_DOT and phase) {
             // Cycle through all dots. The plugin is expected to set the x
             // and y value of the dot.
             // color of the dot (which can be set by the plugin

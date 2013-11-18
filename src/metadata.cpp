@@ -871,7 +871,7 @@ CALF_PORT_PROPS(xover3) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Input L" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Input R" },
     { 1,      0,  2,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
-    { 300,        10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
+    { 150,        10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
     { 3000,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq1", "Transition 2" },
     XOVER_BAND_PARAMS(1)
     XOVER_BAND_PARAMS(2)
