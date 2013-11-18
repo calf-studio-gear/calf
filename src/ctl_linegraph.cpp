@@ -662,9 +662,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_t *bg = cairo_create(lg->background_surface);
         calf_line_graph_draw_background(lg, bg);
         cairo_destroy(bg);
-        
-        // reset the generation
-        lg->generation = 0;
     }
     
     // the cache, grid and realtime surface wrapped in a cairo context
@@ -684,6 +681,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // and copy it to the realtime surface in case no realtime is drawn
         if (lg->debug) printf("copy bg->realtime\n");
         calf_line_graph_copy_surface(realtime_c, lg->background_surface);
+        
+        // reset generation value and request a new expose event
+        lg->generation = 0;
+        lg->source->get_layers(lg->source_id, lg->generation, lg->layers);
     }
     
     int sx = lg->size_x;

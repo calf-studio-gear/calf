@@ -872,8 +872,9 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, f
                 data[i] = dB_grid(output * *params[param_level_out]);
             }
         }
+        return true;
     }
-    return true;
+    return false;
 }
 float tapesimulator_audio_module::freq_gain(int index, double freq) const
 {
@@ -885,6 +886,7 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase
     if(!active or phase)
         return false;
     if (index == param_level_in) {
+        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
         bool tmp;
         vertical = (subindex & 1) != 0;
         bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
@@ -901,6 +903,7 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase
         }
         return result;
     } else if (index == param_lp) {
+        printf("üüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüü\n");
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
     return false;
@@ -921,14 +924,14 @@ bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned 
     layers = 0;
     // always draw grid on cache if surfaces are new on both widgets
     if (!generation)
-        layers = LG_CACHE_GRID;
+        layers |= LG_CACHE_GRID;
     // compression: dot in realtime, graphs as cache on new surfaces
     if (index == param_level_in and !generation)
         layers |= LG_CACHE_GRAPH;
     if (index == param_level_in)
         layers |= LG_REALTIME_DOT;
     // frequency: both graphs in realtime
-    if (index == param_level_in)
+    if (index == param_lp)
         layers |= LG_REALTIME_GRAPH;
     // draw always
     return true;
