@@ -751,7 +751,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     
         
-    if ( lg->force_cache ) {
+    if ( lg->force_cache
+      or lg->layers & LG_CACHE_GRID
+      or lg->layers & LG_CACHE_GRAPH
+      or lg->layers & LG_CACHE_DOT) {
         if (lg->debug) printf("\n->cache\n");
         
         // someone needs a redraw of the cache so start with the cache
@@ -961,6 +964,13 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 if (lg->debug) printf("copy grid->realtime\n");
                 calf_line_graph_copy_surface(ctx, lg->grid_surface, lg->force_cache ? 1 : lg->fade);
                 realtime_drawn = true;
+            }
+            
+            // check if we can skip the whole realtime phase
+            if (!(lg->layers & LG_REALTIME_GRID)
+            and !(lg->layers & LG_REALTIME_GRAPH)
+            and !(lg->layers & LG_REALTIME_DOT)) {
+                 phase = 2;
             }
         }
     } // one or two cycles for drawing cached and non-cached elements

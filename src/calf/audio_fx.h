@@ -651,7 +651,8 @@ public:
     void set_mode(int m) ;
     int get_filter_count() const;
     void init(int c, int b, uint32_t sr);
-    virtual bool get_graph(int subindex, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
+    virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 #if 0

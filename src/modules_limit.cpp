@@ -239,7 +239,6 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
-    redraw_graph = true;
     crossover.init(2, 4, 441000);
 }
 
@@ -283,18 +282,12 @@ void multibandlimiter_audio_module::params_changed()
     int m = *params[param_mode];
     if (m != _mode) {
         _mode = *params[param_mode];
-        redraw_graph = true;
     }
     
     crossover.set_mode(_mode + 1);
-    float r = crossover.set_filter(0, *params[param_freq0]);
-    if(r != *params[param_freq0]) redraw_graph = true;
-    
+    crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
-    if(r != *params[param_freq1]) redraw_graph = true;
-    
     crossover.set_filter(2, *params[param_freq2]);
-    if(r != *params[param_freq2]) redraw_graph = true;
     
     // set the params of all strips
     float rel;
@@ -552,8 +545,9 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
 
 bool multibandlimiter_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!redraw_graph or !is_active or phase or subindex >= strips)
-        return false;
-    redraw_graph = false;
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, phase, data, points, context, mode);
+}
+bool multibandlimiter_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    return crossover.get_layers(index, generation, layers);
 }

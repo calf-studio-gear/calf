@@ -219,7 +219,6 @@ private:
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
     int mode;
-    mutable bool redraw_graph;
 public:
     uint32_t srate;
     bool is_active;
@@ -385,7 +384,6 @@ private:
     expander_audio_module gate[strips];
     dsp::crossover crossover;
     int mode;
-    mutable bool redraw_graph;
 public:
     uint32_t srate;
     bool is_active;

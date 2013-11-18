@@ -947,6 +947,7 @@ float transients::process(float s) {
 crossover::crossover() {
     bands     = -1;
     mode      = -1;
+    redraw_graph = true;
 }
 void crossover::set_sample_rate(uint32_t sr) {
     srate = sr;
@@ -1061,7 +1062,7 @@ void crossover::process(float *data) {
 float crossover::get_value(int c, int b) {
     return out[c][b];
 }
-bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool crossover::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (subindex >= bands) {
         return false;
@@ -1072,23 +1073,25 @@ bool crossover::get_graph(int subindex, float *data, int points, cairo_iface *co
         ret = 1.f;
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
         for(int f = 0; f < get_filter_count(); f ++) {
-            if(subindex == 0)
-                ret *= lp[0][0][f].freq_gain(freq, (float)srate);
-            if(subindex > 0 and subindex < bands - 1) {
-                ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
+            if(subindex < bands -1)
                 ret *= lp[0][subindex][f].freq_gain(freq, (float)srate);
-            }
-            if(subindex == bands - 1) {
+            if(subindex > 0)
                 ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
-            }
         }
         ret *= level[subindex];
         context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.4 : 1);
-        context->set_line_width(1.5);
         data[i] = dB_grid(ret);
     }
     return true;
 }
+bool crossover::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = 0 | (redraw_graph or !generation ? LG_CACHE_GRAPH : 0) | (!generation ? LG_CACHE_GRID : 0);
+    bool redraw = redraw_graph or !generation;
+    redraw_graph = false;
+    return redraw;
+}
+
 int crossover::get_filter_count() const
 {
     switch (mode) {

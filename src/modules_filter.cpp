@@ -717,9 +717,12 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
 template<class XoverBaseClass>
 bool xover_audio_module<XoverBaseClass>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase or subindex >= AM::bands)
-        return false;
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, phase, data, points, context, mode);
+}
+template<class XoverBaseClass>
+bool xover_audio_module<XoverBaseClass>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    return crossover.get_layers(index, generation, layers);
 }
 
 template class xover_audio_module<xover2_metadata>;

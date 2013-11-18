@@ -1285,7 +1285,6 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
     meter_outR = 0.f;
     mode       = 0;
     crossover.init(2, 4, 441000);
-    redraw_graph = false;
 }
 
 void multibandcompressor_audio_module::activate()
@@ -1325,18 +1324,12 @@ void multibandcompressor_audio_module::params_changed()
     int m = *params[param_mode];
     if (m != mode) {
         mode = *params[param_mode];
-        redraw_graph = true;
     }
     
     crossover.set_mode(mode + 1);
-    float r = crossover.set_filter(0, *params[param_freq0]);
-    if(r != *params[param_freq0]) redraw_graph = true;
-    
+    crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
-    if(r != *params[param_freq1]) redraw_graph = true;
-    
     crossover.set_filter(2, *params[param_freq2]);
-    if(r != *params[param_freq2]) redraw_graph = true;
 
     // set the params of all strips
     strip[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo));
@@ -1515,11 +1508,8 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, int ph
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_graph(subindex, data, points, context, mode);
-
-    if (!is_active or subindex > 3)
-        return false;
     context->set_source_rgba(0.35, 0.4, 0.2, *params[param_bypass] > 0.5f ? 0.3 : 1);
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, phase, data, points, context, mode);
 }
 
 bool multibandcompressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
@@ -1535,9 +1525,6 @@ bool multibandcompressor_audio_module::get_gridline(int index, int subindex, int
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_gridline(subindex, pos, vertical, legend, context);
-
-    if (!is_active or phase)
-        return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
@@ -1546,8 +1533,7 @@ bool multibandcompressor_audio_module::get_layers(int index, int generation, uns
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_layers(index, generation, layers);
-    layers   = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    return (!generation or redraw_graph) ? true : false;
+    return crossover.get_layers(index, generation, layers);
 }
 
 
@@ -2412,7 +2398,6 @@ multibandgate_audio_module::multibandgate_audio_module()
     meter_outL = 0.f;
     meter_outR = 0.f;
     crossover.init(2, 4, 441000);
-    redraw_graph = false;
 }
 
 void multibandgate_audio_module::activate()
@@ -2451,18 +2436,12 @@ void multibandgate_audio_module::params_changed()
     int m = *params[param_mode];
     if (m != mode) {
         mode = *params[param_mode];
-        redraw_graph = true;
     }
     
     crossover.set_mode(mode + 1);
-    float r = crossover.set_filter(0, *params[param_freq0]);
-    if(r != *params[param_freq0]) redraw_graph = true;
-    
+    crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
-    if(r != *params[param_freq1]) redraw_graph = true;
-    
     crossover.set_filter(2, *params[param_freq2]);
-    if(r != *params[param_freq2]) redraw_graph = true;
 
     // set the params of all strips
     gate[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], 1.f, *params[param_bypass0], !(solo[0] || no_solo), *params[param_range0]);
@@ -2640,11 +2619,8 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, f
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_graph(subindex, data, points, context, mode);
-
-    if (!is_active or subindex > 3)
-        return false;
     context->set_source_rgba(0.35, 0.4, 0.2, *params[param_bypass] > 0.5f ? 0.3 : 1);
-    return crossover.get_graph(subindex, data, points, context, mode);
+    return crossover.get_graph(subindex, phase, data, points, context, mode);
 }
 
 bool multibandgate_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
@@ -2660,9 +2636,6 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, int phase
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_gridline(subindex, pos, vertical, legend, context);
-
-    if (!is_active or phase)
-        return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
@@ -2671,10 +2644,7 @@ bool multibandgate_audio_module::get_layers(int index, int generation, unsigned 
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
         return m->get_layers(index, generation, layers);
-
-    int draw = (!generation or redraw_graph) ? true : false;
-    layers   = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    return draw;
+    return crossover.get_layers(index, generation, layers);
 }
 
 
