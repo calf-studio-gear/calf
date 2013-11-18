@@ -103,8 +103,8 @@ public:
         switch(type) {
             case 0: //"Columbia"
                 i = 100.f;
-		j = 500.f;
-		k = 1590.f;
+        j = 500.f;
+        k = 1590.f;
                 break;
             case 1: //"EMI"
                 i = 70.f;
@@ -116,20 +116,20 @@ public:
                 j = 353.f;
                 k = 3180.f;
                 break;
-	    case 3: //"RIAA"
-	    default:
+        case 3: //"RIAA"
+        default:
                 float tau1 = 0.003180f;
                 float tau2 = 0.000318f;
                 float tau3 = 0.000075f;
                 i = 1.f / (2.f * M_PI * tau1);
                 j = 1.f / (2.f * M_PI * tau2);
                 k = 1.f / (2.f * M_PI * tau3);
-	        break;
+            break;
         }
 
-	i *= 2.f * M_PI;
-	j *= 2.f * M_PI;
-	k *= 2.f * M_PI;
+    i *= 2.f * M_PI;
+    j *= 2.f * M_PI;
+    k *= 2.f * M_PI;
 
         float t = 1.f / sr;
 
@@ -182,7 +182,7 @@ public:
     }
     
     /// Gain and a given frequency
-    float freq_gain(float freq, float sr)
+    float freq_gain(float freq, float sr) const
     {
         return r1.freq_gain(freq, sr);
     }

@@ -76,7 +76,7 @@ calf_line_graph_draw_grid( CalfLineGraph* lg, cairo_t *ctx, std::string &legend,
             cairo_show_text(ctx, legend.c_str());
         }
     }
-    if (lg->debug > 1) printf("* grid vert: %d, x: %d, y: %d, label: %s\n", vertical ? 1 : 0, (int)x, (int)y, legend.c_str());
+    if (lg->debug > 2) printf("* grid vert: %d, x: %d, y: %d, label: %s\n", vertical ? 1 : 0, (int)x, (int)y, legend.c_str());
 }
 
 static int
@@ -95,7 +95,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
     
     for (int i = 0; i < sx; i++) {
         y = (oy + sy / 2 - (sy / 2 - 1) * data[i]);
-        if (lg->debug > 1) printf("* graph x: %d, y: %.5f, data: %.5f\n", i, y, data[i]);
+        if (lg->debug > 2) printf("* graph x: %d, y: %.5f, data: %.5f\n", i, y, data[i]);
         switch (mode) {
             case 0:
             default:
@@ -614,7 +614,7 @@ void calf_line_graph_expose_request (GtkWidget *widget, bool force)
     // quit if no source available
     if (!lg->source) return;
     
-    if (lg->debug) printf("\n\n### expose request %d ###\n", lg->generation);
+    if (lg->debug > 1) printf("\n\n### expose request %d ###\n", lg->generation);
     
     // let a bitmask be switched by the plugin to determine the layers
     // we want to draw. We set all cache layers to true if force_cache
@@ -624,11 +624,11 @@ void calf_line_graph_expose_request (GtkWidget *widget, bool force)
     //if (lg->force_cache || lg->recreate_surfaces)
         //lg->layers |= LG_CACHE_GRID | LG_CACHE_GRAPH | LG_CACHE_DOT | LG_CACHE_MOVING;
     
-    if (lg->debug) {
-        printf("bitmask ");
-        dsp::print_bits(sizeof(lg->layers), &lg->layers);
-        printf("\n");
-    }
+    //if (lg->debug > 1) {
+        //printf("bitmask ");
+        //dsp::print_bits(sizeof(lg->layers), &lg->layers);
+        //printf("\n");
+    //}
     
     // if plugin returns true (something has obviously changed) or if
     // the requestor forces a redraw, request an exposition of the widget

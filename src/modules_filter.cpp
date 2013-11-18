@@ -331,7 +331,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
 }
 
 template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode)
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active or phase or subindex)
         return false;
@@ -340,7 +340,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
 
 
 template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!is_active or phase)
         return false;
@@ -364,7 +364,7 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 }
 
 template<class BaseClass, bool has_lphp>
-float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, double freq)
+float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, double freq) const
 {
     float ret = 1.f;
     if (has_lphp)
@@ -495,6 +495,8 @@ phonoeq_audio_module::phonoeq_audio_module()
     is_active = false;
     srate = 0;
     redraw_graph = true;
+    mode = -1;
+    type = -1;
 }
 
 void phonoeq_audio_module::activate()
@@ -512,11 +514,13 @@ void phonoeq_audio_module::deactivate()
 
 void phonoeq_audio_module::params_changed()
 {
-    int mode = *params[param_mode];
-    int type = *params[param_type];
+    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+    if (mode != *params[param_mode] or type != *params[param_type])
+        redraw_graph = true;
+    mode = *params[param_mode];
+    type = *params[param_type];
     riaacurvL.set(srate, mode, type);
     riaacurvR.set(srate, mode, type);
-    redraw_graph = true;
 }
 
 uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -580,11 +584,6 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         riaacurvR.sanitize();
     }
     return outputs_mask;
-}
-
-float phonoeq_audio_module::freq_gain(int index, double freq)
-{
-    return riaacurvL.freq_gain(freq, (float)srate);
 }
 
 /**********************************************************************

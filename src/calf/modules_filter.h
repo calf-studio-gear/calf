@@ -74,9 +74,9 @@ public:
     void deactivate();
 
     void params_changed();
-    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context);
-    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode);
-    float freq_gain(int index, double freq);
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    float freq_gain(int index, double freq) const;
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
@@ -94,7 +94,8 @@ typedef equalizerNband_audio_module<equalizer12band_metadata, true>  equalizer12
 **********************************************************************/
 
 template<typename FilterClass, typename Metadata>
-class filter_module_with_inertia: public audio_module<Metadata>, public FilterClass
+class filter_module_with_inertia: public audio_module<Metadata>, public FilterClass,
+public frequency_response_line_graph
 {
 public:
     /// These are pointers to the ins, outs, params arrays in the main class
@@ -196,6 +197,9 @@ public:
         }
         return ostate;
     }
+    float freq_gain(int index, double freq) const {
+        return FilterClass::freq_gain(index, (float)freq, (float)FilterClass::srate);
+    }
 };
 
 /**********************************************************************
@@ -203,8 +207,7 @@ public:
 **********************************************************************/
 
 class filter_audio_module: 
-    public filter_module_with_inertia<dsp::biquad_filter_module, filter_metadata>, 
-    public frequency_response_line_graph
+    public filter_module_with_inertia<dsp::biquad_filter_module, filter_metadata>
 {
     mutable float old_cutoff, old_resonance, old_mode;
 public:    
@@ -229,8 +232,7 @@ public:
 **********************************************************************/
 
 class filterclavier_audio_module: 
-        public filter_module_with_inertia<dsp::biquad_filter_module, filterclavier_metadata>, 
-        public frequency_response_line_graph
+        public filter_module_with_inertia<dsp::biquad_filter_module, filterclavier_metadata>
 {        
     using audio_module<filterclavier_metadata>::ins;
     using audio_module<filterclavier_metadata>::outs;
@@ -247,11 +249,10 @@ public:
     void activate();
     void set_sample_rate(uint32_t sr);
     void deactivate();
-  
+    
     /// MIDI control
     virtual void note_on(int channel, int note, int vel);
     virtual void note_off(int channel, int note, int vel);
-
 private:
     void adjust_gain_according_to_filter_mode(int velocity);
 };
@@ -264,6 +265,7 @@ class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public freque
 public:
     dual_in_out_metering<phonoeq_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
+    int mode, type;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
@@ -276,7 +278,9 @@ public:
         srate = sr;
         meters.set_sample_rate(sr);
     }
-    virtual float freq_gain(int index, double freq);
+    virtual float freq_gain(int index, double freq) const {
+        return riaacurvL.freq_gain(freq, (float)srate);
+    }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 

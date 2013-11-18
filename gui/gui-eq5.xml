@@ -6,10 +6,10 @@
             <value param="level_in" />
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
-            <label param="meter_inL" />
+            <label text="In L" />
             <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
             <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
-            <label param="meter_inR" />
+            <label text="In R" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0">
             <label text="0dB" expand="0" fill="0" />
@@ -22,10 +22,10 @@
              <toggle param="bypass" shrink="1"/>
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
-            <label param="meter_outL" />param
+            <label text="Out L" />
             <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
             <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
-            <label param="meter_outR" />
+            <label text="Out R" />
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="5" attach-y="0">
             <label text="0dB" expand="0" fill="0" />

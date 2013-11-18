@@ -1,55 +1,62 @@
-<table rows="1" cols="3">
-    <vbox attach-x="0" attach-y="0">
-        <frame label="Input">
-            <vbox spacing="15">
-                <table rows="2" cols="3">
-                    <label param="meter_inL" attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L"/>
-                    <vumeter param="meter_inL" position="2" hold="1.5" falloff="2.5"  attach-x="1" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
-                    <led param="clip_inL" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
-                    
-                    <label param="meter_inR" attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
-                    <vumeter param="meter_inR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
-                    <led param="clip_inR" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
-                </table>
-                <table rows="3" cols="2">
-                    <combo param="mode" attach-x="1" attach-y="0" />
-                    <label param="mode" attach-x="0" attach-y="0" />
-                    <combo param="type" attach-x="1" attach-y="1" />
-                    <label param="type" attach-x="0" attach-y="1" />
-                    <vbox attach-x="0" attach-y="2">
-                        <toggle param="bypass" size="2" />
-                        <label param="bypass" />
-                    </vbox>
-                </table>
-            </vbox>
-        </frame>
-    </vbox>
+<vbox>
     
-    <if cond="directlink">
-        <frame label="Frequency Response" attach-x="1" attach-y="0" pad-x="8">
-            <line-graph refresh="1" expand="1" fill="1" crosshairs="1" freqhandles="0" />
-        </frame>
-    </if>
+    <table spacing="5" rows="1" cols="7">
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
+            <label param="level_in" />
+            <knob param="level_in" size="2" />
+            <value param="level_in" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
+            <label text="In L" />
+            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label text="In R" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_inL" expand="0" fill="0" />
+            <led param="clip_inR" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="5">
+             <label param="bypass"/>
+             <toggle param="bypass" shrink="1"/>
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
+            <label text="Out L" />
+            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label text="Out R" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="5" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_outL" expand="0" mode="1" fill="0" />
+            <led param="clip_outR" expand="0" mode="1" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="6" attach-y="0">
+            <label param="level_out" />
+            <knob param="level_out" size="2" />
+            <value param="level_out" />
+        </vbox>
+    </table>
     
-    <vbox attach-x="2" attach-y="0">
-        <frame label="Output">
-            <vbox spacing="15">
-                <table rows="2" cols="3">
-                    <label param="meter_outL"  attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L"/>
-                    <vumeter param="meter_outL" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
-                    <led param="clip_outL" mode="1" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
-                    
-                    <label param="meter_outR"  attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
-                    <vumeter param="meter_outR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
-                    <led param="clip_outR" mode="1" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
-                </table>
-                <hbox>
-                    <vbox>
-                        <knob param="level_out" size="5" />
-                        <value param="level_out" />
-                    </vbox>
-                </hbox>
-            </vbox>
-        </frame>
-    </vbox>
-</table>
+    <frame label="Frequency Response">
+        <vbox>
+            <hbox>
+                <vbox>
+                    <label param="mode"/>
+                    <combo param="mode"/>
+                </vbox>
+                <vbox>
+                    <label param="type"/>
+                    <combo param="type"/>
+                </vbox>
+            </hbox>
+            <if cond="directlink">
+                <line-graph refresh="1" height="180" width="450" expand="1" fill="1" crosshairs="1" />
+            </if>
+        </vbox>
+    </frame>
+    
+</vbox>
