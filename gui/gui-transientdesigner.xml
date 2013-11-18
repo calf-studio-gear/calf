@@ -31,9 +31,9 @@
         <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
-    <hbox spacing="10">
+    <hbox>
         <frame label="Attack">
-            <hbox spacing="12">
+            <hbox spacing="4">
                 <vbox>
                     <label text="Time"/>
                     <knob param="attack_time" size="3"/>
@@ -48,7 +48,7 @@
         </frame>
         
         <frame label="Release">
-            <hbox spacing="12">
+            <hbox spacing="4">
                 <vbox>
                     <label text="Boost"/>
                     <knob param="release_boost" size="5" type="1"/>

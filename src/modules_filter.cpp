@@ -337,6 +337,8 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         return false;
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
+
+
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context)
 {
@@ -361,11 +363,11 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
     return 1;
 }
 
-template<class BaseClass, bool use_hplp>
-float equalizerNband_audio_module<BaseClass, use_hplp>::freq_gain(int index, double freq)
+template<class BaseClass, bool has_lphp>
+float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, double freq)
 {
     float ret = 1.f;
-    if (use_hplp)
+    if (has_lphp)
     {
         ret *= adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
         ret *= adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
