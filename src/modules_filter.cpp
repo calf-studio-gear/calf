@@ -514,7 +514,6 @@ void phonoeq_audio_module::deactivate()
 
 void phonoeq_audio_module::params_changed()
 {
-    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     if (mode != *params[param_mode] or type != *params[param_type])
         redraw_graph = true;
     mode = *params[param_mode];
@@ -584,6 +583,18 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         riaacurvR.sanitize();
     }
     return outputs_mask;
+}
+bool phonoeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (phase or subindex)
+        return false;
+    return ::get_graph(*this, subindex, data, points, 32, 0);
+}
+bool phonoeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (phase)
+        return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
 }
 
 /**********************************************************************
