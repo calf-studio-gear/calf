@@ -1,5 +1,5 @@
 <hbox spacing="8">
-    <vbox spacing="8">
+    <vbox>
         <table cols="4" rows="4" fill="0" expand="0">
             <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
             <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
@@ -55,10 +55,8 @@
         </frame>
     </vbox>
     <frame label="Sidechain">
-        <vbox spacing="5">
-            <if cond="directlink">
-                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="200"  crosshairs="1" freqhandles="4" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
-            </if>
+        <vbox>
+            <label/>
             <hbox homogeneous="1" fill="0" expand="0">
                 <vbox fill="0" expand="0">
                     <label param="f1_freq" />
@@ -86,7 +84,10 @@
                     <value param="f2_q" />
                 </vbox>
             </hbox>
+            <label/>
+            <if cond="directlink">
+                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="180"  crosshairs="1" freqhandles="4" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
+            </if>
         </vbox>
     </frame>
 </hbox>
-                
