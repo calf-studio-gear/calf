@@ -589,7 +589,13 @@ void analyzer_audio_module::params_changed() {
         leveladjust     = *params[param_analyzer_level] > 1 ? 1 + (*params[param_analyzer_level] - 1) / 4 : *params[param_analyzer_level];
         db_level_coeff1 = pow(64, *params[param_analyzer_level]);
         db_level_coeff2 = pow(64, 2 * leveladjust);
+        redraw_graph = true;
     }
+    if(*params[param_analyzer_mode] != _mode_old) {
+        _mode_old  = *params[param_analyzer_mode];
+        redraw_graph = true;
+    }
+    
 }
 
 uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -1418,12 +1424,7 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, flo
 
 bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    bool redraw = false;
-    if(*params[param_analyzer_mode] != _mode_old or *params[param_analyzer_level] != _level_old) {
-        _mode_old  = *params[param_analyzer_mode];
-        _level_old = *params[param_analyzer_level];
-        redraw = true;
-    }
-    layers = LG_REALTIME_GRAPH | (!generation or redraw ? LG_CACHE_GRID : 0);
+    layers = LG_REALTIME_GRAPH | ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
+    redraw_graph = false;
     return true;
 }
