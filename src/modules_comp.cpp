@@ -2875,24 +2875,24 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
             or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
             // we are drawing trigger hold stuff outside the hold window
             // so we don't want to see old data - zero it out.
-            data[i] = dB_grid(2.51e-10, 64, 1);
+            data[i] = dB_grid(2.51e-10, 128, 0.6);
         } else {
             // draw normally
-            data[i] = dB_grid(fabs(pbuffer[pos]) + 2.51e-10, 64, 1);
+            data[i] = dB_grid(fabs(pbuffer[pos]) + 2.51e-10, 128, 0.6);
         }
     }
     return true;
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (subindex >= 12 or phase)
+    if (subindex >= 16 or phase)
         return false;
-    float gain = 1.f / (1 << subindex);
-    pos = dB_grid(gain, 64, 1);
+    float gain = 16.f / (1 << subindex);
+    pos = dB_grid(gain, 128, 0.6);
     context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
     if (!(subindex & 1) and subindex) {
         std::stringstream ss;
-        ss << (-6 * subindex) << " dB";
+        ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();
     }
     return true;

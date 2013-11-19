@@ -289,9 +289,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         std::stringstream ss;
         ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();
-        context->set_dash(dash, 0);
     } else {
-        context->set_dash(dash, 0);
     }
     vertical = false;
     return true;

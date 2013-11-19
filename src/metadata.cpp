@@ -778,7 +778,7 @@ CALF_PORT_PROPS(phonoeq) = {
 CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "PhonoEQ", "Calf PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
-const char *active_mode_names[] = { " ", "Stereo", "Left", "Right", "Mid", "Side" };
+const char *active_mode_names[] = { " ", "ON", "Left", "Right", "Mid", "Side" };
 
 CALF_PORT_NAMES(equalizer5band) = {"In L", "In R", "Out L", "Out R"};
 
