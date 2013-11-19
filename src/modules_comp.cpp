@@ -207,7 +207,7 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
     {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points)
+            if (i == 0 or i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;
@@ -446,7 +446,7 @@ bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int poin
     {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points)
+            if (i == 0 or i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;
@@ -679,7 +679,7 @@ bool expander_audio_module::get_graph(int subindex, float *data, int points, cai
     for (int i = 0; i < points; i++) {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points)
+            if (i == 0 or i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;

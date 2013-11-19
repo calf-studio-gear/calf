@@ -446,13 +446,61 @@ void multichorus_audio_module::set_sample_rate(uint32_t sr) {
     right.setup(sr);
 }
 
+void multichorus_audio_module::params_changed()
+{
+    // delicious copy-pasta from flanger module - it'd be better to keep it common or something
+    float dry = *params[par_dryamount];
+    float wet = *params[par_amount];
+    float rate = *params[par_rate];
+    float min_delay = *params[par_delay] / 1000.0;
+    float mod_depth = *params[par_depth] / 1000.0;
+    float overlap = *params[par_overlap];
+    left.set_dry(dry); right.set_dry(dry);
+    left.set_wet(wet); right.set_wet(wet);
+    left.set_rate(rate); right.set_rate(rate);
+    left.set_min_delay(min_delay); right.set_min_delay(min_delay);
+    left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+    int voices = (int)*params[par_voices];
+    left.lfo.set_voices(voices); right.lfo.set_voices(voices);
+    left.lfo.set_overlap(overlap);right.lfo.set_overlap(overlap);
+    float vphase = *params[par_vphase] * (1.f / 360.f);
+    left.lfo.vphase = right.lfo.vphase = vphase * (4096 / std::max(voices - 1, 1));
+    float r_phase = *params[par_stereo] * (1.f / 360.f);
+    if (fabs(r_phase - last_r_phase) > 0.0001f) {
+        right.lfo.phase = left.lfo.phase;
+        right.lfo.phase += chorus_phase(r_phase * 4096);
+        last_r_phase = r_phase;
+    }
+    if (*params[par_freq] != freq_old or *params[par_freq2] != freq2_old or *params[par_q] != q_old) {
+        left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
+        left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
+        right.post.f1.copy_coeffs(left.post.f1);
+        right.post.f2.copy_coeffs(left.post.f2);
+        freq_old = *params[par_freq];
+        freq2_old = *params[par_freq2];
+        q_old = *params[par_q];
+        redraw_graph = true;
+    }
+    redraw_sine = true;
+}
+
+uint32_t multichorus_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    left.process(outs[0] + offset, ins[0] + offset, numsamples);
+    right.process(outs[1] + offset, ins[1] + offset, numsamples);
+    return outputs_mask; // XXXKF allow some delay after input going blank
+}
+
 bool multichorus_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = 0;
+    // frequency response
     if (index == par_delay)
         layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0) | LG_REALTIME_GRAPH;
+    // sine display
     if (index == par_rate)
         layers = LG_REALTIME_DOT | (redraw_sine ? LG_CACHE_GRAPH : 0);
+    // dot display
     if (index == par_depth)
         layers = LG_REALTIME_DOT;
     redraw_graph = false;
@@ -541,51 +589,6 @@ float multichorus_audio_module::freq_gain(int subindex, float freq) const
     if (subindex == 2)
         return *params[par_amount] * left.post.freq_gain(freq, srate);
     return (subindex ? right : left).freq_gain(freq, srate);                
-}
-
-void multichorus_audio_module::params_changed()
-{
-    // delicious copy-pasta from flanger module - it'd be better to keep it common or something
-    float dry = *params[par_dryamount];
-    float wet = *params[par_amount];
-    float rate = *params[par_rate];
-    float min_delay = *params[par_delay] / 1000.0;
-    float mod_depth = *params[par_depth] / 1000.0;
-    float overlap = *params[par_overlap];
-    left.set_dry(dry); right.set_dry(dry);
-    left.set_wet(wet); right.set_wet(wet);
-    left.set_rate(rate); right.set_rate(rate);
-    left.set_min_delay(min_delay); right.set_min_delay(min_delay);
-    left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
-    int voices = (int)*params[par_voices];
-    left.lfo.set_voices(voices); right.lfo.set_voices(voices);
-    left.lfo.set_overlap(overlap);right.lfo.set_overlap(overlap);
-    float vphase = *params[par_vphase] * (1.f / 360.f);
-    left.lfo.vphase = right.lfo.vphase = vphase * (4096 / std::max(voices - 1, 1));
-    float r_phase = *params[par_stereo] * (1.f / 360.f);
-    if (fabs(r_phase - last_r_phase) > 0.0001f) {
-        right.lfo.phase = left.lfo.phase;
-        right.lfo.phase += chorus_phase(r_phase * 4096);
-        last_r_phase = r_phase;
-    }
-    if (*params[par_freq] != freq_old or *params[par_freq2] != freq2_old or *params[par_q] != q_old) {
-        left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
-        left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
-        right.post.f1.copy_coeffs(left.post.f1);
-        right.post.f2.copy_coeffs(left.post.f2);
-        freq_old = *params[par_freq];
-        freq2_old = *params[par_freq2];
-        q_old = *params[par_q];
-        redraw_graph = true;
-    }
-    redraw_sine = true;
-}
-
-uint32_t multichorus_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
-{
-    left.process(outs[0] + offset, ins[0] + offset, numsamples);
-    right.process(outs[1] + offset, ins[1] + offset, numsamples);
-    return outputs_mask; // XXXKF allow some delay after input going blank
 }
 
 /**********************************************************************

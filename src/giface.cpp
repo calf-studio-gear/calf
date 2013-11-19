@@ -362,7 +362,7 @@ bool frequency_response_line_graph::get_gridline(int index, int subindex, int ph
 bool frequency_response_line_graph::get_layers(int index, int generation, unsigned int &layers) const
 {
     redraw_graph = redraw_graph || !generation;
-    layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    layers = (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
     bool r = redraw_graph;
     redraw_graph = false;
     return r;

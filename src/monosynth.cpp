@@ -241,6 +241,8 @@ bool monosynth_audio_module::get_graph(int index, int subindex, int phase, float
             float level = f.freq_gain(freq, srate);
             if (!is_stereo_filter())
                 level *= filter2.freq_gain(freq, srate);
+            else
+                set_channel_color(context, subindex);
             level *= fgain;
             
             data[i] = log(level) / log(1024.0) + 0.5;

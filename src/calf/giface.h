@@ -170,6 +170,7 @@ struct progress_report_iface
 
 /// possible bit masks for get_layers
 enum layers_flags {
+    LG_NONE            = 0x000000,
     LG_CACHE_GRID      = 0x000001,
     LG_REALTIME_GRID   = 0x000002,
     LG_CACHE_GRAPH     = 0x000004,
