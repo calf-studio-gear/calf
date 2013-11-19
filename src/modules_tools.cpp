@@ -558,6 +558,7 @@ void analyzer_audio_module::params_changed() {
     if(*params[param_analyzer_mode] != _mode_old) {
         _mode_old = *params[param_analyzer_mode];
         ___sanitize = true;
+        redraw_graph = true;
     }
     if(*params[param_analyzer_scale] != _scale_old) {
         _scale_old = *params[param_analyzer_scale];
@@ -591,11 +592,6 @@ void analyzer_audio_module::params_changed() {
         db_level_coeff2 = pow(64, 2 * leveladjust);
         redraw_graph = true;
     }
-    if(*params[param_analyzer_mode] != _mode_old) {
-        _mode_old  = *params[param_analyzer_mode];
-        redraw_graph = true;
-    }
-    
 }
 
 uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {

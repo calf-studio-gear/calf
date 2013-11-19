@@ -66,11 +66,6 @@
                 <label/>
             </vbox>
             <vbox spacing="4">
-                <label param="detection0"/>
-                <combo param="detection0"/>
-                <label/>
-            </vbox>
-            <vbox spacing="4">
                 <label param="range0" />
                 <knob param="range0" />
                 <value param="range0" />
@@ -105,6 +100,11 @@
                 <knob param="knee0" />
                 <value param="knee0" />
             </vbox>
+            <vbox spacing="4">
+                <label param="detection0"/>
+                <combo param="detection0"/>
+                <label/>
+            </vbox>
         </hbox>
         
         <hbox page="Low Band">
@@ -116,11 +116,6 @@
             <vbox spacing="4">
                 <label param="solo1"/>
                 <toggle param="solo1"/>
-                <label/>
-            </vbox>
-            <vbox spacing="4">
-                <label param="detection1"/>
-                <combo param="detection1"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -158,6 +153,11 @@
                 <knob param="knee1" />
                 <value param="knee1" />
             </vbox>
+            <vbox spacing="4">
+                <label param="detection1"/>
+                <combo param="detection1"/>
+                <label/>
+            </vbox>
         </hbox>
         
         <hbox page="Mid Band">
@@ -169,11 +169,6 @@
             <vbox spacing="4">
                 <label param="solo2"/>
                 <toggle param="solo2"/>
-                <label/>
-            </vbox>
-            <vbox spacing="4">
-                <label param="detection2"/>
-                <combo param="detection2"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -211,6 +206,11 @@
                 <knob param="knee2" />
                 <value param="knee2" />
             </vbox>
+            <vbox spacing="4">
+                <label param="detection2"/>
+                <combo param="detection2"/>
+                <label/>
+            </vbox>
         </hbox>
         
         <hbox page="High Band">
@@ -222,11 +222,6 @@
             <vbox spacing="4">
                 <label param="solo3"/>
                 <toggle param="solo3"/>
-                <label/>
-            </vbox>
-            <vbox spacing="4">
-                <label param="detection3"/>
-                <combo param="detection3"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -263,6 +258,11 @@
                 <label param="knee3" />
                 <knob param="knee3" />
                 <value param="knee3" />
+            </vbox>
+            <vbox spacing="4">
+                <label param="detection3"/>
+                <combo param="detection3"/>
+                <label/>
             </vbox>
         </hbox>
     </notebook>
