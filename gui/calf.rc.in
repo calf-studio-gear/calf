@@ -339,8 +339,8 @@ style "calf-button"
     GtkButton      ::child-displacement-y = 0
     GtkButton      ::inner-border         = { 8, 8, 2, 2}
     
-    xthickness = 2
-    ythickness = 1
+    xthickness = 3
+    ythickness = 3
     
     fg[NORMAL]          = "#001144"
     fg[PRELIGHT]        = "#115588"
@@ -434,8 +434,8 @@ style "calf-toggle"
     GtkButton      ::child-displacement-y = 0
     GtkButton::inner-border         = { 6, 31, 1, 1}
     
-    xthickness = 2
-    ythickness = 1
+    xthickness = 3
+    ythickness = 3
     
     fg[NORMAL]          = "#001144"
     fg[PRELIGHT]        = "#115588"
@@ -530,8 +530,8 @@ style "calf-button-norm"
     GtkButton      ::child-displacement-y = 0
     GtkButton      ::inner-border         = { 8, 8, 2, 2}
     
-    xthickness = 2
-    ythickness = 1
+    xthickness = 3
+    ythickness = 3
     
     fg[NORMAL]          = "#001144"
     fg[PRELIGHT]        = "#115588"
