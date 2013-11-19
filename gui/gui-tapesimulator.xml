@@ -2,7 +2,7 @@
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
         
         <label param="bypass" attach-x="0" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="24"/>
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
@@ -29,55 +29,61 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
+        <vbox spacing="10">
+            <label/>
+            <label text="Gain"/>
+            <knob param="level_in" size="5"/>
+            <value param="level_in"/>
+            <label/>
+        </vbox>
         <frame label="Simulation">
-            <vbox spacing="10">
-                <hbox spacing="6">
-                    <if cond="directlink">
-                        <line-graph refresh="1" width="240" height="100" param="lowpass" attach-x="0" attach-y="0"/>
-                    </if>
-                    <vbox attach-x="1" attach-y="0">
+            <hbox spacing="20">
+                <vbox spacing="10">
+                    <vbox>
+                        <label text="Noise"/>
+                        <knob param="noise" size="3"/>
+                        <value param="noise"/>
+                    </vbox>
+                    <vbox>
+                        <label/>
+                        <label text="Tape Speed"/>
+                        <combo param="speed"/>
+                        
+                    </vbox>
+                </vbox>
+                <vbox spacing="10">
+                    <vbox>
+                        <label text="Mechanical"/>
+                        <knob param="mechanical" size="3"/>
+                        <value param="mechanical"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Magnetical"/>
+                        <toggle param="magnetical"/>
+                    </vbox>
+                </vbox>
+                <vbox spacing="10">
+                    <vbox>
                         <label text="Filter"/>
                         <knob param="lowpass" size="3"/>
                         <value param="lowpass"/>
                     </vbox>
-                </hbox>
-                <hbox>
                     <vbox>
-                        <label text="Tape Speed" attach-x="0" attach-y="1"/>
-                        <combo param="speed" attach-x="0" attach-y="2"/>
-                        <label/>
+                        <label text="Muffle"/>
+                        <toggle param="post"/>
                     </vbox>
-                    <vbox>
-                        <label text="Magnetical" attach-x="3" attach-y="1"/>
-                        <toggle param="magnetical" attach-x="3" attach-y="2"/>
-                        <label/>
-                    </vbox>
-                    <vbox>
-                        <label text="Mechanical" attach-x="2" attach-y="1"/>
-                        <knob param="mechanical" attach-x="2" attach-y="2"/>
-                        <value param="mechanical" attach-x="2" attach-y="3"/>
-                    </vbox>
-                    <vbox>
-                        <label text="Noise" attach-x="1" attach-y="1"/>
-                        <knob param="noise" size="2" attach-x="1" attach-y="2"/>
-                        <value param="noise" attach-x="1" attach-y="3"/>
-                    </vbox>
-                </hbox>
-            </vbox>
+                </vbox>
+            </hbox>
+        </frame>
+        <frame label="Frequency Response">
+            <if cond="directlink">
+                <line-graph refresh="1" width="160" height="160" param="lowpass"/>
+            </if>
         </frame>
         <frame label="Saturation">
-            <hbox spacing="12">
-                <vbox>
-                    <label text="Gain"/>
-                    <knob param="level_in" size="5"/>
-                    <value param="level_in"/>
-                    <toggle param="post"/>
-                    <label text="Muffle"/>
-                </vbox>
-                <if cond="directlink">
-                    <line-graph refresh="1" width="190" height="190" param="level_in" square="1"/>
-                </if>
-            </hbox>
+            <if cond="directlink">
+                <line-graph refresh="1" width="160" height="160" param="level_in" square="1"/>
+            </if>
         </frame>
     </hbox>
     

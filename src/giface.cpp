@@ -297,45 +297,33 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
     return true;
 }
 
-void calf_plugins::set_channel_color(cairo_iface *context, int channel)
+void calf_plugins::set_channel_color(cairo_iface *context, int channel, float alpha)
 {
     if (channel & 1)
-        context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
+        context->set_source_rgba(0.25, 0.10, 0.0, alpha);
     else
-        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
+        context->set_source_rgba(0.05, 0.25, 0.0, alpha);
 }
 void calf_plugins::set_channel_dash(cairo_iface *context, int channel)
 {
-    double dash[] = {1, 2, 1, 2, 1, 2, 4, 2};
-    int length;
+    double dash[] = {8,2};
+    int length = 2;
     switch (channel) {
         case 0:
         default:
-            dash[0] = 1;
+            dash[0] = 6;
             dash[1] = 2;
-            dash[2] = 8;
-            dash[3] = 2;
-            length = 4;
+            length = 2;
             break;
         case 1:
-            dash[0] = 1;
+            dash[0] = 4;
             dash[1] = 2;
-            dash[2] = 1;
-            dash[3] = 2;
-            dash[4] = 6;
-            dash[5] = 2;
-            length = 6;
+            length = 2;
             break;
         case 2:
-            dash[0] = 1;
+            dash[0] = 2;
             dash[1] = 2;
-            dash[2] = 1;
-            dash[3] = 2;
-            dash[4] = 1;
-            dash[5] = 2;
-            dash[6] = 4;
-            dash[7] = 2;
-            length = 8;
+            length = 2;
             break;
         case 3:
             dash[0] = 1;

@@ -886,7 +886,6 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase
     if(!active or phase)
         return false;
     if (index == param_level_in) {
-        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
         bool tmp;
         vertical = (subindex & 1) != 0;
         bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
@@ -903,7 +902,6 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase
         }
         return result;
     } else if (index == param_lp) {
-        printf("üüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüü\n");
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
     return false;

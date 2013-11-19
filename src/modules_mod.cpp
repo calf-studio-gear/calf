@@ -495,16 +495,18 @@ bool multichorus_audio_module::get_layers(int index, int generation, unsigned in
 {
     layers = 0;
     // frequency response
-    if (index == par_delay)
+    if (index == par_delay) {
         layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0) | LG_REALTIME_GRAPH;
+        redraw_graph = false;
+    }
     // sine display
-    if (index == par_rate)
+    if (index == par_rate) {
         layers = LG_REALTIME_DOT | (redraw_sine ? LG_CACHE_GRAPH : 0);
+        redraw_sine = false;
+    }
     // dot display
     if (index == par_depth)
         layers = LG_REALTIME_DOT;
-    redraw_graph = false;
-    redraw_sine = false;
     return true;
 }
 
@@ -551,7 +553,6 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
 
     float unit = (1 - *params[par_overlap]);
     float scw = 1 + unit * (nvoices - 1);
-    set_channel_color(context, subindex);
     const sine_multi_lfo<float, 8> &lfo = (subindex & 1 ? right : left).lfo;
     
     // the display with the sine curves
@@ -564,7 +565,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
     if (index == par_depth) {
         double ph = (double)(lfo.phase + lfo.vphase * voice) / 4096.0;
         x = 0.5 + 0.5 * sin(ph * 2 * M_PI);
-        y = subindex & 1 ? -0.7 : 0.7;
+        y = subindex & 1 ? -0.5 : 0.5;
         x = (voice * unit + x) / scw;
     }
     return true;
@@ -572,14 +573,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
 
 bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
-        return false;
-    if (index == par_rate && !subindex) {
-        pos = 0;
-        vertical = false;
-        return true;
-    }
-    if (index == par_delay)
+    if (index == par_delay and !phase and is_active)
         return get_freq_gridline(subindex, pos, vertical, legend, context, 32, 0);
     return false;
 }

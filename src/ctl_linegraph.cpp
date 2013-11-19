@@ -942,7 +942,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 a++)
             {
                 if (lg->debug) printf("dot %d\n", a);
-                int yv = oy + sy / 2 - (sy / 2 - 1) * y;
+                float yv = oy + sy / 2 - (sy / 2 - 1) * y;
                 cairo_arc(ctx, ox + x * sx, yv, size, 0, 2 * M_PI);
                 cairo_fill(ctx);
             }

@@ -713,7 +713,7 @@ public:
 };
 
 /// set drawing color based on channel index (0 or 1)
-void set_channel_color(cairo_iface *context, int channel);
+void set_channel_color(cairo_iface *context, int channel, float alpha = 0.5);
 void set_channel_dash(cairo_iface *context, int channel);
 
 struct preset_access_iface
