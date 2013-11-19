@@ -349,7 +349,6 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     cairo_line_to(c, ox + val_x + 0.5, oy + sy);
                     cairo_stroke(c);
                     // draw some one-dimensional bling-bling
-                    int w = 50;
                     cairo_pattern_t *pat;
                     switch(handle->style) {
                         default:
@@ -364,10 +363,10 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                             break;
                         case 1:
                             // hipass
-                            pat = cairo_pattern_create_linear(ox + val_x - w, oy, ox + val_x, oy);
+                            pat = cairo_pattern_create_linear(ox, oy, ox + val_x, oy);
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, 0);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, pat_alpha);
-                            cairo_rectangle(c, ox + val_x - w, oy, w - 1, sy);
+                            cairo_rectangle(c, ox, oy, val_x - 1, sy);
                             break;
                         case 2:
                             // loshelf
@@ -387,10 +386,10 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                             break;
                         case 4:
                             // lopass
-                            pat = cairo_pattern_create_linear(ox + val_x, oy, ox + val_x + w, oy);
+                            pat = cairo_pattern_create_linear(ox + val_x, oy, ox + sx, oy);
                             cairo_pattern_add_color_stop_rgba(pat, 0.f, 0, 0, 0, pat_alpha);
                             cairo_pattern_add_color_stop_rgba(pat, 1.f, 0, 0, 0, 0);
-                            cairo_rectangle(c, ox + val_x + 2, oy, w - 1, sy);
+                            cairo_rectangle(c, ox + val_x + 2, oy, sx - val_x - 1, sy);
                             break;
                     }
                     cairo_set_source(c, pat);
