@@ -649,8 +649,8 @@ style "calf-combobox"
 #   GtkButton      ::default-border       = { 6, 24, 5, 5 }
     GtkButton::inner-border         = { 6, 25, 1, 1}
     
-    xthickness = 2
-    ythickness = 1
+    xthickness = 3
+    ythickness = 2
     
     engine "pixmap"
     {

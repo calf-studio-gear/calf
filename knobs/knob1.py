@@ -53,7 +53,7 @@ for variant in range(0, 4):
         thresholdP = midled + 1 + ((phase - midphase - 1) * 1.0 * (nleds - midled - 2) / (phases - midphase - 2))
         thresholdN = midled - 1 - ((midphase - 1 - phase) * 1.0 * (nleds - midled - 2) / (midphase - 1))
         
-        spacing = pi / nleds
+        spacing = pi / nleds * 2
         for led in range(0, nleds):
             if variant == 3:
                 adelta = (eangle - sangle) / (nleds)
