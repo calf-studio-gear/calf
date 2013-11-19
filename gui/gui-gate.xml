@@ -63,38 +63,24 @@
                         <value param="makeup" />
                     </vbox>
                 </table>
-            </vbox>
-        </frame>
-        <frame label="Options">
-            <vbox spacing="10" pad-x="5" fill-y="0" expand-y="0">
-                <vbox expand="1" expand-y="0" expand-x="1" fill-x="1">
-                    <label param="stereo_link" expand-y="0" fill-y="0"/>
-                    <align>
-                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1">
-                            <radio param="stereo_link" value="Average" expand-x="1" fill-x="1"/>
-                            <radio param="stereo_link" value="Maximum" expand-x="1" fill-x="1"/>
-                        </hbox>
-                    </align>
-                </vbox>
-                <vbox expand="1" expand-y="0">
-                    <label param="detection" expand-y="0" fill-y="0" expand-x="1" fill-x="1"/>
-                    <align>
-                        <hbox expand="0" fill-y="0" expand-x="1" fill-x="1" >
-                            <radio param="detection" value="RMS" expand-x="1" fill-x="1"/>
-                            <radio param="detection" value="Peak" expand-x="1" fill-x="1"/>
-                        </hbox>
-                    </align>
-                </vbox>
+                <hbox homogeneous="1">
+                    <vbox>
+                        <label param="stereo_link" expand-y="0" fill-y="0"/>
+                        <combo param="stereo_link"/>
+                    </vbox>
+                    <vbox>
+                        <label param="detection" expand-y="0" fill-y="0" expand-x="1" fill-x="1"/>
+                        <combo param="detection"/>
+                    </vbox>
+                </hbox>
             </vbox>
         </frame>
     </vbox>
-    
-    
-      <frame label="Gating">
+    <frame label="Gating">
         <vbox >
             <if cond="directlink">
-                <line-graph refresh="1" width="340" height="340" param="gating" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="300" height="300" param="gating" square="1" expand="1" fill="1"/>
             </if>
         </vbox>
-      </frame>
+    </frame>
 </hbox>
