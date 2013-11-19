@@ -253,8 +253,12 @@
                 <if cond="directlink">
                     <line-graph refresh="1" width="160" height="160" param="solo0"/>
                 </if>
-                <vumeter param="compression0" position="2" mode="2" hold="1.5" falloff="2.5" />
-                <vumeter param="output0" position="2" mode="0" hold="1.5" falloff="2.5"/>
+                <table cols="2" rows="2">
+                    <led param="bypass0" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo0" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="output0" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="compression0" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
             </vbox>
         </frame>
         <frame label="Low band">
@@ -262,8 +266,12 @@
                 <if cond="directlink">
                     <line-graph refresh="1" width="160" height="160" param="solo1"/>
                 </if>
-                <vumeter param="compression1" position="2" mode="2" hold="1.5" falloff="2.5" />
-                <vumeter param="output1" position="2" mode="0" hold="1.5" falloff="2.5"/>
+                <table cols="2" rows="2">
+                    <led param="bypass1" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo1" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="output1" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="compression1" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
             </vbox>
         </frame>
         <frame label="Mid band">
@@ -271,8 +279,12 @@
                 <if cond="directlink">
                     <line-graph refresh="1" width="160" height="160" param="solo2"/>
                 </if>
-                <vumeter param="compression2" position="2" mode="2" hold="1.5" falloff="2.5" />
-                <vumeter param="output2" position="2" mode="0" hold="1.5" falloff="2.5"/>
+                <table cols="2" rows="2">
+                    <led param="bypass2" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo2" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="output2" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="compression2" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
             </vbox>
         </frame>
         <frame label="High band">
@@ -280,8 +292,12 @@
                 <if cond="directlink">
                     <line-graph refresh="1" width="160" height="160" param="solo3"/>
                 </if>
-                <vumeter param="compression3" position="2" mode="2" hold="1.5" falloff="2.5" />
-                <vumeter param="output3" position="2" mode="0" hold="1.5" falloff="2.5" shrink-y="0" />
+                <table cols="2" rows="2">
+                    <led param="bypass3" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo3" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="output3" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="compression3" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
             </vbox>
         </frame>
     </hbox>

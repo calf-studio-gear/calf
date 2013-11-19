@@ -233,7 +233,7 @@ CALF_PORT_PROPS(multichorus) = {
     { 1,          0,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "overlap", "Overlap" },
 };
 
-CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf MultiChorus", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ChorusPlugin" };
+CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ChorusPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -262,7 +262,7 @@ CALF_PORT_PROPS(monocompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf MonoCompressor", "Damien Zammit", calf_plugins::calf_copyright_info, "MonoCompressorPlugin" };
+CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf Mono Compressor", "Damien Zammit", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -345,7 +345,7 @@ CALF_PORT_PROPS(sidechaincompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "Sidechaincompressor", "Calf Sidechain Compressor", "Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "SidechainCompressor", "Calf Sidechain Compressor", "Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -425,7 +425,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandcompressor) = { 0x8516, "Multibandcompressor", "Calf Multiband Compressor", "Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(multibandcompressor) = { 0x8516, "MultibandCompressor", "Calf Multiband Compressor", "Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -540,7 +540,7 @@ CALF_PORT_PROPS(sidechaingate) = {
     {}
 };
 
-CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "Sidechaingate", "Calf Sidechain Gate", "Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "SidechainGate", "Calf Sidechain Gate", "Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -621,7 +621,7 @@ CALF_PORT_PROPS(multibandgate) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "Multibandgate", "Calf Multiband Gate", "Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gate", "Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -719,7 +719,7 @@ CALF_PORT_PROPS(multibandlimiter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "Multibandlimiter", "Calf Multiband Limiter", "Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiband Limiter", "Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
@@ -775,7 +775,7 @@ CALF_PORT_PROPS(phonoeq) = {
     { 3,      0,  3,    0, PF_ENUM | PF_CTL_COMBO, phonoeq_filter_types, "type", "Filter Type" },
     {}
 };
-CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "PhonoEQ", "Calf PhonoEQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
+CALF_PLUGIN_INFO(phonoeq) = { 0x8599, "PhonoEQ", "Calf Phono EQ", "Damien Zammit", calf_plugins::calf_copyright_info, "PhonoEQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 const char *active_mode_names[] = { " ", "ON", "Left", "Right", "Mid", "Side" };

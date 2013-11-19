@@ -1131,7 +1131,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         lg->handle_redraw = 1;
         calf_line_graph_expose_request(widget, true);
     }
-    if(lg->crosshairs_active) {
+    if(lg->crosshairs_active and lg->use_crosshairs) {
         calf_line_graph_expose_request(widget, true);
     }
     return TRUE;

@@ -75,14 +75,14 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
     enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, par_width, par_tap, par_waiting, param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
-    PLUGIN_NAME_ID_LABEL("vintage_delay", "vintagedelay", "Vintage Delay")
+    PLUGIN_NAME_ID_LABEL("vintagedelay", "vintagedelay", "Vintage Delay")
 };
 
 struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
 {
     enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_temp, param_bypass, param_count };
     enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
-    PLUGIN_NAME_ID_LABEL("comp_delay", "compdelay", "Compensation Delay Line")
+    PLUGIN_NAME_ID_LABEL("compdelay", "compdelay", "Compensation Delay Line")
 };
 
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
@@ -179,7 +179,7 @@ struct monocompressor_metadata: public plugin_metadata<monocompressor_metadata>
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_compression, param_mix,
            param_count };
-    PLUGIN_NAME_ID_LABEL("monocompressor", "monocompressor", "MonoCompressor")
+    PLUGIN_NAME_ID_LABEL("monocompressor", "monocompressor", "Mono Compressor")
 };
 
 /// Markus's sidechain compressor - metadata
@@ -210,7 +210,7 @@ struct multibandcompressor_metadata: public plugin_metadata<multibandcompressor_
            param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3,
            param_detection3, param_compression3, param_output3, param_bypass3, param_solo3,
            param_count };
-    PLUGIN_NAME_ID_LABEL("multiband_compressor", "multibandcompressor", "Multiband Compressor")
+    PLUGIN_NAME_ID_LABEL("multibandcompressor", "multibandcompressor", "Multiband Compressor")
 };
 
 /// Markus's deesser - metadata
@@ -264,7 +264,7 @@ struct multibandgate_metadata: public plugin_metadata<multibandgate_metadata>
            param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3,
            param_detection3, param_gating3, param_output3, param_bypass3, param_solo3,
            param_count };
-    PLUGIN_NAME_ID_LABEL("multiband_gate", "multibandgate", "Multiband Gate")
+    PLUGIN_NAME_ID_LABEL("multibandgate", "multibandgate", "Multiband Gate")
 };
 
 /// Markus's limiter - metadata
@@ -296,7 +296,7 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
            param_effrelease0, param_effrelease1, param_effrelease2, param_effrelease3,
            param_asc, param_asc_led, param_asc_coeff,
            param_count };
-    PLUGIN_NAME_ID_LABEL("multiband_limiter", "multibandlimiter", "Multiband Limiter")
+    PLUGIN_NAME_ID_LABEL("multibandlimiter", "multibandlimiter", "Multiband Limiter")
 };
 
 /// Damien's RIAA PhonoEQ - metadata
@@ -305,7 +305,7 @@ struct phonoeq_metadata: public plugin_metadata<phonoeq_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS, param_mode, param_type,
            param_count };
-    PLUGIN_NAME_ID_LABEL("phonoeq", "phonoeq", "PhonoEQ")
+    PLUGIN_NAME_ID_LABEL("phonoeq", "phonoeq", "Phono EQ")
 };
 
 /// Markus's 5-band EQ - metadata
