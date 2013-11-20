@@ -54,7 +54,7 @@
     </frame>
     
     <notebook>
-        <hbox page="Sub Band">
+        <hbox page="Sub Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass0"/>
                 <toggle param="bypass0"/>
@@ -102,7 +102,7 @@
             </vbox>
         </hbox>
         
-        <hbox page="Low Band">
+        <hbox page="Low Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass1"/>
                 <toggle param="bypass1"/>
@@ -150,7 +150,7 @@
             </vbox>
         </hbox>
         
-        <hbox page="Mid Band">
+        <hbox page="Mid Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass2"/>
                 <toggle param="bypass2"/>
@@ -198,7 +198,7 @@
             </vbox>
         </hbox>
         
-        <hbox page="High Band">
+        <hbox page="High Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass3"/>
                 <toggle param="bypass3"/>

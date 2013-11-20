@@ -143,19 +143,6 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
                     continue;
                 }
                 break;
-            case 4:
-                // this mode draws pixels at the bottom of the surface
-                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 2.f);
-                    cairo_rectangle(ctx, ox + _last, oy + sy - 1, i - _last, 1);
-                    cairo_fill(ctx);
-                    _last = i;
-                    if (startdraw < 0)
-                        startdraw = ox + _last;
-                } else {
-                    continue;
-                }
-                break;
         }
     }
     if(!mode) {
@@ -164,6 +151,51 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
         cairo_fill(ctx);
     }
     return startdraw;
+}
+
+static void
+calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int direction, int count )
+{
+    if (lg->debug) printf("(draw moving)\n");
+    
+    int sx = lg->size_x;
+    int sy = lg->size_y;
+    int ox = lg->pad_x;
+    int oy = lg->pad_y;
+    
+    int _last = 0;
+    int startdraw = -1;
+    
+    int sm = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? sy : sx);
+    int om = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? oy : ox);
+    for (int i = 0; i < sm; i++) {
+        if (lg->debug > 2) printf("* moving i: %d, dir: %d, data: %.5f\n", i, direction, data[i]);
+        if (i and ((data[i] < INFINITY) or i == sm - 1)) {
+            cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 2.f);
+            switch (direction) {
+                case LG_MOVING_UP:
+                    cairo_rectangle(ctx, ox + _last, oy + sy - 1 - count, i - _last, 1);
+                    break;
+                case LG_MOVING_DOWN:
+                    cairo_rectangle(ctx, ox + _last, oy + count, i - _last, 1);
+                    break;
+                case LG_MOVING_LEFT:
+                    cairo_rectangle(ctx, ox + sx - 1 - count, oy + _last, 1, i - _last);
+                    break;
+                case LG_MOVING_RIGHT:
+                    cairo_rectangle(ctx, ox + count, oy + _last, 1, i - _last);
+                    break;
+            }
+            
+            cairo_fill(ctx);
+            _last = i;
+            if (startdraw < 0)
+                startdraw = om + _last;
+        }
+        else
+            continue;
+    }
+    
 }
 
 void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, std::string label)
@@ -715,6 +747,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                               (int)(0.4 * 65535), (int)(0.2 * 65535) };
     GdkColor dot_color    = { (int)(1 * 65535), (int)(0.35 * 65535),
                               (int)(0.4 * 65535), (int)(0.2 * 65535) };
+    GdkColor moving_color = { (int)(1 * 65535), (int)(0.35 * 65535),
+                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
     
     // the line widths to switch to between cycles
     float grid_width  = 1.0;
@@ -723,11 +757,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // more vars we have to initialize, mainly stuff we use in callback
     // functions
-    float *data        = new float[2 * lg->size_x];
+    float *data        = new float[2 * std::max(lg->size_x, lg->size_y)];
     float pos          = 0;
     bool vertical      = false;
     std::string legend = "";
     int size           = 0;
+    int direction      = 0;
     float x, y;
     
     // a cairo wrapper to hand over contexts to the plugin for setting
@@ -866,47 +901,81 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 a++)
             {
                 if (lg->debug) printf("graph %d\n", a);
-                
-                //if (lg->moving) {
-                    //// we have a moving curve. switch to moving surface and
-                    //// clear it before we start to draw
-                     //if (lg->debug) printf("switch to moving %d\n", lg->movesurf);
-                    //ctx = calf_line_graph_switch_context(lg, moving_c[lg->movesurf], &cimpl);
-                    //calf_line_graph_clear_surface(ctx);
-                //}
-                
-                int sd = calf_line_graph_draw_graph( lg, ctx, data, lg->mode );
-                
-                //cairo_save(ctx);
-                //if (lg->moving == 1) {
-                    //// we are moving upwards.
-                    //// draw the last cached moving stuff to our new moving 
-                    //// cache with an offset of -1
-                    //cairo_set_source_surface(ctx, lg->moving_surface[lg->movesurf ? 0 : 1], 0, -1);
-                //}
-                //if (lg->moving == 2) {
-                    //// we are moving sidewards.
-                    //// draw the last cached moving stuff to our new moving 
-                    //// cache with an offset of n pixels according to the
-                    //// amount of drawn pixels
-                    //cairo_set_source_surface(ctx, lg->moving_surface[lg->movesurf ? 0 : 1], 0, -sd);
-                //}
-                //if (lg->moving) {
-                    //if (lg->debug) printf("moving\n");
-                    //// finally draw stuff
-                    //cairo_paint(ctx);
-                    //// switch back to the actual context
-                    //if (lg->debug) printf("switch to realtime/cache\n");
-                    //ctx = calf_line_graph_switch_context(lg, _ctx, &cimpl);
-                    //// copy the cache to the realtime surface
-                    //if (lg->debug) printf("copy moving->cache/realtime\n");
-                    //calf_line_graph_copy_surface(ctx, lg->moving_surface[lg->movesurf]);
-                    //// toggle the moving cache
-                    //lg->movesurf = lg->movesurf ? 0 : 1;
-                //}
-                //cairo_restore(ctx);
+                calf_line_graph_draw_graph( lg, ctx, data, lg->mode );
             }
         }
+        
+        ///////////////////////////////////////////////////////////////
+        // MOVING
+        ///////////////////////////////////////////////////////////////
+        
+        if ((lg->layers & LG_CACHE_MOVING and !phase) || (lg->layers & LG_REALTIME_MOVING and phase)) {
+            // we have a moving curve. switch to moving surface and
+            // clear it before we start to draw
+             if (lg->debug) printf("switch to moving %d\n", lg->movesurf);
+            ctx = calf_line_graph_switch_context(lg, moving_c[lg->movesurf], &cimpl);
+            calf_line_graph_clear_surface(ctx);
+            
+            if (!phase and !cache_drawn) {
+                // we are drawing the first moving in cache phase and
+                // no cache has been created by now, so
+                // prepare the cache surface with the grid surface
+                if (lg->debug) printf("copy grid->cache\n");
+                calf_line_graph_copy_surface(ctx, lg->grid_surface);
+                cache_drawn = true;
+            } else if (phase and !realtime_drawn) {
+                // we're in realtime phase and the realtime surface wasn't
+                // reset to cache by now (because there was no cache
+                // phase and no realtime grid was drawn)
+                // so "clear" the realtime surface with the cache
+                if (lg->debug) printf("copy cache->realtime\n");
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                realtime_drawn = true;
+            }
+            
+            int a;
+            for(a = 0;
+                gdk_cairo_set_source_color(ctx, &moving_color),
+                lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, &cimpl);
+                a++)
+            {
+                if (lg->debug) printf("moving %d\n", a);
+                calf_line_graph_draw_moving(lg, ctx, data, direction, a);
+            }
+            // set moving distances according to direction
+            int x = 0;
+            int y = 0;
+            switch (direction ) {
+                case LG_MOVING_LEFT:
+                    x = -a;
+                    y = 0;
+                case LG_MOVING_RIGHT:
+                    x = a;
+                    y = 0;
+                case LG_MOVING_UP:
+                    x = 0;
+                    y = -a;
+                case LG_MOVING_DOWN:
+                    x = 0;
+                    y = a;
+            }
+            // copy the old moving surface to the riht position on the
+            // new surface
+            if (lg->debug) printf("copy cached moving->moving\n");
+            cairo_set_source_surface(ctx, lg->moving_surface[(int)!lg->movesurf], x, y);
+            cairo_paint(ctx);
+            
+            // switch back to the actual context
+            if (lg->debug) printf("switch to realtime/cache\n");
+            ctx = calf_line_graph_switch_context(lg, _ctx, &cimpl);
+            
+            if (lg->debug) printf("copy moving->realtime/cache\n");
+            calf_line_graph_copy_surface(ctx, lg->moving_surface[lg->movesurf], 1);
+            
+            // toggle the moving cache
+            lg->movesurf = (int)!lg->movesurf;
+        }
+        
         ///////////////////////////////////////////////////////////////
         // DOTS
         ///////////////////////////////////////////////////////////////

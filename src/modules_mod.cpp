@@ -194,7 +194,7 @@ bool phaser_audio_module::get_graph(int index, int subindex, int phase, float *d
     if (!is_active or subindex >= 2 or !phase)
         return false;
     set_channel_color(context, subindex);
-    return ::get_graph(*this, subindex, data, points);
+    return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 bool phaser_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {

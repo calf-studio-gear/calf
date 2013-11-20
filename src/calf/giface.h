@@ -181,6 +181,14 @@ enum layers_flags {
     LG_REALTIME_MOVING = 0x000080
 };
 
+/// possible values for get_moving
+enum moving_directions {
+    LG_MOVING_LEFT     = 0x000000,
+    LG_MOVING_RIGHT    = 0x000001,
+    LG_MOVING_UP       = 0x000002,
+    LG_MOVING_DOWN     = 0x000004
+};
+
 /// 'provides live line graph values' interface
 struct line_graph_iface
 {
@@ -194,7 +202,16 @@ struct line_graph_iface
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode = 0) const { return false; }
-
+    
+    /// Obtain subindex'th moving surface of parameter 'index'
+    /// @param index parameter/dot number (usually tied to particular plugin control port)
+    /// @param subindex mvoing line number (there may be multiple graphs for one parameter)
+    /// @param direction 0 if horizontal or 1 if vertical movement
+    /// @param data buffer for normalized output values
+    /// @param x number of points direction to fill in x
+    /// @param y number of points direction to fill in y
+    virtual bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const { return false; }
+    
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)

@@ -74,7 +74,7 @@ struct FreqHandle
 
 struct CalfLineGraph
 {
-    static const int debug = 0;
+    static const int debug = 0; // 0 - 3
     
     GtkDrawingArea parent;
     const calf_plugins::line_graph_iface *source;
