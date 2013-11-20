@@ -709,7 +709,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     moving_c[1]           = cairo_create( lg->moving_surface[1] );
     
     // the colors to reset to between the drawing cycles
-    GdkColor grid_color   = { (int)(1 * 65535), (int)(0.15 * 65535),
+    GdkColor grid_color   = { (int)(0.66 * 65535), (int)(0.15 * 65535),
                               (int)(0.2 * 65535), (int)(0.0 * 65535) };
     GdkColor graph_color  = { (int)(1 * 65535), (int)(0.35 * 65535),
                               (int)(0.4 * 65535), (int)(0.2 * 65535) };

@@ -793,6 +793,21 @@ struct automation_map: public std::multimap<uint32_t, automation_range>
 {
 };
 
+inline float subindex_to_freq(int subindex)
+{
+  float freq = 100;
+  if (subindex < 9)
+    freq = 10 * (subindex + 1);
+  else if (subindex < 18)
+    freq = 100 * (subindex - 9 + 1);
+  else if (subindex < 27)
+    freq = 1000 * (subindex - 18 + 1);
+  else
+    freq = 10000 * (subindex - 27 + 1);
+
+  return freq;
+}
+
 };
 
 #endif

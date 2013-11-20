@@ -26,6 +26,8 @@
 #include <calf/modules_tools.h>
 #include <calf/modules_dev.h>
 #include <sys/time.h>
+#include <calf/utils.h>
+
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -465,6 +467,7 @@ analyzer_audio_module::analyzer_audio_module() {
     db_level_coeff1 = -1;
     db_level_coeff2 = -1;
     leveladjust     = -1;
+    _draw_upper     = -1;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
@@ -1167,9 +1170,9 @@ bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float 
                     case 3:
                         // stereo analyzer
                         if(subindex == 0 or subindex == 2) {
-                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
+                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
                         } else {
-                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
+                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
                         }
                         break;
                     case 4:
@@ -1202,7 +1205,7 @@ bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float 
                         break;
                     default:
                         // normal analyzer behavior
-                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.5f);
+                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
                         break;
                 }
             }
@@ -1389,33 +1392,104 @@ bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, flo
 { 
     if (phase)
         return false;
-    bool out;
-    if(*params[param_analyzer_mode] <= 3)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.5f);
-    else if (*params[param_analyzer_mode] < 5)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 1);
-    else if (*params[param_analyzer_mode] < 6) {
+    float gain;
+    static const double dash[] = {2.0};
+    switch ((int)*params[param_analyzer_mode]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        default:
+            return get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.75f);
+        case 4:
+            if(subindex < 28)
+                return get_freq_gridline(subindex, pos, vertical, legend, context, true);
+            else {
+                subindex -= 28;
+            }
+            gain = _draw_upper >= 0 ? 1.f / (1 << (subindex - _draw_upper))
+                                    : 1.f / (1 << subindex);
+            pos = dB_grid(gain, db_level_coeff1, 1);
+            if (_draw_upper > 0)
+                pos *= -1;
+            
+            context->set_dash(dash, 1);
+            if ((!(subindex & 1) and _draw_upper <= 0)
+              or ((subindex & 1) and _draw_upper > 0)) {
+                std::stringstream ss;
+                ss << (subindex - std::max(0, _draw_upper)) * -6 << " dB";
+                legend = ss.str();
+                context->set_dash(dash, 0);
+            }
         
-        //create a grid in which the middle is fix while rest is sizeable
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff2, 1.f / leveladjust);
-        }
-    else if (*params[param_analyzer_mode] < 9)
-        out = get_freq_gridline(subindex, pos, vertical, legend, context, true, 0, 1.1f);
-    else
-        out = false;
-        
-    if(*params[param_analyzer_mode] > 3 and *params[param_analyzer_mode] < 6 and not vertical) {
-        if(subindex == 30)
-            legend="L";
-        else if(subindex == 34)
-            legend="R";
-    //    else
-    //        legend = "";
+            if (pos < 0 and _draw_upper <= 0) {
+                _draw_upper = subindex + subindex % 2 - 1;
+                pos = -2;
+            }
+            if (pos > 0 and _draw_upper > 0) {
+                _draw_upper = -1;
+                return false;
+            }
+            if (subindex)
+                context->set_source_rgba(0, 0, 0, 0.2);
+            vertical = false;
+            return true;
+        case 5:
+            if(subindex < 28)
+                return get_freq_gridline(subindex, pos, vertical, legend, context, true);
+            else
+                subindex -= 28;
+                
+            gain = _draw_upper >= 0 ? 1.0 / (1 << (subindex - _draw_upper))
+                                    : (1 << subindex);
+            pos = dB_grid(gain, db_level_coeff2, 0);
+            
+            context->set_dash(dash, 1);
+            if ((!(subindex & 1) and _draw_upper <= 0)
+              or ((subindex & 1) and _draw_upper > 0)) {
+                std::stringstream ss;
+                ss << (subindex - std::max(0, _draw_upper)) * 6 - 72 << " dB";
+                legend = ss.str();
+                context->set_dash(dash, 0);
+            }
+            
+            if (pos > 1 and _draw_upper <= 0 and (subindex & 1)) {
+                _draw_upper = subindex;
+            }
+            if (pos < -1 and _draw_upper > 0) {
+                _draw_upper = -1;
+                return false;
+            }
+            
+            if (subindex)
+                context->set_source_rgba(0, 0, 0, 0.2);
+            vertical = false;
+            return true;
+        case 6:
+        case 7:
+        case 8:
+            if (subindex < 28)
+            {
+                vertical = true;
+                if (subindex == 9) legend = "100 Hz";
+                if (subindex == 18) legend = "1 kHz";
+                if (subindex == 27) legend = "10 kHz";
+    
+                float freq = subindex_to_freq(subindex);
+                pos = log(freq / 20.0) / log(1000);
+    
+                if (!legend.empty()) {
+                    context->set_source_rgba(0, 0, 0, 0.2);
+                    context->set_dash(dash, 0);
+                } else {
+                    context->set_source_rgba(0, 0, 0, 0.1);
+                    context->set_dash(dash, 1);
+                }
+                return true;
+            }
+            return false;
     }
-    if(*params[param_analyzer_mode] > 5 and *params[param_analyzer_mode] < 9 and not vertical) {
-        legend = "";
-    }
-    return out;
+    return false;
 }
 
 bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &layers) const

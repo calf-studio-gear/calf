@@ -225,21 +225,6 @@ const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     }
 }
 
-static float subindex_to_freq(int subindex)
-{
-  float freq = 100;
-  if (subindex < 9)
-    freq = 10 * (subindex + 1);
-  else if (subindex < 18)
-    freq = 100 * (subindex - 9 + 1);
-  else if (subindex < 27)
-    freq = 1000 * (subindex - 18 + 1);
-  else
-    freq = 10000 * (subindex - 27 + 1);
-
-  return freq;
-}
-
 bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies, float res, float ofs)
 {
     if (subindex < 0)
@@ -250,7 +235,6 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
     {
         if (subindex < 28)
         {
-            
             vertical = true;
             if (subindex == 9) legend = "100 Hz";
             if (subindex == 18) legend = "1 kHz";
@@ -264,7 +248,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
                 context->set_dash(dash, 0);
             } else {
                 context->set_source_rgba(0, 0, 0, 0.1);
-                context->set_dash(dash, 0);
+                context->set_dash(dash, 1);
             }
             return true;
         }
@@ -289,7 +273,9 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         std::stringstream ss;
         ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();
+        context->set_dash(dash, 0);
     } else {
+        context->set_dash(dash, 1);
     }
     vertical = false;
     return true;

@@ -139,6 +139,7 @@ public:
     mutable int _mode_old;
     mutable float _level_old;
     mutable bool _falling;
+    mutable int _draw_upper;
     float envelope;
     float attack_coef;
     float release_coef;
