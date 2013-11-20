@@ -25,6 +25,7 @@
 #include <malloc.h>
 #include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <gdk/gdk.h>
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
