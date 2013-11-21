@@ -724,7 +724,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // and copy it to the realtime surface in case no realtime is drawn
         if (lg->debug) printf("copy bg->realtime\n");
         calf_line_graph_copy_surface(realtime_c, lg->background_surface);
-        
+    }
+    if (lg->recreate_surfaces or lg->force_redraw) {
         // reset generation value and request a new expose event
         lg->generation = 0;
         lg->source->get_layers(lg->source_id, lg->generation, lg->layers);
@@ -800,6 +801,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
         
     if ( lg->force_cache
+      or lg->force_redraw
       or lg->layers & LG_CACHE_GRID
       or lg->layers & LG_CACHE_GRAPH
       or lg->layers & LG_CACHE_DOT) {
@@ -1097,6 +1099,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     }
     
     lg->force_cache       = false;
+    lg->force_redraw      = false;
     lg->handle_redraw     = 0;
     lg->recreate_surfaces = 0;
     lg->layers            = 0;
@@ -1446,6 +1449,9 @@ calf_line_graph_init (CalfLineGraph *lg)
     widget->requisition.width  = 40;
     widget->requisition.height = 40;
     lg->force_cache          = true;
+    lg->force_redraw         = false;
+    lg->zoom                 = 1;
+    lg->param_zoom           = -1;
     lg->recreate_surfaces    = 1;
     lg->mode                 = 0;
     lg->movesurf             = 0;

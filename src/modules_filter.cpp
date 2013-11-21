@@ -365,7 +365,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     
     // first graph is the overall frequency response graph
     if (!subindex)
-        return ::get_graph(*this, subindex, data, points, 64, 0);
+        return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
     
     // get out if max band is reached
     if (last_peak >= max) {
@@ -406,7 +406,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         } else if (last_peak == PeakBands + 3 and has_lphp) {
             data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
         }
-        data[i] = dB_grid(data[i], 64, 0);
+        data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
     }
     
     last_peak ++;
@@ -421,7 +421,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, i
 {
     if (!is_active or phase)
         return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 64, 0);
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
 }
 
 template<class BaseClass, bool has_lphp>

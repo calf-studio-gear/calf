@@ -80,6 +80,7 @@ struct CalfLineGraph
     const calf_plugins::line_graph_iface *source;
     int source_id;
     bool force_cache;
+    bool force_redraw;
     int recreate_surfaces;
     bool is_square;
     float fade;
@@ -88,6 +89,8 @@ struct CalfLineGraph
     unsigned int layers;
     static const int pad_x = 5, pad_y = 5;
     int size_x, size_y;
+    float zoom;
+    int param_zoom;
     
     cairo_surface_t *background_surface;
     cairo_surface_t *grid_surface;

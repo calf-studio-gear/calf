@@ -1097,15 +1097,15 @@ static float from_x_pos(float pos)
     return c;
 }
 
-static float to_y_pos(float gain)
+static float to_y_pos(CalfLineGraph *lg, float gain)
 {
                 //log(gain) * (1.0 / log(32));
-    return 0.5 - dB_grid(gain, 32, 0) / 2.0;
+    return 0.5 - dB_grid(gain, 128 * lg->zoom, 0) / 2.0;
 }
 
-static float from_y_pos(float pos)
+static float from_y_pos(CalfLineGraph *lg, float pos)
 {
-    float gain = powf(32.0, (0.5 - pos) * 2.0);
+    float gain = powf(128.0 * lg->zoom, (0.5 - pos) * 2.0);
     return gain;
 }
 
@@ -1133,6 +1133,11 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     clg->freqhandles           = get_int("freqhandles", 0);
     clg->enforce_handle_order  = get_int("enforce-handle-order", 0);
     clg->min_handle_distance   = get_float("min-handle-distance", 0.01);
+    
+    const string &zoom_name = attribs["zoom"];
+    if (zoom_name != "")
+        clg->param_zoom = gui->get_param_no_by_name(zoom_name);
+    
     if (clg->freqhandles > 0)
     {
         for(int i = 0; i < clg->freqhandles; i++)
@@ -1160,8 +1165,8 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
                 const parameter_properties &handle_y_props = *gui->plugin->get_metadata_iface()->get_param_props(param_y_no);
                 handle->dimensions = 2;
                 handle->param_y_no = param_y_no;
-                handle->value_y = to_y_pos(gui->plugin->get_param_value(param_y_no));
-                handle->default_value_y = to_y_pos(handle_y_props.def_value);
+                handle->value_y = to_y_pos(clg, gui->plugin->get_param_value(param_y_no));
+                handle->default_value_y = to_y_pos(clg, handle_y_props.def_value);
             } else {
                 handle->param_y_no = -1;
             }
@@ -1226,7 +1231,7 @@ void line_graph_param_control::get()
         if(clg->handle_grabbed >= 0) {
             FreqHandle *handle = &clg->freq_handles[clg->handle_grabbed];
             if(handle->dimensions >= 2) {
-                float value_y = from_y_pos(handle->value_y);
+                float value_y = from_y_pos(clg, handle->value_y);
                 gui->set_param_value(handle->param_y_no, value_y, this);
             }
 
@@ -1269,7 +1274,7 @@ void line_graph_param_control::set()
                 handle->last_value_x = handle->value_x;
                 if(handle->dimensions >= 2 && handle->param_y_no >= 0) {
                     float value_y = gui->plugin->get_param_value(handle->param_y_no);
-                    handle->value_y = to_y_pos(value_y);
+                    handle->value_y = to_y_pos(clg, value_y);
                     if (dsp::_sanitize(handle->value_y - handle->last_value_y)) {
                         clg->handle_redraw = 1;
                     }
@@ -1295,6 +1300,14 @@ void line_graph_param_control::set()
             if (handle->active != _a) {
                 force = true;
                 clg->handle_redraw = true;
+            }
+        }
+        if (clg->param_zoom >= 0) {
+            float _z = gui->plugin->get_param_value(clg->param_zoom);
+            if (_z != clg->zoom) {
+                force = true;
+                clg->zoom = _z;
+                clg->force_redraw = true;
             }
         }
         calf_line_graph_expose_request(widget, force);
