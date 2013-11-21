@@ -239,7 +239,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
-    crossover.init(2, 4, 441000);
+    crossover.init(2, 4, 44100);
 }
 
 void multibandlimiter_audio_module::activate()

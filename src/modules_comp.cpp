@@ -46,8 +46,8 @@ gain_reduction_audio_module::gain_reduction_audio_module()
     old_bypass      = 0.f;
     old_mute        = 0.f;
     linSlope        = 0.f;
-    attack          = 0.f;
-    release         = 0.f;
+    attack          = -1;
+    release         = -1;
     detection       = -1;
     stereo_link     = -1;
     threshold       = -1;
@@ -62,9 +62,6 @@ gain_reduction_audio_module::gain_reduction_audio_module()
 void gain_reduction_audio_module::activate()
 {
     is_active = true;
-    linSlope   = 0.f;
-    meter_out  = 0.f;
-    meter_comp = 1.f;
     float l, r;
     l = r = 0.f;
     float byp = bypass;
@@ -265,7 +262,7 @@ bool gain_reduction_audio_module::get_layers(int index, int generation, unsigned
 }
 
 /**********************************************************************
- * GAIN REDUCTION 2 by Damien Zamit
+ * GAIN REDUCTION 2 by Damien Zammit
 **********************************************************************/
 
 gain_reduction2_audio_module::gain_reduction2_audio_module()
@@ -280,8 +277,8 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
     old_bypass      = 0.f;
     old_mute        = 0.f;
     linSlope        = 0.f;
-    attack          = 0.f;
-    release         = 0.f;
+    attack          = -1;
+    release         = -1;
     detection       = -1;
     stereo_link     = -1;
     threshold       = -1;
@@ -299,11 +296,6 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
 void gain_reduction2_audio_module::activate()
 {
     is_active = true;
-    linSlope   = 0.f;
-    meter_out  = 0.f;
-    meter_comp = 1.f;
-    old_y1     = 0.f;
-    old_yl     = 0.f;
     float l, r;
     l = r = 0.f;
     float byp = bypass;
@@ -504,22 +496,22 @@ bool gain_reduction2_audio_module::get_layers(int index, int generation, unsigne
 
 
 /**********************************************************************
- * EXPANDER by Damien Zamit
+ * EXPANDER by Damien Zammit
 **********************************************************************/
 
 expander_audio_module::expander_audio_module()
 {
     is_active       = false;
     srate           = 0;
-    range     = -1.f;
-    threshold = -1.f;
-    ratio     = -1.f;
-    knee      = -1.f;
-    makeup    = -1.f;
-    detection = -1.f;
-    bypass    = -1.f;
-    mute      = -1.f;
-    stereo_link = -1.f;
+    range     = -1;
+    threshold = -1;
+    ratio     = -1;
+    knee      = -1;
+    makeup    = -1;
+    detection = -1;
+    bypass    = -1;
+    mute      = -1;
+    stereo_link = -1;
     old_range     = 0.f;
     old_threshold = 0.f;
     old_ratio     = 0.f;
@@ -530,17 +522,15 @@ expander_audio_module::expander_audio_module()
     old_mute      = 0.f;
     old_trigger   = 0.f;
     old_stereo_link = 0.f;
-    linSlope      = -1;
-    linKneeStop   = 0;
+    linSlope      = 0.f;
+    linKneeStop   = 0.f;
     redraw_graph  = true;
 }
 
 void expander_audio_module::activate()
 {
     is_active = true;
-    linSlope   = 0.f;
-    meter_out  = 0.f;
-    meter_gate = 1.f;
+    update_curve();
     float l, r;
     l = r = 0.f;
     float byp = bypass;
@@ -632,6 +622,7 @@ void expander_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
 }
+
 void expander_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float det, float stl, float byp, float mu, float ran)
 {
     // set all params
@@ -662,6 +653,7 @@ void expander_audio_module::set_params(float att, float rel, float thr, float ra
         redraw_graph  = true;
     }
 }
+
 float expander_audio_module::get_output_level() {
     // returns output level (max(left, right))
     return meter_out;
@@ -1286,7 +1278,7 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
     meter_outL = 0.f;
     meter_outR = 0.f;
     mode       = 0;
-    crossover.init(2, 4, 441000);
+    crossover.init(2, 4, 44100);
 }
 
 void multibandcompressor_audio_module::activate()
@@ -1540,7 +1532,7 @@ bool multibandcompressor_audio_module::get_layers(int index, int generation, uns
 
 
 /**********************************************************************
- * MONO COMPRESSOR by Damien Zamit
+ * MONO COMPRESSOR by Damien Zammit
 **********************************************************************/
 
 monocompressor_audio_module::monocompressor_audio_module()
@@ -1866,7 +1858,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 
 
 /**********************************************************************
- * GATE AUDIO MODULE Damien Zamit
+ * GATE AUDIO MODULE Damien Zammit
 **********************************************************************/
 
 gate_audio_module::gate_audio_module()
@@ -2397,7 +2389,7 @@ multibandgate_audio_module::multibandgate_audio_module()
     meter_inR  = 0.f;
     meter_outL = 0.f;
     meter_outR = 0.f;
-    crossover.init(2, 4, 441000);
+    crossover.init(2, 4, 44100);
 }
 
 void multibandgate_audio_module::activate()

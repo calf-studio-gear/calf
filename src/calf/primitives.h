@@ -427,9 +427,6 @@ inline void sanitize_denormal(float& value)
 {
     if (!std::isnormal(value))
          value = 0.f;
-    int val = *reinterpret_cast <const int *> (&value);
-    if (!(val & 0x7F800000) && (val & 0x7F800000))
-        value = 0.f;
 }
     
 /**

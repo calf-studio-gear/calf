@@ -66,7 +66,7 @@ public:
 };
 
 /**********************************************************************
- * GAIN REDUCTION 2 by Damien Zamit
+ * GAIN REDUCTION 2 by Damien Zammit
 **********************************************************************/
 
 class gain_reduction2_audio_module
@@ -100,7 +100,7 @@ public:
 };
 
 /**********************************************************************
- * EXPANDER by Damien Zamit
+ * EXPANDER by Damien Zammit
 **********************************************************************/
 
 class expander_audio_module {
@@ -240,7 +240,7 @@ public:
 };
 
 /**********************************************************************
- * MONO COMPRESSOR by Damien Zamit
+ * MONO COMPRESSOR by Damien Zammit
 **********************************************************************/
 
 class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
@@ -297,7 +297,7 @@ public:
 };
 
 /**********************************************************************
- * GATE AUDIO MODULE Damien Zamit
+ * GATE AUDIO MODULE Damien Zammit
 **********************************************************************/
 
 class gate_audio_module: public audio_module<gate_metadata>, public line_graph_iface  {

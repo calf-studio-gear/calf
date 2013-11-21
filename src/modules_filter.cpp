@@ -548,7 +548,7 @@ void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int veloci
 }
 
 /**********************************************************************
- * PHONO EQ by Damien Zamit 
+ * PHONO EQ by Damien Zammit 
 **********************************************************************/
 
 phonoeq_audio_module::phonoeq_audio_module()

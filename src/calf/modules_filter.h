@@ -259,7 +259,7 @@ private:
 };
 
 /**********************************************************************
- * PHONO EQ by Damien Zamit 
+ * PHONO EQ by Damien Zammit 
 **********************************************************************/
 
 class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
