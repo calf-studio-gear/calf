@@ -564,11 +564,15 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
 
 bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    return _analyzer.get_graph(subindex, phase, data, points, context, mode);
+    if (*params[param_analyzer_display])
+        return _analyzer.get_graph(subindex, phase, data, points, context, mode);
+    return false;
 }
 bool analyzer_audio_module::get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
 {
-    return _analyzer.get_moving(subindex, direction, data, x, y, context);
+    if (*params[param_analyzer_display])
+        return _analyzer.get_moving(subindex, direction, data, x, y, context);
+    return false;
 }
 bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 { 

@@ -523,6 +523,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
     // the realtime graphs in frequency response
     if (index == par_delay and subindex < 2 and phase) {
         set_channel_color(context, subindex);
+        context->set_line_width(0.75);
         return ::get_graph(*this, subindex, data, points, 32, 0);
     }
     

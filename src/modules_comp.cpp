@@ -2856,7 +2856,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
     switch (subindex) {
         case 0:
             add = 1.f;
-            context->set_line_width(1);
+            context->set_line_width(0.75);
             break;
         case 1:
             *mode = 1;

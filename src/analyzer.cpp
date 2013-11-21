@@ -50,7 +50,7 @@ analyzer::analyzer() {
     db_level_coeff1 = -1;
     db_level_coeff2 = -1;
     leveladjust     = -1;
-    _draw_upper     = -1;
+    _draw_upper     = 0;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
@@ -881,6 +881,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         // draw lines
         *mode = 0;
     }
+    context->set_line_width(0.75);
     ____analyzer_sanitize = 0;
     return true;
 }
@@ -906,30 +907,39 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             else {
                 subindex -= 28;
             }
-            gain = _draw_upper >= 0 ? 1.f / (1 << (subindex - _draw_upper))
-                                    : 1.f / (1 << subindex);
+            gain = _draw_upper > 0 ? 1.f / (1 << (subindex - _draw_upper))
+                                   : 1.f / (1 << subindex);
             pos = dB_grid(gain, db_level_coeff1, 1);
             if (_draw_upper > 0)
                 pos *= -1;
             
             context->set_dash(dash, 1);
-            if ((!(subindex & 1) and _draw_upper <= 0)
+            if ((!(subindex & 1) and !_draw_upper)
               or ((sub & 1) and _draw_upper > 0)) {
+                // add a label and make the lines straight
                 std::stringstream ss;
                 ss << (subindex - std::max(0, _draw_upper)) * -6 << " dB";
                 legend = ss.str();
                 context->set_dash(dash, 0);
             }
         
-            if (pos < 0 and _draw_upper <= 0) {
+            if (pos < 0 and !_draw_upper) {
+                // start drawing the lower end
                 _draw_upper = subindex;
                 pos = -2;
             }
-            if (pos > 0 and _draw_upper > 0) {
-                _draw_upper = -1;
+            if (_draw_upper < 0) {
+                // end the drawing of the grid
+                _draw_upper = 0;
                 return false;
             }
-            if (subindex)
+            if (pos > 0 and _draw_upper > 0) {
+                // center line
+                _draw_upper = -1;
+                pos = 0;
+                context->set_dash(dash, 0);
+            }
+            else if (subindex)
                 context->set_source_rgba(0, 0, 0, 0.2);
             vertical = false;
             return true;
@@ -940,24 +950,24 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             else
                 subindex -= 28;
                 
-            gain = _draw_upper >= 0 ? 1.0 / (1 << (subindex - _draw_upper))
+            gain = _draw_upper > 0 ? 1.0 / (1 << (subindex - _draw_upper))
                                     : (1 << subindex);
             pos = dB_grid(gain, db_level_coeff2, 0);
             
             context->set_dash(dash, 1);
-            if ((!(subindex & 1) and _draw_upper <= 0)
-              or ((subindex & 1) and _draw_upper > 0)) {
+            if ((!(subindex & 1) and !_draw_upper)
+              or ((subindex & 1) and _draw_upper)) {
                 std::stringstream ss;
                 ss << (subindex - std::max(0, _draw_upper)) * 6 - 72 << " dB";
                 legend = ss.str();
                 context->set_dash(dash, 0);
             }
             
-            if (pos > 1 and _draw_upper <= 0 and (subindex & 1)) {
+            if (pos > 1 and !_draw_upper and (subindex & 1)) {
                 _draw_upper = subindex;
             }
-            if (pos < -1 and _draw_upper > 0) {
-                _draw_upper = -1;
+            if (pos < -1 and _draw_upper) {
+                _draw_upper = 0;
                 return false;
             }
             
