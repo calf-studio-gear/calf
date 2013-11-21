@@ -143,6 +143,18 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
                     continue;
                 }
                 break;
+            case 4:
+                // this one is drawing bars centered on the x axis with 1
+                // as the center
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                    cairo_rectangle(ctx, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
+                    _last = i;
+                    if (startdraw < 0)
+                        startdraw = ox + _last;
+                } else {
+                    continue;
+                }
+                break;
         }
     }
     if(!mode) {
@@ -1328,7 +1340,8 @@ calf_line_graph_leave (GtkWidget *widget, GdkEventCrossing *event)
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     
     if (lg->debug) printf("[leave]\n");
-    
+    if (lg->mouse_x >= 0 or lg->mouse_y >= 0)
+        calf_line_graph_expose_request(widget, true);
     lg->mouse_x = -1;
     lg->mouse_y = -1;
 

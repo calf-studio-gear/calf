@@ -761,6 +761,10 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiba
     { frequency,   10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "p" #band "_freq", "Freq " #band }, \
     { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
 
+#define EQ_DISPLAY_PARAMS \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
+
+
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(phonoeq) = {"In L", "In R", "Out L", "Out R"};
@@ -789,6 +793,7 @@ CALF_PORT_PROPS(equalizer5band) = {
     EQ_BAND_PARAMS(1, 250)
     EQ_BAND_PARAMS(2, 1000)
     EQ_BAND_PARAMS(3, 2500)
+    EQ_DISPLAY_PARAMS
     {}
 };
 
@@ -809,6 +814,7 @@ CALF_PORT_PROPS(equalizer8band) = {
     EQ_BAND_PARAMS(2, 1000)
     EQ_BAND_PARAMS(3, 2500)
     EQ_BAND_PARAMS(4, 5000)
+    EQ_DISPLAY_PARAMS
     {}
 };
 
@@ -831,6 +837,7 @@ CALF_PORT_PROPS(equalizer12band) = {
     EQ_BAND_PARAMS(6, 2500)
     EQ_BAND_PARAMS(7, 4000)
     EQ_BAND_PARAMS(8, 6000)
+    EQ_DISPLAY_PARAMS
     {}
 };
 

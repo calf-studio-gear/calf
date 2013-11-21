@@ -259,19 +259,19 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         return false;
 
     // gain/dB grid
-    float gain = 16.0 / (1 << subindex);
+    float gain = 64.0 / (1 << subindex);
     pos = dB_grid(gain, res, ofs);
 
     if (pos < -1)
         return false;
 
-    if (subindex != 4)
-        context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
+    if (subindex != 6)
+        context->set_source_rgba(0, 0, 0, 0.2);
 
     if (!(subindex & 1))
     {
         std::stringstream ss;
-        ss << (24 - 6 * subindex) << " dB";
+        ss << (36 - 6 * subindex) << " dB";
         legend = ss.str();
         context->set_dash(dash, 0);
     } else {

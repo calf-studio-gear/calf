@@ -54,6 +54,7 @@ private:
     float lp_mode_old, lp_freq_old;
     float ls_level_old, ls_freq_old;
     float hs_level_old, hs_freq_old;
+    int indiv_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
     dual_in_out_metering<BaseClass> meters;
@@ -62,7 +63,7 @@ private:
     dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
     dsp::biquad_d2<float> pL[PeakBands], pR[PeakBands];
     int keep_gliding;
-    
+    mutable int last_peak;
     inline void process_hplp(float &left, float &right);
 public:
     typedef std::complex<double> cfloat;
@@ -311,6 +312,7 @@ public:
     float meter_in[channels];
     unsigned int pos;
     unsigned int buffer_size;
+    int last_peak;
     static inline float sign(float x) {
         if(x < 0) return -1.f;
         if(x > 0) return 1.f;

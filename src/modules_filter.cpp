@@ -53,6 +53,8 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     hs_freq_old = ls_freq_old = 0;
     hs_level_old = ls_level_old = 0;
     keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -157,6 +159,11 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
             p_q_old[i] = q;
         }
     }
+    if (*params[AM::param_individuals] != indiv_old) {
+        indiv_old = *params[AM::param_individuals];
+        redraw_graph = true;
+    }
+    
     // check if any important parameter for redrawing the graph changed
     for (int i = 0; i < graph_param_count; i++) {
         if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
@@ -330,23 +337,6 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
     return outputs_mask;
 }
 
-template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
-{
-    if (!is_active or phase or subindex)
-        return false;
-    return ::get_graph(*this, subindex, data, points, 32, 0);
-}
-
-
-template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
-{
-    if (!is_active or phase)
-        return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
-}
-
 static inline float adjusted_lphp_gain(const float *const *params, int param_active, int param_mode, const biquad_d2<float> &filter, float freq, float srate)
 {
     if(*params[param_active] > 0.f) {
@@ -361,6 +351,71 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
         }
     }
     return 1;
+}
+
+template<class BaseClass, bool has_lphp>
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    int max = PeakBands + 2 + (has_lphp ? 2 : 0);
+    
+    if (!is_active or phase
+    or (subindex and !*params[AM::param_individuals])
+    or (subindex > max and *params[AM::param_individuals]))
+        return false;
+    
+    // first graph is the overall frequency response graph
+    if (!subindex)
+        return ::get_graph(*this, subindex, data, points, 64, 0);
+    
+    // get out if no band is active
+    if (last_peak >= max) {
+        last_peak = 0;
+        return false;
+    }
+    
+    // get the next filter to draw a curve for and leave out inactive
+    // filters
+    while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
+        last_peak ++;
+    if (last_peak == PeakBands and !*params[AM::param_ls_active])
+        last_peak ++;
+    if (last_peak == PeakBands + 1 and !*params[AM::param_hs_active])
+        last_peak ++;
+    if (has_lphp and last_peak == PeakBands + 2 and !*params[AM::param_hp_active])
+        last_peak ++;
+    if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
+        last_peak ++;
+    
+    
+    // draw the individual curve of the actual filter
+    for (int i = 0; i < points; i++) {
+        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+        if (last_peak < PeakBands) {
+            data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+        } else if (last_peak == PeakBands) {
+            data[i] = lsL.freq_gain(freq, (float)srate);
+        } else if (last_peak == PeakBands + 1) {
+            data[i] = hsL.freq_gain(freq, (float)srate);
+        } else if (last_peak == PeakBands + 2 and has_lphp) {
+            data[i] = adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
+        } else if (last_peak == PeakBands + 3 and has_lphp) {
+            data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
+        }
+    }
+    
+    last_peak ++;
+    *mode = 4;
+    context->set_source_rgba(0,0,0,0.0666);
+    return true;
+}
+
+
+template<class BaseClass, bool has_lphp>
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (!is_active or phase)
+        return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 64, 0);
 }
 
 template<class BaseClass, bool has_lphp>
