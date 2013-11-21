@@ -518,13 +518,13 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
     // the filter graph (cached) in frequency response
     if (index == par_delay and subindex == 2 and !phase) {
         context->set_source_rgba(0.35, 0.4, 0.2);
-        return ::get_graph(*this, subindex, data, points, 32, 0);
+        return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     // the realtime graphs in frequency response
     if (index == par_delay and subindex < 2 and phase) {
         set_channel_color(context, subindex);
         context->set_line_width(1);
-        return ::get_graph(*this, subindex, data, points, 32, 0);
+        return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     
     // the sine curves in modulation display
@@ -575,7 +575,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
 bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (index == par_delay and !phase and is_active)
-        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 64, 0.5);
     return false;
 }
 
