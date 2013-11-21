@@ -454,6 +454,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
 void calf_line_graph_draw_background(CalfLineGraph* lg, cairo_t* c) 
 {
     if (lg->debug) printf("(draw background)\n");
+    
     // outer frame (black)
     int pad = 0;
     
@@ -467,7 +468,8 @@ void calf_line_graph_draw_background(CalfLineGraph* lg, cairo_t* c)
     cairo_set_source_rgb(c, 0, 0, 0);
     cairo_fill(c);
             
-    // inner yellowish screen (bevel)
+    
+    // black light effect
     pad = 1;
     cairo_rectangle(
         c, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
@@ -482,19 +484,62 @@ void calf_line_graph_draw_background(CalfLineGraph* lg, cairo_t* c)
     cairo_rectangle(c, ox - 1, oy - 1, sx + 2, sy + 2);
     cairo_set_source_rgb (c, 0, 0, 0);
     cairo_fill(c);
-            
+    
+    // inner yellowish screen
     cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.44, 0.44, 0.30);
-    cairo_pattern_add_color_stop_rgb(pt, 0.04,    0.89, 0.99, 0.54);
-    cairo_pattern_add_color_stop_rgb(pt, 0.4,     0.78, 0.89, 0.45);
-    cairo_pattern_add_color_stop_rgb(pt, 0.400001,0.71, 0.82, 0.33);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89, 1.00, 0.45);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.71, 0.82, 0.33);
+    cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89, 1.00, 0.54);
     cairo_set_source (c, pt);
     cairo_rectangle(c, ox, oy, sx, sy);
     cairo_fill(c);
     cairo_pattern_destroy(pt);
-            
-    // lights
+    
+    // top shadow
+    pt = cairo_pattern_create_linear(ox, oy, ox, oy + 7);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.6);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, sx, 7);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // left shadow
+    pt = cairo_pattern_create_linear(ox, oy, ox + 5, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.3);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, 5, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // right shadow
+    pt = cairo_pattern_create_linear(ox + sx - 5, oy, ox + sx, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.3);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox + sx - 5, oy, 5, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // left dull
+    pt = cairo_pattern_create_linear(ox, oy, ox + sx / 2, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.1);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, sx / 2, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // right dull
+    pt = cairo_pattern_create_linear(ox + sx / 2, oy, ox + sx, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.1);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox + sx / 2, oy, sx / 2, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // light sources
     int div = 1;
     int light_w = sx;
     while(light_w / div > 300) 
