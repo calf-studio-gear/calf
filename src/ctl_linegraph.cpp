@@ -1075,7 +1075,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // if someone changed the handles via drag'n'drop or externally we
     // need a redraw of the handles surface
-    if (lg->freqhandles and lg->handle_redraw) {
+    if (lg->freqhandles and (lg->handle_redraw or lg->force_redraw)) {
         cairo_t *hs = cairo_create(lg->handles_surface);
         calf_line_graph_clear_surface(hs);
         calf_line_graph_draw_freqhandles(lg, hs);

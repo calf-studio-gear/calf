@@ -1260,7 +1260,16 @@ void line_graph_param_control::set()
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
-
+        
+        if (clg->param_zoom >= 0) {
+            float _z = gui->plugin->get_param_value(clg->param_zoom);
+            if (_z != clg->zoom) {
+                force = true;
+                clg->zoom = _z;
+                clg->force_redraw = true;
+            }
+        }
+        
         for (int i = 0; i < clg->freqhandles; i++) {
             FreqHandle *handle = &clg->freq_handles[i];
 
@@ -1300,14 +1309,6 @@ void line_graph_param_control::set()
             if (handle->active != _a) {
                 force = true;
                 clg->handle_redraw = true;
-            }
-        }
-        if (clg->param_zoom >= 0) {
-            float _z = gui->plugin->get_param_value(clg->param_zoom);
-            if (_z != clg->zoom) {
-                force = true;
-                clg->zoom = _z;
-                clg->force_redraw = true;
             }
         }
         calf_line_graph_expose_request(widget, force);
