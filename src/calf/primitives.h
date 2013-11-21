@@ -425,12 +425,11 @@ inline float _sanitize(float value)
  */
 inline void sanitize_denormal(float& value)
 {
-// old test:   if (((*(unsigned int *) &value) & 0x7f800000) == 0) {
-    if (!std::isnormal(value)) {
+    if (!std::isnormal(value))
          value = 0.f;
-    } else {
-       value = clip11(value);
-    }
+    int val = *reinterpret_cast <const int *> (&value);
+    if (!(val & 0x7F800000) && (val & 0x7F800000))
+        value = 0.f;
 }
     
 /**
