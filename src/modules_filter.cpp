@@ -367,7 +367,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     if (!subindex)
         return ::get_graph(*this, subindex, data, points, 64, 0);
     
-    // get out if no band is active
+    // get out if max band is reached
     if (last_peak >= max) {
         last_peak = 0;
         return false;
@@ -386,6 +386,11 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
         last_peak ++;
     
+    // get out if max band is reached
+    if (last_peak >= max) {
+        last_peak = 0;
+        return false;
+    }
     
     // draw the individual curve of the actual filter
     for (int i = 0; i < points; i++) {
@@ -401,11 +406,12 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         } else if (last_peak == PeakBands + 3 and has_lphp) {
             data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
         }
+        data[i] = dB_grid(data[i], 64, 0);
     }
     
     last_peak ++;
     *mode = 4;
-    context->set_source_rgba(0,0,0,0.0666);
+    context->set_source_rgba(0,0,0,0.075);
     return true;
 }
 
