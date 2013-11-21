@@ -890,6 +890,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
 {
     if (phase)
         return false;
+    redraw_graph = false;
     float gain;
     int sub = subindex + (_draw_upper % 2) - 1;
     static const double dash[] = {2.0};
@@ -1008,8 +1009,6 @@ bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int 
     
 bool analyzer::get_layers(int generation, unsigned int &layers) const
 {
-    if(redraw_graph) printf("ha\n");
     layers = LG_REALTIME_GRAPH | ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
-    redraw_graph = false;
     return true;
 }
