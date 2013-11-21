@@ -419,16 +419,6 @@ inline float _sanitize(float value)
         return 0.f;
     return value;
 }
-/**
- * Works on little-endian machines only, but detects NaN better now!
- */
-inline bool is_nan(float& value )
-{
-    if (((*(uint32_t *) &value) & 0x7fffffff) > 0x7f800000) {
-        return true;
-    }
-    return false;
-}
 
 /**
  * Force already-denormal float value to zero
@@ -436,8 +426,10 @@ inline bool is_nan(float& value )
 inline void sanitize_denormal(float& value)
 {
 // old test:   if (((*(unsigned int *) &value) & 0x7f800000) == 0) {
-    if (is_nan(value)) {
-        value = 0.f;
+    if (!std::isnormal(value)) {
+         value = 0.f;
+    } else {
+       value = clip11(value);
     }
 }
     
