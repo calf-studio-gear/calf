@@ -1008,6 +1008,7 @@ bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int 
     
 bool analyzer::get_layers(int generation, unsigned int &layers) const
 {
+    if(redraw_graph) printf("ha\n");
     layers = LG_REALTIME_GRAPH | ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
     redraw_graph = false;
     return true;
