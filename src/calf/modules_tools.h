@@ -27,6 +27,7 @@
 #include "biquad.h"
 #include "inertia.h"
 #include "audio_fx.h"
+#include "analyzer.h"
 #include "giface.h"
 #include "metadata.h"
 #include "loudness.h"
@@ -36,9 +37,6 @@
 namespace calf_plugins {
 
 struct ladspa_plugin_info;
-
-
-#define MATH_E 2.718281828
 
 /**********************************************************************
  * STEREO TOOLS by Markus Schmidt 
@@ -110,20 +108,18 @@ public:
 **********************************************************************/
 
 class analyzer_audio_module:
-    public audio_module<analyzer_metadata>, public frequency_response_line_graph, public phase_graph_iface
+    public audio_module<analyzer_metadata>, public phase_graph_iface,
+    public frequency_response_line_graph
 {
     typedef analyzer_audio_module AM;
     uint32_t srate;
     bool active;
-    int _accuracy;
-    int _acc_old;
-    int _scale_old;
-    int _post_old;
-    int _hold_old;
-    int _smooth_old;
+    float envelope;
+    float attack_coef;
+    float release_coef;
     uint32_t clip_L, clip_R;
     float meter_L, meter_R;
-    float db_level_coeff1, db_level_coeff2, leveladjust;
+    analyzer _analyzer;
 public:
     analyzer_audio_module();
     void params_changed();
@@ -133,39 +129,16 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     ~analyzer_audio_module();
-    mutable int _mode_old;
-    mutable float _level_old;
-    mutable bool _falling;
-    mutable int _draw_upper;
-    float envelope;
-    float attack_coef;
-    float release_coef;
 protected:
     static const int max_phase_buffer_size = 8192;
     int phase_buffer_size;
     float *phase_buffer;
-    int fft_buffer_size;
-    float *fft_buffer;
-    int *spline_buffer;
-    int plength;
     int ppos;
-    int fpos;
-    mutable fftwf_plan fft_plan;
-    static const int max_fft_cache_size = 32768;
-    static const int max_fft_buffer_size = max_fft_cache_size * 2;
-    float *fft_inL, *fft_outL;
-    float *fft_inR, *fft_outR;
-    float *fft_smoothL, *fft_smoothR;
-    float *fft_deltaL, *fft_deltaR;
-    float *fft_holdL, *fft_holdR;
-    float *fft_fallingL, *fft_fallingR;
-    float *fft_freezeL, *fft_freezeR;
-    mutable int lintrans;
-    mutable int ____analyzer_phase_was_drawn_here;
-    mutable int ____analyzer_sanitize;
+    int plength;
 };
 
 };

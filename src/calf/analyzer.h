@@ -33,26 +33,58 @@
 #include <math.h>
 #include "plugin_tools.h"
 
-namespace dsp {
-#if 0
-}; to keep editor happy
-#endif
+#define MATH_E 2.718281828
 
-class analyzer {
+namespace calf_plugins {
+
+class analyzer: public frequency_response_line_graph
+{
 private:
+    mutable int _accuracy;
+    mutable int _acc;
+    mutable int _scale;
+    mutable int _post;
+    mutable int _hold;
+    mutable int _smooth;
+    mutable int _speed;
+    mutable int _windowing;
+    mutable int _view;
+    mutable int _freeze;
+    mutable int _mode;
+    mutable float _level;
+    mutable bool _falling;
+    mutable int _draw_upper;
+    float db_level_coeff1, db_level_coeff2, leveladjust;
 public:
     uint32_t srate;
     analyzer();
-    void process();
+    void process(float L, float R);
     void set_sample_rate(uint32_t sr);
-    void set_params();
+    void set_params(float level, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze);
+    ~analyzer();
+    bool get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
+    bool get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int generation, unsigned int &layers) const;
+protected:
+    int fft_buffer_size;
+    float *fft_buffer;
+    int *spline_buffer;
+    int fpos;
+    mutable fftwf_plan fft_plan;
+    static const int max_fft_cache_size = 32768;
+    static const int max_fft_buffer_size = max_fft_cache_size * 2;
+    float *fft_inL, *fft_outL;
+    float *fft_inR, *fft_outR;
+    float *fft_smoothL, *fft_smoothR;
+    float *fft_deltaL, *fft_deltaR;
+    float *fft_holdL, *fft_holdR;
+    float *fft_fallingL, *fft_fallingR;
+    float *fft_freezeL, *fft_freezeR;
+    mutable int lintrans;
+    mutable int ____analyzer_phase_was_drawn_here;
+    mutable int ____analyzer_sanitize;
 };
 
-
-
-#if 0
-{ to keep editor happy
-#endif
-}
-
+};
 #endif
