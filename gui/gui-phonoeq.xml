@@ -1,4 +1,4 @@
-<vbox>
+<vbox spacing="10">
     
     <table spacing="5" rows="1" cols="7">
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
@@ -41,18 +41,19 @@
         </vbox>
     </table>
     
+    <hbox spacing="20" homogeneous="1">
+        <vbox>
+            <label param="mode"/>
+            <combo param="mode"/>
+        </vbox>
+        <vbox>
+            <label param="type"/>
+            <combo param="type"/>
+        </vbox>
+    </hbox>
+            
     <frame label="Frequency Response">
         <vbox>
-            <hbox>
-                <vbox>
-                    <label param="mode"/>
-                    <combo param="mode"/>
-                </vbox>
-                <vbox>
-                    <label param="type"/>
-                    <combo param="type"/>
-                </vbox>
-            </hbox>
             <if cond="directlink">
                 <line-graph refresh="1" height="180" width="450" expand="1" fill="1" crosshairs="1" />
             </if>
