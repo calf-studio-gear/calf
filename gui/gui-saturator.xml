@@ -20,7 +20,7 @@
         
         <!-- activation -->
         <label param="level_in" />
-        <knob param="level_in" size="5" />
+        <knob param="level_in" size="5" type="1" />
         <value param="level_in" />
     
     </vbox>
@@ -54,7 +54,7 @@
             <value param="mix" attach-x="0" attach-y="3" expand-x="0" fill-x="0" />
             
             <label param="level_out" attach-x="1" attach-y="0" expand-x="0" fill-x="0" />
-            <knob param="level_out" attach-x="1" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+            <knob param="level_out" attach-x="1" attach-y="1" attach-h="2" expand-x="0" fill-x="0" type="1" />
             <value param="level_out" attach-x="1" attach-y="3" expand-x="0" fill-x="0" />
             
             <label param="bypass" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />

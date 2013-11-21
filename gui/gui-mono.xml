@@ -8,7 +8,7 @@
             <hbox spacing="8">
                 <vbox>
                     <label param="level_in" />
-                    <knob param="level_in" size="5" />
+                    <knob param="level_in" size="5" type="1"/>
                     <value param="level_in" />
                 </vbox>
                 <vbox spacing="4" expand="0">
@@ -95,11 +95,10 @@
                 </vbox>
                 <vbox>
                     <label param="level_out" />
-                    <knob param="level_out" size="5" />
+                    <knob param="level_out" size="5" type="1" />
                     <value param="level_out" />
                 </vbox>
             </hbox>
         </vbox>
     </frame>
 </hbox>
-

@@ -12,7 +12,7 @@
             </table>
             <hbox spacing="10">
                 <vbox expand="0" fill="0">
-                    <knob param="level_in" size="5" />
+                    <knob param="level_in" size="5" type="1"/>
                     <value param="level_in" />
                 </vbox>
                 <vbox expand="0" spacing="5">
@@ -131,11 +131,10 @@
                     <value param="balance_out" />
                 </vbox>
                 <vbox expand="0" fill="0">
-                    <knob param="level_out" size="5" />
+                    <knob param="level_out" size="5" type="1" />
                     <value param="level_out" />
                 </vbox>
             </hbox>
         </vbox>
     </frame>
 </hbox>
-

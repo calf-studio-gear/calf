@@ -25,14 +25,14 @@
         <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
         <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="10">
         <vbox spacing="10">
             <label/>
             <label text="Gain"/>
-            <knob param="level_in" size="5"/>
+            <knob param="level_in" size="5" type="1"/>
             <value param="level_in"/>
             <label/>
         </vbox>

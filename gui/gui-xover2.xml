@@ -9,7 +9,7 @@
                     <vbox>
                         <label/>
                         <label param="level" />
-                        <knob param="level" size="5" />
+                        <knob param="level" size="5" type="1" />
                         <value param="level" />
                         <label/>
                         <combo param="mode" fill="0" expand="0"/>

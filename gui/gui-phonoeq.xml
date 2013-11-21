@@ -3,7 +3,7 @@
     <table spacing="5" rows="1" cols="7">
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
             <label param="level_in" />
-            <knob param="level_in" size="2" />
+            <knob param="level_in" size="2"  type="1"/>
             <value param="level_in" />
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
@@ -36,7 +36,7 @@
         </vbox>
         <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="6" attach-y="0">
             <label param="level_out" />
-            <knob param="level_out" size="2" />
+            <knob param="level_out" size="2"  type="1"/>
             <value param="level_out" />
         </vbox>
     </table>

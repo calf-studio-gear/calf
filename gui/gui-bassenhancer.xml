@@ -4,7 +4,7 @@
         <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
         
         <label param="level_in" attach-x="1" attach-y="0" expand-x="0" fill-x="0" />
-        <knob param="level_in" attach-x="1" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        <knob param="level_in" attach-x="1" attach-y="1" attach-h="2" expand-x="0" fill-x="0" type="1" />
         <value param="level_in" attach-x="1" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="meter_in" attach-x="2" attach-y="0" expand-x="1" fill-x="1" />
@@ -22,7 +22,7 @@
         <value param="amount" attach-x="4" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="level_out" attach-x="5" attach-y="0" expand-x="0" fill-x="0" />
-        <knob param="level_out" attach-x="5" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        <knob param="level_out" attach-x="5" attach-y="1" attach-h="2" expand-x="0" fill-x="0" type="1" />
         <value param="level_out" attach-x="5" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="listen" attach-x="6" attach-y="0" expand-x="0" fill-x="0" />
