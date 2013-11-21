@@ -523,7 +523,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
     // the realtime graphs in frequency response
     if (index == par_delay and subindex < 2 and phase) {
         set_channel_color(context, subindex);
-        context->set_line_width(0.75);
+        context->set_line_width(1);
         return ::get_graph(*this, subindex, data, points, 32, 0);
     }
     
@@ -575,7 +575,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
 bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (index == par_delay and !phase and is_active)
-        return get_freq_gridline(subindex, pos, vertical, legend, context, 32, 0);
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
     return false;
 }
 
