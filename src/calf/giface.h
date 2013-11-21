@@ -825,6 +825,111 @@ inline float subindex_to_freq(int subindex)
   return freq;
 }
 
+inline void line_graph_background(cairo_t* c, int sx, int sy, int ox, int oy) 
+{
+    // outer frame (black)
+    int pad = 0;
+    
+    cairo_rectangle(
+        c, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+    cairo_set_source_rgb(c, 0, 0, 0);
+    cairo_fill(c);
+    
+    // black light effect
+    pad = 1;
+    cairo_rectangle(
+        c, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+    cairo_pattern_t *pat2 = cairo_pattern_create_linear (
+        0, 0, 0, sy + oy * 2 - pad * 2);
+    cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
+    cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
+    cairo_set_source (c, pat2);
+    cairo_fill(c);
+    cairo_pattern_destroy(pat2);
+            
+    cairo_rectangle(c, ox - 1, oy - 1, sx + 2, sy + 2);
+    cairo_set_source_rgb (c, 0, 0, 0);
+    cairo_fill(c);
+    
+    // inner yellowish screen
+    cairo_pattern_t *pt = cairo_pattern_create_linear(ox, oy, ox, sy);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.71, 0.82, 0.33);
+    cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89, 1.00, 0.54);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, sx, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // top shadow
+    pt = cairo_pattern_create_linear(ox, oy, ox, oy + 7);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.6);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, sx, 7);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // left shadow
+    pt = cairo_pattern_create_linear(ox, oy, ox + 5, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.3);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, 5, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // right shadow
+    pt = cairo_pattern_create_linear(ox + sx - 5, oy, ox + sx, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.3);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox + sx - 5, oy, 5, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // left dull
+    pt = cairo_pattern_create_linear(ox, oy, ox + sx / 2, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.1);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox, oy, sx / 2, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // right dull
+    pt = cairo_pattern_create_linear(ox + sx / 2, oy, ox + sx, oy);
+    cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
+    cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.1);
+    cairo_set_source (c, pt);
+    cairo_rectangle(c, ox + sx / 2, oy, sx / 2, sy);
+    cairo_fill(c);
+    cairo_pattern_destroy(pt);
+    
+    // light sources
+    int div = 1;
+    int light_w = sx;
+    while(light_w / div > 300) 
+        div += 1;
+    int w = sx / div;
+    cairo_rectangle(c, ox, oy, sx, sy);
+    for(int i = 0; i < div; i ++) {
+        cairo_pattern_t *pt = cairo_pattern_create_radial(
+           ox + w * i + w / 2.f, oy, 1,
+           ox + w * i + w / 2.f, ox + sy * 0.25, w / 2.f);
+        cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+        cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+        cairo_set_source (c, pt);
+        cairo_fill_preserve(c);
+        pt = cairo_pattern_create_radial(
+           ox + w * i + w / 2.f, oy + sy, 1,
+           ox + w * i + w / 2.f, ox + sy * 0.75, w / 2.f);
+        cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+        cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
+        cairo_set_source (c, pt);
+        cairo_fill_preserve(c);
+    }
+}
+
 };
 
 #endif
