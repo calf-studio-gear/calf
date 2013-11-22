@@ -178,24 +178,25 @@ calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int d
     int _last = 0;
     int startdraw = -1;
     
-    int sm = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? sy : sx);
-    int om = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? oy : ox);
+    int sm = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? sx : sy);
+    int om = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? ox : oy);
     for (int i = 0; i < sm; i++) {
-        if (lg->debug > 2) printf("* moving i: %d, dir: %d, data: %.5f\n", i, direction, data[i]);
-        if (i and ((data[i] < INFINITY) or i == sm - 1)) {
+        if (lg->debug > 2) printf("* moving i: %d, dir: %d, count: %d, data: %.5f\n", i, direction, count, data[i]);
+        if (i and ((data[i] < INFINITY) or i >= sm)) {
             cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 2.f);
             switch (direction) {
+                case LG_MOVING_LEFT:
+                default:
+                    cairo_rectangle(ctx, ox + sx - 1 - count, oy + _last, 1, i - _last);
+                    break;
+                case LG_MOVING_RIGHT:
+                    cairo_rectangle(ctx, ox + count, oy + _last, 1, i - _last);
+                    break;
                 case LG_MOVING_UP:
                     cairo_rectangle(ctx, ox + _last, oy + sy - 1 - count, i - _last, 1);
                     break;
                 case LG_MOVING_DOWN:
                     cairo_rectangle(ctx, ox + _last, oy + count, i - _last, 1);
-                    break;
-                case LG_MOVING_LEFT:
-                    cairo_rectangle(ctx, ox + sx - 1 - count, oy + _last, 1, i - _last);
-                    break;
-                case LG_MOVING_RIGHT:
-                    cairo_rectangle(ctx, ox + count, oy + _last, 1, i - _last);
                     break;
             }
             
@@ -869,7 +870,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // no cache has been created by now, so
                 // prepare the cache surface with the grid surface
                 if (lg->debug) printf("copy grid->cache\n");
-                calf_line_graph_copy_surface(ctx, lg->grid_surface);
+                calf_line_graph_copy_surface(cache_c, lg->grid_surface);
                 cache_drawn = true;
             } else if (phase and !realtime_drawn) {
                 // we're in realtime phase and the realtime surface wasn't
@@ -877,7 +878,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid was drawn)
                 // so "clear" the realtime surface with the cache
                 if (lg->debug) printf("copy cache->realtime\n");
-                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                calf_line_graph_copy_surface(cache_c, lg->cache_surface);
                 realtime_drawn = true;
             }
             
@@ -893,19 +894,23 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             // set moving distances according to direction
             int x = 0;
             int y = 0;
-            switch (direction ) {
+            switch (direction) {
                 case LG_MOVING_LEFT:
                     x = -a;
                     y = 0;
+                    break;
                 case LG_MOVING_RIGHT:
                     x = a;
                     y = 0;
+                    break;
                 case LG_MOVING_UP:
                     x = 0;
                     y = -a;
+                    break;
                 case LG_MOVING_DOWN:
                     x = 0;
                     y = a;
+                    break;
             }
             // copy the old moving surface to the riht position on the
             // new surface
