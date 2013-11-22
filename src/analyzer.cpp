@@ -180,10 +180,8 @@ void analyzer::process(float L, float R) {
     fpos %= (max_fft_buffer_size - 2);
 }
 
-bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool analyzer::do_fft(int subindex, int points) const
 {
-    if (!phase)
-        return false;
     if(____analyzer_sanitize) {
         // null the overall buffer to feed the fft with if someone requested so
         // in the last cycle
@@ -194,30 +192,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         return false;
     }
     
-    // just for the stoopid
-    
-    if (   (subindex == 1 and !_hold and _mode < 3) \
-        
-        or (subindex > 1 and _mode < 3) \
-        
-        or (subindex == 2 and !_hold and (_mode == 3 \
-            or _mode == 4)) \
-        
-        or (subindex == 4 and (_mode == 3 or _mode == 4)) \
-            
-        or (subindex == 1 and _mode == 5) \
-        
-        or (subindex == 1 and _mode > 5 and _mode < 9) \
-    ) {
-        // stop drawing when all curves have been drawn according to the mode
-        // and hold settings
-        return false;
-    }
     bool fftdone = false; // if fft was renewed, this one is set to true
-    double freq; // here the frequency of the actual drawn pixel gets stored
-    int iter = 0; // this is the pixel we have been drawing the last box/bar/line
-    int _iter = 1; // this is the next pixel we want to draw a box/bar/line
-    float posneg = 1;
     int __speed = 16 - (int)_speed;
     if(_mode == 5 and _smooth) {
         // there's no falling for difference mode, only smoothing
@@ -408,6 +383,17 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         }
         ____analyzer_phase_was_drawn_here ++;
     }
+    ____analyzer_sanitize = 0;
+    return fftdone;
+}
+
+void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
+{
+    double freq; // here the frequency of the actual drawn pixel gets stored
+    int iter = 0; // this is the pixel we have been drawing the last box/bar/line
+    int _iter = 1; // this is the next pixel we want to draw a box/bar/line
+    float posneg = 1;
+    int __speed = 16 - (int)_speed;
     if (lintrans < 0) {
         // accuracy was changed so we have to recalc linear transition
         int _lintrans = (int)((float)points * log((20.f + 2.f * \
@@ -798,33 +784,40 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
             data[i] = INFINITY;
         }
     }
+}
+
+bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
+{
+    if (subindex >= 1)
+        return false;
+    bool fftdone = false;
+    if (!subindex)
+        fftdone = do_fft(subindex, x);
+    draw(subindex, data, x, fftdone);
+    direction = LG_MOVING_UP;
+    return true;
+}
+
+bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!phase)
+        return false;
     
-    // ###################################
-    // colorize the curves/boxes according
-    // to the chosen display settings
-    // ###################################
-    
-    // change alpha (or color) for hold lines or stereo modes
-    if((subindex == 1 and _mode < 3) or (subindex > 1 and _mode == 4)) {
-        // subtle hold line on left, right, average or stereo image
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+    if ((subindex == 1 and !_hold and _mode < 3) \
+     or (subindex > 1  and _mode < 3) \
+     or (subindex == 2 and !_hold and (_mode == 3 or _mode == 4)) \
+     or (subindex == 4 and (_mode == 3 or _mode == 4)) \
+     or (subindex == 1 and _mode == 5) \
+     or _mode > 5 \
+    ) {
+        // stop drawing when all curves have been drawn according to the mode
+        // and hold settings
+        return false;
     }
-    if(subindex == 0 and _mode == 3) {
-        // left channel in stereo analyzer
-        context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
-    }
-    if(subindex == 1 and _mode == 3) {
-        // right channel in stereo analyzer
-        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
-    }
-    if(subindex == 2 and _mode == 3) {
-        // left hold in stereo analyzer
-        context->set_source_rgba(0.45, 0.30, 0.2, 0.2);
-    }
-    if(subindex == 3 and _mode == 3) {
-        // right hold in stereo analyzer
-        context->set_source_rgba(0.25, 0.45, 0.2, 0.2);
-    }
+    bool fftdone = false;
+    if (!subindex)
+        fftdone = do_fft(subindex, points);
+    draw(subindex, data, points, fftdone);
     
     // #############################
     // choose a drawing mode between
@@ -865,9 +858,6 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
             // lines
             *mode = 0;
         }
-    } else if (_mode > 5 and _mode < 9) {
-        // spectrum analyzer
-        *mode = 4;
     } else if(!_view) {
         // bars
         if((subindex == 0 and _mode < 3) or (subindex <= 1 and _mode == 3)) {
@@ -881,8 +871,34 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         // draw lines
         *mode = 0;
     }
+    // ###################################
+    // colorize the curves/boxes according
+    // to the chosen display settings
+    // ###################################
+    
+    // change alpha (or color) for hold lines or stereo modes
+    if((subindex == 1 and _mode < 3) or (subindex > 1 and _mode == 4)) {
+        // subtle hold line on left, right, average or stereo image
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+    }
+    if(subindex == 0 and _mode == 3) {
+        // left channel in stereo analyzer
+        context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
+    }
+    if(subindex == 1 and _mode == 3) {
+        // right channel in stereo analyzer
+        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
+    }
+    if(subindex == 2 and _mode == 3) {
+        // left hold in stereo analyzer
+        context->set_source_rgba(0.45, 0.30, 0.2, 0.2);
+    }
+    if(subindex == 3 and _mode == 3) {
+        // right hold in stereo analyzer
+        context->set_source_rgba(0.25, 0.45, 0.2, 0.2);
+    }
+    
     context->set_line_width(0.75);
-    ____analyzer_sanitize = 0;
     return true;
 }
 
@@ -1002,13 +1018,13 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
     }
     return false;
 }
-bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
-{
-    return false;
-}
     
 bool analyzer::get_layers(int generation, unsigned int &layers) const
 {
-    layers = LG_REALTIME_GRAPH | ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
+    if (_mode > 5 and _mode < 9)
+        layers = LG_REALTIME_MOVING;
+    else
+        layers = LG_REALTIME_GRAPH;
+    layers |= ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
     return true;
 }

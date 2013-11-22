@@ -62,6 +62,8 @@ public:
     void set_sample_rate(uint32_t sr);
     void set_params(float level, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze);
     ~analyzer();
+    bool do_fft(int subindex, int points) const;
+    void draw(int subindex, float *data, int points, bool fftdone) const;
     bool get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
     bool get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
