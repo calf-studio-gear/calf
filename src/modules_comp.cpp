@@ -327,7 +327,6 @@ void gain_reduction2_audio_module::process(float &left)
         float xg, xl, yg, yl, y1;
         yg=0.f;
         xg = (left==0.f) ? -160.f : 20.f*log10(fabs(left));
-        dsp::sanitize_denormal(xg);
 
         if (2.f*(xg-thresdb)<-width) {
             yg = xg;
@@ -338,17 +337,11 @@ void gain_reduction2_audio_module::process(float &left)
         if (2.f*(xg-thresdb)>width) {
             yg = thresdb + (xg-thresdb)/ratio;
         }
-        dsp::sanitize_denormal(yg);
             
         xl = xg - yg;
-        dsp::sanitize_denormal(old_y1);
-        dsp::sanitize_denormal(old_yl);
-        dsp::sanitize_denormal(old_detected);
             
         y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
         yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
-        dsp::sanitize_denormal(y1);
-        dsp::sanitize_denormal(yl);
         
         cdb = -yl;
         gain = exp(cdb/20.f*log(10.f));
@@ -375,7 +368,6 @@ float gain_reduction2_audio_module::output_gain(float inputt) const {
         float xg, yg;
         yg=0.f;
     xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
-    dsp::sanitize_denormal(xg);
 
         if (2.f*(xg-thresdb)<-width) {
             yg = xg;
