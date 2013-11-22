@@ -183,7 +183,7 @@ calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int d
     for (int i = 0; i < sm; i++) {
         if (lg->debug > 2) printf("* moving i: %d, dir: %d, count: %d, data: %.5f\n", i, direction, count, data[i]);
         if (i and ((data[i] < INFINITY) or i >= sm)) {
-            cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 2.f);
+            cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 1.4);
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
@@ -878,7 +878,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid was drawn)
                 // so "clear" the realtime surface with the cache
                 if (lg->debug) printf("copy cache->realtime\n");
-                calf_line_graph_copy_surface(cache_c, lg->cache_surface);
+                calf_line_graph_copy_surface(realtime_c, lg->cache_surface);
                 realtime_drawn = true;
             }
             
@@ -896,6 +896,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             int y = 0;
             switch (direction) {
                 case LG_MOVING_LEFT:
+                default:
                     x = -a;
                     y = 0;
                     break;
@@ -912,7 +913,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                     y = a;
                     break;
             }
-            // copy the old moving surface to the riht position on the
+            // copy the old moving surface to the right position on the
             // new surface
             if (lg->debug) printf("copy cached moving->moving\n");
             cairo_set_source_surface(ctx, lg->moving_surface[(int)!lg->movesurf], x, y);

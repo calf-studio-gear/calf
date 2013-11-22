@@ -1006,11 +1006,9 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 pos = log(freq / 20.0) / log(1000);
     
                 if (!legend.empty()) {
-                    context->set_source_rgba(0, 0, 0, 0.2);
-                    context->set_dash(dash, 0);
+                    context->set_source_rgba(0, 0, 0, 0.33);
                 } else {
-                    context->set_source_rgba(0, 0, 0, 0.1);
-                    context->set_dash(dash, 1);
+                    context->set_source_rgba(0, 0, 0, 0.2);
                 }
                 return true;
             }
