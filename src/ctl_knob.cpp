@@ -30,6 +30,19 @@
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
 
+//struct CalfKnobSizes
+//{
+    //int size;
+    //float light_rad;
+    //float mask_rad;
+    //float mask_width;
+    //double dash[2];
+    //int dash_length;
+    //float dot_rad;
+    //float dot_width;
+    //float dot_length;
+//} 
+
 static gboolean
 calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -38,12 +51,31 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfKnob *self = CALF_KNOB(widget);
     GdkWindow *window = widget->window;
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-     
+    
     // printf("adjustment = %p value = %f\n", adj, adj->value);
     int ox = widget->allocation.x, oy = widget->allocation.y;
     ox += (widget->allocation.width - self->knob_size * 20) / 2;
     oy += (widget->allocation.height - self->knob_size * 20) / 2;
-
+    
+    float start = knob_type == 4 
+    
+    switch (knob_type) {
+        case 0:
+        default:
+            
+            break;
+        case 1:
+            
+            break;
+        case 2:
+            
+            break;
+        case 3:
+            
+            break;
+    }
+    
+    
     int phase = (int)((adj->value - adj->lower) * 64 / (adj->upper - adj->lower));
     // skip middle phase except for true middle value
     if (self->knob_type == 1 && phase == 32) {
@@ -286,6 +318,7 @@ calf_knob_init (CalfKnob *self)
     GTK_WIDGET_SET_FLAGS (GTK_WIDGET(self), GTK_CAN_FOCUS);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
+    widget->size = widget->knob_size - 1;
 }
 
 GtkWidget *
