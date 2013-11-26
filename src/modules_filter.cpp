@@ -55,7 +55,6 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
-    offset_old = -1;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -173,14 +172,10 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
     }
     
     _analyzer.set_params(
-        128 * *params[AM::param_zoom], *params[AM::param_offset], 6, 0, 1,
-        *params[AM::param_analyzer_mode] += (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
-        0, 0, 15, 2, 0, 0);
-        
-    if (offset_old != *params[AM::param_offset]) {
-        redraw_graph = true;
-        offset_old = *params[AM::param_offset];
-    }
+        256, 1, 6, 0, 1,
+        *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
+        0, 0, 15, 2, 0, 0
+    );
 }
 
 template<class BaseClass, bool has_lphp>
@@ -370,78 +365,104 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    int max = PeakBands + 2 + (has_lphp ? 2 : 0);
-    
-    if (!is_active or phase
-    or (subindex and !*params[AM::param_individuals])
-    or (subindex > max and *params[AM::param_individuals]))
-        return false;
-    
-    // first graph is the overall frequency response graph
-    if (!subindex)
-        return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], *params[AM::param_offset]);
-    
-    // get out if max band is reached
-    if (last_peak >= max) {
-        last_peak = 0;
-        return false;
-    }
-    
-    // get the next filter to draw a curve for and leave out inactive
-    // filters
-    while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
-        last_peak ++;
-    if (last_peak == PeakBands and !*params[AM::param_ls_active])
-        last_peak ++;
-    if (last_peak == PeakBands + 1 and !*params[AM::param_hs_active])
-        last_peak ++;
-    if (has_lphp and last_peak == PeakBands + 2 and !*params[AM::param_hp_active])
-        last_peak ++;
-    if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
-        last_peak ++;
-    
-    // get out if max band is reached
-    if (last_peak >= max) { // and !*params[param_analyzer_active]) {
-        last_peak = 0;
-        return false;
-    }
-     //else if *params[param_analyzer_active]) {
-        //bool goon = _analyzer.get_graph(subindex, phase, data, points, context, mode);
-        //if (!goon)
-            //last_peak = 0;
-        //return goon;
-    //}
-        
-    // draw the individual curve of the actual filter
-    for (int i = 0; i < points; i++) {
-        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        if (last_peak < PeakBands) {
-            data[i] = pL[last_peak].freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands) {
-            data[i] = lsL.freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands + 1) {
-            data[i] = hsL.freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands + 2 and has_lphp) {
-            data[i] = adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
-        } else if (last_peak == PeakBands + 3 and has_lphp) {
-            data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
+    if (phase and *params[AM::param_analyzer_active]) {
+        bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+        if (*params[AM::param_analyzer_mode] == 2) {
+            set_channel_color(context, subindex ? 0 : 1, 0.2);
+        } else {
+            context->set_source_rgba(0,0,0,0.2);
         }
-        data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], *params[AM::param_offset]);
+        return r;
+    } else if (phase and !*params[AM::param_analyzer_active]) {
+        return false;
+    } else {
+        int max = PeakBands + 2 + (has_lphp ? 2 : 0);
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals]))
+            return false;
+        
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        
+        // get out if max band is reached
+        if (last_peak >= max) {
+            last_peak = 0;
+            return false;
+        }
+        
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
+            last_peak ++;
+        if (last_peak == PeakBands and !*params[AM::param_ls_active])
+            last_peak ++;
+        if (last_peak == PeakBands + 1 and !*params[AM::param_hs_active])
+            last_peak ++;
+        if (has_lphp and last_peak == PeakBands + 2 and !*params[AM::param_hp_active])
+            last_peak ++;
+        if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
+            last_peak ++;
+        
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            return false;
+        }
+         //else if *params[param_analyzer_active]) {
+            //bool goon = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+            //if (!goon)
+                //last_peak = 0;
+            //return goon;
+        //}
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands) {
+                data[i] = lsL.freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands + 1) {
+                data[i] = hsL.freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands + 2 and has_lphp) {
+                data[i] = adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
+            } else if (last_peak == PeakBands + 3 and has_lphp) {
+                data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
     }
-    
-    last_peak ++;
-    *mode = 4;
-    context->set_source_rgba(0,0,0,0.075);
-    return true;
 }
-
+template<class BaseClass, bool has_lphp>
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
+{
+    return _analyzer.get_moving(subindex, direction, data, x, y, context);
+}
+template<class BaseClass, bool has_lphp>
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    redraw_graph = redraw_graph || !generation || *params[AM::param_analyzer_active];
+    layers = *params[AM::param_analyzer_active] and generation ? (*params[AM::param_analyzer_mode] >= 3 ? LG_REALTIME_MOVING : LG_REALTIME_GRAPH) : 0;
+    layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+    bool r = redraw_graph;
+    redraw_graph = false;
+    return r;
+}
 
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!is_active or phase)
         return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], *params[AM::param_offset]);
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
 }
 
 template<class BaseClass, bool has_lphp>

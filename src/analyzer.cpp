@@ -879,11 +879,11 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     }
     if(subindex == 0 and _mode == 3) {
         // left channel in stereo analyzer
-        context->set_source_rgba(0.25, 0.10, 0.0, 0.3);
+        context->set_source_rgba(0.25, 0.10, 0.0, 0.5);
     }
     if(subindex == 1 and _mode == 3) {
         // right channel in stereo analyzer
-        context->set_source_rgba(0.05, 0.25, 0.0, 0.3);
+        context->set_source_rgba(0.05, 0.25, 0.0, 0.5);
     }
     if(subindex == 2 and _mode == 3) {
         // left hold in stereo analyzer
