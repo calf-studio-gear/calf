@@ -30,6 +30,7 @@
 #include "metadata.h"
 #include "plugin_tools.h"
 #include "loudness.h"
+#include "analyzer.h"
 
 namespace calf_plugins {
 
@@ -49,12 +50,14 @@ public:
     using AM::param_count;
     using AM::PeakBands;
 private:
+    analyzer _analyzer;
     enum { graph_param_count = BaseClass::last_graph_param - BaseClass::first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     float hp_mode_old, hp_freq_old;
     float lp_mode_old, lp_freq_old;
     float ls_level_old, ls_freq_old;
     float hs_level_old, hs_freq_old;
     int indiv_old;
+    float offset_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
     dual_in_out_metering<BaseClass> meters;
@@ -82,6 +85,7 @@ public:
     {
         srate = sr;
         meters.set_sample_rate(sr);
+        _analyzer.set_sample_rate(sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };

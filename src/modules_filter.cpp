@@ -55,6 +55,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
+    offset_old = -1;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -169,6 +170,16 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
             redraw_graph = true;
         old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+    _analyzer.set_params(
+        128 * *params[AM::param_zoom], *params[AM::param_offset], 6, 0, 1,
+        *params[AM::param_analyzer_mode] += (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
+        0, 0, 15, 2, 0, 0);
+        
+    if (offset_old != *params[AM::param_offset]) {
+        redraw_graph = true;
+        offset_old = *params[AM::param_offset];
     }
 }
 
@@ -312,6 +323,9 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             outL = procL * *params[AM::param_level_out];
             outR = procR * *params[AM::param_level_out];
             
+            // analyzer
+            _analyzer.process((inL + inR) / 2.f, (outL + outR) / 2.f);
+        
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
@@ -365,7 +379,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     
     // first graph is the overall frequency response graph
     if (!subindex)
-        return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], *params[AM::param_offset]);
     
     // get out if max band is reached
     if (last_peak >= max) {
@@ -387,11 +401,17 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         last_peak ++;
     
     // get out if max band is reached
-    if (last_peak >= max) {
+    if (last_peak >= max) { // and !*params[param_analyzer_active]) {
         last_peak = 0;
         return false;
     }
-    
+     //else if *params[param_analyzer_active]) {
+        //bool goon = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+        //if (!goon)
+            //last_peak = 0;
+        //return goon;
+    //}
+        
     // draw the individual curve of the actual filter
     for (int i = 0; i < points; i++) {
         double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
@@ -406,7 +426,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         } else if (last_peak == PeakBands + 3 and has_lphp) {
             data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
         }
-        data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], *params[AM::param_offset]);
     }
     
     last_peak ++;
@@ -421,7 +441,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, i
 {
     if (!is_active or phase)
         return false;
-    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+    return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], *params[AM::param_offset]);
 }
 
 template<class BaseClass, bool has_lphp>

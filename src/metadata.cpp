@@ -723,6 +723,8 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiba
 
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
+const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference", "Spectralizer In", "Spectralizer Out" };
+
 
 #define BYPASS_AND_LEVEL_PARAMS \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" }, \
@@ -764,6 +766,9 @@ CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiba
 #define EQ_DISPLAY_PARAMS \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
     { 0.25,   0.0625,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB, NULL, "zoom", "Zoom" }, \
+    { 0.00,       -1,           1,     0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "offset", "Offset" }, \
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer Active" }, \
+    { 2,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, eq_analyzer_mode_names, "analyzer_mode", "Analyzer Mode" }, \
 
 
 ////////////////////////////////////////////////////////////////////////////

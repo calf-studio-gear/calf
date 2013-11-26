@@ -1100,12 +1100,12 @@ static float from_x_pos(float pos)
 static float to_y_pos(CalfLineGraph *lg, float gain)
 {
                 //log(gain) * (1.0 / log(32));
-    return 0.5 - dB_grid(gain, 128 * lg->zoom, 0) / 2.0;
+    return 0.5 - dB_grid(gain, 128 * lg->zoom, lg->offset) / 2.0;
 }
 
 static float from_y_pos(CalfLineGraph *lg, float pos)
 {
-    float gain = powf(128.0 * lg->zoom, (0.5 - pos) * 2.0);
+    float gain = powf(128.0 * lg->zoom, (0.5 - pos) * 2.0 - lg->offset);
     return gain;
 }
 
@@ -1138,6 +1138,10 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     if (zoom_name != "")
         clg->param_zoom = gui->get_param_no_by_name(zoom_name);
     
+    const string &offset_name = attribs["offset"];
+    if (offset_name != "")
+        clg->param_offset = gui->get_param_no_by_name(offset_name);
+        
     if (clg->freqhandles > 0)
     {
         for(int i = 0; i < clg->freqhandles; i++)
@@ -1266,6 +1270,15 @@ void line_graph_param_control::set()
             if (_z != clg->zoom) {
                 force = true;
                 clg->zoom = _z;
+                clg->force_redraw = true;
+            }
+        }
+        
+        if (clg->param_offset >= 0) {
+            float _z = gui->plugin->get_param_value(clg->param_offset);
+            if (_z != clg->offset) {
+                force = true;
+                clg->offset = _z;
                 clg->force_redraw = true;
             }
         }

@@ -147,7 +147,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
                 // this one is drawing bars centered on the x axis with 1
                 // as the center
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
+                    cairo_rectangle(ctx, ox + _last,oy + sy / 2 - sy * lg->offset / 2, i - _last, -1 * data[i] * (sy / 2) + sy * lg->offset / 2);
                     _last = i;
                     if (startdraw < 0)
                         startdraw = ox + _last;
@@ -1383,6 +1383,8 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->force_redraw         = false;
     lg->zoom                 = 1;
     lg->param_zoom           = -1;
+    lg->offset               = 0;
+    lg->param_offset         = -1;
     lg->recreate_surfaces    = 1;
     lg->mode                 = 0;
     lg->movesurf             = 0;

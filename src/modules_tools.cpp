@@ -494,6 +494,7 @@ void analyzer_audio_module::params_changed() {
             resolution = pow(64, 2 * offset);
             break;
     }
+    
     _analyzer.set_params(
         resolution,
         offset,
