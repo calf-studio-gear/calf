@@ -227,25 +227,26 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
     cairo_pattern_t *pat;
     
     if(mask > 0 and circle) {
-        // draw a circle in the center of the crosshair leaving out
-        // the lines
-        // ne
-        cairo_move_to(cache_cr, _x + 1, _y);
-        cairo_arc (cache_cr, _x + 1, _y, mask, 1.5 * M_PI, 2 * M_PI);
-        cairo_close_path(cache_cr);
-        // se
-        cairo_move_to(cache_cr, _x + 1, _y + 1);
-        cairo_arc (cache_cr, _x + 1, _y + 1, mask, 0, 0.5 * M_PI);
-        cairo_close_path(cache_cr);
-        // sw
-        cairo_move_to(cache_cr, _x, _y + 1);
-        cairo_arc (cache_cr, _x, _y + 1, mask, 0.5 * M_PI, M_PI);
-        cairo_close_path(cache_cr);
-        // nw
+        //// draw a circle in the center of the crosshair leaving out
+        //// the lines
+        //// ne
+        //cairo_move_to(cache_cr, _x + 1, _y);
+        //cairo_arc (cache_cr, _x + 1, _y, mask, 1.5 * M_PI, 2 * M_PI);
+        //cairo_close_path(cache_cr);
+        //// se
+        //cairo_move_to(cache_cr, _x + 1, _y + 1);
+        //cairo_arc (cache_cr, _x + 1, _y + 1, mask, 0, 0.5 * M_PI);
+        //cairo_close_path(cache_cr);
+        //// sw
+        //cairo_move_to(cache_cr, _x, _y + 1);
+        //cairo_arc (cache_cr, _x, _y + 1, mask, 0.5 * M_PI, M_PI);
+        //cairo_close_path(cache_cr);
+        //// nw
+        //cairo_move_to(cache_cr, _x, _y);
+        //cairo_arc (cache_cr, _x, _y, mask, M_PI, 1.5 * M_PI);
+        //cairo_close_path(cache_cr);
         cairo_move_to(cache_cr, _x, _y);
-        cairo_arc (cache_cr, _x, _y, mask, M_PI, 1.5 * M_PI);
-        cairo_close_path(cache_cr);
-        
+        cairo_arc (cache_cr, _x, _y, mask, 0, 2 * M_PI);
         cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_fill(cache_cr);
     }
@@ -360,7 +361,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     cairo_set_source_rgba(c, 0, 0, 0, 0.5);
                 }
                 if (handle->dimensions >= 2) {
-                    cairo_move_to(c, val_x + 11, val_y);
+                    cairo_move_to(c, val_x + 8, val_y);
                 } else {
                     cairo_move_to(c, val_x + 11, oy + 15);
                 }
@@ -380,7 +381,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
 
                     cairo_text_extents(c, handle->label, &te);
                     if (handle->dimensions >= 2) {
-                        cairo_move_to(c, val_x - 3 - te.width, val_y);
+                        cairo_move_to(c, val_x - te.width, val_y);
                     } else {
                         cairo_move_to(c, val_x - 3 - te.width, oy + 15);
                     }

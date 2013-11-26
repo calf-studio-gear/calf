@@ -1358,13 +1358,6 @@ void phase_graph_param_control::set()
 {
     GtkWidget *tw = gtk_widget_get_toplevel(widget);
     gtk_widget_queue_draw(tw);
-//    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
-//    {
-//        int ws = gdk_window_get_state(widget->window);
-//        if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
-//            return;
-//        //last_generation = calf_phase_graph_update_if(CALF_PHASE_GRAPH(widget), last_generation);
-//    }
 }
 
 phase_graph_param_control::~phase_graph_param_control()
