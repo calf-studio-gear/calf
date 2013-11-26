@@ -374,9 +374,9 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     if (phase and *params[AM::param_analyzer_active]) {
         bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         if (*params[AM::param_analyzer_mode] == 2) {
-            set_channel_color(context, subindex ? 0 : 1, 0.2);
+            set_channel_color(context, subindex ? 0 : 1, 0.15);
         } else {
-            context->set_source_rgba(0,0,0,0.2);
+            context->set_source_rgba(0,0,0,0.1);
         }
         return r;
     } else if (phase and !*params[AM::param_analyzer_active]) {
