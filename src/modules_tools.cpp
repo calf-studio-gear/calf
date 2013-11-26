@@ -470,8 +470,33 @@ void analyzer_audio_module::deactivate() {
 }
 
 void analyzer_audio_module::params_changed() {
+    float resolution, offset;
+    switch((int)*params[param_analyzer_mode]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        default:
+            // analyzer
+            resolution = pow(64, *params[param_analyzer_level]);
+            offset = 0.75;
+            break;
+        case 4:
+            // we want to draw Stereo Image
+            resolution = pow(64, *params[param_analyzer_level] * 1.75);
+            offset = 1.f;
+            break;
+        case 5:
+            // We want to draw Stereo Difference
+            offset = *params[param_analyzer_level] > 1
+                ? 1 + (*params[param_analyzer_level] - 1) / 4
+                : *params[param_analyzer_level];
+            resolution = pow(64, 2 * offset);
+            break;
+    }
     _analyzer.set_params(
-        *params[param_analyzer_level],
+        resolution,
+        offset,
         *params[param_analyzer_accuracy],
         *params[param_analyzer_hold],
         *params[param_analyzer_smoothing],

@@ -41,15 +41,13 @@ analyzer::analyzer() {
     _post           = -1;
     _hold           = -1;
     _smooth         = -1;
-    _level          = -1.f;
+    _resolution     = -1.f;
+    _offset         = -1.f;
     _freeze         = -1;
     _view           = -1;
     _windowing      = -1;
     _speed          = -1;
     fpos            = 0;
-    db_level_coeff1 = -1;
-    db_level_coeff2 = -1;
-    leveladjust     = -1;
     _draw_upper     = 0;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
@@ -109,7 +107,7 @@ analyzer::~analyzer()
 void analyzer::set_sample_rate(uint32_t sr) {
     srate = sr;
 }
-void analyzer::set_params(float level, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
+void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
 {
     _speed     = speed;
     _windowing = windowing;
@@ -165,12 +163,9 @@ void analyzer::set_params(float level, int accuracy, int hold, int smoothing, in
         dsp::zero(spline_buffer, 200);
         ____analyzer_phase_was_drawn_here = 0;
     }
-    if(level != _level) {
-        _level = level;
-        leveladjust     = level > 1 ? 1 + (level - 1) / 4 : level;
-        db_level_coeff1 = pow(64, level);
-        db_level_coeff2 = pow(64, 2 * leveladjust);
-        db_level_coeff3 = pow(64, level * 1.75);
+    if(resolution != _resolution || offset != _offset) {
+        _resolution = resolution;
+        _offset = offset;
         redraw_graph = true;
     }
 }
@@ -654,21 +649,21 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     case 3:
                         // stereo analyzer
                         if(subindex == 0 or subindex == 2) {
-                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
+                            data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                         } else {
-                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
+                            data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                         }
                         break;
                     case 4:
                         // we want to draw Stereo Image
                         if(subindex == 0 or subindex == 2) {
                             // Left channel signal
-                            tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff3, 1.f);
+                            tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                             //only signals above the middle are interesting
                             data[i] = tmp < 0 ? 0 : tmp;
                         } else if (subindex == 1 or subindex == 3) {
                             // Right channel signal
-                            tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff3, 1.f);
+                            tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                             //only signals above the middle are interesting. after cutting away
                             //the unneeded stuff, the curve is flipped vertical at the middle.
                             if(tmp < 0) tmp = 0;
@@ -678,7 +673,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     case 5:
                         // We want to draw Stereo Difference
                         if(i) {
-                            tmp = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, db_level_coeff2, 1.f / leveladjust);
+                            tmp = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, _resolution, 1.f / _offset);
                             //only show differences above a threshhold which results from the db_grid-calculation
                             if (tmp < 0) tmp=0;
                             //bring right signals below the middle
@@ -689,7 +684,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                         break;
                     default:
                         // normal analyzer behavior
-                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 0.75f);
+                        data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                         break;
                 }
             }
@@ -917,7 +912,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
         case 2:
         case 3:
         default:
-            return get_freq_gridline(subindex, pos, vertical, legend, context, true, db_level_coeff1, 0.75f);
+            return get_freq_gridline(subindex, pos, vertical, legend, context, true, _resolution, _offset);
         case 4:
             // stereo image
             if(subindex < 28)
@@ -927,7 +922,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             }
             gain = _draw_upper > 0 ? 1.f / (1 << (subindex - _draw_upper))
                                    : 1.f / (1 << subindex);
-            pos = dB_grid(gain, db_level_coeff3, 1);
+            pos = dB_grid(gain, _resolution, _offset);
             if (_draw_upper > 0)
                 pos *= -1;
             
@@ -970,7 +965,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 
             gain = _draw_upper > 0 ? 1.0 / (1 << (subindex - _draw_upper))
                                     : (1 << subindex);
-            pos = dB_grid(gain, db_level_coeff2, 0);
+            pos = dB_grid(gain, _resolution, 0);
             
             context->set_dash(dash, 1);
             if ((!(subindex & 1) and !_draw_upper)

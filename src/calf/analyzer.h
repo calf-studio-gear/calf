@@ -51,16 +51,16 @@ private:
     mutable int _view;
     mutable int _freeze;
     mutable int _mode;
-    mutable float _level;
+    mutable float _resolution;
+    mutable float _offset;
     mutable bool _falling;
     mutable int _draw_upper;
-    float db_level_coeff1, db_level_coeff2, db_level_coeff3, leveladjust;
 public:
     uint32_t srate;
     analyzer();
     void process(float L, float R);
     void set_sample_rate(uint32_t sr);
-    void set_params(float level, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze);
+    void set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze);
     ~analyzer();
     bool do_fft(int subindex, int points) const;
     void draw(int subindex, float *data, int points, bool fftdone) const;
