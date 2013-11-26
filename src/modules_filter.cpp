@@ -55,6 +55,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
+    analyzer_old = false;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -176,6 +177,11 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
         0, 0, 15, 2, 0, 0
     );
+    
+    if ((bool)*params[AM::param_analyzer_active] != analyzer_old) {
+        redraw_graph = true;
+        analyzer_old = (bool)*params[AM::param_analyzer_active];
+    }
 }
 
 template<class BaseClass, bool has_lphp>
@@ -442,16 +448,12 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
     }
 }
 template<class BaseClass, bool has_lphp>
-bool equalizerNband_audio_module<BaseClass, has_lphp>::get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
-{
-    return _analyzer.get_moving(subindex, direction, data, x, y, context);
-}
-template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_layers(int index, int generation, unsigned int &layers) const
 {
-    redraw_graph = redraw_graph || !generation || *params[AM::param_analyzer_active];
-    layers = *params[AM::param_analyzer_active] and generation ? (*params[AM::param_analyzer_mode] >= 3 ? LG_REALTIME_MOVING : LG_REALTIME_GRAPH) : 0;
+    redraw_graph = redraw_graph || !generation;
+    layers = *params[AM::param_analyzer_active] ? LG_REALTIME_GRAPH : 0;
     layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+    redraw_graph |= (bool)*params[AM::param_analyzer_active];
     bool r = redraw_graph;
     redraw_graph = false;
     return r;

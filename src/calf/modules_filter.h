@@ -57,6 +57,7 @@ private:
     float ls_level_old, ls_freq_old;
     float hs_level_old, hs_freq_old;
     int indiv_old;
+    bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
     dual_in_out_metering<BaseClass> meters;
@@ -79,7 +80,6 @@ public:
     void params_changed();
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int index, double freq) const;
     void set_sample_rate(uint32_t sr)
