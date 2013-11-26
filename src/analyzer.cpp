@@ -170,6 +170,7 @@ void analyzer::set_params(float level, int accuracy, int hold, int smoothing, in
         leveladjust     = level > 1 ? 1 + (level - 1) / 4 : level;
         db_level_coeff1 = pow(64, level);
         db_level_coeff2 = pow(64, 2 * leveladjust);
+        db_level_coeff3 = pow(64, level * 1.75);
         redraw_graph = true;
     }
 }
@@ -662,12 +663,12 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                         // we want to draw Stereo Image
                         if(subindex == 0 or subindex == 2) {
                             // Left channel signal
-                            tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff1, 1.f);
+                            tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, db_level_coeff3, 1.f);
                             //only signals above the middle are interesting
                             data[i] = tmp < 0 ? 0 : tmp;
                         } else if (subindex == 1 or subindex == 3) {
                             // Right channel signal
-                            tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff1, 1.f);
+                            tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, db_level_coeff3, 1.f);
                             //only signals above the middle are interesting. after cutting away
                             //the unneeded stuff, the curve is flipped vertical at the middle.
                             if(tmp < 0) tmp = 0;
@@ -926,7 +927,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             }
             gain = _draw_upper > 0 ? 1.f / (1 << (subindex - _draw_upper))
                                    : 1.f / (1 << subindex);
-            pos = dB_grid(gain, db_level_coeff1, 1);
+            pos = dB_grid(gain, db_level_coeff3, 1);
             if (_draw_upper > 0)
                 pos *= -1;
             

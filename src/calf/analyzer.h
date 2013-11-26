@@ -54,7 +54,7 @@ private:
     mutable float _level;
     mutable bool _falling;
     mutable int _draw_upper;
-    float db_level_coeff1, db_level_coeff2, leveladjust;
+    float db_level_coeff1, db_level_coeff2, db_level_coeff3, leveladjust;
 public:
     uint32_t srate;
     analyzer();

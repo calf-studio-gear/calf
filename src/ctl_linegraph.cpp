@@ -689,16 +689,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     moving_c[0]           = cairo_create( lg->moving_surface[0] );
     moving_c[1]           = cairo_create( lg->moving_surface[1] );
     
-    // the colors to reset to between the drawing cycles
-    GdkColor grid_color   = { (int)(0.66 * 65535), (int)(0.15 * 65535),
-                              (int)(0.2 * 65535), (int)(0.0 * 65535) };
-    GdkColor graph_color  = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    GdkColor dot_color    = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    GdkColor moving_color = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    
     // the line widths to switch to between cycles
     float grid_width  = 1.0;
     float graph_width = 1.5;
@@ -794,7 +784,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             for (int a = 0;
                 legend = std::string(),
-                gdk_cairo_set_source_color(ctx, &grid_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.66),
                 cairo_set_line_width(ctx, grid_width),
                 lg->source->get_gridline(lg->source_id, a, phase, pos, vertical, legend, &cimpl);
                 a++)
@@ -845,7 +835,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             for(int a = 0;
                 lg->mode = 0,
-                gdk_cairo_set_source_color(ctx, &graph_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.66),
                 cairo_set_line_width(ctx, graph_width),
                 lg->source->get_graph(lg->source_id, a, phase, data, lg->size_x, &cimpl, &lg->mode);
                 a++)
@@ -885,7 +875,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             int a;
             for(a = 0;
-                gdk_cairo_set_source_color(ctx, &moving_color),
+                cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, 1),
                 lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, &cimpl);
                 a++)
             {
@@ -959,7 +949,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 realtime_drawn = true;
             }
             for (int a = 0;
-                gdk_cairo_set_source_color(ctx, &dot_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 1),
                 cairo_set_line_width(ctx, dot_width),
                 lg->source->get_dot(lg->source_id, a, phase, x, y, size = 3, &cimpl);
                 a++)
