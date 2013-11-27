@@ -61,13 +61,12 @@
                 <hbox>
                     <vbox spacing="3">
                         <hbox>
-                            <label text="Dots" expand="0" fill="0"/>
+                            <label text="Density" expand="0" fill="0"/>
                             <knob param="gonio_accuracy" size="1" expand="0" fill="0"/>
                             
                             <label text="   "/>
                             
-                            <label text="Fade" expand="0" fill="0"/>
-                            <knob param="gonio_fade" size="1" expand="0" fill="0"/>
+                            <label text="Soft" expand="0" fill="0"/>
                             <toggle param="gonio_use_fade" size="1" expand="0" fill="0" />
                             
                             <label text="   "/>

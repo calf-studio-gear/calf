@@ -44,19 +44,16 @@ struct CalfPhaseGraph
     GtkDrawingArea parent;
     const calf_plugins::phase_graph_iface *source;
     int source_id;
-    cairo_surface_t *cache_surface;
-    cairo_surface_t *fade_surface;
+    cairo_surface_t *background, *cache;
     inline float _atan(float x, float l, float r) {
-        // this is a wrapper for a CPU friendly implementation of atan()
-        if(l >= 0 and r >= 0) {
+        if(l >= 0 and r >= 0)
             return atan(x);
-        } else if(l >= 0 and r < 0) {
+        else if(l >= 0 and r < 0)
             return M_PI + atan(x);
-        } else if(l < 0 and r < 0) {
+        else if(l < 0 and r < 0)
             return M_PI + atan(x);
-        } else if(l < 0 and r >= 0) {
+        else if(l < 0 and r >= 0)
             return (2.f * M_PI) + atan(x);
-        }
         return 0.f;
     }
 };

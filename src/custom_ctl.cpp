@@ -35,240 +35,202 @@ using namespace dsp;
 ///////////////////////////////////////// phase graph ///////////////////////////////////////////////
 
 static void
-calf_phase_graph_copy_cache_to_window( cairo_surface_t *pg, cairo_t *c )
+calf_phase_graph_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
 {
-    cairo_save( c );
-    cairo_set_source_surface( c, pg, 0,0 );
-    cairo_paint( c );
-    cairo_restore( c );
+    int cx = ox + sx / 2;
+    int cy = oy + sy / 2;
+    
+    line_graph_background(ctx, sx, sy, ox, oy);
+    cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
+    cairo_select_font_face(ctx, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(ctx, 9);
+    cairo_text_extents_t te;
+    
+    cairo_text_extents (ctx, "M", &te);
+    cairo_move_to (ctx, cx + 5, oy + 12);
+    cairo_show_text (ctx, "M");
+    
+    cairo_text_extents (ctx, "S", &te);
+    cairo_move_to (ctx, ox + 5, cy - 5);
+    cairo_show_text (ctx, "S");
+    
+    cairo_text_extents (ctx, "L", &te);
+    cairo_move_to (ctx, ox + 18, oy + 12);
+    cairo_show_text (ctx, "L");
+    
+    cairo_text_extents (ctx, "R", &te);
+    cairo_move_to (ctx, ox + sx - 22, oy + 12);
+    cairo_show_text (ctx, "R");
+    
+    cairo_set_line_width(ctx, 1);
+    
+    cairo_move_to(ctx, ox, oy + sy * 0.5);
+    cairo_line_to(ctx, ox + sx, oy + sy * 0.5);
+    cairo_stroke(ctx);
+    
+    cairo_move_to(ctx, ox + sx * 0.5, oy);
+    cairo_line_to(ctx, ox + sx * 0.5, oy + sy);
+    cairo_stroke(ctx);
+    
+    cairo_set_source_rgba(ctx, 0, 0, 0, 0.2);
+    cairo_move_to(ctx, ox, oy);
+    cairo_line_to(ctx, ox + sx, oy + sy);
+    cairo_stroke(ctx);
+    
+    cairo_move_to(ctx, ox, oy + sy);
+    cairo_line_to(ctx, ox + sx, oy);
+    cairo_stroke(ctx);
 }
-
+static void
+calf_phase_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, float fade = 1.f)
+{
+    // copy a surface to a cairo context
+    cairo_save(ctx);
+    cairo_set_source_surface(ctx, source, 0, 0);
+    if (fade < 1.0) {
+        float rnd = (float)rand() / (float)RAND_MAX / 100;
+        cairo_paint_with_alpha(ctx, fade * 0.35 + 0.05 + rnd);
+    } else {
+        cairo_paint(ctx);
+    }
+    cairo_restore(ctx);
+}
 static gboolean
 calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_PHASE_GRAPH(widget));
-
     CalfPhaseGraph *pg = CALF_PHASE_GRAPH(widget);
-    //int ox = widget->allocation.x + 1, oy = widget->allocation.y + 1;
+    if (!pg->source) 
+        return FALSE;
+    
+    // dimensions
     int ox = 5, oy = 5;
     int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
     sx += sx % 2 - 1;
     sy += sy % 2 - 1;
-    int rad = sx / 2 * 0.8;
+    int rad = sx / 2;
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
-    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-    GdkColor sc = { 0, 0, 0, 0 };
-
-    bool cache_dirty = 0;
-    bool fade_dirty = 0;
-
-    if( pg->cache_surface == NULL ) {
-        // looks like its either first call or the widget has been resized.
-        // create the cache_surface.
-        cairo_surface_t *window_surface = cairo_get_target( c );
-        pg->cache_surface = cairo_surface_create_similar( window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height );
-        cache_dirty = 1;
-    }
-    if( pg->fade_surface == NULL ) {
-        // looks like its either first call or the widget has been resized.
-        // create the cache_surface.
-        cairo_surface_t *window_surface = cairo_get_target( c );
-        pg->fade_surface = cairo_surface_create_similar( window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height );
-        fade_dirty = 1;
-    }
-
-    cairo_select_font_face(c, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(c, 9);
-    gdk_cairo_set_source_color(c, &sc);
     
-    cairo_impl cimpl;
-    cimpl.context = c;
-
-    if (pg->source) {
-        std::string legend;
-        float *data = new float[2 * sx];
-        GdkColor sc2 = { 0, (int)(0.35 * 65535), (int)(0.4 * 65535), (int)(0.2 * 65535) };
-
-        if( cache_dirty ) {
-            
-            cairo_t *cache_cr = cairo_create( pg->cache_surface );
+    // some values as pointers for the audio plug-in call
+    std::string legend;
+    float *data = new float[2 * sx];
+    float * phase_buffer = 0;
+    int length = 0;
+    int mode = 2;
+    float fade = 0.05;
+    bool use_fade = true;
+    int accuracy = 1;
+    bool display = true;
+    
+    // cairo initialization stuff
+    cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_t *ctx_back;
+    cairo_t *ctx_cache;
+    
+    if( pg->background == NULL ) {
+        // looks like its either first call or the widget has been resized.
+        // create the background surface (stolen from line graph)...
+        cairo_surface_t *window_surface = cairo_get_target(c);
+        pg->background = cairo_surface_create_similar(window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
+        pg->cache = cairo_surface_create_similar(window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height );
         
-//            if(widget->style->bg_pixmap[0] == NULL) {
-                cairo_set_source_rgb(cache_cr, 0, 0, 0);
-//            } else {
-//                gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(&style->bg_pixmap[GTK_STATE_NORMAL]), widget->allocation.x, widget->allocation.y + 20);
-//            }
-            cairo_paint(cache_cr);
-            
-            line_graph_background(cache_cr, sx, sy, ox, oy);
-            
-            gdk_cairo_set_source_color(cache_cr, &sc2);
-            
-            cairo_select_font_face(cache_cr, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-            cairo_set_font_size(cache_cr, 9);
-            cairo_text_extents_t te;
-            
-            cairo_text_extents (cache_cr, "M", &te);
-            cairo_move_to (cache_cr, cx + 5, oy + 12);
-            cairo_show_text (cache_cr, "M");
-            
-            cairo_text_extents (cache_cr, "S", &te);
-            cairo_move_to (cache_cr, ox + 5, cy - 5);
-            cairo_show_text (cache_cr, "S");
-            
-            cairo_text_extents (cache_cr, "L", &te);
-            cairo_move_to (cache_cr, ox + 18, oy + 12);
-            cairo_show_text (cache_cr, "L");
-            
-            cairo_text_extents (cache_cr, "R", &te);
-            cairo_move_to (cache_cr, ox + sx - 22, oy + 12);
-            cairo_show_text (cache_cr, "R");
-            
-            cairo_impl cache_cimpl;
-            cache_cimpl.context = cache_cr;
-
-            // draw style elements here
-            cairo_set_line_width(cache_cr, 1);
-            
-            cairo_move_to(cache_cr, ox, oy + sy * 0.5);
-            cairo_line_to(cache_cr, ox + sx, oy + sy * 0.5);
-            cairo_stroke(cache_cr);
-            
-            cairo_move_to(cache_cr, ox + sx * 0.5, oy);
-            cairo_line_to(cache_cr, ox + sx * 0.5, oy + sy);
-            cairo_stroke(cache_cr);
-            
-            cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.2);
-            cairo_move_to(cache_cr, ox, oy);
-            cairo_line_to(cache_cr, ox + sx, oy + sy);
-            cairo_stroke(cache_cr);
-            
-            cairo_move_to(cache_cr, ox, oy + sy);
-            cairo_line_to(cache_cr, ox + sx, oy);
-            cairo_stroke(cache_cr);
-        }
-        
-        
-        float * phase_buffer = 0;
-        int length = 0;
-        int mode = 2;
-        float fade = 0.05;
-        bool use_fade = true;
-        int accuracy = 1;
-        bool display = true;
-        
-        pg->source->get_phase_graph(&phase_buffer, &length, &mode, &use_fade, &fade, &accuracy, &display);
-        
-        fade *= 0.35;
-        fade += 0.05;
-        accuracy *= 2;
-        accuracy = 12 - accuracy;
-        
-        cairo_t *cache_cr = cairo_create( pg->fade_surface );
-        cairo_set_source_surface(cache_cr, pg->cache_surface, 0, 0);
-        if(fade_dirty or !use_fade or ! display) {
-            cairo_paint(cache_cr);
-        } else {
-            cairo_paint_with_alpha(cache_cr, fade);
-        }
-        
-        if(display) {
-            cairo_rectangle(cache_cr, ox, oy, sx, sy);
-            cairo_clip(cache_cr);
-            //gdk_cairo_set_source_color(cache_cr, &sc3);
-            cairo_set_source_rgba(cache_cr, 0.15, 0.2, 0.0, 0.5);
-            double _a;
-            for(int i = 0; i < length; i+= accuracy) {
-                float l = phase_buffer[i];
-                float r = phase_buffer[i + 1];
-                if(l == 0.f and r == 0.f) continue;
-                else if(r == 0.f and l > 0.f) _a = M_PI / 2.f;
-                else if(r == 0.f and l < 0.f) _a = 3.f *M_PI / 2.f;
-                else _a = pg->_atan(l / r, l, r);
-                double _R = sqrt(pow(l, 2) + pow(r, 2));
-                _a += M_PI / 4.f;
-                float x = (-1.f)*_R * cos(_a);
-                float y = _R * sin(_a);
-                // mask the cached values
-                switch(mode) {
-                    case 0:
-                        // small dots
-                        cairo_rectangle (cache_cr, x * rad + cx, y * rad + cy, 1, 1);
-                        break;
-                    case 1:
-                        // medium dots
-                        cairo_rectangle (cache_cr, x * rad + cx - 0.25, y * rad + cy - 0.25, 1.5, 1.5);
-                        break;
-                    case 2:
-                        // big dots
-                        cairo_rectangle (cache_cr, x * rad + cx - 0.5, y * rad + cy - 0.5, 2, 2);
-                        break;
-                    case 3:
-                        // fields
-                        if(i == 0) cairo_move_to(cache_cr,
-                            x * rad + cx, y * rad + cy);
-                        else cairo_line_to(cache_cr,
-                            x * rad + cx, y * rad + cy);
-                        break;
-                    case 4:
-                        // lines
-                        if(i == 0) cairo_move_to(cache_cr,
-                            x * rad + cx, y * rad + cy);
-                        else cairo_line_to(cache_cr,
-                            x * rad + cx, y * rad + cy);
-                        break;
-                }
-            }
-            // draw
+        // ...and draw some bling bling onto it...
+        ctx_back = cairo_create(pg->background);
+        calf_phase_graph_draw_background(ctx_back, sx, sy, ox, oy);
+        // ...and copy it to the cache
+        ctx_cache = cairo_create(pg->cache); 
+        calf_phase_graph_copy_surface(ctx_cache, pg->background, 1);
+    } else {
+        ctx_back = cairo_create(pg->background);
+        ctx_cache = cairo_create(pg->cache); 
+    }
+    
+    pg->source->get_phase_graph(&phase_buffer, &length, &mode, &use_fade,
+                                &fade, &accuracy, &display);
+    
+    // process some values set by the plug-in
+    accuracy *= 2;
+    accuracy = 12 - accuracy;
+    
+    calf_phase_graph_copy_surface(ctx_cache, pg->background, use_fade ? fade : 1);
+    
+    if(display) {
+        cairo_rectangle(ctx_cache, ox, oy, sx, sy);
+        cairo_clip(ctx_cache);
+        cairo_set_source_rgba(ctx_cache, 0.35, 0.4, 0.2, 1);
+        double _a;
+        for(int i = 0; i < length; i+= accuracy) {
+            float l = phase_buffer[i];
+            float r = phase_buffer[i + 1];
+            if(l == 0.f and r == 0.f) continue;
+            else if(r == 0.f and l > 0.f) _a = M_PI / 2.f;
+            else if(r == 0.f and l < 0.f) _a = 3.f *M_PI / 2.f;
+            else _a = pg->_atan(l / r, l, r);
+            double _R = sqrt(pow(l, 2) + pow(r, 2));
+            _a += M_PI / 4.f;
+            float x = (-1.f)*_R * cos(_a);
+            float y = _R * sin(_a);
+            // mask the cached values
             switch(mode) {
                 case 0:
+                    // small dots
+                    cairo_rectangle (ctx_cache, x * rad + cx, y * rad + cy, 1, 1);
+                    break;
                 case 1:
+                    // medium dots
+                    cairo_rectangle (ctx_cache, x * rad + cx - 0.25, y * rad + cy - 0.25, 1.5, 1.5);
+                    break;
                 case 2:
-                    cairo_fill (cache_cr);
+                    // big dots
+                    cairo_rectangle (ctx_cache, x * rad + cx - 0.5, y * rad + cy - 0.5, 2, 2);
                     break;
                 case 3:
-                    cairo_fill (cache_cr);
+                    // fields
+                    if(i == 0) cairo_move_to(ctx_cache,
+                        x * rad + cx, y * rad + cy);
+                    else cairo_line_to(c,
+                        x * rad + cx, y * rad + cy);
                     break;
                 case 4:
-                    cairo_set_line_width(cache_cr, 1);
-                    cairo_stroke (cache_cr);
+                    // lines
+                    if(i == 0) cairo_move_to(ctx_cache,
+                        x * rad + cx, y * rad + cy);
+                    else cairo_line_to(c,
+                        x * rad + cx, y * rad + cy);
                     break;
             }
         }
-        cairo_destroy( cache_cr );
-        calf_phase_graph_copy_cache_to_window( pg->fade_surface, c );
-        
-        
-//        cairo_set_line_width(c, 1);
-//        for(int phase = 1; phase <= 2; phase++)
-//        {
-//            for(int gn=grid_n_save; legend = std::string(), cairo_set_source_rgba(c, 0, 0, 0, 0.6), lg->source->get_gridline(lg->source_id, gn, pos, vertical, legend, &cimpl); gn++)
-//            {
-//                calf_line_graph_draw_grid( c, legend, vertical, pos, phase, sx, sy );
-//            }
-//        }
-
-//        gdk_cairo_set_source_color(c, &sc2);
-//        cairo_set_line_join(c, CAIRO_LINE_JOIN_MITER);
-//        cairo_set_line_width(c, 1);
-//        for(int gn = graph_n; lg->source->get_graph(lg->source_id, gn, data, 2 * sx, &cimpl); gn++)
-//        {
-//            calf_line_graph_draw_graph( c, data, sx, sy );
-//        }
-        delete []data;
+        // draw
+        switch(mode) {
+            case 0:
+            case 1:
+            case 2:
+                cairo_fill(ctx_cache);
+                break;
+            case 3:
+                cairo_fill(ctx_cache);
+                break;
+            case 4:
+                cairo_set_line_width(c, 1);
+                cairo_stroke(ctx_cache);
+                break;
+        }
     }
-
+    
+    calf_phase_graph_copy_surface(c, pg->cache, 1);
+    
     cairo_destroy(c);
-
+    cairo_destroy(ctx_back);
+    cairo_destroy(ctx_cache);
+    delete []data;
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
-
     return TRUE;
 }
 
@@ -277,7 +239,6 @@ calf_phase_graph_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_PHASE_GRAPH(widget));
-    
     // CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
 }
 
@@ -290,32 +251,26 @@ calf_phase_graph_size_allocate (GtkWidget *widget,
 
     GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_PHASE_GRAPH_GET_CLASS( lg ) );
 
-    if( lg->cache_surface )
-        cairo_surface_destroy( lg->cache_surface );
-    lg->cache_surface = NULL;
-    if( lg->fade_surface )
-        cairo_surface_destroy( lg->fade_surface );
-    lg->fade_surface = NULL;
+    if(lg->background)
+        cairo_surface_destroy(lg->background);
+    lg->background = NULL;
     
     widget->allocation = *allocation;
     GtkAllocation &a = widget->allocation;
-    if (a.width > a.height)
-    {
+    if (a.width > a.height) {
         a.x += (a.width - a.height) / 2;
         a.width = a.height;
     }
-    if (a.width < a.height)
-    {
+    if (a.width < a.height) {
         a.y += (a.height - a.width) / 2;
         a.height = a.width;
     }
-    parent_class->size_allocate( widget, &a );
+    parent_class->size_allocate(widget, &a);
 }
 
 static void
 calf_phase_graph_class_init (CalfPhaseGraphClass *klass)
 {
-    // GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->expose_event = calf_phase_graph_expose;
     widget_class->size_request = calf_phase_graph_size_request;
@@ -325,12 +280,9 @@ calf_phase_graph_class_init (CalfPhaseGraphClass *klass)
 static void
 calf_phase_graph_unrealize (GtkWidget *widget, CalfPhaseGraph *pg)
 {
-    if( pg->cache_surface )
-        cairo_surface_destroy( pg->cache_surface );
-    pg->cache_surface = NULL;
-    if( pg->fade_surface )
-        cairo_surface_destroy( pg->fade_surface );
-    pg->fade_surface = NULL;
+    if( pg->background )
+        cairo_surface_destroy(pg->background);
+    pg->background = NULL;
 }
 
 static void
@@ -339,15 +291,14 @@ calf_phase_graph_init (CalfPhaseGraph *self)
     GtkWidget *widget = GTK_WIDGET(self);
     widget->requisition.width = 40;
     widget->requisition.height = 40;
-    self->cache_surface = NULL;
-    self->fade_surface = NULL;
+    self->background = NULL;
     g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_phase_graph_unrealize), (gpointer)self);
 }
 
 GtkWidget *
 calf_phase_graph_new()
 {
-    return GTK_WIDGET( g_object_new (CALF_TYPE_PHASE_GRAPH, NULL ));
+    return GTK_WIDGET(g_object_new (CALF_TYPE_PHASE_GRAPH, NULL));
 }
 
 GType

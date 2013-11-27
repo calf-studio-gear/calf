@@ -581,7 +581,7 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
     *_buffer   = &phase_buffer[0];
     *_length   = plength;
     *_use_fade = *params[param_gonio_use_fade];
-    *_fade     = *params[param_gonio_fade];
+    *_fade     = 0.6;
     *_mode     = *params[param_gonio_mode];
     *_accuracy = *params[param_gonio_accuracy];
     *_display  = *params[param_gonio_display];
