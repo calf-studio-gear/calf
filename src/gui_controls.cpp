@@ -1354,8 +1354,6 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    //last_generation = -1;
-    
     widget = calf_phase_graph_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-phase");
     CalfPhaseGraph *clg = CALF_PHASE_GRAPH(widget);
@@ -1369,8 +1367,11 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 
 void phase_graph_param_control::set()
 {
+    _GUARD_CHANGE_
     GtkWidget *tw = gtk_widget_get_toplevel(widget);
-    gtk_widget_queue_draw(tw);
+    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window) {
+        gtk_widget_queue_draw(widget);
+    }
 }
 
 phase_graph_param_control::~phase_graph_param_control()
