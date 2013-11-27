@@ -195,14 +195,14 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                     // fields
                     if(i == 0) cairo_move_to(ctx_cache,
                         x * rad + cx, y * rad + cy);
-                    else cairo_line_to(c,
+                    else cairo_line_to(ctx_cache,
                         x * rad + cx, y * rad + cy);
                     break;
                 case 4:
                     // lines
                     if(i == 0) cairo_move_to(ctx_cache,
                         x * rad + cx, y * rad + cy);
-                    else cairo_line_to(c,
+                    else cairo_line_to(ctx_cache,
                         x * rad + cx, y * rad + cy);
                     break;
             }
@@ -218,7 +218,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_fill(ctx_cache);
                 break;
             case 4:
-                cairo_set_line_width(c, 1);
+                cairo_set_line_width(ctx_cache, 0.5);
                 cairo_stroke(ctx_cache);
                 break;
         }
