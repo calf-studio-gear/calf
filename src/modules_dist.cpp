@@ -34,15 +34,16 @@ using namespace calf_plugins;
 
 saturator_audio_module::saturator_audio_module()
 {
-    is_active = false;
-    srate = 0;
-    meter_drive = 0.f;
-    lp_pre_freq_old = -1;
-    hp_pre_freq_old = -1;
+    is_active        = false;
+    srate            = 0;
+    meter_drive      = 0.f;
+    lp_pre_freq_old  = -1;
+    hp_pre_freq_old  = -1;
     lp_post_freq_old = -1;
     hp_post_freq_old = -1;
-    p_freq_old = -1;
-    p_level_old = -1;
+    p_freq_old       = -1;
+    p_level_old      = -1;
+    p_q_old          = -1;
 }
 
 void saturator_audio_module::activate()
@@ -259,9 +260,13 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
 
 exciter_audio_module::exciter_audio_module()
 {
-    is_active = false;
-    srate = 0;
-    meter_drive = 0.f;
+    freq_old        = 0.f;
+    ceil_old        = 0.f;
+    ceil_active_old = false;    
+    meters.reset();
+    meter_drive     = 0.f;
+    is_active       = false;
+    srate           = 0;
 }
 
 void exciter_audio_module::activate()
@@ -444,13 +449,13 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 
 bassenhancer_audio_module::bassenhancer_audio_module()
 {
-    freq_old = 0.f;
-    floor_old = 0.f;
+    freq_old         = 0.f;
+    floor_old        = 0.f;
     floor_active_old = false;    
     meters.reset();
-    meter_drive = 0.f;
-    is_active = false;
-    srate = 0;
+    meter_drive      = 0.f;
+    is_active        = false;
+    srate            = 0;
 }
 
 void bassenhancer_audio_module::activate()
