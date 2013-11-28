@@ -244,7 +244,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
             pos = log(freq / 20.0) / log(1000);
 
             if (!legend.empty()) {
-                context->set_source_rgba(0, 0, 0, 0.2);
+                context->set_source_rgba(0, 0, 0, 0.1);
                 context->set_dash(dash, 0);
             } else {
                 context->set_source_rgba(0, 0, 0, 0.1);
@@ -265,17 +265,19 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
     if (pos < -1)
         return false;
 
-    if (subindex != 6)
-        context->set_source_rgba(0, 0, 0, 0.2);
-
-    if (!(subindex & 1))
-    {
+    if (!(subindex & 1)) {
         std::stringstream ss;
         ss << (36 - 6 * subindex) << " dB";
         legend = ss.str();
+    }
+    if (!legend.empty() and subindex != 6) {
+        context->set_source_rgba(0, 0, 0, 0.1);
         context->set_dash(dash, 0);
-    } else {
+    } else if (subindex != 6) {
+        context->set_source_rgba(0, 0, 0, 0.1);
         context->set_dash(dash, 1);
+    } else {
+        context->set_dash(dash, 0);
     }
     vertical = false;
     return true;

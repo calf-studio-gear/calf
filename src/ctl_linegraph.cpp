@@ -28,6 +28,13 @@
 #include <sys/time.h>
 #include <iostream>
 #include <calf/giface.h>
+#include <stdint.h>
+
+#define RGBAtoINT(r, g, b, a) ((uint32_t)(r * 255) << 24) + ((uint32_t)(g * 255) << 16) + ((uint32_t)(b * 255) << 8) + (uint32_t)(a * 255)
+#define INTtoR(color) (float)((color & 0xff000000) >> 24) / 255.f
+#define INTtoG(color) (float)((color & 0x00ff0000) >> 16) / 255.f
+#define INTtoB(color) (float)((color & 0x0000ff00) >>  8) / 255.f
+#define INTtoA(color) (float)((color & 0x000000ff) >>  0) / 255.f
 
 using namespace calf_plugins;
 
@@ -166,7 +173,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
 }
 
 static void
-calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int direction, int count )
+calf_line_graph_draw_moving(CalfLineGraph* lg, cairo_t *ctx, float *data, int direction, int offset, int color)
 {
     if (lg->debug) printf("(draw moving)\n");
     
@@ -181,22 +188,22 @@ calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int d
     int sm = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? sx : sy);
     int om = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? ox : oy);
     for (int i = 0; i < sm; i++) {
-        if (lg->debug > 2) printf("* moving i: %d, dir: %d, count: %d, data: %.5f\n", i, direction, count, data[i]);
+        if (lg->debug > 2) printf("* moving i: %d, dir: %d, offset: %d, data: %.5f\n", i, direction, offset, data[i]);
         if (i and ((data[i] < INFINITY) or i >= sm)) {
-            cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 1.4);
+            cairo_set_source_rgba(ctx, INTtoR(color), INTtoG(color), INTtoB(color), (data[i] + 1) / 1.4 * INTtoA(color));
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
-                    cairo_rectangle(ctx, ox + sx - 1 - count, oy + _last, 1, i - _last);
+                    cairo_rectangle(ctx, ox + sx - 1 - offset, oy + _last, 1, i - _last);
                     break;
                 case LG_MOVING_RIGHT:
-                    cairo_rectangle(ctx, ox + count, oy + _last, 1, i - _last);
+                    cairo_rectangle(ctx, ox + offset, oy + _last, 1, i - _last);
                     break;
                 case LG_MOVING_UP:
-                    cairo_rectangle(ctx, ox + _last, oy + sy - 1 - count, i - _last, 1);
+                    cairo_rectangle(ctx, ox + _last, oy + sy - 1 - offset, i - _last, 1);
                     break;
                 case LG_MOVING_DOWN:
-                    cairo_rectangle(ctx, ox + _last, oy + count, i - _last, 1);
+                    cairo_rectangle(ctx, ox + _last, oy + offset, i - _last, 1);
                     break;
             }
             
@@ -707,6 +714,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // a cairo wrapper to hand over contexts to the plugin for setting
     // line colors, widths aso
     cairo_impl cimpl;
+    cimpl.size_x = sx;
+    cimpl.size_y = sy;
+    cimpl.pad_x  = ox;
+    cimpl.pad_y  = oy;
     
     // some state variables used to determine what has happened
     bool realtime_drawn = false;
@@ -874,34 +885,40 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             
             int a;
+            int offset;
+            int move = 0;
+            uint32_t color;
             for(a = 0;
-                cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, 1),
-                lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, &cimpl);
+                offset = a,
+                color = RGBAtoINT(0.35, 0.4, 0.2, 1),
+                lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, offset, color);
                 a++)
             {
                 if (lg->debug) printf("moving %d\n", a);
-                calf_line_graph_draw_moving(lg, ctx, data, direction, a);
+                calf_line_graph_draw_moving(lg, ctx, data, direction, offset, color);
+                move += offset;
             }
+            move ++;
             // set moving distances according to direction
             int x = 0;
             int y = 0;
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
-                    x = -a;
+                    x = -move;
                     y = 0;
                     break;
                 case LG_MOVING_RIGHT:
-                    x = a;
+                    x = move;
                     y = 0;
                     break;
                 case LG_MOVING_UP:
                     x = 0;
-                    y = -a;
+                    y = -move;
                     break;
                 case LG_MOVING_DOWN:
                     x = 0;
-                    y = a;
+                    y = move;
                     break;
             }
             // copy the old moving surface to the right position on the

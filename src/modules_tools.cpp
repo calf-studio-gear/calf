@@ -594,10 +594,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float 
         return _analyzer.get_graph(subindex, phase, data, points, context, mode);
     return false;
 }
-bool analyzer_audio_module::get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
+bool analyzer_audio_module::get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const
 {
     if (*params[param_analyzer_display])
-        return _analyzer.get_moving(subindex, direction, data, x, y, context);
+        return _analyzer.get_moving(subindex, direction, data, x, y, offset, color);
     return false;
 }
 bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

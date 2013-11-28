@@ -18,6 +18,7 @@
  * Boston, MA  02110-1301  USA
  */
  
+#include <cairo/cairo.h>
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
@@ -32,6 +33,7 @@ using namespace dsp;
 using namespace calf_plugins;
 
 #define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
+#define RGBAtoINT(r, g, b, a) ((uint32_t)(r * 255) << 24) + ((uint32_t)(g * 255) << 16) + ((uint32_t)(b * 255) << 8) + (uint32_t)(a * 255)
 
 analyzer::analyzer() {
     _accuracy       = -1;
@@ -194,7 +196,7 @@ bool analyzer::do_fft(int subindex, int points) const
         // there's no falling for difference mode, only smoothing
         _smooth = 2;
     }
-    if(_mode > 5 and _mode < 9) {
+    if(_mode > 5 and _mode < 11) {
         // there's no smoothing for spectralizer mode
         //_smooth = 0;
     }
@@ -315,18 +317,17 @@ bool analyzer::do_fft(int subindex, int points) const
                 float valR;
                 
                 switch(_mode) {
+                    default:
+                        // left channel (mode 1)
+                        // or both channels (mode 3, 4, 5, 7, 9, 10)
+                        valL = L;
+                        valR = R;
+                        break;
                     case 0:
                     case 6:
                         // average (mode 0)
                         valL = (L + R) / 2;
                         valR = (L + R) / 2;
-                        break;
-                    case 1:
-                    default:
-                        // left channel (mode 1)
-                        // or both channels (mode 3, 4, 5)
-                        valL = L;
-                        valR = R;
                         break;
                     case 2:
                     case 8:
@@ -388,6 +389,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
     double freq; // here the frequency of the actual drawn pixel gets stored
     int iter = 0; // this is the pixel we have been drawing the last box/bar/line
     int _iter = 1; // this is the next pixel we want to draw a box/bar/line
+    int _last = -1; // used for mode 10 (parallel spectralizer) to prevent overwriting real values with INFINITY
     float posneg = 1;
     int __speed = 16 - (int)_speed;
     if (lintrans < 0) {
@@ -530,11 +532,12 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
             // #######################################
             if(subindex == 0) {
                 float _fdelta = 0.91;
-                if(_mode > 5 and _mode < 9)
-                    _fdelta = .99f;
                 float _ffactor = 2000.f;
-                if(_mode > 5 and _mode < 9)
+                
+                if(_mode > 5 and _mode < 11) {
+                    _fdelta = .99f;
                     _ffactor = 50.f;
+                }
                 if(_smooth == 2) {
                     // smoothing
                     if(fftdone) {
@@ -566,7 +569,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     }
                 }
                 
-                if(_mode > 2 and _mode < 5) {
+                if((_mode > 2 and _mode < 5) or (_mode > 8 and _mode < 11)) {
                     // we need right buffers, too for stereo image and
                     // stereo analyzer
                     if(_smooth == 2) {
@@ -595,7 +598,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                         // change fft_smooth according to delta
                         fft_smoothR[iter] *= fft_deltaR[iter];
                         if(fft_deltaR[iter] > _fdelta)
-                            fft_deltaR[iter] *= 1.f - (16.f - __speed) / 2000.f;
+                            fft_deltaR[iter] *= 1.f - (16.f - __speed) / _ffactor;
                     }
                 }
             }
@@ -645,9 +648,11 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                 // we are drawing lines or boxes
                 // #####################################
                 float tmp;
+                int pos1, pos2;
                 switch(_mode) {
                     case 3:
-                        // stereo analyzer
+                    case 9:
+                        // stereo analyzer/spectralizer
                         if(subindex == 0 or subindex == 2) {
                             data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                         } else {
@@ -681,6 +686,14 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                             data[i] = tmp;
                         }
                         else data[i] = 0.f;
+                        break;
+                    case 10:
+                        // spectralizer parallel
+                        pos1 = i / 2;
+                        pos2 = points / 2 + pos1;
+                        data[pos1] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
+                        data[pos2] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, _resolution, _offset);
+                        _last = pos1;
                         break;
                     default:
                         // normal analyzer behavior
@@ -777,21 +790,14 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
             
         }
         else {
-            data[i] = INFINITY;
+            if (_mode != 10)
+                data[i] = INFINITY;
+            else if (_last != i / 2) {
+                data[i / 2] = INFINITY;
+                data[points / 2 + i / 2] = INFINITY;
+            }
         }
     }
-}
-
-bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
-{
-    if (subindex >= 1)
-        return false;
-    bool fftdone = false;
-    if (!subindex)
-        fftdone = do_fft(subindex, x);
-    draw(subindex, data, x, fftdone);
-    direction = LG_MOVING_UP;
-    return true;
 }
 
 bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -898,6 +904,24 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     return true;
 }
 
+bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const
+{
+    if ((subindex and _mode != 9) or subindex > 1)
+        return false;
+    bool fftdone = false;
+    if (!subindex)
+        fftdone = do_fft(subindex, x);
+    draw(subindex, data, x, fftdone);
+    direction = LG_MOVING_UP;
+    offset = 0;
+    if (_mode == 9 and subindex) {
+        color = RGBAtoINT(0.35, 0.1, 0, 0.4);
+    } else if (_mode == 9) {
+        color = RGBAtoINT(0.15, 0.35, 0, 0.4);
+    }
+    return true;
+}
+
 bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (phase)
@@ -953,7 +977,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 context->set_dash(dash, 0);
             }
             else if (subindex)
-                context->set_source_rgba(0, 0, 0, 0.2);
+                context->set_source_rgba(0, 0, 0, 0.1);
             vertical = false;
             return true;
         case 5:
@@ -985,14 +1009,14 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             }
             
             if (subindex)
-                context->set_source_rgba(0, 0, 0, 0.2);
+                context->set_source_rgba(0, 0, 0, 0.1);
             vertical = false;
             return true;
         case 6:
         case 7:
         case 8:
-            if (subindex < 28)
-            {
+        case 9:
+            if (subindex < 28) {
                 vertical = true;
                 if (subindex == 9) legend = "100 Hz";
                 if (subindex == 18) legend = "1 kHz";
@@ -1009,13 +1033,40 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 return true;
             }
             return false;
+        case 10:
+            //if (!subindex) {
+                //cairo_t *ctx = context->context;
+                //cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
+                //cairo_select_font_face(ctx, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                //cairo_set_font_size(ctx, 20);
+                //cairo_move_to (ctx, context->size_x / 2 - 20, 40);
+                //cairo_show_text (ctx, "L");
+                //cairo_move_to (ctx, context->size_x / 2 + 12, 40);
+                //cairo_show_text (ctx, "R");
+            //}
+            if (subindex < 56) {
+                vertical = true;
+                if (subindex == 9 or subindex == 36) legend = "100 Hz";
+                if (subindex == 18 or subindex == 45) legend = "1 kHz";
+                if (subindex == 27 or subindex == 54) legend = "10 kHz";
+    
+                float freq = subindex_to_freq(subindex - (subindex > 27 ? 27 : 0));
+                pos = log(freq / 20.0) / log(1000) / 2 + (subindex > 27 ? 0.5 : 0);
+                if (!legend.empty() and subindex != 28) {
+                    context->set_source_rgba(0, 0, 0, 0.33);
+                } else if (subindex != 28) {
+                    context->set_source_rgba(0, 0, 0, 0.2);
+                }
+                return true;
+            }
+            return false;
     }
     return false;
 }
     
 bool analyzer::get_layers(int generation, unsigned int &layers) const
 {
-    if (_mode > 5 and _mode < 9)
+    if (_mode > 5 and _mode < 11)
         layers = LG_REALTIME_MOVING;
     else
         layers = LG_REALTIME_GRAPH;

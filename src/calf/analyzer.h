@@ -65,7 +65,7 @@ public:
     bool do_fft(int subindex, int points) const;
     void draw(int subindex, float *data, int points, bool fftdone) const;
     bool get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_moving(int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
+    bool get_moving(int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const;
     bool get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int generation, unsigned int &layers) const;
 protected:
