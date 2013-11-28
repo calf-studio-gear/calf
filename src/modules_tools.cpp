@@ -470,8 +470,34 @@ void analyzer_audio_module::deactivate() {
 }
 
 void analyzer_audio_module::params_changed() {
+    float resolution, offset;
+    switch((int)*params[param_analyzer_mode]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        default:
+            // analyzer
+            resolution = pow(64, *params[param_analyzer_level]);
+            offset = 0.75;
+            break;
+        case 4:
+            // we want to draw Stereo Image
+            resolution = pow(64, *params[param_analyzer_level] * 1.75);
+            offset = 1.f;
+            break;
+        case 5:
+            // We want to draw Stereo Difference
+            offset = *params[param_analyzer_level] > 1
+                ? 1 + (*params[param_analyzer_level] - 1) / 4
+                : *params[param_analyzer_level];
+            resolution = pow(64, 2 * offset);
+            break;
+    }
+    
     _analyzer.set_params(
-        *params[param_analyzer_level],
+        resolution,
+        offset,
         *params[param_analyzer_accuracy],
         *params[param_analyzer_hold],
         *params[param_analyzer_smoothing],
@@ -555,7 +581,7 @@ bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int 
     *_buffer   = &phase_buffer[0];
     *_length   = plength;
     *_use_fade = *params[param_gonio_use_fade];
-    *_fade     = *params[param_gonio_fade];
+    *_fade     = 0.6;
     *_mode     = *params[param_gonio_mode];
     *_accuracy = *params[param_gonio_accuracy];
     *_display  = *params[param_gonio_display];
@@ -568,10 +594,10 @@ bool analyzer_audio_module::get_graph(int index, int subindex, int phase, float 
         return _analyzer.get_graph(subindex, phase, data, points, context, mode);
     return false;
 }
-bool analyzer_audio_module::get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const
+bool analyzer_audio_module::get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const
 {
     if (*params[param_analyzer_display])
-        return _analyzer.get_moving(subindex, direction, data, x, y, context);
+        return _analyzer.get_moving(subindex, direction, data, x, y, offset, color);
     return false;
 }
 bool analyzer_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

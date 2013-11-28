@@ -410,7 +410,12 @@ public:
  */
 inline void sanitize(float &value)
 {
+    // real number?
     if (std::abs(value) < small_value<float>())
+        value = 0.f;
+    // close to 0?
+    const int val = *reinterpret_cast <const int *> (&value);
+    if ((val & 0x7F800000) == 0 && (val & 0x007FFFFF) != 0)
         value = 0.f;
 }
 inline float _sanitize(float value)
@@ -437,10 +442,12 @@ inline void sanitize(double &value)
     if (std::abs(value) < small_value<double>())
         value = 0.0;
 }
+
 inline double _sanitize(double value)
 {
     if (std::abs(value) < small_value<double>())
         return 0.0;
+        
     return value;
 }
 /**

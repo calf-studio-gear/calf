@@ -1100,12 +1100,12 @@ static float from_x_pos(float pos)
 static float to_y_pos(CalfLineGraph *lg, float gain)
 {
                 //log(gain) * (1.0 / log(32));
-    return 0.5 - dB_grid(gain, 128 * lg->zoom, 0) / 2.0;
+    return 0.5 - dB_grid(gain, 128 * lg->zoom, lg->offset) / 2.0;
 }
 
 static float from_y_pos(CalfLineGraph *lg, float pos)
 {
-    float gain = powf(128.0 * lg->zoom, (0.5 - pos) * 2.0);
+    float gain = powf(128.0 * lg->zoom, (0.5 - pos) * 2.0 - lg->offset);
     return gain;
 }
 
@@ -1138,6 +1138,10 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     if (zoom_name != "")
         clg->param_zoom = gui->get_param_no_by_name(zoom_name);
     
+    const string &offset_name = attribs["offset"];
+    if (offset_name != "")
+        clg->param_offset = gui->get_param_no_by_name(offset_name);
+        
     if (clg->freqhandles > 0)
     {
         for(int i = 0; i < clg->freqhandles; i++)
@@ -1270,6 +1274,15 @@ void line_graph_param_control::set()
             }
         }
         
+        if (clg->param_offset >= 0) {
+            float _z = gui->plugin->get_param_value(clg->param_offset);
+            if (_z != clg->offset) {
+                force = true;
+                clg->offset = _z;
+                clg->force_redraw = true;
+            }
+        }
+        
         for (int i = 0; i < clg->freqhandles; i++) {
             FreqHandle *handle = &clg->freq_handles[i];
 
@@ -1341,8 +1354,6 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    //last_generation = -1;
-    
     widget = calf_phase_graph_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-phase");
     CalfPhaseGraph *clg = CALF_PHASE_GRAPH(widget);
@@ -1356,15 +1367,11 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 
 void phase_graph_param_control::set()
 {
+    _GUARD_CHANGE_
     GtkWidget *tw = gtk_widget_get_toplevel(widget);
-    gtk_widget_queue_draw(tw);
-//    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window)
-//    {
-//        int ws = gdk_window_get_state(widget->window);
-//        if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
-//            return;
-//        //last_generation = calf_phase_graph_update_if(CALF_PHASE_GRAPH(widget), last_generation);
-//    }
+    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window) {
+        gtk_widget_queue_draw(widget);
+    }
 }
 
 phase_graph_param_control::~phase_graph_param_control()

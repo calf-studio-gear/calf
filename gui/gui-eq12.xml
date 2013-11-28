@@ -42,17 +42,24 @@
     
     <if cond="directlink">
         <frame label="Frequency Response" attach-x="1" attach-y="0">
-            <table cols="2" rows="1">
-                    <line-graph attach-x="0" attach-y="1" refresh="1" height="250" param="bypass" expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="12" handle1-x="hp_freq" style1="1" label1="HP" active1="hp_active" handle2-x="ls_freq" handle2-y="ls_level" label2="LS" active2="ls_active" handle3-x="p1_freq" handle3-y="p1_level" handle3-z="p1_q" label3="I" active3="p1_active" handle4-x="p2_freq" handle4-y="p2_level" handle4-z="p2_q" label4="II" active4="p2_active" handle5-x="p3_freq" handle5-y="p3_level" handle5-z="p3_q" label5="III" active5="p3_active" handle6-x="p4_freq" handle6-y="p4_level" handle6-z="p4_q" label6="IV" active6="p4_active" handle7-x="p5_freq" handle7-y="p5_level" handle7-z="p5_q" label7="V" active7="p5_active" handle8-x="p6_freq" handle8-y="p6_level" handle8-z="p6_q" label8="VI" active8="p6_active" handle9-x="p7_freq" handle9-y="p7_level" handle9-z="p7_q" label9="VII" active9="p7_active" handle10-x="p8_freq" handle10-y="p8_level" handle10-z="p8_q" label10="VIII" active10="p8_active" handle11-x="hs_freq" handle11-y="hs_level" label11="HS" active11="hs_active" handle12-x="lp_freq" style12="4" label12="LP" active12="lp_active"/>
-                <vbox attach-x="1" attach-y="1" spacing="3" expand-x="0" fill-x="0">
+            <table cols="3" rows="1">
+                <line-graph attach-x="1" attach-y="1" refresh="1" height="250" param="bypass" expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="12" handle1-x="hp_freq" style1="1" label1="HP" active1="hp_active" handle2-x="ls_freq" handle2-y="ls_level" label2="LS" active2="ls_active" handle3-x="p1_freq" handle3-y="p1_level" handle3-z="p1_q" label3="I" active3="p1_active" handle4-x="p2_freq" handle4-y="p2_level" handle4-z="p2_q" label4="II" active4="p2_active" handle5-x="p3_freq" handle5-y="p3_level" handle5-z="p3_q" label5="III" active5="p3_active" handle6-x="p4_freq" handle6-y="p4_level" handle6-z="p4_q" label6="IV" active6="p4_active" handle7-x="p5_freq" handle7-y="p5_level" handle7-z="p5_q" label7="V" active7="p5_active" handle8-x="p6_freq" handle8-y="p6_level" handle8-z="p6_q" label8="VI" active8="p6_active" handle9-x="p7_freq" handle9-y="p7_level" handle9-z="p7_q" label9="VII" active9="p7_active" handle10-x="p8_freq" handle10-y="p8_level" handle10-z="p8_q" label10="VIII" active10="p8_active" handle11-x="hs_freq" handle11-y="hs_level" label11="HS" active11="hs_active" handle12-x="lp_freq" style12="4" label12="LP" active12="lp_active"/>
+                <vbox attach-x="2" attach-y="1" spacing="3" expand-x="0" fill-x="0">
                     <label text="Zoom"/>
                     <vscale param="zoom" inverted="1"/>
                     <value param="zoom"/>
                 </vbox>
-                <align attach-x="0" attach-y="0" align-x="1.0">
-                    <hbox expand="0" fill="0" spacing="10">
-                        <label text="Individual Graphs"/>
-                        <toggle size="1" param="individuals"/>
+                <align attach-x="1" attach-y="0" align-x="1.0">
+                    <hbox expand="0" fill="0" spacing="30">
+                        <hbox expand="0" fill="0" spacing="10">
+                            <label text="Individual Graphs"/>
+                            <toggle size="1" param="individuals"/>
+                        </hbox>
+                        <hbox expand="0" fill="0" spacing="10">
+                            <label text="Analyzer"/>
+                            <toggle size="1" param="analyzer"/>
+                            <combo param="analyzer_mode"/>
+                        </hbox>
                     </hbox>
                 </align>
             </table>

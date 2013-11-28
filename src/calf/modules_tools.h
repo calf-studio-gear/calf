@@ -129,7 +129,7 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const;
+    bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     ~analyzer_audio_module();

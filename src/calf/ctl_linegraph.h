@@ -89,8 +89,8 @@ struct CalfLineGraph
     unsigned int layers;
     static const int pad_x = 5, pad_y = 5;
     int size_x, size_y;
-    float zoom;
-    int param_zoom;
+    float zoom, offset;
+    int param_zoom, param_offset;
     
     cairo_surface_t *background_surface;
     cairo_surface_t *grid_surface;

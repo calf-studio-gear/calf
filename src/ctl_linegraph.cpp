@@ -28,6 +28,13 @@
 #include <sys/time.h>
 #include <iostream>
 #include <calf/giface.h>
+#include <stdint.h>
+
+#define RGBAtoINT(r, g, b, a) ((uint32_t)(r * 255) << 24) + ((uint32_t)(g * 255) << 16) + ((uint32_t)(b * 255) << 8) + (uint32_t)(a * 255)
+#define INTtoR(color) (float)((color & 0xff000000) >> 24) / 255.f
+#define INTtoG(color) (float)((color & 0x00ff0000) >> 16) / 255.f
+#define INTtoB(color) (float)((color & 0x0000ff00) >>  8) / 255.f
+#define INTtoA(color) (float)((color & 0x000000ff) >>  0) / 255.f
 
 using namespace calf_plugins;
 
@@ -147,7 +154,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
                 // this one is drawing bars centered on the x axis with 1
                 // as the center
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
+                    cairo_rectangle(ctx, ox + _last,oy + sy / 2 - sy * lg->offset / 2, i - _last, -1 * data[i] * (sy / 2) + sy * lg->offset / 2);
                     _last = i;
                     if (startdraw < 0)
                         startdraw = ox + _last;
@@ -166,7 +173,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
 }
 
 static void
-calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int direction, int count )
+calf_line_graph_draw_moving(CalfLineGraph* lg, cairo_t *ctx, float *data, int direction, int offset, int color)
 {
     if (lg->debug) printf("(draw moving)\n");
     
@@ -181,22 +188,22 @@ calf_line_graph_draw_moving( CalfLineGraph* lg, cairo_t *ctx, float *data, int d
     int sm = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? sx : sy);
     int om = (direction == LG_MOVING_UP || direction == LG_MOVING_DOWN ? ox : oy);
     for (int i = 0; i < sm; i++) {
-        if (lg->debug > 2) printf("* moving i: %d, dir: %d, count: %d, data: %.5f\n", i, direction, count, data[i]);
+        if (lg->debug > 2) printf("* moving i: %d, dir: %d, offset: %d, data: %.5f\n", i, direction, offset, data[i]);
         if (i and ((data[i] < INFINITY) or i >= sm)) {
-            cairo_set_source_rgba(ctx, 0.35, 0.4, 0.2, (data[i] + 1) / 1.4);
+            cairo_set_source_rgba(ctx, INTtoR(color), INTtoG(color), INTtoB(color), (data[i] + 1) / 1.4 * INTtoA(color));
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
-                    cairo_rectangle(ctx, ox + sx - 1 - count, oy + _last, 1, i - _last);
+                    cairo_rectangle(ctx, ox + sx - 1 - offset, oy + _last, 1, i - _last);
                     break;
                 case LG_MOVING_RIGHT:
-                    cairo_rectangle(ctx, ox + count, oy + _last, 1, i - _last);
+                    cairo_rectangle(ctx, ox + offset, oy + _last, 1, i - _last);
                     break;
                 case LG_MOVING_UP:
-                    cairo_rectangle(ctx, ox + _last, oy + sy - 1 - count, i - _last, 1);
+                    cairo_rectangle(ctx, ox + _last, oy + sy - 1 - offset, i - _last, 1);
                     break;
                 case LG_MOVING_DOWN:
-                    cairo_rectangle(ctx, ox + _last, oy + count, i - _last, 1);
+                    cairo_rectangle(ctx, ox + _last, oy + offset, i - _last, 1);
                     break;
             }
             
@@ -227,25 +234,26 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
     cairo_pattern_t *pat;
     
     if(mask > 0 and circle) {
-        // draw a circle in the center of the crosshair leaving out
-        // the lines
-        // ne
-        cairo_move_to(cache_cr, _x + 1, _y);
-        cairo_arc (cache_cr, _x + 1, _y, mask, 1.5 * M_PI, 2 * M_PI);
-        cairo_close_path(cache_cr);
-        // se
-        cairo_move_to(cache_cr, _x + 1, _y + 1);
-        cairo_arc (cache_cr, _x + 1, _y + 1, mask, 0, 0.5 * M_PI);
-        cairo_close_path(cache_cr);
-        // sw
-        cairo_move_to(cache_cr, _x, _y + 1);
-        cairo_arc (cache_cr, _x, _y + 1, mask, 0.5 * M_PI, M_PI);
-        cairo_close_path(cache_cr);
-        // nw
+        //// draw a circle in the center of the crosshair leaving out
+        //// the lines
+        //// ne
+        //cairo_move_to(cache_cr, _x + 1, _y);
+        //cairo_arc (cache_cr, _x + 1, _y, mask, 1.5 * M_PI, 2 * M_PI);
+        //cairo_close_path(cache_cr);
+        //// se
+        //cairo_move_to(cache_cr, _x + 1, _y + 1);
+        //cairo_arc (cache_cr, _x + 1, _y + 1, mask, 0, 0.5 * M_PI);
+        //cairo_close_path(cache_cr);
+        //// sw
+        //cairo_move_to(cache_cr, _x, _y + 1);
+        //cairo_arc (cache_cr, _x, _y + 1, mask, 0.5 * M_PI, M_PI);
+        //cairo_close_path(cache_cr);
+        //// nw
+        //cairo_move_to(cache_cr, _x, _y);
+        //cairo_arc (cache_cr, _x, _y, mask, M_PI, 1.5 * M_PI);
+        //cairo_close_path(cache_cr);
         cairo_move_to(cache_cr, _x, _y);
-        cairo_arc (cache_cr, _x, _y, mask, M_PI, 1.5 * M_PI);
-        cairo_close_path(cache_cr);
-        
+        cairo_arc (cache_cr, _x, _y, mask, 0, 2 * M_PI);
         cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_fill(cache_cr);
     }
@@ -360,7 +368,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     cairo_set_source_rgba(c, 0, 0, 0, 0.5);
                 }
                 if (handle->dimensions >= 2) {
-                    cairo_move_to(c, val_x + 11, val_y);
+                    cairo_move_to(c, val_x + 8, val_y);
                 } else {
                     cairo_move_to(c, val_x + 11, oy + 15);
                 }
@@ -380,7 +388,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
 
                     cairo_text_extents(c, handle->label, &te);
                     if (handle->dimensions >= 2) {
-                        cairo_move_to(c, val_x - 3 - te.width, val_y);
+                        cairo_move_to(c, val_x - te.width, val_y);
                     } else {
                         cairo_move_to(c, val_x - 3 - te.width, oy + 15);
                     }
@@ -688,16 +696,6 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     moving_c[0]           = cairo_create( lg->moving_surface[0] );
     moving_c[1]           = cairo_create( lg->moving_surface[1] );
     
-    // the colors to reset to between the drawing cycles
-    GdkColor grid_color   = { (int)(0.66 * 65535), (int)(0.15 * 65535),
-                              (int)(0.2 * 65535), (int)(0.0 * 65535) };
-    GdkColor graph_color  = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    GdkColor dot_color    = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    GdkColor moving_color = { (int)(1 * 65535), (int)(0.35 * 65535),
-                              (int)(0.4 * 65535), (int)(0.2 * 65535) };
-    
     // the line widths to switch to between cycles
     float grid_width  = 1.0;
     float graph_width = 1.5;
@@ -716,6 +714,10 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // a cairo wrapper to hand over contexts to the plugin for setting
     // line colors, widths aso
     cairo_impl cimpl;
+    cimpl.size_x = sx;
+    cimpl.size_y = sy;
+    cimpl.pad_x  = ox;
+    cimpl.pad_y  = oy;
     
     // some state variables used to determine what has happened
     bool realtime_drawn = false;
@@ -793,7 +795,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             for (int a = 0;
                 legend = std::string(),
-                gdk_cairo_set_source_color(ctx, &grid_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.66),
                 cairo_set_line_width(ctx, grid_width),
                 lg->source->get_gridline(lg->source_id, a, phase, pos, vertical, legend, &cimpl);
                 a++)
@@ -844,7 +846,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             for(int a = 0;
                 lg->mode = 0,
-                gdk_cairo_set_source_color(ctx, &graph_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.5),
                 cairo_set_line_width(ctx, graph_width),
                 lg->source->get_graph(lg->source_id, a, phase, data, lg->size_x, &cimpl, &lg->mode);
                 a++)
@@ -883,34 +885,40 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             
             int a;
+            int offset;
+            int move = 0;
+            uint32_t color;
             for(a = 0;
-                gdk_cairo_set_source_color(ctx, &moving_color),
-                lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, &cimpl);
+                offset = a,
+                color = RGBAtoINT(0.35, 0.4, 0.2, 1),
+                lg->source->get_moving(lg->source_id, a, direction, data, lg->size_x, lg->size_y, offset, color);
                 a++)
             {
                 if (lg->debug) printf("moving %d\n", a);
-                calf_line_graph_draw_moving(lg, ctx, data, direction, a);
+                calf_line_graph_draw_moving(lg, ctx, data, direction, offset, color);
+                move += offset;
             }
+            move ++;
             // set moving distances according to direction
             int x = 0;
             int y = 0;
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
-                    x = -a;
+                    x = -move;
                     y = 0;
                     break;
                 case LG_MOVING_RIGHT:
-                    x = a;
+                    x = move;
                     y = 0;
                     break;
                 case LG_MOVING_UP:
                     x = 0;
-                    y = -a;
+                    y = -move;
                     break;
                 case LG_MOVING_DOWN:
                     x = 0;
-                    y = a;
+                    y = move;
                     break;
             }
             // copy the old moving surface to the right position on the
@@ -958,7 +966,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 realtime_drawn = true;
             }
             for (int a = 0;
-                gdk_cairo_set_source_color(ctx, &dot_color),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 1),
                 cairo_set_line_width(ctx, dot_width),
                 lg->source->get_dot(lg->source_id, a, phase, x, y, size = 3, &cimpl);
                 a++)
@@ -1392,6 +1400,8 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->force_redraw         = false;
     lg->zoom                 = 1;
     lg->param_zoom           = -1;
+    lg->offset               = 0;
+    lg->param_offset         = -1;
     lg->recreate_surfaces    = 1;
     lg->mode                 = 0;
     lg->movesurf             = 0;
