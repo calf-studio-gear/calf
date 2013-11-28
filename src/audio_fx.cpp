@@ -355,6 +355,7 @@ tap_distortion::tap_distortion()
     is_active = false;
     srate = 0;
     meter = 0.f;
+    rdrive = rbdr = kpa = kpb = kna = knb = ap = an = imr = kc = srct = sq = pwrq = 0.f;
     prev_med = prev_out = 0.f;
     drive_old = blend_old = -1.f;
 }
