@@ -444,10 +444,13 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 
 bassenhancer_audio_module::bassenhancer_audio_module()
 {
-    is_active = false;
-    srate = 0;
+    freq_old = 0.f;
+    floor_old = 0.f;
+    floor_active_old = false;    
     meters.reset();
     meter_drive = 0.f;
+    is_active = false;
+    srate = 0;
 }
 
 void bassenhancer_audio_module::activate()
