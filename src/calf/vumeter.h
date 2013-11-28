@@ -36,6 +36,8 @@ struct vumeter
     float clip;
     /// Falloff of clip indicator (b1 coefficient of a 1-pole filter); set to 1 if no falloff is required (manual reset of clip indicator)
     float clip_falloff;
+    /// Amount of samples > 1.f; Clipping occurs if 3 samples are over 0dB
+    int count_over;
     
     vumeter()
     {
@@ -95,7 +97,11 @@ struct vumeter
         for (unsigned int i = 0; i < len; i++) {
             float sig = fabs(src[i]);
             tmp = std::max(tmp, sig);
-            if (sig >= 1.f)
+            if (sig > 1.f)
+                count_over ++;
+            else
+                count_over = 0;
+            if (count_over >= 3)
                 clip = 1.f;
         }
         level = tmp;
