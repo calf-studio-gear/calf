@@ -37,19 +37,11 @@ limiter_audio_module::limiter_audio_module()
 {
     is_active = false;
     srate = 0;
-    // zero all displays
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL  = 0.f;
-    meter_inR  = 0.f;
-    meter_outL = 0.f;
-    meter_outR = 0.f;
     asc_led    = 0.f;
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
+    meters.reset();
 }
 
 void limiter_audio_module::activate()
@@ -58,6 +50,7 @@ void limiter_audio_module::activate()
     // set all filters and strips
     params_changed();
     limiter.activate();
+    meters.reset();
 }
 
 void limiter_audio_module::deactivate()
@@ -84,10 +77,13 @@ void limiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     limiter.set_sample_rate(srate);
+    meters.set_sample_rate(srate);
 }
 
 uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    uint32_t orig_offset = offset;
+    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -97,26 +93,9 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[1][offset] = ins[1][offset];
             ++offset;
         }
-        // displays, too
-        clip_inL    = 0.f;
-        clip_inR    = 0.f;
-        clip_outL   = 0.f;
-        clip_outR   = 0.f;
-        meter_inL  = 0.f;
-        meter_inR  = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
         asc_led    = 0.f;
+        meters.bypassed(params, orig_numsamples);
     } else {
-        // let meters fall a bit
-        clip_inL    -= std::min(clip_inL,  numsamples);
-        clip_inR    -= std::min(clip_inR,  numsamples);
-        clip_outL   -= std::min(clip_outL, numsamples);
-        clip_outR   -= std::min(clip_outR, numsamples);
-        meter_inL = 0.f;
-        meter_inR = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
         asc_led   -= std::min(asc_led, numsamples);
 
         while(offset < numsamples) {
@@ -155,47 +134,11 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            // clip LED's
-            if(inL > 1.f) {
-                clip_inL  = srate >> 3;
-            }
-            if(inR > 1.f) {
-                clip_inR  = srate >> 3;
-            }
-            if(outL > 1.f) {
-                clip_outL = srate >> 3;
-            }
-            if(outR > 1.f) {
-                clip_outR = srate >> 3;
-            }
-            // set up in / out meters
-            if(inL > meter_inL) {
-                meter_inL = inL;
-            }
-            if(inR > meter_inR) {
-                meter_inR = inR;
-            }
-            if(outL > meter_outL) {
-                meter_outL = outL;
-            }
-            if(outR > meter_outR) {
-                meter_outR = outR;
-            }
             // next sample
             ++offset;
         } // cycle trough samples
-
+        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     } // process (no bypass)
-
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
 
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
 
@@ -217,15 +160,6 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
 {
     is_active = false;
     srate = 0;
-    // zero all displays
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL  = 0.f;
-    meter_inR  = 0.f;
-    meter_outL = 0.f;
-    meter_outR = 0.f;
     asc_led    = 0.f;
     attack_old = -1.f;
     channels = 2;
@@ -240,6 +174,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     limit_old = -1.f;
     asc_old = true;
     crossover.init(2, 4, 44100);
+    meters.reset();
 }
 
 void multibandlimiter_audio_module::activate()
@@ -255,6 +190,7 @@ void multibandlimiter_audio_module::activate()
     }
     broadband.activate();
     pos = 0;
+    meters.reset();
 }
 
 void multibandlimiter_audio_module::deactivate()
@@ -353,6 +289,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     }
     broadband.set_sample_rate(srate);
     crossover.set_sample_rate(srate);
+    meters.set_sample_rate(srate);
 }
 
 #define BYPASSED_COMPRESSION(index) \
@@ -366,6 +303,8 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    uint32_t orig_offset = offset;
+    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     float batt = 0.f;
@@ -376,29 +315,11 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             outs[1][offset] = ins[1][offset];
             ++offset;
         }
-        // displays, too
-        clip_inL    = 0.f;
-        clip_inR    = 0.f;
-        clip_outL   = 0.f;
-        clip_outR   = 0.f;
-        meter_inL  = 0.f;
-        meter_inR  = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
+        meters.bypassed(params, orig_numsamples);
         asc_led    = 0.f;
     } else {
         // process all strips
-
-        // let meters fall a bit
-        clip_inL    -= std::min(clip_inL,  numsamples);
-        clip_inR    -= std::min(clip_inR,  numsamples);
-        clip_outL   -= std::min(clip_outL, numsamples);
-        clip_outR   -= std::min(clip_outR, numsamples);
         asc_led     -= std::min(asc_led, numsamples);
-        meter_inL = 0.f;
-        meter_inR = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
         float _tmpL[channels];
         float _tmpR[channels];
         while(offset < numsamples) {
@@ -478,32 +399,6 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            // clip LED's
-            if(ins[0][offset] * *params[param_level_in] > 1.f) {
-                clip_inL  = srate >> 3;
-            }
-            if(ins[1][offset] * *params[param_level_in] > 1.f) {
-                clip_inR  = srate >> 3;
-            }
-            if(outL > 1.f) {
-                clip_outL = srate >> 3;
-            }
-            if(outR > 1.f) {
-                clip_outR = srate >> 3;
-            }
-            // set up in / out meters
-            if(ins[0][offset] * *params[param_level_in] > meter_inL) {
-                meter_inL = ins[0][offset] * *params[param_level_in];
-            }
-            if(ins[1][offset] * *params[param_level_in] > meter_inR) {
-                meter_inR = ins[1][offset] * *params[param_level_in];
-            }
-            if(outL > meter_outL) {
-                meter_outL = outL;
-            }
-            if(outR > meter_outR) {
-                meter_outR = outR;
-            }
             if(asc_active)  {
                 asc_led = srate >> 3;
             }
@@ -512,18 +407,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             pos = (pos + channels) % buffer_size;
             if(pos == 0) _sanitize = false;
         } // cycle trough samples
-
+        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     } // process all strips (no bypass)
-
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
 
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
 
