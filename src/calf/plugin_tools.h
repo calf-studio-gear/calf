@@ -28,6 +28,41 @@
 
 namespace calf_plugins {
 
+class vumeters
+{
+public:
+    static const int max = 128;
+    int levels[max];
+    int clips[max];
+    dsp::vumeter *meters[max];
+    float *const *params;
+    int amount;
+    vumeters() {};
+    void init(float *const *prms, int *lvls, int *clps, int length) {
+        length = std::min(max, length);
+        for (int i = 0; i < length; i++) {
+            levels[i] = lvls[i];
+            clips[i] = clps[i];
+            meters[i] = new dsp::vumeter;
+        }
+        amount = length;
+        params = prms;
+    }
+    void process(float *values) {
+        for (int i = 0; i < amount; i++) {
+            meters[i]->process(values[i]);
+            if (levels[i] >= 0)
+                *params[levels[i]] = meters[i]->level;
+            if (clips[i] >= 0)
+                *params[clips[i]] = meters[i]->clip > 0 ? 1.f : 0.f;
+        }
+    }
+    void fall(unsigned int numsamples) {
+        for (int i = 0; i < amount; i++)
+            meters[i]->fall(numsamples);
+    }
+};
+
 template<class Meter>
 struct in_out_metering_base
 {
@@ -166,4 +201,3 @@ public:
 };
 
 #endif
-

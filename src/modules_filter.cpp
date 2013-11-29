@@ -712,6 +712,20 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
     srate = 0;
     redraw_graph = true;
     crossover.init(AM::channels, AM::bands, 44100);
+    int amount = AM::bands * AM::channels + AM::channels;
+    int meter[amount];
+    int clip[amount];
+    for(int b = 0; b < AM::bands; b++) {
+        for (int c = 0; c < AM::channels; c++) {
+            meter[b * AM::channels + c] = AM::param_meter_01 + b * params_per_band + c;
+            clip[b * AM::channels + c] = -1;
+        }
+    }
+    for (int c = 0; c < AM::channels; c++) {
+        meter[c + AM::bands * AM::channels] = AM::param_meter_0 + c;
+        clip[c + AM::bands * AM::channels] = -1;
+    }
+    meters.init(params, meter, clip, amount);
 }
 
 template<class XoverBaseClass>
@@ -757,28 +771,15 @@ void xover_audio_module<XoverBaseClass>::params_changed()
 template<class XoverBaseClass>
 uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    // input meter reset
-    for (int c = 0; c < AM::channels; c++) {
-        meter_in[c] = 0.f;
-    }
-    
-    // reset all band meters
-    for (int b = 0; b < AM::bands; b++) {
-        for (int c = 0; c < AM::channels; c++) {
-            meter[c][b] = 0.f;
-        }
-    }
-    
     unsigned int targ = numsamples + offset;
     float xval;
-    
+    float values[AM::bands * AM::channels + AM::channels];
     while(offset < targ) {
         // cycle through samples
         
-        // level and in meters
+        // level
         for (int c = 0; c < AM::channels; c++) {
             in[c] = ins[c][offset] * *params[AM::param_level];
-            meter_in[c] = std::max(meter_in[c], in[c]);
         }
         crossover.process(in);
         
@@ -807,26 +808,22 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
                 // set value with phase to output
                 outs[ptr][offset] = *params[AM::param_phase1 + off] > 0.5 ? xval * -1 : xval;
                 
-                // metering
-                if (outs[ptr][offset] > meter[c][b])
-                    meter[c][b] = outs[ptr][offset];
+                // band meters
+                values[b * AM::channels + c] = outs[ptr][offset];
             }
         }
+        // in meters
+        for (int c = 0; c < AM::channels; c++) {
+            values[c + AM::bands * AM::channels] = ins[c][offset];
+        }
+        meters.process(values);
         // next sample
         ++offset;
         // delay buffer pos forward
         pos = (pos + AM::channels * AM::bands) % buffer_size;
         
     } // cycle trough samples
-    
-    // set all meters
-    for (int c = 0; c < AM::channels; c++) {
-        *params[AM::param_meter_0 + c] = meter_in[c];
-        for (int b = 0; b < AM::bands; b++) {
-            int off = b * params_per_band;
-            *params[AM::param_meter_01 + off + c] = meter[c][b];
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 

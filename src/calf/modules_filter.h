@@ -313,8 +313,6 @@ public:
     bool is_active;
     float * buffer;
     float in[channels];
-    float meter[channels][bands];
-    float meter_in[channels];
     unsigned int pos;
     unsigned int buffer_size;
     int last_peak;
@@ -323,6 +321,7 @@ public:
         if(x > 0) return 1.f;
         return 0.f;
     }
+    vumeters meters;
     dsp::crossover crossover;
     xover_audio_module();
     void activate();
