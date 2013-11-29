@@ -271,7 +271,7 @@ class emphasis_audio_module: public audio_module<emphasis_metadata>, public freq
 public:
     dual_in_out_metering<emphasis_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
-    int mode, type;
+    int mode, type, bypass;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;

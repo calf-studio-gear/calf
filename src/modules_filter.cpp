@@ -618,10 +618,11 @@ void emphasis_audio_module::deactivate()
 
 void emphasis_audio_module::params_changed()
 {
-    if (mode != *params[param_mode] or type != *params[param_type])
+    if (mode != *params[param_mode] or type != *params[param_type] or bypass != *params[param_bypass])
         redraw_graph = true;
-    mode = *params[param_mode];
-    type = *params[param_type];
+    mode   = *params[param_mode];
+    type   = *params[param_type];
+    bypass = *params[param_bypass];
     riaacurvL.set(srate, mode, type);
     riaacurvR.set(srate, mode, type);
 }
@@ -692,6 +693,8 @@ bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float 
 {
     if (phase or subindex)
         return false;
+    if (bypass)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 bool emphasis_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
