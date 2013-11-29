@@ -267,15 +267,15 @@ private:
  * PHONO EQ by Damien Zammit 
 **********************************************************************/
 
-class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
+class emphasis_audio_module: public audio_module<emphasis_metadata>, public frequency_response_line_graph {
 public:
-    dual_in_out_metering<phonoeq_metadata> meters;
+    dual_in_out_metering<emphasis_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
     int mode, type;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    phonoeq_audio_module();
+    emphasis_audio_module();
     void activate();
     void deactivate();
     void params_changed();

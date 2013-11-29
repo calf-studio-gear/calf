@@ -591,10 +591,10 @@ void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int veloci
 }
 
 /**********************************************************************
- * PHONO EQ by Damien Zammit 
+ * EMPHASIS by Damien Zammit 
 **********************************************************************/
 
-phonoeq_audio_module::phonoeq_audio_module()
+emphasis_audio_module::emphasis_audio_module()
 {
     is_active = false;
     srate = 0;
@@ -603,7 +603,7 @@ phonoeq_audio_module::phonoeq_audio_module()
     type = -1;
 }
 
-void phonoeq_audio_module::activate()
+void emphasis_audio_module::activate()
 {
     is_active = true;
     // set all filters
@@ -611,12 +611,12 @@ void phonoeq_audio_module::activate()
     meters.reset();
 }
 
-void phonoeq_audio_module::deactivate()
+void emphasis_audio_module::deactivate()
 {
     is_active = false;
 }
 
-void phonoeq_audio_module::params_changed()
+void emphasis_audio_module::params_changed()
 {
     if (mode != *params[param_mode] or type != *params[param_type])
         redraw_graph = true;
@@ -626,7 +626,7 @@ void phonoeq_audio_module::params_changed()
     riaacurvR.set(srate, mode, type);
 }
 
-uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypass = *params[param_bypass] > 0.f;
     if (!bypass)
@@ -688,13 +688,13 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     }
     return outputs_mask;
 }
-bool phonoeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (phase or subindex)
         return false;
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
-bool phonoeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool emphasis_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (phase)
         return false;
