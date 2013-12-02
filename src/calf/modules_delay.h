@@ -43,6 +43,7 @@ struct ladspa_plugin_info;
 
 class reverb_audio_module: public audio_module<reverb_metadata>
 {
+    vumeters meters;
 public:    
     dsp::reverb reverb;
     dsp::simple_delay<16384, dsp::stereo_sample<float> > pre_delay;
