@@ -119,38 +119,6 @@ struct vumeter
     }
 };
 
-struct dual_vumeter
-{
-    vumeter left, right;
-    
-    inline void update_stereo(const float *src1, const float *src2, unsigned int len)
-    {
-        left.update_stereo(src1, NULL, len);
-        right.update_stereo(NULL, src2, len);
-    }
-    inline void update_zeros(unsigned int len)
-    {
-        left.update_zeros(len);
-        right.update_zeros(len);
-    }
-    inline void reset()
-    {
-        left.reset();
-        right.reset();
-    }
-    inline void set_falloff(double time_20dB, double sample_rate)
-    {
-        left.set_falloff(time_20dB, sample_rate);
-        right.copy_falloff(left);
-    }
-    inline void copy_falloff(const dual_vumeter &src)
-    {
-        left.copy_falloff(src.left);
-        right.copy_falloff(src.right);
-    }
-
-};
-
 };
 
 #endif
