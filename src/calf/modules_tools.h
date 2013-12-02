@@ -50,8 +50,8 @@ class stereo_audio_module:
     uint32_t srate;
     bool active;
     
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR, meter_phase;
+    vumeters meters;
     
     float * buffer;
     unsigned int pos;
@@ -82,8 +82,8 @@ class mono_audio_module:
     uint32_t srate;
     bool active;
     
-    uint32_t clip_in, clip_outL, clip_outR;
     float meter_in, meter_outL, meter_outR;
+    vumeters meters;
     
     float * buffer;
     unsigned int pos;

@@ -41,14 +41,6 @@ using namespace calf_plugins;
 
 stereo_audio_module::stereo_audio_module() {
     active      = false;
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL   = 0.f;
-    meter_inR   = 0.f;
-    meter_outL  = 0.f;
-    meter_outR  = 0.f;
     _phase      = -1;
 }
 
@@ -117,20 +109,11 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         if(*params[param_bypass] > 0.5) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[1][i];
-            clip_inL    = 0.f;
-            clip_inR    = 0.f;
-            clip_outL   = 0.f;
-            clip_outR   = 0.f;
             meter_inL  = 0.f;
             meter_inR  = 0.f;
             meter_outL = 0.f;
             meter_outR = 0.f;
         } else {
-            // let meters fall a bit
-            clip_inL    -= std::min(clip_inL,  numsamples);
-            clip_inR    -= std::min(clip_inR,  numsamples);
-            clip_outL   -= std::min(clip_outL, numsamples);
-            clip_outR   -= std::min(clip_outR, numsamples);
             meter_inL = 0.f;
             meter_inR = 0.f;
             meter_outL = 0.f;
@@ -193,10 +176,8 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             }
             
             // GUI stuff
-            if(L > meter_inL) meter_inL = L;
-            if(R > meter_inR) meter_inR = R;
-            if(L > 1.f) clip_inL  = srate >> 3;
-            if(R > 1.f) clip_inR  = srate >> 3;
+            meter_inL = L;
+            meter_inR = R;
             
             // mute
             L *= (1 - floor(*params[param_mute_l] + 0.5));
@@ -253,11 +234,8 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             outs[0][i] = L;
             outs[1][i] = R;
             
-            // clip LED's
-            if(L > 1.f) clip_outL = srate >> 3;
-            if(R > 1.f) clip_outR = srate >> 3;
-            if(L > meter_outL) meter_outL = L;
-            if(R > meter_outR) meter_outR = R;
+            meter_outL = L;
+            meter_outR = R;
             
             // phase meter
             if(fabs(L) > 0.001 and fabs(R) > 0.001) {
@@ -266,17 +244,10 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                 meter_phase = 0.f;
             }
         }
+        float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
+        meters.process(values);
     }
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
-    SET_IF_CONNECTED(meter_phase);
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -288,6 +259,9 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, sr);
 }
 
 /**********************************************************************
@@ -296,9 +270,6 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
 
 mono_audio_module::mono_audio_module() {
     active      = false;
-    clip_in     = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
     meter_in    = 0.f;
     meter_outL  = 0.f;
     meter_outR  = 0.f;
@@ -330,17 +301,10 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
         if(*params[param_bypass] > 0.5) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[0][i];
-            clip_in     = 0.f;
-            clip_outL   = 0.f;
-            clip_outR   = 0.f;
             meter_in    = 0.f;
             meter_outL  = 0.f;
             meter_outR  = 0.f;
         } else {
-            // let meters fall a bit
-            clip_in     -= std::min(clip_in,  numsamples);
-            clip_outL   -= std::min(clip_outL, numsamples);
-            clip_outR   -= std::min(clip_outR, numsamples);
             meter_in     = 0.f;
             meter_outL   = 0.f;
             meter_outR   = 0.f;
@@ -358,8 +322,7 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             }
             
             // GUI stuff
-            if(L > meter_in) meter_in = L;
-            if(L > 1.f) clip_in = srate >> 3;
+            meter_in = L;
             
             float R = L;
             
@@ -414,20 +377,13 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             outs[0][i] = L;
             outs[1][i] = R;
             
-            // clip LED's
-            if(L > 1.f) clip_outL = srate >> 3;
-            if(R > 1.f) clip_outR = srate >> 3;
-            if(L > meter_outL) meter_outL = L;
-            if(R > meter_outR) meter_outR = R;
+            meter_outL = L;
+            meter_outR = R;
         }
+        float values[] = {meter_in, meter_outL, meter_outR};
+        meters.process(values);
     }
-    // draw meters
-    SET_IF_CONNECTED(clip_in);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_in);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -439,6 +395,9 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
+    int meter[] = {param_meter_in,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_in, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 3, sr);
 }
 
 /**********************************************************************

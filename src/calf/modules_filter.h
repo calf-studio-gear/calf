@@ -60,7 +60,7 @@ private:
     bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
-    dual_in_out_metering<BaseClass> meters;
+    vumeters meters;
     CalfEqMode hp_mode, lp_mode;
     dsp::biquad_d2<float> hp[3][2], lp[3][2];
     dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
@@ -85,8 +85,10 @@ public:
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
-        meters.set_sample_rate(sr);
         _analyzer.set_sample_rate(sr);
+        int meter[] = {AM::param_meter_inL, AM::param_meter_inR,  AM::param_meter_outL, AM::param_meter_outR};
+        int clip[] = {AM::param_clip_inL, AM::param_clip_inR, AM::param_clip_outL, AM::param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
@@ -264,17 +266,17 @@ private:
 };
 
 /**********************************************************************
- * PHONO EQ by Damien Zammit 
+ * EMPHASIS by Damien Zammit 
 **********************************************************************/
 
 class emphasis_audio_module: public audio_module<emphasis_metadata>, public frequency_response_line_graph {
 public:
-    dual_in_out_metering<emphasis_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
     int mode, type, bypass;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
+    vumeters meters;
     emphasis_audio_module();
     void activate();
     void deactivate();
@@ -282,7 +284,9 @@ public:
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
-        meters.set_sample_rate(sr);
+        int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+        int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
     }
     virtual float freq_gain(int index, double freq) const {
         return riaacurvL.freq_gain(freq, (float)srate);

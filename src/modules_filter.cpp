@@ -71,7 +71,6 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::activate()
     is_active = true;
     // set all filters
     params_changed();
-    meters.reset();
 }
 
 template<class BaseClass, bool has_lphp>
@@ -263,18 +262,18 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
         if (keep_gliding)
             params_changed();
     }
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     numsamples += offset;
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
             ++offset;
         }
         // displays, too
-        meters.bypassed(params, orig_numsamples);
+        
     } else {
         // process
         while(offset < numsamples) {
@@ -330,11 +329,14 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-                        
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
+        meters.fall(numsamples);
         // clean up
         for(int i = 0; i < 3; ++i) {
             hp[i][0].sanitize();
@@ -608,7 +610,6 @@ void emphasis_audio_module::activate()
     is_active = true;
     // set all filters
     params_changed();
-    meters.reset();
 }
 
 void emphasis_audio_module::deactivate()
@@ -629,6 +630,7 @@ void emphasis_audio_module::params_changed()
 
 uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.f;
     if (!bypass)
     {
@@ -642,18 +644,16 @@ uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             numsamples -= 8;
         }
     }
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     numsamples += offset;
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
         while(offset < numsamples) {
@@ -678,15 +678,18 @@ uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-                        
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
         // clean up
         riaacurvL.sanitize();
         riaacurvR.sanitize();
     }
+    meters.fall(orig_numsamples);
     return outputs_mask;
 }
 bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -715,20 +718,6 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
     srate = 0;
     redraw_graph = true;
     crossover.init(AM::channels, AM::bands, 44100);
-    int amount = AM::bands * AM::channels + AM::channels;
-    int meter[amount];
-    int clip[amount];
-    for(int b = 0; b < AM::bands; b++) {
-        for (int c = 0; c < AM::channels; c++) {
-            meter[b * AM::channels + c] = AM::param_meter_01 + b * params_per_band + c;
-            clip[b * AM::channels + c] = -1;
-        }
-    }
-    for (int c = 0; c < AM::channels; c++) {
-        meter[c + AM::bands * AM::channels] = AM::param_meter_0 + c;
-        clip[c + AM::bands * AM::channels] = -1;
-    }
-    meters.init(params, meter, clip, amount);
 }
 
 template<class XoverBaseClass>
@@ -754,6 +743,20 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
+    int amount = AM::bands * AM::channels + AM::channels;
+    int meter[amount];
+    int clip[amount];
+    for(int b = 0; b < AM::bands; b++) {
+        for (int c = 0; c < AM::channels; c++) {
+            meter[b * AM::channels + c] = AM::param_meter_01 + b * params_per_band + c;
+            clip[b * AM::channels + c] = -1;
+        }
+    }
+    for (int c = 0; c < AM::channels; c++) {
+        meter[c + AM::bands * AM::channels] = AM::param_meter_0 + c;
+        clip[c + AM::bands * AM::channels] = -1;
+    }
+    meters.init(params, meter, clip, amount, srate);
 }
 template<class XoverBaseClass>
 void xover_audio_module<XoverBaseClass>::params_changed()

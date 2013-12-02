@@ -38,12 +38,13 @@ public:
     float *const *params;
     int amount;
     vumeters() {};
-    void init(float *const *prms, int *lvls, int *clps, int length) {
+    void init(float *const *prms, int *lvls, int *clps, int length, uint32_t srate) {
         length = std::min(max, length);
         for (int i = 0; i < length; i++) {
             levels[i] = lvls[i];
             clips[i] = clps[i];
             meters[i] = new dsp::vumeter;
+            meters[i]->set_falloff(1.f, srate);
         }
         amount = length;
         params = prms;
