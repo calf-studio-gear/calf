@@ -270,10 +270,9 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             outs[1][offset] = ins[1][offset];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
+            _analyzer.process(0, 0);
             ++offset;
         }
-        // displays, too
-        
     } else {
         // process
         while(offset < numsamples) {
@@ -336,7 +335,6 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.fall(numsamples);
         // clean up
         for(int i = 0; i < 3; ++i) {
             hp[i][0].sanitize();
@@ -351,6 +349,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             pR[i].sanitize();
         }
     }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
