@@ -41,7 +41,6 @@ limiter_audio_module::limiter_audio_module()
     attack_old = -1.f;
     limit_old = -1.f;
     asc_old = true;
-    meters.reset();
 }
 
 void limiter_audio_module::activate()
@@ -50,7 +49,6 @@ void limiter_audio_module::activate()
     // set all filters and strips
     params_changed();
     limiter.activate();
-    meters.reset();
 }
 
 void limiter_audio_module::deactivate()
@@ -77,13 +75,13 @@ void limiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     limiter.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
+    meters.init(params, meter, clip, 5, srate);
 }
 
 uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -91,10 +89,11 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 1};
+            meters.process(values);
             ++offset;
         }
         asc_led    = 0.f;
-        meters.bypassed(params, orig_numsamples);
     } else {
         asc_led   -= std::min(asc_led, numsamples);
 
@@ -134,21 +133,15 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
+            float values[] = {inL, inR, outL, outR, bypass > 0.5 ? (float)1.0 : (float)limiter.get_attenuation()};
+            meters.process (values);
+
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     } // process (no bypass)
-
+    meters.fall(numsamples);
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
-
-    if (*params[param_att]) {
-        if(bypass)
-            *params[param_att] = 1.f;
-        else
-            *params[param_att] = limiter.get_attenuation();
-    }
-
     return outputs_mask;
 }
 
@@ -174,7 +167,6 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     limit_old = -1.f;
     asc_old = true;
     crossover.init(2, 4, 44100);
-    meters.reset();
 }
 
 void multibandlimiter_audio_module::activate()
@@ -190,7 +182,6 @@ void multibandlimiter_audio_module::activate()
     }
     broadband.activate();
     pos = 0;
-    meters.reset();
 }
 
 void multibandlimiter_audio_module::deactivate()
@@ -289,7 +280,9 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     }
     broadband.set_sample_rate(srate);
     crossover.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att0, param_att1, param_att2, param_att3};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1};
+    meters.init(params, meter, clip, 8, srate);
 }
 
 #define BYPASSED_COMPRESSION(index) \
@@ -303,8 +296,6 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     float batt = 0.f;
@@ -313,9 +304,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
             ++offset;
         }
-        meters.bypassed(params, orig_numsamples);
         asc_led    = 0.f;
     } else {
         // process all strips
@@ -406,25 +398,17 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             ++offset;
             pos = (pos + channels) % buffer_size;
             if(pos == 0) _sanitize = false;
+            
+            float values[] = {inL, inR, outL, outR,
+                bypass > 0.5 ? (float)1.0 : (float)strip[0].get_attenuation() * batt,
+                bypass > 0.5 ? (float)1.0 : (float)strip[1].get_attenuation() * batt,
+                bypass > 0.5 ? (float)1.0 : (float)strip[2].get_attenuation() * batt,
+                bypass > 0.5 ? (float)1.0 : (float)strip[3].get_attenuation() * batt};
+            meters.process(values);
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     } // process all strips (no bypass)
-
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
-
-    // draw strip meters
-    if(bypass > 0.5f) {
-        if(params[param_att0] != NULL) *params[param_att0] = 1.0;
-        if(params[param_att1] != NULL) *params[param_att1] = 1.0;
-        if(params[param_att2] != NULL) *params[param_att2] = 1.0;
-        if(params[param_att3] != NULL) *params[param_att3] = 1.0;
-
-    } else {
-        if(params[param_att0] != NULL) *params[param_att0] = strip[0].get_attenuation() * batt;
-        if(params[param_att1] != NULL) *params[param_att1] = strip[1].get_attenuation() * batt;
-        if(params[param_att2] != NULL) *params[param_att2] = strip[2].get_attenuation() * batt;
-        if(params[param_att3] != NULL) *params[param_att3] = strip[3].get_attenuation() * batt;
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 

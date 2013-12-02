@@ -42,7 +42,7 @@ private:
     uint32_t asc_led;
     int mode, mode_old;
     dsp::lookahead_limiter limiter;
-    dual_in_out_metering<limiter_metadata> meters;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;
@@ -85,7 +85,7 @@ private:
     bool asc_old;
     float attack_old;
     bool _sanitize;
-    dual_in_out_metering<multibandlimiter_metadata> meters;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;
