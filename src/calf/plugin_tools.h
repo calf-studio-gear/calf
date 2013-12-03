@@ -31,36 +31,43 @@ namespace calf_plugins {
 class vumeters
 {
 public:
-    static const int max = 128;
-    int levels[max];
-    int clips[max];
-    dsp::vumeter *meters[max];
+    struct meter_data
+    {
+        int level_idx;
+        int clip_idx;
+        dsp::vumeter meter;
+    };
+    
+    std::vector<meter_data> meters;    
     float *const *params;
-    int amount;
-    vumeters() {};
+
     void init(float *const *prms, int *lvls, int *clps, int length, uint32_t srate) {
-        length = std::min(max, length);
+        meters.resize(length);
         for (int i = 0; i < length; i++) {
-            levels[i] = lvls[i];
-            clips[i] = clps[i];
-            meters[i] = new dsp::vumeter;
-            meters[i]->set_falloff(1.f, srate);
+            meter_data &md = meters[i];
+            md.level_idx = lvls[i];
+            md.clip_idx = clps[i];
+            md.meter.set_falloff(1.f, srate);
         }
-        amount = length;
         params = prms;
     }
     void process(float *values) {
-        for (int i = 0; i < amount; i++) {
-            meters[i]->process(values[i]);
-            if (levels[i] >= 0)
-                *params[levels[i]] = meters[i]->level;
-            if (clips[i] >= 0)
-                *params[clips[i]] = meters[i]->clip > 0 ? 1.f : 0.f;
+        for (size_t i = 0; i < meters.size(); ++i) {
+            meter_data &md = meters[i];
+            if ((md.level_idx >= 0 && params[md.level_idx] != NULL) || 
+                (md.clip_idx >= 0 && params[md.clip_idx] != NULL))
+            {
+                md.meter.process(values[i]);
+                if (md.level_idx >= 0 && params[md.level_idx])
+                    *params[md.level_idx] = md.meter.level;
+                if (md.clip_idx >= 0 && params[md.clip_idx])
+                    *params[md.clip_idx] = md.meter.clip > 0 ? 1.f : 0.f;
+            }
         }
     }
     void fall(unsigned int numsamples) {
-        for (int i = 0; i < amount; i++)
-            meters[i]->fall(numsamples);
+        for (size_t i = 0; i < meters.size(); ++i)
+            meters[i].meter.fall(numsamples);
     }
 };
 
