@@ -240,16 +240,16 @@ void make_ttl(string path_prefix)
     ;
 #endif
     
-    map<string, string> id_to_label;
+    map<string, pair<string, string> > id_to_info;
     
     for (unsigned int i = 0; i < plugins.size(); i++) {
         const plugin_metadata_iface *pi = plugins[i];
         const ladspa_plugin_info &lpi = pi->get_plugin_info();
-        id_to_label[pi->get_id()] = pi->get_label();
         printf("Generating a .ttl file for plugin '%s'\n", lpi.label);
         fflush(stdout);
         string unquoted_uri = plugin_uri_prefix + string(lpi.label);
         string uri = string("<" + unquoted_uri + ">");
+        id_to_info[pi->get_id()] = make_pair(lpi.label, uri);
         string ttl;
         ttl = "@prefix : <" + unquoted_uri + "#> .\n" + header + gui_header;
         
@@ -380,24 +380,24 @@ void make_ttl(string path_prefix)
     for (unsigned int i = 0; i < factory_presets.size(); i++)
     {
         plugin_preset &pr = factory_presets[i];
-        map<string, string>::iterator ilm = id_to_label.find(pr.plugin);
-        if (ilm == id_to_label.end())
+        map<string, pair<string, string> >::iterator ilm = id_to_info.find(pr.plugin);
+        if (ilm == id_to_info.end())
             continue;
         
         string presets_ttl;
         // if this is the first preset, add a header
-        if (!preset_data.count(ilm->second))
+        if (!preset_data.count(ilm->second.first))
             presets_ttl = presets_ttl_head;
         
         string uri = "<http://calf.sourceforge.net/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
-        ttl += string("<" + plugin_uri_prefix + ilm->second + "> lv2p:hasPreset\n    " + uri + " .\n");
+        ttl += ilm->second.second + " lv2p:hasPreset\n    " + uri + " .\n";
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
             "    rdfs:label \"" + pr.name + "\" ;\n"
-            "    lv2:appliesTo <" + plugin_uri_prefix + ilm->second + "> ;\n"
+            "    lv2:appliesTo " + ilm->second.second + " ;\n"
             "    lv2:port \n"
         ;
         
@@ -411,7 +411,7 @@ void make_ttl(string path_prefix)
         }
         presets_ttl += ".\n\n";
         
-        preset_data[ilm->second] += presets_ttl;
+        preset_data[ilm->second.first] += presets_ttl;
     }
     for (map<string, string>::iterator i = preset_data.begin(); i != preset_data.end(); i++)
     {

@@ -197,6 +197,7 @@ float gain_reduction_audio_module::get_comp_level() {
 
 bool gain_reduction_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    redraw_graph = false;
     if (!is_active or subindex > 1)
         return false;
     
@@ -257,7 +258,6 @@ bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &v
 bool gain_reduction_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    redraw_graph = false;
     return true;
 }
 
@@ -423,6 +423,7 @@ float gain_reduction2_audio_module::get_comp_level() {
 
 bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    redraw_graph = false;
     if (!is_active or subindex > 1)
         return false;
     
@@ -482,7 +483,6 @@ bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &
 bool gain_reduction2_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    redraw_graph = false;
     return true;
 }
 
@@ -657,6 +657,7 @@ float expander_audio_module::get_expander_level() {
 
 bool expander_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
+    redraw_graph = false;
     if (!is_active or subindex > 1)
         return false;
         
@@ -715,7 +716,6 @@ bool expander_audio_module::get_gridline(int subindex, float &pos, bool &vertica
 bool expander_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    redraw_graph = false;
     return true;
 }
 
@@ -728,7 +728,6 @@ compressor_audio_module::compressor_audio_module()
 {
     is_active = false;
     srate = 0;
-    meters.reset();
 }
 
 void compressor_audio_module::activate()
@@ -737,7 +736,6 @@ void compressor_audio_module::activate()
     // set all filters and strips
     compressor.activate();
     params_changed();
-    meters.reset();
 }
 void compressor_audio_module::deactivate()
 {
@@ -754,13 +752,13 @@ void compressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int clip[] = {param_clip_in, param_clip_out, -1};
+    meters.init(params, meter, clip, 3, srate);
 }
 
 uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -768,10 +766,11 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 1};
+            meters.process(values);
             ++offset;
         }
         // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
 
@@ -806,21 +805,14 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
+            float values[] = {std::max(inL, inR), std::max(outL, outR), compressor.get_comp_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = 1.0f;
-        }
-    } else {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = compressor.get_comp_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 bool compressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -860,7 +852,6 @@ sidechaincompressor_audio_module::sidechaincompressor_audio_module()
     f1_level_old = 0.f;
     f2_level_old = 0.f;
     sc_mode_old1  = WIDEBAND;
-    meters.reset();
     redraw_graph = true;
 }
 
@@ -870,7 +861,6 @@ void sidechaincompressor_audio_module::activate()
     // set all filters and strips
     compressor.activate();
     params_changed();
-    meters.reset();
 }
 void sidechaincompressor_audio_module::deactivate()
 {
@@ -1037,13 +1027,13 @@ void sidechaincompressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int clip[] = {param_clip_in, param_clip_out, -1};
+    meters.init(params, meter, clip, 3, srate);
 }
 
 uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -1063,10 +1053,11 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                     outs[1][offset] = ins[1][offset];
                     break;
             }
+            float values[] = {0, 0, 1};
+            meters.process(values);
             ++offset;
         }
         // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
 
@@ -1186,26 +1177,19 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-
+            
+            float values[] = {std::max(inL, inR), std::max(outL, outR), compressor.get_comp_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
         f1L.sanitize();
         f1R.sanitize();
         f2L.sanitize();
         f2R.sanitize();
     }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = 1.0f;
-        }
-    } else {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = compressor.get_comp_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -1260,15 +1244,6 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
 {
     is_active = false;
     srate = 0;
-    // zero all displays
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL  = 0.f;
-    meter_inR  = 0.f;
-    meter_outL = 0.f;
-    meter_outR = 0.f;
     mode       = 0;
     crossover.init(2, 4, 44100);
 }
@@ -1333,24 +1308,20 @@ void multibandcompressor_audio_module::set_sample_rate(uint32_t sr)
     }
     // set srate of crossover
     crossover.set_sample_rate(srate);
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR,
+                   param_output0, param_compression0,
+                   param_output1, param_compression1,
+                   param_output2, param_compression2,
+                   param_output3, param_compression3 };
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, 12, srate);
 }
-
-#define BYPASSED_COMPRESSION(index) \
-    if(params[param_compression##index] != NULL) \
-        *params[param_compression##index] = 1.0; \
-    if(params[param_output##index] != NULL) \
-        *params[param_output##index] = 0.0;
-
-#define ACTIVE_COMPRESSION(index) \
-    if(params[param_compression##index] != NULL) \
-        *params[param_compression##index] = strip[index].get_comp_level(); \
-    if(params[param_output##index] != NULL) \
-        *params[param_output##index] = strip[index].get_output_level();
 
 uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
+    
     for (int i = 0; i < strips; i++)
         strip[i].update_curve();
     if(bypass) {
@@ -1358,29 +1329,12 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        clip_inL    = 0.f;
-        clip_inR    = 0.f;
-        clip_outL   = 0.f;
-        clip_outR   = 0.f;
-        meter_inL  = 0.f;
-        meter_inR  = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
     } else {
         // process all strips
-
-        // let meters fall a bit
-        clip_inL    -= std::min(clip_inL,  numsamples);
-        clip_inR    -= std::min(clip_inR,  numsamples);
-        clip_outL   -= std::min(clip_outL, numsamples);
-        clip_outR   -= std::min(clip_outR, numsamples);
-        meter_inL = 0.f;
-        meter_inR = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -1416,60 +1370,19 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-
-            // clip LED's
-            if(inL > 1.f) {
-                clip_inL  = srate >> 3;
-            }
-            if(inR > 1.f) {
-                clip_inR  = srate >> 3;
-            }
-            if(outL > 1.f) {
-                clip_outL = srate >> 3;
-            }
-            if(outR > 1.f) {
-                clip_outR = srate >> 3;
-            }
-            // set up in / out meters
-            if(inL > meter_inL) {
-                meter_inL = inL;
-            }
-            if(inR > meter_inR) {
-                meter_inR = inR;
-            }
-            if(outL > meter_outL) {
-                meter_outL = outL;
-            }
-            if(outR > meter_outR) {
-                meter_outR = outR;
-            }
+            
+            float values[] = {inL, inR, outL, outR,
+                *params[param_bypass0] > 0.5f ? 0 : strip[0].get_output_level(), *params[param_bypass0] > 0.5f ? 1 : strip[0].get_comp_level(),
+                *params[param_bypass1] > 0.5f ? 0 : strip[1].get_output_level(), *params[param_bypass1] > 0.5f ? 1 : strip[1].get_comp_level(),
+                *params[param_bypass2] > 0.5f ? 0 : strip[2].get_output_level(), *params[param_bypass2] > 0.5f ? 1 : strip[2].get_comp_level(),
+                *params[param_bypass3] > 0.5f ? 0 : strip[3].get_output_level(), *params[param_bypass3] > 0.5f ? 1 : strip[3].get_comp_level() };
+            meters.process(values);
+                
             // next sample
             ++offset;
         } // cycle trough samples
-
     } // process all strips (no bypass)
-
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
-    // draw strip meters
-    if(bypass > 0.5f) {
-        BYPASSED_COMPRESSION(0)
-        BYPASSED_COMPRESSION(1)
-        BYPASSED_COMPRESSION(2)
-        BYPASSED_COMPRESSION(3)
-    } else {
-        ACTIVE_COMPRESSION(0)
-        ACTIVE_COMPRESSION(1)
-        ACTIVE_COMPRESSION(2)
-        ACTIVE_COMPRESSION(3)
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -1531,7 +1444,6 @@ monocompressor_audio_module::monocompressor_audio_module()
 {
     is_active = false;
     srate = 0;
-    meters.reset();
 }
 
 void monocompressor_audio_module::activate()
@@ -1540,7 +1452,6 @@ void monocompressor_audio_module::activate()
     // set all filters and strips
     monocompressor.activate();
     params_changed();
-    meters.reset();
 }
 void monocompressor_audio_module::deactivate()
 {
@@ -1557,24 +1468,23 @@ void monocompressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     monocompressor.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int clip[] = {param_clip_in, param_clip_out, -1};
+    meters.init(params, meter, clip, 3, srate);
 }
 
 uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
-            //outs[1][offset] = 0.f;
+            float values[] = {0, 0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
 
@@ -1608,22 +1518,15 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
             // send to output
             outs[0][offset] = outL;
             //outs[1][offset] = 0.f;
-
+            
+            float values[] = {inL, outL, monocompressor.get_comp_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = 1.0f;
-        }
-    } else {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = monocompressor.get_comp_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 bool monocompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -1665,7 +1568,6 @@ deesser_audio_module::deesser_audio_module()
     f2_level_old = 0.f;
     f2_q_old     = 0.f;
     detected_led = 0;
-    clip_led     = 0;
     redraw_graph = true;
 }
 
@@ -1677,7 +1579,6 @@ void deesser_audio_module::activate()
     params_changed();
     detected = 0.f;
     detected_led = 0.f;
-    clip_out = 0.f;
 }
 void deesser_audio_module::deactivate()
 {
@@ -1726,6 +1627,9 @@ void deesser_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
+    int meter[] = {param_detected, param_compression};
+    int clip[] = {param_clip_out, -1};
+    meters.init(params, meter, clip, 2, srate);
 }
 
 uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -1737,17 +1641,14 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        clip_out   = 0.f;
-        detected = 0.f;
-        detected_led = 0.f;
     } else {
         // process
 
         detected_led -= std::min(detected_led,  numsamples);
-        clip_led   -= std::min(clip_led,  numsamples);
         compressor.update_curve();
 
         while(offset < numsamples) {
@@ -1805,16 +1706,11 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             if(std::max(fabs(leftSC), fabs(rightSC)) > *params[param_threshold]) {
                 detected_led   = srate >> 3;
             }
-            if(std::max(fabs(leftAC), fabs(rightAC)) > 1.f) {
-                clip_led   = srate >> 3;
-            }
-            if(clip_led > 0) {
-                clip_out = 1.f;
-            } else {
-                clip_out = std::max(fabs(outL), fabs(outR));
-            }
             detected = std::max(fabs(leftMC), fabs(rightMC));
-
+            
+            float values[] = {detected, compressor.get_comp_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
@@ -1829,22 +1725,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     if(params[param_detected_led] != NULL) {
         *params[param_detected_led] = detected_led;
     }
-    if(params[param_clip_out] != NULL) {
-        *params[param_clip_out] = clip_out;
-    }
-    if(params[param_detected] != NULL) {
-        *params[param_detected] = detected;
-    }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = 1.0f;
-        }
-    } else {
-        if(params[param_compression] != NULL) {
-            *params[param_compression] = compressor.get_comp_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -1857,7 +1738,6 @@ gate_audio_module::gate_audio_module()
 {
     is_active = false;
     srate = 0;
-    meters.reset();
 }
 
 void gate_audio_module::activate()
@@ -1866,7 +1746,6 @@ void gate_audio_module::activate()
     // set all filters and strips
     gate.activate();
     params_changed();
-    meters.reset();
 }
 void gate_audio_module::deactivate()
 {
@@ -1883,13 +1762,13 @@ void gate_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_in, param_meter_out, param_gating};
+    int clip[] = {param_clip_in, param_clip_out, -1};
+    meters.init(params, meter, clip, 3, srate);
 }
 
 uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -1897,10 +1776,10 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
         gate.update_curve();
@@ -1926,22 +1805,15 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-
+            
+            float values[] = {std::max(inL, inR), std::max(outL, outR), gate.get_expander_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
     }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_gating] != NULL) {
-            *params[param_gating] = 1.0f;
-        }
-    } else {
-        if(params[param_gating] != NULL) {
-            *params[param_gating] = gate.get_expander_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 bool gate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -1976,7 +1848,6 @@ sidechaingate_audio_module::sidechaingate_audio_module()
     f1_freq_old = f2_freq_old = f1_level_old = f2_level_old = 0;
     f1_freq_old1 = f2_freq_old1 = f1_level_old1 = f2_level_old1 = 0;
     sc_mode_old = sc_mode_old1 = WIDEBAND; // doesn't matter as long as it's sane
-    meters.reset();
 }
 
 void sidechaingate_audio_module::activate()
@@ -1985,7 +1856,6 @@ void sidechaingate_audio_module::activate()
     // set all filters and strips
     gate.activate();
     params_changed();
-    meters.reset();
 }
 void sidechaingate_audio_module::deactivate()
 {
@@ -2152,13 +2022,13 @@ void sidechaingate_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
-    meters.set_sample_rate(srate);
+    int meter[] = {param_meter_in, param_meter_out, param_gating};
+    int clip[] = {param_clip_in, param_clip_out, -1};
+    meters.init(params, meter, clip, 3, srate);
 }
 
 uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.5f;
     numsamples += offset;
     if(bypass) {
@@ -2180,10 +2050,10 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             }
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_offset);
     } else {
         // process
 
@@ -2297,27 +2167,20 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-
+            
+            float values[] = {std::max(inL, inR), std::max(outL, outR), gate.get_expander_level()};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
         f1L.sanitize();
         f1R.sanitize();
         f2L.sanitize();
         f2R.sanitize();
 
     }
-    // draw strip meter
-    if(bypass > 0.5f) {
-        if(params[param_gating] != NULL) {
-            *params[param_gating] = 1.0f;
-        }
-    } else {
-        if(params[param_gating] != NULL) {
-            *params[param_gating] = gate.get_expander_level();
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -2372,15 +2235,6 @@ multibandgate_audio_module::multibandgate_audio_module()
 {
     is_active = false;
     srate = 0;
-    // zero all displays
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL  = 0.f;
-    meter_inR  = 0.f;
-    meter_outL = 0.f;
-    meter_outR = 0.f;
     crossover.init(2, 4, 44100);
 }
 
@@ -2443,19 +2297,14 @@ void multibandgate_audio_module::set_sample_rate(uint32_t sr)
     }
     // set srate of crossover
     crossover.set_sample_rate(srate);
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR,
+                   param_output0, param_gating0,
+                   param_output1, param_gating1,
+                   param_output2, param_gating2,
+                   param_output3, param_gating3 };
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, 12, srate);
 }
-
-#define BYPASSED_GATING(index) \
-    if(params[param_gating##index] != NULL) \
-        *params[param_gating##index] = 1.0; \
-    if(params[param_output##index] != NULL) \
-        *params[param_output##index] = 0.0;
-
-#define ACTIVE_GATING(index) \
-    if(params[param_gating##index] != NULL) \
-        *params[param_gating##index] = gate[index].get_expander_level(); \
-    if(params[param_output##index] != NULL) \
-        *params[param_output##index] = gate[index].get_output_level();
 
 uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
@@ -2468,29 +2317,12 @@ uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsample
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        clip_inL    = 0.f;
-        clip_inR    = 0.f;
-        clip_outL   = 0.f;
-        clip_outR   = 0.f;
-        meter_inL  = 0.f;
-        meter_inR  = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
     } else {
         // process all strips
-
-        // let meters fall a bit
-        clip_inL    -= std::min(clip_inL,  numsamples);
-        clip_inR    -= std::min(clip_inR,  numsamples);
-        clip_outL   -= std::min(clip_outL, numsamples);
-        clip_outR   -= std::min(clip_outR, numsamples);
-        meter_inL = 0.f;
-        meter_inR = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -2526,59 +2358,19 @@ uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsample
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            // clip LED's
-            if(inL > 1.f) {
-                clip_inL  = srate >> 3;
-            }
-            if(inR > 1.f) {
-                clip_inR  = srate >> 3;
-            }
-            if(outL > 1.f) {
-                clip_outL = srate >> 3;
-            }
-            if(outR > 1.f) {
-                clip_outR = srate >> 3;
-            }
-            // set up in / out meters
-            if(inL > meter_inL) {
-                meter_inL = inL;
-            }
-            if(inR > meter_inR) {
-                meter_inR = inR;
-            }
-            if(outL > meter_outL) {
-                meter_outL = outL;
-            }
-            if(outR > meter_outR) {
-                meter_outR = outR;
-            }
+            float values[] = {inL, inR, outL, outR,
+                *params[param_bypass0] > 0.5f ? 0 : gate[0].get_output_level(), *params[param_bypass0] > 0.5f ? 1 : gate[0].get_expander_level(),
+                *params[param_bypass1] > 0.5f ? 0 : gate[1].get_output_level(), *params[param_bypass1] > 0.5f ? 1 : gate[1].get_expander_level(),
+                *params[param_bypass2] > 0.5f ? 0 : gate[2].get_output_level(), *params[param_bypass2] > 0.5f ? 1 : gate[2].get_expander_level(),
+                *params[param_bypass3] > 0.5f ? 0 : gate[3].get_output_level(), *params[param_bypass3] > 0.5f ? 1 : gate[3].get_expander_level() };
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
 
     } // process all strips (no bypass)
-
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
-    // draw strip meters
-    if(bypass > 0.5f) {
-        BYPASSED_GATING(0)
-        BYPASSED_GATING(1)
-        BYPASSED_GATING(2)
-        BYPASSED_GATING(3)
-    } else {
-        ACTIVE_GATING(0)
-        ACTIVE_GATING(1)
-        ACTIVE_GATING(2)
-        ACTIVE_GATING(3)
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -2639,14 +2431,6 @@ bool multibandgate_audio_module::get_layers(int index, int generation, unsigned 
 
 transientdesigner_audio_module::transientdesigner_audio_module() {
     active          = false;
-    clip_inL        = 0.f;
-    clip_inR        = 0.f;
-    clip_outL       = 0.f;
-    clip_outR       = 0.f;
-    meter_inL       = 0.f;
-    meter_inR       = 0.f;
-    meter_outL      = 0.f;
-    meter_outR      = 0.f;
     pixels          = 0;
     pbuffer_pos     = 0;
     pbuffer_sample  = 0;
@@ -2685,39 +2469,24 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         float R = ins[1][i];
         float Lin = ins[0][i];
         float Rin = ins[1][i];
+        meter_inL   = 0.f;
+        meter_inR   = 0.f;
+        meter_outL  = 0.f;
+        meter_outR  = 0.f;
         // get average value of input
         float s = (fabs(L) + fabs(R)) / 2;
         if(*params[param_bypass] > 0.5) {
             outs[0][i]  = ins[0][i];
             outs[1][i]  = ins[1][i];
-            clip_inL    = 0.f;
-            clip_inR    = 0.f;
-            clip_outL   = 0.f;
-            clip_outR   = 0.f;
-            meter_inL   = 0.f;
-            meter_inR   = 0.f;
-            meter_outL  = 0.f;
-            meter_outR  = 0.f;
-        } else {
-            // let meters fall a bit
-            clip_inL    -= std::min(clip_inL,  numsamples);
-            clip_inR    -= std::min(clip_inR,  numsamples);
-            clip_outL   -= std::min(clip_outL, numsamples);
-            clip_outR   -= std::min(clip_outR, numsamples);
-            meter_inL    = 0.f;
-            meter_inR    = 0.f;
-            meter_outL   = 0.f;
-            meter_outR   = 0.f;
             
+        } else {
             // levels in
             L *= *params[param_level_in];
             R *= *params[param_level_in];
             
             // GUI stuff
-            if(L > meter_inL) meter_inL = L;
-            if(R > meter_inR) meter_inR = R;
-            if(L > 1.f) clip_inL  = srate >> 3;
-            if(R > 1.f) clip_inR  = srate >> 3;
+            meter_inL = L;
+            meter_inR = R;
             
             // transient designer
             float trans = transients.process(s);
@@ -2736,11 +2505,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             outs[0][i] = L;
             outs[1][i] = R;
             
-            // clip LED's
-            if(L > 1.f) clip_outL = srate >> 3;
-            if(R > 1.f) clip_outR = srate >> 3;
-            if(L > meter_outL) meter_outL = L;
-            if(R > meter_outR) meter_outR = R;
+            meter_outL = L;
+            meter_outR = R;
         }
         // fill pixel buffer
         if (pbuffer_available) {
@@ -2781,16 +2547,10 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             attack_pos = (pbuffer_pos - diff + pbuffer_size) % pbuffer_size;
             attcount = 0;
         }
+        float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
+        meters.process(values);
     }
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -2799,6 +2559,9 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     attcount = srate / 5;
     transients.set_sample_rate(srate);
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {

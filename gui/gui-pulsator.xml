@@ -1,7 +1,7 @@
 <vbox spacing="8">
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
-        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
+        <knob param="level_in" type="1" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
         <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
@@ -27,7 +27,7 @@
         <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
         <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
+        <knob param="level_out" type="1" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="20">

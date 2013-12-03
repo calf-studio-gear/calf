@@ -29,6 +29,7 @@
 #include "giface.h"
 #include "metadata.h"
 #include "multichorus.h"
+#include "plugin_tools.h"
 
 namespace calf_plugins {
 
@@ -181,12 +182,11 @@ public:
 class pulsator_audio_module: public audio_module<pulsator_metadata>, public frequency_response_line_graph  {
 private:
     typedef pulsator_audio_module AM;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
-    float meter_inL, meter_inR, meter_outL, meter_outR;
     float offset_old;
     int mode_old, amount_old;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;

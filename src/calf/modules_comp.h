@@ -138,8 +138,8 @@ public:
 class compressor_audio_module: public audio_module<compressor_metadata>, public line_graph_iface  {
 private:
     typedef compressor_audio_module AM;
-    stereo_in_out_metering<compressor_metadata> meters;
     gain_reduction_audio_module compressor;
+    vumeters meters;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -186,9 +186,9 @@ private:
     CalfScModes sc_mode_old, sc_mode_old1;
     mutable bool redraw_graph;
     float f1_active, f2_active;
-    stereo_in_out_metering<sidechaincompressor_metadata> meters;
     gain_reduction_audio_module compressor;
     dsp::biquad_d2<float> f1L, f1R, f2L, f2R;
+    vumeters meters;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -218,11 +218,11 @@ private:
     bool solo[strips];
     float xout[strips], xin[2];
     bool no_solo;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
     int mode;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;
@@ -246,8 +246,8 @@ public:
 class monocompressor_audio_module: public audio_module<monocompressor_metadata>, public line_graph_iface  {
 private:
     typedef monocompressor_audio_module AM;
-    mono_in_out_metering<monocompressor_metadata> meters;
     gain_reduction2_audio_module monocompressor;
+    vumeters meters;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -277,10 +277,10 @@ private:
     mutable float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old, f2_q_old;
     mutable float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1, f2_q_old1;
     uint32_t detected_led;
-    float detected, clip_out;
-    uint32_t clip_led;
+    float detected;
     gain_reduction_audio_module compressor;
     dsp::biquad_d2<float> hpL, hpR, lpL, lpR, pL, pR;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;
@@ -303,8 +303,8 @@ public:
 class gate_audio_module: public audio_module<gate_metadata>, public line_graph_iface  {
 private:
     typedef gate_audio_module AM;
-    stereo_in_out_metering<gate_metadata> meters;
     expander_audio_module gate;
+    vumeters meters;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -351,9 +351,9 @@ private:
     CalfScModes sc_mode_old, sc_mode_old1;
     mutable bool redraw_graph;
     float f1_active, f2_active;
-    stereo_in_out_metering<sidechaingate_metadata> meters;
     expander_audio_module gate;
     dsp::biquad_d2<float> f1L, f1R, f2L, f2R;
+    vumeters meters;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -384,11 +384,11 @@ private:
     bool solo[strips];
     float xout[strips], xin[2];
     bool no_solo;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     expander_audio_module gate[strips];
     dsp::crossover crossover;
     int mode;
+    vumeters meters;
 public:
     uint32_t srate;
     bool is_active;
@@ -415,7 +415,6 @@ class transientdesigner_audio_module:
     typedef transientdesigner_audio_module AM;
     uint32_t srate;
     bool active;
-    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::transients transients;
     int display_old;
@@ -430,6 +429,7 @@ class transientdesigner_audio_module:
     uint32_t attcount;
     int attack_pos;
     float display_max;
+    vumeters meters;
 public:
     transientdesigner_audio_module();
     void params_changed();

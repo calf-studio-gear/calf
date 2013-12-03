@@ -42,17 +42,24 @@
     
     <if cond="directlink">
         <frame label="Frequency Response" attach-x="1" attach-y="0">
-            <table cols="2" rows="1">
-                <line-graph attach-x="0" attach-y="1" refresh="1" height="200" width="500" param="bypass" expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="12" handle1-x="ls_freq" handle1-y="ls_level" label1="LS" active1="ls_active" handle2-x="p1_freq" handle2-y="p1_level" handle2-z="p1_q" label2="I" active2="p1_active" handle3-x="p2_freq" handle3-y="p2_level" handle3-z="p2_q" label3="II" active3="p2_active" handle4-x="p3_freq" handle4-y="p3_level" handle4-z="p3_q" label4="III" active4="p3_active" handle5-x="hs_freq" handle5-y="hs_level" label5="HS" active5="hs_active"/>
-                <vbox attach-x="1" attach-y="1" spacing="3" expand-x="0" fill-x="0">
+            <table cols="3" rows="1">
+                <line-graph attach-x="1" attach-y="1" refresh="1" height="200" width="500" param="ls_freq" expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="12" handle1-x="ls_freq" handle1-y="ls_level" label1="LS" active1="ls_active" handle2-x="p1_freq" handle2-y="p1_level" handle2-z="p1_q" label2="I" active2="p1_active" handle3-x="p2_freq" handle3-y="p2_level" handle3-z="p2_q" label3="II" active3="p2_active" handle4-x="p3_freq" handle4-y="p3_level" handle4-z="p3_q" label4="III" active4="p3_active" handle5-x="hs_freq" handle5-y="hs_level" label5="HS" active5="hs_active"/>
+                <vbox attach-x="2" attach-y="1" spacing="3" expand-x="0" fill-x="0">
                     <label text="Zoom"/>
                     <vscale param="zoom" inverted="1"/>
                     <value param="zoom"/>
                 </vbox>
-                <align attach-x="0" attach-y="0" align-x="1.0">
-                    <hbox expand="0" fill="0" spacing="10">
-                        <label text="Individual Graphs"/>
-                        <toggle size="1" param="individuals"/>
+                <align attach-x="1" attach-y="0" align-x="1.0">
+                    <hbox expand="0" fill="0" spacing="30">
+                        <hbox expand="0" fill="0" spacing="10">
+                            <label text="Individual Graphs"/>
+                            <toggle size="1" param="individuals"/>
+                        </hbox>
+                        <hbox expand="0" fill="0" spacing="10">
+                            <label text="Analyzer"/>
+                            <toggle size="1" param="analyzer"/>
+                            <combo param="analyzer_mode"/>
+                        </hbox>
                     </hbox>
                 </align>
             </table>

@@ -30,6 +30,7 @@
 #include "metadata.h"
 #include "plugin_tools.h"
 #include "loudness.h"
+#include "analyzer.h"
 
 namespace calf_plugins {
 
@@ -49,15 +50,17 @@ public:
     using AM::param_count;
     using AM::PeakBands;
 private:
+    analyzer _analyzer;
     enum { graph_param_count = BaseClass::last_graph_param - BaseClass::first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     float hp_mode_old, hp_freq_old;
     float lp_mode_old, lp_freq_old;
     float ls_level_old, ls_freq_old;
     float hs_level_old, hs_freq_old;
     int indiv_old;
+    bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
-    dual_in_out_metering<BaseClass> meters;
+    vumeters meters;
     CalfEqMode hp_mode, lp_mode;
     dsp::biquad_d2<float> hp[3][2], lp[3][2];
     dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
@@ -77,11 +80,15 @@ public:
     void params_changed();
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int index, double freq) const;
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
-        meters.set_sample_rate(sr);
+        _analyzer.set_sample_rate(sr);
+        int meter[] = {AM::param_meter_inL, AM::param_meter_inR,  AM::param_meter_outL, AM::param_meter_outR};
+        int clip[] = {AM::param_clip_inL, AM::param_clip_inR, AM::param_clip_outL, AM::param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
     }
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
@@ -259,25 +266,27 @@ private:
 };
 
 /**********************************************************************
- * PHONO EQ by Damien Zammit 
+ * EMPHASIS by Damien Zammit 
 **********************************************************************/
 
-class phonoeq_audio_module: public audio_module<phonoeq_metadata>, public frequency_response_line_graph {
+class emphasis_audio_module: public audio_module<emphasis_metadata>, public frequency_response_line_graph {
 public:
-    dual_in_out_metering<phonoeq_metadata> meters;
     dsp::riaacurve riaacurvL, riaacurvR;
-    int mode, type;
+    int mode, type, bypass;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
-    phonoeq_audio_module();
+    vumeters meters;
+    emphasis_audio_module();
     void activate();
     void deactivate();
     void params_changed();
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
-        meters.set_sample_rate(sr);
+        int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+        int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
     }
     virtual float freq_gain(int index, double freq) const {
         return riaacurvL.freq_gain(freq, (float)srate);
@@ -308,8 +317,6 @@ public:
     bool is_active;
     float * buffer;
     float in[channels];
-    float meter[channels][bands];
-    float meter_in[channels];
     unsigned int pos;
     unsigned int buffer_size;
     int last_peak;
@@ -318,6 +325,7 @@ public:
         if(x > 0) return 1.f;
         return 0.f;
     }
+    vumeters meters;
     dsp::crossover crossover;
     xover_audio_module();
     void activate();

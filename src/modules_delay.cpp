@@ -50,6 +50,9 @@ void reverb_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     reverb.setup(sr);
     amount.set_sample_rate(sr);
+    int meter[] = {par_meter_wet, par_meter_out};
+    int clip[] = {-1, par_clip};
+    meters.init(params, meter, clip, 2, srate);
 }
 
 void reverb_audio_module::params_changed()
@@ -88,20 +91,14 @@ uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             clip = srate >> 3;
         }
     }
+    meters.fall(numsamples);
     reverb.extra_sanitize();
     left_lo.sanitize();
     left_hi.sanitize();
     right_lo.sanitize();
     right_hi.sanitize();
-    if(params[par_meter_wet] != NULL) {
-        *params[par_meter_wet] = meter_wet;
-    }
-    if(params[par_meter_out] != NULL) {
-        *params[par_meter_out] = meter_out;
-    }
-    if(params[par_clip] != NULL) {
-        *params[par_clip] = clip;
-    }
+    float values[] = {meter_wet, meter_out};
+    meters.process(values);
     return outputs_mask;
 }
 

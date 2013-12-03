@@ -33,32 +33,12 @@ G_BEGIN_DECLS
 #define CALF_KNOB_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_KNOB, CalfKnobClass))
 #define CALF_IS_KNOB_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_KNOB))
 
-struct CalfKnobSizes
-{
-    int size;
-    float light_rad;
-    float mask_rad;
-    float mask_width;
-    double dash[2];
-    int dash_length;
-    float dot_rad;
-    float dot_width;
-    float dot_length;
-} 
 struct CalfKnob
 {
     GtkRange parent;
     int knob_type;
     int knob_size;
-    int size;
     double start_x, start_y, last_y, start_value, default_value;
-    const CalfKnobSizes sizes[4] = {
-         20,  8,  8, 1.5, {1, 0}, 0, 15,   1,   1,
-         40,  9, 18,   2, {2, 2}, 2, 15,   1,   3,
-         60, 10, 22,   3, {3, 3}, 2, 18,   1, 2.5,
-         80, 12, 32,   4, {3, 3}, 2, 28,   1,   3,
-        100, 14, 44,   4, {4, 4}, 2, 38, 1.5,   4
-    };
 };
 
 struct CalfKnobClass

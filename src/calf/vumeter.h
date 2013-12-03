@@ -36,6 +36,8 @@ struct vumeter
     float clip;
     /// Falloff of clip indicator (b1 coefficient of a 1-pole filter); set to 1 if no falloff is required (manual reset of clip indicator)
     float clip_falloff;
+    /// Amount of samples > 1.f; Clipping occurs if 3 samples are over 0dB
+    int count_over;
     
     vumeter()
     {
@@ -76,12 +78,7 @@ struct vumeter
     /// Update peak meter based on louder of two input signals
     inline void update_stereo(const float *src1, const float *src2, unsigned int len)
     {
-        // "Age" the old level by falloff^length
-        level *= pow(falloff, len);
-        // Same for clip level (using different fade constant)
-        clip *= pow(clip_falloff, len);
-        dsp::sanitize(level);
-        dsp::sanitize(clip);
+        fall(len);
         // Process input samples - to get peak value, take a max of all values in the input signal and "aged" old peak
         // Clip is set to 1 if any sample is out-of-range, if no clip occurs, the "aged" value is assumed
         if (src1)
@@ -91,14 +88,26 @@ struct vumeter
     }
     inline void run_sample_loop(const float *src, unsigned int len)
     {
-        float tmp = level;
-        for (unsigned int i = 0; i < len; i++) {
-            float sig = fabs(src[i]);
-            tmp = std::max(tmp, sig);
-            if (sig >= 1.f)
-                clip = 1.f;
-        }
-        level = tmp;
+        for (unsigned int i = 0; i < len; i++)
+            process(src[i]);
+    }
+    inline void process(const float value)
+    {
+        level = std::max(level, (float)fabs(value));
+        if (level > 1.f)
+            count_over ++;
+        else
+            count_over = 0;
+        if (count_over >= 3)
+            clip = 1.f;
+    }
+    void fall(unsigned int len) {
+        // "Age" the old level by falloff^length
+        level *= pow(falloff, len);
+        // Same for clip level (using different fade constant)
+        clip *= pow(clip_falloff, len);
+        dsp::sanitize(level);
+        dsp::sanitize(clip);
     }
     /// Update clip meter as if update was called with all-zero input signal
     inline void update_zeros(unsigned int len)
@@ -108,38 +117,6 @@ struct vumeter
         dsp::sanitize(level);
         dsp::sanitize(clip);
     }
-};
-
-struct dual_vumeter
-{
-    vumeter left, right;
-    
-    inline void update_stereo(const float *src1, const float *src2, unsigned int len)
-    {
-        left.update_stereo(src1, NULL, len);
-        right.update_stereo(NULL, src2, len);
-    }
-    inline void update_zeros(unsigned int len)
-    {
-        left.update_zeros(len);
-        right.update_zeros(len);
-    }
-    inline void reset()
-    {
-        left.reset();
-        right.reset();
-    }
-    inline void set_falloff(double time_20dB, double sample_rate)
-    {
-        left.set_falloff(time_20dB, sample_rate);
-        right.copy_falloff(left);
-    }
-    inline void copy_falloff(const dual_vumeter &src)
-    {
-        left.copy_falloff(src.left);
-        right.copy_falloff(src.right);
-    }
-
 };
 
 };

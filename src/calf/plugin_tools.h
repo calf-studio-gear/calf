@@ -28,142 +28,42 @@
 
 namespace calf_plugins {
 
-template<class Meter>
-struct in_out_metering_base
-{
-    typedef Meter meter;
-    meter vumeter_in, vumeter_out;
-    in_out_metering_base()
-    {
-        reset();
-    }
-    void reset()
-    {
-        vumeter_in.reset();
-        vumeter_out.reset();
-    }
-    void set_sample_rate(double sample_rate)
-    {
-        vumeter_in.set_falloff(0.f, sample_rate);
-        vumeter_out.copy_falloff(vumeter_in);
-    }
-};
-    
-/// Universal single stereo level metering for a specific plugin
-template<class Metadata>
-class stereo_in_out_metering: public in_out_metering_base<dsp::vumeter>
+class vumeters
 {
 public:
-    inline void process(float *const *params, const float *const *inputs, const float *const *outputs, unsigned int offset, unsigned int nsamples)
-    {
-        if (params[Metadata::param_meter_in] || params[Metadata::param_clip_in]) {
-            if (inputs)
-                vumeter_in.update_stereo(inputs[0] ? inputs[0] + offset : NULL, inputs[1] ? inputs[1] + offset : NULL, nsamples);
-            else
-                vumeter_in.update_zeros(nsamples);
-            if (params[Metadata::param_meter_in])
-                *params[Metadata::param_meter_in] = vumeter_in.level;
-            if (params[Metadata::param_clip_in])
-                *params[Metadata::param_clip_in] = vumeter_in.clip > 0 ? 1.f : 0.f;
+    static const int max = 128;
+    int levels[max];
+    int clips[max];
+    dsp::vumeter *meters[max];
+    float *const *params;
+    int amount;
+    vumeters() {};
+    void init(float *const *prms, int *lvls, int *clps, int length, uint32_t srate) {
+        length = std::min(max, length);
+        for (int i = 0; i < length; i++) {
+            levels[i] = lvls[i];
+            clips[i] = clps[i];
+            meters[i] = new dsp::vumeter;
+            meters[i]->set_falloff(1.f, srate);
         }
-        if (params[Metadata::param_meter_out] || params[Metadata::param_clip_out]) {
-            if (outputs)
-                vumeter_out.update_stereo(outputs[0] ? outputs[0] + offset : NULL, outputs[1] ? outputs[1] + offset : NULL, nsamples);
-            else
-                vumeter_out.update_zeros(nsamples);
-            if (params[Metadata::param_meter_out])
-                *params[Metadata::param_meter_out] = vumeter_out.level;
-            if (params[Metadata::param_clip_out])
-                *params[Metadata::param_clip_out] = vumeter_out.clip > 0 ? 1.f : 0.f;
-        }
+        amount = length;
+        params = prms;
     }
-    void bypassed(float *const *params, unsigned int nsamples)
-    {
-        reset();
-        process(params, NULL, NULL, 0, nsamples);
-    }
-};
-
-/// Universal single stereo level metering for a specific plugin
-template<class Metadata>
-class mono_in_out_metering: public in_out_metering_base<dsp::vumeter>
-{
-public:
-    inline void process(float *const *params, const float *const *inputs, const float *const *outputs, unsigned int offset, unsigned int nsamples)
-    { 
-        if (params[Metadata::param_meter_in] || params[Metadata::param_clip_in]) {
-            if (inputs)
-                vumeter_in.update_stereo(inputs[0] ? inputs[0] + offset : NULL, NULL, nsamples);
-            else
-                vumeter_in.update_zeros(nsamples);
-            if (params[Metadata::param_meter_in])
-                *params[Metadata::param_meter_in] = vumeter_in.level;
-            if (params[Metadata::param_clip_in])
-                *params[Metadata::param_clip_in] = vumeter_in.clip > 0 ? 1.f : 0.f;             
-        }   
-        if (params[Metadata::param_meter_out] || params[Metadata::param_clip_out]) {        
-            if (outputs)
-                vumeter_out.update_stereo(outputs[0] ? outputs[0] + offset : NULL, NULL, nsamples);
-            else
-                vumeter_out.update_zeros(nsamples);
-            if (params[Metadata::param_meter_out])
-                *params[Metadata::param_meter_out] = vumeter_out.level;
-            if (params[Metadata::param_clip_out])
-                *params[Metadata::param_clip_out] = vumeter_out.clip > 0 ? 1.f : 0.f;           
-        }   
-    }           
-    void bypassed(float *const *params, unsigned int nsamples)
-    {           
-        reset();
-        process(params, NULL, NULL, 0, nsamples);
-    }
-};  
-
-
-/// Universal dual level metering for a specific plugin
-template<class Metadata>
-class dual_in_out_metering: public in_out_metering_base<dsp::dual_vumeter>
-{
-public:
-    inline void process(float *const *params, const float *const *inputs, const float *const *outputs, unsigned int offset, unsigned int nsamples)
-    {
-        if (params[Metadata::param_meter_inL] || params[Metadata::param_clip_inL] || params[Metadata::param_meter_inR] || params[Metadata::param_clip_inR]) {
-            if (inputs)
-                vumeter_in.update_stereo(inputs[0] ? inputs[0] + offset : NULL, inputs[1] ? inputs[1] + offset : NULL, nsamples);
-            else
-                vumeter_in.update_zeros(nsamples);
-            if (params[Metadata::param_meter_inL])
-                *params[Metadata::param_meter_inL] = vumeter_in.left.level;
-            if (params[Metadata::param_meter_inR])
-                *params[Metadata::param_meter_inR] = vumeter_in.right.level;
-            if (params[Metadata::param_clip_inL])
-                *params[Metadata::param_clip_inL] = vumeter_in.left.clip > 0 ? 1.f : 0.f;
-            if (params[Metadata::param_clip_inR])
-                *params[Metadata::param_clip_inR] = vumeter_in.right.clip > 0 ? 1.f : 0.f;
-        }
-        if (params[Metadata::param_meter_outL] || params[Metadata::param_clip_outL] || params[Metadata::param_meter_outR] || params[Metadata::param_clip_outR]) {
-            if (outputs)
-                vumeter_out.update_stereo(outputs[0] ? outputs[0] + offset : NULL, outputs[1] ? outputs[1] + offset : NULL, nsamples);
-            else
-                vumeter_out.update_zeros(nsamples);
-            if (params[Metadata::param_meter_outL])
-                *params[Metadata::param_meter_outL] = vumeter_out.left.level;
-            if (params[Metadata::param_meter_outR])
-                *params[Metadata::param_meter_outR] = vumeter_out.right.level;
-            if (params[Metadata::param_clip_outL])
-                *params[Metadata::param_clip_outL] = vumeter_out.left.clip > 0 ? 1.f : 0.f;
-            if (params[Metadata::param_clip_outR])
-                *params[Metadata::param_clip_outR] = vumeter_out.right.clip > 0 ? 1.f : 0.f;
+    void process(float *values) {
+        for (int i = 0; i < amount; i++) {
+            meters[i]->process(values[i]);
+            if (levels[i] >= 0)
+                *params[levels[i]] = meters[i]->level;
+            if (clips[i] >= 0)
+                *params[clips[i]] = meters[i]->clip > 0 ? 1.f : 0.f;
         }
     }
-    void bypassed(float *const *params, unsigned int nsamples)
-    {
-        reset();
-        process(params, NULL, NULL, 0, nsamples);
+    void fall(unsigned int numsamples) {
+        for (int i = 0; i < amount; i++)
+            meters[i]->fall(numsamples);
     }
 };
 
 };
 
 #endif
-

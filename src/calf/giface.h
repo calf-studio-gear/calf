@@ -147,6 +147,8 @@ struct parameter_properties
 
 struct cairo_iface
 {
+    cairo_t *context;
+    int size_x, size_y, pad_x, pad_y;
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
     virtual void set_line_width(float width) = 0;
     virtual void set_dash(const double *dash, int length) = 0;
@@ -210,7 +212,7 @@ struct line_graph_iface
     /// @param data buffer for normalized output values
     /// @param x number of points direction to fill in x
     /// @param y number of points direction to fill in y
-    virtual bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, cairo_iface *context) const { return false; }
+    virtual bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const { return false; }
     
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
@@ -730,7 +732,7 @@ public:
 };
 
 /// set drawing color based on channel index (0 or 1)
-void set_channel_color(cairo_iface *context, int channel, float alpha = 0.5);
+void set_channel_color(cairo_iface *context, int channel, float alpha = 0.6);
 void set_channel_dash(cairo_iface *context, int channel);
 
 struct preset_access_iface

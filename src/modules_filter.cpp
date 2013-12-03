@@ -55,6 +55,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
+    analyzer_old = false;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -70,7 +71,6 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::activate()
     is_active = true;
     // set all filters
     params_changed();
-    meters.reset();
 }
 
 template<class BaseClass, bool has_lphp>
@@ -170,6 +170,17 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
             redraw_graph = true;
         old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
+    
+    _analyzer.set_params(
+        256, 1, 6, 0, 1,
+        *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
+        0, 0, 15, 2, 0, 0
+    );
+    
+    if ((bool)*params[AM::param_analyzer_active] != analyzer_old) {
+        redraw_graph = true;
+        analyzer_old = (bool)*params[AM::param_analyzer_active];
+    }
 }
 
 template<class BaseClass, bool has_lphp>
@@ -251,18 +262,17 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
         if (keep_gliding)
             params_changed();
     }
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     numsamples += offset;
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            _analyzer.process(0, 0);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
         while(offset < numsamples) {
@@ -312,14 +322,19 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             outL = procL * *params[AM::param_level_out];
             outR = procR * *params[AM::param_level_out];
             
+            // analyzer
+            _analyzer.process((inL + inR) / 2.f, (outL + outR) / 2.f);
+        
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-                        
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
         // clean up
         for(int i = 0; i < 3; ++i) {
             hp[i][0].sanitize();
@@ -334,6 +349,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             pR[i].sanitize();
         }
     }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -356,65 +372,93 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    int max = PeakBands + 2 + (has_lphp ? 2 : 0);
-    
-    if (!is_active or phase
-    or (subindex and !*params[AM::param_individuals])
-    or (subindex > max and *params[AM::param_individuals]))
-        return false;
-    
-    // first graph is the overall frequency response graph
-    if (!subindex)
-        return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
-    
-    // get out if max band is reached
-    if (last_peak >= max) {
-        last_peak = 0;
-        return false;
-    }
-    
-    // get the next filter to draw a curve for and leave out inactive
-    // filters
-    while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
-        last_peak ++;
-    if (last_peak == PeakBands and !*params[AM::param_ls_active])
-        last_peak ++;
-    if (last_peak == PeakBands + 1 and !*params[AM::param_hs_active])
-        last_peak ++;
-    if (has_lphp and last_peak == PeakBands + 2 and !*params[AM::param_hp_active])
-        last_peak ++;
-    if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
-        last_peak ++;
-    
-    // get out if max band is reached
-    if (last_peak >= max) {
-        last_peak = 0;
-        return false;
-    }
-    
-    // draw the individual curve of the actual filter
-    for (int i = 0; i < points; i++) {
-        double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        if (last_peak < PeakBands) {
-            data[i] = pL[last_peak].freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands) {
-            data[i] = lsL.freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands + 1) {
-            data[i] = hsL.freq_gain(freq, (float)srate);
-        } else if (last_peak == PeakBands + 2 and has_lphp) {
-            data[i] = adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
-        } else if (last_peak == PeakBands + 3 and has_lphp) {
-            data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
+    if (phase and *params[AM::param_analyzer_active]) {
+        bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+        if (*params[AM::param_analyzer_mode] == 2) {
+            set_channel_color(context, subindex ? 0 : 1, 0.15);
+        } else {
+            context->set_source_rgba(0,0,0,0.1);
         }
-        data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        return r;
+    } else if (phase and !*params[AM::param_analyzer_active]) {
+        return false;
+    } else {
+        int max = PeakBands + 2 + (has_lphp ? 2 : 0);
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals]))
+            return false;
+        
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        
+        // get out if max band is reached
+        if (last_peak >= max) {
+            last_peak = 0;
+            return false;
+        }
+        
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
+            last_peak ++;
+        if (last_peak == PeakBands and !*params[AM::param_ls_active])
+            last_peak ++;
+        if (last_peak == PeakBands + 1 and !*params[AM::param_hs_active])
+            last_peak ++;
+        if (has_lphp and last_peak == PeakBands + 2 and !*params[AM::param_hp_active])
+            last_peak ++;
+        if (has_lphp and last_peak == PeakBands + 3 and !*params[AM::param_lp_active])
+            last_peak ++;
+        
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            return false;
+        }
+         //else if *params[param_analyzer_active]) {
+            //bool goon = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+            //if (!goon)
+                //last_peak = 0;
+            //return goon;
+        //}
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands) {
+                data[i] = lsL.freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands + 1) {
+                data[i] = hsL.freq_gain(freq, (float)srate);
+            } else if (last_peak == PeakBands + 2 and has_lphp) {
+                data[i] = adjusted_lphp_gain(params, AM::param_hp_active, AM::param_hp_mode, hp[0][0], freq, (float)srate);
+            } else if (last_peak == PeakBands + 3 and has_lphp) {
+                data[i] = adjusted_lphp_gain(params, AM::param_lp_active, AM::param_lp_mode, lp[0][0], freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
     }
-    
-    last_peak ++;
-    *mode = 4;
-    context->set_source_rgba(0,0,0,0.075);
-    return true;
 }
-
+template<class BaseClass, bool has_lphp>
+bool equalizerNband_audio_module<BaseClass, has_lphp>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    redraw_graph = redraw_graph || !generation;
+    layers = *params[AM::param_analyzer_active] ? LG_REALTIME_GRAPH : 0;
+    layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+    redraw_graph |= (bool)*params[AM::param_analyzer_active];
+    bool r = redraw_graph;
+    redraw_graph = false;
+    return r;
+}
 
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
@@ -548,10 +592,10 @@ void filterclavier_audio_module::adjust_gain_according_to_filter_mode(int veloci
 }
 
 /**********************************************************************
- * PHONO EQ by Damien Zammit 
+ * EMPHASIS by Damien Zammit 
 **********************************************************************/
 
-phonoeq_audio_module::phonoeq_audio_module()
+emphasis_audio_module::emphasis_audio_module()
 {
     is_active = false;
     srate = 0;
@@ -560,31 +604,32 @@ phonoeq_audio_module::phonoeq_audio_module()
     type = -1;
 }
 
-void phonoeq_audio_module::activate()
+void emphasis_audio_module::activate()
 {
     is_active = true;
     // set all filters
     params_changed();
-    meters.reset();
 }
 
-void phonoeq_audio_module::deactivate()
+void emphasis_audio_module::deactivate()
 {
     is_active = false;
 }
 
-void phonoeq_audio_module::params_changed()
+void emphasis_audio_module::params_changed()
 {
-    if (mode != *params[param_mode] or type != *params[param_type])
+    if (mode != *params[param_mode] or type != *params[param_type] or bypass != *params[param_bypass])
         redraw_graph = true;
-    mode = *params[param_mode];
-    type = *params[param_type];
+    mode   = *params[param_mode];
+    type   = *params[param_type];
+    bypass = *params[param_bypass];
     riaacurvL.set(srate, mode, type);
     riaacurvR.set(srate, mode, type);
 }
 
-uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.f;
     if (!bypass)
     {
@@ -598,18 +643,16 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             numsamples -= 8;
         }
     }
-    uint32_t orig_offset = offset;
-    uint32_t orig_numsamples = numsamples;
     numsamples += offset;
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
             ++offset;
         }
-        // displays, too
-        meters.bypassed(params, orig_numsamples);
     } else {
         // process
         while(offset < numsamples) {
@@ -634,24 +677,29 @@ uint32_t phonoeq_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // send to output
             outs[0][offset] = outL;
             outs[1][offset] = outR;
-                        
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+            
             // next sample
             ++offset;
         } // cycle trough samples
-        meters.process(params, ins, outs, orig_offset, orig_numsamples);
         // clean up
         riaacurvL.sanitize();
         riaacurvR.sanitize();
     }
+    meters.fall(orig_numsamples);
     return outputs_mask;
 }
-bool phonoeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (phase or subindex)
         return false;
+    if (bypass)
+        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
-bool phonoeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool emphasis_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (phase)
         return false;
@@ -694,6 +742,20 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
+    int amount = AM::bands * AM::channels + AM::channels;
+    int meter[amount];
+    int clip[amount];
+    for(int b = 0; b < AM::bands; b++) {
+        for (int c = 0; c < AM::channels; c++) {
+            meter[b * AM::channels + c] = AM::param_meter_01 + b * params_per_band + c;
+            clip[b * AM::channels + c] = -1;
+        }
+    }
+    for (int c = 0; c < AM::channels; c++) {
+        meter[c + AM::bands * AM::channels] = AM::param_meter_0 + c;
+        clip[c + AM::bands * AM::channels] = -1;
+    }
+    meters.init(params, meter, clip, amount, srate);
 }
 template<class XoverBaseClass>
 void xover_audio_module<XoverBaseClass>::params_changed()
@@ -714,28 +776,15 @@ void xover_audio_module<XoverBaseClass>::params_changed()
 template<class XoverBaseClass>
 uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    // input meter reset
-    for (int c = 0; c < AM::channels; c++) {
-        meter_in[c] = 0.f;
-    }
-    
-    // reset all band meters
-    for (int b = 0; b < AM::bands; b++) {
-        for (int c = 0; c < AM::channels; c++) {
-            meter[c][b] = 0.f;
-        }
-    }
-    
     unsigned int targ = numsamples + offset;
     float xval;
-    
+    float values[AM::bands * AM::channels + AM::channels];
     while(offset < targ) {
         // cycle through samples
         
-        // level and in meters
+        // level
         for (int c = 0; c < AM::channels; c++) {
             in[c] = ins[c][offset] * *params[AM::param_level];
-            meter_in[c] = std::max(meter_in[c], in[c]);
         }
         crossover.process(in);
         
@@ -764,26 +813,22 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
                 // set value with phase to output
                 outs[ptr][offset] = *params[AM::param_phase1 + off] > 0.5 ? xval * -1 : xval;
                 
-                // metering
-                if (outs[ptr][offset] > meter[c][b])
-                    meter[c][b] = outs[ptr][offset];
+                // band meters
+                values[b * AM::channels + c] = outs[ptr][offset];
             }
         }
+        // in meters
+        for (int c = 0; c < AM::channels; c++) {
+            values[c + AM::bands * AM::channels] = ins[c][offset];
+        }
+        meters.process(values);
         // next sample
         ++offset;
         // delay buffer pos forward
         pos = (pos + AM::channels * AM::bands) % buffer_size;
         
     } // cycle trough samples
-    
-    // set all meters
-    for (int c = 0; c < AM::channels; c++) {
-        *params[AM::param_meter_0 + c] = meter_in[c];
-        for (int b = 0; b < AM::bands; b++) {
-            int off = b * params_per_band;
-            *params[AM::param_meter_01 + off + c] = meter[c][b];
-        }
-    }
+    meters.fall(numsamples);
     return outputs_mask;
 }
 

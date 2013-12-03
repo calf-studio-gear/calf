@@ -594,14 +594,6 @@ pulsator_audio_module::pulsator_audio_module()
 {
     is_active = false;
     srate = 0;
-    clip_inL    = 0.f;
-    clip_inR    = 0.f;
-    clip_outL   = 0.f;
-    clip_outR   = 0.f;
-    meter_inL   = 0.f;
-    meter_inR   = 0.f;
-    meter_outL  = 0.f;
-    meter_outR  = 0.f;
     mode_old    = -1;
     amount_old  = -1;
     offset_old  = -1;
@@ -645,6 +637,9 @@ void pulsator_audio_module::params_changed()
 void pulsator_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, sr);
 }
 
 uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -658,31 +653,13 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             outs[1][offset] = ins[1][offset];
             ++offset;
         }
-        // displays, too
-        clip_inL    = 0.f;
-        clip_inR    = 0.f;
-        clip_outL   = 0.f;
-        clip_outR   = 0.f;
-        meter_inL  = 0.f;
-        meter_inR  = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
-        
         // LFO's should go on
         lfoL.advance(numsamples);
         lfoR.advance(numsamples);
         
+        float values[] = {0, 0, 0, 0};
+        meters.process(values);
     } else {
-        
-        clip_inL    -= std::min(clip_inL,  numsamples);
-        clip_inR    -= std::min(clip_inR,  numsamples);
-        clip_outL   -= std::min(clip_outL, numsamples);
-        clip_outR   -= std::min(clip_outR, numsamples);
-        meter_inL = 0.f;
-        meter_inR = 0.f;
-        meter_outL = 0.f;
-        meter_outR = 0.f;
-        
         // process
         while(offset < samples) {
             // cycle through samples
@@ -714,51 +691,19 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             outs[0][offset] = outL;
             outs[1][offset] = outR;
             
-            // clip LED's
-            if(inL > 1.f) {
-                clip_inL  = srate >> 3;
-            }
-            if(inR > 1.f) {
-                clip_inR  = srate >> 3;
-            }
-            if(outL > 1.f) {
-                clip_outL = srate >> 3;
-            }
-            if(outR > 1.f) {
-                clip_outR = srate >> 3;
-            }
-            // set up in / out meters
-            if(inL > meter_inL) {
-                meter_inL = inL;
-            }
-            if(inR > meter_inR) {
-                meter_inR = inR;
-            }
-            if(outL > meter_outL) {
-                meter_outL = outL;
-            }
-            if(outR > meter_outR) {
-                meter_outR = outR;
-            }
-            
             // next sample
             ++offset;
             
             // advance lfo's
             lfoL.advance(1);
             lfoR.advance(1);
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+
         } // cycle trough samples
     }
-    // draw meters
-    SET_IF_CONNECTED(clip_inL)
-    SET_IF_CONNECTED(clip_inR)
-    SET_IF_CONNECTED(clip_outL)
-    SET_IF_CONNECTED(clip_outR)
-    SET_IF_CONNECTED(meter_inL)
-    SET_IF_CONNECTED(meter_inR)
-    SET_IF_CONNECTED(meter_outL)
-    SET_IF_CONNECTED(meter_outR)
-    
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
