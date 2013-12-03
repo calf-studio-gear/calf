@@ -333,7 +333,7 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
 
-    float scale = (event->state & GDK_SHIFT_MASK) ? 1000 : 100;
+    float scale = (event->state & GDK_SHIFT_MASK) ? 2500 : 250;
     gboolean moved = FALSE;
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
