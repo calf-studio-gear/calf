@@ -35,8 +35,8 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_KNOB(widget));
     
-    float widths[6]  = {0, 2, 3, 4, 4.5, 5};
-    float margins[6] = {0, 2, 3, 4, 5, 8};
+    float widths[6]  = {0, 2, 4, 4, 4.5, 5.5};
+    float margins[6] = {0, 2, 3, 4, 5, 7.5};
     float pins_m[6]  = {0, 4, 8, 20, 11, 21};
     float pins_s[6]  = {0, 3, 4, 3, 4, 5};
     

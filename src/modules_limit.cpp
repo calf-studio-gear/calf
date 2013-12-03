@@ -304,7 +304,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
-            float values[] = {0, 0, 0, 0};
+            float values[] = {0, 0, 0, 0, 1, 1, 1, 1};
             meters.process(values);
             ++offset;
         }
