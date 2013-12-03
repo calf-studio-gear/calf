@@ -98,7 +98,7 @@
                     <hbox>
                         <vbox>
                             <label param="release0"/>
-                            <knob param="release0" size="2" type="1" />
+                            <knob param="release0" size="4" type="1" />
                             <value param="effrelease0" />
                         </vbox>
                         <vbox>
@@ -108,7 +108,7 @@
                         </vbox>
                         <vbox>
                             <label param="weight0" />
-                            <knob param="weight0" size="2" type="1" />
+                            <knob param="weight0" size="1" type="1" />
                             <value param="weight0" />
                         </vbox>
                     </hbox>
