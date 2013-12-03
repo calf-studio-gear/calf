@@ -35,10 +35,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_KNOB(widget));
     
-    float widths[6]  = {0, 2, 4, 4, 4.5, 5.5};
+    float widths[6]  = {0, 2, 4, 4.5, 4.5, 5.5};
     float margins[6] = {0, 2, 3, 4, 5, 7.5};
-    float pins_m[6]  = {0, 4, 8, 20, 11, 21};
-    float pins_s[6]  = {0, 3, 4, 3, 4, 5};
+    float pins_m[6]  = {0, 4, 8, 10, 11, 21};
+    float pins_s[6]  = {0, 3, 4, 4.5, 4, 5};
     
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
@@ -174,7 +174,8 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_move_to(ctx, x1, y1);
     cairo_line_to(ctx, x2, y2);
     cairo_set_dash(ctx, dash, 0, 0);
-    cairo_set_source_rgba(ctx, 0,0,0,0.5);
+    float col = self->knob_size == 3 ? 1 : 0;
+    cairo_set_source_rgba(ctx, col, col, col,0.5);
     cairo_set_line_width(ctx, widths[self->knob_size] / 2.);
     cairo_stroke(ctx);
     
