@@ -65,11 +65,6 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     for (int i = 0; i < graph_param_count; i++)
         old_params_for_graph[i] = -1;
     redraw_graph = true;
-    _analyzer.set_params(
-        256, 1, 6, 0, 1,
-        1, // mode - will be updated anyway
-        0, 0, 15, 2, 0, 0
-    );
 }
 
 template<class BaseClass, bool has_lphp>
@@ -178,8 +173,11 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
     
-    if (_analyzer.set_mode(*params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1)))
-        _analyzer.invalidate();
+    _analyzer.set_params(
+        256, 1, 6, 0, 1,
+        *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
+        0, 0, 15, 2, 0, 0
+    );
     
     if ((bool)*params[AM::param_analyzer_active] != analyzer_old) {
         redraw_graph = true;

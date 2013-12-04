@@ -51,6 +51,8 @@ analyzer::analyzer() {
     _speed          = -1;
     fpos            = 0;
     _draw_upper     = 0;
+    sanitize        = true;
+    recreate_plan   = true;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
     memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
@@ -76,8 +78,7 @@ analyzer::analyzer() {
     
     fft_plan = NULL;
     
-    ____analyzer_phase_was_drawn_here = 0;
-    ____analyzer_sanitize = 0;
+    analyzer_phase_drawn = 0;
 }
 analyzer::~analyzer()
 {
@@ -103,33 +104,6 @@ void analyzer::set_sample_rate(uint32_t sr) {
     srate = sr;
 }
 
-bool analyzer::set_mode(int mode)
-{
-    if (mode == _mode)
-        return false;
-    
-    _mode = mode;
-    redraw_graph = true;
-    return true;
-}
-
-void analyzer::invalidate()
-{
-    // null the overall buffer
-    dsp::zero(fft_inL,     max_fft_cache_size);
-    dsp::zero(fft_inR,     max_fft_cache_size);
-    dsp::zero(fft_outL,    max_fft_cache_size);
-    dsp::zero(fft_outR,    max_fft_cache_size);
-    dsp::zero(fft_holdL,   max_fft_cache_size);
-    dsp::zero(fft_holdR,   max_fft_cache_size);
-    dsp::zero(fft_smoothL, max_fft_cache_size);
-    dsp::zero(fft_smoothR, max_fft_cache_size);
-    dsp::zero(fft_deltaL,  max_fft_cache_size);
-    dsp::zero(fft_deltaR,  max_fft_cache_size);
-    dsp::zero(spline_buffer, 200);
-    ____analyzer_phase_was_drawn_here = 0;
-}
-
 void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
 {
     _speed     = speed;
@@ -137,37 +111,31 @@ void analyzer::set_params(float resolution, float offset, int accuracy, int hold
     _freeze    = freeze;
     _view      = view;
     
-    bool ___sanitize = false;
     if(accuracy != _acc) {
         _accuracy = 1 << (7 + (int)accuracy);
         _acc = accuracy;
-        // recreate fftw plan
-        if (fft_plan) fftwf_destroy_plan (fft_plan);
-        //fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
-        fft_plan = fftwf_plan_r2r_1d(_accuracy, NULL, NULL, FFTW_R2HC, FFTW_ESTIMATE);
-        lintrans = -1;
-        ___sanitize = true;
+        recreate_plan = true;
     }
     if(hold != _hold) {
         _hold = hold;
-        ___sanitize = true;
+        sanitize = true;
     }
     if(smoothing != _smooth) {
         _smooth = smoothing;
-        ___sanitize = true;
+        sanitize = true;
     }
-    if (set_mode(mode))
-        ___sanitize = true;
+    if (mode != _mode) {
+        _mode = mode;
+        sanitize = true;
+        redraw_graph = true;
+    }
     if(scale != _scale) {
         _scale = scale;
-        ___sanitize = true;
+        sanitize = true;
     }
     if(post != _post) {
         _post = post;
-        ___sanitize = true;
-    }
-    if(___sanitize) {
-        invalidate();
+        sanitize = true;
     }
     if(resolution != _resolution || offset != _offset) {
         _resolution = resolution;
@@ -184,14 +152,30 @@ void analyzer::process(float L, float R) {
 
 bool analyzer::do_fft(int subindex, int points) const
 {
-    if(____analyzer_sanitize) {
-        // null the overall buffer to feed the fft with if someone requested so
-        // in the last cycle
-        // afterwards quit this call
-        dsp::zero(fft_inL, max_fft_cache_size);
-        dsp::zero(fft_inR, max_fft_cache_size);
-        ____analyzer_sanitize = 0;
-        return false;
+    if (recreate_plan) {
+        // recreate fftw plan
+        if (fft_plan) fftwf_destroy_plan (fft_plan);
+        //fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
+        fft_plan = fftwf_plan_r2r_1d(_accuracy, NULL, NULL, FFTW_R2HC, FFTW_ESTIMATE);
+        lintrans = -1;
+        recreate_plan = false;
+        sanitize = true;
+    }
+    if (sanitize) {
+        // null the overall buffer
+        dsp::zero(fft_inL,     max_fft_cache_size);
+        dsp::zero(fft_inR,     max_fft_cache_size);
+        dsp::zero(fft_outL,    max_fft_cache_size);
+        dsp::zero(fft_outR,    max_fft_cache_size);
+        dsp::zero(fft_holdL,   max_fft_cache_size);
+        dsp::zero(fft_holdR,   max_fft_cache_size);
+        dsp::zero(fft_smoothL, max_fft_cache_size);
+        dsp::zero(fft_smoothR, max_fft_cache_size);
+        dsp::zero(fft_deltaL,  max_fft_cache_size);
+        dsp::zero(fft_deltaR,  max_fft_cache_size);
+        dsp::zero(spline_buffer, 200);
+        analyzer_phase_drawn = 0;
+        sanitize = false;
     }
     
     bool fftdone = false; // if fft was renewed, this one is set to true
@@ -211,7 +195,7 @@ bool analyzer::do_fft(int subindex, int points) const
         // the main buffer and we use this cycle for filling other buffers
         // like smoothing, delta and hold
         // #####################################################################
-        if(!((int)____analyzer_phase_was_drawn_here % __speed)) {
+        if(!((int)analyzer_phase_drawn % __speed)) {
             // seems we have to do a fft, so let's read the latest data from the
             // buffer to send it to fft afterwards
             // we want to remember old fft_out values for smoothing as well
@@ -379,12 +363,11 @@ bool analyzer::do_fft(int subindex, int points) const
                 fftwf_execute_r2r(fft_plan, fft_inR, fft_outR);
             }
             // ...and set some values for later use
-            ____analyzer_phase_was_drawn_here = 0;     
+            analyzer_phase_drawn = 0;     
             fftdone = true;  
         }
-        ____analyzer_phase_was_drawn_here ++;
+        analyzer_phase_drawn ++;
     }
-    ____analyzer_sanitize = 0;
     return fftdone;
 }
 

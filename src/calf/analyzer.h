@@ -77,6 +77,7 @@ protected:
     float *fft_buffer;
     int *spline_buffer;
     int fpos;
+    mutable bool sanitize, recreate_plan;
     mutable fftwf_plan fft_plan;
     static const int max_fft_cache_size = 32768;
     static const int max_fft_buffer_size = max_fft_cache_size * 2;
@@ -87,8 +88,7 @@ protected:
     float *fft_holdL, *fft_holdR;
     float *fft_freezeL, *fft_freezeR;
     mutable int lintrans;
-    mutable int ____analyzer_phase_was_drawn_here;
-    mutable int ____analyzer_sanitize;
+    mutable int analyzer_phase_drawn;
 };
 
 };
