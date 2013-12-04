@@ -55,11 +55,15 @@ private:
     mutable float _offset;
     mutable bool _falling;
     mutable int _draw_upper;
+
+    
 public:
     uint32_t srate;
     analyzer();
     void process(float L, float R);
     void set_sample_rate(uint32_t sr);
+    bool set_mode(int mode);
+    void invalidate();
     void set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze);
     ~analyzer();
     bool do_fft(int subindex, int points) const;

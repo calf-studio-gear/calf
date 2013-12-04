@@ -109,6 +109,36 @@ analyzer::~analyzer()
 void analyzer::set_sample_rate(uint32_t sr) {
     srate = sr;
 }
+
+bool analyzer::set_mode(int mode)
+{
+    if (mode == _mode)
+        return false;
+    
+    _mode = mode;
+    redraw_graph = true;
+    return true;
+}
+
+void analyzer::invalidate()
+{
+    // null the overall buffer
+    dsp::zero(fft_inL,     max_fft_cache_size);
+    dsp::zero(fft_inR,     max_fft_cache_size);
+    dsp::zero(fft_outL,    max_fft_cache_size);
+    dsp::zero(fft_outR,    max_fft_cache_size);
+    dsp::zero(fft_holdL,   max_fft_cache_size);
+    dsp::zero(fft_holdR,   max_fft_cache_size);
+    dsp::zero(fft_smoothL, max_fft_cache_size);
+    dsp::zero(fft_smoothR, max_fft_cache_size);
+    dsp::zero(fft_deltaL,  max_fft_cache_size);
+    dsp::zero(fft_deltaR,  max_fft_cache_size);
+//        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
+//        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
+    dsp::zero(spline_buffer, 200);
+    ____analyzer_phase_was_drawn_here = 0;
+}
+
 void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
 {
     _speed     = speed;
@@ -135,11 +165,8 @@ void analyzer::set_params(float resolution, float offset, int accuracy, int hold
         _smooth = smoothing;
         ___sanitize = true;
     }
-    if(mode != _mode) {
-        _mode = mode;
+    if (set_mode(mode))
         ___sanitize = true;
-        redraw_graph = true;
-    }
     if(scale != _scale) {
         _scale = scale;
         ___sanitize = true;
@@ -149,21 +176,7 @@ void analyzer::set_params(float resolution, float offset, int accuracy, int hold
         ___sanitize = true;
     }
     if(___sanitize) {
-        // null the overall buffer
-        dsp::zero(fft_inL,     max_fft_cache_size);
-        dsp::zero(fft_inR,     max_fft_cache_size);
-        dsp::zero(fft_outL,    max_fft_cache_size);
-        dsp::zero(fft_outR,    max_fft_cache_size);
-        dsp::zero(fft_holdL,   max_fft_cache_size);
-        dsp::zero(fft_holdR,   max_fft_cache_size);
-        dsp::zero(fft_smoothL, max_fft_cache_size);
-        dsp::zero(fft_smoothR, max_fft_cache_size);
-        dsp::zero(fft_deltaL,  max_fft_cache_size);
-        dsp::zero(fft_deltaR,  max_fft_cache_size);
-//        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
-//        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
-        dsp::zero(spline_buffer, 200);
-        ____analyzer_phase_was_drawn_here = 0;
+        invalidate();
     }
     if(resolution != _resolution || offset != _offset) {
         _resolution = resolution;
