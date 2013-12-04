@@ -1065,6 +1065,7 @@ float crossover::get_value(int c, int b) {
 }
 bool crossover::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    redraw_graph = false;
     if (subindex >= bands)
         return false;
     float ret;
@@ -1087,9 +1088,7 @@ bool crossover::get_graph(int subindex, int phase, float *data, int points, cair
 bool crossover::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = 0 | (redraw_graph or !generation ? LG_CACHE_GRAPH : 0) | (!generation ? LG_CACHE_GRID : 0);
-    bool redraw = redraw_graph or !generation;
-    redraw_graph = false;
-    return redraw;
+    return redraw_graph or !generation;
 }
 
 int crossover::get_filter_count() const

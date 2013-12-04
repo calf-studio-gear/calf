@@ -372,6 +372,7 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    redraw_graph = false;
     if (phase and *params[AM::param_analyzer_active]) {
         bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         if (*params[AM::param_analyzer_mode] == 2) {
@@ -455,9 +456,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_layers(int index, int
     layers = *params[AM::param_analyzer_active] ? LG_REALTIME_GRAPH : 0;
     layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
     redraw_graph |= (bool)*params[AM::param_analyzer_active];
-    bool r = redraw_graph;
-    redraw_graph = false;
-    return r;
+    return redraw_graph or !generation;
 }
 
 template<class BaseClass, bool has_lphp>
