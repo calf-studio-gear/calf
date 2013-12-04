@@ -62,6 +62,8 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
         p_level_old[i] = 0;
         p_q_old[i] = 0;
     }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
     redraw_graph = true;
 }
 
