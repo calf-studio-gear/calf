@@ -65,11 +65,6 @@ analyzer::analyzer() {
     fft_smoothL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_smoothR = (float*) calloc(max_fft_cache_size, sizeof(float));
     
-    fft_fallingL = (float*) calloc(max_fft_cache_size, sizeof(float));
-    fft_fallingR = (float*) calloc(max_fft_cache_size, sizeof(float));
-    dsp::fill(fft_fallingL, 1.f, max_fft_cache_size);
-    dsp::fill(fft_fallingR, 1.f, max_fft_cache_size);
-    
     fft_deltaL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_deltaR = (float*) calloc(max_fft_cache_size, sizeof(float));
     
@@ -92,8 +87,6 @@ analyzer::~analyzer()
     free(fft_holdL);
     free(fft_deltaR);
     free(fft_deltaL);
-    free(fft_fallingR);
-    free(fft_fallingL);
     free(fft_smoothR);
     free(fft_smoothL);
     free(fft_outR);
@@ -133,8 +126,6 @@ void analyzer::invalidate()
     dsp::zero(fft_smoothR, max_fft_cache_size);
     dsp::zero(fft_deltaL,  max_fft_cache_size);
     dsp::zero(fft_deltaR,  max_fft_cache_size);
-//        memset(fft_fallingL, 1.f, max_fft_cache_size * sizeof(float));
-//        memset(fft_fallingR, 1.f, max_fft_cache_size * sizeof(float));
     dsp::zero(spline_buffer, 200);
     ____analyzer_phase_was_drawn_here = 0;
 }

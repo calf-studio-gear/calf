@@ -85,7 +85,6 @@ protected:
     float *fft_smoothL, *fft_smoothR;
     float *fft_deltaL, *fft_deltaR;
     float *fft_holdL, *fft_holdR;
-    float *fft_fallingL, *fft_fallingR;
     float *fft_freezeL, *fft_freezeR;
     mutable int lintrans;
     mutable int ____analyzer_phase_was_drawn_here;
