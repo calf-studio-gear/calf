@@ -1018,7 +1018,7 @@ float crossover::set_filter(int b, float f, bool force) {
             hp[c][b][1].copy_coeffs(hp[c][b][0]);
         }
     }
-    redraw_graph = std::min(2, redraw_graph += 1);
+    redraw_graph = std::min(2, redraw_graph + 1);
     return freq[b];
 }
 void crossover::set_mode(int m) {
@@ -1028,19 +1028,19 @@ void crossover::set_mode(int m) {
     for(int i = 0; i < bands - 1; i ++) {
         set_filter(i, freq[i], true);
     }
-    redraw_graph = std::min(2, redraw_graph += 1);
+    redraw_graph = std::min(2, redraw_graph + 1);
 }
 void crossover::set_active(int b, bool a) {
     if (active[b] == a)
         return;
     active[b] = a;
-    redraw_graph = std::min(2, redraw_graph += 1);
+    redraw_graph = std::min(2, redraw_graph + 1);
 }
 void crossover::set_level(int b, float l) {
     if (level[b] == l)
         return;
     level[b] = l;
-    redraw_graph = std::min(2, redraw_graph += 1);
+    redraw_graph = std::min(2, redraw_graph + 1);
 }
 void crossover::process(float *data) {
     for (int c = 0; c < channels; c++) {
@@ -1066,7 +1066,7 @@ float crossover::get_value(int c, int b) {
 bool crossover::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (subindex >= bands) {
-        redraw_graph = std::max(0, redraw_graph -= 1);
+        redraw_graph = std::max(0, redraw_graph - 1);
         return false;
     }
     float ret;
