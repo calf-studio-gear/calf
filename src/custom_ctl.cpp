@@ -484,3 +484,133 @@ calf_toggle_get_type (void)
     }
     return type;
 }
+
+///////////////////////////////////////// frame ///////////////////////////////////////////////
+
+
+GtkWidget *
+calf_frame_new(const char *label)
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_FRAME, NULL ));
+    CalfFrame *self = CALF_FRAME(widget);
+    //self->label = label;
+    return widget;
+}
+
+static gboolean
+calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    //g_assert(CALF_IS_FRAME(widget));
+
+    //CalfFrame *self = CALF_FRAME(widget);
+    //GdkWindow *window = widget->window;
+    //cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+    
+    //int ox = 0;
+    //int oy = 0;
+    
+    //int sx = widget->allocation.width - ox * 2;
+    //int sy = widget->allocation.height - oy * 2;
+    //int xc = widget->allocation.width / 2;
+    //int yc = widget->allocation.height / 2;
+    
+    //cairo_destroy(c);
+
+    return TRUE;
+}
+
+//static void
+//calf_frame_realize(GtkWidget *widget)
+//{
+    //GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+
+    //GdkWindowAttr attributes;
+    //attributes.event_mask = GDK_EXPOSURE_MASK;
+    //attributes.x = widget->allocation.x;
+    //attributes.y = widget->allocation.y;
+    //attributes.width = widget->allocation.width;
+    //attributes.height = widget->allocation.height;
+    //attributes.wclass = GDK_INPUT_OUTPUT;
+    //attributes.window_type = GDK_WINDOW_CHILD;
+
+    //widget->window = gdk_window_new(gtk_widget_get_parent_window (widget), &attributes, GDK_WA_X | GDK_WA_Y);
+
+    //gdk_window_set_user_data(widget->window, widget);
+    //widget->style = gtk_style_attach(widget->style, widget->window);
+//}
+
+//static void
+//calf_frame_size_request (GtkWidget *widget,
+                           //GtkRequisition *requisition)
+//{
+    //g_assert(CALF_IS_FRAME(widget));
+
+    //requisition->width = 40;
+    //requisition->height = 40;
+//}
+
+//static void
+//calf_frame_size_allocate (GtkWidget *widget,
+                           //GtkAllocation *allocation)
+//{
+    //g_assert(CALF_IS_FRAME(widget));
+    //CalfFrame *frame = CALF_FRAME(widget);
+    
+    //widget->allocation = *allocation;
+    
+    //if (GTK_WIDGET_REALIZED(widget))
+        //gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
+//}
+
+static void
+calf_frame_class_init (CalfFrameClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    //widget_class->realize = calf_frame_realize;
+    widget_class->expose_event = calf_frame_expose;
+    //widget_class->size_request = calf_frame_size_request;
+    //widget_class->size_allocate = calf_frame_size_allocate;
+}
+
+static void
+calf_frame_init (CalfFrame *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
+}
+
+GType
+calf_frame_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfFrameClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_frame_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfFrame),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_frame_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfFrame%u%d", 
+                ((unsigned int)(intptr_t)calf_frame_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_FRAME,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}

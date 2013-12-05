@@ -1552,7 +1552,7 @@ void table_container::add(GtkWidget *widget, control_base *base)
     gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
 } 
 
-/******************************** alignment contaner ********************************/
+/******************************** alignment container ********************************/
 
 GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
@@ -1562,14 +1562,14 @@ GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xm
     return align;
 }
 
-/******************************** GtkFrame contaner ********************************/
+/******************************** GtkFrame container ********************************/
 
 GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
-    GtkWidget *frame = gtk_frame_new(attribs["label"].c_str());
-    container = GTK_CONTAINER(frame);
-    gtk_widget_set_name(GTK_WIDGET(frame), "Calf-Frame");
-    return frame;
+    GtkWidget *widget = calf_frame_new(attribs["label"].c_str());
+    container = GTK_CONTAINER(widget);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Frame");
+    return widget;
 }
 
 /******************************** GtkBox type of containers ********************************/
