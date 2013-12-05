@@ -639,7 +639,7 @@ public:
     int channels, bands, mode;
     float freq[8], active[8], level[8], out[8][8];
     dsp::biquad_d2<float> lp[8][8][4], hp[8][8][4];
-    mutable bool redraw_graph;
+    mutable int redraw_graph;
     uint32_t srate;
     crossover();
     void process(float *data);
