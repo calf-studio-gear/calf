@@ -126,13 +126,16 @@ void about_action(GtkAction *action, plugin_gui_window *gui_win)
 void tips_tricks_action(GtkAction *action, plugin_gui_window *gui_win)
 {
     static const char tips_and_tricks[] = 
-    "1. Knob control\n"
+    "1. Knob and Fader Control\n"
     "\n"
-    "Use SHIFT-dragging for increased precision. Mouse wheel is also supported.\n"
+    "* Use SHIFT-dragging for increased precision\n"
+    "* Mouse wheel is also supported\n"
+    "* Middle click opens a text entry\n"
+    "* Right click a knob to assign a MIDI controller\n"
     "\n"
-    "2. Rack ears\n"
+    "2. Rack Ears\n"
     "\n"
-    "If you consider those a waste of screen space, you can turn them off in Preferences dialog in Calf JACK host. The setting affects all versions of the GUI (DSSI, LV2 GTK+, LV2 External, JACK host).\n"
+    "If you consider those a waste of screen space, you can turn them off in Preferences dialog in Calf JACK host. The setting affects all versions of the GUI (LV2 GTK+, LV2 External, JACK host).\n"
     "\n"
     ;
     GtkMessageDialog *dlg = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(gui_win->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, "%s", tips_and_tricks));
