@@ -1521,6 +1521,33 @@ void listview_param_control::on_editing_canceled(GtkCellRenderer *renderer, list
     gtk_widget_grab_focus(pThis->widget);
 }
 
+/******************************** GtkNotebook control ********************************/
+
+GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    GtkWidget *nb = gtk_notebook_new();
+    widget = GTK_WIDGET(nb);
+    container = GTK_CONTAINER(nb);
+    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
+    return nb;
+}
+void notebook_param_control::get()
+{
+    // const parameter_properties &props = get_props();
+    gui->set_param_value(param_no, (int)gtk_notebook_get_current_page(GTK_NOTEBOOK(widget)), this);
+}
+void notebook_param_control::set()
+{
+    _GUARD_CHANGE_
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), (gint)gui->plugin->get_param_value(param_no));
+}
+void notebook_param_control::add(GtkWidget *w, control_base *base)
+{
+    gtk_notebook_append_page(GTK_NOTEBOOK(widget), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
+}
+
 /******************************** GtkTable container ********************************/
 
 GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
@@ -1597,21 +1624,6 @@ GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_att
     container = GTK_CONTAINER(vbox);
     gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-VBox");
     return vbox;
-}
-
-/******************************** GtkNotebook container ********************************/
-
-GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *nb = gtk_notebook_new();
-    container = GTK_CONTAINER(nb);
-    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
-    return nb;
-}
-
-void notebook_container::add(GtkWidget *w, control_base *base)
-{
-    gtk_notebook_append_page(GTK_NOTEBOOK(container), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
 }
 
 /******************************** GtkNotebook container ********************************/

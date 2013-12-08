@@ -53,7 +53,7 @@
         </vbox>
     </frame>
     
-    <notebook>
+    <notebook param="notebook">
         <hbox page="Sub Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass0"/>

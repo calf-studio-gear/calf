@@ -209,6 +209,7 @@ struct multibandcompressor_metadata: public plugin_metadata<multibandcompressor_
            param_detection2, param_compression2, param_output2, param_bypass2, param_solo2,
            param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3,
            param_detection3, param_compression3, param_output3, param_bypass3, param_solo3,
+           param_notebook,
            param_count };
     PLUGIN_NAME_ID_LABEL("multibandcompressor", "multibandcompressor", "Multiband Compressor")
 };
@@ -263,6 +264,7 @@ struct multibandgate_metadata: public plugin_metadata<multibandgate_metadata>
            param_detection2, param_gating2, param_output2, param_bypass2, param_solo2,
            param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3,
            param_detection3, param_gating3, param_output3, param_bypass3, param_solo3,
+           param_notebook,
            param_count };
     PLUGIN_NAME_ID_LABEL("multibandgate", "multibandgate", "Multiband Gate")
 };

@@ -103,13 +103,12 @@ extern GType calf_toggle_get_type();
 
 struct CalfFrame
 {
-    const char *label;
-    GtkWidget parent;
+    GtkFrame parent;
 };
 
 struct CalfFrameClass
 {
-    GtkWidgetClass parent_class;
+    GtkFrameClass parent_class;
 };
 
 extern GtkWidget *calf_frame_new(const char *label);

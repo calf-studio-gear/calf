@@ -26,7 +26,6 @@
 #include <math.h>
 #include <gdk/gdk.h>
 #include <sys/time.h>
-
 #include <iostream>
 
 using namespace calf_plugins;
@@ -493,13 +492,20 @@ calf_frame_new(const char *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_FRAME, NULL ));
     CalfFrame *self = CALF_FRAME(widget);
-    //self->label = label;
+    gtk_frame_set_label(GTK_FRAME(self), label);
     return widget;
 }
 
 static gboolean
 calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
 {
+    if (gtk_widget_is_drawable (widget))
+    {
+        //gtk_frame_paint (widget, &event->area);
+        //GTK_WIDGET_CLASS (gtk_frame_parent_class)->expose_event (widget, event);
+    }
+
+    return FALSE;
     //g_assert(CALF_IS_FRAME(widget));
 
     //CalfFrame *self = CALF_FRAME(widget);
@@ -516,60 +522,14 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
     
     //cairo_destroy(c);
 
-    return TRUE;
+    //return TRUE;
 }
-
-//static void
-//calf_frame_realize(GtkWidget *widget)
-//{
-    //GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
-
-    //GdkWindowAttr attributes;
-    //attributes.event_mask = GDK_EXPOSURE_MASK;
-    //attributes.x = widget->allocation.x;
-    //attributes.y = widget->allocation.y;
-    //attributes.width = widget->allocation.width;
-    //attributes.height = widget->allocation.height;
-    //attributes.wclass = GDK_INPUT_OUTPUT;
-    //attributes.window_type = GDK_WINDOW_CHILD;
-
-    //widget->window = gdk_window_new(gtk_widget_get_parent_window (widget), &attributes, GDK_WA_X | GDK_WA_Y);
-
-    //gdk_window_set_user_data(widget->window, widget);
-    //widget->style = gtk_style_attach(widget->style, widget->window);
-//}
-
-//static void
-//calf_frame_size_request (GtkWidget *widget,
-                           //GtkRequisition *requisition)
-//{
-    //g_assert(CALF_IS_FRAME(widget));
-
-    //requisition->width = 40;
-    //requisition->height = 40;
-//}
-
-//static void
-//calf_frame_size_allocate (GtkWidget *widget,
-                           //GtkAllocation *allocation)
-//{
-    //g_assert(CALF_IS_FRAME(widget));
-    //CalfFrame *frame = CALF_FRAME(widget);
-    
-    //widget->allocation = *allocation;
-    
-    //if (GTK_WIDGET_REALIZED(widget))
-        //gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
-//}
 
 static void
 calf_frame_class_init (CalfFrameClass *klass)
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    //widget_class->realize = calf_frame_realize;
-    widget_class->expose_event = calf_frame_expose;
-    //widget_class->size_request = calf_frame_size_request;
-    //widget_class->size_allocate = calf_frame_size_allocate;
+    //widget_class->expose_event = calf_frame_expose;
 }
 
 static void

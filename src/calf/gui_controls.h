@@ -62,12 +62,6 @@ struct hbox_container: public box_container
     virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
 };
 
-struct notebook_container: public control_container
-{
-    virtual void add(GtkWidget *w, control_base *base);
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
-};
-
 struct scrolled_container: public control_container
 {
     virtual void add(GtkWidget *w, control_base *base);
@@ -76,6 +70,15 @@ struct scrolled_container: public control_container
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // controls
+
+struct notebook_param_control: public param_control
+{
+    const static bool is_container = true;
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void add(GtkWidget *w, control_base *base);
+    virtual void get();
+    virtual void set();
+};
 
 /// Display-only control: static text
 struct label_param_control: public param_control
