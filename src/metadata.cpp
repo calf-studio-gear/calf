@@ -472,7 +472,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass3", "Bypass 4" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo3", "Solo 4" },
     
-    { 0,           0,           3,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF,  NULL, "notebook", "Notebook" },
+    { 0,           0,           3,     0,  PF_INT | PF_SCALE_LINEAR,  NULL, "notebook", "Notebook" },
     {}
 };
 

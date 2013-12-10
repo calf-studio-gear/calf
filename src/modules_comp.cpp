@@ -1243,8 +1243,11 @@ bool sidechaincompressor_audio_module::get_layers(int index, int generation, uns
 multibandcompressor_audio_module::multibandcompressor_audio_module()
 {
     is_active = false;
-    srate = 0;
+    srate      = 0;
     mode       = 0;
+    redraw     = 0;
+    page       = 0;
+    bypass     = 0;
     crossover.init(2, 4, 44100);
 }
 
@@ -1285,6 +1288,17 @@ void multibandcompressor_audio_module::params_changed()
     int m = *params[param_mode];
     if (m != mode) {
         mode = *params[param_mode];
+    }
+    
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+    
+    int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
+    if (b != bypass) {
+        redraw = strips * 2 + strips;
     }
     
     crossover.set_mode(mode + 1);
@@ -1404,10 +1418,31 @@ const gain_reduction_audio_module *multibandcompressor_audio_module::get_strip_b
 
 bool multibandcompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    bool r;
+    
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+        
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_graph(subindex, data, points, context, mode);
-    return crossover.get_graph(subindex, phase, data, points, context, mode);
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if ((index == param_solo0 + 11 * page and subindex == 1)
+    or  (index == param_bypass and subindex == page)) {
+        *mode = 1;
+    }
+    if ((subindex == 1 and index != param_bypass)
+    or  (index == param_bypass)) {
+        if (r 
+        and ((index != param_bypass and *params[index - 1])
+        or   (index == param_bypass and *params[param_bypass0 + 11 * subindex])))
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.22);
+        else
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.55);
+    }
+    return r;
 }
 
 bool multibandcompressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
@@ -1429,10 +1464,18 @@ bool multibandcompressor_audio_module::get_gridline(int index, int subindex, int
 
 bool multibandcompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
+    bool r;
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_layers(index, generation, layers);
-    return crossover.get_layers(index, generation, layers);
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        r = crossover.get_layers(index, generation, layers);
+    }
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
 }
 
 
@@ -2235,6 +2278,10 @@ multibandgate_audio_module::multibandgate_audio_module()
 {
     is_active = false;
     srate = 0;
+    mode       = 0;
+    redraw     = 0;
+    page       = 0;
+    bypass     = 0;
     crossover.init(2, 4, 44100);
 }
 
@@ -2274,6 +2321,17 @@ void multibandgate_audio_module::params_changed()
     int m = *params[param_mode];
     if (m != mode) {
         mode = *params[param_mode];
+    }
+    
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+    
+    int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
+    if (b != bypass) {
+        redraw = strips * 2 + strips;
     }
     
     crossover.set_mode(mode + 1);
@@ -2392,10 +2450,30 @@ const expander_audio_module *multibandgate_audio_module::get_strip_by_param_inde
 
 bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    bool r;
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+        
     const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_graph(subindex, data, points, context, mode);
-    return crossover.get_graph(subindex, phase, data, points, context, mode);
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if ((index == param_solo0 + 12 * page and subindex == 1)
+    or  (index == param_bypass and subindex == page)) {
+        *mode = 1;
+    }
+    if ((subindex == 1 and index != param_bypass)
+    or  (index == param_bypass)) {
+        if (r 
+        and ((index != param_bypass and *params[index - 1])
+        or   (index == param_bypass and *params[param_bypass0 + 12 * subindex])))
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.22);
+        else
+            context->set_source_rgba(0.35, 0.4, 0.2, 0.55);
+    }
+    return r;
 }
 
 bool multibandgate_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
@@ -2417,10 +2495,18 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, int phase
 
 bool multibandgate_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
+    bool r;
     const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_layers(index, generation, layers);
-    return crossover.get_layers(index, generation, layers);
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        r = crossover.get_layers(index, generation, layers);
+    }
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
 }
 
 

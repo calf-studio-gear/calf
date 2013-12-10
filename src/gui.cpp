@@ -190,7 +190,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             current_control->set();
             current_control->hook_params();
             current_control->add_context_menu_handler();
-            if (current_control->is_container) {
+            if (current_control->is_container()) {
                 gtk_container_set_border_width(current_control->container, current_control->get_int("border"));
                 container_stack.push_back(current_control);
             }
@@ -211,7 +211,7 @@ void plugin_gui::xml_element_end(void *data, const char *element)
     {
         return;
     }
-    if (gui->current_control and !gui->current_control->is_container)
+    if (gui->current_control and !gui->current_control->is_container())
     {
         (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
         gui->current_control = NULL;
@@ -224,6 +224,7 @@ void plugin_gui::xml_element_end(void *data, const char *element)
     else
         gui->top_container = gui->container_stack[0];
     gui->container_stack.pop_back();
+    gui->current_control = NULL;
 }
 
 

@@ -48,12 +48,12 @@
                 <combo param="mode"/>
             </hbox>
             <if cond="directlink">
-                <line-graph refresh="1" width="300" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+                <line-graph refresh="1" width="300" height="120" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
             </if>
         </vbox>
     </frame>
     
-    <notebook>
+    <notebook param="notebook">
         <hbox page="Sub Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass0"/>

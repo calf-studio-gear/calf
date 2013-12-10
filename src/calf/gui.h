@@ -43,6 +43,7 @@ class plugin_gui;
 
 struct control_base
 {
+    virtual bool is_container() { return false; };
     GtkContainer *container;
     std::string control_name;
     typedef std::map<std::string, std::string> xml_attribute_map;
@@ -70,10 +71,8 @@ struct control_container: public control_base
 struct param_control: public control_base
 {    
     int param_no;
-    const static bool is_container = false;
     std::string param_variable;
     GtkWidget *label, *widget, *entrywin;
-    GtkContainer *container;
     int in_change;
     bool has_entry;
     float old_displayed_value;

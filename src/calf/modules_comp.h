@@ -221,7 +221,8 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
-    int mode;
+    int mode, page, bypass;
+    mutable int redraw;
     vumeters meters;
 public:
     uint32_t srate;
@@ -387,7 +388,8 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     expander_audio_module gate[strips];
     dsp::crossover crossover;
-    int mode;
+    int mode, page, bypass;
+    mutable int redraw;
     vumeters meters;
 public:
     uint32_t srate;
