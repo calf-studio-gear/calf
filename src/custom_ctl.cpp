@@ -495,41 +495,93 @@ calf_frame_new(const char *label)
     gtk_frame_set_label(GTK_FRAME(self), label);
     return widget;
 }
-
 static gboolean
 calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
 {
-    if (gtk_widget_is_drawable (widget))
-    {
-        //gtk_frame_paint (widget, &event->area);
-        //GTK_WIDGET_CLASS (gtk_frame_parent_class)->expose_event (widget, event);
+    g_assert(CALF_IS_FRAME(widget));
+    if (gtk_widget_is_drawable (widget)) {
+        
+        GdkWindow *window = widget->window;
+        cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+        cairo_text_extents_t extents;
+        
+        int ox = widget->allocation.x;
+        int oy = widget->allocation.y;
+        int sx = widget->allocation.width;
+        int sy = widget->allocation.height;
+        
+        double rad  = 8;
+        double a    = 1.5;
+        double pad  = 4;
+        double txp  = 4;
+        double m    = 1;
+        double size = 10;
+        
+        const gchar *lab = gtk_frame_get_label(GTK_FRAME(widget));
+        
+        cairo_select_font_face(c, "Bitstream Vera Sans",
+              CAIRO_FONT_SLANT_NORMAL,
+              CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(c, size);
+        
+        cairo_text_extents(c, lab, &extents);
+        
+        double lw = extents.width + txp * 2.;
+        
+        cairo_set_line_width(c, 1.);
+        
+        cairo_move_to(c, ox + rad + txp + m, oy + size - 2 + m);
+        cairo_set_source_rgb(c, 0.99,0.99,0.99);
+        cairo_show_text(c, lab);
+        
+        cairo_set_source_rgb(c, 0.9,0.9,0.9);
+        
+        rad = 8;
+        cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
+        cairo_arc (c, ox + rad + a + m, oy + rad + a + pad + m, rad, 1 * M_PI, 1.5 * M_PI);
+        cairo_move_to(c, ox + rad + a + lw + m, oy + a + pad + m);
+        cairo_line_to(c, ox + sx + a - rad - m - 1, oy + a + pad + m);
+        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + rad + a + pad + m, rad, 1.5 * M_PI, 2 * M_PI);
+        cairo_line_to(c, ox + sx + a - 2*m - 1, oy + a + sy - rad - 2*m - 1);
+        rad = 9;
+        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + sy - rad + a - 2*m - 1, rad, 0 * M_PI, 0.5 * M_PI);
+        rad = 8;
+        cairo_line_to(c, ox + a + rad + m, oy + sy + a - 2*m - 1);
+        cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
+        cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
+        cairo_stroke(c);
+        
+        a = 0.5;
+        
+        cairo_set_source_rgb(c, 0.55,0.55,0.55);
+        
+        rad = 9;
+        cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
+        cairo_arc (c, ox + rad + a + m, oy + rad + a + pad + m, rad, 1 * M_PI, 1.5 * M_PI);
+        cairo_move_to(c, ox + rad + a + lw + m, oy + a + pad + m);
+        rad = 8;
+        cairo_line_to(c, ox + sx + a - rad - m, oy + a + pad + m);
+        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + rad + a + pad + m, rad, 1.5 * M_PI, 2 * M_PI);
+        cairo_line_to(c, ox + sx + a - 2*m - 1, oy + a + sy - rad - 2*m);
+        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + sy - rad + a - 2*m - 1, rad, 0 * M_PI, 0.5 * M_PI);
+        cairo_line_to(c, ox + a + rad + m, oy + sy + a - 2*m - 1);
+        cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
+        cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
+        cairo_stroke(c);
     }
-
+    if (gtk_bin_get_child(GTK_BIN(widget))) {
+        gtk_container_propagate_expose(GTK_CONTAINER(widget),
+                                       gtk_bin_get_child(GTK_BIN(widget)),
+                                       event);
+    }
     return FALSE;
-    //g_assert(CALF_IS_FRAME(widget));
-
-    //CalfFrame *self = CALF_FRAME(widget);
-    //GdkWindow *window = widget->window;
-    //cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
-    
-    //int ox = 0;
-    //int oy = 0;
-    
-    //int sx = widget->allocation.width - ox * 2;
-    //int sy = widget->allocation.height - oy * 2;
-    //int xc = widget->allocation.width / 2;
-    //int yc = widget->allocation.height / 2;
-    
-    //cairo_destroy(c);
-
-    //return TRUE;
 }
 
 static void
 calf_frame_class_init (CalfFrameClass *klass)
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    //widget_class->expose_event = calf_frame_expose;
+    widget_class->expose_event = calf_frame_expose;
 }
 
 static void

@@ -219,6 +219,8 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
     else {
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
     }
+    if (!subindex)
+        context->set_line_width(1.);
     return true;
 }
 
@@ -444,8 +446,9 @@ bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int poin
         context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     else {
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        context->set_line_width(1.5);
     }
+    if (!subindex)
+        context->set_line_width(1.);
     return true;
 }
 
@@ -677,8 +680,9 @@ bool expander_audio_module::get_graph(int subindex, float *data, int points, cai
         context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
     else {
         context->set_source_rgba(0.35, 0.4, 0.2, 1);
-        context->set_line_width(1.5);
     }
+    if (!subindex)
+        context->set_line_width(1.);
     return true;
 }
 

@@ -112,7 +112,6 @@ struct CalfFrameClass
 };
 
 extern GtkWidget *calf_frame_new(const char *label);
-
 extern GType calf_frame_get_type();
 
 G_END_DECLS
