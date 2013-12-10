@@ -43,6 +43,8 @@ class plugin_gui;
 
 struct control_base
 {
+    virtual bool is_container() { return false; };
+    GtkContainer *container;
     std::string control_name;
     typedef std::map<std::string, std::string> xml_attribute_map;
     xml_attribute_map attribs;
@@ -51,8 +53,17 @@ struct control_base
     void require_int_attribute(const char *name);
     int get_int(const char *name, int def_value = 0);
     float get_float(const char *name, float def_value = 0.f);
+    virtual void add(GtkWidget *w, control_base *base) { gtk_container_add(container, w); }
     /// called after creation, so that all standard properties can be set
     virtual void set_std_properties() = 0;
+};
+
+
+struct control_container: public control_base
+{
+    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)=0;
+    virtual void set_std_properties();
+    virtual ~control_container() {}
 };
 
 #define _GUARD_CHANGE_ if (in_change) return; guard_change __gc__(this);
@@ -101,15 +112,6 @@ struct param_control: public control_base
     static gboolean value_entry_click(GtkWidget *widget, GdkEventButton *event, void *user_data);
 };
 
-struct control_container: public control_base
-{
-    GtkContainer *container;
-    
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)=0;
-    virtual void add(GtkWidget *w, control_base *base) { gtk_container_add(container, w); }
-    virtual void set_std_properties();
-    virtual ~control_container() {}
-};
 
 class plugin_gui_window;
 
@@ -120,8 +122,8 @@ protected:
     std::multimap<int, param_control *> par2ctl;
     XML_Parser parser;
     param_control *current_control;
-    std::vector<control_container *> container_stack;
-    control_container *top_container;
+    std::vector<control_base *> container_stack;
+    control_base *top_container;
     std::map<std::string, int> param_name_map;
     int ignore_stack;
     int last_status_serial_no;

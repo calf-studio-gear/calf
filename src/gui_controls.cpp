@@ -150,7 +150,7 @@ param_control::~param_control()
 {
     if (label)
         gtk_widget_destroy(label);
-    if (widget)
+    if (GTK_IS_WIDGET(widget))
         gtk_widget_destroy(widget);
 }
 
@@ -1521,6 +1521,43 @@ void listview_param_control::on_editing_canceled(GtkCellRenderer *renderer, list
     gtk_widget_grab_focus(pThis->widget);
 }
 
+/******************************** GtkNotebook control ********************************/
+
+GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    page = 0;
+    GtkWidget *nb = gtk_notebook_new();
+    widget = GTK_WIDGET(nb);
+    container = GTK_CONTAINER(nb);
+    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
+    g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
+    return nb;
+}
+void notebook_param_control::get()
+{
+    if (param_no >= 0)
+        gui->set_param_value(param_no, page, this);
+}
+void notebook_param_control::set()
+{
+    if (param_no < 0)
+        return;
+    _GUARD_CHANGE_
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), (gint)gui->plugin->get_param_value(param_no));
+}
+void notebook_param_control::add(GtkWidget *w, control_base *base)
+{
+    gtk_notebook_append_page(GTK_NOTEBOOK(widget), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
+}
+void notebook_param_control::notebook_page_changed(GtkWidget *widget, GtkWidget *page, guint id, gpointer user)
+{
+    notebook_param_control *jhp = (notebook_param_control *)user;
+    jhp->page = (int)id;
+    jhp->get();
+}
+
 /******************************** GtkTable container ********************************/
 
 GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
@@ -1552,7 +1589,7 @@ void table_container::add(GtkWidget *widget, control_base *base)
     gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
 } 
 
-/******************************** alignment contaner ********************************/
+/******************************** alignment container ********************************/
 
 GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
@@ -1562,14 +1599,14 @@ GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xm
     return align;
 }
 
-/******************************** GtkFrame contaner ********************************/
+/******************************** GtkFrame container ********************************/
 
 GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
 {
-    GtkWidget *frame = gtk_frame_new(attribs["label"].c_str());
-    container = GTK_CONTAINER(frame);
-    gtk_widget_set_name(GTK_WIDGET(frame), "Calf-Frame");
-    return frame;
+    GtkWidget *widget = calf_frame_new(attribs["label"].c_str());
+    container = GTK_CONTAINER(widget);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Frame");
+    return widget;
 }
 
 /******************************** GtkBox type of containers ********************************/
@@ -1597,21 +1634,6 @@ GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_att
     container = GTK_CONTAINER(vbox);
     gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-VBox");
     return vbox;
-}
-
-/******************************** GtkNotebook container ********************************/
-
-GtkWidget *notebook_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
-{
-    GtkWidget *nb = gtk_notebook_new();
-    container = GTK_CONTAINER(nb);
-    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
-    return nb;
-}
-
-void notebook_container::add(GtkWidget *w, control_base *base)
-{
-    gtk_notebook_append_page(GTK_NOTEBOOK(container), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
 }
 
 /******************************** GtkNotebook container ********************************/

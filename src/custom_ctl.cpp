@@ -26,7 +26,6 @@
 #include <math.h>
 #include <gdk/gdk.h>
 #include <sys/time.h>
-
 #include <iostream>
 
 using namespace calf_plugins;
@@ -478,6 +477,97 @@ calf_toggle_get_type (void)
                                            name,
                                            &type_info,
                                            (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+///////////////////////////////////////// frame ///////////////////////////////////////////////
+
+
+GtkWidget *
+calf_frame_new(const char *label)
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_FRAME, NULL ));
+    CalfFrame *self = CALF_FRAME(widget);
+    gtk_frame_set_label(GTK_FRAME(self), label);
+    return widget;
+}
+
+static gboolean
+calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    if (gtk_widget_is_drawable (widget))
+    {
+        //gtk_frame_paint (widget, &event->area);
+        //GTK_WIDGET_CLASS (gtk_frame_parent_class)->expose_event (widget, event);
+    }
+
+    return FALSE;
+    //g_assert(CALF_IS_FRAME(widget));
+
+    //CalfFrame *self = CALF_FRAME(widget);
+    //GdkWindow *window = widget->window;
+    //cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+    
+    //int ox = 0;
+    //int oy = 0;
+    
+    //int sx = widget->allocation.width - ox * 2;
+    //int sy = widget->allocation.height - oy * 2;
+    //int xc = widget->allocation.width / 2;
+    //int yc = widget->allocation.height / 2;
+    
+    //cairo_destroy(c);
+
+    //return TRUE;
+}
+
+static void
+calf_frame_class_init (CalfFrameClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    //widget_class->expose_event = calf_frame_expose;
+}
+
+static void
+calf_frame_init (CalfFrame *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
+}
+
+GType
+calf_frame_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfFrameClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_frame_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfFrame),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_frame_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfFrame%u%d", 
+                ((unsigned int)(intptr_t)calf_frame_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_FRAME,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
             free(name);
             break;
         }

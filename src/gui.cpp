@@ -88,6 +88,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new filechooser_param_control;
     if (!strcmp(element, "listview"))
         return new listview_param_control;
+    if (!strcmp(element, "notebook"))
+        return new notebook_param_control;
     return NULL;
 }
 
@@ -103,8 +105,6 @@ control_container *plugin_gui::create_container_from_xml(const char *element, co
         return new alignment_container;
     if (!strcmp(element, "frame"))
         return new frame_container;
-    if (!strcmp(element, "notebook"))
-        return new notebook_container;
     if (!strcmp(element, "scrolled"))
         return new scrolled_container;
     return NULL;
@@ -190,6 +190,10 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             current_control->set();
             current_control->hook_params();
             current_control->add_context_menu_handler();
+            if (current_control->is_container()) {
+                gtk_container_set_border_width(current_control->container, current_control->get_int("border"));
+                container_stack.push_back(current_control);
+            }
             return;
         }
     }
@@ -207,7 +211,7 @@ void plugin_gui::xml_element_end(void *data, const char *element)
     {
         return;
     }
-    if (gui->current_control)
+    if (gui->current_control and !gui->current_control->is_container())
     {
         (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
         gui->current_control = NULL;
@@ -220,6 +224,7 @@ void plugin_gui::xml_element_end(void *data, const char *element)
     else
         gui->top_container = gui->container_stack[0];
     gui->container_stack.pop_back();
+    gui->current_control = NULL;
 }
 
 

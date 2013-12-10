@@ -28,6 +28,7 @@
 
 
 #include <gtk/gtk.h>
+#include <gtk/gtkframe.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -91,6 +92,28 @@ extern GtkWidget *calf_toggle_new();
 extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
 
 extern GType calf_toggle_get_type();
+
+
+
+#define CALF_TYPE_FRAME          (calf_frame_get_type())
+#define CALF_FRAME(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_FRAME, CalfFrame))
+#define CALF_IS_FRAME(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_FRAME))
+#define CALF_FRAME_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_FRAME, CalfFrameClass))
+#define CALF_IS_FRAME_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_FRAME))
+
+struct CalfFrame
+{
+    GtkFrame parent;
+};
+
+struct CalfFrameClass
+{
+    GtkFrameClass parent_class;
+};
+
+extern GtkWidget *calf_frame_new(const char *label);
+
+extern GType calf_frame_get_type();
 
 G_END_DECLS
 
