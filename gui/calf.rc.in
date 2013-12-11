@@ -529,6 +529,8 @@ style "calf-button-norm"
     GtkButton      ::child-displacement-x = 0
     GtkButton      ::child-displacement-y = 0
     GtkButton      ::inner-border         = { 8, 8, 2, 2}
+    GtkButton      ::default-border       = { 7, 25, 5, 5 }
+    #GtkButton::inner-border         = { 6, 25, 1, 1}
     
     xthickness = 3
     ythickness = 3
@@ -620,12 +622,8 @@ style "calf-button-norm"
 
 style "calf-combobox"
 {
-    GtkButton      ::child-displacement-x = 0
-    GtkButton      ::child-displacement-y = 0
-    GtkButton      ::default-border       = { 7, 25, 5, 5 }
-    #GtkButton::inner-border         = { 6, 25, 1, 1}
-    
-    xthickness = 6
+    font_name = "Bitstream Vera Sans 10"
+    xthickness = 0
     ythickness = 2
 }
 

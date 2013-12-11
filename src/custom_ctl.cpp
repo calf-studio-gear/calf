@@ -647,15 +647,15 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_COMBOBOX(widget));
     
-    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
-    GtkTreeIter iter;
-    gchar *lab;
-    gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter);
-    gtk_tree_model_get (model, &iter, 0, &lab, -1);
-    
     if (gtk_widget_is_drawable (widget)) {
         
-        int pad = 5;
+        int pad = 4;
+        
+        GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
+        GtkTreeIter iter;
+        gchar *lab;
+        gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter);
+        gtk_tree_model_get (model, &iter, 0, &lab, -1);
         
         GdkWindow *window = widget->window;
         cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -681,14 +681,14 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
               CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(c, 11);
         
-        cairo_move_to(c, x + pad + 3, y + sy / 2 + 4);
+        cairo_move_to(c, x + pad + 3, y + sy / 2 + 5);
         cairo_set_source_rgb(c, 0.,0.,0.);
         cairo_show_text(c, lab);
         
         
         cairo_surface_t *image;
         image = cairo_image_surface_create_from_png(PKGLIBDIR "combo_arrow.png");
-        cairo_set_source_surface(c, image, x + sx - 20, y + sy / 2 - 6);
+        cairo_set_source_surface(c, image, x + sx - 20, y + sy / 2 - 5);
         cairo_rectangle(c, x, y, sx, sy);
         cairo_fill(c);
         
