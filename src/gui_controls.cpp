@@ -270,7 +270,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     lstore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING); // value, key
     
     const parameter_properties &props = get_props();
-    widget  = gtk_combo_box_new_text ();
+    widget  = calf_combobox_new ();
     if (param_no != -1 && props.choices)
     {
         for (int j = (int)props.min; j <= (int)props.max; j++)

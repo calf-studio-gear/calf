@@ -39,7 +39,7 @@ calf_phase_graph_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
     
-    line_graph_background(ctx, sx, sy, ox, oy);
+    line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
     cairo_select_font_face(ctx, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx, 9);
@@ -517,6 +517,10 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         double m    = 1;
         double size = 10;
         
+        cairo_rectangle(c, ox, oy, sx, sy);
+        cairo_clip(c);
+        
+        
         const gchar *lab = gtk_frame_get_label(GTK_FRAME(widget));
         
         cairo_select_font_face(c, "Bitstream Vera Sans",
@@ -553,7 +557,7 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         
         a = 0.5;
         
-        cairo_set_source_rgb(c, 0.55,0.55,0.55);
+        cairo_set_source_rgb(c, 0.66,0.66,0.66);
         
         rad = 9;
         cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
@@ -568,6 +572,8 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
         cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
         cairo_stroke(c);
+        
+        cairo_destroy(c);
     }
     if (gtk_bin_get_child(GTK_BIN(widget))) {
         gtk_container_propagate_expose(GTK_CONTAINER(widget),
@@ -617,6 +623,120 @@ calf_frame_get_type (void)
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_FRAME,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+///////////////////////////////////////// combo box ///////////////////////////////////////////////
+
+
+GtkWidget *
+calf_combobox_new()
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_COMBOBOX, NULL ));
+    return widget;
+}
+static gboolean
+calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_COMBOBOX(widget));
+    
+    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
+    GtkTreeIter iter;
+    gchar *lab;
+    gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter);
+    gtk_tree_model_get (model, &iter, 0, &lab, -1);
+    
+    if (gtk_widget_is_drawable (widget)) {
+        
+        int pad = 5;
+        
+        GdkWindow *window = widget->window;
+        cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+        
+        int x  = widget->allocation.x;
+        int y  = widget->allocation.y;
+        int sx = widget->allocation.width;
+        int sy = widget->allocation.height;
+        gint mx, my;
+        bool hover = false;
+        
+        cairo_rectangle(c, x, y, sx, sy);
+        cairo_clip(c);
+        
+        gtk_widget_get_pointer(GTK_WIDGET(widget), &mx, &my);
+        if (mx >= 0 and mx < sx and my >= 0 and my < sy)
+            hover = true;
+            
+        line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, 4, hover, hover ? 0.1 : 0.25);
+        
+        cairo_select_font_face(c, "Bitstream Vera Sans",
+              CAIRO_FONT_SLANT_NORMAL,
+              CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(c, 11);
+        
+        cairo_move_to(c, x + pad + 3, y + sy / 2 + 4);
+        cairo_set_source_rgb(c, 0.,0.,0.);
+        cairo_show_text(c, lab);
+        
+        
+        cairo_surface_t *image;
+        image = cairo_image_surface_create_from_png(PKGLIBDIR "combo_arrow.png");
+        cairo_set_source_surface(c, image, x + sx - 20, y + sy / 2 - 6);
+        cairo_rectangle(c, x, y, sx, sy);
+        cairo_fill(c);
+        
+        cairo_destroy(c);
+    }
+    return FALSE;
+}
+
+static void
+calf_combobox_class_init (CalfComboboxClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_combobox_expose;
+}
+
+static void
+calf_combobox_init (CalfCombobox *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 20;
+}
+
+GType
+calf_combobox_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfComboboxClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_combobox_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfCombobox),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_combobox_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfCombobox%u%d", 
+                ((unsigned int)(intptr_t)calf_combobox_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_COMBO_BOX_TEXT,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);

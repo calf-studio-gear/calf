@@ -29,6 +29,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkframe.h>
+#include <gtk/gtkcomboboxtext.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -113,6 +114,26 @@ struct CalfFrameClass
 
 extern GtkWidget *calf_frame_new(const char *label);
 extern GType calf_frame_get_type();
+
+
+#define CALF_TYPE_COMBOBOX          (calf_combobox_get_type())
+#define CALF_COMBOBOX(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_COMBOBOX, CalfCombobox))
+#define CALF_IS_COMBOBOX(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_COMBOBOX))
+#define CALF_COMBOBOX_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_COMBOBOX, CalfComboboxClass))
+#define CALF_IS_COMBOBOX_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_COMBOBOX))
+
+struct CalfCombobox
+{
+    GtkComboBoxText parent;
+};
+
+struct CalfComboboxClass
+{
+    GtkComboBoxTextClass parent_class;
+};
+
+extern GtkWidget *calf_combobox_new();
+extern GType calf_combobox_get_type();
 
 G_END_DECLS
 
