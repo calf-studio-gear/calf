@@ -827,8 +827,10 @@ inline float subindex_to_freq(int subindex)
   return freq;
 }
 
-inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, int shadow = 7, bool lights = true, float dull = 0.15) 
+inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness = 1, int shadow = 7, float lights = 0.9, float dull = 0.15) 
 {
+    float br = brightness * 0.5 + 0.5;
+    
     // outer frame (black)
     int pad = 0;
     
@@ -855,8 +857,8 @@ inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int 
     
     // inner yellowish screen
     cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0,     0.71, 0.82, 0.33);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0,     0.89, 1.00, 0.54);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * 0.71, br * 0.82, br * 0.33);
+    cairo_pattern_add_color_stop_rgb(pt, 1.0, br * 0.89, br * 1.00, br * 0.54);
     cairo_set_source (c, pt);
     cairo_rectangle(c, x + ox, y + oy, sx, sy);
     cairo_fill(c);
@@ -911,7 +913,7 @@ inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int 
         cairo_pattern_destroy(pt);
     }
     
-    if(lights) {
+    if(lights > 0) {
         // light sources
         int div = 1;
         int light_w = sx;
@@ -923,14 +925,14 @@ inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int 
             cairo_pattern_t *pt = cairo_pattern_create_radial(
                x + ox + w * i + w / 2.f, y + oy, 1,
                x + ox + w * i + w / 2.f, y + ox + sy * 0.25, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
             cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
             cairo_set_source (c, pt);
             cairo_fill_preserve(c);
             pt = cairo_pattern_create_radial(
                x + ox + w * i + w / 2.f, y + oy + sy, 1,
                x + ox + w * i + w / 2.f, y + ox + sy * 0.75, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, 0.9);
+            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
             cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
             cairo_set_source (c, pt);
             cairo_fill_preserve(c);

@@ -674,7 +674,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         if (mx >= 0 and mx < sx and my >= 0 and my < sy)
             hover = true;
             
-        line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, 4, hover, hover ? 0.1 : 0.25);
+        line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
         
         cairo_select_font_face(c, "Bitstream Vera Sans",
               CAIRO_FONT_SLANT_NORMAL,
