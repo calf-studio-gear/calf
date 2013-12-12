@@ -828,9 +828,10 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     
     // *modes to set:
     // 0: lines
-    // 1: bars
-    // 2: boxes (little things on the values position
-    // 3: centered bars (0dB is centered in y direction)
+    // 1: blob
+    // 2: bars
+    // 3: boxes (little things on the values position
+    // 4: centered bars (0dB is centered in y direction)
     
     if (_mode > 3 and _mode < 6) {
         // centered viewing modes like stereo image and stereo difference
@@ -838,10 +839,10 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
             // boxes
             if(subindex > 1) {
                 // boxes (hold)
-                *mode = 2;
+                *mode = 3;
             } else {
                 // bars (signal)
-                *mode = 3;
+                *mode = 4;
             }
         } else {
             // lines
@@ -851,10 +852,10 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         // bars
         if((subindex == 0 and _mode < 3) or (subindex <= 1 and _mode == 3)) {
             // draw bars
-            *mode = 1;
+            *mode = 2;
         } else {
             // draw boxes
-            *mode = 2;
+            *mode = 3;
         }
     } else {
         // draw lines

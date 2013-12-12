@@ -96,7 +96,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
     int ox = lg->pad_x;
     int oy = lg->pad_y;
     
-    int _last = 0;
+    int _lastx = 0;
     float y = 0.f;
     int startdraw = -1;
     
@@ -105,6 +105,7 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
         if (lg->debug > 2) printf("* graph x: %d, y: %.5f, data: %.5f\n", i, y, data[i]);
         switch (mode) {
             case 0:
+            case 1:
             default:
                 // we want to draw a line
                 if (i and (data[i] < INFINITY or i == sx - 1)) {
@@ -117,52 +118,57 @@ calf_line_graph_draw_graph( CalfLineGraph* lg, cairo_t *ctx, float *data, int mo
                         startdraw = i;
                 }
                 break;
-            case 1:
+            case 2:
                 // bars are used
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, (int)y, i - _last, sy - (int)y + oy);
-                    _last = i;
+                    cairo_rectangle(ctx, ox + _lastx, (int)y, i - _lastx, sy - (int)y + oy);
+                    _lastx = i;
                     if (startdraw < 0)
-                        startdraw = ox + _last;
-                } else {
-                    continue;
-                }
-                break;
-            case 2:
-                // this one is drawing little boxes at the values position
-                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, (int)y - 1, i - _last, 2);
-                    _last = i;
-                    if (startdraw < 0)
-                        startdraw = ox + _last;
+                        startdraw = ox + _lastx;
                 } else {
                     continue;
                 }
                 break;
             case 3:
-                // this one is drawing bars centered on the x axis
+                // this one is drawing little boxes at the values position
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last, oy + sy / 2, i - _last, -1 * data[i] * (sy / 2));
-                    _last = i;
+                    cairo_rectangle(ctx, ox + _lastx, (int)y - 1, i - _lastx, 2);
+                    _lastx = i;
                     if (startdraw < 0)
-                        startdraw = ox + _last;
+                        startdraw = ox + _lastx;
                 } else {
                     continue;
                 }
                 break;
             case 4:
+                // this one is drawing bars centered on the x axis
+                if (i and ((data[i] < INFINITY) or i == sx - 1)) {
+                    cairo_rectangle(ctx, ox + _lastx, oy + sy / 2, i - _lastx, -1 * data[i] * (sy / 2));
+                    _lastx = i;
+                    if (startdraw < 0)
+                        startdraw = ox + _lastx;
+                } else {
+                    continue;
+                }
+                break;
+            case 5:
                 // this one is drawing bars centered on the x axis with 1
                 // as the center
                 if (i and ((data[i] < INFINITY) or i == sx - 1)) {
-                    cairo_rectangle(ctx, ox + _last,oy + sy / 2 - sy * lg->offset / 2, i - _last, -1 * data[i] * (sy / 2) + sy * lg->offset / 2);
-                    _last = i;
+                    cairo_rectangle(ctx, ox + _lastx,oy + sy / 2 - sy * lg->offset / 2, i - _lastx, -1 * data[i] * (sy / 2) + sy * lg->offset / 2);
+                    _lastx = i;
                     if (startdraw < 0)
-                        startdraw = ox + _last;
+                        startdraw = ox + _lastx;
                 } else {
                     continue;
                 }
                 break;
         }
+    }
+    if (mode == 1) {
+        cairo_line_to(ctx, sx + 2 * ox, sy + 2 * oy);
+        cairo_line_to(ctx, 0, sy + 2 * oy);
+        cairo_close_path(ctx);
     }
     if(!mode) {
         cairo_stroke(ctx);
