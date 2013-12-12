@@ -215,9 +215,9 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
         }
     }
     if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
     else {
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
     }
     if (!subindex)
         context->set_line_width(1.);
@@ -443,9 +443,9 @@ bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int poin
         }
     }
     if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
     else {
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
     }
     if (!subindex)
         context->set_line_width(1.);
@@ -677,9 +677,9 @@ bool expander_audio_module::get_graph(int subindex, float *data, int points, cai
         }
     }
     if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
     else {
-        context->set_source_rgba(0.35, 0.4, 0.2, 1);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
     }
     if (!subindex)
         context->set_line_width(1.);
@@ -1442,9 +1442,9 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, int ph
         if (r 
         and ((index != param_bypass and *params[index - 1])
         or   (index == param_bypass and *params[param_bypass0 + 11 * subindex])))
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.22);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
         else
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.55);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
     }
     return r;
 }
@@ -2473,9 +2473,9 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, f
         if (r 
         and ((index != param_bypass and *params[index - 1])
         or   (index == param_bypass and *params[param_bypass0 + 12 * subindex])))
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.22);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
         else
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.55);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
     }
     return r;
 }
@@ -2697,7 +2697,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
             break;
         case 1:
             *mode = 1;
-            context->set_source_rgba(0.35, 0.4, 0.2, 0.33);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
             break;
         default:
         case 2:
