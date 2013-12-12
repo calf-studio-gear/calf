@@ -1528,7 +1528,7 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     page = 0;
-    GtkWidget *nb = gtk_notebook_new();
+    GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
     container = GTK_CONTAINER(nb);
     gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");

@@ -30,6 +30,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkframe.h>
 #include <gtk/gtkcomboboxtext.h>
+#include <gtk/gtknotebook.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -134,6 +135,27 @@ struct CalfComboboxClass
 
 extern GtkWidget *calf_combobox_new();
 extern GType calf_combobox_get_type();
+
+
+
+#define CALF_TYPE_NOTEBOOK          (calf_notebook_get_type())
+#define CALF_NOTEBOOK(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_NOTEBOOK, CalfNotebook))
+#define CALF_IS_NOTEBOOK(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_NOTEBOOK))
+#define CALF_NOTEBOOK_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_NOTEBOOK, CalfNotebookClass))
+#define CALF_IS_NOTEBOOK_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_NOTEBOOK))
+
+struct CalfNotebook
+{
+    GtkNotebook parent;
+};
+
+struct CalfNotebookClass
+{
+    GtkNotebookClass parent_class;
+};
+
+extern GtkWidget *calf_notebook_new();
+extern GType calf_notebook_get_type();
 
 G_END_DECLS
 
