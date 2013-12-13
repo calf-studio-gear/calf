@@ -1134,7 +1134,7 @@ calf_fader_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_fill_preserve(c);
         
         // draw slider
-        if (fader->hover)
+        if (fader->hover or gtk_grab_get_current() == widget)
             gdk_cairo_set_source_pixbuf(c, fader->sliderpre, layout.slx, layout.sly);
         else
             gdk_cairo_set_source_pixbuf(c, fader->slider, layout.slx, layout.sly);
