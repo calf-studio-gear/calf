@@ -22,7 +22,6 @@
 #include <calf/giface.h>
 #include <calf/custom_ctl.h>
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtknotebook.h>
 #include <cairo/cairo.h>
 #include <math.h>
 #include <gdk/gdk.h>
@@ -792,7 +791,8 @@ calf_notebook_expose (GtkWidget *widget, GdkEventExpose *event)
     
     GtkNotebook *notebook;
     notebook = GTK_NOTEBOOK (widget);
-
+    CalfNotebookClass *klass = CALF_NOTEBOOK_CLASS(GTK_OBJECT_GET_CLASS(widget));
+    
     if (gtk_widget_is_drawable (widget)) {
         
         GdkWindow *window = widget->window;
@@ -874,19 +874,17 @@ calf_notebook_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1);
         cairo_stroke_preserve(c);
                     
-        // create pixbuf for screw image
-        GdkPixbuf *screw = gdk_pixbuf_new_from_file (PKGLIBDIR "screw_black.png", 0);
-        int sw = gdk_pixbuf_get_width(screw);
-        int sh = gdk_pixbuf_get_height(screw);
+        int sw = gdk_pixbuf_get_width(klass->screw);
+        int sh = gdk_pixbuf_get_height(klass->screw);
         
         // draw screws
-        gdk_cairo_set_source_pixbuf(c, screw, x, y + add);
+        gdk_cairo_set_source_pixbuf(c, klass->screw, x, y + add);
         cairo_fill_preserve(c);
-        gdk_cairo_set_source_pixbuf(c, screw, x + sx - sw, y + add);
+        gdk_cairo_set_source_pixbuf(c, klass->screw, x + sx - sw, y + add);
         cairo_fill_preserve(c);
-        gdk_cairo_set_source_pixbuf(c, screw, x, y + sy - sh);
+        gdk_cairo_set_source_pixbuf(c, klass->screw, x, y + sy - sh);
         cairo_fill_preserve(c);
-        gdk_cairo_set_source_pixbuf(c, screw, x + sx - sh, y + sy - sh);
+        gdk_cairo_set_source_pixbuf(c, klass->screw, x + sx - sh, y + sy - sh);
         cairo_fill_preserve(c);
         
         // propagate expose to all children
@@ -907,6 +905,8 @@ calf_notebook_class_init (CalfNotebookClass *klass)
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->expose_event = calf_notebook_expose;
+    
+    klass->screw = gdk_pixbuf_new_from_file (PKGLIBDIR "screw_black.png", 0);
 }
 
 static void
@@ -940,6 +940,266 @@ calf_notebook_get_type (void)
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_NOTEBOOK,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+///////////////////////////////////////// fader ///////////////////////////////////////////////
+
+static void calf_fader_set_layout(GtkWidget *widget)
+{
+    GtkRange  *range        = GTK_RANGE(widget);
+    CalfFader *fader        = CALF_FADER(widget);
+    CalfFaderLayout layout  = fader->layout;
+    
+    int hor = fader->horizontal;
+    
+    // widget layout
+    layout.x = widget->allocation.x;
+    layout.y = widget->allocation.y;
+    layout.w = widget->allocation.width;
+    layout.h = widget->allocation.height;
+    
+    // trough layout
+    layout.tx = range->range_rect.x + layout.x;
+    layout.ty = range->range_rect.y + layout.y;
+    layout.tw = range->range_rect.width;
+    layout.th = range->range_rect.height;
+    layout.tc = hor ? layout.ty + layout.th / 2 : layout.tx + layout.tw / 2; 
+    
+    // screw layout
+    layout.scw  = gdk_pixbuf_get_width(fader->screw);
+    layout.sch  = gdk_pixbuf_get_height(fader->screw);
+    layout.scx1 = hor ? layout.tx : layout.tc - layout.scw / 2;
+    layout.scy1 = hor ? layout.tc - layout.sch / 2 : layout.ty;
+    layout.scx2 = hor ? layout.tx + layout.tw - layout.scw : layout.tc - layout.scw / 2;
+    layout.scy2 = hor ? layout.tc - layout.sch / 2 : layout.ty + layout.th - layout.sch;
+    
+    // slit layout
+    layout.sw = hor ? layout.tw - layout.scw * 2 - 2: 2;
+    layout.sh = hor ? 2 : layout.th - layout.sch * 2 - 2;
+    layout.sx = hor ? layout.tx + layout.scw + 1 : layout.tc - 1;
+    layout.sy = hor ? layout.tc - 1 : layout.ty + layout.sch + 1;
+    
+    // slider layout
+    layout.slw = gdk_pixbuf_get_width(fader->slider);
+    layout.slh = gdk_pixbuf_get_height(fader->slider);
+    layout.slx = fader->horizontal ? 0 : layout.tc - layout.slw / 2;
+    layout.sly = fader->horizontal ? layout.tc - layout.slh / 2 : 0;
+    
+    //printf("widg %d %d %d %d | trgh %d %d %d %d %d | slid %d %d %d %d | slit %d %d %d %d\n",
+            //layout.x, layout.y, layout.w, layout.h,
+            //layout.tx, layout.ty, layout.tw, layout.th, layout.tc,
+            //layout.slx, layout.sly, layout.slw, layout.slh,
+            //layout.sx, layout.sy, layout.sw, layout.sh);
+            
+    fader->layout = layout;
+}
+
+GtkWidget *
+calf_fader_new(const int horiz = 0, const int size = 2, const double min = 0, const double max = 1, const double step = 0.1)
+{
+    GtkObject *adj;
+    gint digits;
+    
+    adj = gtk_adjustment_new (min, min, max, step, 10 * step, 0);
+    
+    if (fabs (step) >= 1.0 || step == 0.0)
+        digits = 0;
+    else
+        digits = std::min(5, abs((gint) floor (log10 (fabs (step)))));
+        
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_FADER, NULL ));
+    CalfFader *self = CALF_FADER(widget);
+    
+    GTK_RANGE(widget)->orientation = horiz ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    gtk_range_set_adjustment(GTK_RANGE(widget), GTK_ADJUSTMENT(adj));
+    gtk_scale_set_digits(GTK_SCALE(widget), digits);
+    
+    self->size = size;
+    self->horizontal = horiz;
+    self->hover = 0;
+    
+    gchar * file = g_strdup_printf("%sslider%d-%s.png", PKGLIBDIR, size, horiz ? "horiz" : "vert");
+    self->slider = gdk_pixbuf_new_from_file (file, 0);
+    file = g_strdup_printf("%sslider%d-%s-prelight.png", PKGLIBDIR, size, horiz ? "horiz" : "vert");
+    self->sliderpre = gdk_pixbuf_new_from_file(file, 0);
+    
+    self->screw = gdk_pixbuf_new_from_file (PKGLIBDIR "screw_silver.png", 0);
+    
+    return widget;
+}
+
+static bool calf_fader_hover(GtkWidget *widget)
+{
+    CalfFader *fader        = CALF_FADER(widget);
+    CalfFaderLayout  layout = fader->layout;
+    gint mx, my;
+    gtk_widget_get_pointer(GTK_WIDGET(widget), &mx, &my);
+
+    if ((fader->horizontal and mx + layout.x >= layout.tx
+                           and mx + layout.x < layout.tx + layout.tw
+                           and my + layout.y >= layout.sly
+                           and my + layout.y < layout.sly + layout.slh)
+    or (!fader->horizontal and mx + layout.x >= layout.slx
+                           and mx + layout.x < layout.slx + layout.slw
+                           and my + layout.y >= layout.ty
+                           and my + layout.y < layout.ty + layout.th))
+        return true;
+    return false;
+}
+static void calf_fader_check_hover_change(GtkWidget *widget)
+{
+    CalfFader *fader = CALF_FADER(widget);
+    bool hover = calf_fader_hover(widget);
+    if (hover != fader->hover)
+        gtk_widget_queue_draw(widget);
+    fader->hover = hover;
+}
+static gboolean
+calf_fader_motion (GtkWidget *widget, GdkEventMotion *event)
+{
+    calf_fader_check_hover_change(widget);
+    return FALSE;
+}
+
+static gboolean
+calf_fader_enter (GtkWidget *widget, GdkEventCrossing *event)
+{
+    calf_fader_check_hover_change(widget);
+    return FALSE;
+}
+
+static gboolean
+calf_fader_leave (GtkWidget *widget, GdkEventCrossing *event)
+{
+    CALF_FADER(widget)->hover = false;
+    gtk_widget_queue_draw(widget);
+    return FALSE;
+}
+static void
+calf_fader_allocate (GtkWidget *widget, GtkAllocation *allocation)
+{
+    calf_fader_set_layout(widget);
+}
+static gboolean
+calf_fader_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_FADER(widget));
+    if (gtk_widget_is_drawable (widget)) {
+        
+        GdkWindow *window       = widget->window;
+        GtkScale  *scale        = GTK_SCALE(widget);
+        GtkRange  *range        = GTK_RANGE(widget);
+        CalfFader *fader        = CALF_FADER(widget);
+        CalfFaderLayout layout  = fader->layout;
+        cairo_t   *c            = gdk_cairo_create(GDK_DRAWABLE(window));
+        
+        cairo_rectangle(c, layout.x, layout.y, layout.w, layout.h);
+        cairo_clip(c);
+        
+        // draw slit
+        double r  = range->adjustment->upper - range->adjustment->lower;
+        double v0 = range->adjustment->value - range->adjustment->lower;
+        if ((fader->horizontal and gtk_range_get_inverted(range))
+        or (!fader->horizontal and gtk_range_get_inverted(range)))
+            v0 = -v0 + 1;
+        int vp  = v0 / r * (fader->horizontal ? layout.w - layout.slw : layout.h - layout.slh)
+                         + (fader->horizontal ? layout.slw : layout.slh) / 2
+                         + (fader->horizontal ? layout.x : layout.y);
+        layout.slx = fader->horizontal ? vp - layout.slw / 2 : layout.tc - layout.slw / 2;
+        layout.sly = fader->horizontal ? layout.tc - layout.slh / 2 : vp - layout.slh / 2;
+        
+        cairo_rectangle(c, layout.sx - 1, layout.sy - 1, layout.sw, layout.sh);
+        cairo_set_source_rgba(c, 0,0,0, 0.25);
+        cairo_fill(c);
+        cairo_rectangle(c, layout.sx + 1, layout.sy + 1, layout.sw, layout.sh);
+        cairo_set_source_rgba(c, 1,1,1, 0.125);
+        cairo_fill(c);
+        cairo_rectangle(c, layout.sx, layout.sy, layout.sw, layout.sh);
+        cairo_set_source_rgb(c, 0,0,0);
+        cairo_fill(c);
+        
+        // draw screws
+        cairo_rectangle(c, layout.x, layout.y, layout.w, layout.h);
+        gdk_cairo_set_source_pixbuf(c, fader->screw, layout.scx1, layout.scy1);
+        cairo_fill_preserve(c);
+        gdk_cairo_set_source_pixbuf(c, fader->screw, layout.scx2, layout.scy2);
+        cairo_fill_preserve(c);
+        
+        // draw slider
+        if (fader->hover)
+            gdk_cairo_set_source_pixbuf(c, fader->sliderpre, layout.slx, layout.sly);
+        else
+            gdk_cairo_set_source_pixbuf(c, fader->slider, layout.slx, layout.sly);
+        cairo_fill(c);
+        
+        // draw value label
+        if (scale->draw_value) {
+            PangoLayout *layout;
+            gint _x, _y;
+            layout = gtk_scale_get_layout (scale);
+            gtk_scale_get_layout_offsets (scale, &_x, &_y);
+            gtk_paint_layout (widget->style, window, GTK_STATE_NORMAL, FALSE, NULL,
+                              widget, fader->horizontal ? "hscale" : "vscale", _x, _y, layout);
+        }
+        
+        cairo_destroy(c);
+    }
+    return FALSE;
+}
+
+static void
+calf_fader_class_init (CalfFaderClass *klass)
+{
+    GtkWidgetClass *widget_class      = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event        = calf_fader_expose;
+}
+
+static void
+calf_fader_init (CalfFader *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 40;
+    
+    gtk_signal_connect(GTK_OBJECT(widget), "motion-notify-event", GTK_SIGNAL_FUNC (calf_fader_motion), NULL);
+    gtk_signal_connect(GTK_OBJECT(widget), "enter-notify-event", GTK_SIGNAL_FUNC (calf_fader_enter), NULL);
+    gtk_signal_connect(GTK_OBJECT(widget), "leave-notify-event", GTK_SIGNAL_FUNC (calf_fader_leave), NULL);
+    gtk_signal_connect(GTK_OBJECT(widget), "size-allocate", GTK_SIGNAL_FUNC (calf_fader_allocate), NULL);
+}
+
+GType
+calf_fader_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfFaderClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_fader_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfFader),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_fader_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfFader%u%d", 
+                ((unsigned int)(intptr_t)calf_fader_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_SCALE,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);

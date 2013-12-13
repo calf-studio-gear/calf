@@ -22,13 +22,10 @@ style "calf-default"
 
     GtkPaned       ::handle-size          = 6
 
-    GtkRange       ::slider-width         = 15
     GtkRange       ::stepper-size         = 15
-    GtkRange::trough_border               = 0
-    GtkVScale::slider_length              = 46
-    GtkVScale::slider_width               = 35
-    GtkHScale::slider_length              = 46
-    GtkHScale::slider_width               = 35
+    GtkRange       ::trough-border        = 0
+    GtkScale       ::slider-length        = 46
+    GtkRange       ::slider-width         = 35
     
     GtkScale       ::trough-side-details  = 0   # Restores sliders
     
@@ -926,205 +923,15 @@ style "calf-menu-separator" = "menu"
 
 style "calf-scale-small" = "calf-default"
 {
-    GtkVScale::slider_length              = 38
-    GtkVScale::slider_width               = 25
-    GtkHScale::slider_length              = 38
-    GtkHScale::slider_width               = 25
-    engine "pixmap"
-    {
-        image
-        {
-            function        = BOX
-            file            = "trough1-horizontal.png"
-            border          = { 14, 14, 0, 0 }
-            stretch         = TRUE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = BOX
-            file            = "trough1-vertical.png"
-            border          = { 0, 0, 14, 14 }
-            stretch         = TRUE
-            orientation     = VERTICAL
-        }
-
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = NORMAL
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-horiz.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = PRELIGHT
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-horiz-prelight.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = INSENSITIVE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-horiz.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = NORMAL
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-vert.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = PRELIGHT
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-vert-prelight.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = INSENSITIVE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider1-vert.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-    }
+    GtkScale::slider-length = 38
+    GtkRange::slider-width  = 25
 }
 
 
 style "calf-scale-big" = "calf-default"
 {
-    engine "pixmap"
-    {
-        image
-        {
-            function        = BOX
-            file            = "trough2-horizontal.png"
-            border          = { 20, 20, 0, 0 }
-            stretch         = TRUE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = BOX
-            file            = "trough2-vertical.png"
-            border          = { 0, 0, 20, 20 }
-            stretch         = TRUE
-            orientation     = VERTICAL
-        }
-
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = NORMAL
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-horiz.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = PRELIGHT
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-horiz-prelight.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = INSENSITIVE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-horiz.png"
-            overlay_stretch     = FALSE
-            orientation     = HORIZONTAL
-        }
-        
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = NORMAL
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-vert.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = PRELIGHT
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-vert-prelight.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-        image
-        {
-            function        = SLIDER
-            recolorable     = FALSE
-            state           = INSENSITIVE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-            overlay_file        = "slider2-vert.png"
-            overlay_stretch     = FALSE
-            orientation     = VERTICAL
-        }
-    }
+    
 }
-
-
-
 
 ### SCROLLBAR ###
 

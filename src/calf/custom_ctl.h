@@ -31,6 +31,8 @@
 #include <gtk/gtkframe.h>
 #include <gtk/gtkcomboboxtext.h>
 #include <gtk/gtknotebook.h>
+#include <gtk/gtkrange.h>
+#include <gtk/gtkscale.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -117,6 +119,7 @@ extern GtkWidget *calf_frame_new(const char *label);
 extern GType calf_frame_get_type();
 
 
+
 #define CALF_TYPE_COMBOBOX          (calf_combobox_get_type())
 #define CALF_COMBOBOX(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_COMBOBOX, CalfCombobox))
 #define CALF_IS_COMBOBOX(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_COMBOBOX))
@@ -152,10 +155,48 @@ struct CalfNotebook
 struct CalfNotebookClass
 {
     GtkNotebookClass parent_class;
+    GdkPixbuf *screw;
 };
 
 extern GtkWidget *calf_notebook_new();
 extern GType calf_notebook_get_type();
+
+
+
+#define CALF_TYPE_FADER          (calf_fader_get_type())
+#define CALF_FADER(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_FADER, CalfFader))
+#define CALF_IS_FADER(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_FADER))
+#define CALF_FADER_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_FADER, CalfFaderClass))
+#define CALF_IS_FADER_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_FADER))
+
+struct CalfFaderLayout
+{
+    int x, y, w, h;
+    int tx, ty, tw, th, tc;
+    int scw, sch, scx1, scy1, scx2, scy2;
+    int sx, sy, sw, sh;
+    int slx, sly, slw, slh;
+};
+
+struct CalfFader
+{
+    GtkScale parent;
+    int horizontal, size;
+    GdkPixbuf *screw;
+    GdkPixbuf *slider;
+    GdkPixbuf *sliderpre;
+    CalfFaderLayout layout;
+    bool hover;
+};
+
+struct CalfFaderClass
+{
+    GtkScaleClass parent_class;
+};
+
+extern GtkWidget *calf_fader_new(const int horiz, const int size, const double min, const double max, const double step);
+extern GType calf_fader_get_type();
+
 
 G_END_DECLS
 

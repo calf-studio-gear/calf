@@ -403,7 +403,8 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
 
-    widget = gtk_hscale_new_with_range (0, 1, get_props().get_increment());
+    widget = calf_fader_new(1, get_int("size", 2), 0, 1, get_props().get_increment());
+    
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
@@ -412,10 +413,6 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
     int size = get_int("size", 2);
-    if(size < 1)
-        size = 1;
-    if(size > 2)
-        size = 2;
     char *name = g_strdup_printf("Calf-HScale%i", size);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
     gtk_widget_set_size_request (widget, size * 100, -1);
@@ -473,7 +470,7 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget = gtk_vscale_new_with_range (0, 1, get_props().get_increment());
+    widget = calf_fader_new(0, get_int("size", 2), 0, 1, get_props().get_increment());
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
 
@@ -483,10 +480,6 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
     int size = get_int("size", 2);
-    if(size < 1)
-        size = 1;
-    if(size > 2)
-        size = 2;
     char *name = g_strdup_printf("Calf-VScale%i", size);
     gtk_widget_set_size_request (widget, -1, size * 100);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
