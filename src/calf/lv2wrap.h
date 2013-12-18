@@ -285,7 +285,12 @@ struct lv2_wrapper
         {
             inst->process_events(offset);
         }
+        bool simulate_stereo_input = (Module::in_count > 1) && Module::simulate_stereo_input && !inst->ins[1];
+        if (simulate_stereo_input)
+            inst->ins[1] = inst->ins[0];
         inst->module->process_slice(offset, SampleCount);
+        if (simulate_stereo_input)
+            inst->ins[1] = NULL;
     }
     static void cb_cleanup(LV2_Handle Instance)
     {

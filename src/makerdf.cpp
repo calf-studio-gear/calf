@@ -330,7 +330,7 @@ void make_ttl(string path_prefix)
         const char *out_symbols[] = { "out_l", "out_r", "out_l_2", "out_r_2", "out_l_3", "out_r_3", "out_l_4", "out_r_4" };
         const char *out_names[] = { "Out L", "Out R", "Out L 2", "Out R 2", "Out L 3", "Out R 3", "Out L 4", "Out R 4" };
         for (int i = 0; i < pi->get_input_count(); i++)
-            if(i <= pi->get_input_count() - pi->get_inputs_optional() - 1)
+            if(i <= pi->get_input_count() - pi->get_inputs_optional() - 1 && !(i == 1 && pi->get_simulate_stereo_input()))
                 add_port(ports, in_symbols[i], in_names[i], "Input", pn++);
             else
                 add_port(ports, in_symbols[i], in_names[i], "Input", pn++, "lv2:AudioPort", true);

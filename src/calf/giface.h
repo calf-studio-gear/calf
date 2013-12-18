@@ -328,6 +328,7 @@ struct ladspa_plugin_info
 /// An interface returning metadata about a plugin
 struct plugin_metadata_iface
 {
+    enum { simulate_stereo_input = true };
     /// @return plugin long name
     virtual const char *get_name() const = 0;
     /// @return plugin LV2 label
@@ -372,6 +373,8 @@ struct plugin_metadata_iface
     virtual const char *const *get_configure_vars() const { return NULL; }
     /// @return table_metadata_iface if any
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { return NULL; }
+    /// @return whether to auto-connect right input with left input if unconnected
+    virtual bool get_simulate_stereo_input() const = 0;
 
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_metadata_iface() {}
@@ -681,6 +684,7 @@ public:
     bool is_noisy(int param_no) const { return false; }
     const ladspa_plugin_info &get_plugin_info() const { return plugin_info; }
     bool requires_configure() const { return false; }
+    bool get_simulate_stereo_input() const { return Metadata::simulate_stereo_input; }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]
