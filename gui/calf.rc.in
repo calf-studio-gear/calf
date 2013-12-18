@@ -1,332 +1,90 @@
-# Ubuntu Human-Clearlooks Colorscheme
-#
-# Authors:
-# Kenneth Wimar <kwwii@ubuntu.com>
-# Conn O'Griofa <connogriofa@gmail.com>
-#
-# Feel free to modify and share!
-
-#gtk_color_scheme = "calf_fg_color:#101010\ncalf_bg_color:#EFEBE7\ncalf_base_color:#FFF\ncalf_text_color:#1A1A1A\ncalf_selected_bg_color:#FFA443\ncalf_selected_fg_color:#1A1A1A\ncalf_tooltip_bg_color:#F5F5B5\ncalf_tooltip_fg_color:#000"
-
 pixmap_path "@guidatadir@"
 
 style "calf-default"
 {
-    ########
-    # Style Properties
-    ########
-    GtkButton      ::child-displacement-x = 0
-    GtkButton      ::child-displacement-y = 0
-    GtkButton      ::default-border       = { 0, 0, 0, 0 }
-    GtkCheckButton ::indicator-size       = 14
-
-    GtkPaned       ::handle-size          = 6
-
-    GtkRange       ::stepper-size         = 15
+    GtkWidget      ::focus-line-width     = 0
+    
     GtkRange       ::trough-border        = 0
     GtkScale       ::slider-length        = 46
     GtkRange       ::slider-width         = 35
-    
-    GtkScale       ::trough-side-details  = 0   # Restores sliders
-    
-    GtkScrollbar   ::min-slider-length    = 30
+    GtkScale       ::trough-side-details  = 0
     
     GtkMenuBar     ::internal-padding     = 4
-    GtkExpander    ::expander-size        = 16
-    GtkToolbar     ::internal-padding     = 1
-    GtkTreeView    ::expander-size        = 14
-    GtkTreeView    ::vertical-separator   = 0
-
-    GtkMenu        ::horizontal-padding   = 0
-    GtkMenu        ::vertical-padding     = 0
     
-    GtkSpinButton::shadow-type          = GTK_SHADOW_NONE
+    GtkTreeView    ::allow-rules          = 0
     
-    # Glow the tasklist by changing the color, instead of overlaying it with a rectangle
-    WnckTasklist   ::fade-overlay-rect    = 0
-
-    #GtkWidget      ::link-color           = @fg_color
-    #GtkWidget      ::visited-link-color   = shade (0.2, @fg_color)
-
-    xthickness = 0
-    ythickness = 0
+    GtkArrow       ::arrow-scaling        = 0.0
+    GtkComboBox    ::arrow-scaling        = 0.0
+    GtkComboBox    ::arrow-size           = 0
     
-    font_name = "Sans 8"
+    xthickness        = 0
+    ythickness        = 0
+    
+    font_name         = "Bitstream Vera Sans 8"
     
     fg[NORMAL]        = "#fff"
     fg[PRELIGHT]      = "#fff"
     fg[ACTIVE]        = "#fff"
-    fg[SELECTED]      = "#0af"
+    fg[SELECTED]      = "#fff"
     fg[INSENSITIVE]   = "#aaa"
 
-    bg[NORMAL]        = "#eee"
-    bg[PRELIGHT]      = "#000"
-    bg[ACTIVE]        = shade (0.9, "#465160")
-    bg[SELECTED]      = "#000" # Gnome Appearances Preferences workaround
-    bg[INSENSITIVE]   = shade (0.7, "#465160")
-#dark: 465160
-#blue: 29394c
-#light-green: afcbb5
-#light-alu: d7d8dd
-#light-metal: e8e7e2
-
+    bg[NORMAL]        = "#222"
+    bg[PRELIGHT]      = "#333"
+    bg[ACTIVE]        = "#444"
+    bg[SELECTED]      = "#0af"
+    bg[INSENSITIVE]   = "#666"
 
     base[NORMAL]      = "#eee"
     base[PRELIGHT]    = "#fff"
     base[ACTIVE]      = "#ddd"
     base[SELECTED]    = "#0af"
-    base[INSENSITIVE] = "#465160"
+    base[INSENSITIVE] = "#666"
 
-    text[NORMAL]      = "#111"
+    text[NORMAL]      = "#333"
     text[PRELIGHT]    = "#000"
     text[ACTIVE]      = "#000"
     text[SELECTED]    = "#000"
     text[INSENSITIVE] = "#666"
-    
-    bg_pixmap[NORMAL]       = "background_dark.png"
-    bg_pixmap[SELECTED]     = "background_black.png"
-    bg_pixmap[ACTIVE]       = "background_black.png"
-    bg_pixmap[INSENSITIVE]          = "background_dark.png"
-    
-    engine "pixmap"
-    {
-        image
-        {
-            function                = BOX
-            detail                  = "buttondefault"
-            recolorable             = TRUE
-            overlay_file            = "button_default.png"
-            overlay_border          = {8, 8, 2, 2}
-            overlay_stretch         = FALSE
-        }
-        
-        # Focus
-        image
-        {
-            function        = FOCUS
-            recolorable     = TRUE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-
-        # Arrows
-        image
-        {
-            function        = ARROW
-            state           = INSENSITIVE
-            recolorable     = FALSE
-            overlay_file        = "led_inactive.png"
-            overlay_border      = { 3, 3, 2, 2 }
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = ARROW
-            recolorable     = FALSE
-            state           = NORMAL
-            overlay_file        = "led_normal.png"
-            overlay_border      = { 3, 3, 2, 2 }
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = ARROW
-            recolorable     = FALSE
-            state           = ACTIVE
-            overlay_file        = "led_active.png"
-            overlay_border      = { 3, 3, 2, 2 }
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = ARROW
-            recolorable     = FALSE
-            state           = PRELIGHT
-            overlay_file        = "led_prelight.png"
-            overlay_border      = { 3, 3, 2, 2 }
-            overlay_stretch     = FALSE
-        }
-        
-        # Lines
-        image
-        {
-            function        = VLINE
-            recolorable     = FALSE
-            file            = "vline.png"
-            border          = { 1, 1, 0, 0 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = HLINE
-            recolorable     = FALSE
-            file            = "hline.png"
-            border          = { 0, 0, 1, 1  }
-            stretch         = TRUE
-        }
-        
-        # Shadows
-        image
-        {
-            function            = SHADOW
-            shadow          = IN
-            recolorable     = FALSE
-            file                = "frame.png"
-            border          = { 16, 16, 16, 16 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function            = SHADOW
-            shadow          = IN
-            recolorable     = FALSE
-            file                = "frame.png"
-            border          = { 16, 16, 16, 16 }
-            stretch         = TRUE
-        }
-
-        image
-        {
-            function        = SHADOW
-            shadow          = ETCHED_IN
-            recolorable     = TRUE
-            file                = "frame.png"               
-            border          = { 16, 16, 16, 16 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = SHADOW
-            shadow          = ETCHED_OUT
-            recolorable     = TRUE
-            file                = "frame.png"
-            border          = { 16, 16, 16, 16 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function            = SHADOW_GAP
-            recolorable         = TRUE
-            file                = "frame.png"
-            border              = { 12, 12, 12, 12 }
-            stretch             = TRUE
-            gap_start_file      = "frame_top_start.png"
-            gap_start_border    = { 12, 2, 12, 2 }
-            gap_end_file        = "frame_top_end.png"
-            gap_end_border      = { 2, 12, 12, 2 }
-            gap_side            = TOP
-        }
-        image
-        {
-            function            = SHADOW_GAP
-            recolorable         = TRUE
-            file                = "frame.png"
-            border              = { 12, 12, 12, 12 }
-            stretch             = TRUE
-            gap_start_file      = "frame_left_start.png"
-            gap_start_border    = { 12, 2, 12, 2 }
-            gap_end_file        = "frame_left_end.png"
-            gap_end_border      = { 12, 2, 2, 12 }
-            gap_side            = LEFT
-        }
-        image
-        {
-            function            = SHADOW_GAP
-            recolorable         = TRUE
-            file                = "frame.png"
-            border              = { 12, 12, 12, 12 }
-            stretch             = TRUE
-            gap_start_file      = "frame_right_start.png"
-            gap_start_border    = { 2, 12, 12, 2 }
-            gap_end_file        = "frame_right_end.png"
-            gap_end_border      = { 2, 12, 2, 12 }
-            gap_side            = RIGHT
-        }
-        image
-        {
-            function            = SHADOW_GAP
-            recolorable         = TRUE
-            file                = "frame.png"
-            border              = { 12, 12, 12, 12 }
-            stretch             = TRUE
-            gap_start_file      = "frame_bottom_start.png"
-            gap_start_border    = { 12, 2, 2, 12 }
-            gap_end_file        = "frame_bottom_end.png"
-            gap_end_border      = { 2, 12, 2, 12 }
-            gap_side            = BOTTOM
-        }
-
-        # Clear default box
-        image
-        {
-            function        = BOX
-            recolorable     = TRUE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-    }
 }
 
 style "calf-wide"
-{
-    xthickness   = 3
-    ythickness   = 2
-
-    bg[SELECTED] = "#FFA443"
-}
-
-style "calf-wider"
 {
     xthickness   = 5
     ythickness   = 4
 }
 
-
-
-
 style "calf-rack"
 {
-    fg[NORMAL]        = "#000"
-    fg[PRELIGHT]      = "#000"
-    fg[ACTIVE]        = "#000"
-    fg[SELECTED]      = "#000"
-    fg[INSENSITIVE]   = "#000"
-    
-    bg[NORMAL]        = "#e8e7e2"
-    bg[PRELIGHT]      = "#000"
-    bg[ACTIVE]        = shade (0.9, "#e8e7e2")
-    bg[SELECTED]      = shade (1.2, "#e8e7e2") # Gnome Appearances Preferences workaround
-    bg[INSENSITIVE]   = shade (0.7, "#e8e7e2")
-    
-    bg_pixmap[NORMAL]       = "background_light.png"
-    bg_pixmap[SELECTED]     = "background_light.png"
-    bg_pixmap[ACTIVE]       = "background_light.png"
-    bg_pixmap[INSENSITIVE]  = "background_light.png"
-    
-    font_name = "Sans 8"
+    bg_pixmap[NORMAL] = "background_light.png"
 }
+
 style "calf-rack-title"
 {
-    fg[NORMAL]        = "#000"
-    fg[PRELIGHT]      = "#000"
-    fg[ACTIVE]        = "#000"
-    fg[SELECTED]      = "#000"
-    fg[INSENSITIVE]   = "#000"
-    font_name = "Sans Bold 10"
-    
+    fg[NORMAL] = "#000"
+    font_name  = "Bitstream Vera Sans Bold 10"
     xthickness = 7
     ythickness = 3
 }
 
-style "calf-label" {
-    font_name = "Sans 7"
+style "calf-rack-widgets"
+{
+    fg[NORMAL]        = "#000"
+    fg[PRELIGHT]      = "#000"
+    fg[ACTIVE]        = "#000"
+    fg[SELECTED]      = "#000"
+    fg[INSENSITIVE]   = "#000"
+    font_name         = "Bitstream Vera Sans 8"
 }
 
-################################################################################
-#                                   BUTTONS                                    #
-################################################################################
+style "calf-plugin"
+{
+    bg_pixmap[NORMAL] = "background_dark.png"
+}
+
+style "calf-label" {
+    font_name = "Bitstream Vera Sans 7"
+}
+
 
 ### BUTTON ###
 
@@ -350,18 +108,6 @@ style "calf-button"
     text[SELECTED]      = "#001144"
     text[ACTIVE]        = "#2288aa"
     text[INSENSITIVE]   = "#aaa"
-    
-#    fg[NORMAL]         = "#0385CD"
-#   fg[PRELIGHT]        = "#49DBE8"
-#   fg[SELECTED]        = "#0385CD"
-#   fg[ACTIVE]          = "#49DBE8"
-#   fg[INSENSITIVE]     = "#aaa"
-#   
-#   text[NORMAL]        = "#0385CD"
-#   text[PRELIGHT]      = "#49DBE8"
-#   text[SELECTED]      = "#0385CD"
-#   text[ACTIVE]        = "#49DBE8"
-#   text[INSENSITIVE]   = "#aaa"
     
     bg[NORMAL]        = "#DADADA"
     bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
@@ -425,50 +171,11 @@ style "calf-button"
 
 ### TOGGLE BUTTON ###
 
-style "calf-toggle"
+style "calf-toggle" = "calf-button"
 {
     GtkButton      ::child-displacement-x = 0
     GtkButton      ::child-displacement-y = 0
     GtkButton::inner-border         = { 6, 31, 1, 1}
-    
-    xthickness = 3
-    ythickness = 3
-    
-    fg[NORMAL]          = "#001144"
-    fg[PRELIGHT]        = "#115588"
-    fg[SELECTED]        = "#001144"
-    fg[ACTIVE]          = "#2288aa"
-    fg[INSENSITIVE]     = "#aaa"
-    
-    text[NORMAL]        = "#001144"
-    text[PRELIGHT]      = "#115588"
-    text[SELECTED]      = "#001144"
-    text[ACTIVE]        = "#2288aa"
-    text[INSENSITIVE]   = "#aaa"
-    
-#    fg[NORMAL]         = "#0385CD"
-#   fg[PRELIGHT]        = "#49DBE8"
-#   fg[SELECTED]        = "#0385CD"
-#   fg[ACTIVE]          = "#49DBE8"
-#   fg[INSENSITIVE]     = "#aaa"
-#   
-#   text[NORMAL]        = "#0385CD"
-#   text[PRELIGHT]      = "#49DBE8"
-#   text[SELECTED]      = "#0385CD"
-#   text[ACTIVE]        = "#49DBE8"
-#   text[INSENSITIVE]   = "#aaa"
-    
-    bg[NORMAL]        = "#DADADA"
-    bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
-    bg[ACTIVE]        = shade (1.4, "#D1D1D1")
-    bg[SELECTED]      = "#DADADA"
-    bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
-
-    base[NORMAL]        = "#DADADA"
-    base[PRELIGHT]      = shade (1.4, "#D1D1D1")
-    base[ACTIVE]        = shade (1.4, "#D1D1D1")
-    base[SELECTED]    = "#DADADA"
-    base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
     
     engine "pixmap"
     {
@@ -521,52 +228,9 @@ style "calf-toggle"
 
 ### DEFAULT BUTTON ###
 
-style "calf-button-norm"
+style "calf-button-norm" = "calf-button"
 {
-    GtkButton      ::child-displacement-x = 0
-    GtkButton      ::child-displacement-y = 0
-    GtkButton      ::inner-border         = { 8, 8, 2, 2}
     GtkButton      ::default-border       = { 7, 25, 5, 5 }
-    #GtkButton::inner-border         = { 6, 25, 1, 1}
-    
-    xthickness = 3
-    ythickness = 3
-    
-    fg[NORMAL]          = "#001144"
-    fg[PRELIGHT]        = "#115588"
-    fg[SELECTED]        = "#001144"
-    fg[ACTIVE]          = "#2288aa"
-    fg[INSENSITIVE]     = "#aaa"
-    
-    text[NORMAL]        = "#001144"
-    text[PRELIGHT]      = "#115588"
-    text[SELECTED]      = "#001144"
-    text[ACTIVE]        = "#2288aa"
-    text[INSENSITIVE]   = "#aaa"
-    
-#    fg[NORMAL]         = "#0385CD"
-#   fg[PRELIGHT]        = "#49DBE8"
-#   fg[SELECTED]        = "#0385CD"
-#   fg[ACTIVE]          = "#49DBE8"
-#   fg[INSENSITIVE]     = "#aaa"
-#   
-#   text[NORMAL]        = "#0385CD"
-#   text[PRELIGHT]      = "#49DBE8"
-#   text[SELECTED]      = "#0385CD"
-#   text[ACTIVE]        = "#49DBE8"
-#   text[INSENSITIVE]   = "#aaa"
-    
-    bg[NORMAL]        = "#DADADA"
-    bg[PRELIGHT]      = shade (1.4, "#D1D1D1")
-    bg[ACTIVE]        = shade (1.4, "#D1D1D1")
-    bg[SELECTED]      = "#DADADA"
-    bg[INSENSITIVE]   = shade (0.7, "#D1D1D1")
-
-    base[NORMAL]        = "#DADADA"
-    base[PRELIGHT]      = shade (1.4, "#D1D1D1")
-    base[ACTIVE]        = shade (1.4, "#D1D1D1")
-    base[SELECTED]    = "#DADADA"
-    base[INSENSITIVE]   = shade (0.7, "#D1D1D1")
     
     engine "pixmap"
     {
@@ -619,316 +283,53 @@ style "calf-button-norm"
 
 style "calf-combobox"
 {
-    font_name = "Bitstream Vera Sans 10"
-    xthickness = 0
-    ythickness = 2
-}
-
-style "calf-comboboxentry" = "calf-combobox"
-{
     # NOTE:
-    # If you set the appears-as-list option on comboboxes in the theme
-    # you should set this hint on the combobox instead.
+    # ComboBox is rendered via Cairo with 12pt text. These settings are
+    # just for a usable size allocation of the widget.
+    font_name = "Bitstream Vera Sans 11"
     xthickness = 0
     ythickness = 0
-    base[NORMAL] = "#000"
 }
 
-
+style "calf-comboboxentry"
+{
+    
+}
 
 ### TEXT ENTRY ###
 
 style "calf-entry"
 {
-    fg[NORMAL]          = "#000"
-    fg[PRELIGHT]        = "#000"
-    fg[ACTIVE]          = "#000"
-    fg[INSENSITIVE]     = "#aaa"
-    
-    text[NORMAL]        = "#000"
-    text[PRELIGHT]      = "#000"
-    text[ACTIVE]        = "#000"
-    text[INSENSITIVE]   = "#000"
-    xthickness          = 0
-    ythickness          = 0
-    GtkEntry::shadow-type               = GTK_SHADOW_NONE
-    GtkEntry::inner-border              = { 7, 7, 6, 5 }
-    base[NORMAL] = "#000"
-    engine "pixmap"
-    {
-        image
-        {
-            function        = SHADOW
-            shadow          = IN
-            recolorable     = FALSE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = FLAT_BOX
-            state           = INSENSITIVE
-            detail          = "entry_bg"
-            file            = "entry_inactive.png"
-            border          = { 6, 6, 6, 6 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = FLAT_BOX
-            state           = NORMAL
-            detail          = "entry_bg"
-            file            = "entry.png"
-            border          = { 6, 6, 6, 6 }
-            stretch         = TRUE
-        }
-    }
+    base[SELECTED] = "#D1EA73"
+    base[NORMAL]   = "#000"
+    text[SELECTED] = "#000"
+    text[NORMAL]   = "#D1EA73"
+    xthickness     = 3
+    ythickness     = 3
 }
-
-
-
-### SPIN BUTTON ###
-
-style "calf-spinbutton" = "calf-entry"
-{
-    xthickness = 0
-    ythickness = 0
-    base[NORMAL] = "#000"
-    engine "pixmap"
-    {
-        image
-        {
-            function        = ARROW
-        }
-        image
-        {
-            function        = SHADOW
-            shadow          = IN
-            recolorable     = FALSE
-            file            = "null.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = FLAT_BOX
-            state           = INSENSITIVE
-            detail          = "entry_bg"
-            file            = "entry_inactive.png"
-            border          = { 4, 4, 5, 4 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = FLAT_BOX
-            state           = NORMAL
-            detail          = "entry_bg"
-            file            = "entry.png"
-            border          = { 4, 4, 5, 4 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = BOX
-            state           = NORMAL
-            detail          = "spinbutton_up"
-            recolorable     = FALSE
-            file            = "spin_up_normal.png"
-            border          = { 6, 4, 4, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = PRELIGHT
-            detail          = "spinbutton_up"
-            recolorable     = FALSE
-            file            = "spin_up_prelight.png"
-            border          = { 6, 4, 4, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = INSENSITIVE
-            detail          = "spinbutton_up"
-            recolorable     = FALSE
-            file            = "spin_up_inactive.png"
-            border          = { 6, 4, 4, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = ACTIVE
-            detail          = "spinbutton_up"
-            recolorable     = FALSE
-            file            = "spin_up_active.png"
-            border          = { 6, 4, 4, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-
-        image
-        {
-            function        = BOX
-            state           = NORMAL
-            detail          = "spinbutton_down"
-            recolorable     = FALSE
-            file            = "spin_down_normal.png"
-            border          = { 6, 4, 3, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = PRELIGHT
-            detail          = "spinbutton_down"
-            recolorable     = FALSE
-            file            = "spin_down_prelight.png"
-            border          = { 6, 4, 3, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = INSENSITIVE
-            detail          = "spinbutton_down"
-            recolorable     = FALSE
-            file            = "spin_down_inactive.png"
-            border          = { 6, 4, 3, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-        image
-        {
-            function        = BOX
-            state           = ACTIVE
-            detail          = "spinbutton_down"
-            recolorable     = FALSE
-            file            = "spin_down_active.png"
-            border          = { 6, 4, 3, 3 }
-            stretch         = TRUE
-            overlay_file        = "null.png"
-            overlay_stretch     = FALSE
-        }
-    }
-}
-
-
-
-
-################################################################################
-#                                     MENUS                                    #
-################################################################################
 
 ### MENU ###
 
-style "calf-menu" = "calf-wider"
+style "calf-menu" = "calf-wide"
 {
     fg[PRELIGHT] = "#fff"
     fg[SELECTED] = "#fff"
-    fg[NORMAL] = "#fff"
-    bg[PRELIGHT] = "#000"
-    bg[SELECTED] = "#000"
-    bg[NORMAL] = "#000"
-    bg_pixmap[NORMAL]       = "background_black.png"
-    bg_pixmap[ACTIVE]       = "background_black.png"
-    bg_pixmap[INSENSITIVE]  = "background_black.png"
-#   engine "clearlooks" 
-#   {
-#       radius = 5.0
-#       menubarstyle       = 0      # 0 = flat, 1 = sunken, 2 = flat gradient
-#   }
+    fg[NORMAL]   = "#ddd"
+    bg[PRELIGHT] = "#333"
+    bg[SELECTED] = "#333"
+    font_name    = "Bitstream Vera Sans 8"
 }
-
-style "calf-menu-item" = "calf-wider"
-{
-    fg[PRELIGHT] = "#fff"
-    fg[SELECTED] = "#fff"
-    fg[NORMAL] = "#fff"
-    bg[PRELIGHT] = "#000"
-    bg[SELECTED] = "#000"
-    bg[NORMAL] = "#000"
-    bg_pixmap[NORMAL]       = "background_black.png"
-    bg_pixmap[ACTIVE]       = "background_black.png"
-    bg_pixmap[INSENSITIVE]  = "background_black.png"
-#   engine "clearlooks" 
-#   {
-#       radius = 3.0
-#   }
-}
-
-style "calf-menubar"
-{
-    fg[PRELIGHT] = "#fff"
-    fg[SELECTED] = "#fff"
-    fg[NORMAL] = "#fff"
-    bg[PRELIGHT] = "#000"
-    bg[SELECTED] = "#000"
-    bg[NORMAL] = "#000"
-    bg_pixmap[NORMAL]       = "background_black.png"
-    bg_pixmap[ACTIVE]       = "background_black.png"
-    bg_pixmap[INSENSITIVE]  = "background_black.png"
-#   engine "clearlooks" 
-#   {
-#       radius = 3.0
-#       hint = "menubar"
-#   }
-}
-
-style "calf-menu-separator" = "menu"
-{
-  engine "pixmap" {
-    image
-        {
-            function        = VLINE
-            recolorable     = FALSE
-            file            = "vline.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-        image
-        {
-            function        = HLINE
-            recolorable     = FALSE
-            file            = "hline.png"
-            border          = { 0, 0, 0, 0  }
-            stretch         = TRUE
-        }
-    }
-}
-
-
-
-
-################################################################################
-#                                    SCALES                                    #
-################################################################################
 
 ### H/V SCALES ###
 
-style "calf-scale-small" = "calf-default"
+style "calf-scale-small"
 {
     GtkScale::slider-length = 38
     GtkRange::slider-width  = 25
 }
 
 
-style "calf-scale-big" = "calf-default"
+style "calf-scale-big"
 {
     
 }
@@ -1232,19 +633,6 @@ style "calf-scrollbar"
 
 
 
-################################################################################
-#                                    LAYOUT                                    #
-################################################################################
-
-
-### CONTAINER ###
-
-style "calf-container"
-{
-    xthickness=0
-    ythickness=0
-}
-
 ### NOTEBOOK ###
 
 style "calf-notebook"
@@ -1259,13 +647,19 @@ style "calf-notebook"
 
 style "calf-treeview"
 {
-#   engine "clearlooks" 
-#   {
-#       hint = "treeview"
-#   }
+    fg[NORMAL]        = "white" # header txt color
+    bg[SELECTED]      = "black" # backgr mini-checkbox checked
+    base[ACTIVE]      = "DimGray" # selection row unfocused
+    base[SELECTED]    = "black" # selection row focused
+    text[NORMAL]      = "white" # txt+indicador checked normal
+    text[ACTIVE]      = "DeepSkyBlue" # txt+indicador selected unfocused
+    text[SELECTED]    = "DeepSkyBlue" # txt+indicador selected focused
+    engine "clearlooks" {
+        hint = "treeview"
+    }
 }
 
-style "calf-treeview-header"
+style "calf-treeview-header" = "calf-treeview"
 {
     fg[NORMAL]        = "#fff"
     fg[PRELIGHT]      = "#fff"
@@ -1278,10 +672,6 @@ style "calf-treeview-header"
     bg[ACTIVE]        = shade (0.9, "#465160")
     bg[SELECTED]      = "#000" # Gnome Appearances Preferences workaround
     bg[INSENSITIVE]   = shade (0.7, "#465160")
-#   engine "clearlooks" 
-#   {
-#       hint = "treeview-header"
-#   }
 }
 
 
@@ -1292,189 +682,45 @@ style "calf-frame"
 {
     xthickness = 8
     ythickness = 8
-    bg[NORMAL] = "#ddd"
-}
-
-style "calf-frame-title"
-{
-    fg[NORMAL] = "#fff"
-    font_name = "Sans 8"
 }
 
 
+widget "*Calf*"                                   style : highest "calf-default"
 
-################################################################################
-#                                 MISCELLANEOUS                                #
-################################################################################
+widget "*Calf-Rack"                               style : highest "calf-rack"
+widget "*Calf-Rack*"                              style : highest "calf-rack-widgets"
+widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-title"
 
-### PROGRESS BAR ###
+widget "*Calf-Plugin"                             style : highest "calf-plugin"
 
-style "calf-progressbar"
-{
-#   xthickness = 1
-#   ythickness = 1
-#   bg[NORMAL] = "#000"
-#   bg[SELECTED] = "#0af"
-#   fg[PRELIGHT] = "#000"
+widget "*Calf-Label"                              style : highest "calf-label"
+widget "*Calf-Value"                              style : highest "calf-label"
 
-#   engine "clearlooks"
-#   {
-#       hint = "progressbar"
-#   }
-}
+widget "*Calf-Menu*"                              style : highest "calf-menu"
 
+widget "*Calf*Notebook"                           style : highest "calf-notebook"
 
+widget "*Calf*Frame"                              style : highest "calf-frame"
 
-### STATUS BAR ###
+widget_class "*Calf*TreeView*"                    style : highest "calf-treeview"
+widget_class "*Calf*.<GtkTreeView>.<GtkButton>*"  style : highest "calf-treeview-header"
+widget_class "*Calf*.<GtkList>.<GtkButton>*"      style : highest "calf-treeview-header"
 
-style "calf-statusbar"
-{
-#   engine "clearlooks"
-#   {
-#       hint = "statusbar"
-#   }
-}
+widget "*Calf*Button*"                            style : highest "calf-button"
+widget "*Calf*Toggle*"                            style : highest "calf-toggle"
+widget "*Calf-Button"                             style : highest "calf-button"
+widget "*Calf-Toggle"                             style : highest "calf-toggle"
+widget "*Calf*CheckButton"                        style : highest "calf-toggle"
+widget "*Calf*RadioButton"                        style : highest "calf-toggle"
 
-### TOOLTIPS ###
+widget "*Calf-Combobox*"                          style : highest "calf-combobox"
+widget "*Calf*Combo*"                             style : highest "calf-combobox"
+widget_class "*Calf-Combobox*<GtkComboBoxEntry>*" style : highest "calf-comboboxentry"
+widget "*Calf*GtkOptionMenu*"                     style : highest "calf-combobox"
 
-style "calf-tooltips" = "calf-wider"
-{
-    bg[NORMAL] = "#F5F5B5"
-    fg[NORMAL] = "#000"
-}
+widget "*Calf*Entry*"                             style : highest "calf-entry"
 
-
-################################################################################
-#                                    MATCHES                                   #
-################################################################################
-
-# Theme default style is applied to every widget
-widget "*Calf*"                     style : highest "calf-default"
-
-# Rack
-widget "*Calf-Rack*"                                    style : highest "calf-rack"
-widget "Calf-Rack*Calf-Rack-Title"                          style : highest "calf-rack-title"
-
-# Labels
-widget "*Calf-Label"                                    style : highest "calf-label"
-
-# Values
-widget "*Calf-Value"                                    style : highest "calf-label"
-
-# Menus
-widget_class "*Calf*<GtkMenuBar>*"                  style : highest "calf-menubar"
-widget "*Calf-Menu*"                                    style : highest "calf-menu"
-widget_class "*Calf*<GtkMenuShell>*"                    style : highest "calf-menu"
-widget "*Calf*SeparatorMenuItem*"                       style : highest "calf-menu-separator"
-widget_class "*Calf*<GtkMenuItem>*"                 style : highest "calf-menu-item"
-
-# Notebook
-widget "*Calf*Notebook"             style : highest "calf-notebook"
-widget_class "*Calf*Notebook.<GtkWidget>"               style : highest "calf-notebook"
-
-# Frame
-widget "*Calf*Frame"                    style : highest "calf-frame"
-widget "*Calf*Frame.GtkLabel"           style : highest "calf-frame-title"
-
-# Scrolled window
-widget "*Calf-Container"                    style : highest "calf-container"
-
-# Treeview
-widget_class "*Calf*.<GtkTreeView>*"                    style : highest "calf-treeview"
-widget_class "*Calf*.<GtkTreeView>.<GtkButton>*"        style : highest "calf-treeview-header"
-widget_class "*Calf*.<GtkCTree>.<GtkButton>*"           style : highest "calf-treeview-header"
-widget_class "*Calf*.<GtkList>.<GtkButton>*"            style : highest "calf-treeview-header"
-widget_class "*Calf*.<GtkCList>.<GtkButton>*"           style : highest "calf-treeview-header"
-
-# Buttons
-widget "*Calf*Button*"                    style : highest "calf-button"
-widget "*Calf*Toggle*"                    style : highest "calf-toggle"
-widget "*Calf-Button"                    style : highest "calf-button"
-widget "*Calf-Toggle"                    style : highest "calf-toggle"
-widget "*Calf*CheckButton"                  style : highest "calf-toggle"
-widget "*Calf*RadioButton"                  style : highest "calf-toggle"
-widget "*Calf*GtkLinkButton*"                               style : highest "calf-button"
-widget "*Calf*GtkScaleButton*"                              style : highest "calf-button"
-widget "*Calf*GtkColorButton*"                              style : highest "calf-button"
-widget "*Calf*FileChooserButton*"                               style : highest "calf-button"
-widget "*Calf*GtkFontButton*"                               style : highest "calf-button"
-
-widget "*Calf-Combobox*"                    style : highest "calf-combobox"
-widget "*Calf*Combo*"                   style : highest "calf-combobox"
-widget_class "*Calf-Combobox*<GtkComboBoxEntry>*"           style : highest "calf-comboboxentry"
-widget "*Calf*GtkOptionMenu*"                       style : highest "calf-combobox"
-
-# Entries
-widget "*Calf*Entry*"                       style : highest "calf-entry"
-widget "*Calf*SpinButton*"                      style : highest "calf-spinbutton"
-
-# Miscellaneous
-widget_class "*Calf*<GtkStatusbar>"             style : highest "calf-statusbar"
-widget_class "*Calf*<GtkProgressBar>"                   style : highest "calf-progressbar"
-
-# Scrollbars/Scales
-widget "*Calf*Range"                        style : highest "calf-scale-small"
-widget "*Calf*Scale1"                           style : highest "calf-scale-small"
-widget "*Calf*Scale2"                           style : highest "calf-scale-big"
-widget "*Calf*Scrollbar*"                       style : highest "calf-scrollbar"
-#
-
-# Increase the x/ythickness in some widgets
-#class "GtkToolbar"                     style "calf-default" 
-#class "GtkRange"                       style "calf-wide"
-#class "GtkFrame"                       style "calf-wide"
-#class "GtkSeparator"                   style "calf-wide"
-
-
-
-
-
-
-
-
-
-# Work around for http://bugzilla.gnome.org/show_bug.cgi?id=382646
-# Note that the work around assumes that the combobox is _not_ in
-# appears-as-list mode.
-# Similar hack also in the menuitem style.
-# This style does not affect GtkComboBoxEntry, it does have an effect
-# on comboboxes in appears-as-list mode though.
-style "calf-combobox-text-color-workaround"
-{
-    text[NORMAL]      = "#fff"
-    text[PRELIGHT]    = "#fff"
-    text[ACTIVE]      = "#fff"
-    text[SELECTED]    = "#fff"
-    text[INSENSITIVE] = "#999"
-}
-
-widget_class "*Calf*.<GtkComboBox>.<GtkCellView>"       style "calf-combobox-text-color-workaround"
-
-style "calf-menuitem-text-is-fg-color-workaround"
-{
-    text[NORMAL]      = "#fff"
-    text[PRELIGHT]    = "#fff"
-    text[ACTIVE]      = "#fff"
-    text[SELECTED]    = "#fff"
-    text[INSENSITIVE] = "#999"
-}
-widget "*Calf*.gtk-combobox-popup-menu.*"               style "calf-menuitem-text-is-fg-color-workaround"
-
-# Work around the usage of GtkLabel inside GtkListItems to display text.
-# This breaks because the label is shown on a background that is based on the
-# base color set.
-style "calf-fg-is-text-color-workaround"
-{
-    bg[SELECTED]    = "#FFA443"
-    fg[NORMAL]      = "#1A1A1A"
-    fg[PRELIGHT]    = "#1A1A1A"
-    fg[ACTIVE]      = "#1A1A1A"
-    fg[SELECTED]    = "#1A1A1A"
-    fg[INSENSITIVE] = darker ("#EFEBE7")
-}
-
-widget_class "*Calf*<GtkListItem>*"                 style "calf-fg-is-text-color-workaround"
-# The same problem also exists for GtkCList and GtkCTree
-# Only match GtkCList and not the parent widgets, because that would also change the headers.
-
-widget_class "*Calf*<GtkCList>"                 style "calf-fg-is-text-color-workaround"
+widget "*Calf*Range"                              style : highest "calf-scale-small"
+widget "*Calf*Scale1"                             style : highest "calf-scale-small"
+widget "*Calf*Scale2"                             style : highest "calf-scale-big"
+widget "*Calf*Scrollbar*"                         style : highest "calf-scrollbar"

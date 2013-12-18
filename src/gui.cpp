@@ -294,7 +294,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
         
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
-    gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-whatever" );
+    gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
     
     // create window with viewport
 //    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);

@@ -517,7 +517,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
     
     // the filter graph (cached) in frequency response
     if (index == par_delay and subindex == 2 and !phase) {
-        context->set_source_rgba(0.35, 0.4, 0.2);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.8);
         return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     // the realtime graphs in frequency response

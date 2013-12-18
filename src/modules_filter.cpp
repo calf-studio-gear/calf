@@ -697,7 +697,7 @@ bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float 
     if (phase or subindex)
         return false;
     if (bypass)
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.3);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 bool emphasis_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const

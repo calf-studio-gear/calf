@@ -215,9 +215,9 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
         }
     }
     if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
-        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
     else {
-        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.8);
     }
     if (!subindex)
         context->set_line_width(1.);

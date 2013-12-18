@@ -1081,7 +1081,7 @@ bool crossover::get_graph(int subindex, int phase, float *data, int points, cair
                 ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
         }
         ret *= level[subindex];
-        context->set_source_rgba(0.35, 0.4, 0.2, !active[subindex] ? 0.4 : 1);
+        context->set_source_rgba(0.15, 0.2, 0.0, !active[subindex] ? 0.3 : 0.8);
         data[i] = dB_grid(ret);
     }
     return true;

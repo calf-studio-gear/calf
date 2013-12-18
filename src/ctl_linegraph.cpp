@@ -852,7 +852,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             
             for(int a = 0;
                 lg->mode = 0,
-                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.5),
+                cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.8),
                 cairo_set_line_width(ctx, graph_width),
                 lg->source->get_graph(lg->source_id, a, phase, data, lg->size_x, &cimpl, &lg->mode);
                 a++)

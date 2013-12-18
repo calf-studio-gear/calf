@@ -33,6 +33,7 @@
 #include <gtk/gtknotebook.h>
 #include <gtk/gtkrange.h>
 #include <gtk/gtkscale.h>
+#include <gtk/gtkentry.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -194,8 +195,30 @@ struct CalfFaderClass
     GtkScaleClass parent_class;
 };
 
+
+
 extern GtkWidget *calf_fader_new(const int horiz, const int size, const double min, const double max, const double step);
 extern GType calf_fader_get_type();
+
+
+#define CALF_TYPE_ENTRY          (calf_entry_get_type())
+#define CALF_ENTRY(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_ENTRY, CalfEntry))
+#define CALF_IS_ENTRY(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_ENTRY))
+#define CALF_ENTRY_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_ENTRY, CalfEntryClass))
+#define CALF_IS_ENTRY_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_ENTRY))
+
+struct CalfEntry
+{
+    GtkEntry parent;
+};
+
+struct CalfEntryClass
+{
+    GtkEntryClass parent_class;
+};
+
+extern GtkWidget *calf_entry_new();
+extern GType calf_entry_get_type();
 
 
 G_END_DECLS

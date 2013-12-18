@@ -229,25 +229,29 @@ void param_control::create_value_entry(GtkWidget *widget, int x, int y)
         return;
     }
     
+    if (param_no < 0)
+        return;
+        
     const parameter_properties &props = get_props();
     float value = gui->plugin->get_param_value(param_no);
     
     // no chance for a menu, so we have to do everything by hand
     entrywin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_set_name(GTK_WIDGET(entrywin), "Calf-Value-Entry");
-    gtk_window_set_title (GTK_WINDOW (entrywin), "Calf Value Entry");
-    gtk_window_set_resizable (GTK_WINDOW (entrywin), FALSE);
-    gtk_window_set_decorated (GTK_WINDOW (entrywin), FALSE);
-    gtk_window_set_skip_taskbar_hint (GTK_WINDOW (entrywin), TRUE);
-    gtk_window_set_skip_pager_hint (GTK_WINDOW (entrywin), TRUE);
-    gtk_window_set_transient_for (GTK_WINDOW (entrywin), GTK_WINDOW (gui->window->toplevel));
+    gtk_window_set_title (GTK_WINDOW(entrywin), "Calf Value Entry");
+    gtk_window_set_resizable (GTK_WINDOW(entrywin), FALSE);
+    gtk_window_set_decorated (GTK_WINDOW(entrywin), FALSE);
+    gtk_window_set_skip_taskbar_hint (GTK_WINDOW(entrywin), TRUE);
+    gtk_window_set_skip_pager_hint (GTK_WINDOW(entrywin), TRUE);
+    gtk_window_set_transient_for (GTK_WINDOW(entrywin), GTK_WINDOW (gui->window->toplevel));
     gtk_window_set_gravity(GTK_WINDOW(entrywin), GDK_GRAVITY_CENTER);
     gtk_widget_set_events (GTK_WIDGET(entrywin), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (entrywin), "focus-out-event", G_CALLBACK (value_entry_unfocus), this);
+    g_signal_connect (G_OBJECT(entrywin), "focus-out-event", G_CALLBACK (value_entry_unfocus), this);
     
     // create the text entry
     GtkWidget *entry = gtk_entry_new();
     gtk_widget_set_name(GTK_WIDGET(entry), "Calf-Entry");
+    gtk_entry_set_width_chars(GTK_ENTRY(entry), props.get_char_count());
     gtk_entry_set_text(GTK_ENTRY(entry), props.to_string(value).c_str());
     gtk_widget_add_events (entry, GDK_KEY_PRESS_MASK);
     g_signal_connect (entry, "key-press-event", (GCallback)value_entry_action, this);
@@ -1007,7 +1011,7 @@ GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     require_attribute("key");
     
-    widget = gtk_entry_new();
+    widget = calf_entry_new();
     entry = GTK_ENTRY(widget);
     g_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
     gtk_editable_set_editable(GTK_EDITABLE(entry), get_int("editable", 1));

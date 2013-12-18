@@ -869,7 +869,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     // change alpha (or color) for hold lines or stereo modes
     if((subindex == 1 and _mode < 3) or (subindex > 1 and _mode == 4)) {
         // subtle hold line on left, right, average or stereo image
-        context->set_source_rgba(0.35, 0.4, 0.2, 0.2);
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
     }
     if(subindex == 0 and _mode == 3) {
         // left channel in stereo analyzer
