@@ -654,9 +654,6 @@ style "calf-treeview"
     text[NORMAL]      = "white" # txt+indicador checked normal
     text[ACTIVE]      = "DeepSkyBlue" # txt+indicador selected unfocused
     text[SELECTED]    = "DeepSkyBlue" # txt+indicador selected focused
-    engine "clearlooks" {
-        hint = "treeview"
-    }
 }
 
 style "calf-treeview-header" = "calf-treeview"
