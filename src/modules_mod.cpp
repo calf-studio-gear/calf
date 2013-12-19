@@ -497,12 +497,10 @@ bool multichorus_audio_module::get_layers(int index, int generation, unsigned in
     // frequency response
     if (index == par_delay) {
         layers = (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0) | LG_REALTIME_GRAPH;
-        redraw_graph = false;
     }
     // sine display
     if (index == par_rate) {
         layers = LG_REALTIME_DOT | (redraw_sine ? LG_CACHE_GRAPH : 0);
-        redraw_sine = false;
     }
     // dot display
     if (index == par_depth)
@@ -518,6 +516,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
     // the filter graph (cached) in frequency response
     if (index == par_delay and subindex == 2 and !phase) {
         context->set_source_rgba(0.15, 0.2, 0.0, 0.8);
+        redraw_graph = false;
         return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     // the realtime graphs in frequency response
@@ -539,6 +538,7 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
         }
         return true;
     }
+    redraw_sine = false;
     return false;
 }
 
