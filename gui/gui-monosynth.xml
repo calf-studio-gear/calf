@@ -36,7 +36,7 @@
               <vbox>      
                 <combo param="o1_wave" fill="0" expand="0"/>        
                 <if cond="directlink">
-                  <line-graph param="o1_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
+                  <line-graph param="o1_wave" refresh="1" width="150" height="70" expand="0" fill="0"/>
                 </if>
               </vbox>
               <vbox>
@@ -61,7 +61,7 @@
               <vbox>
                 <combo param="o2_wave" fill="0" expand="0"/>
                 <if cond="directlink">
-                  <line-graph param="o2_wave" refresh="1" width="150" height="70" expand="1" fill="1"/>
+                  <line-graph param="o2_wave" refresh="1" width="150" height="70" expand="0" fill="0"/>
                 </if>
               </vbox>
               <label />
@@ -107,11 +107,11 @@
       </hbox>
       <hbox>
         <frame label="Filter">
-          <hbox spacing="3">
+          <hbox spacing="15">
             <vbox>
               <combo param="filter" fill="0" expand="0"/>
               <if cond="directlink">
-                <line-graph param="filter" refresh="1" width="150" height="70" expand="1" fill="1" fade="0.5"/>
+                <line-graph param="filter" refresh="1" width="150" height="70" expand="0" fill="0" fade="0.5"/>
               </if>
             </vbox>
             <label />
@@ -126,13 +126,13 @@
               <knob param="res" size="2"/>
               <value param="res"/>
             </vbox>
-            <label text="              "/>
+            <label text="                  "/>
             <vbox>
               <label param="filter_sep"/>
               <knob type="1" param="filter_sep" size="3"/>
               <value param="filter_sep"/>
             </vbox>
-            <label text="          "/>
+            <label text="             "/>
             <vbox>
               <label param="key_follow"/>
               <knob param="key_follow" size="3"/>

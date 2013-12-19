@@ -208,7 +208,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         // create blinder pattern
         vu->pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0, 1, 1, 1, 0.15);
+        cairo_pattern_add_color_stop_rgba (vu->pat, 0, 1, 1, 1, 0.25);
         cairo_pattern_add_color_stop_rgba (vu->pat, 0.5, 0.5, 0.5, 0.5, 0.0);
         cairo_pattern_add_color_stop_rgba (vu->pat, 1, 0.0, 0.0, 0.0, 0.25);
         cairo_rectangle( cache_cr, led_x, led_y, led_w, led_h);
@@ -218,7 +218,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         // create blinder pattern
         vu->pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
         cairo_pattern_add_color_stop_rgba (vu->pat, 0, 0.2, 0.2, 0.2, 0.7);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0.4, 0.05, 0.05, 0.05, 0.5);
+        cairo_pattern_add_color_stop_rgba (vu->pat, 0.4, 0.05, 0.05, 0.05, 0.7);
         cairo_pattern_add_color_stop_rgba (vu->pat, 0.401, 0.05, 0.05, 0.05, 0.9);
         cairo_pattern_add_color_stop_rgba (vu->pat, 1, 0.05, 0.05, 0.05, 0.75);
         cairo_destroy( cache_cr );

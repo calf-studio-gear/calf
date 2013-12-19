@@ -1257,7 +1257,7 @@ calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
             case GTK_STATE_ACTIVE:
             case GTK_STATE_SELECTED:
                 cairo_pattern_add_color_stop_rgb(pat, 0.0,  19. / 255, 237. / 255, 254. / 255);
-                cairo_pattern_add_color_stop_rgb(pat, 0.3,   2. / 255, 180. / 255, 230. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 0.3,   10. / 255, 200. / 255, 240. / 255);
                 cairo_pattern_add_color_stop_rgb(pat, 0.7,  19. / 255, 237. / 255, 254. / 255);
                 cairo_pattern_add_color_stop_rgb(pat, 1.0,   2. / 255, 168. / 255, 230. / 255);
                 break;
@@ -1269,7 +1269,7 @@ calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_rectangle(c, x + pad, y + pad, sx - pad * 2, sy - pad * 2);
         if (CALF_IS_TOGGLE_BUTTON(widget)) {
             cairo_new_sub_path (c);
-            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 20, 2);
+            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 22, 2);
             cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
         }
         pat = cairo_pattern_create_linear(x + pad, y + pad, x + pad, y + sy - pad * 2);
@@ -1283,12 +1283,12 @@ calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_rectangle(c, x + pad, _y, sx - pad * 2, _h);
         if (CALF_IS_TOGGLE_BUTTON(widget)) {
             cairo_new_sub_path (c);
-            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 20, 2);
+            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 22, 2);
             cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
         }
         pat = cairo_pattern_create_linear(x + pad, _y, x + pad, _y + _h);
-        cairo_pattern_add_color_stop_rgba(pat, 1.0,  0.92, 0.92, 0.92, 0.86);
-        cairo_pattern_add_color_stop_rgba(pat, 0.0,  0.70, 0.70, 0.70, 0.86);
+        cairo_pattern_add_color_stop_rgb(pat, 1.0,  0.92, 0.92, 0.92);
+        cairo_pattern_add_color_stop_rgb(pat, 0.0,  0.70, 0.70, 0.70);
         cairo_set_source(c, pat);
         cairo_fill(c);
         

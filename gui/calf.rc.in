@@ -12,8 +12,6 @@ style "calf-default"
     
     GtkMenuBar     ::internal-padding     = 4
     
-    GtkTreeView    ::allow-rules          = 0
-    
     GtkArrow       ::arrow-scaling        = 0.0
     GtkComboBox    ::arrow-scaling        = 0.0
     GtkComboBox    ::arrow-size           = 0
@@ -23,31 +21,40 @@ style "calf-default"
     
     font_name         = "Bitstream Vera Sans 8"
     
-    fg[NORMAL]        = "#fff"
-    fg[PRELIGHT]      = "#fff"
-    fg[ACTIVE]        = "#fff"
-    fg[SELECTED]      = "#fff"
-    fg[INSENSITIVE]   = "#aaa"
+    #fg[NORMAL]        = "#fff"
+    #fg[PRELIGHT]      = "#fff"
+    #fg[ACTIVE]        = "#fff"
+    #fg[SELECTED]      = "#fff"
+    #fg[INSENSITIVE]   = "#aaa"
 
-    bg[NORMAL]        = "#222"
-    bg[PRELIGHT]      = "#444"
-    bg[ACTIVE]        = "#222"
-    bg[SELECTED]      = "#0af"
-    bg[INSENSITIVE]   = "#666"
+    #bg[NORMAL]        = "#222"
+    #bg[PRELIGHT]      = "#444"
+    #bg[ACTIVE]        = "#222"
+    #bg[SELECTED]      = "#0af"
+    #bg[INSENSITIVE]   = "#666"
 
-    base[NORMAL]      = "#eee"
-    base[PRELIGHT]    = "#fff"
-    base[ACTIVE]      = "#ddd"
-    base[SELECTED]    = "#0af"
-    base[INSENSITIVE] = "#666"
+    #base[NORMAL]      = "#eee"
+    #base[PRELIGHT]    = "#fff"
+    #base[ACTIVE]      = "#ddd"
+    #base[SELECTED]    = "#0af"
+    #base[INSENSITIVE] = "#666"
 
-    text[NORMAL]      = "#333"
-    text[PRELIGHT]    = "#000"
-    text[ACTIVE]      = "#000"
-    text[SELECTED]    = "#000"
-    text[INSENSITIVE] = "#aaa"
+    #text[NORMAL]      = "#333"
+    #text[PRELIGHT]    = "#000"
+    #text[ACTIVE]      = "#000"
+    #text[SELECTED]    = "#000"
+    #text[INSENSITIVE] = "#aaa"
     
     engine "clearlooks" { }
+}
+
+style "debug"
+{
+    fg[NORMAL]       = "red"
+    fg[PRELIGHT]     = "green"
+    fg[SELECTED]     = "yellow"
+    fg[ACTIVE]       = "blue"
+    fg[INSENSITIVE]  = "grey"
 }
 
 style "calf-wide"
@@ -85,7 +92,8 @@ style "calf-plugin"
 }
 
 style "calf-label" {
-    font_name = "Bitstream Vera Sans 7"
+    font_name  = "Bitstream Vera Sans 7"
+    fg[NORMAL] = "#fff"
 }
 
 
@@ -95,7 +103,7 @@ style "calf-button"
 {
     GtkButton      ::child-displacement-x = 0
     GtkButton      ::child-displacement-y = 0
-    GtkButton      ::inner-border         = { 10, 10, 6, 6}
+    GtkButton      ::inner-border         = { 10, 10, 4, 4}
     
     fg[NORMAL]   = "#07005a"
     fg[PRELIGHT] = "#3392e6"
@@ -106,14 +114,12 @@ style "calf-button"
     
 }
 
-
 ### TOGGLE BUTTON ###
 
 style "calf-toggle" = "calf-button"
 {
-    GtkButton::inner-border = { 10, 36, 6, 6}
+    GtkButton::inner-border = { 10, 36, 4, 4}
 }
-
 
 ### COMBOBOX ###
 
@@ -125,11 +131,6 @@ style "calf-combobox"
     font_name = "Bitstream Vera Sans 11"
     xthickness = 0
     ythickness = 2
-}
-
-style "calf-comboboxentry"
-{
-    
 }
 
 ### TEXT ENTRY ###
@@ -148,10 +149,9 @@ style "calf-entry"
 
 style "calf-menu" = "calf-wide"
 {
-    fg[PRELIGHT] = "#fff"
-    fg[SELECTED] = "#fff"
     fg[NORMAL]   = "#ddd"
-    bg[PRELIGHT] = "#333"
+    fg[SELECTED] = "#fff"
+    bg[NORMAL]   = "#111"
     bg[SELECTED] = "#333"
     font_name    = "Bitstream Vera Sans 8"
 }
@@ -177,46 +177,42 @@ style "calf-scrollbar"
     
 }
 
-
-
 ### NOTEBOOK ###
 
 style "calf-notebook"
 {
-    xthickness = 24
-    ythickness = 8
+    xthickness   = 24
+    ythickness   = 8
+    fg[NORMAL]   = "#fff"
+    fg[PRELIGHT]   = "#fff"
+    fg[ACTIVE]   = "#eee"
 }
-
-
 
 ### TREEVIEW ###
 
 style "calf-treeview"
 {
-    fg[NORMAL]        = "white" # header txt color
-    bg[SELECTED]      = "black" # backgr mini-checkbox checked
-    base[ACTIVE]      = "DimGray" # selection row unfocused
-    base[SELECTED]    = "white" # selection row focused
-    text[NORMAL]      = "black" # txt+indicador checked normal
-    text[ACTIVE]      = "DeepSkyBlue" # txt+indicador selected unfocused
-    text[SELECTED]    = "DeepSkyBlue" # txt+indicador selected focused
+    GtkTreeView::odd-row-color = "#323942"
+    base[NORMAL]       = "#222932" # rows background
+    base[SELECTED]     = "#49596a" # rows background selected
+    base[ACTIVE]       = "#49596a" # rows background selected but not focused
+    
+    text[NORMAL]       = "#dddddd" # rows text
+    text[SELECTED]     = "#ffffff" # rows text selected
+    text[ACTIVE]       = "#ffffff" # rows text selected but not focused
+    
+    xthickness   = 24
+    ythickness   = 8
 }
 
-style "calf-treeview-header" = "calf-treeview"
+style "calf-treehead"
 {
-    fg[NORMAL]        = "#fff"
-    fg[PRELIGHT]      = "#fff"
-    fg[ACTIVE]        = "#fff"
-    fg[SELECTED]      = "#0af"
-    fg[INSENSITIVE]   = "#aaa"
-
-    bg[NORMAL]        = "#465160"
-    bg[PRELIGHT]      = "#000"
-    bg[ACTIVE]        = shade (0.9, "#465160")
-    bg[SELECTED]      = "#000" # Gnome Appearances Preferences workaround
-    bg[INSENSITIVE]   = shade (0.7, "#465160")
+    bg[NORMAL]         = "#eeeeee" # header background
+    fg[NORMAL]         = "white" # header text
+    fg[PRELIGHT]       = "white" # header text
+    fg[SELECTED]       = "white" # header text
+    fg[ACTIVE]         = "white" # header text
 }
-
 
 
 ### FRAMES ###
@@ -227,8 +223,7 @@ style "calf-frame"
     ythickness = 8
 }
 
-
-widget "*Calf*"                                   style : highest "calf-default"
+widget "*Calf*"                                   style : rc "calf-default"
 
 widget "*Calf-Rack"                               style : highest "calf-rack"
 widget "*Calf-Rack*"                              style : highest "calf-rack-widgets"
@@ -241,25 +236,16 @@ widget "*Calf-Value"                              style : highest "calf-label"
 
 widget "*Calf-Menu*"                              style : highest "calf-menu"
 
-widget "*Calf*Notebook"                           style : highest "calf-notebook"
+widget "*Calf*Notebook*"                          style : highest "calf-notebook"
 
 widget "*Calf*Frame"                              style : highest "calf-frame"
 
-widget_class "*Calf*TreeView*"                    style : highest "calf-treeview"
-widget_class "*Calf*.<GtkTreeView>.<GtkButton>*"  style : highest "calf-treeview-header"
-widget_class "*Calf*.<GtkList>.<GtkButton>*"      style : highest "calf-treeview-header"
-
 widget "*Calf*Button*"                            style : highest "calf-button"
 widget "*Calf*Toggle*"                            style : highest "calf-toggle"
-widget "*Calf-Button"                             style : highest "calf-button"
-widget "*Calf-Toggle"                             style : highest "calf-toggle"
 widget "*Calf*CheckButton"                        style : highest "calf-toggle"
 widget "*Calf*RadioButton"                        style : highest "calf-toggle"
 
-widget "*Calf-Combobox*"                          style : highest "calf-combobox"
 widget "*Calf*Combo*"                             style : highest "calf-combobox"
-widget_class "*Calf-Combobox*<GtkComboBoxEntry>*" style : highest "calf-comboboxentry"
-widget "*Calf*GtkOptionMenu*"                     style : highest "calf-combobox"
 
 widget "*Calf*Entry*"                             style : highest "calf-entry"
 
@@ -267,3 +253,6 @@ widget "*Calf*Range"                              style : highest "calf-scale-sm
 widget "*Calf*Scale1"                             style : highest "calf-scale-small"
 widget "*Calf*Scale2"                             style : highest "calf-scale-big"
 widget_class "*Scrollbar*"                        style : highest "calf-scrollbar"
+
+widget_class "*Calf*GtkTreeView*"                 style : highest "calf-treeview"
+widget_class "*Calf*TreeView*Button*"                       style : highest "calf-treehead"
