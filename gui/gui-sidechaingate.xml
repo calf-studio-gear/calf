@@ -5,6 +5,7 @@
             <label param="bypass" expand="0" fill="0" />
             <align><toggle param="bypass" shrink="1" size="2"/></align>
         </vbox>
+        <label/>
         <vbox attach-x="0" attach-y="1" expand="0" fill="0" pad-y="20" pad-x="7" spacing="5">
             <label param="range" expand="0" fill="0" expand-y="0" fill-y="0" />
             <knob param="range" size="5" expand="1" fill="1" />
@@ -95,11 +96,6 @@
                     <combo param="sc_mode" fill="0" expand="0" attach-x="1" attach-y="1" attach-w="4" />
                     <label param="sc_route" expand="0" fill="0" attach-x="0" attach-y="2" />
                     <combo param="sc_route" fill="0" expand="0" attach-x="1" attach-y="2" attach-w="4"/>
-                    <label param="sc_listen" expand="0" fill="0" attach-x="3" attach-y="3" />
-                    <toggle param="sc_listen" size="2" expand="0" fill="0" attach-x="4" attach-y="3"/>
-                    <label param="sc_level" expand="0" fill="0" attach-x="0" attach-y="3" />
-                    <knob param="sc_level" size="2" expand="0" fill="0" type="1" attach-x="1" attach-y="3"/>
-                    <value param="sc_level" expand="0" fill="0" attach-x="2" attach-y="3" />
                 </table>
             </frame>
         </if>
@@ -146,6 +142,16 @@
                     </hbox>
                 </vbox>
             </frame>
+            
+            <vbox>
+                <label param="sc_level" expand="0" fill="0" attach-x="0" attach-y="3" />
+                <knob param="sc_level" size="2" expand="0" fill="0" type="1" attach-x="1" attach-y="3"/>
+                <value param="sc_level" expand="0" fill="0" attach-x="2" attach-y="3" />
+                <label/>
+                <label param="sc_listen" expand="0" fill="0" attach-x="3" attach-y="3" />
+                <toggle param="sc_listen" size="2" expand="0" fill="0" attach-x="4" attach-y="3"/>
+            </vbox>
+            
         </hbox>
     </vbox>
 </hbox>
