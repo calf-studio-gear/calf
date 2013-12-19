@@ -68,7 +68,7 @@
     
     <hbox>
         <frame label="Highpass">
-            <vbox>
+            <vbox spacing="3">
                 <combo param="hp_active"/>
                 <label/>
                 <label param="hp_freq" text="Frequency"/>
@@ -243,7 +243,7 @@
         
         
         <frame label="Lowpass">
-            <vbox>
+            <vbox spacing="3">
                 <combo param="lp_active"/>
                 <label/>
                 <label param="lp_freq" text="Frequency"/>

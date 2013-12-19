@@ -790,7 +790,7 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     
-    widget  = gtk_button_new_with_label (get_props().name);
+    widget  = calf_button_new ((gchar*)get_props().name);
     g_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (button_press_event), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
@@ -1011,7 +1011,7 @@ GtkWidget *entry_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     require_attribute("key");
     
-    widget = calf_entry_new();
+    widget = gtk_entry_new();
     entry = GTK_ENTRY(widget);
     g_signal_connect(GTK_OBJECT(widget), "changed", G_CALLBACK(entry_value_changed), (gpointer)this);
     gtk_editable_set_editable(GTK_EDITABLE(entry), get_int("editable", 1));

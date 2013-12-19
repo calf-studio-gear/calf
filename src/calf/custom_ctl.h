@@ -33,7 +33,7 @@
 #include <gtk/gtknotebook.h>
 #include <gtk/gtkrange.h>
 #include <gtk/gtkscale.h>
-#include <gtk/gtkentry.h>
+#include <gtk/gtkbutton.h>
 #include <calf/giface.h>
 
 G_BEGIN_DECLS
@@ -201,24 +201,47 @@ extern GtkWidget *calf_fader_new(const int horiz, const int size, const double m
 extern GType calf_fader_get_type();
 
 
-#define CALF_TYPE_ENTRY          (calf_entry_get_type())
-#define CALF_ENTRY(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_ENTRY, CalfEntry))
-#define CALF_IS_ENTRY(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_ENTRY))
-#define CALF_ENTRY_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_ENTRY, CalfEntryClass))
-#define CALF_IS_ENTRY_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_ENTRY))
 
-struct CalfEntry
+#define CALF_TYPE_BUTTON          (calf_button_get_type())
+#define CALF_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_BUTTON, CalfButton))
+#define CALF_IS_BUTTON(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_BUTTON))
+#define CALF_BUTTON_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_BUTTON, CalfButtonClass))
+#define CALF_IS_BUTTON_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_BUTTON))
+
+struct CalfButton
 {
-    GtkEntry parent;
+    GtkButton parent;
 };
 
-struct CalfEntryClass
+struct CalfButtonClass
 {
-    GtkEntryClass parent_class;
+    GtkButtonClass parent_class;
 };
 
-extern GtkWidget *calf_entry_new();
-extern GType calf_entry_get_type();
+extern GtkWidget *calf_button_new(gchar *label);
+extern GType calf_button_get_type();
+
+
+
+#define CALF_TYPE_TOGGLE_BUTTON          (calf_toggle_button_get_type())
+#define CALF_TOGGLE_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TOGGLE_BUTTON, CalfToggleButton))
+#define CALF_IS_TOGGLE_BUTTON(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TOGGLE_BUTTON))
+#define CALF_TOGGLE_BUTTON_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_TOGGLE_BUTTON, CalfToggleButtonClass))
+#define CALF_IS_TOGGLE_BUTTON_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_TOGGLE_BUTTON))
+
+struct CalfToggleButton
+{
+    GtkToggleButton parent;
+};
+
+struct CalfToggleButtonClass
+{
+    GtkToggleButtonClass parent_class;
+};
+
+extern GtkWidget *calf_toggle_button_new(gchar *label);
+extern GType calf_toggle_button_get_type();
+
 
 
 G_END_DECLS

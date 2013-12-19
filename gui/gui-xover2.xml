@@ -1,5 +1,5 @@
 <vbox>
-    <hbox spacing="10">
+    <hbox spacing="5">
         <frame label="Input">
             <vbox attach-x="0">
                 <vumeter param="meter_L" mode="0" position="2" hold="1.5" falloff="2.5"/>
@@ -24,7 +24,7 @@
             </if>
         </frame>
     </hbox>
-    <hbox spacing="10">
+    <hbox spacing="5">
         <frame label="Band 1">
             <vbox>
                 <hbox>

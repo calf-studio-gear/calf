@@ -1211,59 +1211,102 @@ calf_fader_get_type (void)
 }
 
 
-///////////////////////////////////////// entry ///////////////////////////////////////////////
+///////////////////////////////////////// button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_entry_new()
+calf_button_new(gchar *label)
 {
-    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_ENTRY, NULL ));
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_BUTTON, NULL ));
+    gtk_button_set_label(GTK_BUTTON(widget), label);
     return widget;
 }
 static gboolean
-calf_entry_expose (GtkWidget *widget, GdkEventExpose *event)
+calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
 {
-    g_assert(CALF_IS_ENTRY(widget));
+    g_assert(CALF_IS_BUTTON(widget) || CALF_IS_TOGGLE_BUTTON(widget));
     
     if (gtk_widget_is_drawable (widget)) {
         
-        int pad = 4;
+        int pad = 2;
         
-        const gchar *lab = gtk_entry_get_text (GTK_ENTRY (widget));
-        
-        GdkWindow *window = widget->window;
-        GtkEntry *entry   = GTK_ENTRY(widget);
-        cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+        GdkWindow *window    = widget->window;
+        GtkWidget *child     = GTK_BIN (widget)->child;
+        cairo_t *c           = gdk_cairo_create(GDK_DRAWABLE(window));
+        cairo_pattern_t *pat = NULL;
         
         int x  = widget->allocation.x;
         int y  = widget->allocation.y;
         int sx = widget->allocation.width;
         int sy = widget->allocation.height;
-        gint mx, my;
-        bool hover = false;
         
         cairo_rectangle(c, x, y, sx, sy);
         cairo_clip(c);
         
-        gtk_widget_get_pointer(GTK_WIDGET(widget), &mx, &my);
-        if (mx >= 0 and mx < sx and my >= 0 and my < sy)
-            hover = true;
+        cairo_rectangle(c, x, y, sx, sy);
+        pat = cairo_pattern_create_radial(x + sx / 2, y + sy / 2, 1, x + sx / 2, y + sy / 2, sx / 2);
+        switch (gtk_widget_get_state(widget)) {
+            case GTK_STATE_NORMAL:
+            default:
+                cairo_pattern_add_color_stop_rgb(pat, 0.3,  39. / 255,  52. / 255,  87. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 1.0,   6. / 255,   5. / 255,  14. / 255);
+                break;
+            case GTK_STATE_PRELIGHT:
+                cairo_pattern_add_color_stop_rgb(pat, 0.3,  19. / 255, 237. / 255, 254. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 1.0,   0. / 255,  45. / 255, 206. / 255);
+                break;
+            case GTK_STATE_ACTIVE:
+            case GTK_STATE_SELECTED:
+                cairo_pattern_add_color_stop_rgb(pat, 0.0,  19. / 255, 237. / 255, 254. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 0.3,   2. / 255, 180. / 255, 230. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 0.7,  19. / 255, 237. / 255, 254. / 255);
+                cairo_pattern_add_color_stop_rgb(pat, 1.0,   2. / 255, 168. / 255, 230. / 255);
+                break;
+            
+        }
+        cairo_set_source(c, pat);
+        cairo_fill(c);
         
-        line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
+        cairo_rectangle(c, x + pad, y + pad, sx - pad * 2, sy - pad * 2);
+        if (CALF_IS_TOGGLE_BUTTON(widget)) {
+            cairo_new_sub_path (c);
+            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 20, 2);
+            cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
+        }
+        pat = cairo_pattern_create_linear(x + pad, y + pad, x + pad, y + sy - pad * 2);
+        cairo_pattern_add_color_stop_rgb(pat, 0.0,  0.92, 0.92, 0.92);
+        cairo_pattern_add_color_stop_rgb(pat, 1.0,  0.70, 0.70, 0.70);
+        cairo_set_source(c, pat);
+        cairo_fill(c);
+        
+        int _h = GTK_WIDGET(GTK_BIN(widget)->child)->allocation.height + 0;
+        int _y = y + (sy - _h) / 2;
+        cairo_rectangle(c, x + pad, _y, sx - pad * 2, _h);
+        if (CALF_IS_TOGGLE_BUTTON(widget)) {
+            cairo_new_sub_path (c);
+            cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 20, 2);
+            cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
+        }
+        pat = cairo_pattern_create_linear(x + pad, _y, x + pad, _y + _h);
+        cairo_pattern_add_color_stop_rgba(pat, 1.0,  0.92, 0.92, 0.92, 0.86);
+        cairo_pattern_add_color_stop_rgba(pat, 0.0,  0.70, 0.70, 0.70, 0.86);
+        cairo_set_source(c, pat);
+        cairo_fill(c);
         
         cairo_destroy(c);
+        gtk_container_propagate_expose (GTK_CONTAINER (widget), child, event);
     }
     return FALSE;
 }
 
 static void
-calf_entry_class_init (CalfEntryClass *klass)
+calf_button_class_init (CalfButtonClass *klass)
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    //widget_class->expose_event = calf_entry_expose;
+    widget_class->expose_event = calf_button_expose;
 }
 
 static void
-calf_entry_init (CalfCombobox *self)
+calf_button_init (CalfButton *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
     widget->requisition.width = 40;
@@ -1271,30 +1314,91 @@ calf_entry_init (CalfCombobox *self)
 }
 
 GType
-calf_entry_get_type (void)
+calf_button_get_type (void)
 {
     static GType type = 0;
     if (!type) {
         static const GTypeInfo type_info = {
-            sizeof(CalfEntryClass),
+            sizeof(CalfButtonClass),
             NULL, /* base_init */
             NULL, /* base_finalize */
-            (GClassInitFunc)calf_entry_class_init,
+            (GClassInitFunc)calf_button_class_init,
             NULL, /* class_finalize */
             NULL, /* class_data */
-            sizeof(CalfEntry),
+            sizeof(CalfButton),
             0,    /* n_preallocs */
-            (GInstanceInitFunc)calf_entry_init
+            (GInstanceInitFunc)calf_button_init
         };
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfEntry%u%d", 
-                ((unsigned int)(intptr_t)calf_entry_class_init) >> 16, i);
+            char *name = g_strdup_printf("CalfButton%u%d", 
+                ((unsigned int)(intptr_t)calf_button_class_init) >> 16, i);
             if (g_type_from_name(name)) {
                 free(name);
                 continue;
             }
-            type = g_type_register_static(GTK_TYPE_ENTRY,
+            type = g_type_register_static(GTK_TYPE_BUTTON,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+
+///////////////////////////////////////// toggle button ///////////////////////////////////////////////
+
+GtkWidget *
+calf_toggle_button_new(gchar *label)
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE_BUTTON, NULL ));
+    gtk_button_set_label(GTK_BUTTON(widget), label);
+    return widget;
+}
+
+static void
+calf_toggle_button_class_init (CalfToggleButtonClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_button_expose;
+}
+
+static void
+calf_toggle_button_init (CalfToggleButton *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 20;
+}
+
+GType
+calf_toggle_button_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfToggleButtonClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_toggle_button_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfToggleButton),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_toggle_button_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfToggleButton%u%d", 
+                ((unsigned int)(intptr_t)calf_toggle_button_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);

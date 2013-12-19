@@ -22,6 +22,7 @@
 #include <calf/ctl_vumeter.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
+#include <calf/custom_ctl.h>
 #include <calf/preset.h>
 #include <calf/gtk_main_win.h>
 
@@ -319,7 +320,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_widget_show(title);
     
     // open button
-    GtkWidget *label = gtk_toggle_button_new_with_label("Edit");
+    GtkWidget *label = calf_toggle_button_new("Edit");
     strip->button = label;
     gtk_widget_set_size_request(GTK_WIDGET(label), 80, -1);
     g_signal_connect(GTK_OBJECT(label), "toggled", G_CALLBACK(gui_button_pressed), 
@@ -327,7 +328,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_widget_show(strip->button);
 
     // delete buton
-    GtkWidget *extra = gtk_button_new_with_label("Remove");
+    GtkWidget *extra = calf_button_new("Remove");
     strip->extra = extra;
     gtk_widget_set_size_request(GTK_WIDGET(extra), 80, -1);
     g_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
