@@ -160,6 +160,7 @@ style "calf-menu" = "calf-wide"
 
 style "calf-scale-small"
 {
+    fg[NORMAL] = "white"
     GtkScale::slider-length = 38
     GtkRange::slider-width  = 25
 }
@@ -167,7 +168,7 @@ style "calf-scale-small"
 
 style "calf-scale-big"
 {
-    
+    fg[NORMAL] = "white"
 }
 
 ### SCROLLBAR ###

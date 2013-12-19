@@ -709,8 +709,10 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
 
 bool pulsator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase or subindex > 1)
+    if (!is_active or phase or subindex > 1) {
+        redraw_graph = false;
         return false;
+    }
     set_channel_color(context, subindex);
     return (subindex ? lfoR : lfoL).get_graph(data, points, context, mode);
 }
@@ -734,6 +736,5 @@ bool pulsator_audio_module::get_gridline(int index, int subindex, int phase, flo
 bool pulsator_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
-    redraw_graph = false;
     return true;
 }

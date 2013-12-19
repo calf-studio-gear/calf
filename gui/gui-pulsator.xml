@@ -42,7 +42,7 @@
                     <line-graph refresh="1" width="400" height="100" param="freq"/>
                 </if>
             </frame>
-            <hbox>
+            <hbox spacing="10">
                 <vbox>
                     <label />
                     <combo param="mode" expand="0" fill="0" />
