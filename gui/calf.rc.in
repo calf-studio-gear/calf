@@ -151,6 +151,7 @@ style "calf-menu" = "calf-wide"
 {
     fg[NORMAL]   = "#ddd"
     fg[SELECTED] = "#fff"
+    fg[PRELIGHT] = "#fff"
     bg[NORMAL]   = "#111"
     bg[SELECTED] = "#333"
     font_name    = "Bitstream Vera Sans 8"
