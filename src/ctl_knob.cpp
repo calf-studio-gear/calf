@@ -56,7 +56,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     int neg_b = 0;
     int neg_l = 0;
     
-    cairo_rectangle(ctx, ox, oy, size, size);
+    cairo_rectangle(ctx, ox, oy, size + size / 2, size + size / 2);
     cairo_clip(ctx);
     
     switch (self->knob_type) {
@@ -101,7 +101,13 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_line_width(ctx, widths[self->knob_size]);
     
     // draw background
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1], 0, 0, ox, oy, size, size, GDK_RGB_DITHER_NORMAL, 0, 0);
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
+                    widget->style->fg_gc[0],
+                    CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1],
+                    0, 0, ox, oy,
+                    gdk_pixbuf_get_width(CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1]),
+                    gdk_pixbuf_get_height(CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1]),
+                    GDK_RGB_DITHER_NORMAL, 0, 0);
     
     // draw unlit
     if (neg_b)

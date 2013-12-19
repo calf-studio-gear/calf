@@ -850,6 +850,8 @@ inline void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int 
     cairo_pattern_t *pat2 = cairo_pattern_create_linear (
         x, y, x, y + sy + oy * 2 - pad * 2);
     cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
+    cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.13, 0.13, 0.13, 1);
+    cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.05, 0.05, 0.05, 1);
     cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
     cairo_set_source (c, pat2);
     cairo_fill(c);
