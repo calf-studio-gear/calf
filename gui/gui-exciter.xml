@@ -8,8 +8,8 @@
         <value param="level_in" attach-x="1" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="meter_in" attach-x="2" attach-y="0" expand-x="1" fill-x="1" />
-        <vumeter param="meter_in" hold="1.5" falloff="2.5" attach-x="2" attach-y="1" expand-x="1" fill-x="1" />
-        <vumeter param="meter_out" hold="1.5" falloff="2.5" attach-x="2" attach-y="2" expand-x="1" fill-x="1" />
+        <vumeter param="meter_in" position="2" hold="1.5" falloff="2.5" attach-x="2" attach-y="1" expand-x="1" fill-x="1" />
+        <vumeter param="meter_out" position="2" hold="1.5" falloff="2.5" attach-x="2" attach-y="2" expand-x="1" fill-x="1" />
         <label param="meter_out" attach-x="2" attach-y="3" expand-x="1" fill-x="1" />
         
         <label param="clip_in" attach-x="3" attach-y="0" expand-x="0" fill-x="0" />
@@ -44,7 +44,7 @@
                     <label align-x="1.0" text="3rd" />
                 </hbox>
                 <label param="meter_drive" />
-                <vumeter param="meter_drive" hold="1.5" falloff="2.5" />
+                <vumeter param="meter_drive" position="2" hold="1.5" falloff="2.5" />
             </vbox>
             
             <vbox>
