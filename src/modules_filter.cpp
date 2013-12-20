@@ -374,7 +374,6 @@ static inline float adjusted_lphp_gain(const float *const *params, int param_act
 template<class BaseClass, bool has_lphp>
 bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    redraw_graph = false;
     if (phase and *params[AM::param_analyzer_active]) {
         bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         if (*params[AM::param_analyzer_mode] == 2) {
@@ -384,14 +383,17 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         }
         return r;
     } else if (phase and !*params[AM::param_analyzer_active]) {
+        redraw_graph = false;
         return false;
     } else {
         int max = PeakBands + 2 + (has_lphp ? 2 : 0);
         
         if (!is_active
         or (subindex and !*params[AM::param_individuals])
-        or (subindex > max and *params[AM::param_individuals]))
+        or (subindex > max and *params[AM::param_individuals])) {
+            redraw_graph = false;
             return false;
+        }
         
         // first graph is the overall frequency response graph
         if (!subindex)
@@ -400,6 +402,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         // get out if max band is reached
         if (last_peak >= max) {
             last_peak = 0;
+            redraw_graph = false;
             return false;
         }
         
@@ -419,6 +422,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         // get out if max band is reached
         if (last_peak >= max) { // and !*params[param_analyzer_active]) {
             last_peak = 0;
+            redraw_graph = false;
             return false;
         }
          //else if *params[param_analyzer_active]) {
