@@ -1,6 +1,6 @@
 <hbox spacing="10">
 
-    <vbox spacing="20" expand="0" fill="0">
+    <vbox spacing="8" expand="0" fill="0">
         <vbox expand="0" fill="0" spacing="7" >
             <label param="bypass" expand="0" fill="0" />
             <align><toggle param="bypass" shrink="1" size="2"/></align>
@@ -10,7 +10,7 @@
             <knob param="level_in" size="5" expand="1" fill="1" type="1" />
             <value param="level_in" />
         </vbox>
-        <vbox expand="0" fill="0" spacing="7" >
+        <vbox expand="0" fill="0">
             <label param="mix" expand="0" fill="0" />
             <knob param="mix" size="3" expand="1" fill="1" />
             <value param="mix" />
@@ -81,7 +81,7 @@
     <frame label="Compression">
         <vbox >
             <if cond="directlink">
-                <line-graph refresh="1" width="300" height="300" param="level_in" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="260" height="260" param="level_in" square="1" expand="1" fill="1"/>
             </if>
         </vbox>
     </frame>
