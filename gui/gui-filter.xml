@@ -1,10 +1,10 @@
 <table rows="2" cols="2" >
     <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
-        <label param="mode" attach-x="0" attach-y="0" shrink-x="1" widget-name="inverted"/>
+        <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
         <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10" />
         <combo param="mode" attach-x="2" attach-y="0" />
     </table>
-    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1" widget-name="default">
+    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
         <vbox border="10">
             <label param="res" />
             <knob param="res" />

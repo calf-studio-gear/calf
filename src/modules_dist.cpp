@@ -837,8 +837,10 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, f
         set_channel_color(context, subindex);
         return ::get_graph(*this, subindex, data, points);
     } else if (index == param_level_in and !phase) {
-        if (!subindex)
+        if (!subindex) {
             context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
+            context->set_line_width(1);
+        }
         for (int i = 0; i < points; i++) {
             if (!subindex) {
                 float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
