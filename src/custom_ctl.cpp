@@ -41,7 +41,7 @@ calf_phase_graph_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
     
     line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
-    cairo_select_font_face(ctx, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx, 9);
     cairo_text_extents_t te;
     
@@ -523,7 +523,7 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         
         const gchar *lab = gtk_frame_get_label(GTK_FRAME(widget));
         
-        cairo_select_font_face(c, "Bitstream Vera Sans",
+        cairo_select_font_face(c, "Sans",
               CAIRO_FONT_SLANT_NORMAL,
               CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(c, size);
@@ -676,7 +676,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
             
         line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
         
-        cairo_select_font_face(c, "Bitstream Vera Sans",
+        cairo_select_font_face(c, "Sans",
               CAIRO_FONT_SLANT_NORMAL,
               CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(c, 12);

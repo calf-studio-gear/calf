@@ -387,7 +387,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                 // draw the label on top
                 if (handle->label && handle->label[0]) {
                     
-                    cairo_select_font_face(c, "Bitstream Vera Sans",
+                    cairo_select_font_face(c, "Sans",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
                     cairo_set_font_size(c, 9);
                     cairo_text_extents_t te;
@@ -558,7 +558,7 @@ static cairo_t
     if (lg->debug) printf("{switch context}\n");
     
     cimpl->context = ctx;
-    cairo_select_font_face(ctx, "Bitstream Vera Sans",
+    cairo_select_font_face(ctx, "Sans",
         CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx, 9);
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_MITER);

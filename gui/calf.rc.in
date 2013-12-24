@@ -19,7 +19,7 @@ style "calf-default"
     xthickness        = 0
     ythickness        = 0
     
-    font_name         = "Bitstream Vera Sans 8"
+    font_name         = "Sans 8"
     
     #fg[NORMAL]        = "#fff"
     #fg[PRELIGHT]      = "#fff"
@@ -71,7 +71,7 @@ style "calf-rack"
 style "calf-rack-title"
 {
     fg[NORMAL] = "#000"
-    font_name  = "Bitstream Vera Sans Bold 10"
+    font_name  = "Sans Bold 10"
     xthickness = 7
     ythickness = 3
 }
@@ -83,7 +83,7 @@ style "calf-rack-widgets"
     fg[ACTIVE]        = "#000"
     fg[SELECTED]      = "#000"
     fg[INSENSITIVE]   = "#000"
-    font_name         = "Bitstream Vera Sans 8"
+    font_name         = "Sans 8"
 }
 
 style "calf-plugin"
@@ -92,7 +92,7 @@ style "calf-plugin"
 }
 
 style "calf-label" {
-    font_name  = "Bitstream Vera Sans 7"
+    font_name  = "Sans 7"
     fg[NORMAL] = "#fff"
 }
 
@@ -128,7 +128,7 @@ style "calf-combobox"
     # NOTE:
     # ComboBox is rendered via Cairo with 12pt text. These settings are
     # just for a usable size allocation of the widget.
-    font_name = "Bitstream Vera Sans 11"
+    font_name = "Sans 11"
     xthickness = 0
     ythickness = 2
 }
@@ -154,7 +154,7 @@ style "calf-menu" = "calf-wide"
     fg[PRELIGHT] = "#fff"
     bg[NORMAL]   = "#111"
     bg[SELECTED] = "#333"
-    font_name    = "Bitstream Vera Sans 8"
+    font_name    = "Sans 8"
 }
 
 ### H/V SCALES ###

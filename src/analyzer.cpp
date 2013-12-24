@@ -1025,7 +1025,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             //if (!subindex) {
                 //cairo_t *ctx = context->context;
                 //cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
-                //cairo_select_font_face(ctx, "Bitstream Vera Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                //cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
                 //cairo_set_font_size(ctx, 20);
                 //cairo_move_to (ctx, context->size_x / 2 - 20, 40);
                 //cairo_show_text (ctx, "L");
