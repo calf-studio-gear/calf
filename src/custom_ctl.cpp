@@ -351,8 +351,8 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
                     CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1],
                     0,
                     (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
-                    widget->allocation.x - 20,
-                    widget->allocation.y - 20,
+                    widget->allocation.x + widget->allocation.width / 2 - self->size * 15 - 20,
+                    widget->allocation.y + widget->allocation.height / 2 - self->size * 10 - 20,
                     40 + self->size * 30,
                     40 + self->size * 20,
                     GDK_RGB_DITHER_NORMAL, 0, 0);
