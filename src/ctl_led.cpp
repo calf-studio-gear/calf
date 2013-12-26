@@ -102,40 +102,40 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
         default:
         case 0:
             // blue-on/off
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 0.2 : 0.0, value > 0.f ? 1.0 : 0.25, value > 0.f ? 1.0 : 0.5);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.1 : 0.0, value > 0.f ? 0.6 : 0.15, value > 0.f ? 0.75 : 0.3);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                     value > 0.f ? 0.3 : 0.1,  value > 0.f ? 0.5 : 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 0.2 : 0.0, value > 0.f ? 1.0 : 0.25, value > 0.f ? 1.0 : 0.35);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.1 : 0.0, value > 0.f ? 0.6 : 0.15, value > 0.f ? 0.75 : 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,                     value > 0.f ? 0.3 : 0.1,  value > 0.f ? 0.5 : 0.1);
             break;
         case 1:
             // red-on/off
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 1.0 : 0.5,  value > 0.f ? 0.5 : 0.0, value > 0.f ? 0.2 : 0.0);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.75 : 0.3, value > 0.f ? 0.2 : 0.0, value > 0.f ? 0.1 : 0.0);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, value > 0.f ? 0.5 : 0.2,  value > 0.f ? 0.1 : 0.0, 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value > 0.f ? 1.0 : 0.35, value > 0.f ? 0.5 : 0.0, value > 0.f ? 0.2 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value > 0.f ? 0.80 : 0.2, value > 0.f ? 0.2 : 0.0, value > 0.f ? 0.1 : 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, value > 0.f ? 0.65 : 0.1, value > 0.f ? 0.1 : 0.0, 0.0);
             break;
         case 2:
         case 4:
             // blue-dynamic (limited)
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.5 + 0.5);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.45 + 0.3);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.3 + 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.65 + 0.35);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.55 + 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.4 + 0.1);
             break;
         case 3:
         case 5:
             // red-dynamic (limited)
-            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.5 + 0.5,  value * 0.5, value * 0.2);
-            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.45 + 0.3, value * 0.2, value * 0.1);
-            cairo_pattern_add_color_stop_rgb(pt, 1.0, value * 0.3 + 0.2,  value * 0.1, 0.0);
+            cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.65 + 0.35, value * 0.5, value * 0.2);
+            cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.6 + 0.2,   value * 0.2, value * 0.1);
+            cairo_pattern_add_color_stop_rgb(pt, 1.0, value * 0.66 + 0.1,  value * 0.1, 0.0);
             break;
         case 6:
             // blue-dynamic with red peak at >= 1.f
             if(value < 1.0) {
-                cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.5 + 0.5);
-                cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.45 + 0.3);
-                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.3 + 0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, value * 0.2, value * 0.75 + 0.25, value * 0.65 + 0.35);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, value * 0.1, value * 0.45 + 0.15, value * 0.55 + 0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0,         value * 0.2 + 0.1,   value * 0.4 + 0.1);
             } else {
                 cairo_pattern_add_color_stop_rgb(pt, 0.0, 1.0,  0.5, 0.2);
-                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.75, 0.2, 0.1);
-                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.5,  0.1, 0.0);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.80, 0.2, 0.1);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.66, 0.1, 0.0);
             }
             break;
         case 7:
@@ -147,14 +147,14 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0, 0.3, 0.5);
             } else if(value == 0.f) {
                 // off
-                cairo_pattern_add_color_stop_rgb(pt, 0.0, 0.0, 0.25, 0.5);
-                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.0, 0.15, 0.3);
-                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0, 0.1,  0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 0.0, 0.0, 0.25, 0.35);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.0, 0.15, 0.2);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.0, 0.1,  0.1);
             } else {
                 // red
                 cairo_pattern_add_color_stop_rgb(pt, 0.0, 1.0,  0.5, 0.2);
-                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.75, 0.2, 0.1);
-                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.5,  0.1, 0.0);
+                cairo_pattern_add_color_stop_rgb(pt, 0.5, 0.80, 0.2, 0.1);
+                cairo_pattern_add_color_stop_rgb(pt, 1.0, 0.66, 0.1, 0.0);
             }
             break;
     }
@@ -306,4 +306,3 @@ calf_led_get_type (void)
     }
     return type;
 }
-
