@@ -345,17 +345,21 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
     g_assert(CALF_IS_TOGGLE(widget));
     
     CalfToggle *self = CALF_TOGGLE(widget);
-    GdkWindow *window = widget->window;
-
-    int ox = widget->allocation.x + widget->allocation.width / 2 - self->size * 15;
-    int oy = widget->allocation.y + widget->allocation.height / 2 - self->size * 10;
-    int width = self->size * 30, height = self->size * 20;
-
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1], 0, height * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))), ox, oy, width, height, GDK_RGB_DITHER_NORMAL, 0, 0);
-    if (gtk_widget_is_focus(widget))
-    {
-        gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, width, height);
-    }
+    
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
+                    widget->style->fg_gc[0],
+                    CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1],
+                    0,
+                    (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
+                    widget->allocation.x - 20,
+                    widget->allocation.y - 20,
+                    40 + self->size * 30,
+                    40 + self->size * 20,
+                    GDK_RGB_DITHER_NORMAL, 0, 0);
+    //if (gtk_widget_is_focus(widget))
+    //{
+        //gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, width, height);
+    //}
 
     return TRUE;
 }
@@ -434,7 +438,12 @@ calf_toggle_new()
 static gboolean calf_toggle_value_changed(gpointer obj)
 {
     GtkWidget *widget = (GtkWidget *)obj;
-    gtk_widget_queue_draw(widget);
+    CalfToggle *self = CALF_TOGGLE(widget);
+    gtk_widget_queue_draw_area(widget,
+                               widget->allocation.x - 20,
+                               widget->allocation.y - 20,
+                               40 + self->size * 30,
+                               40 + self->size * 20);
     return FALSE;
 }
 
