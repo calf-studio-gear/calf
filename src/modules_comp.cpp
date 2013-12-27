@@ -1303,6 +1303,7 @@ void multibandcompressor_audio_module::params_changed()
     int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
     if (b != bypass) {
         redraw = strips * 2 + strips;
+        bypass = b;
     }
     
     crossover.set_mode(mode + 1);
@@ -2336,6 +2337,7 @@ void multibandgate_audio_module::params_changed()
     int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
     if (b != bypass) {
         redraw = strips * 2 + strips;
+        bypass = b;
     }
     
     crossover.set_mode(mode + 1);

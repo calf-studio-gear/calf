@@ -859,12 +859,21 @@ calf_notebook_expose (GtkWidget *widget, GdkEventExpose *event)
                         // draw tab light
                         cairo_rectangle(c, lx - tx + 2, y + 2, lw + 2 * tx - 4, 2);
                         pat = cairo_pattern_create_radial(lx + lw / 2, y + bh / 2, 1, lx + lw / 2, y + bh / 2, lw + tx * 2);
-                        cairo_pattern_add_color_stop_rgb(pat, 0, 19. / 255, 237. / 255, 254. / 255);
-                        cairo_pattern_add_color_stop_rgb(pat, 0.3, 2. / 255, 205. / 255, 250. / 255);
-                        cairo_pattern_add_color_stop_rgb(pat, 0.7, 19. / 255, 237. / 255, 254. / 255);
-                        cairo_pattern_add_color_stop_rgb(pat, 1, 2. / 255, 168. / 255, 250. / 255);
+                        cairo_pattern_add_color_stop_rgb(pat, 0,   50. / 255, 1, 1);
+                        cairo_pattern_add_color_stop_rgb(pat, 0.3,  2. / 255, 180. / 255, 1);
+                        cairo_pattern_add_color_stop_rgb(pat, 0.5, 19. / 255, 220. / 255, 1);
+                        cairo_pattern_add_color_stop_rgb(pat, 1,    2. / 255, 120. / 255, 1);
                         cairo_set_source(c, pat);
                         cairo_fill(c);
+                        
+                        cairo_rectangle(c, lx - tx + 2, y + 1, lw + 2 * tx - 4, 1);
+                        cairo_set_source_rgba(c, 0,0,0,0.5);
+                        cairo_fill(c);
+                        
+                        cairo_rectangle(c, lx - tx + 2, y + 4, lw + 2 * tx - 4, 1);
+                        cairo_set_source_rgba(c, 1,1,1,0.3);
+                        cairo_fill(c);
+                    
                     }
                     // draw labels
                     gtk_container_propagate_expose (GTK_CONTAINER (notebook), page->tab_label, event);
