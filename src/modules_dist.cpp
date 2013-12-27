@@ -653,8 +653,8 @@ void tapesimulator_audio_module::params_changed() {
                           100.f,
                           0.f,
                           1.f);
-    lfo1.set_params(*params[param_speed] + 1, 0, 0.f, srate, 1.f);
-    lfo2.set_params((*params[param_speed] + 1) / 4.69, 0, 0.f, srate, 1.f);
+    lfo1.set_params((*params[param_speed] + 1) / 2, 0, 0.f, srate, 1.f);
+    lfo2.set_params((*params[param_speed] + 1) / 9.38, 0, 0.f, srate, 1.f);
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
