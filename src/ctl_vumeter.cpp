@@ -354,7 +354,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         if(vu->disp_value > 1.f and vu->mode != VU_MONOCHROME_REVERSE)
             cairo_set_source_rgba (c, 1, 0, 0, 0.8);
         else
-            cairo_set_source_rgba (c, 0, 0.7, 1, 0.8);
+            cairo_set_source_rgba (c, 0, 0.9, 1, 0.8);
         cairo_show_text(c, str);
         cairo_fill(c);
     }
