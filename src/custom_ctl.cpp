@@ -346,16 +346,22 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
     
     CalfToggle *self = CALF_TOGGLE(widget);
     
+    int x = widget->allocation.x + widget->allocation.width / 2 - self->size * 15 - self->size * 2;
+    int y = widget->allocation.y + widget->allocation.height / 2 - self->size * 10 - self->size * 3;
+    int width = self->size * 34;
+    int height = self->size * 26;
+    
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
                     widget->style->fg_gc[0],
                     CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1],
-                    0,
-                    (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
-                    widget->allocation.x + widget->allocation.width / 2 - self->size * 15 - 20,
-                    widget->allocation.y + widget->allocation.height / 2 - self->size * 10 - 20,
-                    40 + self->size * 30,
-                    40 + self->size * 20,
+                    20 - self->size * 2,
+                    20 - self->size * 3 + (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
+                    x,
+                    y,
+                    width,
+                    height,
                     GDK_RGB_DITHER_NORMAL, 0, 0);
+                    
     //if (gtk_widget_is_focus(widget))
     //{
         //gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, width, height);
@@ -440,10 +446,10 @@ static gboolean calf_toggle_value_changed(gpointer obj)
     GtkWidget *widget = (GtkWidget *)obj;
     CalfToggle *self = CALF_TOGGLE(widget);
     gtk_widget_queue_draw_area(widget,
-                               widget->allocation.x - 20,
-                               widget->allocation.y - 20,
-                               40 + self->size * 30,
-                               40 + self->size * 20);
+                               widget->allocation.x - self->size * 2,
+                               widget->allocation.y - self->size * 3,
+                               self->size * 34,
+                               self->size * 26);
     return FALSE;
 }
 
