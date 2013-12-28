@@ -876,18 +876,26 @@ transients::transients() {
     rel_time        = 0.f;
     rel_level       = 0.f;
     sust_thres      = 0.f;
+    ampcomplete     = 1.f;
+    ampcomplete_old = 1.f;
+    factor1         = 1.f;
+    factor2         = 1.f;
 }
 void transients::set_sample_rate(uint32_t sr) {
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
     release_coef = exp(log(0.01) / (0.1f  * srate));
+    factor1 = pow(2.0f, 1.f / (0.002 * srate));
+    factor2 = pow(0.5f, 1.f / (0.002 * srate));
 }
 void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th) {
-    att_time        = att_t;
-    att_level       = att_l;
-    rel_time        = rel_t;
-    rel_level       = rel_l;
-    sust_thres      = sust_th;
+    sust_thres = sust_th;
+    att_time   = att_t;
+    rel_time   = rel_t;
+    att_level  = att_l > 0 ? 0.25f * pow(att_l * 8, 2)
+                          : -0.25f * pow(att_l * 8, 2);
+    rel_level  = rel_l > 0 ? 0.5f  * pow(rel_l * 8, 2)
+                          : -0.25f * pow(rel_l * 8, 2);
 }
 float transients::process(float s) {
     // envelope follower
@@ -936,10 +944,18 @@ float transients::process(float s) {
     float reldiff = release - envelope;
     
     // amplification factor from attack and release curve
-    float ampfactor = attdiff * (att_level > 0 ? 0.25f * pow(att_level * 8, 2) : -0.25f * pow(att_level * 8, 2))
-                    + reldiff * (rel_level > 0 ? 0.5f  * pow(rel_level * 8, 2) : -0.25f * pow(rel_level * 8, 2));
+    float ampfactor = attdiff * att_level + reldiff * rel_level;
     
-    return 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+    ampcomplete_old = ampcomplete;
+    
+    ampcomplete = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+    
+    if (ampcomplete / ampcomplete_old >= factor1)
+        ampcomplete = ampcomplete_old * factor1;
+    else if (ampcomplete / ampcomplete_old <= factor2)
+        ampcomplete = ampcomplete_old * factor2;
+    
+    return ampcomplete;
 }
 
 

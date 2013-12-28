@@ -625,6 +625,7 @@ private:
 public:
     float envelope, attack, release;
     float att_time, att_level, rel_time, rel_level, sust_thres;
+    float ampcomplete, ampcomplete_old, factor1, factor2;
     uint32_t srate;
     transients();
     float process(float s);
