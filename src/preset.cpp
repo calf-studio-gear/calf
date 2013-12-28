@@ -150,7 +150,7 @@ void preset_list::plugin_snapshot::reset()
     type.clear();
     instance_name.clear();
     preset_offset = input_index = output_index = midi_index = 0;
-    
+    automation_entries.clear();
 }
 
 void preset_list::xml_start_element_handler(void *user_data, const char *name, const char *attrs[])
@@ -191,6 +191,20 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
         }
         break;
     case PLUGIN:
+        if (!strcmp(name, "automation"))
+        {
+            string key, value;
+            for(; *attrs; attrs += 2) {
+                if (!strcmp(*attrs, "key")) key = attrs[1];
+                else
+                if (!strcmp(*attrs, "value")) value = attrs[1];
+            }
+            if (!key.empty() && !value.empty())
+                self.parser_plugin.automation_entries.push_back(make_pair(key, value));
+            state = AUTOMATION_ENTRY;
+            return;
+        }
+        // fall through
     case LIST:
         if (!strcmp(name, "preset")) {
             
@@ -250,6 +264,9 @@ void preset_list::xml_start_element_handler(void *user_data, const char *name, c
     case VAR:
         // no nested elements allowed inside <var>
         break;
+    case AUTOMATION_ENTRY:
+        // no nested elements allowed inside <automation>
+        break;
     }
     // g_warning("Invalid XML element: %s", name);
     throw preset_exception("Invalid XML element: %s", name, 0);
@@ -264,6 +281,13 @@ void preset_list::xml_end_element_handler(void *user_data, const char *name)
     switch(state)
     {
     case START:
+        break;
+    case AUTOMATION_ENTRY:
+        if (!strcmp(name, "automation"))
+        {
+            state = PLUGIN;
+            return;
+        }
         break;
     case LIST:
         if (!strcmp(name, "presets")) {

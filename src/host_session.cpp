@@ -313,6 +313,11 @@ char *host_session::open_file(const char *name)
             {
                 add_plugin(ps.type, "", ps.instance_name);
                 pl.presets[ps.preset_offset].activate(plugins[i]);
+                for (size_t j = 0; j < ps.automation_entries.size(); ++j)
+                {
+                    const pair<string, string> &p = ps.automation_entries[j];
+                    plugins[i]->configure(p.first.c_str(), p.second.c_str());
+                }
                 main_win->refresh_plugin(plugins[i]);
             }
         }
@@ -327,35 +332,51 @@ char *host_session::open_file(const char *name)
     return NULL;
 }
 
+struct gather_automation_params: public send_configure_iface
+{
+    stringstream &xml;
+    gather_automation_params(stringstream &_xml)
+    : xml(_xml)
+    {}
+    
+    virtual void send_configure(const char *key, const char *value)
+    {
+        xml << "<automation key=\"" << key << "\" value=\"" << value << "\" />" << endl;
+    }
+};
+
 char *host_session::save_file(const char *name)
 {
     string i_name = stripfmt(client.input_name);
     string o_name = stripfmt(client.output_name);
     string m_name = stripfmt(client.midi_name);
-    string data;
-    data = "<?xml version=\"1.1\" encoding=\"utf-8\">\n";
-    data = "<rack>\n";
+    stringstream data;
+    data << "<?xml version=\"1.1\" encoding=\"utf-8\"?>" << endl;
+    data << "<rack>";
     for (unsigned int i = 0; i < plugins.size(); i++) {
         jack_host *p = plugins[i];
         plugin_preset preset;
         preset.plugin = p->metadata->get_id();
         preset.get_from(p);
-        data += "<plugin";
-        data += to_xml_attr("type", preset.plugin);
-        data += to_xml_attr("instance-name", p->instance_name);
+        data << "<plugin";
+        data << to_xml_attr("type", preset.plugin);
+        data << to_xml_attr("instance-name", p->instance_name);
         if (p->metadata->get_input_count())
-            data += to_xml_attr("input-index", p->get_inputs()[0].name.substr(i_name.length()));
+            data << to_xml_attr("input-index", p->get_inputs()[0].name.substr(i_name.length()));
         if (p->metadata->get_output_count())
-            data += to_xml_attr("output-index", p->get_outputs()[0].name.substr(o_name.length()));
+            data << to_xml_attr("output-index", p->get_outputs()[0].name.substr(o_name.length()));
         if (p->get_midi_port())
-            data += to_xml_attr("midi-index", p->get_midi_port()->name.substr(m_name.length()));
-        data += ">\n";
-        data += preset.to_xml();
-        data += "</plugin>\n";
+            data << to_xml_attr("midi-index", p->get_midi_port()->name.substr(m_name.length()));
+        data << ">" << endl;
+        data << preset.to_xml();
+        gather_automation_params gap(data);
+        p->send_automation_configures(&gap);
+        data << "</plugin>" << endl;
     }
-    data += "</rack>\n";
+    data << "</rack>" << endl;
+    string datastr(data.str());
     FILE *f = fopen(name, "w");
-    if (!f || 1 != fwrite(data.c_str(), data.length(), 1, f))
+    if (!f || 1 != fwrite(datastr.c_str(), datastr.length(), 1, f))
     {
         int e = errno;
         if (f)

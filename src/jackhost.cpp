@@ -345,8 +345,6 @@ void jack_host::replace_automation_map(automation_map *amap)
 {
     client->atomic_swap(cc_mappings, amap);
     delete amap;
-    debug_send_configure_iface dsci;
-    send_automation_configures(&dsci);
 }
 
 void jack_host::get_automation(int param_no, multimap<uint32_t, automation_range> &dests)

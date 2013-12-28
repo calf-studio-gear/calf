@@ -41,7 +41,7 @@ automation_range *automation_range::new_from_configure(const plugin_metadata_ifa
 {
     if (0 != strncmp(key, automation_key_prefix, sizeof(automation_key_prefix) - 1))
         return NULL;
-    key += sizeof(automation_key_prefix);
+    key += sizeof(automation_key_prefix) - 1;
     const char *totoken = strstr(key, "_to_");
     if (!totoken)
         return NULL;
@@ -62,7 +62,7 @@ automation_range *automation_range::new_from_configure(const plugin_metadata_ifa
             std::stringstream ss(value);
             double minv, maxv;
             ss >> minv >> maxv;
-            return new automation_range(i, minv, maxv);
+            return new automation_range(minv, maxv, i);
         }
     }
     

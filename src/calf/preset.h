@@ -100,6 +100,8 @@ struct preset_list
         int output_index;
         /// Index of the first MIDI port
         int midi_index;
+        /// Automation assignments for this plugin
+        std::vector<std::pair<std::string, std::string> > automation_entries;
         
         /// Reset to initial values
         void reset();
@@ -115,6 +117,7 @@ struct preset_list
         VAR, ///< Inside (non-empty) var tag
         PLUGIN, ///< Inside plugin element (calfjackhost snapshots only)
         RACK, ///< Inside rack element (calfjackhost snapshots only)
+        AUTOMATION_ENTRY, ///< inside automation element (calfjackhost snapshots only, always an empty element)
     } state;
 
     /// Contained presets (usually for all plugins)
