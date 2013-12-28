@@ -22,6 +22,7 @@
 #include <calf/host_session.h>
 #include <calf/preset.h>
 #include <calf/gtk_session_env.h>
+#include <calf/plugin_tools.h>
 #include <getopt.h>
 
 using namespace std;
@@ -344,6 +345,8 @@ void jack_host::replace_automation_map(automation_map *amap)
 {
     client->atomic_swap(cc_mappings, amap);
     delete amap;
+    debug_send_configure_iface dsci;
+    send_automation_configures(&dsci);
 }
 
 void jack_host::get_automation(int param_no, multimap<uint32_t, automation_range> &dests)
@@ -356,6 +359,29 @@ void jack_host::get_automation(int param_no, multimap<uint32_t, automation_range
         if (param_no == -1 || param_no == i->second.param_no)
             dests.insert(*i);
     }
+}
+
+void jack_host::send_automation_configures(send_configure_iface *sci)
+{
+    if (!cc_mappings)
+        return;
+    for(automation_map::iterator i = cc_mappings->begin(); i != cc_mappings->end(); ++i)
+    {
+        i->second.send_configure(metadata, i->first, sci);
+    }
+}
+
+char *jack_host::configure(const char *key, const char *value)
+{
+    uint32_t controller;
+    automation_range *ar = automation_range::new_from_configure(metadata, key, value, controller);
+    if (ar)
+    {
+        add_automation(controller, *ar);
+        delete ar;
+        return NULL;
+    }
+    return module->configure(key, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

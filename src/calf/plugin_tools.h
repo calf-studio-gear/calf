@@ -71,6 +71,14 @@ public:
     }
 };
 
+struct debug_send_configure_iface: public send_configure_iface
+{
+    void send_configure(const char *key, const char *value)
+    {
+        printf("send_configure key=%s value=%s\n", key, value);
+    }
+};
+
 };
 
 #endif

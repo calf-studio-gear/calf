@@ -297,7 +297,8 @@ struct lv2_wrapper
         instance *const mod = (instance *)Instance;
         delete mod;
     }
-    static const void *cb_ext_data(const char *URI)
+
+static const void *cb_ext_data(const char *URI)
     {
         if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
             return &calf_descriptor;

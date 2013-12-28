@@ -27,6 +27,48 @@ using namespace std;
 using namespace calf_utils;
 using namespace calf_plugins;
 
+static const char automation_key_prefix[] = "automation_v1_";
+
+void automation_range::send_configure(const plugin_metadata_iface *metadata, uint32_t from_controller, send_configure_iface *sci)
+{
+    std::stringstream ss1, ss2;
+    ss1 << automation_key_prefix << from_controller << "_to_" << metadata->get_param_props(param_no)->short_name;
+    ss2 << min_value << " " << max_value;
+    sci->send_configure(ss1.str().c_str(), ss2.str().c_str());
+}
+
+automation_range *automation_range::new_from_configure(const plugin_metadata_iface *metadata, const char *key, const char *value, uint32_t &from_controller)
+{
+    if (0 != strncmp(key, automation_key_prefix, sizeof(automation_key_prefix) - 1))
+        return NULL;
+    key += sizeof(automation_key_prefix);
+    const char *totoken = strstr(key, "_to_");
+    if (!totoken)
+        return NULL;
+    string from_ctl(key, totoken - key);
+    for (size_t i = 0; i < from_ctl.length(); i++)
+    {
+        if (!isdigit(from_ctl[i]))
+            return NULL;
+    }
+    from_controller = (uint32_t)atoi(from_ctl.c_str());
+    key = totoken + 4;
+    
+    size_t pcount = metadata->get_param_count();
+    for (size_t i = 0; i < pcount; ++i) {
+        const parameter_properties *props = metadata->get_param_props(i);
+        if (!strcmp(key, props->short_name))
+        {
+            std::stringstream ss(value);
+            double minv, maxv;
+            ss >> minv >> maxv;
+            return new automation_range(i, minv, maxv);
+        }
+    }
+    
+    return NULL;
+}
+
 float parameter_properties::from_01(double value01) const
 {
     double value = dsp::clip(value01, 0., 1.);

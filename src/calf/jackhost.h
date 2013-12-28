@@ -160,8 +160,9 @@ public:
         changed = true;
     }
     virtual void execute(int cmd_no) { module->execute(cmd_no); }
-    virtual char *configure(const char *key, const char *value) { return module->configure(key, value); }
+    virtual char *configure(const char *key, const char *value);
     virtual void send_configures(send_configure_iface *sci) { module->send_configures(sci); }
+    virtual void send_automation_configures(send_configure_iface *);
     virtual int send_status_updates(send_updates_iface *sui, int last_serial) { return module->send_status_updates(sui, last_serial); }
     virtual const plugin_metadata_iface *get_metadata_iface() const { return module->get_metadata_iface(); }
     virtual const line_graph_iface *get_line_graph_iface() const { return module->get_line_graph_iface(); }

@@ -423,6 +423,7 @@ struct plugin_ctl_iface
     virtual void get_automation(int param_no, std::multimap<uint32_t, automation_range> &dests) {}
     /// Return the source identifier for the most recently seen control change that could be used for automation
     virtual uint32_t get_last_automation_source() { return 0xFFFFFFFF; }
+    virtual void send_automation_configures(send_configure_iface *) {}
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_ctl_iface() {}
 };
@@ -810,6 +811,8 @@ struct automation_range
     , max_value(u)
     , param_no(param)
     {}
+    void send_configure(const plugin_metadata_iface *metadata, uint32_t from_controller, send_configure_iface *sci);
+    static automation_range *new_from_configure(const plugin_metadata_iface *metadata, const char *key, const char *value, uint32_t &from_controller);
 };
 
 struct automation_map: public std::multimap<uint32_t, automation_range>
