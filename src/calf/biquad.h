@@ -70,16 +70,16 @@ public:
      */
     inline void set_lp_rbj(float fc, float q, float sr, float gain = 1.0)
     {
-        float omega=(float)(2*M_PI*fc/sr);
-        float sn=sin(omega);
-        float cs=cos(omega);
-        float alpha=(float)(sn/(2*q));
-        float inv=(float)(1.0/(1.0+alpha));
+        double omega=(double)(2*M_PI*fc/sr);
+        double sn=sin(omega);
+        double cs=cos(omega);
+        double alpha=(double)(sn/(2*q));
+        double inv=(double)(1.0/(1.0+alpha));
 
-        a2 = a0 =  (float)(gain*inv*(1 - cs)*0.5f);
+        a2 = a0 =  (double)(gain*inv*(1 - cs)*0.5f);
         a1 =  a0 + a0;
-        b1 =  (float)(-2*cs*inv);
-        b2 =  (float)((1 - alpha)*inv);
+        b1 =  (double)(-2*cs*inv);
+        b2 =  (double)((1 - alpha)*inv);
     }
 
     // different lowpass filter, based on Zoelzer's equations, modified by
@@ -110,12 +110,12 @@ public:
      */
     inline void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(float)(2*M_PI*fc/esr);
+        Coeff omega=(double)(2*M_PI*fc/esr);
         Coeff sn=sin(omega);
         Coeff cs=cos(omega);
-        Coeff alpha=(float)(sn/(2*q));
+        Coeff alpha=(double)(sn/(2*q));
 
-        float inv=(float)(1.0/(1.0+alpha));
+        double inv=(double)(1.0/(1.0+alpha));
 
         a0 =  (Coeff)(gain*inv*(1 + cs)/2);
         a1 =  -2.f * a0;
@@ -127,12 +127,12 @@ public:
     // this replaces sin/cos with polynomial approximation
     inline void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(float)(2*M_PI*fc/esr);
+        Coeff omega=(double)(2*M_PI*fc/esr);
         Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
         Coeff cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
-        Coeff alpha=(float)(sn/(2*q));
+        Coeff alpha=(double)(sn/(2*q));
 
-        float inv=(float)(1.0/(1.0+alpha));
+        double inv=(double)(1.0/(1.0+alpha));
 
         a0 =  (Coeff)(gain*inv*(1 + cs)*(1.0/2.0));
         a1 =  -2.f * a0;
@@ -149,29 +149,29 @@ public:
      */
     inline void set_bp_rbj(double fc, double q, double esr, double gain=1.0)
     {
-        float omega=(float)(2*M_PI*fc/esr);
-        float sn=sin(omega);
-        float cs=cos(omega);
-        float alpha=(float)(sn/(2*q));
+        double omega=(double)(2*M_PI*fc/esr);
+        double sn=sin(omega);
+        double cs=cos(omega);
+        double alpha=(double)(sn/(2*q));
 
-        float inv=(float)(1.0/(1.0+alpha));
+        double inv=(double)(1.0/(1.0+alpha));
 
-        a0 =  (float)(gain*inv*alpha);
+        a0 =  (double)(gain*inv*alpha);
         a1 =  0.f;
-        a2 =  (float)(-gain*inv*alpha);
-        b1 =  (float)(-2*cs*inv);
-        b2 =  (float)((1 - alpha)*inv);
+        a2 =  (double)(-gain*inv*alpha);
+        b1 =  (double)(-2*cs*inv);
+        b2 =  (double)((1 - alpha)*inv);
     }
     
     // rbj's bandreject
     inline void set_br_rbj(double fc, double q, double esr, double gain=1.0)
     {
-        float omega=(float)(2*M_PI*fc/esr);
-        float sn=sin(omega);
-        float cs=cos(omega);
-        float alpha=(float)(sn/(2*q));
+        double omega=(double)(2*M_PI*fc/esr);
+        double sn=sin(omega);
+        double cs=cos(omega);
+        double alpha=(double)(sn/(2*q));
 
-        float inv=(float)(1.0/(1.0+alpha));
+        double inv=(double)(1.0/(1.0+alpha));
 
         a0 =  (Coeff)(gain*inv);
         a1 =  (Coeff)(-gain*inv*2*cs);
@@ -182,36 +182,36 @@ public:
     // this is mine (and, I guess, it sucks/doesn't work)
     void set_allpass(float freq, float pole_r, float sr)
     {
-        float a=prewarp(freq, sr);
-        float q=pole_r;
+        double a=prewarp(freq, sr);
+        double q=pole_r;
         set_bilinear(a*a+q*q, -2.0f*a, 1, a*a+q*q, 2.0f*a, 1);
     }
     /// prewarping for bilinear transform, maps given digital frequency to analog counterpart for analog filter design
-    static inline float prewarp(float freq, float sr)
+    static inline double prewarp(float freq, float sr)
     {
         if (freq>sr*0.49) freq=(float)(sr*0.49);
-        return (float)(tan(M_PI*freq/sr));
+        return (double)(tan(M_PI*freq/sr));
     }
     /// convert analog angular frequency value to digital
-    static inline float unwarp(float omega, float sr)
+    static inline double unwarp(float omega, float sr)
     {
-        float T = 1.0 / sr;
+        double T = 1.0 / sr;
         return (2 / T) * atan(omega * T / 2);
     }
     /// convert analog filter time constant to digital counterpart
-    static inline float unwarpf(float t, float sr)
+    static inline double unwarpf(float t, float sr)
     {
         // this is most likely broken and works by pure accident!
-        float omega = 1.0 / t;
+        double omega = 1.0 / t;
         omega = unwarp(omega, sr);
         // I really don't know why does it have to be M_PI and not 2 * M_PI!
-        float f = M_PI / omega;
+        double f = M_PI / omega;
         return f / sr;
     }
     /// set digital filter parameters based on given analog filter parameters
-    void set_bilinear(float aa0, float aa1, float aa2, float ab0, float ab1, float ab2)
+    void set_bilinear(double aa0, double aa1, double aa2, double ab0, double ab1, double ab2)
     {
-        float q=(float)(1.0/(ab0+ab1+ab2));
+        double q=(double)(1.0/(ab0+ab1+ab2));
         a0 = (aa0+aa1+aa2)*q;
         a1 = 2*(aa0-aa2)*q;
         a2 = (aa0-aa1+aa2)*q;
@@ -220,7 +220,7 @@ public:
     }
     
     /// set digital filter parameters directly
-    void set_bilinear_direct(float aa0, float aa1, float aa2, float ab1, float ab2)
+    void set_bilinear_direct(double aa0, double aa1, double aa2, double ab1, double ab2)
     {
         a0 = aa0;
         a1 = aa1;
@@ -234,12 +234,12 @@ public:
     /// @param freq   peak frequency
     /// @param q      q (correlated to freq/bandwidth, @see set_bp_rbj)
     /// @param peak   peak gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
-    inline void set_peakeq_rbj(float freq, float q, float peak, float sr)
+    inline void set_peakeq_rbj(double freq, double q, double peak, double sr)
     {
-        float A = sqrt(peak);
-        float w0 = freq * 2 * M_PI * (1.0 / sr);
-        float alpha = sin(w0) / (2 * q);
-        float ib0 = 1.0 / (1 + alpha/A);
+        double A = sqrt(peak);
+        double w0 = freq * 2 * M_PI * (1.0 / sr);
+        double alpha = sin(w0) / (2 * q);
+        double ib0 = 1.0 / (1 + alpha/A);
         a1 = b1 = -2*cos(w0) * ib0;
         a0 = ib0 * (1 + alpha*A);
         a2 = ib0 * (1 - alpha*A);
@@ -252,12 +252,12 @@ public:
     /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
     inline void set_lowshelf_rbj(float freq, float q, float peak, float sr)
     {
-        float A = sqrt(peak);
-        float w0 = freq * 2 * M_PI * (1.0 / sr);
-        float alpha = sin(w0) / (2 * q);
-        float cw0 = cos(w0);
-        float tmp = 2 * sqrt(A) * alpha;
-        float b0 = 0.f, ib0 = 0.f;
+        double A = sqrt(peak);
+        double w0 = freq * 2 * M_PI * (1.0 / sr);
+        double alpha = sin(w0) / (2 * q);
+        double cw0 = cos(w0);
+        double tmp = 2 * sqrt(A) * alpha;
+        double b0 = 0.f, ib0 = 0.f;
         
         a0 =    A*( (A+1) - (A-1)*cw0 + tmp);
         a1 =  2*A*( (A-1) - (A+1)*cw0);
@@ -280,12 +280,12 @@ public:
     /// @param peak   shelf gain (1.0 means no peak, >1.0 means a peak, less than 1.0 is a dip)
     inline void set_highshelf_rbj(float freq, float q, float peak, float sr)
     {
-        float A = sqrt(peak);
-        float w0 = freq * 2 * M_PI * (1.0 / sr);
-        float alpha = sin(w0) / (2 * q);
-        float cw0 = cos(w0);
-        float tmp = 2 * sqrt(A) * alpha;
-        float b0 = 0.f, ib0 = 0.f;
+        double A = sqrt(peak);
+        double w0 = freq * 2 * M_PI * (1.0 / sr);
+        double alpha = sin(w0) / (2 * q);
+        double cw0 = cos(w0);
+        double tmp = 2 * sqrt(A) * alpha;
+        double b0 = 0.f, ib0 = 0.f;
         
         a0 =    A*( (A+1) + (A-1)*cw0 + tmp);
         a1 = -2*A*( (A-1) + (A+1)*cw0);
@@ -429,9 +429,9 @@ struct biquad_d2: public biquad_coeffs<Coeff>
     using biquad_coeffs<Coeff>::b1;
     using biquad_coeffs<Coeff>::b2;
     /// state[n-1]
-    float w1; 
+    double w1; 
     /// state[n-2]
-    float w2; 
+    double w2; 
     /// Constructor (initializes state to all zeros)
     biquad_d2()
     {
