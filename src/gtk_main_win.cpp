@@ -312,7 +312,6 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     
     // title @ 1, 1
     const plugin_metadata_iface *metadata = plugin->get_metadata_iface();
-    //sprintf(buf, "<span size=\"12000\">%s</span>", metadata->get_label());
     GtkWidget *title = gtk_label_new(NULL);
     gtk_widget_set_name(GTK_WIDGET(title), "Calf-Rack-Title");
     gtk_label_set_markup(GTK_LABEL(title), metadata->get_label());

@@ -94,7 +94,7 @@ std::string load_file(const std::string &src)
 std::string i2s(int value)
 {
     char buf[32];
-    sprintf(buf, "%d", value);
+    snprintf(buf, sizeof(buf), "%d", value);
     
     return std::string(buf);
 }

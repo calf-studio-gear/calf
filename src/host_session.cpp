@@ -446,7 +446,7 @@ void host_session::save(session_save_iface *stream)
         plugin_preset preset;
         preset.plugin = p->metadata->get_id();
         preset.get_from(p);
-        sprintf(ss, "Plugin%d", i);
+        snprintf(ss, sizeof(ss), "Plugin%d", i);
         pstr = preset.to_xml();
         tmp.clear();
         tmp["instance_name"] = p->instance_name;

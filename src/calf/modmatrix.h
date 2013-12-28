@@ -103,7 +103,7 @@ public:
                 for (int j = 0; j < 5; j++)
                 {
                     char buf[40];
-                    sprintf(buf, "mod_matrix:%d,%d", i, j);
+                    snprintf(buf, sizeof(buf), "mod_matrix:%d,%d", i, j);
                     names_vector.push_back(buf);
                 }
             }

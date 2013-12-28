@@ -167,9 +167,9 @@ int parameter_properties::get_char_count() const
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
         char buf[256];
         size_t len = 0;
-        sprintf(buf, "%0.0f dB", 6.0 * log(min) / log(2));
+        snprintf(buf, sizeof(buf), "%0.0f dB", 6.0 * log(min) / log(2));
         len = strlen(buf);
-        sprintf(buf, "%0.0f dB", 6.0 * log(max) / log(2));
+        snprintf(buf, sizeof(buf), "%0.0f dB", 6.0 * log(max) / log(2));
         len = std::max(len, strlen(buf)) + 2;
         return (int)len;
     }
@@ -180,13 +180,13 @@ std::string parameter_properties::to_string(float value) const
 {
     char buf[32];
     if ((flags & PF_SCALEMASK) == PF_SCALE_PERC) {
-        sprintf(buf, "%0.f%%", 100.0 * value);
+        snprintf(buf, sizeof(buf), "%0.f%%", 100.0 * value);
         return string(buf);
     }
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
         if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
             return "-inf dB"; // XXXKF change to utf-8 infinity
-        sprintf(buf, "%0.1f dB", dsp::amp2dB(value));
+        snprintf(buf, sizeof(buf), "%0.1f dB", dsp::amp2dB(value));
         return string(buf);
     }
     switch(flags & PF_TYPEMASK)
@@ -200,9 +200,9 @@ std::string parameter_properties::to_string(float value) const
     }
 
     if ((flags & PF_SCALEMASK) == PF_SCALE_LOG_INF && IS_FAKE_INFINITY(value))
-        sprintf(buf, "+inf"); // XXXKF change to utf-8 infinity
+        snprintf(buf, sizeof(buf), "+inf"); // XXXKF change to utf-8 infinity
     else
-        sprintf(buf, "%g", value);
+        snprintf(buf, sizeof(buf), "%g", value);
     
     switch(flags & PF_UNITMASK) {
     case PF_UNIT_DB: return string(buf) + " dB";
