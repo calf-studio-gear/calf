@@ -334,14 +334,23 @@ char *host_session::open_file(const char *name)
 
 struct gather_automation_params: public send_configure_iface
 {
-    stringstream &xml;
+    stringstream *xml;
+    dictionary *dict;
     gather_automation_params(stringstream &_xml)
-    : xml(_xml)
+    : xml(&_xml)
+    , dict(NULL)
+    {}
+    gather_automation_params(dictionary &_dict)
+    : xml(NULL)
+    , dict(&_dict)
     {}
     
     virtual void send_configure(const char *key, const char *value)
     {
-        xml << "<automation key=\"" << key << "\" value=\"" << value << "\" />" << endl;
+        if (xml)
+            *xml << "<automation key=\"" << key << "\" value=\"" << value << "\" />" << endl;
+        if (dict && key && value)
+            (*dict)[key] = value;
     }
 };
 
@@ -406,9 +415,11 @@ void host_session::load(session_load_iface *stream)
         if (!strncmp(key.c_str(), "Plugin", 6))
         {
             unsigned int nplugin = atoi(key.c_str() + 6);
-            dictionary dict;
+            dictionary dict, automation;
             decode_map(dict, data);
             data = dict["preset"];
+            if (dict.count("automation"))
+                decode_map(automation, dict["automation"]);
             string instance_name;
             if (dict.count("instance_name")) instance_name = dict["instance_name"];
             if (dict.count("input_name")) client.input_nr = atoi(dict["input_name"].c_str());
@@ -422,6 +433,8 @@ void host_session::load(session_load_iface *stream)
                 add_plugin(tmp.presets[0].plugin, "", instance_name);
                 tmp.presets[0].activate(plugins[nplugin]);
                 main_win->refresh_plugin(plugins[nplugin]);
+                for(dictionary::const_iterator i = automation.begin(); i != automation.end(); ++i)
+                    plugins[nplugin]->configure(i->first.c_str(), i->second.c_str());
             }
         }
     }
@@ -457,6 +470,11 @@ void host_session::save(session_save_iface *stream)
         if (p->get_midi_port())
             tmp["midi_name"] = p->get_midi_port()->name.substr(m_name.length());
         tmp["preset"] = pstr;
+        dictionary automation;
+        gather_automation_params gap(automation);
+        p->send_automation_configures(&gap);
+        tmp["automation"] = encode_map(automation);
+
         pstr = encode_map(tmp);
         stream->write_next_item(ss, pstr);
     }
