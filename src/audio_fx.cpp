@@ -880,16 +880,16 @@ transients::transients() {
 void transients::set_sample_rate(uint32_t sr) {
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
-    release_coef = exp(log(0.01) / (0.1f  * srate));
+    release_coef = exp(log(0.01) / (0.2f  * srate));
 }
 void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th) {
     sust_thres = sust_th;
     att_time   = att_t;
     rel_time   = rel_t;
     att_level  = att_l > 0 ? 0.25f * pow(att_l * 8, 2)
-                          : -0.25f * pow(att_l * 8, 2);
+                          : -0.25f * pow(att_l * 4, 2);
     rel_level  = rel_l > 0 ? 0.5f  * pow(rel_l * 8, 2)
-                          : -0.25f * pow(rel_l * 8, 2);
+                          : -0.25f * pow(rel_l * 4, 2);
 }
 float transients::process(float s) {
     // envelope follower
@@ -897,7 +897,6 @@ float transients::process(float s) {
     // fast as the signal is raising and falls much slower
     // depending on the sample rate and the ffactor
     // (the falling factor)
-    
     if(s > envelope)
         envelope = attack_coef * (envelope - s) + s;
     else
@@ -932,10 +931,10 @@ float transients::process(float s) {
     release = std::max(envelope, release);
     
     // difference between attack and envelope
-    float attdiff = envelope - attack;
+    float attdiff = log(envelope / attack);
     
     // difference between release and envelope
-    float reldiff = release - envelope;
+    float reldiff = log(release / envelope);
     
     // amplification factor from attack and release curve
     float ampfactor = attdiff * att_level + reldiff * rel_level;
