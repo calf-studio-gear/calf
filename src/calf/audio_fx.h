@@ -626,7 +626,7 @@ public:
     float envelope, attack, release;
     float old_return, new_return, maxdelta;
     float att_time, att_level, rel_time, rel_level, sust_thres;
-    static const int looksize = 20;
+    static const int looksize = 101;
     int lookahead, lookpos;
     float *lookbuf;
     int channels;
@@ -636,6 +636,7 @@ public:
     void set_channels(int ch);
     void set_sample_rate(uint32_t sr);
     void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look);
+    int cnt;
 };
 
 

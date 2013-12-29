@@ -1133,7 +1133,7 @@ CALF_PORT_PROPS(transientdesigner) = {
     { 0.f,   -1.f,   1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_boost", "Release Boost" },
     { 2000.f, 50.f,  5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "display", "Display (ms)" },
     { pow(2,-12), pow(2,-12),1, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "display_threshold", "Threshold" },
-    { 0,      0,     20,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "lookahead", "Lookahead (Samples)" },
+    { 0,      0,     100,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "lookahead", "Lookahead (Samples)" },
     {}
 };
 

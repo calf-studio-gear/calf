@@ -882,6 +882,7 @@ transients::transients() {
     lookahead       = 0;
     lookpos         = 0;
     channels        = 1;
+    cnt             = 0;
 }
 void transients::set_channels(int ch) {
     channels = ch;
@@ -897,7 +898,7 @@ void transients::set_sample_rate(uint32_t sr) {
     // gain reduction/boost. 
     // to prevent "clicks" a maxdelta is set, which allows the signal
     // to raise/fall ~6dB/ms. 
-    maxdelta = pow(2, 1.f / (0.001 * srate));
+    maxdelta = pow(4, 1.f / (0.001 * srate));
 }
 void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look) {
     lookahead  = look;
@@ -914,12 +915,9 @@ void transients::process(float *in) {
     float s = 0;
     for (int i = 0; i < channels; i++) {
         lookbuf[lookpos + i] = in[i];
-        s += in[i];
+        s += fabs(in[i]);
     }
     s /= channels;
-    
-    // advance lookpos
-    lookpos = (lookpos + channels) % (looksize * channels);
     
     // envelope follower
     // this is the real envelope follower curve. It raises as
@@ -975,9 +973,14 @@ void transients::process(float *in) {
         new_return = old_return / maxdelta;
     
     int pos = (lookpos + looksize * channels - lookahead * channels) % (looksize * channels);
-    for (int i = 0; i < channels; i++)
+    for (int i = 0; i < channels; i++) {
         in[i] = lookbuf[pos + i] * new_return;
-        
+    }
+    
+    // advance lookpos
+    lookpos = (lookpos + channels) % (looksize * channels);
+    
+    cnt += 1;
 }
 
 
