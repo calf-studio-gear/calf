@@ -2552,7 +2552,8 @@ void transientdesigner_audio_module::params_changed() {
                           *params[param_attack_boost],
                           *params[param_release_time],
                           *params[param_release_boost],
-                          *params[param_sustain_threshold]);
+                          *params[param_sustain_threshold],
+                          *params[param_lookahead]);
 }
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {

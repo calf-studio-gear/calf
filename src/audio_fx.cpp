@@ -876,13 +876,25 @@ transients::transients() {
     rel_time        = 0.f;
     rel_level       = 0.f;
     sust_thres      = 0.f;
+    maxdelta        = 0.f;
+    new_return      = 1.f;
+    old_return      = 1.f;
+    lookahead       = 0;
+    lookpos         = 0;
+    memset(lookbuf, 0, looksize * sizeof(int));
 }
 void transients::set_sample_rate(uint32_t sr) {
     srate = sr;
     attack_coef  = exp(log(0.01) / (0.001 * srate));
     release_coef = exp(log(0.01) / (0.2f  * srate));
+    // due to new calculation in attack, we sometimes get harsh
+    // gain reduction/boost. 
+    // to prevent "clicks" a maxdelta is set, which allows the signal
+    // to raise/fall ~6dB/ms. 
+    maxdelta = pow(2, 1.f / (0.001 * srate));
 }
-void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th) {
+void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look) {
+    lookahead  = look;
     sust_thres = sust_th;
     att_time   = att_t;
     rel_time   = rel_t;
@@ -892,6 +904,13 @@ void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, 
                           : -0.25f * pow(rel_l * 4, 2);
 }
 float transients::process(float s) {
+    // fill lookahead buffer
+    lookbuf[lookpos] = s;
+    // get lookahead value
+    float s_ = lookbuf[(lookpos + looksize - lookahead) % looksize];
+    // advance lookpos
+    lookpos = (lookpos + 1) % looksize;
+    
     // envelope follower
     // this is the real envelope follower curve. It raises as
     // fast as the signal is raising and falls much slower
@@ -938,8 +957,14 @@ float transients::process(float s) {
     
     // amplification factor from attack and release curve
     float ampfactor = attdiff * att_level + reldiff * rel_level;
-    
-    return 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+    old_return = new_return;
+    new_return = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+    if (new_return / old_return > maxdelta) 
+        new_return = old_return * maxdelta;
+    if (new_return / old_return < 1 / maxdelta)
+        new_return = old_return / maxdelta;
+
+    return new_return;
 }
 
 

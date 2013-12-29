@@ -12,24 +12,28 @@
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
-        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <label text="Lookahead" attach-x="3" attach-y="0" expand-x="0" />
+        <knob param="lookahead" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <value param="lookahead" attach-x="3" attach-y="3" expand-x="0" />
         
-        <label param="mix" attach-x="4" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
-        <value param="mix" attach-x="4" attach-y="3" expand-x="0" />
+        <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
-        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <label param="mix" attach-x="5" attach-y="0" expand-x="0" />
+        <knob param="mix" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <value param="mix" attach-x="5" attach-y="3" expand-x="0" />
         
-        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        <label attach-x="6" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="2" expand-x="1" />
         
-        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+        <label attach-x="7" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="7" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="7" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="8" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
     </table>
     <hbox>
         <frame label="Attack">
