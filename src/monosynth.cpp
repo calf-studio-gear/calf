@@ -234,7 +234,6 @@ bool monosynth_audio_module::get_graph(int index, int subindex, int phase, float
             return false;
         for (int i = 0; i < points; i++)
         {
-            typedef complex<double> cfloat;
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             
             const dsp::biquad_d1_lerp<float> &f = subindex ? filter2 : filter;
