@@ -629,6 +629,7 @@ tapesimulator_audio_module::tapesimulator_audio_module() {
     lp_old          = -1.f;
     rms             = 0.f;
     mech_old        = false;
+    transients.set_channels(channels);
 }
 
 void tapesimulator_audio_module::activate() {
@@ -694,9 +695,10 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             
             // transients
             if(*params[param_magnetical] > 0.5f) {
-                float trans = transients.process((fabs(L) + fabs(R)) / 2.f);
-                L *= trans;
-                R *= trans;
+                float values[] = {L, R};
+                transients.process(values);
+                L = values[0];
+                R = values[1];
             }
             
             // noise

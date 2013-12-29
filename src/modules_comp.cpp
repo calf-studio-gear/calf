@@ -2533,6 +2533,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     display_old     = 0.f;
     pbuffer_available = false;
     display_max     = pow(2,-12);
+    transients.set_channels(channels);
 }
 
 void transientdesigner_audio_module::activate() {
@@ -2566,7 +2567,6 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         meter_inR   = 0.f;
         meter_outL  = 0.f;
         meter_outR  = 0.f;
-        // get average value of input
         float s = (fabs(L) + fabs(R)) / 2;
         if(*params[param_bypass] > 0.5) {
             outs[0][i]  = ins[0][i];
@@ -2582,9 +2582,10 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR = R;
             
             // transient designer
-            float trans = transients.process(s);
-            L *= trans;
-            R *= trans;
+            float values[] = {L, R};
+            transients.process(values);
+            L = values[0];
+            R = values[1];
             
             // mix
             L = L * *params[param_mix] + Lin * (*params[param_mix] * -1 + 1);

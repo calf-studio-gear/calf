@@ -881,7 +881,13 @@ transients::transients() {
     old_return      = 1.f;
     lookahead       = 0;
     lookpos         = 0;
-    memset(lookbuf, 0, looksize * sizeof(int));
+    channels        = 1;
+}
+void transients::set_channels(int ch) {
+    channels = ch;
+    lookbuf = (float*) calloc(looksize * channels, sizeof(float));
+    memset(lookbuf, 0, looksize * channels * sizeof(float));
+    lookpos = 0;
 }
 void transients::set_sample_rate(uint32_t sr) {
     srate = sr;
@@ -903,13 +909,17 @@ void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, 
     rel_level  = rel_l > 0 ? 0.5f  * pow(rel_l * 8, 2)
                           : -0.25f * pow(rel_l * 4, 2);
 }
-float transients::process(float s) {
+void transients::process(float *in) {
     // fill lookahead buffer
-    lookbuf[lookpos] = s;
-    // get lookahead value
-    float s_ = lookbuf[(lookpos + looksize - lookahead) % looksize];
+    float s = 0;
+    for (int i = 0; i < channels; i++) {
+        lookbuf[lookpos + i] = in[i];
+        s += in[i];
+    }
+    s /= channels;
+    
     // advance lookpos
-    lookpos = (lookpos + 1) % looksize;
+    lookpos = (lookpos + channels) % (looksize * channels);
     
     // envelope follower
     // this is the real envelope follower curve. It raises as
@@ -963,8 +973,11 @@ float transients::process(float s) {
         new_return = old_return * maxdelta;
     if (new_return / old_return < 1 / maxdelta)
         new_return = old_return / maxdelta;
-
-    return new_return;
+    
+    int pos = (lookpos + looksize * channels - lookahead * channels) % (looksize * channels);
+    for (int i = 0; i < channels; i++)
+        in[i] = lookbuf[pos + i] * new_return;
+        
 }
 
 

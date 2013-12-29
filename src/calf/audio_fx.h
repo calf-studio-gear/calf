@@ -628,10 +628,12 @@ public:
     float att_time, att_level, rel_time, rel_level, sust_thres;
     static const int looksize = 20;
     int lookahead, lookpos;
-    int lookbuf[looksize];
+    float *lookbuf;
+    int channels;
     uint32_t srate;
     transients();
-    float process(float s);
+    void process(float *in);
+    void set_channels(int ch);
     void set_sample_rate(uint32_t sr);
     void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look);
 };

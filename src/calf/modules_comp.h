@@ -415,6 +415,7 @@ class transientdesigner_audio_module:
     public audio_module<transientdesigner_metadata>, public frequency_response_line_graph
 {
     typedef transientdesigner_audio_module AM;
+    static const int channels = 2;
     uint32_t srate;
     bool active;
     float meter_inL, meter_inR, meter_outL, meter_outR;
