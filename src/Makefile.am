@@ -1,7 +1,5 @@
 # Calf DSP library - example modules
 
-INCLUDES = -I$(top_srcdir) -I$(srcdir)
-
 SUBDIRS = calf
 
 lv2dir = $(with_lv2_dir)/calf.lv2
@@ -12,6 +10,7 @@ noinst_LTLIBRARIES =
 noinst_PROGRAMS = calfbenchmark
 pkglib_LTLIBRARIES = calf.la
 
+AM_CPPFLAGS = -I$(top_srcdir) -I$(srcdir)
 AM_CXXFLAGS = -ffast-math -finline-limit=80 $(FLUIDSYNTH_DEPS_CFLAGS)
 
 if USE_GUI
