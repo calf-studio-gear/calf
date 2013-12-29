@@ -26,7 +26,7 @@
 #ifndef __CALF_CUSTOM_CTL
 #define __CALF_CUSTOM_CTL
 
-
+#include <cairo/cairo.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkframe.h>
 #include <gtk/gtkcomboboxtext.h>
@@ -35,6 +35,8 @@
 #include <gtk/gtkscale.h>
 #include <gtk/gtkbutton.h>
 #include <calf/giface.h>
+
+void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness = 1, int shadow = 7, float lights = 0.9, float dull = 0.15) ;
 
 G_BEGIN_DECLS
 

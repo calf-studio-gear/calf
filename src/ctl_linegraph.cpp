@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
+#include <calf/custom_ctl.h>
 #include <calf/ctl_linegraph.h>
 #include <gdk/gdkkeysyms.h>
-#include <cairo/cairo.h>
 #include <math.h>
 #include <gdk/gdk.h>
 #include <sys/time.h>
