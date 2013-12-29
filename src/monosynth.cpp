@@ -36,6 +36,7 @@ monosynth_audio_module::monosynth_audio_module()
 }
 
 void monosynth_audio_module::activate() {
+    stopping = false;
     running = false;
     output_pos = 0;
     queue_note_on = -1;
