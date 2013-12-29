@@ -410,8 +410,12 @@ void print_help(char *argv[])
 
 int main(int argc, char *argv[])
 {
+#if !GLIB_CHECK_VERSION(2, 36, 0)
     g_type_init();
+#endif
+#if !GLIB_CHECK_VERSION(2, 32, 0)
     if (!g_thread_supported()) g_thread_init(NULL);
+#endif
     
     host_session sess(new gtk_session_environment());
     if (argc > 0 && argv[0] && argv[0] != sess.calfjackhost_cmd)
