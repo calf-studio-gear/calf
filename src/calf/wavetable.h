@@ -74,6 +74,7 @@ public:
     void channel_pressure(int value);
     void steal();
     void render_block();
+    const int16_t *get_last_table(int osc) const;
     virtual int get_current_note() {
         return note;
     }
@@ -88,7 +89,7 @@ public:
     }
 };    
 
-class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public mod_matrix_impl
+class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public line_graph_iface, public mod_matrix_impl
 {
 public:
     using dsp::basic_synth::note_on;
@@ -112,6 +113,7 @@ public:
     dsp::inertia<dsp::linear_ramp> inertia_pressure;
     /// Unsmoothed mod wheel value
     float modwheel_value;
+    wavetable_voice *last_voice;
 
 public:
     wavetable_audio_module();
@@ -134,6 +136,8 @@ public:
         float buf[4096][2];
         dsp::zero(&buf[0][0], 2 * nsamples);
         basic_synth::render_to(buf, nsamples);
+        if (!active_voices.empty())
+            last_voice = (wavetable_voice *)*active_voices.begin();
         float gain = 1.0f;
         for (uint32_t i=0; i<nsamples; i++) {
             o[0][i] = gain*buf[i][0];
@@ -159,6 +163,8 @@ public:
     {
         inertia_pitchbend.set_inertia(pow(2.0, (value * *params[par_pwhlrange]) / (1200.0 * 8192.0)));
     }
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }
 };
 
     
