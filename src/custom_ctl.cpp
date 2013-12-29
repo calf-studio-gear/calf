@@ -785,8 +785,10 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
         GtkTreeIter iter;
         gchar *lab;
-        gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter);
-        gtk_tree_model_get (model, &iter, 0, &lab, -1);
+        if (gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter))
+            gtk_tree_model_get (model, &iter, 0, &lab, -1);
+        else
+            lab = g_strdup("");
         
         GdkWindow *window = widget->window;
         cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -815,7 +817,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_move_to(c, x + pad + 3, y + sy / 2 + 5);
         cairo_set_source_rgb(c, 0.,0.,0.);
         cairo_show_text(c, lab);
-        
+        g_free(lab);
         
         cairo_surface_t *image;
         image = cairo_image_surface_create_from_png(PKGLIBDIR "combo_arrow.png");
