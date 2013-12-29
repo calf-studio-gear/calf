@@ -44,6 +44,7 @@ host_session::host_session(session_environment_iface *se)
     only_load_if_exists = false;
     save_file_on_next_idle_call = false;
     quit_on_next_idle_call = 0;
+    handle_event_on_next_idle_call = NULL;
 
     main_win = session_env->create_main_window();
     main_win->set_owner(this);
@@ -112,7 +113,8 @@ void host_session::open()
     if (!output_name.empty()) client.output_name = output_name;
     if (!midi_name.empty()) client.midi_name = midi_name;
     
-    client.open(client_name.c_str());
+    client.open(client_name.c_str(), !jack_session_id.empty() ? jack_session_id.c_str() : NULL);
+    jack_set_session_callback(client.client, session_callback, this);
     main_win->add_condition("jackhost");
     main_win->add_condition("directlink");
     main_win->add_condition("configure");
@@ -120,6 +122,44 @@ void host_session::open()
     if (!session_manager || !session_manager->is_being_restored()) 
         create_plugins_from_list();
     main_win->create();
+}
+
+void host_session::session_callback(jack_session_event_t *event, void *arg)
+{
+    printf("session callback type %d\n", (int)event->type);
+    switch(event->type)
+    {
+    case JackSessionSave:
+    case JackSessionSaveAndQuit:
+    case JackSessionSaveTemplate:
+        host_session *hs = (host_session *)arg;
+        hs->handle_event_on_next_idle_call = event;
+    }
+    // XXXKF if more than one event happen in a short sequence, the other event
+    // may be lost. This calls for implementing a proper event queue.
+}
+
+void host_session::handle_jack_session_event(jack_session_event_t *event)
+{
+    try {
+        asprintf(&event->command_line, "%s --load ${SESSION_DIR}" G_DIR_SEPARATOR_S "rack.xml --session-id %s" , "calfjackhost", event->client_uuid);
+        string fn = event->session_dir;
+        fn += "rack.xml";
+        save_file(fn.c_str());
+    }
+    catch(...)
+    {
+        event->flags = JackSessionSaveError;
+        // let the server know that the save operation failed
+        jack_session_reply(client.client, event);
+        jack_session_event_free(event);
+        throw;
+    }
+
+    if (event->type == JackSessionSaveAndQuit)
+        quit_on_next_idle_call = 1;
+    jack_session_reply(client.client, event);
+    jack_session_event_free(event);
 }
 
 void host_session::new_plugin(const char *name)
@@ -503,6 +543,12 @@ void host_session::on_idle()
         printf("LADISH Level 1 support: file '%s' saved\n", get_current_filename().c_str());
     }
 
+    if (handle_event_on_next_idle_call)
+    {
+        jack_session_event_t *ev = handle_event_on_next_idle_call;
+        handle_event_on_next_idle_call = NULL;
+        handle_jack_session_event(ev);
+    }
     if (quit_on_next_idle_call > 0)
     {
         printf("Quit requested through signal %d\n", quit_on_next_idle_call);

@@ -61,10 +61,13 @@ void jack_client::del(jack_host *plugin)
     assert(0);
 }
 
-void jack_client::open(const char *client_name)
+void jack_client::open(const char *client_name, const char *jack_session_id)
 {
     jack_status_t status;
-    client = jack_client_open(client_name, JackNullOption, &status);
+    if (jack_session_id && !jack_session_id)
+        client = jack_client_open(client_name, JackSessionID, &status, jack_session_id);
+    else
+        client = jack_client_open(client_name, JackNullOption, &status);
     if (!client)
         throw calf_utils::text_exception("Could not initialize JACK subsystem");
     sample_rate = jack_get_sample_rate(client);

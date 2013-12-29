@@ -29,6 +29,7 @@
 #include "vumeter.h"
 #include <pthread.h>
 #include <jack/jack.h>
+#include <jack/session.h>
 
 #ifdef OLD_JACK
 #define NFRAMES_MAYBE(nframes) nframes
@@ -63,7 +64,7 @@ public:
     jack_client();
     void add(jack_host *plugin);
     void del(jack_host *plugin);
-    void open(const char *client_name);
+    void open(const char *client_name, const char *jack_session_id);
     std::string get_name();
     void activate();
     void deactivate();

@@ -384,7 +384,7 @@ char *jack_host::configure(const char *key, const char *value)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char *short_options = "c:i:l:o:m:M:s:ehv";
+static const char *short_options = "c:i:l:o:m:M:s:S:ehv";
 
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
@@ -396,6 +396,7 @@ static struct option long_options[] = {
     {"output", 1, 0, 'o'},
     {"state", 1, 0, 's'},
     {"connect-midi", 1, 0, 'M'},
+    {"session-id", 1, 0, 'S'},
     {0,0,0,0},
 };
 
@@ -434,6 +435,8 @@ int main(int argc, char *argv[])
     
 #if USE_LASH
     sess.session_manager = create_lash_session_mgr(&sess, argc, argv);
+#else
+    sess.session_manager = NULL;
 #endif
     while(1)
     {
@@ -459,6 +462,9 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
                 sess.midi_name = string(optarg) + "_%d";
+                break;
+            case 'S':
+                sess.jack_session_id = optarg;
                 break;
             case 'l':
             case 's':
