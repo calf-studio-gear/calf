@@ -33,7 +33,6 @@ monosynth_audio_module::monosynth_audio_module()
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
-    reset();
 }
 
 void monosynth_audio_module::reset()
