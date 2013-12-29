@@ -119,6 +119,7 @@ public:
     virtual void reorder_plugins();
     virtual std::string get_current_filename() const;
     virtual void set_current_filename(const std::string &name);
+    ~host_session();
 };
 
 };

@@ -593,3 +593,8 @@ void host_session::set_current_filename(const std::string &name)
 {
     current_filename = name;
 }
+
+host_session::~host_session()
+{
+    delete main_win;
+}
