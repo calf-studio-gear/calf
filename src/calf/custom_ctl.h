@@ -220,7 +220,7 @@ struct CalfButtonClass
     GtkButtonClass parent_class;
 };
 
-extern GtkWidget *calf_button_new(gchar *label);
+extern GtkWidget *calf_button_new(const gchar *label);
 extern GType calf_button_get_type();
 
 
@@ -241,7 +241,7 @@ struct CalfToggleButtonClass
     GtkToggleButtonClass parent_class;
 };
 
-extern GtkWidget *calf_toggle_button_new(gchar *label);
+extern GtkWidget *calf_toggle_button_new(const gchar *label);
 extern GType calf_toggle_button_get_type();
 
 

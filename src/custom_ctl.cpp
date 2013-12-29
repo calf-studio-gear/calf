@@ -1354,7 +1354,7 @@ calf_fader_get_type (void)
 ///////////////////////////////////////// button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_button_new(gchar *label)
+calf_button_new(const gchar *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_BUTTON, NULL ));
     gtk_button_set_label(GTK_BUTTON(widget), label);
@@ -1492,7 +1492,7 @@ calf_button_get_type (void)
 ///////////////////////////////////////// toggle button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_toggle_button_new(gchar *label)
+calf_toggle_button_new(const gchar *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE_BUTTON, NULL ));
     gtk_button_set_label(GTK_BUTTON(widget), label);
