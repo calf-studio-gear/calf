@@ -51,6 +51,7 @@ void wavetable_voice::note_on(int note, int vel)
 {
     typedef wavetable_metadata md;
     this->note = note;
+    float s = 0.001;
     velocity = vel / 127.0;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
@@ -58,9 +59,11 @@ void wavetable_voice::note_on(int note, int vel)
         oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
         last_oscshift[i] = 0;
     }
-    int cr = sample_rate / BlockSize;
+    // int cr = sample_rate / BlockSize;
+    int espc = md::par_eg2attack - md::par_eg1attack;
     for (int i = 0; i < EnvCount; i++) {
-        envs[i].set(0.01, 0.1, 0.5, 1, cr);
+        int o = i*espc;
+        envs[i].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize, *params[md::par_eg1fade + o] * s); 
         envs[i].note_on();
     }
     float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
@@ -100,7 +103,7 @@ void wavetable_voice::render_block()
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
     
-    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2]};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
     calc_derived_dests();
 

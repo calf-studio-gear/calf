@@ -165,6 +165,8 @@ public:
     }
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }
+    virtual void send_configures(send_configure_iface *sci) { return mod_matrix_impl::send_configures(sci); }
+    virtual char *configure(const char *key, const char *value) { return mod_matrix_impl::configure(key, value); }
 };
 
     
