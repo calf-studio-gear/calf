@@ -624,6 +624,7 @@ private:
     float attack_coef, release_coef;
 public:
     float envelope, attack, release;
+    float old_return, new_return, maxdelta;
     float att_time, att_level, rel_time, rel_level, sust_thres;
     static const int looksize = 20;
     int lookahead, lookpos;
