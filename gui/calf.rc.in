@@ -45,7 +45,7 @@ style "calf-default"
     #text[SELECTED]    = "#000"
     #text[INSENSITIVE] = "#aaa"
     
-    engine "clearlooks" { }
+    #engine "clearlooks" { }
 }
 
 style "debug"
