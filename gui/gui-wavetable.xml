@@ -31,7 +31,12 @@
               </hbox>
               <hbox fill="0">
                 <label text="Wave"/>
-                <combo param="o1wave"/>
+                <vbox>
+                    <combo param="o1wave"/>
+                    <if cond="directlink">
+                        <line-graph param="o1wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
+                    </if>
+                </vbox>
               </hbox>
             </vbox>
           </hbox>
@@ -66,7 +71,12 @@
               </hbox>
               <hbox>
                 <label text="Wave"/>
-                <combo param="o2wave"/>
+                <vbox>
+                    <combo param="o2wave"/>
+                    <if cond="directlink">
+                        <line-graph param="o2wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
+                    </if>
+                </vbox>
               </hbox>
             </vbox>>
           </hbox>
@@ -113,6 +123,8 @@
             <label text="Vel Mod" fill="0"/>
             <knob param="adsr_v" size="3" fill="0"/>
             <value param="adsr_v" fill="0"/>
+            <label text="To Amp"/>
+            <toggle param="eg1amp" size="1"/>
           </vbox>
         </hbox>
       </frame>

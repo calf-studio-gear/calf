@@ -679,6 +679,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         par_eg2attack, par_eg2decay, par_eg2sustain, par_eg2fade, par_eg2release, par_eg2velscl,
         par_eg3attack, par_eg3decay, par_eg3sustain, par_eg3fade, par_eg3release, par_eg3velscl,
         par_pwhlrange,
+        par_eg1toamp,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true };
     enum { mod_matrix_slots = 10 };

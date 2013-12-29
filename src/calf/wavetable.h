@@ -74,6 +74,7 @@ public:
     void channel_pressure(int value);
     void steal();
     void render_block();
+    const int16_t *get_last_table(int osc) const;
     virtual int get_current_note() {
         return note;
     }
@@ -81,14 +82,15 @@ public:
         // printf("note %d getactive %d use_percussion %d pamp active %d\n", note, amp.get_active(), use_percussion(), pamp.get_active());
         return (note != -1) && (amp.get_active()) && !envs[0].stopped();
     }
-    inline void calc_derived_dests() {
+    inline void calc_derived_dests(float env0) {
         float cv = dsp::clip<float>(0.5f + moddest[wavetable_metadata::moddest_oscmix], 0.f, 1.f);
-        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level];
-        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level];
+        float overall = *params[wavetable_metadata::par_eg1toamp] > 0 ? env0 * env0 : 1.0;
+        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level] * overall;
+        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level] * overall;
     }
 };    
 
-class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public mod_matrix_impl
+class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public line_graph_iface, public mod_matrix_impl
 {
 public:
     using dsp::basic_synth::note_on;
@@ -112,6 +114,7 @@ public:
     dsp::inertia<dsp::linear_ramp> inertia_pressure;
     /// Unsmoothed mod wheel value
     float modwheel_value;
+    wavetable_voice *last_voice;
 
 public:
     wavetable_audio_module();
@@ -134,6 +137,8 @@ public:
         float buf[4096][2];
         dsp::zero(&buf[0][0], 2 * nsamples);
         basic_synth::render_to(buf, nsamples);
+        if (!active_voices.empty())
+            last_voice = (wavetable_voice *)*active_voices.begin();
         float gain = 1.0f;
         for (uint32_t i=0; i<nsamples; i++) {
             o[0][i] = gain*buf[i][0];
@@ -159,6 +164,10 @@ public:
     {
         inertia_pitchbend.set_inertia(pow(2.0, (value * *params[par_pwhlrange]) / (1200.0 * 8192.0)));
     }
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }
+    virtual void send_configures(send_configure_iface *sci) { return mod_matrix_impl::send_configures(sci); }
+    virtual char *configure(const char *key, const char *value) { return mod_matrix_impl::configure(key, value); }
 };
 
     

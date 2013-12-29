@@ -51,6 +51,7 @@ void wavetable_voice::note_on(int note, int vel)
 {
     typedef wavetable_metadata md;
     this->note = note;
+    float s = 0.001;
     velocity = vel / 127.0;
     amp.set(1.0);
     for (int i = 0; i < OscCount; i++) {
@@ -58,14 +59,16 @@ void wavetable_voice::note_on(int note, int vel)
         oscs[i].set_freq(note_to_hz(note, 0), sample_rate);
         last_oscshift[i] = 0;
     }
-    int cr = sample_rate / BlockSize;
+    // int cr = sample_rate / BlockSize;
+    int espc = md::par_eg2attack - md::par_eg1attack;
     for (int i = 0; i < EnvCount; i++) {
-        envs[i].set(0.01, 0.1, 0.5, 1, cr);
+        int o = i*espc;
+        envs[i].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize, *params[md::par_eg1fade + o] * s); 
         envs[i].note_on();
     }
     float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
-    calc_derived_dests();
+    calc_derived_dests(0);
 
     float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
     memcpy(last_oscshift, oscshift, sizeof(oscshift));
@@ -100,9 +103,9 @@ void wavetable_voice::render_block()
     for (int i = 0; i < EnvCount; i++)
         envs[i].advance();    
     
-    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2]};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
-    calc_derived_dests();
+    calc_derived_dests(envs[0].value * scl[0]);
 
     int ospc = md::par_o2level - md::par_o1level;
     for (int j = 0; j < OscCount; j++) {
@@ -111,6 +114,9 @@ void wavetable_voice::render_block()
     }
         
     float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
+    for (int j = 0; j < OscCount; j++) {
+        oscshift[j] += *params[md::par_o1offset + j * ospc] * 100;
+    }
     float osstep[2] = { (oscshift[0] - last_oscshift[0]) * step, (oscshift[1] - last_oscshift[1]) * step };
     float oastep[2] = { (cur_oscamp[0] - last_oscamp[0]) * step, (cur_oscamp[1] - last_oscamp[1]) * step };
     for (int i = 0; i < BlockSize; i++) {        
@@ -118,7 +124,7 @@ void wavetable_voice::render_block()
 
         for (int j = 0; j < OscCount; j++) {
             float o = last_oscshift[j] * 0.01;
-            value += last_oscamp[j] * oscs[j].get(dsp::clip(fastf2i_drm((o + *params[md::par_o1offset + j * ospc]) * 127.0 * 256), 0, 127 * 256));
+            value += last_oscamp[j] * oscs[j].get(dsp::clip(fastf2i_drm(o * 127.0 * 256), 0, 127 * 256));
             last_oscshift[j] += osstep[j];
             last_oscamp[j] += oastep[j];
         }
@@ -131,6 +137,37 @@ void wavetable_voice::render_block()
     memcpy(last_oscamp, cur_oscamp, sizeof(cur_oscamp));
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const int16_t *wavetable_voice::get_last_table(int osc) const
+{
+    float os = dsp::clip<double>(last_oscshift[osc] * 1.27, 0, 127);
+    return oscs[osc].tables[(int)os];
+}
+
+bool wavetable_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!phase)
+        return false;
+    // printf("get_graph %d %p %d wave1=%d wave2=%d\n", index, data, points, wave1, wave2);
+    if (index == par_o1wave || index == par_o2wave) {
+        if (subindex)
+            return false;
+        if (active_voices.empty())
+            return false;
+        wavetable_voice *vc = last_voice;
+        const int16_t *tab = vc->get_last_table(index == par_o1wave ? 0 : 1);
+        for (int i = 0; i < points; i++)
+        {
+            double pos = i * 256 / points;
+            int ipos = (int)pos;
+            data[i] = lerp(tab[ipos] / 32767.0, tab[(ipos + 1) & 255] / 32767.0, pos - ipos);
+        }
+
+        return true;
+    }
+    return false;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static inline float sincl(float x, float clip)
@@ -168,6 +205,8 @@ wavetable_audio_module::wavetable_audio_module()
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
+    last_voice = (wavetable_voice *)give_voice();
+
     panic_flag = false;
     modwheel_value = 0.;
     for (int i = 0; i < 129; i += 8)
