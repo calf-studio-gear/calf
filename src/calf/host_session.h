@@ -68,6 +68,8 @@ public:
     std::string current_filename;
     /// Jack session ID, if given via command line, otherwise empty
     std::string jack_session_id;
+    /// Command used to start the JACK host
+    std::string calfjackhost_cmd;
     
     // these are not saved
     jack_client client;

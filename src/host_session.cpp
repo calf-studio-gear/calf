@@ -37,6 +37,7 @@ host_session *host_session::instance = NULL;
 host_session::host_session(session_environment_iface *se)
 {
     client_name = "calf";
+    calfjackhost_cmd = "calfjackhost";
     session_env = se;
     autoconnect_midi_index = -1;
     gui_win = NULL;
@@ -142,7 +143,7 @@ void host_session::session_callback(jack_session_event_t *event, void *arg)
 void host_session::handle_jack_session_event(jack_session_event_t *event)
 {
     try {
-        asprintf(&event->command_line, "%s --load ${SESSION_DIR}" G_DIR_SEPARATOR_S "rack.xml --session-id %s" , "calfjackhost", event->client_uuid);
+        asprintf(&event->command_line, "%s --load ${SESSION_DIR}" G_DIR_SEPARATOR_S "rack.xml --session-id %s" , calfjackhost_cmd.c_str(), event->client_uuid);
         string fn = event->session_dir;
         fn += "rack.xml";
         save_file(fn.c_str());
