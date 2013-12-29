@@ -33,9 +33,12 @@ monosynth_audio_module::monosynth_audio_module()
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
+    reset();
 }
 
-void monosynth_audio_module::activate() {
+void monosynth_audio_module::reset()
+{
+    last_stretch1 = 0;
     stopping = false;
     running = false;
     output_pos = 0;
@@ -59,6 +62,11 @@ void monosynth_audio_module::activate() {
     queue_note_on = -1;
     last_filter_type = -1;
     lfo_clock = 0.f;
+}
+
+void monosynth_audio_module::activate()
+{
+    reset();
 }
 
 waveform_family<MONOSYNTH_WAVE_BITS> *monosynth_audio_module::waves;

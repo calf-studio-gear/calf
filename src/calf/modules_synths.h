@@ -121,7 +121,6 @@ public:
     float moddest[moddest_count];
      
     monosynth_audio_module();    
-    static void precalculate_waves(progress_report_iface *reporter);
     void set_sample_rate(uint32_t sr);
     void delayed_note_on();
     /// Release a note (physically), called from note-off handler or when note-off has been scheduled after note-on (very short queued note)
@@ -164,25 +163,28 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }
     /// @retval true if the filter 1 is to be used for the left channel and filter 2 for the right channel
-    /// @retval false if filters are to be connected in series and sent (mono) to both channels    
-    inline bool is_stereo_filter() const
-    {
-        return filter_type == flt_2lp12 || filter_type == flt_2bp6;
-    }
     /// No CV inputs for now
     bool is_cv(int param_no) const { return false; }
     /// Practically all the stuff here is noisy
     bool is_noisy(int param_no) const { return param_no != par_cutoff; }
-    /// Calculate control signals and produce step_size samples of output.
-    void calculate_step();
-    /// Apply anti-click'n'pop fadeout (used at the end of the sound)
-    void apply_fadeout();
     /// Main processing function
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     /// Send all configure variables set within a plugin to given destination (which may be limited to only those that plugin understands)
     virtual void send_configures(send_configure_iface *sci) { return mod_matrix_impl::send_configures(sci); }
     virtual char *configure(const char *key, const char *value) { return mod_matrix_impl::configure(key, value); }
+private:
+    void reset();
     float get_lfo(dsp::triangle_lfo &lfo, int param);
+    /// Apply anti-click'n'pop fadeout (used at the end of the sound)
+    void apply_fadeout();
+    /// Calculate control signals and produce step_size samples of output.
+    void calculate_step();
+    /// @retval false if filters are to be connected in series and sent (mono) to both channels    
+    inline bool is_stereo_filter() const
+    {
+        return filter_type == flt_2lp12 || filter_type == flt_2bp6;
+    }
+    static void precalculate_waves(progress_report_iface *reporter);
 };
 
 };
