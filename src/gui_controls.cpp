@@ -128,8 +128,8 @@ void param_control::hook_params()
 
 param_control::~param_control()
 {
-    if (GTK_IS_WIDGET(widget))
-        gtk_widget_destroy(widget);
+    //if (GTK_IS_WIDGET(widget))
+    //    gtk_widget_destroy(widget);
 }
 
 void param_control::add_context_menu_handler()

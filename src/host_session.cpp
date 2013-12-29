@@ -286,6 +286,7 @@ void host_session::connect()
                     break;
                 }
             }
+            free(ports);
         }
     }
     if (!load_name.empty())
