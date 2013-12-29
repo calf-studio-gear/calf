@@ -29,7 +29,7 @@ namespace dsp {
     
 class aweighter {
 public:
-    biquad_d2<float> bq1, bq2, bq3;
+    biquad_d2 bq1, bq2, bq3;
     
     /// Produce one output sample from one input sample
     float process(float sample)
@@ -42,10 +42,10 @@ public:
     {
         // analog coeffs taken from: http://www.diracdelta.co.uk/science/source/a/w/aweighting/source.html
         // first we need to adjust them by doing some obscene sort of reverse pre-warping (a broken one, too!)
-        float f1 = biquad_coeffs<float>::unwarpf(20.6f, sr);
-        float f2 = biquad_coeffs<float>::unwarpf(107.7f, sr);
-        float f3 = biquad_coeffs<float>::unwarpf(738.f, sr);
-        float f4 = biquad_coeffs<float>::unwarpf(12200.f, sr);
+        float f1 = biquad_coeffs::unwarpf(20.6f, sr);
+        float f2 = biquad_coeffs::unwarpf(107.7f, sr);
+        float f3 = biquad_coeffs::unwarpf(738.f, sr);
+        float f4 = biquad_coeffs::unwarpf(12200.f, sr);
         // then map s domain to z domain using bilinear transform
         // note: f1 and f4 are double poles
         bq1.set_bilinear(0, 0, 1, f1*f1, 2 * f1, 1);
@@ -87,8 +87,8 @@ public:
 
 class riaacurve {
 public:
-    biquad_d2<float> r1;
-    biquad_d2<float> brickw;
+    biquad_d2 r1;
+    biquad_d2 brickw;
     
     /// Produce one output sample from one input sample
     float process(float sample)

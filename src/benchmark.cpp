@@ -83,7 +83,7 @@ struct filter_lp24dB_benchmark
     double scaler() { return BUF_SIZE; }
 };
 
-struct filter_24dB_lp_twopass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
+struct filter_24dB_lp_twopass_d1: public filter_lp24dB_benchmark<biquad_d1>
 {
     void run()
     {
@@ -94,7 +94,7 @@ struct filter_24dB_lp_twopass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
     }
 };
 
-struct filter_24dB_lp_onepass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
+struct filter_24dB_lp_onepass_d1: public filter_lp24dB_benchmark<biquad_d1>
 {
     void run()
     {
@@ -103,7 +103,7 @@ struct filter_24dB_lp_onepass_d1: public filter_lp24dB_benchmark<biquad_d1<> >
     }
 };
 
-struct filter_12dB_lp_d1: public filter_lp24dB_benchmark<biquad_d1<> >
+struct filter_12dB_lp_d1: public filter_lp24dB_benchmark<biquad_d1>
 {
     void run()
     {
@@ -112,7 +112,7 @@ struct filter_12dB_lp_d1: public filter_lp24dB_benchmark<biquad_d1<> >
     }
 };
 
-struct filter_24dB_lp_twopass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
+struct filter_24dB_lp_twopass_d2: public filter_lp24dB_benchmark<biquad_d2 >
 {
     void run()
     {
@@ -123,7 +123,7 @@ struct filter_24dB_lp_twopass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
     }
 };
 
-struct filter_24dB_lp_onepass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
+struct filter_24dB_lp_onepass_d2: public filter_lp24dB_benchmark<biquad_d2 >
 {
     void run()
     {
@@ -132,7 +132,7 @@ struct filter_24dB_lp_onepass_d2: public filter_lp24dB_benchmark<biquad_d2<> >
     }
 };
 
-struct filter_24dB_lp_onepass_d2_lp: public filter_lp24dB_benchmark<biquad_d2<> >
+struct filter_24dB_lp_onepass_d2_lp: public filter_lp24dB_benchmark<biquad_d2 >
 {
     void run()
     {
@@ -141,7 +141,7 @@ struct filter_24dB_lp_onepass_d2_lp: public filter_lp24dB_benchmark<biquad_d2<> 
     }
 };
 
-struct filter_12dB_lp_d2: public filter_lp24dB_benchmark<biquad_d2<> >
+struct filter_12dB_lp_d2: public filter_lp24dB_benchmark<biquad_d2 >
 {
     void run()
     {
@@ -410,7 +410,7 @@ void reverbir_calc()
 
 void eq_calc()
 {
-    biquad_coeffs<float> bqc;
+    biquad_coeffs bqc;
     bqc.set_lowshelf_rbj(2000, 2.0, 4.0, 10000);
     for (int i = 0; i <= 5000; i += 100)
     {

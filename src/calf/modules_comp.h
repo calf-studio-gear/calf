@@ -187,7 +187,7 @@ private:
     mutable bool redraw_graph;
     float f1_active, f2_active;
     gain_reduction_audio_module compressor;
-    dsp::biquad_d2<float> f1L, f1R, f2L, f2R;
+    dsp::biquad_d2 f1L, f1R, f2L, f2R;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
@@ -280,7 +280,7 @@ private:
     uint32_t detected_led;
     float detected;
     gain_reduction_audio_module compressor;
-    dsp::biquad_d2<float> hpL, hpR, lpL, lpR, pL, pR;
+    dsp::biquad_d2 hpL, hpR, lpL, lpR, pL, pR;
     vumeters meters;
 public:
     uint32_t srate;
@@ -353,7 +353,7 @@ private:
     mutable bool redraw_graph;
     float f1_active, f2_active;
     expander_audio_module gate;
-    dsp::biquad_d2<float> f1L, f1R, f2L, f2R;
+    dsp::biquad_d2 f1L, f1R, f2L, f2R;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;

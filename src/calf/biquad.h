@@ -41,12 +41,11 @@ namespace dsp {
  * 
  * don't use this for integers because it won't work
  */
-template<class Coeff = float>
 class biquad_coeffs
 {
 public:
     // filter coefficients
-    Coeff a0, a1, a2, b1, b2;
+    double a0, a1, a2, b1, b2;
     typedef std::complex<double> cfloat;
 
     biquad_coeffs()
@@ -70,16 +69,16 @@ public:
      */
     inline void set_lp_rbj(float fc, float q, float sr, float gain = 1.0)
     {
-        double omega=(double)(2*M_PI*fc/sr);
+        double omega=(2.0*M_PI*fc/sr);
         double sn=sin(omega);
         double cs=cos(omega);
-        double alpha=(double)(sn/(2*q));
-        double inv=(double)(1.0/(1.0+alpha));
+        double alpha=(sn/(2*q));
+        double inv=(1.0/(1.0+alpha));
 
-        a2 = a0 =  (double)(gain*inv*(1 - cs)*0.5f);
+        a2 = a0 =  (gain*inv*(1.0 - cs)*0.5);
         a1 =  a0 + a0;
-        b1 =  (double)(-2*cs*inv);
-        b2 =  (double)((1 - alpha)*inv);
+        b1 =  (-2.0*cs*inv);
+        b2 =  ((1.0 - alpha)*inv);
     }
 
     // different lowpass filter, based on Zoelzer's equations, modified by
@@ -89,16 +88,16 @@ public:
     // from how it looks, it perhaps uses bilinear transform - but who knows :)
     inline void set_lp_zoelzer(float fc, float q, float odsr, float gain=1.0)
     {
-        Coeff omega=(Coeff)(M_PI*fc*odsr);
-        Coeff omega2=omega*omega;
-        Coeff K=omega*(1+omega2*omega2*Coeff(1.0/1.45));
-        Coeff KK=K*K;
-        Coeff QK=q*(KK+1.f);
-        Coeff iQK=1.0f/(QK+K);
-        Coeff inv=q*iQK;
-        b2 =  (Coeff)(iQK*(QK-K));
-        b1 =  (Coeff)(2.f*(KK-1.f)*inv);
-        a2 = a0 =  (Coeff)(inv*gain*KK);
+        double omega=(M_PI*fc*odsr);
+        double omega2=omega*omega;
+        double K=omega*(1+omega2*omega2*(1.0/1.45));
+        double KK=K*K;
+        double QK=q*(KK+1.f);
+        double iQK=1.0f/(QK+K);
+        double inv=q*iQK;
+        b2 =  (iQK*(QK-K));
+        b1 =  (2.*(KK-1.f)*inv);
+        a2 = a0 =  (inv*gain*KK);
         a1 =  a0 + a0;
     }
 
@@ -110,35 +109,35 @@ public:
      */
     inline void set_hp_rbj(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(double)(2*M_PI*fc/esr);
-        Coeff sn=sin(omega);
-        Coeff cs=cos(omega);
-        Coeff alpha=(double)(sn/(2*q));
+        double omega=(double)(2*M_PI*fc/esr);
+        double sn=sin(omega);
+        double cs=cos(omega);
+        double alpha=(double)(sn/(2*q));
 
         double inv=(double)(1.0/(1.0+alpha));
 
-        a0 =  (Coeff)(gain*inv*(1 + cs)/2);
+        a0 =  (gain*inv*(1 + cs)/2);
         a1 =  -2.f * a0;
         a2 =  a0;
-        b1 =  (Coeff)(-2*cs*inv);
-        b2 =  (Coeff)((1 - alpha)*inv);
+        b1 =  (-2*cs*inv);
+        b2 =  ((1 - alpha)*inv);
     }
 
     // this replaces sin/cos with polynomial approximation
     inline void set_hp_rbj_optimized(float fc, float q, float esr, float gain=1.0)
     {
-        Coeff omega=(double)(2*M_PI*fc/esr);
-        Coeff sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
-        Coeff cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
-        Coeff alpha=(double)(sn/(2*q));
+        double omega=(double)(2*M_PI*fc/esr);
+        double sn=omega+omega*omega*omega*(1.0/6.0)+omega*omega*omega*omega*omega*(1.0/120);
+        double cs=1-omega*omega*(1.0/2.0)+omega*omega*omega*omega*(1.0/24);
+        double alpha=(double)(sn/(2*q));
 
         double inv=(double)(1.0/(1.0+alpha));
 
-        a0 =  (Coeff)(gain*inv*(1 + cs)*(1.0/2.0));
+        a0 =  (gain*inv*(1 + cs)*(1.0/2.0));
         a1 =  -2.f * a0;
         a2 =  a0;
-        b1 =  (Coeff)(-2*cs*inv);
-        b2 =  (Coeff)((1 - alpha)*inv);
+        b1 =  (-2.*cs*inv);
+        b2 =  ((1. - alpha)*inv);
     }
     
     /** Bandpass filter based on Robert Bristow-Johnson's equations (normalized to 1.0 at center frequency)
@@ -173,11 +172,11 @@ public:
 
         double inv=(double)(1.0/(1.0+alpha));
 
-        a0 =  (Coeff)(gain*inv);
-        a1 =  (Coeff)(-gain*inv*2*cs);
-        a2 =  (Coeff)(gain*inv);
-        b1 =  (Coeff)(-2*cs*inv);
-        b2 =  (Coeff)((1 - alpha)*inv);
+        a0 =  (gain*inv);
+        a1 =  (-gain*inv*2.*cs);
+        a2 =  (gain*inv);
+        b1 =  (-2.*cs*inv);
+        b2 =  ((1. - alpha)*inv);
     }
     // this is mine (and, I guess, it sucks/doesn't work)
     void set_allpass(float freq, float pole_r, float sr)
@@ -303,8 +302,7 @@ public:
     }
     
     /// copy coefficients from another biquad
-    template<class U>
-    inline void copy_coeffs(const biquad_coeffs<U> &src)
+    inline void copy_coeffs(const biquad_coeffs &src)
     {
         a0 = src.a0;
         a1 = src.a1;
@@ -340,31 +338,25 @@ public:
  * Uses "traditional" Direct I form (separate FIR and IIR halves).
  * don't use this for integers because it won't work
  */
-template<class Coeff = float, class T = float>
-struct biquad_d1: public biquad_coeffs<Coeff>
+struct biquad_d1: public biquad_coeffs
 {
-    using biquad_coeffs<Coeff>::a0;
-    using biquad_coeffs<Coeff>::a1;
-    using biquad_coeffs<Coeff>::a2;
-    using biquad_coeffs<Coeff>::b1;
-    using biquad_coeffs<Coeff>::b2;
     /// input[n-1]
-    T x1; 
+    double x1; 
     /// input[n-2]
-    T x2; 
+    double x2; 
     /// output[n-1]
-    T y1; 
+    double y1; 
     /// output[n-2]
-    T y2; 
+    double y2; 
     /// Constructor (initializes state to all zeros)
     biquad_d1()
     {
         reset();
     }
     /// direct I form with four state variables
-    inline T process(T in)
+    inline double process(double in)
     {
-        T out = in * a0 + x1 * a1 + x2 * a2 - y1 * b1 - y2 * b2;
+        double out = in * a0 + x1 * a1 + x2 * a2 - y1 * b1 - y2 * b2;
         x2 = x1;
         y2 = y1;
         x1 = in;
@@ -373,18 +365,28 @@ struct biquad_d1: public biquad_coeffs<Coeff>
     }
     
     /// direct I form with zero input
-    inline T process_zeroin()
+    inline double process_zeroin()
     {
-        T out = - y1 * b1 - y2 * b2;
+        double out = - y1 * b1 - y2 * b2;
         y2 = y1;
         y1 = out;
         return out;
     }
     
     /// simplified version for lowpass case with two zeros at -1
-    inline T process_lp(T in)
+    inline double process_lp(double in)
     {
-        T out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
+        double out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
+        x2 = x1;
+        y2 = y1;
+        x1 = in;
+        y1 = out;
+        return out;
+    }
+    /// simplified version for highpass case with two zeros at 1
+    inline double process_hp(double in)
+    {
+        double out = a0*(in - x1 - x1 + x2) - y1 * b1 - y2 * b2;
         x2 = x1;
         y2 = y1;
         x1 = in;
@@ -408,7 +410,7 @@ struct biquad_d1: public biquad_coeffs<Coeff>
         dsp::zero(y2);
     }
     inline bool empty() const {
-        return (y1 == 0.f && y2 == 0.f);
+        return (y1 == 0. && y2 == 0.);
     }
     
 };
@@ -420,14 +422,8 @@ struct biquad_d1: public biquad_coeffs<Coeff>
  * make more zipper noise than Direct I form, so it's better to
  * use it when filter coefficients are not changed mid-stream.
  */
-template<class Coeff = float, class T = float>
-struct biquad_d2: public biquad_coeffs<Coeff>
+struct biquad_d2: public biquad_coeffs
 {
-    using biquad_coeffs<Coeff>::a0;
-    using biquad_coeffs<Coeff>::a1;
-    using biquad_coeffs<Coeff>::a2;
-    using biquad_coeffs<Coeff>::b1;
-    using biquad_coeffs<Coeff>::b2;
     /// state[n-1]
     double w1; 
     /// state[n-2]
@@ -438,15 +434,15 @@ struct biquad_d2: public biquad_coeffs<Coeff>
         reset();
     }
     /// direct II form with two state variables
-    inline T process(T in)
+    inline double process(double in)
     {
         dsp::sanitize_denormal(in);
         dsp::sanitize(in);
         dsp::sanitize(w1);
         dsp::sanitize(w2);
 
-        T tmp = in - w1 * b1 - w2 * b2;
-        T out = tmp * a0 + w1 * a1 + w2 * a2;
+        double tmp = in - w1 * b1 - w2 * b2;
+        double out = tmp * a0 + w1 * a1 + w2 * a2;
         w2 = w1;
         w1 = tmp;
         return out;
@@ -454,10 +450,10 @@ struct biquad_d2: public biquad_coeffs<Coeff>
     
     // direct II form with two state variables, lowpass version
     // interesting fact: this is actually slower than the general version!
-    inline T process_lp(T in)
+    inline double process_lp(double in)
     {
-        T tmp = in - w1 * b1 - w2 * b2;
-        T out = (tmp  + w2 + w1* 2) * a0;
+        double tmp = in - w1 * b1 - w2 * b2;
+        double out = (tmp  + w2 + w1* 2) * a0;
         w2 = w1;
         w1 = tmp;
         return out;
@@ -489,31 +485,25 @@ struct biquad_d2: public biquad_coeffs<Coeff>
  * Uses "traditional" Direct I form (separate FIR and IIR halves).
  * don't use this for integers because it won't work
  */
-template<class Coeff = float, class T = float>
-struct biquad_d1_lerp: public biquad_coeffs<Coeff>
+struct biquad_d1_lerp: public biquad_coeffs
 {
-    using biquad_coeffs<Coeff>::a0;
-    using biquad_coeffs<Coeff>::a1;
-    using biquad_coeffs<Coeff>::a2;
-    using biquad_coeffs<Coeff>::b1;
-    using biquad_coeffs<Coeff>::b2;
-    Coeff a0cur, a1cur, a2cur, b1cur, b2cur;
-    Coeff a0delta, a1delta, a2delta, b1delta, b2delta;
+    double a0cur, a1cur, a2cur, b1cur, b2cur;
+    double a0delta, a1delta, a2delta, b1delta, b2delta;
     /// input[n-1]
-    T x1; 
+    double  x1; 
     /// input[n-2]
-    T x2; 
+    double  x2; 
     /// output[n-1]
-    T y1; 
+    double  y1; 
     /// output[n-2]
-    T y2; 
+    double  y2;
     /// Constructor (initializes state to all zeros)
     biquad_d1_lerp()
     {
         reset();
     }
     #define _DO_COEFF(coeff) coeff##delta = (coeff - coeff##cur) * (frac)
-    void big_step(Coeff frac)
+    void big_step(double frac)
     {
         _DO_COEFF(a0);
         _DO_COEFF(a1);
@@ -523,9 +513,9 @@ struct biquad_d1_lerp: public biquad_coeffs<Coeff>
     }
     #undef _DO_COEFF
     /// direct I form with four state variables
-    inline T process(T in)
+    inline double process(double in)
     {
-        T out = in * a0cur + x1 * a1cur + x2 * a2cur - y1 * b1cur - y2 * b2cur;
+        double out = in * a0cur + x1 * a1cur + x2 * a2cur - y1 * b1cur - y2 * b2cur;
         x2 = x1;
         y2 = y1;
         x1 = in;
@@ -539,9 +529,9 @@ struct biquad_d1_lerp: public biquad_coeffs<Coeff>
     }
     
     /// direct I form with zero input
-    inline T process_zeroin()
+    inline double process_zeroin()
     {
-        T out = - y1 * b1 - y2 * b2;
+        double  out = - y1 * b1 - y2 * b2;
         y2 = y1;
         y1 = out;
         b1cur += b1delta;
@@ -550,9 +540,9 @@ struct biquad_d1_lerp: public biquad_coeffs<Coeff>
     }
     
     /// simplified version for lowpass case with two zeros at -1
-    inline T process_lp(T in)
+    inline double process_lp(double in)
     {
-        T out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
+        double out = a0*(in + x1 + x1 + x2) - y1 * b1 - y2 * b2;
         x2 = x1;
         y2 = y1;
         x1 = in;
@@ -586,7 +576,7 @@ struct biquad_d1_lerp: public biquad_coeffs<Coeff>
         dsp::zero(b2cur);
     }
     inline bool empty() {
-        return (y1 == 0.f && y2 == 0.f);
+        return (y1 == 0. && y2 == 0.);
     }
     
 };
@@ -633,7 +623,7 @@ public:
     F1 f1;
     F2 f2;
 public:
-    float process(float value) {
+    double process(double value) {
         return f2.process(value) + f1.process(value);
     }
     

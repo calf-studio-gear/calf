@@ -78,7 +78,7 @@ public:
     
     dsp::gain_smoothing amt_left, amt_right, fb_left, fb_right, dry, chmix;
     
-    dsp::biquad_d2<float> biquad_left[2], biquad_right[2];
+    dsp::biquad_d2 biquad_left[2], biquad_right[2];
     
     uint32_t srate;
     

@@ -441,7 +441,7 @@ public:
 class biquad_filter_module: public filter_module_iface
 {
 private:
-    dsp::biquad_d1<float> left[3], right[3];
+    dsp::biquad_d1 left[3], right[3];
     int order;
 
 public:
@@ -638,7 +638,7 @@ private:
 public:
     int channels, bands, mode;
     float freq[8], active[8], level[8], out[8][8];
-    dsp::biquad_d2<float> lp[8][8][4], hp[8][8][4];
+    dsp::biquad_d2 lp[8][8][4], hp[8][8][4];
     mutable int redraw_graph;
     uint32_t srate;
     crossover();

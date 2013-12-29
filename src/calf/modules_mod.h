@@ -107,7 +107,7 @@ public:
     /// Current phases and phase deltas for bass and treble rotors
     uint32_t phase_l, dphase_l, phase_h, dphase_h;
     dsp::simple_delay<1024, float> delay;
-    dsp::biquad_d2<float> crossover1l, crossover1r, crossover2l, crossover2r, damper1l, damper1r;
+    dsp::biquad_d2 crossover1l, crossover1r, crossover2l, crossover2r, damper1l, damper1r;
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
     int vibrato_mode;
@@ -155,7 +155,7 @@ class multichorus_audio_module: public audio_module<multichorus_metadata>, publi
 {
 public:
     uint32_t srate;
-    dsp::multichorus<float, dsp::sine_multi_lfo<float, 8>, dsp::filter_sum<dsp::biquad_d2<>, dsp::biquad_d2<> >, 4096> left, right;
+    dsp::multichorus<float, dsp::sine_multi_lfo<float, 8>, dsp::filter_sum<dsp::biquad_d2, dsp::biquad_d2 >, 4096> left, right;
     float last_r_phase;
     float cutoff;
     bool is_active;

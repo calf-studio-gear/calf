@@ -81,7 +81,7 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::deactivate()
     is_active = false;
 }
 
-static inline void copy_lphp(biquad_d2<float> filters[3][2])
+static inline void copy_lphp(biquad_d2 filters[3][2])
 {
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 2; j++)
@@ -355,7 +355,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
     return outputs_mask;
 }
 
-static inline float adjusted_lphp_gain(const float *const *params, int param_active, int param_mode, const biquad_d2<float> &filter, float freq, float srate)
+static inline float adjusted_lphp_gain(const float *const *params, int param_active, int param_mode, const biquad_d2 &filter, float freq, float srate)
 {
     if(*params[param_active] > 0.f) {
         float gain = filter.freq_gain(freq, srate);

@@ -353,10 +353,10 @@ uint32_t rotary_speaker_audio_module::process(uint32_t offset, uint32_t nsamples
     float mix = 0.5 * (1.0 - *params[par_micdistance]);
     float mix2 = *params[par_reflection];
     float mix3 = mix2 * mix2;
-    float am_depth = *params[par_am_depth];
+    double am_depth = *params[par_am_depth];
     for (unsigned int i = 0; i < nsamples; i++) {
         float in_l = ins[0][i + offset], in_r = ins[1][i + offset];
-        float in_mono = atan(0.5f * (in_l + in_r));
+        double in_mono = atan(0.5f * (in_l + in_r));
         
         int xl = pseudo_sine_scl(phase_l), yl = pseudo_sine_scl(phase_l + 0x40000000);
         int xh = pseudo_sine_scl(phase_h), yh = pseudo_sine_scl(phase_h + 0x40000000);
@@ -367,11 +367,11 @@ uint32_t rotary_speaker_audio_module::process(uint32_t offset, uint32_t nsamples
         // float out_hi_r = in_mono + delay.get_interp_1616(shift + md * 65536 - md * yh) - delay.get_interp_1616(shift + pdelta + md * xh) + delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
         float fm_hi_l = delay.get_interp_1616(shift + md * xh) - mix2 * delay.get_interp_1616(shift + md * 65536 + pdelta - md * yh) + mix3 * delay.get_interp_1616(shift + md * 65536 + pdelta + pdelta - md * xh);
         float fm_hi_r = delay.get_interp_1616(shift + md * 65536 - md * yh) - mix2 * delay.get_interp_1616(shift + pdelta + md * xh) + mix3 * delay.get_interp_1616(shift + pdelta + pdelta + md * yh);
-        float out_hi_l = lerp(in_mono, damper1l.process(fm_hi_l), lerp(0.5, xh * 1.0 / 65536.0, am_depth));
-        float out_hi_r = lerp(in_mono, damper1r.process(fm_hi_r), lerp(0.5, yh * 1.0 / 65536.0, am_depth));
+        float out_hi_l = lerp(in_mono, (double)damper1l.process(fm_hi_l), lerp(0.5, xh * 1.0 / 65536.0, am_depth));
+        float out_hi_r = lerp(in_mono, (double)damper1r.process(fm_hi_r), lerp(0.5, yh * 1.0 / 65536.0, am_depth));
 
-        float out_lo_l = lerp(in_mono, delay.get_interp_1616(shift + (md * xl >> 2)), lerp(0.5, yl * 1.0 / 65536.0, am_depth)); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
-        float out_lo_r = lerp(in_mono, delay.get_interp_1616(shift + (md * yl >> 2)), lerp(0.5, xl * 1.0 / 65536.0, am_depth)); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
+        float out_lo_l = lerp(in_mono, (double)delay.get_interp_1616(shift + (md * xl >> 2)), lerp(0.5, yl * 1.0 / 65536.0, am_depth)); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
+        float out_lo_r = lerp(in_mono, (double)delay.get_interp_1616(shift + (md * yl >> 2)), lerp(0.5, xl * 1.0 / 65536.0, am_depth)); // + delay.get_interp_1616(shift + md * 65536 + pdelta - md * yl);
         
         out_hi_l = crossover2l.process(out_hi_l); // sanitize(out_hi_l);
         out_hi_r = crossover2r.process(out_hi_r); // sanitize(out_hi_r);

@@ -45,7 +45,7 @@ public:
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
     dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
     dsp::triangle_lfo lfo1, lfo2;
-    dsp::biquad_d1_lerp<float> filter, filter2;
+    dsp::biquad_d1_lerp filter, filter2;
     /// The step code is producing non-zero values
     bool running;
     /// This is the last non-zero buffer (set on calculate_step after fadeout is complete, the next calculate_step will zero running)

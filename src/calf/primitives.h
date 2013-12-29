@@ -435,6 +435,15 @@ inline void sanitize_denormal(float& value)
 }
     
 /**
+ * Force already-denormal float value to zero
+ */
+inline void sanitize_denormal(double & value)
+{
+    if (!std::isnormal(value))
+         value = 0.f;
+}
+    
+/**
  * Force "small enough" double value to zero
  */
 inline void sanitize(double &value)

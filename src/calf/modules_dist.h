@@ -42,8 +42,8 @@ private:
     float hp_post_freq_old, lp_post_freq_old;
     float p_level_old, p_freq_old, p_q_old;
     float meter_drive;
-    dsp::biquad_d2<float> lp[2][4], hp[2][4];
-    dsp::biquad_d2<float> p[2];
+    dsp::biquad_d2 lp[2][4], hp[2][4];
+    dsp::biquad_d2 p[2];
     dsp::tap_distortion dist[2];
     vumeters meters;
 public:
@@ -66,8 +66,8 @@ private:
     float freq_old, ceil_old;
     bool ceil_active_old;
     float meter_drive;
-    dsp::biquad_d2<float> hp[2][4];
-    dsp::biquad_d2<float> lp[2][2];
+    dsp::biquad_d2 hp[2][4];
+    dsp::biquad_d2 lp[2][2];
     dsp::tap_distortion dist[2];
     vumeters meters;
 public:
@@ -90,8 +90,8 @@ private:
     float freq_old, floor_old;
     bool floor_active_old;
     float meter_drive;
-    dsp::biquad_d2<float> lp[2][4];
-    dsp::biquad_d2<float> hp[2][2];
+    dsp::biquad_d2 lp[2][4];
+    dsp::biquad_d2 hp[2][2];
     dsp::tap_distortion dist[2];
     vumeters meters;
 public:
@@ -117,8 +117,8 @@ class tapesimulator_audio_module:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     bool mech_old;
-    dsp::biquad_d2<float> lp[2][2];
-    dsp::biquad_d2<float> noisefilters[2][3];
+    dsp::biquad_d2 lp[2][2];
+    dsp::biquad_d2 noisefilters[2][3];
     dsp::transients transients;
     dsp::simple_lfo lfo1, lfo2;
     float lp_old;

@@ -206,7 +206,7 @@ class scanner_vibrato
 protected:
     enum { ScannerSize = 18 };
     float lfo_phase;
-    dsp::biquad_d2<float> scanner[ScannerSize];
+    dsp::biquad_d2 scanner[ScannerSize];
     organ_vibrato legacy;
 public:
     void reset();
@@ -221,7 +221,7 @@ protected:
         float aux_buffers[3][BlockSize][Channels];
     };
     dsp::fixed_point<int64_t, 52> phase, dphase;
-    dsp::biquad_d1<float> filterL[2], filterR[2];
+    dsp::biquad_d1 filterL[2], filterR[2];
     adsr envs[EnvCount];
     dsp::inertia<dsp::linear_ramp> expression;
     scanner_vibrato vibrato;

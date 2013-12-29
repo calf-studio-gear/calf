@@ -62,9 +62,9 @@ private:
     mutable float old_params_for_graph[graph_param_count];
     vumeters meters;
     CalfEqMode hp_mode, lp_mode;
-    dsp::biquad_d2<float> hp[3][2], lp[3][2];
-    dsp::biquad_d2<float> lsL, lsR, hsL, hsR;
-    dsp::biquad_d2<float> pL[PeakBands], pR[PeakBands];
+    dsp::biquad_d2 hp[3][2], lp[3][2];
+    dsp::biquad_d2 lsL, lsR, hsL, hsR;
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
     int keep_gliding;
     mutable int last_peak;
     inline void process_hplp(float &left, float &right);
