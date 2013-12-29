@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
     if (!g_thread_supported()) g_thread_init(NULL);
     
     host_session sess(new gtk_session_environment());
-    if (argc > 0 && argv[0])
+    if (argc > 0 && argv[0] && argv[0] != sess.calfjackhost_cmd)
     {
         char *path = realpath(argv[0], NULL);
         sess.calfjackhost_cmd = path;
