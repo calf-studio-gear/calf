@@ -286,6 +286,7 @@ void host_session::connect()
                     break;
                 }
             }
+            free(ports);
         }
     }
     if (!load_name.empty())
@@ -591,4 +592,9 @@ std::string host_session::get_current_filename() const
 void host_session::set_current_filename(const std::string &name)
 {
     current_filename = name;
+}
+
+host_session::~host_session()
+{
+    delete main_win;
 }

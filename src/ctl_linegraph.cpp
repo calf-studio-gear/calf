@@ -1018,6 +1018,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     
     finalize:
+    delete[] data;
     if (lg->debug) printf("\n### finalize\n");
     
     // whatever happened - we need to copy the realtime surface to the

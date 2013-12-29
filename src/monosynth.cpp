@@ -48,6 +48,8 @@ void monosynth_audio_module::reset()
     modwheel_value_int = 0;
     inertia_cutoff.set_now(*params[par_cutoff]);
     inertia_pressure.set_now(0);
+    osc1.phasedelta = 0;
+    osc2.phasedelta = 0;
     filter.reset();
     filter2.reset();
     stack.clear();

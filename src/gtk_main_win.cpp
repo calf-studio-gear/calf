@@ -762,8 +762,8 @@ void gtk_main_window::report_progress(float percentage, const std::string &messa
             gtk_window_set_modal (GTK_WINDOW (progress_window), TRUE);
             if (toplevel)
                 gtk_window_set_transient_for (GTK_WINDOW (progress_window), toplevel);
+            gtk_widget_show(progress_window);
         }
-        gtk_widget_show(progress_window);
         GtkWidget *pbar = gtk_bin_get_child (GTK_BIN (progress_window));
         if (!message.empty())
             gtk_progress_bar_set_text (GTK_PROGRESS_BAR (pbar), message.c_str());

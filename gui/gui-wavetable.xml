@@ -75,7 +75,7 @@
       
     </hbox>
     <frame label="Envelopes Matrix">
-      <listview param="adsr_s" />
+      <listview key="mod_matrix" />
     </frame>
     
   </vbox>
