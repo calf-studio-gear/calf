@@ -72,7 +72,7 @@ struct param_control: public control_base
 {    
     int param_no;
     std::string param_variable;
-    GtkWidget *label, *widget, *entrywin;
+    GtkWidget *widget, *entrywin;
     int in_change;
     bool has_entry;
     float old_displayed_value;
@@ -87,8 +87,6 @@ struct param_control: public control_base
     inline const parameter_properties &get_props();
     
     virtual void init_xml(const char *element) {}
-    virtual GtkWidget *create_label();
-    virtual void update_label();
     /// called to create a widget for a control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no)=0;
     /// called to transfer the value from control to parameter(s)

@@ -101,7 +101,6 @@ param_control::param_control()
 {
     gui = NULL;
     param_no = -1;
-    label = NULL;
     in_change = 0;
     old_displayed_value = -1.f;
     has_entry = false;
@@ -119,25 +118,6 @@ void param_control::set_std_properties()
     }
 }
 
-GtkWidget *param_control::create_label()
-{
-    label = gtk_label_new ("");
-    gtk_label_set_width_chars (GTK_LABEL (label), 12);
-    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-    return label;
-}
-
-void param_control::update_label()
-{
-    const parameter_properties &props = get_props();
-    
-    float value = gui->plugin->get_param_value(param_no);
-    if (value == old_displayed_value)
-        return;
-    gtk_label_set_text (GTK_LABEL (label), props.to_string(value).c_str());
-    old_displayed_value = value;
-}
-
 void param_control::hook_params()
 {
     if (param_no != -1) {
@@ -148,8 +128,6 @@ void param_control::hook_params()
 
 param_control::~param_control()
 {
-    if (label)
-        gtk_widget_destroy(label);
     if (GTK_IS_WIDGET(widget))
         gtk_widget_destroy(widget);
 }
@@ -605,8 +583,6 @@ void vumeter_param_control::set()
     _GUARD_CHANGE_
     // const parameter_properties &props = get_props();
     calf_vumeter_set_value (CALF_VUMETER (widget), gui->plugin->get_param_value(param_no));
-    if (label)
-        update_label();
 }
 
 // LED
@@ -627,8 +603,6 @@ void led_param_control::set()
     _GUARD_CHANGE_
     // const parameter_properties &props = get_props();
     calf_led_set_value (CALF_LED (widget), gui->plugin->get_param_value(param_no));
-    if (label)
-        update_label();
 }
 
 // tube
@@ -650,8 +624,6 @@ void tube_param_control::set()
     _GUARD_CHANGE_
     // const parameter_properties &props = get_props();
     calf_tube_set_value (CALF_TUBE (widget), gui->plugin->get_param_value(param_no));
-    if (label)
-        update_label();
 }
 
 /******************************** Check Box ********************************/
@@ -863,8 +835,6 @@ void knob_param_control::get()
     const parameter_properties &props = get_props();
     float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
     gui->set_param_value(param_no, value, this);
-    if (label)
-        update_label();
 }
 
 void knob_param_control::set()
@@ -872,8 +842,6 @@ void knob_param_control::set()
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
     gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-    if (label)
-        update_label();
 }
 
 void knob_param_control::knob_value_changed(GtkWidget *widget, gpointer value)
@@ -907,8 +875,6 @@ void toggle_param_control::get()
     const parameter_properties &props = get_props();
     float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
     gui->set_param_value(param_no, value, this);
-    if (label)
-        update_label();
 }
 
 void toggle_param_control::set()
@@ -916,8 +882,6 @@ void toggle_param_control::set()
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
     gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
-    if (label)
-        update_label();
 }
 
 void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer value)
