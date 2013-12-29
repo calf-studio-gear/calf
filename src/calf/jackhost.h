@@ -119,8 +119,8 @@ public:
     const plugin_metadata_iface *metadata;
     
 public:
-    jack_host(audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface);
-    void create(jack_client *_client);    
+    jack_host(jack_client *_client, audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface);
+    void create();
     void create_ports();
     void init_module();
     void destroy();
@@ -176,7 +176,7 @@ public:
     void replace_automation_map(automation_map *amap);
 };
 
-extern jack_host *create_jack_host(const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
+extern jack_host *create_jack_host(jack_client *_client, const char *name, const std::string &instance_name, calf_plugins::progress_report_iface *priface);
 
 };
 

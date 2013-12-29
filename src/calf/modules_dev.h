@@ -57,6 +57,7 @@ protected:
     int status_serial;
     /// Preset number to set on next process() call
     volatile int set_preset;
+    volatile bool soundfont_loaded;
 
     /// Update last_selected_preset based on synth object state
     void update_preset_num();

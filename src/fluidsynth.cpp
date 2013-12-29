@@ -41,6 +41,7 @@ void fluidsynth_audio_module::post_instantiate()
 {
     settings = new_fluid_settings();
     synth = create_synth(sfid);
+    soundfont_loaded = sfid != -1;
 }
 
 void fluidsynth_audio_module::activate()
@@ -141,7 +142,7 @@ uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, ui
 {
     static const int interp_lens[] = { 0, 1, 4, 7 };
     int new_preset = set_preset;
-    if (new_preset != -1)
+    if (new_preset != -1 && soundfont_loaded)
     {
         // XXXKF yeah there's a tiny chance of race here, have to live with it until I write some utility classes for lock-free data passing
         set_preset = -1;
@@ -178,6 +179,8 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
         }
         int newsfid = -1;
         fluid_synth_t *new_synth = create_synth(newsfid);
+        soundfont_loaded = newsfid != -1;
+
         status_serial++;
         
         if (new_synth)
