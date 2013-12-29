@@ -489,7 +489,7 @@ struct audio_module_iface
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     virtual void params_reset() = 0;
     /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)
-    virtual void post_instantiate() = 0;
+    virtual void post_instantiate(uint32_t sample_rate) = 0;
     /// Return the arrays of port buffer pointers
     virtual void get_port_arrays(float **&ins_ptrs, float **&outs_ptrs, float **&params_ptrs) = 0;
     /// Return metadata object
@@ -564,7 +564,7 @@ public:
     /// Reset parameter values for epp:trigger type parameters (ones activated by oneshot push button instead of check box)
     void params_reset() {}
     /// Called after instantiating (after all the feature pointers are set - including interfaces like progress_report_iface)
-    void post_instantiate() {}
+    void post_instantiate(uint32_t) {}
     /// Handle 'message context' port message
     /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
     uint32_t message_run(const void *valid_ports, void *output_ports) { 

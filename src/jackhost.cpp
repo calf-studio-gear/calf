@@ -67,12 +67,11 @@ jack_host::jack_host(jack_client *_client, audio_module_iface *_module, const st
     for (int i = 0; i < param_count; i++) {
         params[i] = &param_values[i];
     }
+    clear_preset();
     midi_meter = 0;
     last_designator = 0xFFFFFFFF;
     module->set_progress_report_iface(_priface);
-    module->set_sample_rate(client->sample_rate);
-    module->post_instantiate();
-    clear_preset();
+    module->post_instantiate(client->sample_rate);
 }
 
 jack_host::~jack_host()
@@ -283,6 +282,7 @@ int jack_host::process(jack_nframes_t nframes, automation_iface &automation)
 
 void jack_host::init_module()
 {
+    module->set_sample_rate(client->sample_rate);
     module->activate();
     module->params_changed();
 }

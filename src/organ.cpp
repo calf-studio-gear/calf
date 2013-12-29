@@ -42,7 +42,7 @@ void organ_audio_module::activate()
     panic_flag = false;
 }
 
-void organ_audio_module::post_instantiate()
+void organ_audio_module::post_instantiate(uint32_t)
 {
     dsp::organ_voice_base::precalculate_waves(progress_report);
 }

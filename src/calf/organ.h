@@ -329,7 +329,7 @@ public:
 
     organ_audio_module();
     
-    void post_instantiate();
+    void post_instantiate(uint32_t sample_rate);
 
     void set_sample_rate(uint32_t sr) {
         srate = sr;
