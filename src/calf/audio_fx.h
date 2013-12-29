@@ -625,11 +625,14 @@ private:
 public:
     float envelope, attack, release;
     float att_time, att_level, rel_time, rel_level, sust_thres;
+    static const int looksize = 20;
+    int lookahead, lookpos;
+    int lookbuf[looksize];
     uint32_t srate;
     transients();
     float process(float s);
     void set_sample_rate(uint32_t sr);
-    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th);
+    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look);
 };
 
 
@@ -653,6 +656,16 @@ public:
     void init(int c, int b, uint32_t sr);
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+class bitcrush
+{
+private:
+public:
+    uint32_t srate;
+    void set_sample_rate(uint32_t sr);
+    void process(float *ins, float *outs, uint32_t offset, uint32_t numsamples);
+    void set_params(int bitrate, int mode, float antialiasing);
 };
 
 #if 0
