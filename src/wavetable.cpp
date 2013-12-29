@@ -68,7 +68,7 @@ void wavetable_voice::note_on(int note, int vel)
     }
     float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
-    calc_derived_dests();
+    calc_derived_dests(0);
 
     float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
     memcpy(last_oscshift, oscshift, sizeof(oscshift));
@@ -105,7 +105,7 @@ void wavetable_voice::render_block()
     
     float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2]};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
-    calc_derived_dests();
+    calc_derived_dests(envs[0].value * scl[0]);
 
     int ospc = md::par_o2level - md::par_o1level;
     for (int j = 0; j < OscCount; j++) {

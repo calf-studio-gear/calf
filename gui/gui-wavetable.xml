@@ -123,6 +123,8 @@
             <label text="Vel Mod" fill="0"/>
             <knob param="adsr_v" size="3" fill="0"/>
             <value param="adsr_v" fill="0"/>
+            <label text="To Amp"/>
+            <toggle param="eg1amp" size="1"/>
           </vbox>
         </hbox>
       </frame>

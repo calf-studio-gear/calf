@@ -82,10 +82,11 @@ public:
         // printf("note %d getactive %d use_percussion %d pamp active %d\n", note, amp.get_active(), use_percussion(), pamp.get_active());
         return (note != -1) && (amp.get_active()) && !envs[0].stopped();
     }
-    inline void calc_derived_dests() {
+    inline void calc_derived_dests(float env0) {
         float cv = dsp::clip<float>(0.5f + moddest[wavetable_metadata::moddest_oscmix], 0.f, 1.f);
-        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level];
-        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level];
+        float overall = *params[wavetable_metadata::par_eg1toamp] > 0 ? env0 * env0 : 1.0;
+        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level] * overall;
+        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level] * overall;
     }
 };    
 
