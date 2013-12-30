@@ -1558,6 +1558,8 @@ static const char *wavetable_mod_src_names[] = {
     "Env 1",
     "Env 2",
     "Env 3",
+    "LFO 1",
+    "LFO 2",
     NULL
 };
 
@@ -1616,6 +1618,8 @@ CALF_PORT_PROPS(wavetable) = {
 
     { 200,        0, 2400,   25, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "pbend_range", "PBend Range" },
     { 0,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "eg1amp", "EG1->Amp" },
+    { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo1_rate", "LFO1 Rate" },
+    { 0.25,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_rate", "LFO2 Rate" },
     {}
 };
 

@@ -90,6 +90,26 @@
     
   </vbox>
   <notebook>
+    <vbox page="LFOs" spacing="4">
+      <frame label="LFO 1">
+        <hbox homogeneous="1">
+          <vbox>
+            <label text="Frequency"/>
+            <knob height="120" param="lfo1_rate" inverted="1"/>
+            <value param="lfo1_rate"/>
+          </vbox>
+        </hbox>
+      </frame>
+      <frame label="LFO 2">
+        <hbox homogeneous="1">
+          <vbox>
+            <label text="Frequency"/>
+            <knob height="120" param="lfo2_rate" inverted="1"/>
+            <value param="lfo2_rate"/>
+          </vbox>
+        </hbox>
+      </frame>
+    </vbox>
     <vbox page="Envelopes" spacing="4">
     
       <frame label="EG 1">
