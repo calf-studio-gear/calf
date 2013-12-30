@@ -57,6 +57,7 @@ protected:
     int status_serial;
     /// Preset number to set on next process() call
     volatile int set_preset;
+    volatile bool soundfont_loaded;
 
     /// Update last_selected_preset based on synth object state
     void update_preset_num();
@@ -66,7 +67,7 @@ public:
     /// Constructor to initialize handles to NULL
     fluidsynth_audio_module();
 
-    void post_instantiate();
+    void post_instantiate(uint32_t sr);
     void set_sample_rate(uint32_t sr) { srate = sr; }
     /// Handle MIDI Note On message (by sending it to fluidsynth)
     void note_on(int channel, int note, int vel);

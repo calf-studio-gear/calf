@@ -145,7 +145,7 @@ public:
     void params_changed();
     void activate();
     void deactivate();
-    void post_instantiate()
+    void post_instantiate(uint32_t)
     {
         precalculate_waves(progress_report);
     }

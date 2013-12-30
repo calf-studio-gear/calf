@@ -69,7 +69,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
 {
     if (instance_name.empty())
         instance_name = get_next_instance_name(name);
-    jack_host *jh = create_jack_host(name.c_str(), instance_name, main_win);
+    jack_host *jh = create_jack_host(&client, name.c_str(), instance_name, main_win);
     if (!jh) {
         string s = 
         #define PER_MODULE_ITEM(name, isSynth, jackname) jackname ", "
@@ -80,7 +80,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
         throw text_exception("Unknown plugin name; allowed are: " + s);
     }
     instances.insert(jh->instance_name);
-    jh->create(&client);
+    jh->create();
     
     plugins.push_back(jh);
     client.add(jh);
@@ -165,11 +165,11 @@ void host_session::handle_jack_session_event(jack_session_event_t *event)
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host *jh = create_jack_host(name, get_next_instance_name(name), main_win);
+    jack_host *jh = create_jack_host(&client, name, get_next_instance_name(name), main_win);
     if (!jh)
         return;
     instances.insert(jh->instance_name);
-    jh->create(&client);
+    jh->create();
     
     plugins.push_back(jh);
     client.add(jh);

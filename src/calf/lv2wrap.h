@@ -70,7 +70,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     {
         if (progress_report_feature)
             module->set_progress_report_iface(this);
-        module->post_instantiate();
+        module->post_instantiate(srate_to_set);
     }
     virtual bool activate_preset(int bank, int program) { 
         return false;

@@ -46,7 +46,7 @@ class reverb_audio_module: public audio_module<reverb_metadata>
     vumeters meters;
 public:    
     dsp::reverb reverb;
-    dsp::simple_delay<16384, dsp::stereo_sample<float> > pre_delay;
+    dsp::simple_delay<131072, dsp::stereo_sample<float> > pre_delay;
     dsp::onepole<float> left_lo, right_lo, left_hi, right_hi;
     uint32_t srate;
     dsp::gain_smoothing amount, dryamount;

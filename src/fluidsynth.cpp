@@ -35,12 +35,15 @@ fluidsynth_audio_module::fluidsynth_audio_module()
     synth = NULL;
     status_serial = 1;
     set_preset = -1;
+    last_selected_preset = -1;
 }
 
-void fluidsynth_audio_module::post_instantiate()
+void fluidsynth_audio_module::post_instantiate(uint32_t sr)
 {
+    srate = sr;
     settings = new_fluid_settings();
     synth = create_synth(sfid);
+    soundfont_loaded = sfid != -1;
 }
 
 void fluidsynth_audio_module::activate()
@@ -141,7 +144,7 @@ uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, ui
 {
     static const int interp_lens[] = { 0, 1, 4, 7 };
     int new_preset = set_preset;
-    if (new_preset != -1)
+    if (new_preset != -1 && soundfont_loaded)
     {
         // XXXKF yeah there's a tiny chance of race here, have to live with it until I write some utility classes for lock-free data passing
         set_preset = -1;
@@ -149,6 +152,8 @@ uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, ui
         fluid_synth_program_change(synth, 0, new_preset & 127);
         last_selected_preset = new_preset;
     }
+    if (!soundfont_loaded)
+        last_selected_preset = -1;
     fluid_synth_set_interp_method(synth, -1, interp_lens[dsp::clip<int>(fastf2i_drm(*params[par_interpolation]), 0, 3)]);
     fluid_synth_set_reverb_on(synth, *params[par_reverb] > 0);
     fluid_synth_set_chorus_on(synth, *params[par_chorus] > 0);
@@ -176,8 +181,13 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
             printf("Creating a blank synth\n");
             soundfont.clear();
         }
+        // First synth not yet created - defer creation up to post_instantiate
+        if (!synth)
+            return NULL;
         int newsfid = -1;
         fluid_synth_t *new_synth = create_synth(newsfid);
+        soundfont_loaded = newsfid != -1;
+
         status_serial++;
         
         if (new_synth)

@@ -33,23 +33,23 @@ const char *client_name = "calfhost";
 
 extern "C" audio_module_iface *create_calf_plugin_by_name(const char *effect_name);
 
-jack_host *calf_plugins::create_jack_host(const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
+jack_host *calf_plugins::create_jack_host(jack_client *client, const char *effect_name, const std::string &instance_name, calf_plugins::progress_report_iface *priface)
 {
     audio_module_iface *plugin = create_calf_plugin_by_name(effect_name);
     if (plugin != NULL)
-        return new jack_host(plugin, effect_name, instance_name, priface);
+        return new jack_host(client, plugin, effect_name, instance_name, priface);
     return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-jack_host::jack_host(audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
+jack_host::jack_host(jack_client *_client, audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface)
 : module(_module)
 {
     name = _name;
     instance_name = _instance_name;
     
-    client = NULL;
+    client = _client;
     cc_mappings = NULL;
     changed = true;
 
@@ -71,7 +71,7 @@ jack_host::jack_host(audio_module_iface *_module, const std::string &_name, cons
     midi_meter = 0;
     last_designator = 0xFFFFFFFF;
     module->set_progress_report_iface(_priface);
-    module->post_instantiate();
+    module->post_instantiate(client->sample_rate);
 }
 
 jack_host::~jack_host()
@@ -83,10 +83,8 @@ jack_host::~jack_host()
         destroy();
 }
 
-void jack_host::create(jack_client *_client)
+void jack_host::create()
 {
-    client = _client; //jack_client_open(client_name, JackNullOption, &status);
-    
     create_ports();    
     cache_ports();
     init_module();

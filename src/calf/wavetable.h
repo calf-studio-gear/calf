@@ -65,6 +65,7 @@ protected:
     float last_oscamp[OscCount];
     /// Current osc amplitude
     float cur_oscamp[OscCount];
+    dsp::triangle_lfo lfo1, lfo2;
 public:
     wavetable_voice();
     void set_params_ptr(wavetable_audio_module *_parent, int _srate);
@@ -124,6 +125,8 @@ public:
         v->set_params_ptr(this, sample_rate);
         return v;
     }
+    
+    uint32_t get_crate() const { return crate; }
     
     /// process function copied from Organ (will probably need some adjustments as well as implementing the panic flag elsewhere
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
