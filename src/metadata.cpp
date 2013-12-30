@@ -359,8 +359,8 @@ const char *sidechaincompressor_mode_names[] = {"Wideband (F1:off / F2:off)",
                                                 "Bandpass #1 (F1:BP / F2:off)",
                                                 "Bandpass #2 (F1:HP / F2:LP)"};
 const char *sidechaincompressor_route_names[] = {"Stereo Input (Default)",
-                                           "R ▸ L (L: Signal / R: S/C)",
-                                           "L ▸ R (L: S/C / R: Signal)"};
+                                           "R > L (L: Signal / R: S/C)",
+                                           "L > R (L: S/C / R: Signal)"};
 const char *sidechaincompressor_filter_choices[] = { "12dB", "24dB", "36dB"};
 
 
@@ -556,8 +556,8 @@ const char *sidechaingate_mode_names[] = {"Wideband (F1:off / F2:off)",
                                                 "Bandpass #1 (F1:BP / F2:off)",
                                                 "Bandpass #2 (F1:HP / F2:LP)"};
 const char *sidechaingate_route_names[] = {"Stereo Input (Default)",
-                                           "R ▸ L (L: Signal / R: S/C)",
-                                           "L ▸ R (L: S/C / R: Signal)"};
+                                           "R > L (L: Signal / R: S/C)",
+                                           "L > R (L: S/C / R: Signal)"};
 const char *sidechaingate_filter_choices[] = { "12dB", "24dB", "36dB"};
 
 
@@ -1037,7 +1037,7 @@ CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmi
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(stereo) = {"In L", "In R", "Out L", "Out R"};
-const char *stereo_mode_names[] = { "LR ▸ LR (Stereo Default)", "LR ▸ MS (Stereo to Mid-Side)", "MS ▸ LR (Mid-Side to Stereo)", "LR ▸ LL (Mono Left Channel)", "LR ▸ RR (Mono Right Channel)", "LR ▸ L+R (Mono Sum L+R)", "LR ▸ RL (Stereo Flip Channels)" };
+const char *stereo_mode_names[] = { "LR > LR (Stereo Default)", "LR > MS (Stereo to Mid-Side)", "MS > LR (Mid-Side to Stereo)", "LR > LL (Mono Left Channel)", "LR > RR (Mono Right Channel)", "LR > L+R (Mono Sum L+R)", "LR > RL (Stereo Flip Channels)" };
 CALF_PORT_PROPS(stereo) = {
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
@@ -1160,6 +1160,18 @@ CALF_PORT_PROPS(tapesimulator) = {
 
 CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(crusher) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(crusher) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 16,     2,    32,      0,  PF_INT | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bits", "Bits" },
+    { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
+    {}
+};
+
+CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "Utility" };
 
 ////////////////////////////////////////////////////////////////////////////
 

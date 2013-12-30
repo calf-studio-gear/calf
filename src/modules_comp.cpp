@@ -2624,7 +2624,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
                 pbuffer[pbuffer_pos + 1] /= -2.f;
                 
                 // advance the buffer position
-                pbuffer_pos = (pbuffer_pos + 2) % pbuffer_size;
+                pbuffer_pos = (pbuffer_pos + 5) % pbuffer_size;
                 
                 // reset sample counter
                 pbuffer_sample = 0;
@@ -2666,9 +2666,10 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         // some graphs
         // 
         // buffer size is the amount of pixels for the max display value
-        // if drawn in the min display zoom level multiplied by 2 for
-        // keeping the input and the output fabs signals
-        pbuffer_size = (int)(points * 2.f * 100.f);
+        // if drawn in the min display zoom level multiplied by 5 for
+        // keeping the input and the output fabs signals and all graphs
+        // of the envelopes
+        pbuffer_size = (int)(points * 5.f * 100.f);
         // create array
         pbuffer = (float*) calloc(pbuffer_size, sizeof(float));
         dsp::zero(pbuffer, pbuffer_size);
@@ -2687,7 +2688,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
     if (subindex == 0) {
         int pos = hold ? attack_pos : pbuffer_pos;
         pbuffer_draw = *params[param_display_threshold] > display_max ? pos
-                     : (pbuffer_size + pos - pixels * 2) % pbuffer_size;
+                     : (pbuffer_size + pos - pixels * 5) % pbuffer_size;
     }
     // add is needed because we don't want to divide every single data
     // entry of the output curve in the array inside ::process but do it
@@ -2709,7 +2710,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
     }
     // draw curve
     for (int i = 0; i <= points; i++) {
-        int pos = (pbuffer_draw + i * 2) % pbuffer_size + add;
+        int pos = (pbuffer_draw + i * 5) % pbuffer_size + add;
         if (hold
         and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos)
             or (pbuffer_pos < attack_pos and pos < attack_pos)))

@@ -1145,3 +1145,38 @@ int crossover::get_filter_count() const
             return 4;
     }
 }
+
+//////////////////////////////////////////////////////////////////
+
+bitreduction::bitreduction()
+{
+    coeff = 1;
+    morph = 0;
+}
+void bitreduction::set_params(uint32_t b, float m)
+{
+    coeff = powf(2.0f, b);
+    morph = 1 - m;
+}
+float bitreduction::process(float in)
+{
+    float n = floorf(in * coeff) / coeff;
+    return n + (in - n) * morph;
+}
+
+//////////////////////////////////////////////////////////////////
+
+//samplerate::samplerate()
+//{
+    //from         = 44100;
+    //to           = 44100;
+//}
+//void samplerate::set_sample_rates (uint32_t f, uint32_t t)
+//{
+    //from = f;
+    //to   = t;
+//}
+//void samplerate::process(float *ins, float *outs, uint32_t offset, uint32_t numsamples)
+//{
+    
+//}

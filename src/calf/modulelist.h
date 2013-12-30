@@ -47,6 +47,7 @@
     PER_MODULE_ITEM(exciter, false, "exciter")
     PER_MODULE_ITEM(bassenhancer, false, "bassenhancer")
     PER_MODULE_ITEM(tapesimulator, false, "tapesimulator")
+    PER_MODULE_ITEM(crusher, false, "crusher")
     
     // tools
     PER_MODULE_ITEM(mono, false, "mono")
