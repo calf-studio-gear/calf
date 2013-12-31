@@ -139,6 +139,22 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
+class crusher_audio_module:
+    public audio_module<crusher_metadata>
+{
+private:
+    vumeters meters;
+    dsp::bitreduction bitreduction;
+public:
+    uint32_t srate;
+    crusher_audio_module();
+    void set_sample_rate(uint32_t sr);
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 };
 
 #endif

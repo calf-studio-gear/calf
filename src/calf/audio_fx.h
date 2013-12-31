@@ -662,15 +662,27 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
-class bitcrush
+class bitreduction
 {
 private:
 public:
-    uint32_t srate;
-    void set_sample_rate(uint32_t sr);
-    void process(float *ins, float *outs, uint32_t offset, uint32_t numsamples);
-    void set_params(int bitrate, int mode, float antialiasing);
+    float morph;
+    uint32_t coeff;
+    bitreduction();
+    void set_params(uint32_t b, float m);
+    float process(float in);
 };
+
+//class samplerate
+//{
+//private:
+//public:
+    //uint32_t from;
+    //uint32_t to;
+    //samplerate();
+    //void set_sample_rates(uint32_t from, uint32_t to);
+    //void process(float *ins, float *outs, uint32_t offset, uint32_t numsamples);
+//};
 
 #if 0
 { to keep editor happy

@@ -185,7 +185,7 @@ struct monocompressor_metadata: public plugin_metadata<monocompressor_metadata>
 /// Markus's sidechain compressor - metadata
 struct sidechaincompressor_metadata: public plugin_metadata<sidechaincompressor_metadata>
 {
-    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { in_count = 4, out_count = 2, ins_optional = 2, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_compression,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
@@ -240,7 +240,7 @@ struct gate_metadata: public plugin_metadata<gate_metadata>
 /// Markus's sidechain gate - metadata
 struct sidechaingate_metadata: public plugin_metadata<sidechaingate_metadata>
 {
-    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { in_count = 4, out_count = 2, ins_optional = 2, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, MONO_VU_METER_PARAMS,
            param_range, param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_gating,
            param_sc_mode, param_f1_freq, param_f2_freq, param_f1_level, param_f2_level,
@@ -444,6 +444,16 @@ struct bassenhancer_metadata: public plugin_metadata<bassenhancer_metadata>
            param_freq, param_listen, param_floor_active, param_floor, param_count };
     PLUGIN_NAME_ID_LABEL("bassenhancer", "bassenhancer", "Bass Enhancer")
 };
+/// Markus's and Chrischi's Crusher Module - metadata
+struct crusher_metadata: public plugin_metadata<crusher_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_bits, param_morph,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("crusher", "crusher", "Crusher")
+};
 /// Markus's Stereo Module - metadata
 struct stereo_metadata: public plugin_metadata<stereo_metadata>
 {
@@ -460,7 +470,7 @@ struct stereo_metadata: public plugin_metadata<stereo_metadata>
 /// Markus's Mono Module - metadata
 struct mono_metadata: public plugin_metadata<mono_metadata>
 {
-    enum { in_count = 1, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { in_count = 1, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            param_meter_in, param_meter_outL, param_meter_outR, param_clip_in,param_clip_outL, param_clip_outR,
            param_balance_out, param_softclip,

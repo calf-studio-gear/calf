@@ -915,3 +915,67 @@ bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned 
     // draw always
     return true;
 }
+
+
+
+/**********************************************************************
+ * CRUSHER by Markus Schmidt
+**********************************************************************/
+
+
+crusher_audio_module::crusher_audio_module()
+{
+    
+}
+
+void crusher_audio_module::activate()
+{
+    
+}
+void crusher_audio_module::deactivate()
+{
+    
+}
+
+void crusher_audio_module::params_changed()
+{
+    bitreduction.set_params(*params[param_bits], *params[param_morph]);
+}
+
+void crusher_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
+}
+
+uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            outs[0][offset] = bitreduction.process(ins[0][offset]);
+            outs[1][offset] = bitreduction.process(ins[1][offset]);
+            
+            float values[] = {ins[0][offset], ins[1][offset], outs[0][offset], outs[1][offset]};
+            meters.process(values);
+            // next sample
+            ++offset;
+        } // cycle trough samples
+    }
+    meters.fall(numsamples);
+    return outputs_mask;
+}
