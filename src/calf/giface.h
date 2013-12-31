@@ -521,7 +521,8 @@ public:
     float *ins[Metadata::in_count]; 
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
-    bool questionable_data_reported;
+    bool questionable_data_reported_in;
+    bool questionable_data_reported_out;
 
     progress_report_iface *progress_report;
 
@@ -530,7 +531,8 @@ public:
         memset(ins, 0, sizeof(ins));
         memset(outs, 0, sizeof(outs));
         memset(params, 0, sizeof(params));
-        questionable_data_reported = false;
+        questionable_data_reported_in = false;
+        questionable_data_reported_out = false;
     }
 
     /// Handle MIDI Note On
@@ -609,9 +611,9 @@ public:
                         had_errors = true;
                     }
                 }
-                if (had_errors && !questionable_data_reported) {
+                if (had_errors && !questionable_data_reported_in) {
                     fprintf(stderr, "Warning: Plugin %s got questionable value %f on its input %d\n", Metadata::get_name(), errval, i);
-                    questionable_data_reported = true;
+                    questionable_data_reported_in = true;
                 }
             }
         }
@@ -623,6 +625,27 @@ public:
             total_out_mask |= out_mask;
             zero_by_mask(out_mask, offset, newend - offset);
             offset = newend;
+        }
+        for (int i=0; i<Metadata::out_count; ++i) {
+            if (total_out_mask & (1 << i))
+            {
+                had_errors = false;
+                float *outdata = outs[i];
+                float errval = 0;
+                for (uint32_t j = offset; j < end; j++)
+                {
+                    if (!std::isfinite(outdata[j]) || fabs(outdata[j]) > 4294967296.0) {
+                        errval = outdata[j];
+                        had_errors = true;
+                    }
+                }
+                if (had_errors && !questionable_data_reported_out) {
+                    fprintf(stderr, "Warning: Plugin %s generated questionable value %f on its output %d - this is most likely a bug in the plugin!\n", Metadata::get_name(), errval, i);
+                    questionable_data_reported_out = true;
+                }
+                if (had_errors)
+                    dsp::zero(outs[i] + offset, end - offset);
+            }
         }
         return total_out_mask;
     }
