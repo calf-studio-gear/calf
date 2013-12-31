@@ -1157,15 +1157,17 @@ bitreduction::bitreduction()
 }
 void bitreduction::set_params(uint32_t b, float m, bool bp)
 {
-    coeff        = powf(2.0f, b - 1);
+    coeff        = powf(2.0f, b) - 1;
     morph        = 1 - m;
     bypass       = bp;
     redraw_graph = true;
 }
 float bitreduction::process(float in) const
 {
-    float n = roundf(in * coeff) / coeff;
-    return n + (in - n) * morph;
+    float n = roundf((in + 1.) * coeff) / coeff - 1.;
+    n += (in - n) * morph;
+    return n;
+    
 }
 
 bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const
@@ -1190,6 +1192,8 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
     }
     return true;
 }
+
+
 //////////////////////////////////////////////////////////////////
 
 //samplerate::samplerate()
