@@ -521,6 +521,7 @@ public:
     float *ins[Metadata::in_count]; 
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
+    bool questionable_data_reported;
 
     progress_report_iface *progress_report;
 
@@ -529,6 +530,7 @@ public:
         memset(ins, 0, sizeof(ins));
         memset(outs, 0, sizeof(outs));
         memset(params, 0, sizeof(params));
+        questionable_data_reported = false;
     }
 
     /// Handle MIDI Note On
@@ -595,11 +597,29 @@ public:
     /// utility function: call process, and if it returned zeros in output masks, zero out the relevant output port buffers
     uint32_t process_slice(uint32_t offset, uint32_t end)
     {
+        bool had_errors = false;
+        for (int i=0; i<Metadata::in_count; ++i) {
+            float *indata = ins[i];
+            if (indata) {
+                float errval = 0;
+                for (uint32_t j = offset; j < end; j++)
+                {
+                    if (!std::isfinite(indata[j]) || fabs(indata[j]) > 4294967296.0) {
+                        errval = indata[j];
+                        had_errors = true;
+                    }
+                }
+                if (had_errors && !questionable_data_reported) {
+                    fprintf(stderr, "Warning: Plugin %s got questionable value %f on its input %d\n", Metadata::get_name(), errval, i);
+                    questionable_data_reported = true;
+                }
+            }
+        }
         uint32_t total_out_mask = 0;
         while(offset < end)
         {
             uint32_t newend = std::min(offset + MAX_SAMPLE_RUN, end);
-            uint32_t out_mask = process(offset, newend - offset, -1, -1);
+            uint32_t out_mask = !had_errors ? process(offset, newend - offset, -1, -1) : 0;
             total_out_mask |= out_mask;
             zero_by_mask(out_mask, offset, newend - offset);
             offset = newend;
