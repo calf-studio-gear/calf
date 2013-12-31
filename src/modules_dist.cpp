@@ -979,3 +979,11 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     meters.fall(numsamples);
     return outputs_mask;
 }
+bool crusher_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    return bitreduction.get_graph(subindex, phase, data, points, context, mode);
+}
+bool crusher_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    return bitreduction.get_layers(index, generation, layers);
+}

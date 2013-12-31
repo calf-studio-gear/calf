@@ -140,7 +140,7 @@ public:
 };
 
 class crusher_audio_module:
-    public audio_module<crusher_metadata>
+    public audio_module<crusher_metadata>, public line_graph_iface
 {
 private:
     vumeters meters;
@@ -153,6 +153,8 @@ public:
     void deactivate();
     void params_changed();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 };

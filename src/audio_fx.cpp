@@ -1152,18 +1152,42 @@ bitreduction::bitreduction()
 {
     coeff = 1;
     morph = 0;
+    redraw_graph = true;
 }
 void bitreduction::set_params(uint32_t b, float m)
 {
-    coeff = powf(2.0f, b);
+    coeff = powf(2.0f, b - 1);
     morph = 1 - m;
+    redraw_graph = true;
 }
-float bitreduction::process(float in)
+float bitreduction::process(float in) const
 {
-    float n = floorf(in * coeff) / coeff;
+    float n = roundf(in * coeff) / coeff;
     return n + (in - n) * morph;
 }
 
+bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = redraw_graph or !generation ? LG_CACHE_GRAPH : 0;
+    return redraw_graph or !generation;
+}
+bool bitreduction::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (subindex >= 2) {
+        redraw_graph = false;
+        return false;
+    }
+    for (int i = 0; i < points; i++) {
+        data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
+        if (subindex)
+            data[i] = process((data[i] + 1) / 2.) * 2 - 1;
+        else {
+            context->set_line_width(1);
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        }
+    }
+    return true;
+}
 //////////////////////////////////////////////////////////////////
 
 //samplerate::samplerate()
