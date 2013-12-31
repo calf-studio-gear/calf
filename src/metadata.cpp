@@ -1166,7 +1166,7 @@ CALF_PORT_NAMES(crusher) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(crusher) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
-    { 16,     2,    31,      0,  PF_INT | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bits", "Bits" },
+    { 16,     2,    16,      0,  PF_INT | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bits", "Bits" },
     { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
     {}
 };

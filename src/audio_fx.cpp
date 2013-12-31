@@ -1150,14 +1150,16 @@ int crossover::get_filter_count() const
 
 bitreduction::bitreduction()
 {
-    coeff = 1;
-    morph = 0;
+    coeff        = 1;
+    morph        = 0;
     redraw_graph = true;
+    bypass       = true;
 }
-void bitreduction::set_params(uint32_t b, float m)
+void bitreduction::set_params(uint32_t b, float m, bool bp)
 {
-    coeff = powf(2.0f, b - 1);
-    morph = 1 - m;
+    coeff        = powf(2.0f, b - 1);
+    morph        = 1 - m;
+    bypass       = bp;
     redraw_graph = true;
 }
 float bitreduction::process(float in) const
@@ -1179,7 +1181,7 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
     }
     for (int i = 0; i < points; i++) {
         data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
-        if (subindex)
+        if (subindex and !bypass)
             data[i] = process((data[i] + 1) / 2.) * 2 - 1;
         else {
             context->set_line_width(1);
