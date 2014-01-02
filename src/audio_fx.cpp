@@ -883,6 +883,7 @@ transients::transients() {
     lookpos         = 0;
     channels        = 1;
     cnt             = 0;
+    sustain_ended   = false;
 }
 void transients::set_channels(int ch) {
     channels = ch;
@@ -899,6 +900,7 @@ void transients::set_sample_rate(uint32_t sr) {
     // to prevent "clicks" a maxdelta is set, which allows the signal
     // to raise/fall ~6dB/ms. 
     maxdelta = pow(4, 1.f / (0.001 * srate));
+    relfac   = pow(2, 1.f / (0.001 * rel_time * srate));
 }
 void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look) {
     lookahead  = look;
@@ -909,6 +911,7 @@ void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, 
                           : -0.25f * pow(att_l * 4, 2);
     rel_level  = rel_l > 0 ? 0.5f  * pow(rel_l * 8, 2)
                           : -0.25f * pow(rel_l * 4, 2);
+    relfac   = pow(0.5f, 1.f / (0.001 * rel_time * srate));
 }
 void transients::process(float *in) {
     // fill lookahead buffer
@@ -937,6 +940,10 @@ void transients::process(float *in) {
     float attdelta = (envelope - attack)
                    * 0.707
                    / (srate * att_time * 0.001);
+    if (sustain_ended == true and envelope / attack - 1 > 0.2f) {
+        sustain_ended = false;
+        //printf("attack -> false %d \n", (int)sustain_ended);
+    }
     attack += attdelta;
     
     // never raise above envelope
@@ -947,12 +954,18 @@ void transients::process(float *in) {
     // starts to fall when the envelope falls beneath the
     // sustain threshold
     
-    float reldelta = (envelope / release - sust_thres) * 0.707
-                   / (rel_time * srate * 0.001 * sust_thres);
+    //float reldelta = (envelope / release - sust_thres) * 0.707
+    //               / (rel_time * srate * 0.001 * sust_thres);
+    
+    if ((envelope / release) - sust_thres < 0 and sustain_ended == false) {
+        sustain_ended = true; 
+        //printf("threshold erreicht %d \n", (int)sustain_ended);
+    }
+    double reldelta = sustain_ended ? relfac : 1; 
                    
     // release delta can never raise above 0
-    reldelta = std::min(0.f, reldelta);
-    release += reldelta;
+    //reldelta = std::min(0.f, reldelta);
+    release *= reldelta;
     
     // never fall below envelope
     release = std::max(envelope, release);
