@@ -1168,7 +1168,7 @@ bitreduction::bitreduction()
     redraw_graph = true;
     bypass       = true;
 }
-void bitreduction::set_params(uint32_t b, float m, bool bp)
+void bitreduction::set_params(float b, float m, bool bp)
 {
     coeff        = powf(2.0f, b) - 1;
     morph        = 1 - m;
