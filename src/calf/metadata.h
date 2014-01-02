@@ -450,7 +450,7 @@ struct crusher_metadata: public plugin_metadata<crusher_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_bits, param_morph,
+           param_bits, param_morph, param_round, param_mode,
            param_count };
     PLUGIN_NAME_ID_LABEL("crusher", "crusher", "Crusher")
 };

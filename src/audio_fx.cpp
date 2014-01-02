@@ -1152,20 +1152,35 @@ bitreduction::bitreduction()
 {
     coeff        = 1;
     morph        = 0;
+    mode         = 0;
+    round        = 1;
     redraw_graph = true;
     bypass       = true;
 }
-void bitreduction::set_params(float b, float m, bool bp)
+void bitreduction::set_params(float b, float m, bool bp, uint32_t mode, bool round)
 {
     coeff        = powf(2.0f, b) - 1;
     morph        = 1 - m;
     bypass       = bp;
+    if (round) coeff = floorf(coeff);
+    
     redraw_graph = true;
 }
 float bitreduction::process(float in) const
 {
     float n = roundf((in + 1.) * coeff) / coeff - 1.;
-    n += (in - n) * morph;
+    switch (mode) {
+        case 0:
+        default:
+            n += (in - n) * morph;
+            break;
+        case 1:
+            if (in - n > 0)
+                sin((1 * 360.) * M_PI / 180.);
+            else
+                sin((1 * 360.) * M_PI / 180.);
+            break;
+    }
     return n;
     
 }

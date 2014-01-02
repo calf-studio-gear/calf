@@ -1163,11 +1163,14 @@ CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulato
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(crusher) = {"In L", "In R", "Out L", "Out R"};
+const char *crusher_mode_names[] = { "None", "Circular" };
 CALF_PORT_PROPS(crusher) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 16,     2,    16,      0,  PF_FLOAT | PF_CTL_KNOB | PF_SCALE_LOG | PF_UNIT_COEF, NULL, "bits", "Reduction" },
     { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
+    { 1,      0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "round", "Round" },
+    { 0,      0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
     {}
 };
 
