@@ -44,7 +44,7 @@
             <frame label="Attack">
                 <vbox spacing="10">
                     <vbox>
-                        <knob param="attack_boost" size="5" type="1"/>
+                        <knob param="attack_boost" size="4" type="1"/>
                         <value param="attack_boost"/>
                     </vbox>
                     <vbox>
@@ -86,7 +86,7 @@
             <frame label="Release">
                 <vbox spacing="10">
                     <vbox>
-                        <knob param="release_boost" size="5" type="1"/>
+                        <knob param="release_boost" size="4" type="1"/>
                         <value param="release_boost"/>
                     </vbox>
                     <vbox>
