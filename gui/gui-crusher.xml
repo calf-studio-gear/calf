@@ -1,0 +1,81 @@
+<vbox spacing="10">
+    <table spacing="5" rows="1" cols="7">
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="0" attach-y="0">
+            <label param="level_in" />
+            <knob param="level_in" size="2" type="1" />
+            <value param="level_in" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="1" attach-y="0">
+            <label text="In L" />
+            <vumeter param="meter_inL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_inR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label text="In R" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="2" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_inL" expand="0" fill="0" />
+            <led param="clip_inR" expand="0" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="5">
+             <label param="bypass"/>
+             <toggle param="bypass" shrink="1"/>
+        </vbox>
+        <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
+            <label text="Out L" />
+            <vumeter param="meter_outL" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <vumeter param="meter_outR" mode="0" hold="1.5" falloff="2.5" shrink-y="0" position="2" />
+            <label text="Out R" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="5" attach-y="0">
+            <label text="0dB" expand="0" fill="0" />
+            <led param="clip_outL" expand="0" mode="1" fill="0" />
+            <led param="clip_outR" expand="0" mode="1" fill="0" />
+            <label text="0dB" expand="0" fill="0" />
+        </vbox>
+        <vbox shrink-x="1" expand-x="0" fill-x="0" expand="0" fill="0" attach-x="6" attach-y="0">
+            <label param="level_out" />
+            <knob param="level_out" size="2" type="1" />
+            <value param="level_out" />
+        </vbox>
+    </table>
+        <hbox spacing="25">
+            <vbox>
+                <label param="bits" />
+                <knob param="bits" size="5" type="2" />
+                <value param="bits" />
+                <label/>
+                <label param="round"/>
+                <toggle size="1" param="round"/>
+            </vbox>
+            <if cond="directlink">
+                <frame label="Response">
+                    <line-graph refresh="1" width="300" height="120" param="morph"/>
+                </frame>
+            </if>
+            <vbox>
+                <hbox spacing="10">
+                    <vbox spacing="10">
+                        <label param="offset" />
+                        <knob param="offset" size="3" type="1" />
+                        <value param="offset" />
+                    </vbox>
+                    <vbox spacing="10">
+                        <label param="dc" />
+                        <knob param="dc" size="3" type="1" />
+                        <value param="dc" />
+                    </vbox>
+                    <vbox spacing="10">
+                        <label param="morph" />
+                        <knob param="morph" size="3" />
+                        <value param="morph" />
+                    </vbox>
+                </hbox>
+                <label/>
+                <hbox>
+                    <label param="mode" expand="0" fill="0"/>
+                    <combo param="mode" expand="0" fill="0"/>
+                </hbox>
+            </vbox>
+        </hbox>
+</vbox>
