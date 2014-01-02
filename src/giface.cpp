@@ -214,6 +214,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_BPM: return string(buf) + " bpm";
     case PF_UNIT_RPM: return string(buf) + " rpm";
     case PF_UNIT_DEG: return string(buf) + " deg";
+    case PF_UNIT_SAMPLES: return string(buf) + " smpl";
     case PF_UNIT_NOTE: 
         {
             static const char *notes = "C C#D D#E F F#G G#A A#B ";

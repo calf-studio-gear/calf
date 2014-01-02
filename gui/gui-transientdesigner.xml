@@ -12,24 +12,20 @@
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
-        <label text="Lookahead" attach-x="3" attach-y="0" expand-x="0" />
-        <knob param="lookahead" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
-        <value param="lookahead" attach-x="3" attach-y="3" expand-x="0" />
-        
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
-        <label param="mix" attach-x="5" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
-        <value param="mix" attach-x="5" attach-y="3" expand-x="0" />
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
         
-        <label attach-x="6" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="2" expand-x="1" />
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
-        <label attach-x="7" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="7" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="7" attach-y="2" expand-x="0" />
+        <label param="mix" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="mix" attach-x="7" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <value param="mix" attach-x="7" attach-y="3" expand-x="0" />
         
         <label param="level_out" attach-x="8" attach-y="0" expand-x="0" />
         <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
@@ -37,60 +33,70 @@
     </table>
     <hbox>
         <frame label="Attack">
-            <hbox spacing="10">
+            <vbox spacing="10">
                 <vbox>
-                    <label text="Time"/>
-                    <knob param="attack_time" size="3"/>
-                    <value param="attack_time"/>
-                </vbox>
-                <vbox>
-                    <label text="Boost"/>
                     <knob param="attack_boost" size="5" type="1"/>
                     <value param="attack_boost"/>
                 </vbox>
-            </hbox>
-        </frame>
-        
-        <frame label="Release">
-            <hbox spacing="10">
                 <vbox>
-                    <label text="Boost"/>
-                    <knob param="release_boost" size="5" type="1"/>
-                    <value param="release_boost"/>
+                    <knob param="attack_time" size="2"/>
+                    <value param="attack_time"/>
                 </vbox>
-                <vbox>
-                    <label text="Time"/>
-                    <knob param="release_time" size="3"/>
-                    <value param="release_time"/>
-                </vbox>
-            </hbox>
-        </frame>
-        
-        <frame label="Sustain">
-            <hbox>
-                <vbox>
-                    <label text="Threshold"/>
-                    <knob param="sustain_threshold" size="3"/>
-                    <value param="sustain_threshold"/>
-                </vbox>
-            </hbox>
+            </vbox>
         </frame>
         
         <if cond="directlink">
             <frame label="Waveform">
-                <hbox>
-                    <vbox>
-                        <label text="Display"/>
-                        <knob param="display"/>
-                        <value param="display"/>
-                        <label text="Threshold"/>
-                        <knob param="display_threshold"/>
-                        <value param="display_threshold"/>
-                    </vbox>
+                <vbox>
                     <line-graph refresh="1" width="375" height="150" param="sustain_threshold"/>
-                </hbox>
+                    <hbox>
+                        <label text="Display" align-x="1.0"/>
+                        <knob param="display" size="1"/>
+                        <value param="display" align-x="0.0"/>
+                        <label/>
+                        <label text="Threshold" align-x="1.0"/>
+                        <knob param="display_threshold" size="1"/>
+                        <value param="display_threshold" align-x="0.0"/>
+                    </hbox>
+                </vbox>
             </frame>
         </if>
+        
+        <frame label="Release">
+            <vbox spacing="10">
+                <vbox>
+                    <knob param="release_boost" size="5" type="1"/>
+                    <value param="release_boost"/>
+                </vbox>
+                <vbox>
+                    <knob param="release_time" size="2"/>
+                    <value param="release_time"/>
+                </vbox>
+            </vbox>
+        </frame>
+        
+        <vbox>
+        
+            <frame label="Sustain">
+                <hbox>
+                    <vbox>
+                        <label text="Threshold"/>
+                        <knob param="sustain_threshold" size="3"/>
+                        <value param="sustain_threshold"/>
+                    </vbox>
+                </hbox>
+            </frame>
+            
+            <frame label="Lookahead">
+                <hbox>
+                    <vbox>
+                        <knob param="lookahead" size="3"/>
+                        <value param="lookahead"/>
+                    </vbox>
+                </hbox>
+            </frame>
+            
+        </vbox>
     </hbox>
     
 </vbox>

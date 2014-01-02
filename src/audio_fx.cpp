@@ -1218,7 +1218,6 @@ float bitreduction::process(float in) const
         case 0:
         default:
             n = roundf((in + 1.) * coeff) / coeff - 1.;
-            n += (in - n) * morph;
             break;
         case 1:
             if(in)
@@ -1231,6 +1230,7 @@ float bitreduction::process(float in) const
                 //sin((1 * 360.) * M_PI / 180.);
             break;
     }
+    n += (in - n) * morph;
     n = remove_dc(n, dc);
     n /= offset;
     return n;

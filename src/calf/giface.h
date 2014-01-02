@@ -97,6 +97,7 @@ enum parameter_flags
   PF_UNIT_DEG     = 0x09000000,  ///< degrees
   PF_UNIT_NOTE    = 0x0A000000,  ///< MIDI note number
   PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
+  PF_UNIT_SAMPLES = 0x0C000000,  ///< samples
 };
 
 /// A fake infinity value (because real infinity may break some hosts)
