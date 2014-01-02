@@ -1187,25 +1187,11 @@ void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool roun
 }
 float bitreduction::add_dc(float s, float dc) const
 {
-    if (dc > 1) {
-        if (s > 0) s *= dc;
-        else s /= dc;
-    } else if (dc < 1) {
-        if (s > 0) s /= dc;
-        else s *= dc;
-    }
-    return s;
+    return s > 0 ? s *= dc : s /= dc;
 }
 float bitreduction::remove_dc(float s, float dc) const
 {
-    if (dc > 1) {
-        if (s > 0) s /= dc;
-        else s *= dc;
-    } else if (dc < 1) {
-        if (s > 0) s *= dc;
-        else s /= dc;
-    }
-    return s;
+    return s > 0 ? s /= dc : s *= dc;
 }
 float bitreduction::process(float in) const
 {
@@ -1248,8 +1234,7 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
         return false;
     }
     for (int i = 0; i < points; i++) {
-        //data[i] = sin(float(i) / float(points) * M_PI);
-        data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
+         data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
         if (subindex and !bypass)
             data[i] = process(data[i]);
         else {
