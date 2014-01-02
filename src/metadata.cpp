@@ -1167,7 +1167,7 @@ const char *crusher_mode_names[] = { "Linear", "Logarithmic" };
 CALF_PORT_PROPS(crusher) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
-    { 5,     2,    16,      0,  PF_FLOAT | PF_CTL_KNOB | PF_SCALE_LOG | PF_UNIT_COEF, NULL, "bits", "Reduction" },
+    { 5,     1,    16,      0,  PF_FLOAT | PF_CTL_KNOB | PF_SCALE_LOG | PF_UNIT_COEF, NULL, "bits", "Reduction" },
     { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
     { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "round", "Round" },
     { 0,     0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
