@@ -31,33 +31,11 @@
         <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
     </table>
-    <hbox>
-        <vbox>
-            <frame label="Lookahead">
-                <hbox>
-                    <vbox>
-                        <knob param="lookahead" size="2"/>
-                        <value param="lookahead"/>
-                    </vbox>
-                </hbox>
-            </frame>
-            <frame label="Attack">
-                <vbox spacing="10">
-                    <vbox>
-                        <knob param="attack_boost" size="4" type="1"/>
-                        <value param="attack_boost"/>
-                    </vbox>
-                    <vbox>
-                        <knob param="attack_time" size="2"/>
-                        <value param="attack_time"/>
-                    </vbox>
-                </vbox>
-            </frame>
-        </vbox>
+    <hbox spacing="20">
         <if cond="directlink">
             <frame label="Waveform">
                 <vbox>
-                    <line-graph refresh="1" width="420" height="220" param="sustain_threshold"/>
+                    <line-graph refresh="1" width="540" height="200" param="sustain_threshold"/>
                     <hbox>
                         <label text="Display" align-x="1.0"/>
                         <knob param="display" size="1"/>
@@ -72,31 +50,50 @@
         </if>
         
         <vbox>
-            
-            <frame label="Sustain">
+                <hbox>
+                    <vbox>
+                        <label param="lookahead"/>
+                        <knob param="lookahead" size="3"/>
+                        <value param="lookahead"/>
+                    </vbox>
+                </hbox>
+                <label/>
+                <vbox spacing="10">
+                    <vbox>
+                        <label param="attack_boost"/>
+                        <knob param="attack_boost" size="4" type="1"/>
+                        <value param="attack_boost"/>
+                    </vbox>
+                    <vbox>
+                        <label param="attack_time"/>
+                        <knob param="attack_time" size="2"/>
+                        <value param="attack_time"/>
+                    </vbox>
+                </vbox>
+        </vbox>
+        
+        <vbox>
                 <hbox>
                     <vbox>
                         <label text="Threshold"/>
-                        <knob param="sustain_threshold" size="2"/>
+                        <knob param="sustain_threshold" size="3"/>
                         <value param="sustain_threshold"/>
                     </vbox>
                 </hbox>
-            </frame>
-            
-            <frame label="Release">
+                <label/>
                 <vbox spacing="10">
                     <vbox>
+                        <label param="release_boost"/>
                         <knob param="release_boost" size="4" type="1"/>
                         <value param="release_boost"/>
                     </vbox>
                     <vbox>
+                        <label param="release_time"/>
                         <knob param="release_time" size="2"/>
                         <value param="release_time"/>
                     </vbox>
                 </vbox>
-            </frame>
-            
         </vbox>
-    </hbox>
     
+    </hbox>
 </vbox>
