@@ -656,7 +656,7 @@ public:
     float set_filter(int b, float f, bool force = false);
     void set_level(int b, float l);
     void set_active(int b, bool a);
-    void set_mode(int m) ;
+    void set_mode(int m);
     int get_filter_count() const;
     void init(int c, int b, uint32_t sr);
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
@@ -669,9 +669,11 @@ private:
 public:
     float morph, coeff, offset, dc, sqr;
     bool round, bypass;
-    uint32_t mode;
+    uint32_t mode, srate;
     mutable bool redraw_graph;
+    dsp::biquad_d2 filter[2];
     bitreduction();
+    void set_sample_rate(uint32_t sr);
     float add_dc(float s, float dc) const;
     float remove_dc(float s, float dc) const;
     void set_params(float b, float m, bool bp, uint32_t mode, bool round, float offset, float dc);

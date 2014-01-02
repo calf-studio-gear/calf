@@ -948,6 +948,7 @@ void crusher_audio_module::set_sample_rate(uint32_t sr)
     int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
     int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
     meters.init(params, meter, clip, 4, srate);
+    bitreduction.set_sample_rate(srate);
 }
 
 uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)

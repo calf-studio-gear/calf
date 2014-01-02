@@ -436,12 +436,13 @@ struct biquad_d2: public biquad_coeffs
     /// direct II form with two state variables
     inline double process(double in)
     {
-        dsp::sanitize_denormal(in);
-        dsp::sanitize(in);
+        double n = in;
+        dsp::sanitize_denormal(n);
+        dsp::sanitize(n);
         dsp::sanitize(w1);
         dsp::sanitize(w2);
 
-        double tmp = in - w1 * b1 - w2 * b2;
+        double tmp = n - w1 * b1 - w2 * b2;
         double out = tmp * a0 + w1 * a1 + w2 * a2;
         w2 = w1;
         w1 = tmp;

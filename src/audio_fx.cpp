@@ -1173,16 +1173,26 @@ bitreduction::bitreduction()
     redraw_graph = true;
     bypass       = true;
 }
-void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool round, float off, float d)
+void bitreduction::set_sample_rate(uint32_t sr)
 {
-    coeff        = powf(2.0f, b) - 1;
+    srate = sr;
+    filter[0].set_hp_rbj(10, 0.7071, (float)srate);
+    filter[1].copy_coeffs(filter[0]);
+}
+void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd, float off, float d)
+{
     morph        = 1 - mo;
     bypass       = bp;
     offset       = off;
     dc           = d;
-    if (round) coeff = floorf(coeff);
     sqr          = sqrt(coeff / 2);
     mode         = md;
+    round        = rnd > 0.5;
+    
+    coeff = powf(2.0f, b) - 1;
+    if (round)
+        coeff = floorf(coeff);
+    
     redraw_graph = true;
 }
 float bitreduction::add_dc(float s, float dc) const
@@ -1196,10 +1206,14 @@ float bitreduction::remove_dc(float s, float dc) const
 float bitreduction::process(float in) const
 {
     float n;
+    
+    // add offset
     in *= offset;
+    
+    // add dc
     in = add_dc(in, dc);
     
-        
+    // main rounding calculation depending on mode
     switch (mode) {
         case 0:
         default:
@@ -1210,15 +1224,30 @@ float bitreduction::process(float in) const
                 n = in / fabs(in) * exp(roundf(sqr * log(fabs(in)) + sqr * sqr) / sqr - sqr);
             else
                 n = 0;
+            break;
+        //case 2:
             //if (in - n > 0)
                 //sin((1 * 360.) * M_PI / 180.);
             //else
                 //sin((1 * 360.) * M_PI / 180.);
-            break;
+            //break;
     }
+    
+    // morph between dry and wet signal
     n += (in - n) * morph;
+    
+    // remove dc
     n = remove_dc(n, dc);
+    
+    // remove offset
     n /= offset;
+    
+    // filter if possible dc could appear because of non-rounded quantization
+    //if (!round) {
+        //n = filter[1].process(filter[0].process(n));
+        //filter[0].sanitize();
+        //filter[1].sanitize();
+    //}
     return n;
 }
 
