@@ -35,7 +35,7 @@
         <if cond="directlink">
             <frame label="Waveform">
                 <vbox>
-                    <line-graph refresh="1" width="540" height="200" param="sustain_threshold"/>
+                    <line-graph refresh="1" width="540" height="220" param="sustain_threshold"/>
                     <hbox>
                         <label text="Display" align-x="1.0"/>
                         <knob param="display" size="1"/>
@@ -61,7 +61,7 @@
                 <vbox spacing="10">
                     <vbox>
                         <label param="attack_boost"/>
-                        <knob param="attack_boost" size="4" type="1"/>
+                        <knob param="attack_boost" size="5" type="1"/>
                         <value param="attack_boost"/>
                     </vbox>
                     <vbox>
@@ -75,7 +75,7 @@
         <vbox>
                 <hbox>
                     <vbox>
-                        <label text="Threshold"/>
+                        <label text="Sustain Thres"/>
                         <knob param="sustain_threshold" size="3"/>
                         <value param="sustain_threshold"/>
                     </vbox>
@@ -84,7 +84,7 @@
                 <vbox spacing="10">
                     <vbox>
                         <label param="release_boost"/>
-                        <knob param="release_boost" size="4" type="1"/>
+                        <knob param="release_boost" size="5" type="1"/>
                         <value param="release_boost"/>
                     </vbox>
                     <vbox>

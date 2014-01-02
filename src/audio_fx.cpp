@@ -1221,7 +1221,7 @@ float bitreduction::process(float in) const
             break;
         case 1:
             if(in)
-                n = in / fabs(in) * exp(roundf(sqr * (log(fabs(in)) + 1)) / sqr - sqr);
+                n = in / fabs(in) * exp(roundf(sqr * log(fabs(in)) + sqr * sqr) / sqr - sqr);
             else
                 n = 0;
             //if (in - n > 0)
