@@ -1153,8 +1153,8 @@ CALF_PORT_PROPS(tapesimulator) = {
     { 1,        0,      1, 0,  PF_ENUM | PF_CTL_COMBO, tapesimulator_speed_names, "speed", "Speed Simulation" },
     { 0.10,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "noise", "Noise" },
     { 0.20,     0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mechanical", "Mechanical" },
-    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "magnetical", "Magnetical" },
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "post", "Post-Filter" },
+    { 1,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "magnetical", "Magnetical" },
+    { 0,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "post", "Post-Filter" },
     {}
 };
 
@@ -1167,10 +1167,12 @@ const char *crusher_mode_names[] = { "None", "Circular" };
 CALF_PORT_PROPS(crusher) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
-    { 16,     2,    16,      0,  PF_FLOAT | PF_CTL_KNOB | PF_SCALE_LOG | PF_UNIT_COEF, NULL, "bits", "Reduction" },
-    { 1,      0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
-    { 1,      0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "round", "Round" },
-    { 0,      0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
+    { 5,     2,    16,      0,  PF_FLOAT | PF_CTL_KNOB | PF_SCALE_LOG | PF_UNIT_COEF, NULL, "bits", "Reduction" },
+    { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "morph", "Morph" },
+    { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "round", "Round" },
+    { 0,     0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
+    { 1,     0.25,  4,      0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "offset", "Offset" },
+    { 1,     0.25,  4,      0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "dc", "DC" },
     {}
 };
 

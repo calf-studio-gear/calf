@@ -667,14 +667,14 @@ class bitreduction
 {
 private:
 public:
-    float morph;
-    bool round;
-    bool bypass;
-    mutable bool redraw_graph;
-    float coeff;
+    float morph, coeff, offset, dc;
+    bool round, bypass;
     uint32_t mode;
+    mutable bool redraw_graph;
     bitreduction();
-    void set_params(float b, float m, bool bp, uint32_t mode, bool round);
+    float add_dc(float s, float dc) const;
+    float remove_dc(float s, float dc) const;
+    void set_params(float b, float m, bool bp, uint32_t mode, bool round, float offset, float dc);
     float process(float in) const;
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;

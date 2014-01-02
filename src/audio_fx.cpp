@@ -1167,20 +1167,47 @@ bitreduction::bitreduction()
     morph        = 0;
     mode         = 0;
     round        = 1;
+    offset       = 1;
+    dc           = 0;
     redraw_graph = true;
     bypass       = true;
 }
-void bitreduction::set_params(float b, float m, bool bp, uint32_t mode, bool round)
+void bitreduction::set_params(float b, float m, bool bp, uint32_t mode, bool round, float off, float d)
 {
     coeff        = powf(2.0f, b) - 1;
     morph        = 1 - m;
     bypass       = bp;
+    offset       = off;
+    dc           = d;
     if (round) coeff = floorf(coeff);
-    
     redraw_graph = true;
+}
+float bitreduction::add_dc(float s, float dc) const
+{
+    if (dc > 1) {
+        if (s > 0) s *= dc;
+        else s /= dc;
+    } else if (dc < 1) {
+        if (s > 0) s /= dc;
+        else s *= dc;
+    }
+    return s;
+}
+float bitreduction::remove_dc(float s, float dc) const
+{
+    if (dc > 1) {
+        if (s > 0) s /= dc;
+        else s *= dc;
+    } else if (dc < 1) {
+        if (s > 0) s *= dc;
+        else s /= dc;
+    }
+    return s;
 }
 float bitreduction::process(float in) const
 {
+    in *= offset;
+    in = add_dc(in, dc);
     float n = roundf((in + 1.) * coeff) / coeff - 1.;
     switch (mode) {
         case 0:
@@ -1194,8 +1221,9 @@ float bitreduction::process(float in) const
                 sin((1 * 360.) * M_PI / 180.);
             break;
     }
+    n = remove_dc(n, dc);
+    n /= offset;
     return n;
-    
 }
 
 bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const
