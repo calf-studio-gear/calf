@@ -1169,17 +1169,20 @@ bitreduction::bitreduction()
     round        = 1;
     offset       = 1;
     dc           = 0;
+    sqr          = 0;
     redraw_graph = true;
     bypass       = true;
 }
-void bitreduction::set_params(float b, float m, bool bp, uint32_t mode, bool round, float off, float d)
+void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool round, float off, float d)
 {
     coeff        = powf(2.0f, b) - 1;
-    morph        = 1 - m;
+    morph        = 1 - mo;
     bypass       = bp;
     offset       = off;
     dc           = d;
     if (round) coeff = floorf(coeff);
+    sqr          = sqrt(coeff / 2);
+    mode         = md;
     redraw_graph = true;
 }
 float bitreduction::add_dc(float s, float dc) const
@@ -1206,19 +1209,26 @@ float bitreduction::remove_dc(float s, float dc) const
 }
 float bitreduction::process(float in) const
 {
+    float n;
     in *= offset;
     in = add_dc(in, dc);
-    float n = roundf((in + 1.) * coeff) / coeff - 1.;
+    
+        
     switch (mode) {
         case 0:
         default:
+            n = roundf((in + 1.) * coeff) / coeff - 1.;
             n += (in - n) * morph;
             break;
         case 1:
-            if (in - n > 0)
-                sin((1 * 360.) * M_PI / 180.);
+            if(in)
+                n = in / fabs(in) * exp(roundf(sqr * (log(fabs(in)) + 1)) / sqr - sqr);
             else
-                sin((1 * 360.) * M_PI / 180.);
+                n = 0;
+            //if (in - n > 0)
+                //sin((1 * 360.) * M_PI / 180.);
+            //else
+                //sin((1 * 360.) * M_PI / 180.);
             break;
     }
     n = remove_dc(n, dc);

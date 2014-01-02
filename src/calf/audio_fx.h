@@ -667,7 +667,7 @@ class bitreduction
 {
 private:
 public:
-    float morph, coeff, offset, dc;
+    float morph, coeff, offset, dc, sqr;
     bool round, bypass;
     uint32_t mode;
     mutable bool redraw_graph;

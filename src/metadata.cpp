@@ -1163,7 +1163,7 @@ CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulato
 ////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(crusher) = {"In L", "In R", "Out L", "Out R"};
-const char *crusher_mode_names[] = { "None", "Circular" };
+const char *crusher_mode_names[] = { "Linear", "Logarithmic" };
 CALF_PORT_PROPS(crusher) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
