@@ -1248,9 +1248,10 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
         return false;
     }
     for (int i = 0; i < points; i++) {
+        //data[i] = sin(float(i) / float(points) * M_PI);
         data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
         if (subindex and !bypass)
-            data[i] = process((data[i] + 1) / 2.) * 2 - 1;
+            data[i] = process(data[i]);
         else {
             context->set_line_width(1);
             context->set_source_rgba(0.15, 0.2, 0.0, 0.15);

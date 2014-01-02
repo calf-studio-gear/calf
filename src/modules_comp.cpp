@@ -2606,12 +2606,16 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         if (pbuffer_available) {
             // sanitize the buffer position if enough samples have
             // been captured. This is recognized by a negative value
-            pbuffer[pbuffer_pos]     = std::max(pbuffer[pbuffer_pos], 0.f);
-            pbuffer[pbuffer_pos + 1] = std::max(pbuffer[pbuffer_pos + 1], 0.f);
+            for (int i = 0; i < 5; i++) {
+                pbuffer[pbuffer_pos + i]     = std::max(pbuffer[pbuffer_pos + i], 0.f);
+            }
             
             // add samples to the buffer at the actual address
             pbuffer[pbuffer_pos]     = std::max(s, pbuffer[pbuffer_pos]);
             pbuffer[pbuffer_pos + 1] = std::max((float)(fabs(L) + fabs(R)), (float)pbuffer[pbuffer_pos + 1]);
+            pbuffer[pbuffer_pos + 2] = std::max(transients.envelope, pbuffer[pbuffer_pos + 2]);
+            pbuffer[pbuffer_pos + 3] = std::max(transients.attack, pbuffer[pbuffer_pos + 3]);
+            pbuffer[pbuffer_pos + 4] = std::max(transients.release, pbuffer[pbuffer_pos + 4]);
             
             pbuffer_sample += 1;
             
