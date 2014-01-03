@@ -43,7 +43,9 @@ stereo_audio_module::stereo_audio_module() {
     active      = false;
     _phase      = -1;
 }
-
+stereo_audio_module::~stereo_audio_module() {
+    free(buffer);
+}
 void stereo_audio_module::activate() {
     active = true;
 }
@@ -257,7 +259,6 @@ void stereo_audio_module::set_sample_rate(uint32_t sr)
     // rebuild buffer
     buffer_size = (int)(srate * 0.05 * 2.f); // buffer size attack rate multiplied by 2 channels
     buffer = (float*) calloc(buffer_size, sizeof(float));
-    dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
@@ -275,7 +276,9 @@ mono_audio_module::mono_audio_module() {
     meter_outR  = 0.f;
     _phase      = -1.f;
 }
-
+mono_audio_module::~mono_audio_module() {
+    free(buffer);
+}
 void mono_audio_module::activate() {
     active = true;
 }
@@ -393,7 +396,6 @@ void mono_audio_module::set_sample_rate(uint32_t sr)
     // rebuild buffer
     buffer_size = (int)srate * 0.05 * 2; // delay buffer size multiplied by 2 channels
     buffer = (float*) calloc(buffer_size, sizeof(float));
-    dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
     int meter[] = {param_meter_in,  param_meter_outL, param_meter_outR};
     int clip[] = {param_clip_in, param_clip_outL, param_clip_outR};
@@ -415,7 +417,6 @@ analyzer_audio_module::analyzer_audio_module() {
     ppos            = 0;
     plength         = 0;
     phase_buffer = (float*) calloc(max_phase_buffer_size, sizeof(float));
-    dsp::zero(phase_buffer, max_phase_buffer_size);
 }
 analyzer_audio_module::~analyzer_audio_module() {
     free(phase_buffer);

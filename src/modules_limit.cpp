@@ -168,7 +168,10 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     asc_old = true;
     crossover.init(2, 4, 44100);
 }
-
+multibandlimiter_audio_module::~multibandlimiter_audio_module()
+{
+    free(buffer);
+}
 void multibandlimiter_audio_module::activate()
 {
     is_active = true;
@@ -272,7 +275,6 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     // rebuild buffer
     overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size max attack rate
     buffer = (float*) calloc(overall_buffer_size, sizeof(float));
-    memset(buffer, 0, overall_buffer_size * sizeof(float)); // reset buffer to zero
     pos = 0;
     // set srate of all strips
     for (int j = 0; j < strips; j ++) {

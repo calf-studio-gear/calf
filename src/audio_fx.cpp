@@ -568,6 +568,12 @@ lookahead_limiter::lookahead_limiter() {
     asc_changed = false;
     asc_coeff = 1.f;
 }
+lookahead_limiter::~lookahead_limiter()
+{
+    free(buffer);
+    free(nextpos);
+    free(nextdelta);
+}
 
 void lookahead_limiter::activate()
 {
@@ -596,11 +602,10 @@ void lookahead_limiter::set_sample_rate(uint32_t sr)
     // rebuild buffer
     overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size attack rate multiplied by 2 channels
     buffer = (float*) calloc(overall_buffer_size, sizeof(float));
-    memset(buffer, 0, overall_buffer_size * sizeof(float)); // reset buffer to zero
     pos = 0;
 
-    nextpos = (int*) calloc(overall_buffer_size, sizeof(int));
     nextdelta = (float*) calloc(overall_buffer_size, sizeof(float));
+    nextpos = (int*) malloc(overall_buffer_size * sizeof(int));
     memset(nextpos, -1, overall_buffer_size * sizeof(int));
 }
 
@@ -886,10 +891,13 @@ transients::transients() {
     mix             = 1;
     sustain_ended   = false;
 }
+transients::~transients()
+{
+    free(lookbuf);
+}
 void transients::set_channels(int ch) {
     channels = ch;
     lookbuf = (float*) calloc(looksize * channels, sizeof(float));
-    memset(lookbuf, 0, looksize * channels * sizeof(float));
     lookpos = 0;
 }
 void transients::set_sample_rate(uint32_t sr) {

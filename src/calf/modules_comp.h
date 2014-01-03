@@ -435,6 +435,7 @@ class transientdesigner_audio_module:
     vumeters meters;
 public:
     transientdesigner_audio_module();
+    ~transientdesigner_audio_module();
     void params_changed();
     void activate();
     void set_sample_rate(uint32_t sr);
