@@ -977,10 +977,10 @@ void transients::process(float *in) {
     release = std::max(envelope, release);
     
     // difference between attack and envelope
-    float attdiff = log(envelope / attack);
+    float attdiff = attack > 0 ? log(envelope / attack) : 0;
     
     // difference between release and envelope
-    float reldiff = log(release / envelope);
+    float reldiff = envelope > 0 ? log(release / envelope) : 0;
     
     // amplification factor from attack and release curve
     float ampfactor = attdiff * att_level + reldiff * rel_level;
