@@ -1134,6 +1134,11 @@ CALF_PORT_PROPS(transientdesigner) = {
     { 2000.f, 50.f,  5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "display", "Display" },
     { pow(2,-12), pow(2,-12),1, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "display_threshold", "Threshold" },
     { 0,      0,     100,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SAMPLES, NULL, "lookahead", "Lookahead" },
+    { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "input", "Input" },
+    { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "output", "Output" },
+    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "envelope", "Envelope" },
+    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "attack", "Attack" },
+    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "release", "Release" },
     {}
 };
 

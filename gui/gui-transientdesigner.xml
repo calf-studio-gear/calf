@@ -34,18 +34,31 @@
     <hbox spacing="20">
         <if cond="directlink">
             <frame label="Waveform">
-                <vbox>
-                    <line-graph refresh="1" width="540" height="220" param="sustain_threshold"/>
-                    <hbox>
-                        <label text="Display" align-x="1.0"/>
-                        <knob param="display" size="1"/>
-                        <value param="display" align-x="0.0"/>
-                        <label/>
-                        <label text="Threshold" align-x="1.0"/>
-                        <knob param="display_threshold" size="1"/>
-                        <value param="display_threshold" align-x="0.0"/>
-                    </hbox>
-                </vbox>
+                <hbox>
+                    <table rows="7" cols="2">
+                        <vbox attach-x="0" attach-y="0" spacing="0">
+                            <label text="Display" align-x="1.0"/>
+                            <value param="display" align-x="1.0"/>
+                        </vbox>
+                        <knob param="display" size="2" attach-x="1" attach-y="0"/>
+                        <vbox attach-x="0" attach-y="1" spacing="0">
+                            <label text="Threshold" align-x="1.0"/>
+                            <value param="display_threshold" align-x="1.0"/>
+                        </vbox>
+                        <knob param="display_threshold" size="2" attach-x="1" attach-y="1"/>
+                        <label param="input" align-x="1" attach-x="0" attach-y="2"/>
+                        <toggle param="input" size="1" attach-x="1" attach-y="2"/>
+                        <label param="output" align-x="1" attach-x="0" attach-y="3"/>
+                        <toggle param="output" size="1" attach-x="1" attach-y="3"/>
+                        <label param="envelope" align-x="1" attach-x="0" attach-y="4"/>
+                        <toggle param="envelope" size="1" attach-x="1" attach-y="4"/>
+                        <label param="attack" align-x="1" attach-x="0" attach-y="5"/>
+                        <toggle param="attack" size="1" attach-x="1" attach-y="5"/>
+                        <label param="release" align-x="1" attach-x="0" attach-y="6"/>
+                        <toggle param="release" size="1" attach-x="1" attach-y="6"/>
+                    </table>
+                    <line-graph refresh="1" width="440" height="220" param="sustain_threshold"/>
+                </hbox>
             </frame>
         </if>
         
