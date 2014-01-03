@@ -66,7 +66,7 @@
                 <hbox>
                     <vbox>
                         <label param="lookahead"/>
-                        <knob param="lookahead" size="3"/>
+                        <knob param="lookahead" size="2"/>
                         <value param="lookahead"/>
                     </vbox>
                 </hbox>
@@ -89,7 +89,7 @@
                 <hbox>
                     <vbox>
                         <label text="Sustain Thres"/>
-                        <knob param="sustain_threshold" size="3"/>
+                        <knob param="sustain_threshold" size="2"/>
                         <value param="sustain_threshold"/>
                     </vbox>
                 </hbox>
