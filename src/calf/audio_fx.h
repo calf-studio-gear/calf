@@ -626,17 +626,18 @@ public:
     float envelope, attack, release;
     bool sustain_ended;
     float old_return, new_return, maxdelta, relfac;
-    float att_time, att_level, rel_time, rel_level, sust_thres;
+    float att_time, att_level, rel_time, rel_level, sust_thres, mix;
     static const int looksize = 101;
     int lookahead, lookpos;
     float *lookbuf;
     int channels;
     uint32_t srate;
     transients();
+    void calc_relfac();
     void process(float *in);
     void set_channels(int ch);
     void set_sample_rate(uint32_t sr);
-    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look);
+    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look, float mix);
     int cnt;
 };
 

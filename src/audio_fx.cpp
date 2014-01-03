@@ -883,6 +883,7 @@ transients::transients() {
     lookpos         = 0;
     channels        = 1;
     cnt             = 0;
+    mix             = 1;
     sustain_ended   = false;
 }
 void transients::set_channels(int ch) {
@@ -900,9 +901,10 @@ void transients::set_sample_rate(uint32_t sr) {
     // to prevent "clicks" a maxdelta is set, which allows the signal
     // to raise/fall ~6dB/ms. 
     maxdelta = pow(4, 1.f / (0.001 * srate));
-    relfac   = pow(2, 1.f / (0.001 * rel_time * srate));
+    calc_relfac();
 }
-void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look) {
+void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look, float mx) {
+    mix        = mx;
     lookahead  = look;
     sust_thres = sust_th;
     att_time   = att_t;
@@ -911,7 +913,11 @@ void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, 
                           : -0.25f * pow(att_l * 4, 2);
     rel_level  = rel_l > 0 ? 0.5f  * pow(rel_l * 8, 2)
                           : -0.25f * pow(rel_l * 4, 2);
-    relfac   = pow(0.5f, 1.f / (0.001 * rel_time * srate));
+    calc_relfac();
+}
+void transients::calc_relfac()
+{
+    relfac = pow(0.5f, 1.f / (0.001 * rel_time * srate));
 }
 void transients::process(float *in) {
     // fill lookahead buffer
@@ -987,7 +993,7 @@ void transients::process(float *in) {
     
     int pos = (lookpos + looksize * channels - lookahead * channels) % (looksize * channels);
     for (int i = 0; i < channels; i++) {
-        in[i] = lookbuf[pos + i] * new_return;
+        in[i] = lookbuf[pos + i] * new_return * mix + lookbuf[pos + i] * (mix * -1 + 1);
     }
     
     // advance lookpos
