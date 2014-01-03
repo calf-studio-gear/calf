@@ -1209,7 +1209,7 @@ float bitreduction::remove_dc(float s, float dc) const
 {
     return s > 0 ? s /= dc : s *= dc;
 }
-float bitreduction::process(float in) const
+float bitreduction::waveshape(float in) const
 {
     float n;
     
@@ -1248,18 +1248,23 @@ float bitreduction::process(float in) const
     // remove offset
     n /= offset;
     
+    return n;
+}
+float bitreduction::process(float in)
+{
+    float n = waveshape(in);
     // filter if possible dc could appear because of non-rounded quantization
-    //if (!round) {
-        //n = filter[1].process(filter[0].process(n));
-        //filter[0].sanitize();
-        //filter[1].sanitize();
-    //}
+    if (!round) {
+        n = filter[1].process(filter[0].process(n));
+        filter[0].sanitize();
+        filter[1].sanitize();
+    }
     return n;
 }
 
 bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = redraw_graph or !generation ? LG_CACHE_GRAPH : 0;
+    layers = redraw_graph or !generation ? LG_CACHE_GRAPH | LG_CACHE_GRID : 0;
     return redraw_graph or !generation;
 }
 bool bitreduction::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
@@ -1271,7 +1276,7 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
     for (int i = 0; i < points; i++) {
          data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
         if (subindex and !bypass)
-            data[i] = process(data[i]);
+            data[i] = waveshape(data[i]);
         else {
             context->set_line_width(1);
             context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
@@ -1279,7 +1284,14 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
     }
     return true;
 }
-
+bool bitreduction::get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (phase or subindex)
+        return false;
+    pos = 0;
+    vertical = false;
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////
 

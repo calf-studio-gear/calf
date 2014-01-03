@@ -989,3 +989,7 @@ bool crusher_audio_module::get_layers(int index, int generation, unsigned int &l
 {
     return bitreduction.get_layers(index, generation, layers);
 }
+bool crusher_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    return bitreduction.get_gridline(subindex, phase, pos, vertical, legend, context);
+}

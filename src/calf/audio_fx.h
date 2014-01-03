@@ -25,6 +25,7 @@
 #include "delay.h"
 #include "fixed_point.h"
 #include "inertia.h"
+#include "giface.h"
 #include "onepole.h"
 #include <complex>
 
@@ -635,6 +636,7 @@ public:
     transients();
     void calc_relfac();
     void process(float *in);
+    void waveshape(float *in);
     void set_channels(int ch);
     void set_sample_rate(uint32_t sr);
     void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look, float mix);
@@ -678,9 +680,11 @@ public:
     float add_dc(float s, float dc) const;
     float remove_dc(float s, float dc) const;
     void set_params(float b, float m, bool bp, uint32_t mode, bool round, float offset, float dc);
-    float process(float in) const;
+    float waveshape(float in) const;
+    float process(float in);
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
+    bool get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, calf_plugins::cairo_iface *context) const;
 };
 
 //class samplerate
