@@ -1173,6 +1173,7 @@ CALF_PORT_PROPS(crusher) = {
     { 0,     0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
     { 1,     0.25,  4,      0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "offset", "Offset" },
     { 1,     0.25,  4,      0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "dc", "DC" },
+    { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "anti-aliasing", "Anti-Aliasing" },
     {}
 };
 

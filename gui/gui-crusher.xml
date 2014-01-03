@@ -39,42 +39,53 @@
             <value param="level_out" />
         </vbox>
     </table>
-        <hbox spacing="25">
-            <vbox>
-                <label param="bits" />
-                <knob param="bits" size="5" type="2" />
-                <value param="bits" />
-                <label/>
-                <label param="round"/>
-                <toggle size="1" param="round"/>
+        <hbox spacing="20">
+            <vbox spacing="10">
+                <vbox>
+                    <label param="bits" />
+                    <knob param="bits" size="5" type="2" />
+                    <value param="bits" />
+                </vbox>
+                <hbox spacing="20">
+                    <vbox>
+                        <label param="round"/>
+                        <toggle size="1" param="round"/>
+                    </vbox>
+                    <vbox>
+                        <label param="mode" expand="0" fill="0"/>
+                        <combo param="mode" expand="0" fill="0"/>
+                    </vbox>
+                </hbox>
             </vbox>
             <if cond="directlink">
                 <frame label="Response">
                     <line-graph refresh="1" width="300" height="120" param="morph"/>
                 </frame>
             </if>
-            <vbox>
-                <hbox spacing="10">
-                    <vbox spacing="10">
+            <vbox spacing="10">
+                <hbox spacing="20" homogeneous="1">
+                    <vbox>
                         <label param="offset" />
                         <knob param="offset" size="3" type="1" />
                         <value param="offset" />
                     </vbox>
-                    <vbox spacing="10">
+                    <vbox>
                         <label param="dc" />
                         <knob param="dc" size="3" type="1" />
                         <value param="dc" />
                     </vbox>
-                    <vbox spacing="10">
+                </hbox>
+                <hbox spacing="20" homogeneous="1">
+                    <vbox>
+                        <label param="anti-aliasing" />
+                        <knob param="anti-aliasing" size="3" />
+                        <value param="anti-aliasing" />
+                    </vbox>
+                    <vbox>
                         <label param="morph" />
                         <knob param="morph" size="3" />
                         <value param="morph" />
                     </vbox>
-                </hbox>
-                <label/>
-                <hbox>
-                    <label param="mode" expand="0" fill="0"/>
-                    <combo param="mode" expand="0" fill="0"/>
                 </hbox>
             </vbox>
         </hbox>

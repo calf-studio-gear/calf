@@ -670,7 +670,7 @@ class bitreduction
 {
 private:
 public:
-    float morph, coeff, offset, dc, sqr;
+    float morph, coeff, offset, dc, sqr, aa;
     bool round, bypass;
     uint32_t mode, srate;
     mutable bool redraw_graph;
@@ -679,7 +679,7 @@ public:
     void set_sample_rate(uint32_t sr);
     float add_dc(float s, float dc) const;
     float remove_dc(float s, float dc) const;
-    void set_params(float b, float m, bool bp, uint32_t mode, bool round, float offset, float dc);
+    void set_params(float b, float m, bool bp, uint32_t mode, bool round, float offset, float dc, float aa);
     float waveshape(float in) const;
     float process(float in);
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;

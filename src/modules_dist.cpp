@@ -940,7 +940,7 @@ void crusher_audio_module::deactivate()
 
 void crusher_audio_module::params_changed()
 {
-    bitreduction.set_params(*params[param_bits], *params[param_morph], *params[param_bypass] > 0.5, *params[param_mode], *params[param_round] > 0.5, *params[param_offset], *params[param_dc]);
+    bitreduction.set_params(*params[param_bits], *params[param_morph], *params[param_bypass] > 0.5, *params[param_mode], *params[param_round] > 0.5, *params[param_offset], *params[param_dc], *params[param_aa]);
 }
 
 void crusher_audio_module::set_sample_rate(uint32_t sr)

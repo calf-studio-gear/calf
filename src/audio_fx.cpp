@@ -1185,12 +1185,13 @@ void bitreduction::set_sample_rate(uint32_t sr)
     filter[0].set_hp_rbj(10, 0.7071, (float)srate);
     filter[1].copy_coeffs(filter[0]);
 }
-void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd, float off, float d)
+void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd, float off, float d, float a)
 {
     morph        = 1 - mo;
     bypass       = bp;
     offset       = off;
     dc           = d;
+    aa           = a;
     sqr          = sqrt(coeff / 2);
     mode         = md;
     round        = rnd > 0.5;
