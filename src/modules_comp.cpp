@@ -2708,7 +2708,6 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         last_drawn = 0;
         return false;
     }
-    printf("%d\n", last_drawn);
     if (!last_drawn) {
         // input is drawn as bars with less opacity
         *mode = 1;
