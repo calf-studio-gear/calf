@@ -1192,14 +1192,12 @@ void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd,
     offset       = off;
     dc           = d;
     aa           = a;
-    sqr          = sqrt(coeff / 2);
     mode         = md;
     round        = rnd > 0.5;
-    
-    coeff = powf(2.0f, b) - 1;
+    coeff        = powf(2.0f, b) - 1;
     if (round)
-        coeff = floorf(coeff);
-    
+        coeff    = floorf(coeff);
+    sqr          = sqrt(coeff / 2);
     redraw_graph = true;
 }
 float bitreduction::add_dc(float s, float dc) const
