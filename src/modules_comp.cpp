@@ -2535,7 +2535,10 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     display_max     = pow(2,-12);
     transients.set_channels(channels);
 }
-
+transientdesigner_audio_module::~transientdesigner_audio_module()
+{
+    free(pbuffer);
+}
 void transientdesigner_audio_module::activate() {
     active = true;
 }
@@ -2671,7 +2674,6 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         pbuffer_size = (int)(points * 5.f * 100.f);
         // create array
         pbuffer = (float*) calloc(pbuffer_size, sizeof(float));
-        dsp::zero(pbuffer, pbuffer_size);
         
         // sanitize some indexes and addresses
         pbuffer_pos    = 0;

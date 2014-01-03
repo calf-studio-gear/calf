@@ -64,6 +64,7 @@ class stereo_audio_module:
     float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
 public:
     stereo_audio_module();
+    ~stereo_audio_module();
     void params_changed();
     void activate();
     void set_sample_rate(uint32_t sr);
@@ -96,6 +97,7 @@ class mono_audio_module:
     float _phase, _phase_sin_coef, _phase_cos_coef, _sc_level, _inv_atan_shape;
 public:
     mono_audio_module();
+    ~mono_audio_module();
     void params_changed();
     void activate();
     void set_sample_rate(uint32_t sr);

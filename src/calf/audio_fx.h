@@ -611,6 +611,7 @@ public:
     void reset_asc();
     bool get_asc();
     lookahead_limiter();
+    ~lookahead_limiter();
     void set_multi(bool set);
     void process(float &left, float &right, float *multi_buffer);
     void set_sample_rate(uint32_t sr);
@@ -634,6 +635,7 @@ public:
     int channels;
     uint32_t srate;
     transients();
+    ~transients();
     void calc_relfac();
     void process(float *in);
     void waveshape(float *in);

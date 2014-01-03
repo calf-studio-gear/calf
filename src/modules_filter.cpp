@@ -723,7 +723,11 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
     redraw_graph = true;
     crossover.init(AM::channels, AM::bands, 44100);
 }
-
+template<class XoverBaseClass>
+xover_audio_module<XoverBaseClass>::~xover_audio_module()
+{
+    free(buffer);
+}
 template<class XoverBaseClass>
 void xover_audio_module<XoverBaseClass>::activate()
 {
@@ -745,7 +749,6 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
     // rebuild buffer
     buffer_size = (int)(srate / 10 * AM::channels * AM::bands + AM::channels * AM::bands); // buffer size attack rate multiplied by channels and bands
     buffer = (float*) calloc(buffer_size, sizeof(float));
-    dsp::zero(buffer, buffer_size); // reset buffer to zero
     pos = 0;
     int amount = AM::bands * AM::channels + AM::channels;
     int meter[amount];

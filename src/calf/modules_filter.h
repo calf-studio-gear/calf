@@ -328,6 +328,7 @@ public:
     vumeters meters;
     dsp::crossover crossover;
     xover_audio_module();
+    ~xover_audio_module();
     void activate();
     void deactivate();
     void params_changed();

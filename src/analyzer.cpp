@@ -55,7 +55,6 @@ analyzer::analyzer() {
     recreate_plan   = true;
     
     spline_buffer = (int*) calloc(200, sizeof(int));
-    memset(spline_buffer, 0, 200 * sizeof(int)); // reset buffer to zero
     
     fft_buffer = (float*) calloc(max_fft_buffer_size, sizeof(float));
     
