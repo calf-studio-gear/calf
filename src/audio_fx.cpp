@@ -954,10 +954,8 @@ void transients::process(float *in) {
     float attdelta = (envelope - attack)
                    * 0.707
                    / (srate * att_time * 0.001);
-    if (sustain_ended == true and envelope / attack - 1 > 0.2f) {
+    if (sustain_ended == true and envelope / attack - 1 > 0.2f)
         sustain_ended = false;
-        //printf("attack -> false %d \n", (int)sustain_ended);
-    }
     attack += attdelta;
     
     // never raise above envelope
@@ -967,18 +965,12 @@ void transients::process(float *in) {
     // this is a curve which is always above the envelope. It
     // starts to fall when the envelope falls beneath the
     // sustain threshold
-    
-    //float reldelta = (envelope / release - sust_thres) * 0.707
-    //               / (rel_time * srate * 0.001 * sust_thres);
-    
-    if ((envelope / release) - sust_thres < 0 and sustain_ended == false) {
+        
+    if ((envelope / release) - sust_thres < 0 and sustain_ended == false) 
         sustain_ended = true; 
-        //printf("threshold erreicht %d \n", (int)sustain_ended);
-    }
     double reldelta = sustain_ended ? relfac : 1; 
                    
     // release delta can never raise above 0
-    //reldelta = std::min(0.f, reldelta);
     release *= reldelta;
     
     // never fall below envelope
