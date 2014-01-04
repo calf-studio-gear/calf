@@ -23,9 +23,11 @@
 #include <calf/metadata.h>
 #include <calf/audio_fx.h>
 #include <calf/modmatrix.h>
+#include <calf/utils.h>
 
 using namespace dsp;
 using namespace calf_plugins;
+using namespace std;
 
 const char *calf_plugins::calf_copyright_info = "(C) 2001-2013 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
 const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8" };
@@ -1132,7 +1134,7 @@ CALF_PORT_PROPS(transientdesigner) = {
     { 300.f,  1.f,   5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release_time", "Release Time" },
     { 0.f,   -1.f,   1.f,    0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "release_boost", "Release Boost" },
     { 2000.f, 50.f,  5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "display", "Display" },
-    { pow(2,-12), pow(2,-12),1, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "display_threshold", "Threshold" },
+    { pow(2.0,-12.0), pow(2.0,-12.0),1, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "display_threshold", "Threshold" },
     { 0,      0,     100,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SAMPLES, NULL, "lookahead", "Lookahead" },
     { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "input", "Input" },
     { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "output", "Output" },
@@ -1305,9 +1307,9 @@ monosynth_metadata::monosynth_metadata()
 {
 }
 
-const char *const *monosynth_metadata::get_configure_vars() const
+void monosynth_metadata::get_configure_vars(vector<string> &names) const
 {
-    return mod_matrix_impl::get_configure_vars<mod_matrix_slots>();
+    mm_metadata.get_configure_vars(names);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1505,10 +1507,9 @@ CALF_PORT_PROPS(organ) = {
     { 1,        0.1, 10,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "treble_gain", "Treble Gain" },
 };
 
-const char *const *organ_metadata::get_configure_vars() const
+void organ_metadata::get_configure_vars(vector<string> &names) const
 {
-    static const char *names[] = {"map_curve", NULL};
-    return names;
+    names.push_back("map_curve");
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1528,10 +1529,12 @@ CALF_PORT_PROPS(fluidsynth) = {
     { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "chorus", "Chorus" },
 };
 
-const char *const *fluidsynth_metadata::get_configure_vars() const
+void fluidsynth_metadata::get_configure_vars(vector<string> &names) const
 {
-    static const char *names[] = {"soundfont", "preset_key_set", NULL};
-    return names;
+    names.push_back("soundfont");
+    names.push_back("preset_key_set");
+    for (int i = 1; i < 16; i++)
+        names.push_back("preset_key_set" + calf_utils::i2s(i + 1));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1644,6 +1647,11 @@ CALF_PORT_PROPS(wavetable) = {
 wavetable_metadata::wavetable_metadata()
 : mm_metadata(mod_matrix_slots, wavetable_mod_src_names, wavetable_mod_dest_names)
 {
+}
+
+void wavetable_metadata::get_configure_vars(std::vector<std::string> &names) const
+{
+    mm_metadata.get_configure_vars(names);
 }
 
 ////////////////////////////////////////////////////////////////////////////

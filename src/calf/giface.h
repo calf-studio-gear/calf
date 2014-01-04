@@ -371,7 +371,7 @@ struct plugin_metadata_iface
     /// does the plugin require string port extension? (or DSSI configure) may be slow
     virtual bool requires_configure() const = 0;
     /// obtain array of names of configure variables (or NULL is none needed)
-    virtual const char *const *get_configure_vars() const { return NULL; }
+    virtual void get_configure_vars(std::vector<std::string> &names) const { names.clear(); }
     /// @return table_metadata_iface if any
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { return NULL; }
     /// @return whether to auto-connect right input with left input if unconnected
@@ -812,6 +812,8 @@ public:
     mod_matrix_metadata(unsigned int _rows, const char **_src_names, const char **_dest_names);
     virtual const table_column_info *get_table_columns() const;
     virtual uint32_t get_table_rows() const;
+    /// Return a list of configure variables used by the modulation matrix
+    void get_configure_vars(std::vector<std::string> &names) const;
 
 protected:
     /// Column descriptions for table widget

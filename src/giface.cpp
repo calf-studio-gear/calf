@@ -249,12 +249,10 @@ void calf_plugins::plugin_ctl_iface::clear_preset() {
         const parameter_properties &pp = *get_metadata_iface()->get_param_props(i);
         set_param_value(i, pp.def_value);
     }
-    const char *const *vars = get_metadata_iface()->get_configure_vars();
-    if (vars)
-    {
-        for (int i = 0; vars[i]; i++)
-            configure(vars[i], NULL);
-    }
+    vector<string> vars;
+    get_metadata_iface()->get_configure_vars(vars);
+    for (size_t i = 0; i < vars.size(); ++i)
+        configure(vars[i].c_str(), NULL);
 }
 
 const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
@@ -489,6 +487,22 @@ uint32_t mod_matrix_metadata::get_table_rows() const
 {
     return matrix_rows;
 }
+
+/// Return a list of configure variables used by the modulation matrix
+void mod_matrix_metadata::get_configure_vars(std::vector<std::string> &names) const
+{
+    for (unsigned int i = 0; i < matrix_rows; ++i)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            char buf[40];
+            snprintf(buf, sizeof(buf), "mod_matrix:%d,%d", i, j);
+            names.push_back(buf);
+        }
+    }        
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////
 

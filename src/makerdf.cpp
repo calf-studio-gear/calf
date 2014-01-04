@@ -311,7 +311,9 @@ void make_ttl(string path_prefix)
             }
         }
         
-        if (pi->get_configure_vars())
+        vector<string> configure_keys;
+        pi->get_configure_vars(configure_keys);
+        if (!configure_keys.empty())
         {
             ttl += "    lv2:extensionData <" LV2_STATE__interface "> ;\n";
         }

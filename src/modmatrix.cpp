@@ -137,6 +137,20 @@ char *mod_matrix_impl::configure(const char *key, const char *value)
         string value_text;
         if (value == NULL)
         {
+            const modulation_entry *src = get_default_mod_matrix_value(row);
+            if (src)
+            {
+                modulation_entry &slot = matrix[row];
+                switch(column)
+                {
+                case 0: slot.src1 = src->src1; break;
+                case 1: slot.mapping = src->mapping; break;
+                case 2: slot.src2 = src->src2; break;
+                case 3: slot.amount = src->amount; break;
+                case 4: slot.dest = src->dest; break;                    
+                }
+                return NULL;
+            }
             const table_column_info &ci = metadata->get_table_columns()[column];
             if (ci.type == TCT_ENUM)
                 value_text = ci.values[(int)ci.def_value];

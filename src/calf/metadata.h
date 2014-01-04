@@ -157,7 +157,7 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
     monosynth_metadata();
     /// Lookup of table edit interface
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { if (!strcmp(key, "mod_matrix")) return &mm_metadata; else return NULL; }
-    const char *const *get_configure_vars() const;
+    void get_configure_vars(std::vector<std::string> &names) const;
 };
 
 /// Thor's compressor - metadata
@@ -612,7 +612,7 @@ struct organ_metadata: public organ_enums, public plugin_metadata<organ_metadata
 
 public:
     plugin_command_info *get_commands();
-    const char *const *get_configure_vars() const;
+    void get_configure_vars(std::vector<std::string> &names) const;
 };
 
 /// FluidSynth - metadata
@@ -623,7 +623,7 @@ struct fluidsynth_metadata: public plugin_metadata<fluidsynth_metadata>
     PLUGIN_NAME_ID_LABEL("fluidsynth", "fluidsynth", "Fluidsynth")
 
 public:
-    const char *const *get_configure_vars() const;
+    void get_configure_vars(std::vector<std::string> &names) const;
 };
 
 /// Wavetable - metadata
@@ -705,6 +705,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
     wavetable_metadata();
     /// Lookup of table edit interface
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { if (!strcmp(key, "mod_matrix")) return &mm_metadata; else return NULL; }
+    void get_configure_vars(std::vector<std::string> &names) const;
 };
 
 };
