@@ -213,7 +213,8 @@ wavetable_audio_module::wavetable_audio_module()
 , inertia_pitchbend(1)
 , inertia_pressure(64)
 {
-    last_voice = (wavetable_voice *)give_voice();
+    init_voices(36);
+    last_voice = (wavetable_voice *)allocated_voices.items[0];
 
     panic_flag = false;
     modwheel_value = 0.;
