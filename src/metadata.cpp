@@ -1351,8 +1351,6 @@ const char *organ_filter_type_names[] = { "12dB/oct LP", "12dB/oct HP" };
 
 const char *organ_filter_send_names[] = { "Output", "Filter 2" };
 
-const char *organ_init_map_curve = "2\n0 1\n1 1\n";
-
 CALF_PORT_PROPS(organ) = {
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l1", "16'" },
     { 8,       0,  8, 80, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "l2", "5 1/3'" },
@@ -1514,9 +1512,6 @@ const char *const *organ_metadata::get_configure_vars() const
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
-const char *fluidsynth_init_soundfont = "";
-const char *fluidsynth_init_presetkeyset = "";
 
 const char *fluidsynth_interpolation_names[] = { "None (zero-hold)", "Linear", "Cubic", "7-point" };
 
