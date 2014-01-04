@@ -293,6 +293,7 @@ struct drawbar_organ: public dsp::basic_synth, public calf_plugins::organ_enums 
      drawbar_organ(organ_parameters *_parameters)
     : parameters(_parameters)
     , percussion(_parameters) {
+        init_voices(36);
     }
     void render_separate(float *output[], int nsamples);
     dsp::voice *alloc_voice();

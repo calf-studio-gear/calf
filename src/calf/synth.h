@@ -178,6 +178,73 @@ public:
     }
 };
 
+#define for_all_voices(iter) for (dsp::voice **iter = active_voices.begin(); iter != active_voices.end(); iter++)
+    
+/// A basic preallocated var-array with append and 
+template<class T>
+struct basic_pool {
+    typedef T *iterator;
+    typedef const T *const_iterator;
+    T *items;
+    int count;
+    int alloc_size;
+    
+    basic_pool()
+    : items()
+    , count()
+    , alloc_size()
+    {}
+        
+    void init(int max_count)
+    {
+        assert(!items);
+        assert(!count);
+        assert(!alloc_size);
+        items = new T[max_count];
+        alloc_size = max_count;
+    }
+    
+    T *begin() { return items; }
+    T *end() { return items + count; }
+    const T *begin() const { return items; }
+    const T *end() const { return items + count; }
+    bool empty() const { return count == 0; }
+    size_t size() const { return count; }
+    
+    bool add(T v)
+    {
+        if (count >= alloc_size)
+            return false;
+        items[count++] = v;
+        return true;
+    }
+
+    iterator erase(iterator iter)
+    {
+        erase(iter - begin());
+        return iter;
+    }
+    void erase(int pos)
+    {
+        assert(pos >= 0 && pos < count);
+        if (pos != count - 1)
+            std::swap(items[count - 1], items[pos]);
+        count--;
+        items[count] = T();        
+    }
+    
+    T pop() {
+        if (count)
+            return items[--count];
+        else
+            return NULL;
+    }
+
+    ~basic_pool()
+    {
+        delete []items;
+    }
+};
 /// Base class for all kinds of polyphonic instruments, provides
 /// somewhat reasonable voice management, pedal support - and 
 /// little else. It's implemented as a base class with virtual
@@ -186,22 +253,27 @@ public:
 /// @todo it would make sense to support all notes off controller too
 struct basic_synth {
 protected:
+    typedef basic_pool<dsp::voice *> voice_array; 
     /// Current sample rate
     int sample_rate;
     /// Hold pedal state
     bool hold;
     /// Sostenuto pedal state
     bool sostenuto;
+    /// All voices available
+    voice_array allocated_voices;
     /// Voices currently playing
-    std::list<dsp::voice *> active_voices;
+    voice_array active_voices;
     /// Voices allocated, but not used
-    std::stack<dsp::voice *> unused_voices;
+    voice_array unused_voices;
     /// Gate values for all 128 MIDI notes
     std::bitset<128> gate;
     /// Maximum allocated number of channels
     unsigned int polyphony_limit;
 
+    void init_voices(int count);
     void kill_note(int note, int vel, bool just_one);
+    virtual dsp::voice *alloc_voice() = 0;
 public:
     virtual void setup(int sr) {
         sample_rate = sr;
@@ -211,8 +283,7 @@ public:
     }
     virtual void trim_voices();
     virtual dsp::voice *give_voice();
-    virtual dsp::voice *alloc_voice()=0;
-    virtual dsp::voice *steal_voice();
+    virtual void steal_voice();
     virtual void render_to(float (*output)[2], int nsamples);
     virtual void note_on(int note, int vel);
     virtual void percussion_note_on(int note, int vel) {}

@@ -1222,7 +1222,7 @@ float bitreduction::waveshape(float in) const
     switch (mode) {
         case 0:
         default:
-            n = roundf((in + 1.) * coeff) / coeff - 1.;
+            n = roundf((in) * coeff) / coeff;
             break;
         case 1:
             if(in)
