@@ -2532,6 +2532,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     attack_pos      = 0;
     display_old     = 0.f;
     pbuffer_available = false;
+    last_drawn      = 0;
     display_max     = pow(2,-12);
     transients.set_channels(channels);
 }
@@ -2691,27 +2692,33 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         pbuffer_draw = *params[param_display_threshold] > display_max ? pos
                      : (pbuffer_size + pos - pixels * 5) % pbuffer_size;
     }
-    // add is needed because we don't want to divide every single data
-    // entry of the output curve in the array inside ::process but do it
-    // in the drawing cycle (less cpu usage). So add is set to 1 while
-    // drawing the output
-    float add = 0.f;
-    switch (subindex) {
-        case 0:
-            add = 1.f;
-            context->set_line_width(0.75);
-            break;
-        case 1:
-            *mode = 1;
-            context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
-            break;
-        default:
-        case 2:
-            return false;
+    
+    // get outa here if max graph is reached
+    if (last_drawn >= 5) {
+        last_drawn = 0;
+        return false;
     }
+    
+    // get the next graph to draw leaving out inactive
+    while (last_drawn < 5 and !*params[param_input + last_drawn] > 0.5)
+        last_drawn ++;
+        
+    // get outa here if max graph is reached
+    if (last_drawn >= 5) {
+        last_drawn = 0;
+        return false;
+    }
+    if (!last_drawn) {
+        // input is drawn as bars with less opacity
+        *mode = 1;
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
+    } else {
+        context->set_line_width(0.75);
+    }
+    
     // draw curve
     for (int i = 0; i <= points; i++) {
-        int pos = (pbuffer_draw + i * 5) % pbuffer_size + add;
+        int pos = (pbuffer_draw + i * 5) % pbuffer_size + last_drawn;
         if (hold
         and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos)
             or (pbuffer_pos < attack_pos and pos < attack_pos)))
@@ -2724,6 +2731,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
             data[i] = dB_grid(fabs(pbuffer[pos]) + 2.51e-10, 128, 0.6);
         }
     }
+    last_drawn ++;
     return true;
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
