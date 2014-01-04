@@ -34,8 +34,8 @@ fluidsynth_audio_module::fluidsynth_audio_module()
     settings = NULL;
     synth = NULL;
     status_serial = 1;
-    set_preset = -1;
-    last_selected_preset = -1;
+    std::fill(set_presets, set_presets + 16, -1);
+    std::fill(last_selected_presets, last_selected_presets + 16, -1);
 }
 
 void fluidsynth_audio_module::post_instantiate(uint32_t sr)
@@ -56,7 +56,7 @@ void fluidsynth_audio_module::deactivate()
 
 fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
 {
-    set_preset = -1;
+    std::fill(set_presets, set_presets + 16, -1);
     fluid_settings_t *new_settings = new_fluid_settings();
     fluid_settings_setnum(new_settings, "synth.sample-rate", srate);
     fluid_synth_t *s = new_fluid_synth(new_settings);
@@ -119,41 +119,52 @@ void fluidsynth_audio_module::control_change(int channel, int controller, int va
     fluid_synth_cc(synth, channel, controller, value);
 
     if (controller == 0 || controller == 32)
-        update_preset_num();
+        update_preset_num(channel);
 }
 
 void fluidsynth_audio_module::program_change(int channel, int program)
 {
     fluid_synth_program_change(synth, channel, program);
 
-    update_preset_num();
+    update_preset_num(channel);
 }
 
 
-void fluidsynth_audio_module::update_preset_num()
+void fluidsynth_audio_module::update_preset_num(int channel)
 {
-    fluid_preset_t *p = fluid_synth_get_channel_preset(synth, 0);
+    fluid_preset_t *p = fluid_synth_get_channel_preset(synth, channel);
     if (p)
-        last_selected_preset = p->get_num(p) + 128 * p->get_banknum(p);
+        last_selected_presets[channel] = p->get_num(p) + 128 * p->get_banknum(p);
     else
-        last_selected_preset = -1;
+        last_selected_presets[channel] = -1;
     status_serial++;
+}
+
+void fluidsynth_audio_module::select_preset_in_channel(int channel, int new_preset)
+{
+    fluid_synth_bank_select(synth, channel, new_preset >> 7);
+    fluid_synth_program_change(synth, channel, new_preset & 127);
+    last_selected_presets[channel] = new_preset;
 }
 
 uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     static const int interp_lens[] = { 0, 1, 4, 7 };
-    int new_preset = set_preset;
-    if (new_preset != -1 && soundfont_loaded)
+    for (int i = 0; i < 16; ++i)
     {
-        // XXXKF yeah there's a tiny chance of race here, have to live with it until I write some utility classes for lock-free data passing
-        set_preset = -1;
-        fluid_synth_bank_select(synth, 0, new_preset >> 7);
-        fluid_synth_program_change(synth, 0, new_preset & 127);
-        last_selected_preset = new_preset;
+        int new_preset = set_presets[i];
+        if (new_preset != -1 && soundfont_loaded)
+        {
+            // XXXKF yeah there's a tiny chance of race here, have to live with it until I write some utility classes for lock-free data passing
+            set_presets[i] = -1;
+            select_preset_in_channel(i, new_preset);
+        }
     }
     if (!soundfont_loaded)
-        last_selected_preset = -1;
+    {
+        // Reset selected presets array to 'no preset'
+        std::fill(last_selected_presets, last_selected_presets + 16, -1);
+    }
     fluid_synth_set_interp_method(synth, -1, interp_lens[dsp::clip<int>(fastf2i_drm(*params[par_interpolation]), 0, 3)]);
     fluid_synth_set_reverb_on(synth, *params[par_reverb] > 0);
     fluid_synth_set_chorus_on(synth, *params[par_chorus] > 0);
@@ -164,9 +175,13 @@ uint32_t fluidsynth_audio_module::process(uint32_t offset, uint32_t nsamples, ui
 
 char *fluidsynth_audio_module::configure(const char *key, const char *value)
 {
-    if (!strcmp(key, "preset_key_set"))
+    if (!strncmp(key, "preset_key_set", 14))
     {
-        set_preset = value ? atoi(value) : 0;
+        int ch = atoi(key + 14);
+        if (ch > 0)
+            ch--;
+        if (ch >= 0 && ch <= 15)
+            set_presets[ch] = value ? atoi(value) : 0;
         return NULL;
     }
     if (!strcmp(key, "soundfont"))
@@ -194,7 +209,8 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
         {
             synth = new_synth;
             sfid = newsfid;
-            update_preset_num();
+            for (int i = 0; i < 16; ++i)
+                update_preset_num(i);
         }
         else
             return strdup("Cannot load a soundfont");
@@ -206,7 +222,12 @@ char *fluidsynth_audio_module::configure(const char *key, const char *value)
 void fluidsynth_audio_module::send_configures(send_configure_iface *sci)
 {
     sci->send_configure("soundfont", soundfont.c_str());
-    sci->send_configure("preset_key_set", calf_utils::i2s(last_selected_preset).c_str());
+    sci->send_configure("preset_key_set", calf_utils::i2s(last_selected_presets[0]).c_str());
+    for (int i = 1; i < 16; ++i)
+    {
+        string key = "preset_key_set" + calf_utils::i2s(i + 1);
+        sci->send_configure(key.c_str(), calf_utils::i2s(last_selected_presets[i]).c_str());
+    }
 }
 
 int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int last_serial)
@@ -215,12 +236,19 @@ int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int la
     {
         sui->send_status("sf_name", soundfont_name.c_str());
         sui->send_status("preset_list", soundfont_preset_list.c_str());
-        sui->send_status("preset_key", calf_utils::i2s(last_selected_preset).c_str());
-        map<uint32_t, string>::const_iterator i = sf_preset_names.find(last_selected_preset);
-        if (i == sf_preset_names.end())
-            sui->send_status("preset_name", "");
-        else
-            sui->send_status("preset_name", i->second.c_str());
+        sui->send_status("preset_key", calf_utils::i2s(last_selected_presets[0]).c_str());
+        for (int i = 0; i < 16; ++i)
+        {
+            string id = i ? calf_utils::i2s(i + 1) : string();
+            string key = "preset_key" + id;
+            sui->send_status(key.c_str(), calf_utils::i2s(last_selected_presets[i]).c_str());
+            key = "preset_name" + id;
+            map<uint32_t, string>::const_iterator it = sf_preset_names.find(last_selected_presets[i]);
+            if (it == sf_preset_names.end())
+                sui->send_status(key.c_str(), "");
+            else
+                sui->send_status(key.c_str(), it->second.c_str());
+        }
     }
     return status_serial;
 }

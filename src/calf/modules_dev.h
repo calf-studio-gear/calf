@@ -51,16 +51,18 @@ protected:
     int sfid;
     /// Map of preset+128*bank to preset name
     std::map<uint32_t, std::string> sf_preset_names;
-    /// Last selected preset+128*bank
-    uint32_t last_selected_preset;
+    /// Last selected preset+128*bank in each channel
+    uint32_t last_selected_presets[16];
     /// Serial number of status data
     int status_serial;
     /// Preset number to set on next process() call
-    volatile int set_preset;
+    volatile int set_presets[16];
     volatile bool soundfont_loaded;
 
     /// Update last_selected_preset based on synth object state
-    void update_preset_num();
+    void update_preset_num(int channel);
+    /// Send a bank/program change sequence for a specific channel/preset combo
+    void select_preset_in_channel(int ch, int new_preset);
     /// Create a fluidsynth object and load the current soundfont
     fluid_synth_t *create_synth(int &new_sfid);
 public:

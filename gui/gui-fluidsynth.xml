@@ -1,4 +1,4 @@
-<table rows="1" cols="3">
+<table rows="2" cols="3">
     <vbox attach-x="0" attach-y="0" pad-x="10" expand-y="1" fill-y="0" spacing="5">
         <label param="master"  />
         <knob param="master" size="5" />
@@ -15,10 +15,49 @@
       <table rows="3" cols="2" pad-x="10" fill-y="0">
           <align attach-x="0" attach-y="0"   align-x="1"><label text="Soundfont"  /></align>
           <filechooser attach-x="1" attach-y="0" key="soundfont" title="Select a soundfont" width_chars="30" pad-x="5" pad-y="6" />
-          <align attach-x="0" attach-y="1"   align-x="1"><label text="Current preset" /></align>
-          <combo attach-x="1" attach-y="1" key="preset_list" current-key="preset_key" setter-key="preset_key_set" pad-x="5" pad-y="6" />
-          <align attach-x="0" attach-y="2" align-x="1"><label param="interpolation" /></align>
-          <combo attach-x="1" attach-y="2" param="interpolation" pad-x="5" pad-y="6" />
+          <align attach-x="0" attach-y="1" align-x="1"><label param="interpolation" /></align>
+          <combo attach-x="1" attach-y="1" param="interpolation" pad-x="5" pad-y="6" />
+      </table>
+    </frame>
+    <frame attach-x="0" attach-y="1" attach-w="3" label="Channels">
+      <table rows="9" cols="4" pad-x="10" pad-y="5" fill-y="0">
+          <align attach-x="0" attach-y="0" align-x="1" shrink-x="1" ><label text="Ch#" /></align>
+          <align attach-x="1" attach-y="0" align-x="0"><label text="Current preset" /></align>
+          <align attach-x="2" attach-y="0" align-x="1" shrink-x="1" ><label text="Ch#" /></align>
+          <align attach-x="3" attach-y="0" align-x="0"><label text="Current preset" /></align>
+
+          <align attach-x="0" attach-y="1" align-x="1" shrink-x="1" ><label text="1" /></align>
+          <combo attach-x="1" attach-y="1" key="preset_list" current-key="preset_key" setter-key="preset_key_set" />
+          <align attach-x="0" attach-y="2" align-x="1" shrink-x="1" ><label text="2" /></align>
+          <combo attach-x="1" attach-y="2" key="preset_list" current-key="preset_key2" setter-key="preset_key_set2" />
+          <align attach-x="0" attach-y="3" align-x="1" shrink-x="1" ><label text="3" /></align>
+          <combo attach-x="1" attach-y="3" key="preset_list" current-key="preset_key3" setter-key="preset_key_set3" />
+          <align attach-x="0" attach-y="4" align-x="1" shrink-x="1" ><label text="4" /></align>
+          <combo attach-x="1" attach-y="4" key="preset_list" current-key="preset_key4" setter-key="preset_key_set4" />
+          <align attach-x="0" attach-y="5" align-x="1" shrink-x="1" ><label text="5" /></align>
+          <combo attach-x="1" attach-y="5" key="preset_list" current-key="preset_key5" setter-key="preset_key_set5" />
+          <align attach-x="0" attach-y="6" align-x="1" shrink-x="1" ><label text="6" /></align>
+          <combo attach-x="1" attach-y="6" key="preset_list" current-key="preset_key6" setter-key="preset_key_set6" />
+          <align attach-x="0" attach-y="7" align-x="1" shrink-x="1" ><label text="7" /></align>
+          <combo attach-x="1" attach-y="7" key="preset_list" current-key="preset_key7" setter-key="preset_key_set7" />
+          <align attach-x="0" attach-y="8" align-x="1" shrink-x="1" ><label text="8" /></align>
+          <combo attach-x="1" attach-y="8" key="preset_list" current-key="preset_key8" setter-key="preset_key_set8" />
+          <align attach-x="2" attach-y="1" align-x="1" shrink-x="1" ><label text="9" /></align>
+          <combo attach-x="3" attach-y="1" key="preset_list" current-key="preset_key9" setter-key="preset_key_set9" />
+          <align attach-x="2" attach-y="2" align-x="1" shrink-x="1" ><label text="10" /></align>
+          <combo attach-x="3" attach-y="2" key="preset_list" current-key="preset_key10" setter-key="preset_key_set10" />
+          <align attach-x="2" attach-y="3" align-x="1" shrink-x="1" ><label text="11" /></align>
+          <combo attach-x="3" attach-y="3" key="preset_list" current-key="preset_key11" setter-key="preset_key_set11" />
+          <align attach-x="2" attach-y="4" align-x="1" shrink-x="1" ><label text="12" /></align>
+          <combo attach-x="3" attach-y="4" key="preset_list" current-key="preset_key12" setter-key="preset_key_set12" />
+          <align attach-x="2" attach-y="5" align-x="1" shrink-x="1" ><label text="13" /></align>
+          <combo attach-x="3" attach-y="5" key="preset_list" current-key="preset_key13" setter-key="preset_key_set13" />
+          <align attach-x="2" attach-y="6" align-x="1" shrink-x="1" ><label text="14" /></align>
+          <combo attach-x="3" attach-y="6" key="preset_list" current-key="preset_key14" setter-key="preset_key_set14" />
+          <align attach-x="2" attach-y="7" align-x="1" shrink-x="1" ><label text="15" /></align>
+          <combo attach-x="3" attach-y="7" key="preset_list" current-key="preset_key15" setter-key="preset_key_set15" />
+          <align attach-x="2" attach-y="8" align-x="1" shrink-x="1" ><label text="16" /></align>
+          <combo attach-x="3" attach-y="8" key="preset_list" current-key="preset_key16" setter-key="preset_key_set16" />
       </table>
     </frame>
 </table>
