@@ -89,7 +89,7 @@
                 <hbox>
                     <vbox>
                         <label text="Sustain Thres"/>
-                        <knob param="sustain_threshold" size="2"/>
+                        <knob param="sustain_threshold" size="2" type="2"/>
                         <value param="sustain_threshold"/>
                     </vbox>
                 </hbox>
