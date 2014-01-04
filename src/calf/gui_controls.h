@@ -175,6 +175,19 @@ struct toggle_param_control: public param_control
     static void toggle_value_changed(GtkWidget *widget, gpointer value);
 };
 
+/// Tap Button
+struct tap_button_param_control: public param_control
+{
+    guint last_time;
+    unsigned long init_time;
+    float avg_value, value;
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    static gboolean tap_button_released(GtkWidget *widget, gpointer value);
+    static gboolean tap_button_pressed(GtkWidget *widget, GdkEventButton *event, gpointer value);
+};
+
 /// Radio button
 struct radio_param_control: public param_control
 {

@@ -20,6 +20,7 @@
  
 #include <config.h>
 #include <assert.h>
+#include <sys/time.h>
 #include <calf/ctl_curve.h>
 #include <calf/ctl_keyboard.h>
 #include <calf/ctl_knob.h>
@@ -888,6 +889,90 @@ void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer valu
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
+}
+
+/******************************** Tap Button ********************************/
+
+GtkWidget *tap_button_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui       = _gui;
+    param_no  = _param_no;
+    last_time = 0;
+    init_time = 0;
+    avg_value = 0;
+    value     = 0;
+    widget    = calf_tap_button_new ();
+    //CALF_TAP(widget)->size = get_int("size", 2);
+    g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (tap_button_pressed), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "released", G_CALLBACK (tap_button_released), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "leave", G_CALLBACK (tap_button_released), (gpointer)this);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-TapButton");
+    return widget;
+}
+
+void tap_button_param_control::get()
+{
+    gui->set_param_value(param_no, value, this);
+}
+
+void tap_button_param_control::set()
+{
+    _GUARD_CHANGE_
+    if(last_time) {
+        timeval tv;
+        gettimeofday(&tv, 0);
+        unsigned long _now = tv.tv_sec * 1000;
+        if(_now > init_time + 2000) {
+            // user stopped tapping
+            avg_value = 0;
+            last_time = 0;
+            init_time = 0;
+            CALF_TAP_BUTTON(widget)->state = 0;
+            gtk_widget_queue_draw(widget);
+        }
+    }
+}
+
+gboolean tap_button_param_control::tap_button_pressed(GtkWidget *widget, GdkEventButton *event, gpointer value)
+{
+    tap_button_param_control *ctl = (tap_button_param_control *)value;
+    CalfTapButton *tap = CALF_TAP_BUTTON(widget);
+    
+    guint time = 0;
+    if (event->type == GDK_BUTTON_PRESS and event->button == 1)
+    {
+        timeval tv;
+        gettimeofday(&tv, 0);
+        ctl->init_time = tv.tv_sec * 1000;
+        time = event->time;
+        tap->state = 2;
+        
+        if(ctl->last_time) {
+            if(ctl->avg_value)
+                ctl->avg_value = (ctl->avg_value * 3 + (time - ctl->last_time)) / 4.f;
+            else
+                ctl->avg_value = time - ctl->last_time;
+            ctl->value = 60.f / (float)(ctl->avg_value / 1000.f);
+            
+            if (ctl->value > 30 and ctl->value < 300)
+                ctl->get();
+        }
+        ctl->last_time = time;
+    }
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+}
+gboolean tap_button_param_control::tap_button_released(GtkWidget *widget, gpointer value)
+{
+    tap_button_param_control *ctl = (tap_button_param_control *)value;
+    CalfTapButton *tap = CALF_TAP_BUTTON(widget);
+    if (ctl->last_time)
+        tap->state = 1;
+    else
+        tap->state = 0;
+    gtk_widget_queue_draw(widget);
+    //ctl->get();
+    return FALSE;
 }
 
 /******************************** Keyboard ********************************/

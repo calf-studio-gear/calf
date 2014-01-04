@@ -60,6 +60,8 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new radio_param_control;
     if (!strcmp(element, "toggle"))
         return new toggle_param_control;
+    if (!strcmp(element, "tap"))
+        return new tap_button_param_control;
     if (!strcmp(element, "spin"))
         return new spin_param_control;
     if (!strcmp(element, "button"))

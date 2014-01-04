@@ -2,11 +2,18 @@
     <frame label="Delay time">
         <vbox>
             <table rows="4" cols="2">
-                <vbox attach-x="0" attach-y="0" attach-h="3" spacing="12" pad-x="10" pad-y="15">
-                    <label param="bpm" />
-                    <knob param="bpm" size="5" />
-                    <value param="bpm"/>
-                </vbox>
+                <hbox attach-x="0" attach-y="0" attach-h="3" spacing="12" pad-x="10" pad-y="15">
+                    <vbox>
+                        <label param="bpm" />
+                        <knob param="bpm" size="5" />
+                        <value param="bpm"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Tap"/>
+                        <tap param="bpm"/>
+                        <label/>
+                    </vbox>
+                </hbox>
                 <label attach-x="1" attach-y="0" param="subdiv" />
                 <hscale attach-x="2" attach-y="0" param="subdiv" />
                 <label attach-x="1" attach-y="1" param="time_l" />

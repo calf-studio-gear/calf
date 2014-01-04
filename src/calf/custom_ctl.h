@@ -40,6 +40,10 @@ void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int
 
 G_BEGIN_DECLS
 
+
+/// PHASE GRAPH ////////////////////////////////////////////////////////
+
+
 #define CALF_TYPE_PHASE_GRAPH           (calf_phase_graph_get_type())
 #define CALF_PHASE_GRAPH(obj)           (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_PHASE_GRAPH, CalfPhaseGraph))
 #define CALF_IS_PHASE_GRAPH(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_PHASE_GRAPH))
@@ -75,6 +79,10 @@ extern GtkWidget *calf_phase_graph_new();
 
 extern GType calf_phase_graph_get_type();
 
+
+/// TOGGLE /////////////////////////////////////////////////////////////
+
+
 #define CALF_TYPE_TOGGLE          (calf_toggle_get_type())
 #define CALF_TOGGLE(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TOGGLE, CalfToggle))
 #define CALF_IS_TOGGLE(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TOGGLE))
@@ -87,12 +95,12 @@ struct CalfToggle
     int size;
     int width;
     int height;
+    GdkPixbuf *toggle_image[2];
 };
 
 struct CalfToggleClass
 {
     GtkRangeClass parent_class;
-    GdkPixbuf *toggle_image[2];
 };
 
 extern GtkWidget *calf_toggle_new();
@@ -100,6 +108,8 @@ extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
 
 extern GType calf_toggle_get_type();
 
+
+/// FRAME //////////////////////////////////////////////////////////////
 
 
 #define CALF_TYPE_FRAME          (calf_frame_get_type())
@@ -122,6 +132,8 @@ extern GtkWidget *calf_frame_new(const char *label);
 extern GType calf_frame_get_type();
 
 
+/// COMBOBOX ///////////////////////////////////////////////////////////
+
 
 #define CALF_TYPE_COMBOBOX          (calf_combobox_get_type())
 #define CALF_COMBOBOX(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_COMBOBOX, CalfCombobox))
@@ -142,6 +154,8 @@ struct CalfComboboxClass
 extern GtkWidget *calf_combobox_new();
 extern GType calf_combobox_get_type();
 
+
+/// NOTEBOOK ///////////////////////////////////////////////////////////
 
 
 #define CALF_TYPE_NOTEBOOK          (calf_notebook_get_type())
@@ -164,6 +178,8 @@ struct CalfNotebookClass
 extern GtkWidget *calf_notebook_new();
 extern GType calf_notebook_get_type();
 
+
+/// FADER //////////////////////////////////////////////////////////////
 
 
 #define CALF_TYPE_FADER          (calf_fader_get_type())
@@ -203,6 +219,8 @@ extern GtkWidget *calf_fader_new(const int horiz, const int size, const double m
 extern GType calf_fader_get_type();
 
 
+/// BUTTON /////////////////////////////////////////////////////////////
+
 
 #define CALF_TYPE_BUTTON          (calf_button_get_type())
 #define CALF_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_BUTTON, CalfButton))
@@ -224,6 +242,8 @@ extern GtkWidget *calf_button_new(const gchar *label);
 extern GType calf_button_get_type();
 
 
+/// TOGGLE BUTTON //////////////////////////////////////////////////////
+
 
 #define CALF_TYPE_TOGGLE_BUTTON          (calf_toggle_button_get_type())
 #define CALF_TOGGLE_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TOGGLE_BUTTON, CalfToggleButton))
@@ -243,6 +263,31 @@ struct CalfToggleButtonClass
 
 extern GtkWidget *calf_toggle_button_new(const gchar *label);
 extern GType calf_toggle_button_get_type();
+
+
+/// TAP BUTTON /////////////////////////////////////////////////////////
+
+
+#define CALF_TYPE_TAP_BUTTON          (calf_tap_button_get_type())
+#define CALF_TAP_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TAP_BUTTON, CalfTapButton))
+#define CALF_IS_TAP_BUTTON(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TAP_BUTTON))
+#define CALF_TAP_BUTTON_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_TAP_BUTTON, CalfTapButtonClass))
+#define CALF_IS_TAP_BUTTON_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_TAP_BUTTON))
+
+struct CalfTapButton
+{
+    GtkButton parent;
+    GdkPixbuf *image[3];
+    int state;
+};
+
+struct CalfTapButtonClass
+{
+    GtkButtonClass parent_class;
+};
+
+extern GtkWidget *calf_tap_button_new();
+extern GType calf_tap_button_get_type();
 
 
 
