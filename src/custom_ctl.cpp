@@ -24,6 +24,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #include <sys/time.h>
 #include <iostream>
 
@@ -469,7 +470,7 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
     
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
                     widget->style->fg_gc[0],
-                    CALF_TOGGLE_CLASS(GTK_OBJECT_GET_CLASS(widget))->toggle_image[self->size - 1],
+                    self->toggle_image[self->size - 1],
                     20 - self->size * 2,
                     20 - self->size * 3 + (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
                     x,
@@ -477,12 +478,6 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
                     width,
                     height,
                     GDK_RGB_DITHER_NORMAL, 0, 0);
-                    
-    //if (gtk_widget_is_focus(widget))
-    //{
-        //gtk_paint_focus(widget->style, window, GTK_STATE_NORMAL, NULL, widget, NULL, ox, oy, width, height);
-    //}
-
     return TRUE;
 }
 
@@ -534,10 +529,6 @@ calf_toggle_class_init (CalfToggleClass *klass)
     widget_class->size_request = calf_toggle_size_request;
     widget_class->button_press_event = calf_toggle_button_press;
     widget_class->key_press_event = calf_toggle_key_press;
-    GError *error = NULL;
-    klass->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
-    klass->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
-    g_assert(klass->toggle_image != NULL);
 }
 
 static void
@@ -548,6 +539,10 @@ calf_toggle_init (CalfToggle *self)
     widget->requisition.width = 30;
     widget->requisition.height = 20;
     self->size = 1;
+    GError *error = NULL;
+    self->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
+    self->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
+    g_assert(self->toggle_image != NULL);
 }
 
 GtkWidget *
@@ -1541,6 +1536,103 @@ calf_toggle_button_get_type (void)
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
+
+
+///////////////////////////////////////// tap button ///////////////////////////////////////////////
+
+GtkWidget *
+calf_tap_button_new()
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TAP_BUTTON, NULL ));
+    return widget;
+}
+
+static gboolean
+calf_tap_button_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_TAP_BUTTON(widget));
+    CalfTapButton *self = CALF_TAP_BUTTON(widget);
+    
+    int x = widget->allocation.x + widget->allocation.width / 2 - 35;
+    int y = widget->allocation.y + widget->allocation.height / 2 - 35;
+    int width = 70;
+    int height = 70;
+    
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
+                    widget->style->fg_gc[0],
+                    self->image[self->state],
+                    0,
+                    0,
+                    x,
+                    y,
+                    width,
+                    height,
+                    GDK_RGB_DITHER_NORMAL, 0, 0);
+    return TRUE;
+}
+
+static void
+calf_tap_button_size_request (GtkWidget *widget,
+                           GtkRequisition *requisition)
+{
+    g_assert(CALF_IS_TAP_BUTTON(widget));
+    requisition->width  = 70;
+    requisition->height = 70;
+}
+static void
+calf_tap_button_class_init (CalfTapButtonClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_tap_button_expose;
+    widget_class->size_request = calf_tap_button_size_request;
+}
+static void
+calf_tap_button_init (CalfTapButton *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 70;
+    widget->requisition.height = 70;
+    self->state = 0;
+    GError *error = NULL;
+    self->image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_inactive.png", &error);
+    self->image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_prelight.png", &error);
+    self->image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_active.png", &error);
+}
+
+GType
+calf_tap_button_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfTapButtonClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_tap_button_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfTapButton),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_tap_button_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfTapButton%u%d", 
+                ((unsigned int)(intptr_t)calf_tap_button_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_BUTTON,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
