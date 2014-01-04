@@ -880,7 +880,7 @@ transients::transients() {
     att_level       = 0.f;
     rel_time        = 0.f;
     rel_level       = 0.f;
-    sust_thres      = 0.f;
+    sust_thres      = 1.f;
     maxdelta        = 0.f;
     new_return      = 1.f;
     old_return      = 1.f;

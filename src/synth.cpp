@@ -23,9 +23,22 @@
 using namespace dsp;
 using namespace std;
 
+void basic_synth::init_voices(int count)
+{
+    allocated_voices.init(count);
+    active_voices.init(count);
+    unused_voices.init(count);
+    for (int i = 0; i < count; i++)
+    {
+        dsp::voice *v = alloc_voice();
+        allocated_voices.add(v);
+        unused_voices.add(v);
+    }
+}
+
 void basic_synth::kill_note(int note, int vel, bool just_one)
 {
-    for (list<dsp::voice *>::iterator it = active_voices.begin(); it != active_voices.end(); it++) {
+    for_all_voices(it) {
         // preserve sostenuto notes
         if ((*it)->get_current_note() == note && !(sostenuto && (*it)->sostenuto)) {
             (*it)->note_off(vel);
@@ -38,48 +51,42 @@ void basic_synth::kill_note(int note, int vel, bool just_one)
 dsp::voice *basic_synth::give_voice()
 {
     if (active_voices.size() >= polyphony_limit)
-    {
-        dsp::voice *stolen = steal_voice();
-        if (stolen)
-            return stolen;
-    }
+        steal_voice();
     if (unused_voices.empty())
-        return alloc_voice();
+        return NULL;
     else {
-        dsp::voice *v = unused_voices.top();
-        unused_voices.pop();
+        dsp::voice *v = unused_voices.pop();
         v->reset();
         return v;
     }   
 }
 
-dsp::voice *basic_synth::steal_voice()
+void basic_synth::steal_voice()
 {
-    std::list<dsp::voice *>::iterator found = active_voices.end();
+    dsp::voice *found = NULL;
     float priority = 10000;
     //int idx = 0;
-    for(std::list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    for_all_voices(i)
     {
         //printf("Voice %d priority %f at %p\n", idx++, (*i)->get_priority(), *i);
         if ((*i)->get_priority() < priority)
         {
             priority = (*i)->get_priority();
-            found = i;
+            found = *i;
         }
     }
     //printf("Found: %p\n\n", *found);
-    if (found == active_voices.end())
-        return NULL;
+    if (!found)
+        return;
     
-    (*found)->steal();
-    return NULL;
+    found->steal();
 }
 
 void basic_synth::trim_voices()
 {
     // count stealable voices
     unsigned int count = 0;
-    for(std::list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    for_all_voices(i)
     {
         if ((*i)->get_priority() < 10000)
             count++;
@@ -105,7 +112,7 @@ void basic_synth::note_on(int note, int vel)
     v->sostenuto = false;
     gate.set(note);
     v->note_on(note, vel);
-    active_voices.push_back(v);
+    active_voices.add(v);
     if (perc) {
         percussion_note_on(note, vel);
     }
@@ -118,8 +125,6 @@ void basic_synth::note_off(int note, int vel)
         kill_note(note, vel, false);
 }
 
-#define for_all_voices(iter) for (std::list<dsp::voice *>::iterator iter = active_voices.begin(); iter != active_voices.end(); iter++)
-    
 void basic_synth::on_pedal_release()
 {
     for_all_voices(i)
@@ -196,12 +201,12 @@ void basic_synth::control_change(int ctl, int val)
 void basic_synth::render_to(float (*output)[2], int nsamples)
 {
     // render voices, eliminate ones that aren't sounding anymore
-    for (list<dsp::voice *>::iterator i = active_voices.begin(); i != active_voices.end();) {
+    for (dsp::voice **i = active_voices.begin(); i != active_voices.end(); ) {
         dsp::voice *v = *i;
         v->render_to(output, nsamples);
         if (!v->get_active()) {
             i = active_voices.erase(i);
-            unused_voices.push(v);
+            unused_voices.add(v);
             continue;
         }
         i++;
@@ -210,11 +215,7 @@ void basic_synth::render_to(float (*output)[2], int nsamples)
 
 basic_synth::~basic_synth()
 {
-    while(!unused_voices.empty()) {
-        delete unused_voices.top();
-        unused_voices.pop();
-    }
-    for (list<voice *>::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    for (voice_array::iterator i = allocated_voices.begin(); i != allocated_voices.end(); i++)
         delete *i;
 }
 
