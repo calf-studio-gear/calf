@@ -107,6 +107,8 @@ void basic_synth::note_on(int note, int vel)
     }
     bool perc = check_percussion();
     dsp::voice *v = give_voice();
+    if (!v)
+        return;
     v->setup(sample_rate);
     v->released = false;
     v->sostenuto = false;
