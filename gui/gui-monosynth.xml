@@ -40,6 +40,11 @@
                                 <value param="o1_pw"/>
                             </vbox>
                             <vbox>
+                                <label param="o1_xpose" text="Transpose"/>
+                                <knob type="1" param="o1_xpose"/>
+                                <value param="o1_xpose"/>
+                            </vbox>
+                            <vbox>
                                 <label param="o1_stretch" text="Stretch"/>
                                 <knob param="o1_stretch"/>
                                 <value param="o1_stretch"/>

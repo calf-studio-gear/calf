@@ -762,8 +762,8 @@ void monosynth_audio_module::set_frequency()
         p1 = pow(2.0, moddest[moddest_o1detune] * (1.0 / 1200.0));
     if (moddest[moddest_o2detune] != 0)
         p2 = pow(2.0, moddest[moddest_o2detune] * (1.0 / 1200.0));
-    osc1.set_freq(freq * (1 - detune_scaled) * p1 * inertia_pitchbend.get_last() * lfo_bend, srate);
-    osc2.set_freq(freq * (1 + detune_scaled) * p2 * inertia_pitchbend.get_last() * lfo_bend * xpose, srate);
+    osc1.set_freq(freq * (1 - detune_scaled) * p1 * inertia_pitchbend.get_last() * lfo_bend * xpose1, srate);
+    osc2.set_freq(freq * (1 + detune_scaled) * p2 * inertia_pitchbend.get_last() * lfo_bend * xpose2, srate);
 }
 
 
@@ -777,7 +777,8 @@ void monosynth_audio_module::params_changed()
     wave1 = dsp::clip(dsp::fastf2i_drm(*params[par_wave1]), 0, (int)wave_count - 1);
     wave2 = dsp::clip(dsp::fastf2i_drm(*params[par_wave2]), 0, (int)wave_count - 1);
     detune = pow(2.0, *params[par_detune] / 1200.0);
-    xpose = pow(2.0, *params[par_osc2xpose] / 12.0);
+    xpose1 = pow(2.0, *params[par_osc1xpose] / 12.0);
+    xpose2 = pow(2.0, *params[par_osc2xpose] / 12.0);
     xfade = *params[par_oscmix];
     legato = dsp::fastf2i_drm(*params[par_legato]);
     master.set_inertia(*params[par_master]);

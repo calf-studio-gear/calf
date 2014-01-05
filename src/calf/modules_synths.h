@@ -75,7 +75,7 @@ public:
     /// Filter type on the last calculate_step
     int last_filter_type;
     float freq, start_freq, target_freq, cutoff, fgain, fgain_delta, separation;
-    float detune, xpose, xfade, ampctl, fltctl;
+    float detune, xpose1, xpose2, xfade, ampctl, fltctl;
     float odcr, porta_time, lfo_bend;
     /// Modulation wheel position (0.f-1.f)
     float modwheel_value;
