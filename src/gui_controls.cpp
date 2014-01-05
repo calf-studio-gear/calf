@@ -135,24 +135,17 @@ param_control::~param_control()
 
 void param_control::add_context_menu_handler()
 {
-    if (widget && !(get_props().flags & PF_PROP_OUTPUT))
+    if (widget)
     {
         g_signal_connect(GTK_OBJECT(widget), "button-press-event", (GCallback)on_button_press_event, this);
-        //g_signal_connect(GTK_OBJECT(widget), "popup-menu", (GCallback)on_popup_menu, this);
     }
 }
-
-//gboolean param_control::on_popup_menu(GtkWidget *widget, void *user_data)
-//{
-    //param_control *self = (param_control *)user_data;
-    //self->do_popup_menu();
-    //return TRUE;
-//}
 
 gboolean param_control::on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data)
 {
     param_control *self = (param_control *)user_data;
-    if (event->button == 3)
+    const parameter_properties &props = self->get_props();
+    if (event->button == 3 && !(props.flags & PF_PROP_OUTPUT))
     {
         self->do_popup_menu();
         return TRUE;
@@ -958,20 +951,16 @@ gboolean tap_button_param_control::tap_button_pressed(GtkWidget *widget, GdkEven
                 ctl->get();
         }
         ctl->last_time = time;
+        gtk_widget_queue_draw(widget);
     }
-    gtk_widget_queue_draw(widget);
-    return TRUE;
+    return FALSE;
 }
 gboolean tap_button_param_control::tap_button_released(GtkWidget *widget, gpointer value)
 {
     tap_button_param_control *ctl = (tap_button_param_control *)value;
     CalfTapButton *tap = CALF_TAP_BUTTON(widget);
-    if (ctl->last_time)
-        tap->state = 1;
-    else
-        tap->state = 0;
+    tap->state = ctl->last_time ? 1 : 0;
     gtk_widget_queue_draw(widget);
-    //ctl->get();
     return FALSE;
 }
 
