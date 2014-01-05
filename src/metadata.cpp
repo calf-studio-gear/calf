@@ -945,7 +945,6 @@ CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmi
 CALF_PORT_NAMES(stereo) = {"In L", "In R", "Out L", "Out R"};
 const char *stereo_mode_names[] = { "LR > LR (Stereo Default)", "LR > MS (Stereo to Mid-Side)", "MS > LR (Mid-Side to Stereo)", "LR > LL (Mono Left Channel)", "LR > RR (Mono Right Channel)", "LR > L+R (Mono Sum L+R)", "LR > RL (Stereo Flip Channels)" };
 CALF_PORT_PROPS(stereo) = {
-    {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
 
