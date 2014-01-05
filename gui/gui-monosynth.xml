@@ -40,6 +40,11 @@
                                 <value param="o1_pw"/>
                             </vbox>
                             <vbox>
+                                <label param="o1_xpose" text="Transpose"/>
+                                <knob type="1" param="o1_xpose"/>
+                                <value param="o1_xpose"/>
+                            </vbox>
+                            <vbox>
                                 <label param="o1_stretch" text="Stretch"/>
                                 <knob param="o1_stretch"/>
                                 <value param="o1_stretch"/>
@@ -85,20 +90,27 @@
             
                 <frame label="Oscillator 2">
                     <vbox spacing="3">
-                        <hbox spacing="5">
-                            <label text="     "/>
+                        <hbox homogeneous="1">
                             <vbox>
                                 <label attach-x="1" attach-y="0" param="o2_pw" text="Pulse Width"/>
                                 <knob attach-x="1" attach-y="1" param="o2_pw"/>
                                 <value attach-x="1" attach-y="2" param="o2_pw"/>
                             </vbox>
-                            <label text="     "/>
                             <vbox>
                                 <label param="o2_xpose" text="Transpose"/>
                                 <knob type="1" param="o2_xpose"/>
                                 <value param="o2_xpose"/>
                             </vbox>
-                            <label text="    "/>
+                            <vbox>
+                                <label text="Unison Amt"/>
+                                <knob type="0" param="o2_unison"/>
+                                <value param="o2_unison"/>
+                            </vbox>
+                            <vbox>
+                                <label text="Unison Rate"/>
+                                <knob type="0" param="o2_unisonfrq"/>
+                                <value param="o2_unisonfrq"/>
+                            </vbox>
                         </hbox>
                         <label text="Waveform"/>
                         <combo param="o2_wave" fill="0" expand="0"/>

@@ -43,8 +43,9 @@ class monosynth_audio_module: public audio_module<monosynth_metadata>, public li
 public:
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
-    dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
+    dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2, detosc;
     dsp::triangle_lfo lfo1, lfo2;
+    dsp::simple_oscillator unison_osc;
     dsp::biquad_d1_lerp filter, filter2;
     /// The step code is producing non-zero values
     bool running;
@@ -74,7 +75,7 @@ public:
     /// Filter type on the last calculate_step
     int last_filter_type;
     float freq, start_freq, target_freq, cutoff, fgain, fgain_delta, separation;
-    float detune, xpose, xfade, ampctl, fltctl;
+    float detune, xpose1, xpose2, xfade, ampctl, fltctl;
     float odcr, porta_time, lfo_bend;
     /// Modulation wheel position (0.f-1.f)
     float modwheel_value;

@@ -1114,7 +1114,7 @@ CALF_PORT_PROPS(monosynth) = {
     { 0,         -1,    1,  0.1, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "o2_pw", "Osc2 PW" },
 
     { 10,         0,  100,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "o12_detune", "O1<>2 Detune" },
-    { 12,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o2_xpose", "Osc2 transpose" },
+    { 12,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o2_xpose", "Osc2 Transpose" },
     { 0,          0,    5,    0, PF_ENUM | PF_CTL_COMBO, monosynth_mode_names, "phase_mode", "Phase mode" },
     { 0.5,        0,    1,    0, PF_FLOAT | PF_SCALE_PERC, NULL, "o12_mix", "O1<>2 Mix" },
     { 1,          0,    7,    0, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_filter_choices, "filter", "Filter" },
@@ -1168,6 +1168,9 @@ CALF_PORT_PROPS(monosynth) = {
     { 0,          0,    1,    0, PF_ENUM | PF_CTL_COMBO, monosynth_lfotrig_names, "lfo2_trig", "LFO2 Trigger Mode" },
     { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_rate", "LFO1 Rate" },
     { 0.5,      0.1,  5,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "lfo2_delay", "LFO1 Delay" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "o2_unison", "Osc2 Unison" },
+    { 2,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "o2_unisonfrq", "Osc2 Unison Detune" },
+    { 0,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o1_xpose", "Osc1 Transpose" },
     {}
 };
 

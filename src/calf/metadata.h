@@ -122,6 +122,8 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         par_stretch1, par_window1,
         par_lfo1trig, par_lfo2trig,
         par_lfo2rate, par_lfo2delay,
+        par_o2unison, par_o2unisonfrq,
+        par_osc1xpose,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true };
     enum { step_size = 64, step_shift = 6 };
