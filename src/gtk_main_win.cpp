@@ -482,7 +482,8 @@ void gtk_main_window::update_strip(plugin_ctl_iface *plugin)
 void gtk_main_window::open_gui(plugin_ctl_iface *plugin)
 {
     plugin_gui_window *gui_win = new plugin_gui_window(this, this);
-    gui_win->create(plugin, (owner->get_client_name() + " - " + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
+    std::string title = "Calf - ";
+    gui_win->create(plugin, (title + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id()); //(owner->get_client_name() + " - " + plugin->get_metadata_iface()->get_label()).c_str(), plugin->get_metadata_iface()->get_id());
     gtk_widget_show(GTK_WIDGET(gui_win->toplevel));
     plugins[plugin]->gui_win = gui_win; 
 }
@@ -534,7 +535,8 @@ static void window_destroy_cb(GtkWindow *window, gpointer data)
 void gtk_main_window::create()
 {
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
-    gtk_window_set_title(toplevel, (owner->get_client_name() + " - Calf JACK Host").c_str());
+    std::string title = "Calf JACK Host";
+    gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
     gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
     gtk_window_set_icon_name(toplevel, "calf");
     is_closed = false;
