@@ -189,7 +189,7 @@ CALF_PORT_PROPS(filterclavier) = {
     {}
 };
 
-CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Krzysztof Foltman / Hans Baier", calf_plugins::calf_copyright_info, "FilterclavierPlugin" };
+CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Krzysztof Foltman / Hans Baier", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -674,7 +674,7 @@ CALF_PORT_PROPS(emphasis) = {
     { 4,      0,  4,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
     {}
 };
-CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Damien Zammit", calf_plugins::calf_copyright_info, "EmphasisPlugin" };
+CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Damien Zammit", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 const char *active_mode_names[] = { " ", "ON", "Left", "Right", "Mid", "Side" };
@@ -692,7 +692,7 @@ CALF_PORT_PROPS(equalizer5band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer5band) = { 0x8511, "Equalizer5Band", "Calf Equalizer 5 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EqualizerPlugin" };
+CALF_PLUGIN_INFO(equalizer5band) = { 0x8511, "Equalizer5Band", "Calf Equalizer 5 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -713,7 +713,7 @@ CALF_PORT_PROPS(equalizer8band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer8band) = { 0x8512, "Equalizer8Band", "Calf Equalizer 8 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EqualizerPlugin" };
+CALF_PLUGIN_INFO(equalizer8band) = { 0x8512, "Equalizer8Band", "Calf Equalizer 8 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -736,7 +736,7 @@ CALF_PORT_PROPS(equalizer12band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer 12 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EqualizerPlugin" };
+CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer 12 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -762,7 +762,7 @@ CALF_PORT_PROPS(xover2) = {
     XOVER_BAND_PARAMS(2)
     {}
 };
-CALF_PLUGIN_INFO(xover2) = { 0x8515, "XOver2Band", "Calf X-Over 2 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
+CALF_PLUGIN_INFO(xover2) = { 0x8515, "XOver2Band", "Calf X-Over 2 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -780,7 +780,7 @@ CALF_PORT_PROPS(xover3) = {
     XOVER_BAND_PARAMS(3)
     {}
 };
-CALF_PLUGIN_INFO(xover3) = { 0x8515, "XOver3Band", "Calf X-Over 3 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
+CALF_PLUGIN_INFO(xover3) = { 0x8515, "XOver3Band", "Calf X-Over 3 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -800,7 +800,7 @@ CALF_PORT_PROPS(xover4) = {
     XOVER_BAND_PARAMS(4)
     {}
 };
-CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "CrossoverPlugin" };
+CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -820,7 +820,7 @@ CALF_PORT_PROPS(pulsator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(pulsator) = { 0x8514, "Pulsator", "Calf Pulsator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulationPlugin" };
+CALF_PLUGIN_INFO(pulsator) = { 0x8514, "Pulsator", "Calf Pulsator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -879,7 +879,7 @@ CALF_PORT_PROPS(exciter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(exciter) = { 0x8531, "Exciter", "Calf Exciter", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(exciter) = { 0x8531, "Exciter", "Calf Exciter", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SpectralPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -906,7 +906,7 @@ CALF_PORT_PROPS(bassenhancer) = {
     {}
 };
 
-CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer", "Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SpectralPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -937,7 +937,7 @@ CALF_PORT_PROPS(mono) = {
     {}
 };
 
-CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
+CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmidt", calf_plugins::calf_copyright_info, "ConverterPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -974,7 +974,7 @@ CALF_PORT_PROPS(stereo) = {
     {}
 };
 
-CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
+CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus Schmidt", calf_plugins::calf_copyright_info, "ConverterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1014,7 +1014,7 @@ CALF_PORT_PROPS(analyzer) = {
     {}
 };
 
-CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "Analyzer" };
+CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "AnalyserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1039,7 +1039,7 @@ CALF_PORT_PROPS(transientdesigner) = {
     {}
 };
 
-CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Christian Holschuh, Markus Schmidt", calf_plugins::calf_copyright_info, "Utility" };
+CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Christian Holschuh, Markus Schmidt", calf_plugins::calf_copyright_info, "EnvelopePlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1060,7 +1060,7 @@ CALF_PORT_PROPS(tapesimulator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1079,7 +1079,7 @@ CALF_PORT_PROPS(crusher) = {
     {}
 };
 
-CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "Utility" };
+CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Markus Schmidt, Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
