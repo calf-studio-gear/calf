@@ -701,7 +701,7 @@ void organ_voice::update_pitch()
     dphase.set(dsp::midi_note_to_phase(note, 100 * parameters->global_transpose + parameters->global_detune, sample_rate) * inertia_pitchbend.get_last());
 }
 
-void organ_voice::render_block() {
+void organ_voice::render_block(int snapshot) {
     if (note == -1)
         return;
 

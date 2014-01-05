@@ -215,7 +215,7 @@ public:
 
 class organ_voice: public dsp::voice, public organ_voice_base {
 protected:    
-    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount };
+    enum { Channels = 2, BlockSize = 64, EnvCount = organ_parameters::EnvCount, FilterCount = organ_parameters::FilterCount, MaxSampleRun = calf_plugins::MAX_SAMPLE_RUN };
     union {
         float output_buffer[BlockSize][Channels];
         float aux_buffers[3][BlockSize][Channels];
@@ -245,7 +245,7 @@ public:
     void note_off(int /* vel */);
     virtual float get_priority() { return stolen ? 20000 : (perc_released ? 1 : (sostenuto ? 200 : 100)); }
     virtual void steal();
-    void render_block();
+    void render_block(int current_snapshot);
     
     virtual int get_current_note() {
         return note;

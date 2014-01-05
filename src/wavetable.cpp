@@ -69,7 +69,7 @@ void wavetable_voice::note_on(int note, int vel)
         envs[i].set(*params[md::par_eg1attack + o] * s, *params[md::par_eg1decay + o] * s, *params[md::par_eg1sustain + o], *params[md::par_eg1release + o] * s, sample_rate / BlockSize, *params[md::par_eg1fade + o] * s); 
         envs[i].note_on();
     }
-    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value, 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value, (float)envs[1].value, (float)envs[2].value, 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last, (float)((note - 60) / 12.0)};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
     calc_derived_dests(0);
 
@@ -88,7 +88,7 @@ void wavetable_voice::steal()
 {
 }
 
-void wavetable_voice::render_block()
+void wavetable_voice::render_block(int current_snapshot)
 {
     typedef wavetable_metadata md;
     
@@ -112,14 +112,15 @@ void wavetable_voice::render_block()
     lfo1.last = lfo1.get();
     lfo2.last = lfo2.get();
 
-    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2], 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last};
+    float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2], 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last, dsp::clip<float>(note / 120.0, 0.f, 1.f)};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
     calc_derived_dests(envs[0].value * scl[0] * scl[0]);
 
     int ospc = md::par_o2level - md::par_o1level;
+    float pb = moddest[md::moddest_pitch] + parent->control_snapshots[current_snapshot].pitchbend;
     for (int j = 0; j < OscCount; j++) {
         oscs[j].tables = parent->tables[(int)*params[md::par_o1wave + j * ospc]];
-        oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc] + moddest[md::moddest_o1detune]), sample_rate);
+        oscs[j].set_freq(note_to_hz(note, *params[md::par_o1transpose + j * ospc] * 100+ *params[md::par_o1detune + j * ospc] + moddest[md::moddest_o1detune + j] + pb), sample_rate);
     }
         
     float oscshift[2] = { moddest[md::moddest_o1shift], moddest[md::moddest_o2shift] };
@@ -210,8 +211,7 @@ static void interpolate_wt(int16_t table[129][256], int step)
 
 wavetable_audio_module::wavetable_audio_module()
 : mod_matrix_impl(mod_matrix_data, &mm_metadata)
-, inertia_cutoff(1)
-, inertia_pitchbend(1)
+, inertia_pitchbend(64)
 , inertia_pressure(64)
 {
     init_voices(36);

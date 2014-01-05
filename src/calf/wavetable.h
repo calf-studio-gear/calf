@@ -46,7 +46,7 @@ struct wavetable_oscillator: public dsp::simple_oscillator
 class wavetable_voice: public dsp::voice
 {
 public:
-    enum { Channels = 2, BlockSize = 64, EnvCount = 3, OscCount = 2 };
+    enum { Channels = 2, BlockSize = 64, MaxSampleRun = MAX_SAMPLE_RUN, EnvCount = 3, OscCount = 2 };
     float output_buffer[BlockSize][Channels];
 protected:
     int note;
@@ -74,7 +74,7 @@ public:
     void note_off(int /* vel */);
     void channel_pressure(int value);
     void steal();
-    void render_block();
+    void render_block(int current_snapshot);
     const int16_t *get_last_table(int osc) const;
     virtual int get_current_note() {
         return note;
@@ -91,7 +91,7 @@ public:
     }
 };    
 
-class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public line_graph_iface, public mod_matrix_impl
+class wavetable_audio_module: public audio_module<wavetable_metadata>, public dsp::basic_synth, public dsp::block_allvoices_base<wavetable_voice>, public line_graph_iface, public mod_matrix_impl
 {
 public:
     using dsp::basic_synth::note_on;
@@ -107,15 +107,19 @@ public:
     int16_t tables[wt_count][129][256]; // one dummy level for interpolation
     /// Rows of the modulation matrix
     dsp::modulation_entry mod_matrix_data[mod_matrix_slots];
-    /// Smoothed cutoff value
-    dsp::inertia<dsp::exponential_ramp> inertia_cutoff;
     /// Smoothed pitch bend value
-    dsp::inertia<dsp::exponential_ramp> inertia_pitchbend;
+    dsp::inertia<dsp::linear_ramp> inertia_pitchbend;
     /// Smoothed channel pressure value
     dsp::inertia<dsp::linear_ramp> inertia_pressure;
     /// Unsmoothed mod wheel value
     float modwheel_value;
     wavetable_voice *last_voice;
+
+    struct ControlSnapshot {
+        float pitchbend;
+    };
+    
+    ControlSnapshot control_snapshots[MaxSnapshots];
 
 public:
     wavetable_audio_module();
@@ -137,7 +141,9 @@ public:
             control_change(121, 0); // reset all controllers
             panic_flag = false;
         }
-        float buf[4096][2];
+        
+        fill_snapshots(nsamples);
+        float buf[MAX_SAMPLE_RUN][2];
         dsp::zero(&buf[0][0], 2 * nsamples);
         basic_synth::render_to(buf, nsamples);
         if (!active_voices.empty())
@@ -149,11 +155,18 @@ public:
         }
         return 3;
     }
+    
+    void make_snapshot(int index)
+    {
+        if (index)
+            control_snapshots[index].pitchbend = inertia_pitchbend.get();
+        else
+            control_snapshots[0].pitchbend = inertia_pitchbend.get_last();
+    }
 
     void set_sample_rate(uint32_t sr) {
         setup(sr);
         crate = sample_rate / wavetable_voice::BlockSize;
-        inertia_cutoff.ramp.set_length(crate / 30); // 1/30s    
         inertia_pitchbend.ramp.set_length(crate / 30); // 1/30s    
         inertia_pressure.ramp.set_length(crate / 30); // 1/30s - XXXKF monosynth needs that too
     }
@@ -165,7 +178,7 @@ public:
     /// Handle pitch bend message.
     virtual void pitch_bend(int channel, int value)
     {
-        inertia_pitchbend.set_inertia(pow(2.0, (value * *params[par_pwhlrange]) / (1200.0 * 8192.0)));
+        inertia_pitchbend.set_inertia((value * *params[par_pwhlrange]) * (1.0 / 8192.0));
     }
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }

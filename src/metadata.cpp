@@ -1579,6 +1579,7 @@ static const char *wavetable_mod_src_names[] = {
     "Env 3",
     "LFO 1",
     "LFO 2",
+    "Key Flw",
     NULL
 };
 
@@ -1592,6 +1593,7 @@ static const char *wavetable_mod_dest_names[] = {
     "O2: Shift (%)",
     "O1: Detune [ct]",
     "O2: Detune [ct]",
+    "Pitch [ct]",
     NULL
 };
 

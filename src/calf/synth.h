@@ -130,6 +130,28 @@ public:
     virtual ~voice() {}
 };
 
+template<class Base>
+class block_allvoices_base
+{
+public:
+    enum { BlockSize = Base::BlockSize, MaxSnapshots = (Base::MaxSampleRun + Base::BlockSize - 1) / Base::BlockSize + 1 };
+    unsigned int sample_ctr;
+
+    void fill_snapshots(int nsamples)
+    {
+        int s = 0;
+        make_snapshot(s++);
+        while(sample_ctr + nsamples >= Base::BlockSize)
+        {
+            make_snapshot(s++);
+            nsamples -= (Base::BlockSize - sample_ctr);
+            sample_ctr = 0;
+        }
+        sample_ctr += nsamples;
+    }
+    virtual void make_snapshot(int index) = 0;
+};
+
 /// An "optimized" voice class using fixed-size processing units
 /// and fixed number of channels. The drawback is that voice
 /// control is not sample-accurate, and no modulation input
@@ -161,11 +183,13 @@ public:
     virtual void render_to(float (*buf)[2], int nsamples)
     {
         int p = 0;
+        int current_snapshot = 0;
         while(p < nsamples)
         {
             if (read_ptr == BlockSize) 
             {
-                render_block();
+                render_block(current_snapshot);
+                current_snapshot++;
                 read_ptr = 0;
             }
             int ncopy = std::min<int>(BlockSize - read_ptr, nsamples - p);

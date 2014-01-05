@@ -671,6 +671,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         modsrc_env3,
         modsrc_lfo1,
         modsrc_lfo2,
+        modsrc_keyfollow,
         modsrc_count,
     };
     enum {
@@ -683,6 +684,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         moddest_o2shift,
         moddest_o1detune,
         moddest_o2detune,
+        moddest_pitch,
         moddest_count,
     };
     enum {
