@@ -96,18 +96,16 @@ void plugin_preset::activate(plugin_ctl_iface *plugin)
         }
         plugin->set_param_value(pos->second, values[i]);
     }
-    const char *const *vnames = metadata->get_configure_vars();
-    if (vnames)
+    vector<string> vnames;
+    metadata->get_configure_vars(vnames);
+    for (unsigned n = 0; n < vnames.size(); ++n)
     {
-        for (; *vnames; vnames++)
-        {
-            const char *key = *vnames;
-            map<string, string>::const_iterator i = variables.find(key);
-            if (i == variables.end())
-                plugin->configure(key, NULL);
-            else
-                plugin->configure(key, i->second.c_str());
-        }
+        const char *key = vnames[n].c_str();
+        map<string, string>::const_iterator i = variables.find(key);
+        if (i == variables.end())
+            plugin->configure(key, NULL);
+        else
+            plugin->configure(key, i->second.c_str());
     }
 }
 

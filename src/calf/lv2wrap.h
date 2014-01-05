@@ -88,13 +88,14 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     }
     void impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data)
     {
-        const char *const *vars = module->get_metadata_iface()->get_configure_vars();
-        if (!vars)
+        std::vector<std::string> vars;
+        module->get_metadata_iface()->get_configure_vars(vars);
+        if (vars.empty())
             return;
         assert(uri_map);
         uint32_t string_type = uri_map->uri_to_id(uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
         assert(string_type);
-        for (unsigned int i = 0; vars[i]; i++)
+        for (size_t i = 0; i < vars.size(); ++i)
         {
             std::string    pred  = std::string("urn:calf:") + vars[i];
             const uint32_t key   = uri_map->uri_to_id(uri_map->callback_data, NULL, pred.c_str());
@@ -106,11 +107,11 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
             {
                 if (type != string_type)
                     fprintf(stderr, "Warning: type is %d, expected %d\n", (int)type, (int)string_type);
-                printf("Calling configure on %s\n", vars[i]);
-                configure(vars[i], std::string((const char *)ptr, len).c_str());
+                printf("Calling configure on %s\n", vars[i].c_str());
+                configure(vars[i].c_str(), std::string((const char *)ptr, len).c_str());
             }
             else
-                configure(vars[i], NULL);
+                configure(vars[i].c_str(), NULL);
         }
     }
     char *configure(const char *key, const char *value) { 

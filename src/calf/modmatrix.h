@@ -43,6 +43,13 @@ struct modulation_entry
     modulation_entry() {
         reset();
     }
+    modulation_entry(int _src1, calf_plugins::mod_matrix_metadata::mapping_mode _mapping, int _src2, float _amount, int _dest) {
+        src1 = _src1;
+        mapping = _mapping;
+        src2 = _src2;
+        amount = _amount;
+        dest = _dest;
+    }
     
     /// Reset the row to default
     void reset() {
@@ -75,7 +82,7 @@ public:
     {
         for (int i = 0; i < moddest_count; i++)
             moddest[i] = 0;
-        for (unsigned int i = 0; i < matrix_rows; i++)
+        for (unsigned int i = 0; i < matrix_rows; ++i)
         {
             dsp::modulation_entry &slot = matrix[i];
             if (slot.dest) {
@@ -89,31 +96,8 @@ public:
     void send_configures(send_configure_iface *);
     char *configure(const char *key, const char *value);
     
-    /// Return a list of configure variables used by the modulation matrix
-    template<int rows>
-    static const char **get_configure_vars()
-    {
-        static std::vector<std::string> names_vector;
-        static const char *names[rows * 5 + 1];
-        
-        if (names[0] == NULL)
-        {
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    char buf[40];
-                    snprintf(buf, sizeof(buf), "mod_matrix:%d,%d", i, j);
-                    names_vector.push_back(buf);
-                }
-            }
-            for (size_t i = 0; i < names_vector.size(); i++)
-                names[i] = names_vector[i].c_str();
-            names[names_vector.size()] = NULL;
-        }
-        
-        return names;
-    }
+    virtual const dsp::modulation_entry *get_default_mod_matrix_value(int row) const
+    { return NULL; }
     
 private:
     std::string get_cell(int row, int column) const;

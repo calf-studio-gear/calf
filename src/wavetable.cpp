@@ -29,6 +29,7 @@
 
 using namespace dsp;
 using namespace calf_plugins;
+using namespace std;
 
 wavetable_voice::wavetable_voice()
 {
@@ -113,7 +114,7 @@ void wavetable_voice::render_block()
 
     float modsrc[wavetable_metadata::modsrc_count] = { 1.f, velocity, parent->inertia_pressure.get_last(), parent->modwheel_value, (float)envs[0].value * scl[0], (float)envs[1].value * scl[1], (float)envs[2].value * scl[2], 0.5f+0.5f*lfo1.last, 0.5f+0.5f*lfo2.last};
     parent->calculate_modmatrix(moddest, md::moddest_count, modsrc);
-    calc_derived_dests(envs[0].value * scl[0]);
+    calc_derived_dests(envs[0].value * scl[0] * scl[0]);
 
     int ospc = md::par_o2level - md::par_o1level;
     for (int j = 0; j < OscCount; j++) {
@@ -595,6 +596,29 @@ wavetable_audio_module::wavetable_audio_module()
 void wavetable_audio_module::channel_pressure(int /*channel*/, int value)
 {
     inertia_pressure.set_inertia(value * (1.0 / 127.0));
+}
+
+char *wavetable_audio_module::configure(const char *key, const char *value)
+{
+    return mod_matrix_impl::configure(key, value);
+}
+
+void wavetable_audio_module::control_change(int /*channel*/, int controller, int value)
+{
+    dsp::basic_synth::control_change(controller, value);
+    if (controller == 1)
+        modwheel_value = value * (1.0 / 127.0f);
+}
+
+const dsp::modulation_entry *wavetable_audio_module::get_default_mod_matrix_value(int row) const
+{
+    static modulation_entry row0(modsrc_env1, mod_matrix_metadata::map_positive, modsrc_none, 50, moddest_o1shift);
+    static modulation_entry row1(modsrc_lfo2, mod_matrix_metadata::map_positive, modsrc_none, 10, moddest_o1shift);
+    if (row == 0)
+        return &row0;
+    if (row == 1)
+        return &row1;
+    return NULL;
 }
 
 #endif

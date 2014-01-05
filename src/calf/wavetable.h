@@ -84,10 +84,10 @@ public:
         return (note != -1) && (amp.get_active()) && !envs[0].stopped();
     }
     inline void calc_derived_dests(float env0) {
-        float cv = dsp::clip<float>(0.5f + moddest[wavetable_metadata::moddest_oscmix], 0.f, 1.f);
-        float overall = *params[wavetable_metadata::par_eg1toamp] > 0 ? env0 * env0 : 1.0;
-        cur_oscamp[0] = (cv) * *params[wavetable_metadata::par_o1level] * overall;
-        cur_oscamp[1] = (1 - cv) * *params[wavetable_metadata::par_o2level] * overall;
+        float cv = dsp::clip<float>(0.5 + 0.01 * moddest[wavetable_metadata::moddest_oscmix], 0.f, 1.f);
+        float overall = *params[wavetable_metadata::par_eg1toamp] > 0 ? env0 : 1.0;
+        cur_oscamp[0] = (1 - cv) * *params[wavetable_metadata::par_o1level] * overall;
+        cur_oscamp[1] = (cv) * *params[wavetable_metadata::par_o2level] * overall;
     }
 };    
 
@@ -159,7 +159,7 @@ public:
     }
     virtual void note_on(int /*channel*/, int note, int velocity) { dsp::basic_synth::note_on(note, velocity); }
     virtual void note_off(int /*channel*/, int note, int velocity) { dsp::basic_synth::note_off(note, velocity); }
-    virtual void control_change(int /*channel*/, int controller, int value) { dsp::basic_synth::control_change(controller, value); }
+    virtual void control_change(int /*channel*/, int controller, int value);
     /// Handle MIDI Channel Pressure
     virtual void channel_pressure(int channel, int value);
     /// Handle pitch bend message.
@@ -170,7 +170,9 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const { layers = LG_REALTIME_GRAPH; return true; }
     virtual void send_configures(send_configure_iface *sci) { return mod_matrix_impl::send_configures(sci); }
-    virtual char *configure(const char *key, const char *value) { return mod_matrix_impl::configure(key, value); }
+    virtual char *configure(const char *key, const char *value);
+    virtual const dsp::modulation_entry *get_default_mod_matrix_value(int row) const;
+
 };
 
     

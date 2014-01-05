@@ -127,10 +127,12 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
     for (int i = 0; i < S; i++) {
         data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (-1 + fmod (i * i * 8/ (S * S * 1.0), 2.0));
     }
+    normalize_waveform(data, S);
     waves[wave_skewsaw].make(bl, data);
     for (int i = 0; i < S; i++) {
         data[i] = (min(1.f, (float)(i / 64.f))) * (1.0 - i * 1.0 / S) * (fmod (i * i * 8/ (S * S * 1.0), 2.0) < 1.0 ? -1.0 : +1.0);
     }
+    normalize_waveform(data, S);
     waves[wave_skewsqr].make(bl, data);
 
     if (reporter)
@@ -145,6 +147,7 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
             data[i] = -0.5 * sin(3 * M_PI * p * p);
         }
     }
+    normalize_waveform(data, S);
     waves[wave_test1].make(bl, data);
     for (int i = 0; i < S; i++) {
         data[i] = exp(-i * 1.0 / HS) * sin(i * M_PI / HS) * cos(2 * M_PI * i / HS);
@@ -156,14 +159,17 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
         int ii = HS;
         data[i] = (ii * 1.0 / HS) * sin(i * 3 * M_PI / HS + 2 * M_PI * sin(M_PI / 4 + i * 4 * M_PI / HS)) * sin(i * 5 * M_PI / HS + 2 * M_PI * sin(M_PI / 8 + i * 6 * M_PI / HS));
     }
+    normalize_waveform(data, S);
     waves[wave_test3].make(bl, data);
     for (int i = 0; i < S; i++) {
         data[i] = sin(i * 2 * M_PI / HS + sin(i * 2 * M_PI / HS + 0.5 * M_PI * sin(i * 18 * M_PI / HS)) * sin(i * 1 * M_PI / HS + 0.5 * M_PI * sin(i * 11 * M_PI / HS)));
     }
+    normalize_waveform(data, S);
     waves[wave_test4].make(bl, data);
     for (int i = 0; i < S; i++) {
         data[i] = sin(i * 2 * M_PI / HS + 0.2 * M_PI * sin(i * 13 * M_PI / HS) + 0.1 * M_PI * sin(i * 37 * M_PI / HS)) * sin(i * M_PI / HS + 0.2 * M_PI * sin(i * 15 * M_PI / HS));
     }
+    normalize_waveform(data, S);
     waves[wave_test5].make(bl, data);
     for (int i = 0; i < S; i++) {
         if (i < HS)
@@ -177,16 +183,19 @@ void monosynth_audio_module::precalculate_waves(progress_report_iface *reporter)
         else
             data[i] = sin(i * 8 * M_PI / HS) * (S - i) / (S / 8);
     }
+    normalize_waveform(data, S);
     waves[wave_test6].make(bl, data);
     for (int i = 0; i < S; i++) {
         int j = i >> (MONOSYNTH_WAVE_BITS - 11);
         data[i] = (j ^ 0x1D0) * 1.0 / HS - 1;
     }
+    normalize_waveform(data, S);
     waves[wave_test7].make(bl, data);
     for (int i = 0; i < S; i++) {
         int j = i >> (MONOSYNTH_WAVE_BITS - 11);
         data[i] = -1 + 0.66 * (3 & ((j >> 8) ^ (j >> 10) ^ (j >> 6)));
     }
+    normalize_waveform(data, S);
     waves[wave_test8].make(bl, data);
     if (reporter)
         reporter->report_progress(100, "");
