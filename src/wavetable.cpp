@@ -603,6 +603,13 @@ char *wavetable_audio_module::configure(const char *key, const char *value)
     return mod_matrix_impl::configure(key, value);
 }
 
+void wavetable_audio_module::control_change(int /*channel*/, int controller, int value)
+{
+    dsp::basic_synth::control_change(controller, value);
+    if (controller == 1)
+        modwheel_value = value * (1.0 / 127.0f);
+}
+
 const dsp::modulation_entry *wavetable_audio_module::get_default_mod_matrix_value(int row) const
 {
     static modulation_entry row0(modsrc_env1, mod_matrix_metadata::map_positive, modsrc_none, 50, moddest_o1shift);
