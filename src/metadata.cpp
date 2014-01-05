@@ -1271,6 +1271,8 @@ CALF_PORT_PROPS(monosynth) = {
     { 0,          0,    1,    0, PF_ENUM | PF_CTL_COMBO, monosynth_lfotrig_names, "lfo2_trig", "LFO2 Trigger Mode" },
     { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_rate", "LFO1 Rate" },
     { 0.5,      0.1,  5,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "lfo2_delay", "LFO1 Delay" },
+    { 0,          0,    1,    0, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "o2_unison", "Osc2 Unison" },
+    { 2,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "o2_unisonfrq", "Osc2 Unison Detune" },
     {}
 };
 

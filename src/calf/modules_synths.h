@@ -43,8 +43,9 @@ class monosynth_audio_module: public audio_module<monosynth_metadata>, public li
 public:
     uint32_t srate, crate;
     static dsp::waveform_family<MONOSYNTH_WAVE_BITS> *waves;
-    dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2;
+    dsp::waveform_oscillator<MONOSYNTH_WAVE_BITS> osc1, osc2, detosc;
     dsp::triangle_lfo lfo1, lfo2;
+    dsp::simple_oscillator unison_osc;
     dsp::biquad_d1_lerp filter, filter2;
     /// The step code is producing non-zero values
     bool running;

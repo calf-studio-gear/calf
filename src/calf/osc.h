@@ -53,10 +53,16 @@ struct simple_oscillator
     {
         phasedelta = (int)(freq * 65536.0 * 256.0 * 16.0 * odsr) << 4;
     }
+    /// Make one phase increment
+    inline void step()
+    {
+        phase += phasedelta;
+    }
+    /// Make one phase increment and return a value from -0.5 to 0.5
     inline float get()
     {
         float value = (phase >> 16 ) / 65535.0 - 0.5;
-        phase += phasedelta;
+        step();
         return value;
     }
 };
@@ -258,6 +264,15 @@ struct waveform_oscillator: public simple_oscillator
         uint32_t wpos = phase >> (32 - SIZE_BITS);
         float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
         wpos = (phase + shift) >> (32 - SIZE_BITS);
+        float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SCALE - 1)) * (1.0f / SCALE));
+        return value1 + mix * value2;
+    }
+    /// Add/substract two phase-shifted values
+    inline float get_phaseshifted2(uint32_t shift, int32_t gshift, float mix)
+    {
+        uint32_t wpos = (phase + gshift) >> (32 - SIZE_BITS);
+        float value1 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], (phase & (SCALE - 1)) * (1.0f / SCALE));
+        wpos = (phase + gshift + shift) >> (32 - SIZE_BITS);
         float value2 = dsp::lerp(waveform[wpos], waveform[(wpos + 1) & MASK], ((phase + shift) & (SCALE - 1)) * (1.0f / SCALE));
         return value1 + mix * value2;
     }
