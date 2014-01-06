@@ -10,12 +10,12 @@
             <label/>
             <vbox>
                 <label param="transpose" />
-                <knob param="transpose" type="1" />
+                <knob param="transpose" type="1" size="3" />
                 <value param="transpose" />
             </vbox>
             <vbox>
                 <label param="detune" />
-                <knob param="detune" type="1" />
+                <knob param="detune" type="1" size="3" />
                 <value param="detune" />
             </vbox>
             <vbox>
