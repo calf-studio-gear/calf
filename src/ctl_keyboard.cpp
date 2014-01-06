@@ -50,7 +50,7 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
     
     for (int i = 0; i < self->nkeys; i++)
     {
-        CalfKeyboard::KeyInfo ki = { 0.5 + 12 * i, 0.5, 12, sy, 12 * (i / 7) + semitones_w[i % 7], false };
+        CalfKeyboard::KeyInfo ki = { 0.5 + 11 * i, 0.5, 11, (double)sy, 12 * (i / 7) + semitones_w[i % 7], false };
         cairo_new_path(c);
         if (!self->sink->pre_draw(c, ki))
         {
@@ -77,7 +77,7 @@ calf_keyboard_expose (GtkWidget *widget, GdkEventExpose *event)
     {
         if ((1 << (i % 7)) & 59)
         {
-            CalfKeyboard::KeyInfo ki = { 8.5 + 12 * i, 0.5, 8, sy * 3 / 5, 12 * (i / 7) + semitones_b[i % 7], true };
+            CalfKeyboard::KeyInfo ki = { 8.5 + 11 * i, 0.5, 6, (double)sy * 3 / 5, 12 * (i / 7) + semitones_b[i % 7], true };
             cairo_new_path(c);
             cairo_rectangle(c, ki.x, ki.y, ki.width, ki.height);
 //            gdk_cairo_set_source_color(c, &scBlackKey);
@@ -148,7 +148,7 @@ calf_keyboard_size_request (GtkWidget *widget,
     CalfKeyboard *self = CALF_KEYBOARD(widget);
     g_assert(CALF_IS_KEYBOARD(widget));
     
-    requisition->width = 12 * self->nkeys + 1;
+    requisition->width = 11 * self->nkeys + 1;
     requisition->height = 40;
 }
 
@@ -304,4 +304,3 @@ calf_keyboard_get_type (void)
     }
     return type;
 }
-

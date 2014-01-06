@@ -15,6 +15,7 @@ style "calf-default"
     GtkArrow       ::arrow-scaling        = 0.0
     GtkComboBox    ::arrow-scaling        = 0.0
     GtkComboBox    ::arrow-size           = 0
+    GtkStatusbar   ::shadow_type          = GTK_SHADOW_NONE
     
     xthickness        = 0
     ythickness        = 0
@@ -128,9 +129,9 @@ style "calf-combobox"
     # NOTE:
     # ComboBox is rendered via Cairo with 12pt text. These settings are
     # just for a usable size allocation of the widget.
-    font_name = "Sans 11"
+    font_name = "Sans 10.5"
     xthickness = 0
-    ythickness = 2
+    ythickness = 3
 }
 
 ### TEXT ENTRY ###

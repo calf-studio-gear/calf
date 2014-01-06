@@ -1,589 +1,508 @@
-<?xml version="1.0"?>
-<vbox>
-  <hbox>
-    <if cond="directlink">
-      <align scale-x="0.0" scale-y="1.0" align-x="0" align-y="0">
-        <line-graph param="master" refresh="1" width="372" height="40" expand="0" fill="0"/>
-      </align>
-    </if>
-    <align scale-x="0.25" scale-y="0.0" align-x="1.0" align-y="0.5">
-      <hbox>
-        <vbox>
-          <label param="polyphony"/>
-          <knob param="polyphony"/>
-          <value param="polyphony"/>
-        </vbox>
-        <vbox>
-          <label param="master"/>
-          <knob param="master" size="3"/>
-          <value param="master"/>
-        </vbox>
-      </hbox>
-    </align>
-  </hbox>
-  <notebook>
-    <vbox page="Tone generator">
-      <table rows="12" cols="9">
-        <label attach-x="0" attach-y="1" text="Level"/>
-        <label attach-x="0" attach-y="3" text="Harmonic"/>
-        <label attach-x="0" attach-y="5" text="Wave"/>
-        <label attach-x="0" attach-y="6" text="Detune"/>
-        <label attach-x="0" attach-y="8" text="Phase"/>
-        <label attach-x="0" attach-y="10" text="Pan"/>
-        <label attach-x="0" attach-y="12" text="Send to"/>
-        <label attach-x="1" attach-y="0" param="l1"/>
-        <vscale height="160" attach-x="1" attach-y="1" param="l1"/>
-        <value attach-x="1" attach-y="2" param="l1"/>
-        <knob attach-x="1" attach-y="3" param="f1"/>
-        <value attach-x="1" attach-y="4" param="f1"/>
-        <combo attach-x="1" attach-y="5" param="w1"/>
-        <knob attach-x="1" attach-y="6" param="detune1" type="1"/>
-        <value attach-x="1" attach-y="7" param="detune1"/>
-        <knob attach-x="1" attach-y="8" param="phase1" type="3"/>
-        <value attach-x="1" attach-y="9" param="phase1"/>
-        <knob attach-x="1" attach-y="10" param="pan1" type="1"/>
-        <value attach-x="1" attach-y="11" param="pan1"/>
-        <combo attach-x="1" attach-y="12" param="routing1"/>
-        <label attach-x="2" attach-y="0" param="l2"/>
-        <vscale height="160" attach-x="2" attach-y="1" param="l2"/>
-        <value attach-x="2" attach-y="2" param="l2"/>
-        <knob attach-x="2" attach-y="3" param="f2"/>
-        <value attach-x="2" attach-y="4" param="f2"/>
-        <combo attach-x="2" attach-y="5" param="w2"/>
-        <knob attach-x="2" attach-y="6" param="detune2" type="1"/>
-        <value attach-x="2" attach-y="7" param="detune2"/>
-        <knob attach-x="2" attach-y="8" param="phase2" type="3"/>
-        <value attach-x="2" attach-y="9" param="phase2"/>
-        <knob attach-x="2" attach-y="10" param="pan2" type="1"/>
-        <value attach-x="2" attach-y="11" param="pan2"/>
-        <combo attach-x="2" attach-y="12" param="routing2"/>
-        <label attach-x="3" attach-y="0" param="l3"/>
-        <vscale height="160" attach-x="3" attach-y="1" param="l3"/>
-        <value attach-x="3" attach-y="2" param="l3"/>
-        <knob attach-x="3" attach-y="3" param="f3"/>
-        <value attach-x="3" attach-y="4" param="f3"/>
-        <combo attach-x="3" attach-y="5" param="w3"/>
-        <knob attach-x="3" attach-y="6" param="detune3" type="1"/>
-        <value attach-x="3" attach-y="7" param="detune3"/>
-        <knob attach-x="3" attach-y="8" param="phase3" type="3"/>
-        <value attach-x="3" attach-y="9" param="phase3"/>
-        <knob attach-x="3" attach-y="10" param="pan3" type="1"/>
-        <value attach-x="3" attach-y="11" param="pan3"/>
-        <combo attach-x="3" attach-y="12" param="routing3"/>
-        <label attach-x="4" attach-y="0" param="l4"/>
-        <vscale height="160" attach-x="4" attach-y="1" param="l4"/>
-        <value attach-x="4" attach-y="2" param="l4"/>
-        <knob attach-x="4" attach-y="3" param="f4"/>
-        <value attach-x="4" attach-y="4" param="f4"/>
-        <combo attach-x="4" attach-y="5" param="w4"/>
-        <knob attach-x="4" attach-y="6" param="detune4" type="1"/>
-        <value attach-x="4" attach-y="7" param="detune4"/>
-        <knob attach-x="4" attach-y="8" param="phase4" type="3"/>
-        <value attach-x="4" attach-y="9" param="phase4"/>
-        <knob attach-x="4" attach-y="10" param="pan4" type="1"/>
-        <value attach-x="4" attach-y="11" param="pan4"/>
-        <combo attach-x="4" attach-y="12" param="routing4"/>
-        <label attach-x="5" attach-y="0" param="l5"/>
-        <vscale height="160" attach-x="5" attach-y="1" param="l5"/>
-        <value attach-x="5" attach-y="2" param="l5"/>
-        <knob attach-x="5" attach-y="3" param="f5"/>
-        <value attach-x="5" attach-y="4" param="f5"/>
-        <combo attach-x="5" attach-y="5" param="w5"/>
-        <knob attach-x="5" attach-y="6" param="detune5" type="1"/>
-        <value attach-x="5" attach-y="7" param="detune5"/>
-        <knob attach-x="5" attach-y="8" param="phase5" type="3"/>
-        <value attach-x="5" attach-y="9" param="phase5"/>
-        <knob attach-x="5" attach-y="10" param="pan5" type="1"/>
-        <value attach-x="5" attach-y="11" param="pan5"/>
-        <combo attach-x="5" attach-y="12" param="routing5"/>
-        <label attach-x="6" attach-y="0" param="l6"/>
-        <vscale height="160" attach-x="6" attach-y="1" param="l6"/>
-        <value attach-x="6" attach-y="2" param="l6"/>
-        <knob attach-x="6" attach-y="3" param="f6"/>
-        <value attach-x="6" attach-y="4" param="f6"/>
-        <combo attach-x="6" attach-y="5" param="w6"/>
-        <knob attach-x="6" attach-y="6" param="detune6" type="1"/>
-        <value attach-x="6" attach-y="7" param="detune6"/>
-        <knob attach-x="6" attach-y="8" param="phase6" type="3"/>
-        <value attach-x="6" attach-y="9" param="phase6"/>
-        <knob attach-x="6" attach-y="10" param="pan6" type="1"/>
-        <value attach-x="6" attach-y="11" param="pan6"/>
-        <combo attach-x="6" attach-y="12" param="routing6"/>
-        <label attach-x="7" attach-y="0" param="l7"/>
-        <vscale height="160" attach-x="7" attach-y="1" param="l7"/>
-        <value attach-x="7" attach-y="2" param="l7"/>
-        <knob attach-x="7" attach-y="3" param="f7"/>
-        <value attach-x="7" attach-y="4" param="f7"/>
-        <combo attach-x="7" attach-y="5" param="w7"/>
-        <knob attach-x="7" attach-y="6" param="detune7" type="1"/>
-        <value attach-x="7" attach-y="7" param="detune7"/>
-        <knob attach-x="7" attach-y="8" param="phase7" type="3"/>
-        <value attach-x="7" attach-y="9" param="phase7"/>
-        <knob attach-x="7" attach-y="10" param="pan7" type="1"/>
-        <value attach-x="7" attach-y="11" param="pan7"/>
-        <combo attach-x="7" attach-y="12" param="routing7"/>
-        <label attach-x="8" attach-y="0" param="l8"/>
-        <vscale height="160" attach-x="8" attach-y="1" param="l8"/>
-        <value attach-x="8" attach-y="2" param="l8"/>
-        <knob attach-x="8" attach-y="3" param="f8"/>
-        <value attach-x="8" attach-y="4" param="f8"/>
-        <combo attach-x="8" attach-y="5" param="w8"/>
-        <knob attach-x="8" attach-y="6" param="detune8" type="1"/>
-        <value attach-x="8" attach-y="7" param="detune8"/>
-        <knob attach-x="8" attach-y="8" param="phase8" type="3"/>
-        <value attach-x="8" attach-y="9" param="phase8"/>
-        <knob attach-x="8" attach-y="10" param="pan8" type="1"/>
-        <value attach-x="8" attach-y="11" param="pan8"/>
-        <combo attach-x="8" attach-y="12" param="routing8"/>
-        <label attach-x="9" attach-y="0" param="l9"/>
-        <vscale height="160" attach-x="9" attach-y="1" param="l9"/>
-        <value attach-x="9" attach-y="2" param="l9"/>
-        <knob attach-x="9" attach-y="3" param="f9"/>
-        <value attach-x="9" attach-y="4" param="f9"/>
-        <combo attach-x="9" attach-y="5" param="w9"/>
-        <knob attach-x="9" attach-y="6" param="detune9" type="1"/>
-        <value attach-x="9" attach-y="7" param="detune9"/>
-        <knob attach-x="9" attach-y="8" param="phase9" type="3"/>
-        <value attach-x="9" attach-y="9" param="phase9"/>
-        <knob attach-x="9" attach-y="10" param="pan9" type="1"/>
-        <value attach-x="9" attach-y="11" param="pan9"/>
-        <combo attach-x="9" attach-y="12" param="routing9"/>
-      </table>
-    </vbox>
-    <hbox page="Sound processor" spacing="8">
-      <vbox>
-        <frame label="Filter 1">
-          <vbox>
-            <hbox>
-              <vbox>
-                <label param="f1_cutoff"/>
-                <align>
-                  <knob param="f1_cutoff" expand="0" fill="0"/>
-                </align>
-                <value param="f1_cutoff"/>
-              </vbox>
-              <vbox>
-                <label param="f1_res"/>
-                <align>
-                  <knob param="f1_res" expand="0" fill="0"/>
-                </align>
-                <value param="f1_res"/>
-              </vbox>
-              <vbox>
-                <label param="f1_keyf"/>
-                <align>
-                  <knob param="f1_keyf" expand="0" fill="0"/>
-                </align>
-                <value param="f1_keyf"/>
-              </vbox>
-            </hbox>
-            <hbox>
-              <vbox>
-                <label param="f1_env1"/>
-                <align>
-                  <knob param="f1_env1" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f1_env1"/>
-              </vbox>
-              <vbox>
-                <label param="f1_env2"/>
-                <align>
-                  <knob param="f1_env2" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f1_env2"/>
-              </vbox>
-              <vbox>
-                <label param="f1_env3"/>
-                <align>
-                  <knob param="f1_env3" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f1_env3"/>
-              </vbox>
-            </hbox>
-            <hbox>
-              <label param="filter_chain"/>
-              <combo param="filter_chain"/>
-              <label param="filter1_type"/>
-              <combo param="filter1_type"/>
-            </hbox>
-          </vbox>
-        </frame>
-        <frame label="Filter 2">
-          <vbox>
-            <hbox>
-              <vbox>
-                <label param="f2_cutoff"/>
-                <align>
-                  <knob param="f2_cutoff" expand="0" fill="0"/>
-                </align>
-                <value param="f2_cutoff"/>
-              </vbox>
-              <vbox>
-                <label param="f2_res"/>
-                <align>
-                  <knob param="f2_res" expand="0" fill="0"/>
-                </align>
-                <value param="f2_res"/>
-              </vbox>
-              <vbox>
-                <label param="f2_keyf"/>
-                <align>
-                  <knob param="f2_keyf" expand="0" fill="0"/>
-                </align>
-                <value param="f2_keyf"/>
-              </vbox>
-            </hbox>
-            <hbox>
-              <vbox>
-                <label param="f2_env1"/>
-                <align>
-                  <knob param="f2_env1" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f2_env1"/>
-              </vbox>
-              <vbox>
-                <label param="f2_env2"/>
-                <align>
-                  <knob param="f2_env2" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f2_env2"/>
-              </vbox>
-              <vbox>
-                <label param="f2_env3"/>
-                <align>
-                  <knob param="f2_env3" expand="0" fill="0" type="1"/>
-                </align>
-                <value param="f2_env3"/>
-              </vbox>
-            </hbox>
-          </vbox>
-        </frame>
-        <frame label="Amplifier">
-          <hbox>
+<?xml version="1.0" encoding="UTF-8"?>
+<hbox spacing="10">
+    <frame label="Global">
+        <vbox spacing="8">
             <vbox>
-              <hbox>
-                <label param="eg1_amp_ctl"/>
-                <combo param="eg1_amp_ctl"/>
-              </hbox>
-              <hbox>
-                <label param="eg2_amp_ctl"/>
-                <combo param="eg2_amp_ctl"/>
-              </hbox>
-              <hbox>
-                <label param="eg3_amp_ctl"/>
-                <combo param="eg3_amp_ctl"/>
-              </hbox>
+                <label param="master" />
+                <knob param="master" size="5" />
+                <value param="master" />
             </vbox>
-            <align>
-              <vbox >
+            <label/>
+            <vbox>
+                <label param="transpose" />
+                <knob param="transpose" type="1" />
+                <value param="transpose" />
+            </vbox>
+            <vbox>
+                <label param="detune" />
+                <knob param="detune" type="1" />
+                <value param="detune" />
+            </vbox>
+            <vbox>
+                <label param="polyphony" />
+                <knob param="polyphony" />
+                <value param="polyphony" />
+            </vbox>
+            <vbox>
+                <label param="pbend_range" />
+                <knob param="pbend_range" />
+                <value param="pbend_range" />
+            </vbox>
+            <vbox>
+                <label param="foldnote" />
+                <knob param="foldnote" />
+                <value param="foldnote" />
+            </vbox>
+            <vbox>
                 <label param="quad_env" />
-                <align>
-                  <toggle param="quad_env" />
-                </align>
-                <label />
-              </vbox>
-            </align>
-          </hbox>
-        </frame>
-      </vbox>
-      <vbox>
-        <frame label="EG 1">
-          <vbox>
-            <hbox>
-              <vbox>
-                <label param="adsr_a"/>
-                <align>
-                  <knob param="adsr_a" expand="0" fill="0"/>
-                </align>
-                <value param="adsr_a"/>
-              </vbox>
-              <vbox>
-                <label param="adsr_d"/>
-                <align>
-                  <knob param="adsr_d" expand="0" fill="0"/>
-                </align>
-                <value param="adsr_d"/>
-              </vbox>
-              <vbox>
-                <label param="adsr_s"/>
-                <align>
-                  <knob param="adsr_s" expand="0" fill="0"/>
-                </align>
-                <value param="adsr_s"/>
-              </vbox>
-              <vbox>
-                <label param="adsr_r"/>
-                <align>
-                  <knob param="adsr_r" expand="0" fill="0"/>
-                </align>
-                <value param="adsr_r"/>
-              </vbox>
-              <vbox>
-                <label param="adsr_v"/>
-                <align>
-                  <knob param="adsr_v" expand="0" fill="0"/>
-                </align>
-                <value param="adsr_v"/>
-              </vbox>
-            </hbox>
-          </vbox>
-        </frame>
-        <frame label="EG 2">
-          <vbox>
-            <hbox>
-              <vbox>
-                <label param="adsr2_a"/>
-                <align>
-                  <knob param="adsr2_a" expand="0" fill="0"/>
-                </align>
-                <value param="adsr2_a"/>
-              </vbox>
-              <vbox>
-                <label param="adsr2_d"/>
-                <align>
-                  <knob param="adsr2_d" expand="0" fill="0"/>
-                </align>
-                <value param="adsr2_d"/>
-              </vbox>
-              <vbox>
-                <label param="adsr2_s"/>
-                <align>
-                  <knob param="adsr2_s" expand="0" fill="0"/>
-                </align>
-                <value param="adsr2_s"/>
-              </vbox>
-              <vbox>
-                <label param="adsr2_r"/>
-                <align>
-                  <knob param="adsr2_r" expand="0" fill="0"/>
-                </align>
-                <value param="adsr2_r"/>
-              </vbox>
-              <vbox>
-                <label param="adsr2_v"/>
-                <align>
-                  <knob param="adsr2_v" expand="0" fill="0"/>
-                </align>
-                <value param="adsr2_v"/>
-              </vbox>
-            </hbox>
-          </vbox>
-        </frame>
-        <frame label="EG 3">
-          <vbox>
-            <hbox>
-              <vbox>
-                <label param="adsr3_a"/>
-                <align>
-                  <knob param="adsr3_a" expand="0" fill="0"/>
-                </align>
-                <value param="adsr3_a"/>
-              </vbox>
-              <vbox>
-                <label param="adsr3_d"/>
-                <align>
-                  <knob param="adsr3_d" expand="0" fill="0"/>
-                </align>
-                <value param="adsr3_d"/>
-              </vbox>
-              <vbox>
-                <label param="adsr3_s"/>
-                <align>
-                  <knob param="adsr3_s" expand="0" fill="0"/>
-                </align>
-                <value param="adsr3_s"/>
-              </vbox>
-              <vbox>
-                <label param="adsr3_r"/>
-                <align>
-                  <knob param="adsr3_r" expand="0" fill="0"/>
-                </align>
-                <value param="adsr3_r"/>
-              </vbox>
-              <vbox>
-                <label param="adsr3_v"/>
-                <align>
-                  <knob param="adsr3_v" expand="0" fill="0"/>
-                </align>
-                <value param="adsr3_v"/>
-              </vbox>
-            </hbox>
-          </vbox>
-        </frame>
-        <frame label="Global EQ">
-          <hbox>
-            <vbox>
-              <label param="bass_freq"/>
-              <knob param="bass_freq"/>
-              <value param="bass_freq"/>
+                <toggle param="quad_env" />
             </vbox>
-            <vbox>
-              <label param="bass_gain"/>
-              <knob param="bass_gain"/>
-              <value param="bass_gain"/>
-            </vbox>
-            <vbox>
-              <label param="treble_freq"/>
-              <knob param="treble_freq"/>
-              <value param="treble_freq"/>
-            </vbox>
-            <vbox>
-              <label param="treble_gain"/>
-              <knob param="treble_gain"/>
-              <value param="treble_gain"/>
-            </vbox>
-          </hbox>
-        </frame>
-      </vbox>
-    </hbox>
-    <vbox page="Advanced">
-      <frame label="Percussive section">
-        <vbox>
-          <align scale-x="0.0" scale-y="1.0">
-            <vbox>
-              <keyboard octaves="10"/>
-              <curve key="map_curve" maxpoints="4"/>
-            </vbox>
-          </align>
-          <hbox>
-            <table rows="2" cols="5">
-              <vbox attach-x="0" attach-y="0">
-                <label param="perc_waveform"/>
-                <align>
-                  <combo param="perc_waveform"/>
-                </align>
-                <label/>
-              </vbox>
-              <vbox attach-x="1" attach-y="0">
-                <label param="perc_harmonic"/>
-                <knob param="perc_harmonic" />
-                <value param="perc_harmonic"/>
-              </vbox>
-              <vbox attach-x="2" attach-y="0">
-                <label param="perc_level"/>
-                <knob param="perc_level" />
-                <value param="perc_level"/>
-              </vbox>
-              <vbox attach-x="3" attach-y="0">
-                <label param="perc_decay"/>
-                <knob param="perc_decay" />
-                <value param="perc_decay"/>
-              </vbox>
-              <vbox attach-x="4" attach-y="0">
-                <label param="perc_vel2amp"/>
-                <knob param="perc_vel2amp" />
-                <value param="perc_vel2amp"/>
-              </vbox>
-              <hbox attach-x="0" attach-y="1" attach-w="5" attach-h="1" />
-              <vbox attach-x="0" attach-y="2">
-                <label param="perc_fm_waveform"/>
-                <align>
-                  <combo param="perc_fm_waveform"/>
-                </align>
-                <label/>
-              </vbox>
-              <vbox attach-x="1" attach-y="2">
-                <label param="perc_fm_harmonic"/>
-                <knob param="perc_fm_harmonic" />
-                <value param="perc_fm_harmonic"/>
-              </vbox>
-              <vbox attach-x="2" attach-y="2">
-                <label param="perc_fm_depth"/>
-                <knob param="perc_fm_depth" />
-                <value param="perc_fm_depth"/>
-              </vbox>
-              <vbox attach-x="3" attach-y="2">
-                <label param="perc_fm_decay"/>
-                <knob param="perc_fm_decay" />
-                <value param="perc_fm_decay"/>
-              </vbox>
-              <vbox attach-x="4" attach-y="2">
-                <label param="perc_vel2fm"/>
-                <knob param="perc_vel2fm" />
-                <value param="perc_vel2fm"/>
-              </vbox>
-            </table>
-            <vbox>
-              <hbox>
-                <align>
-                  <vbox>
-                    <label param="perc_stereo"/>
-                    <knob param="perc_stereo" expand="0" fill="0" type="3"/>
-                    <value param="perc_stereo"/>
-                  </vbox>
-                </align>
-                <align>
-                  <vbox>
-                    <label param="perc_trigger"/>
-                    <align>
-                      <combo param="perc_trigger"/>
-                    </align>
-                  </vbox>
-                </align>
-              </hbox>
-            </vbox>
-          </hbox>
         </vbox>
-      </frame>
-      <frame label="Vibrato" >
+    </frame>
+    <vbox spacing="8">
         <hbox>
-          <vbox >
-            <label param="vib_rate"/>
-            <knob param="vib_rate" />
-            <value param="vib_rate"/>
-          </vbox>
-          <vbox >
-            <label param="vib_amt"/>
-            <knob param="vib_amt" />
-            <value param="vib_amt"/>
-          </vbox>
-          <vbox >
-            <label param="vib_wet"/>
-            <knob param="vib_wet" />
-            <value param="vib_wet"/>
-          </vbox>
-          <vbox >
-            <label param="vib_phase"/>
-            <knob param="vib_phase" type="3"/>
-            <value param="vib_phase"/>
-          </vbox>
-          <vbox >
-            <label param="vib_type"/>
-            <combo param="vib_type" />
-            <label />
-          </vbox>
-          <vbox >
-            <label param="vib_mode"/>
-            <combo param="vib_mode" />
-            <label />
-          </vbox>
+            <if cond="directlink">
+                <frame label="Response">
+                    <line-graph param="master" refresh="1" width="200" height="40" expand="0" fill="0" />
+                </frame>
+            </if>
+            <frame label="Vibrato">
+                <vbox>
+                    <hbox homogeneous="0">
+                        <vbox>
+                            <label text="Rate" />
+                            <knob param="vib_rate" />
+                            <value param="vib_rate" />
+                        </vbox>
+                        <vbox>
+                            <label text="Amount" />
+                            <knob param="vib_amt" />
+                            <value param="vib_amt" />
+                        </vbox>
+                        <label text=" "/>
+                        <vbox>
+                            <label text="Mix" />
+                            <knob param="vib_wet" />
+                            <value param="vib_wet" />
+                        </vbox>
+                        <vbox>
+                            <label text="Phase" />
+                            <knob param="vib_phase" type="3" />
+                            <value param="vib_phase" />
+                        </vbox>
+                    </hbox>
+                    <hbox>
+                        <combo param="vib_type" />
+                        <combo param="vib_mode" />
+                    </hbox>
+                </vbox>
+            </frame>
+            <frame label="Global EQ">
+                <hbox>
+                    <vbox>
+                        <label param="bass_freq" />
+                        <knob param="bass_freq" />
+                        <value param="bass_freq" />
+                    </vbox>
+                    <vbox>
+                        <label param="bass_gain" />
+                        <knob param="bass_gain" />
+                        <value param="bass_gain" />
+                    </vbox>
+                    <vbox>
+                        <label param="treble_freq" />
+                        <knob param="treble_freq" />
+                        <value param="treble_freq" />
+                    </vbox>
+                    <vbox>
+                        <label param="treble_gain" />
+                        <knob param="treble_gain" />
+                        <value param="treble_gain" />
+                    </vbox>
+                </hbox>
+            </frame>
         </hbox>
-      </frame>
-      <frame label="Additional settings" >
-        <hbox>
-          <vbox>
-            <label param="transpose"/>
-            <knob param="transpose" type="1"/>
-            <value param="transpose"/>
-          </vbox>
-          <vbox>
-            <label param="detune"/>
-            <knob param="detune" type="1"/>
-            <value param="detune"/>
-          </vbox>
-          <vbox>
-            <label param="pbend_range"/>
-            <knob param="pbend_range"/>
-            <value param="pbend_range"/>
-          </vbox>
-          <vbox>
-            <label param="foldnote"/>
-            <knob param="foldnote"/>
-            <value param="foldnote"/>
-          </vbox>
-        </hbox>
-      </frame>
-      <vbox/>
+        <notebook>
+            <vbox page="Tone Generator">
+                <table rows="12" cols="9">
+                    <label attach-x="0" attach-y="1" text="Level" />
+                    <label attach-x="0" attach-y="3" text="Harmonic" />
+                    <label attach-x="0" attach-y="5" text="Wave" />
+                    <label attach-x="0" attach-y="6" text="Detune" />
+                    <label attach-x="0" attach-y="8" text="Phase" />
+                    <label attach-x="0" attach-y="10" text="Pan" />
+                    <label attach-x="0" attach-y="12" text="Send to" />
+                    <label attach-x="1" attach-y="0" param="l1" />
+                    <vscale height="150" attach-x="1" attach-y="1" param="l1" />
+                    <value attach-x="1" attach-y="2" param="l1" />
+                    <knob attach-x="1" attach-y="3" param="f1" />
+                    <value attach-x="1" attach-y="4" param="f1" />
+                    <combo attach-x="1" attach-y="5" param="w1" />
+                    <knob attach-x="1" attach-y="6" param="detune1" type="1" />
+                    <value attach-x="1" attach-y="7" param="detune1" />
+                    <knob attach-x="1" attach-y="8" param="phase1" type="3" />
+                    <value attach-x="1" attach-y="9" param="phase1" />
+                    <knob attach-x="1" attach-y="10" param="pan1" type="1" />
+                    <value attach-x="1" attach-y="11" param="pan1" />
+                    <combo attach-x="1" attach-y="12" param="routing1" />
+                    <label attach-x="2" attach-y="0" param="l2" />
+                    <vscale height="150" attach-x="2" attach-y="1" param="l2" />
+                    <value attach-x="2" attach-y="2" param="l2" />
+                    <knob attach-x="2" attach-y="3" param="f2" />
+                    <value attach-x="2" attach-y="4" param="f2" />
+                    <combo attach-x="2" attach-y="5" param="w2" />
+                    <knob attach-x="2" attach-y="6" param="detune2" type="1" />
+                    <value attach-x="2" attach-y="7" param="detune2" />
+                    <knob attach-x="2" attach-y="8" param="phase2" type="3" />
+                    <value attach-x="2" attach-y="9" param="phase2" />
+                    <knob attach-x="2" attach-y="10" param="pan2" type="1" />
+                    <value attach-x="2" attach-y="11" param="pan2" />
+                    <combo attach-x="2" attach-y="12" param="routing2" />
+                    <label attach-x="3" attach-y="0" param="l3" />
+                    <vscale height="150" attach-x="3" attach-y="1" param="l3" />
+                    <value attach-x="3" attach-y="2" param="l3" />
+                    <knob attach-x="3" attach-y="3" param="f3" />
+                    <value attach-x="3" attach-y="4" param="f3" />
+                    <combo attach-x="3" attach-y="5" param="w3" />
+                    <knob attach-x="3" attach-y="6" param="detune3" type="1" />
+                    <value attach-x="3" attach-y="7" param="detune3" />
+                    <knob attach-x="3" attach-y="8" param="phase3" type="3" />
+                    <value attach-x="3" attach-y="9" param="phase3" />
+                    <knob attach-x="3" attach-y="10" param="pan3" type="1" />
+                    <value attach-x="3" attach-y="11" param="pan3" />
+                    <combo attach-x="3" attach-y="12" param="routing3" />
+                    <label attach-x="4" attach-y="0" param="l4" />
+                    <vscale height="150" attach-x="4" attach-y="1" param="l4" />
+                    <value attach-x="4" attach-y="2" param="l4" />
+                    <knob attach-x="4" attach-y="3" param="f4" />
+                    <value attach-x="4" attach-y="4" param="f4" />
+                    <combo attach-x="4" attach-y="5" param="w4" />
+                    <knob attach-x="4" attach-y="6" param="detune4" type="1" />
+                    <value attach-x="4" attach-y="7" param="detune4" />
+                    <knob attach-x="4" attach-y="8" param="phase4" type="3" />
+                    <value attach-x="4" attach-y="9" param="phase4" />
+                    <knob attach-x="4" attach-y="10" param="pan4" type="1" />
+                    <value attach-x="4" attach-y="11" param="pan4" />
+                    <combo attach-x="4" attach-y="12" param="routing4" />
+                    <label attach-x="5" attach-y="0" param="l5" />
+                    <vscale height="150" attach-x="5" attach-y="1" param="l5" />
+                    <value attach-x="5" attach-y="2" param="l5" />
+                    <knob attach-x="5" attach-y="3" param="f5" />
+                    <value attach-x="5" attach-y="4" param="f5" />
+                    <combo attach-x="5" attach-y="5" param="w5" />
+                    <knob attach-x="5" attach-y="6" param="detune5" type="1" />
+                    <value attach-x="5" attach-y="7" param="detune5" />
+                    <knob attach-x="5" attach-y="8" param="phase5" type="3" />
+                    <value attach-x="5" attach-y="9" param="phase5" />
+                    <knob attach-x="5" attach-y="10" param="pan5" type="1" />
+                    <value attach-x="5" attach-y="11" param="pan5" />
+                    <combo attach-x="5" attach-y="12" param="routing5" />
+                    <label attach-x="6" attach-y="0" param="l6" />
+                    <vscale height="150" attach-x="6" attach-y="1" param="l6" />
+                    <value attach-x="6" attach-y="2" param="l6" />
+                    <knob attach-x="6" attach-y="3" param="f6" />
+                    <value attach-x="6" attach-y="4" param="f6" />
+                    <combo attach-x="6" attach-y="5" param="w6" />
+                    <knob attach-x="6" attach-y="6" param="detune6" type="1" />
+                    <value attach-x="6" attach-y="7" param="detune6" />
+                    <knob attach-x="6" attach-y="8" param="phase6" type="3" />
+                    <value attach-x="6" attach-y="9" param="phase6" />
+                    <knob attach-x="6" attach-y="10" param="pan6" type="1" />
+                    <value attach-x="6" attach-y="11" param="pan6" />
+                    <combo attach-x="6" attach-y="12" param="routing6" />
+                    <label attach-x="7" attach-y="0" param="l7" />
+                    <vscale height="150" attach-x="7" attach-y="1" param="l7" />
+                    <value attach-x="7" attach-y="2" param="l7" />
+                    <knob attach-x="7" attach-y="3" param="f7" />
+                    <value attach-x="7" attach-y="4" param="f7" />
+                    <combo attach-x="7" attach-y="5" param="w7" />
+                    <knob attach-x="7" attach-y="6" param="detune7" type="1" />
+                    <value attach-x="7" attach-y="7" param="detune7" />
+                    <knob attach-x="7" attach-y="8" param="phase7" type="3" />
+                    <value attach-x="7" attach-y="9" param="phase7" />
+                    <knob attach-x="7" attach-y="10" param="pan7" type="1" />
+                    <value attach-x="7" attach-y="11" param="pan7" />
+                    <combo attach-x="7" attach-y="12" param="routing7" />
+                    <label attach-x="8" attach-y="0" param="l8" />
+                    <vscale height="150" attach-x="8" attach-y="1" param="l8" />
+                    <value attach-x="8" attach-y="2" param="l8" />
+                    <knob attach-x="8" attach-y="3" param="f8" />
+                    <value attach-x="8" attach-y="4" param="f8" />
+                    <combo attach-x="8" attach-y="5" param="w8" />
+                    <knob attach-x="8" attach-y="6" param="detune8" type="1" />
+                    <value attach-x="8" attach-y="7" param="detune8" />
+                    <knob attach-x="8" attach-y="8" param="phase8" type="3" />
+                    <value attach-x="8" attach-y="9" param="phase8" />
+                    <knob attach-x="8" attach-y="10" param="pan8" type="1" />
+                    <value attach-x="8" attach-y="11" param="pan8" />
+                    <combo attach-x="8" attach-y="12" param="routing8" />
+                    <label attach-x="9" attach-y="0" param="l9" />
+                    <vscale height="150" attach-x="9" attach-y="1" param="l9" />
+                    <value attach-x="9" attach-y="2" param="l9" />
+                    <knob attach-x="9" attach-y="3" param="f9" />
+                    <value attach-x="9" attach-y="4" param="f9" />
+                    <combo attach-x="9" attach-y="5" param="w9" />
+                    <knob attach-x="9" attach-y="6" param="detune9" type="1" />
+                    <value attach-x="9" attach-y="7" param="detune9" />
+                    <knob attach-x="9" attach-y="8" param="phase9" type="3" />
+                    <value attach-x="9" attach-y="9" param="phase9" />
+                    <knob attach-x="9" attach-y="10" param="pan9" type="1" />
+                    <value attach-x="9" attach-y="11" param="pan9" />
+                    <combo attach-x="9" attach-y="12" param="routing9" />
+                </table>
+            </vbox>
+            <vbox page="Sound Processor">
+                <frame label="Percussive section">
+                    <vbox>
+                        <align scale-x="0.0" scale-y="1.0">
+                            <vbox>
+                                <keyboard octaves="10" />
+                                <curve key="map_curve" maxpoints="4" />
+                            </vbox>
+                        </align>
+                        <hbox>
+                            <vbox>
+                                <label text="Carrier" />
+                                <align>
+                                    <combo param="perc_waveform" />
+                                </align>
+                                <label/>
+                            </vbox>
+                            <vbox>
+                                <label text="C:Harmonic" />
+                                <knob param="perc_harmonic" />
+                                <value param="perc_harmonic" />
+                            </vbox>
+                            <vbox>
+                                <label text="C:Level" />
+                                <knob param="perc_level" />
+                                <value param="perc_level" />
+                            </vbox>
+                            <vbox>
+                                <label text="C:Decay" />
+                                <knob param="perc_decay" />
+                                <value param="perc_decay" />
+                            </vbox>
+                            <vbox>
+                                <label text="C:Vel>Amp" />
+                                <knob param="perc_vel2amp" />
+                                <value param="perc_vel2amp" />
+                            </vbox>
+                            
+                            <label/>
+                            
+                            <vbox attach-x="0" attach-y="2">
+                                <label text="Modulator" />
+                                <align>
+                                    <combo param="perc_fm_waveform" />
+                                </align>
+                                <label/>
+                            </vbox>
+                            <vbox>
+                                <label text="M:Harmonic" />
+                                <knob param="perc_fm_harmonic" />
+                                <value param="perc_fm_harmonic" />
+                            </vbox>
+                            <vbox>
+                                <label text="M:Depth" />
+                                <knob param="perc_fm_depth" />
+                                <value param="perc_fm_depth" />
+                            </vbox>
+                            <vbox>
+                                <label text="M:Decay" />
+                                <knob param="perc_fm_decay" />
+                                <value param="perc_fm_decay" />
+                            </vbox>
+                            <vbox>
+                                <label text="M:Vel>FM" />
+                                <knob param="perc_vel2fm" />
+                                <value param="perc_vel2fm" />
+                            </vbox>
+                            
+                            <vbox>
+                                <label text="Trigger" />
+                                <align>
+                                    <combo param="perc_trigger" />
+                                </align>
+                                <label/>
+                            </vbox>
+                            <vbox>
+                                <label text="Stereo Phase" />
+                                <knob param="perc_stereo" expand="0" fill="0" type="3" />
+                                <value param="perc_stereo" />
+                            </vbox>
+                        </hbox>
+                    </vbox>
+                </frame>
+                <hbox>
+                    <vbox>
+                        <frame label="Filter 1">
+                            <vbox>
+                                <hbox homogeneous="1">
+                                    <vbox>
+                                        <label param="f1_cutoff" />
+                                        <knob param="f1_cutoff" expand="0" fill="0" />
+                                        <value param="f1_cutoff" />
+                                    </vbox>
+                                    <vbox>
+                                        <label param="f1_res" />
+                                        <knob param="f1_res" expand="0" fill="0" />
+                                        <value param="f1_res" />
+                                    </vbox>
+                                    <vbox>
+                                        <label param="f1_keyf" />
+                                        <knob param="f1_keyf" expand="0" fill="0" />
+                                        <value param="f1_keyf" />
+                                    </vbox>
+                                    <vbox>
+                                        <label param="f1_env1" />
+                                        <knob param="f1_env1" expand="0" fill="0" type="1" />
+                                        <value param="f1_env1" />
+                                    </vbox>
+                                    <vbox>
+                                        <label param="f1_env2" />
+                                        <knob param="f1_env2" expand="0" fill="0" type="1" />
+                                        <value param="f1_env2" />
+                                    </vbox>
+                                    <vbox>
+                                        <label param="f1_env3" />
+                                        <knob param="f1_env3" expand="0" fill="0" type="1" />
+                                        <value param="f1_env3" />
+                                    </vbox>
+                                </hbox>
+                                <hbox>
+                                    <label param="filter_chain" />
+                                    <align><combo param="filter_chain" /></align>
+                                    <label param="filter1_type" />
+                                    <align><combo param="filter1_type" /></align>
+                                </hbox>
+                            </vbox>
+                        </frame>
+                        <frame label="Filter 2">
+                            <hbox homogeneous="1">
+                                <vbox>
+                                    <label param="f2_cutoff" />
+                                    <knob param="f2_cutoff" expand="0" fill="0" />
+                                    <value param="f2_cutoff" />
+                                </vbox>
+                                <vbox>
+                                    <label param="f2_res" />
+                                    <knob param="f2_res" expand="0" fill="0" />
+                                    <value param="f2_res" />
+                                </vbox>
+                                <vbox>
+                                    <label param="f2_keyf" />
+                                    <knob param="f2_keyf" expand="0" fill="0" />
+                                    <value param="f2_keyf" />
+                                </vbox>
+                                <vbox>
+                                    <label param="f2_env1" />
+                                    <knob param="f2_env1" expand="0" fill="0" type="1" />
+                                    <value param="f2_env1" />
+                                </vbox>
+                                <vbox>
+                                    <label param="f2_env2" />
+                                    <knob param="f2_env2" expand="0" fill="0" type="1" />
+                                    <value param="f2_env2" />
+                                </vbox>
+                                <vbox>
+                                    <label param="f2_env3" />
+                                    <knob param="f2_env3" expand="0" fill="0" type="1" />
+                                    <value param="f2_env3" />
+                                </vbox>
+                            </hbox>
+                        </frame>
+                    </vbox>
+                    <vbox>
+                        <frame label="Envelope Generator 1">
+                            <hbox>
+                                <vbox>
+                                    <label text="Attack" />
+                                    <knob param="adsr_a" expand="0" fill="0" />
+                                    <value param="adsr_a" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Decay" />
+                                    <knob param="adsr_d" expand="0" fill="0" />
+                                    <value param="adsr_d" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Sustain" />
+                                    <knob param="adsr_s" expand="0" fill="0" />
+                                    <value param="adsr_s" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Release" />
+                                    <knob param="adsr_r" expand="0" fill="0" />
+                                    <value param="adsr_r" />
+                                </vbox>
+                                <vbox>
+                                    <label text="VelMod" />
+                                    <knob param="adsr_v" expand="0" fill="0" />
+                                    <value param="adsr_v" />
+                                </vbox>
+                                <vbox>
+                                    <label text="To Amp" />
+                                    <combo param="eg1_amp_ctl"/>
+                                    <label/>
+                                    <label/>
+                                </vbox>
+                            </hbox>
+                        </frame>
+                        <frame label="Envelope Generator 2">
+                            <hbox>
+                                <vbox>
+                                    <label text="Attack" />
+                                    <knob param="adsr2_a" expand="0" fill="0" />
+                                    <value param="adsr2_a" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Decay" />
+                                    <knob param="adsr2_d" expand="0" fill="0" />
+                                    <value param="adsr2_d" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Sustain" />
+                                    <knob param="adsr2_s" expand="0" fill="0" />
+                                    <value param="adsr2_s" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Release" />
+                                    <knob param="adsr2_r" expand="0" fill="0" />
+                                    <value param="adsr2_r" />
+                                </vbox>
+                                <vbox>
+                                    <label text="VelMod" />
+                                    <knob param="adsr2_v" expand="0" fill="0" />
+                                    <value param="adsr2_v" />
+                                </vbox>
+                                <vbox>
+                                    <label text="To Amp" />
+                                    <combo param="eg2_amp_ctl" />
+                                    <label/>
+                                    <label/>
+                                </vbox>
+                            </hbox>
+                        </frame>
+                        <frame label="Envelope Generator 3">
+                            <hbox>
+                                <vbox>
+                                    <label text="Attack" />
+                                    <knob param="adsr3_a" expand="0" fill="0" />
+                                    <value param="adsr3_a" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Decay" />
+                                    <knob param="adsr3_d" expand="0" fill="0" />
+                                    <value param="adsr3_d" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Sustain" />
+                                    <knob param="adsr3_s" expand="0" fill="0" />
+                                    <value param="adsr3_s" />
+                                </vbox>
+                                <vbox>
+                                    <label text="Release" />
+                                    <knob param="adsr3_r" expand="0" fill="0" />
+                                    <value param="adsr3_r" />
+                                </vbox>
+                                <vbox>
+                                    <label text="VelMod" />
+                                    <knob param="adsr3_v" expand="0" fill="0" />
+                                    <value param="adsr3_v" />
+                                </vbox>
+                                <vbox>
+                                    <label text="To Amp" />
+                                    <combo param="eg3_amp_ctl" />
+                                    <label/>
+                                    <label/>
+                                </vbox>
+                            </hbox>
+                        </frame>
+                    </vbox>
+                </hbox>
+                
+            </vbox>
+        </notebook>
     </vbox>
-  </notebook>
-</vbox>
+</hbox>

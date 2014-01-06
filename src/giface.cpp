@@ -203,7 +203,6 @@ std::string parameter_properties::to_string(float value) const
         snprintf(buf, sizeof(buf), "+inf"); // XXXKF change to utf-8 infinity
     else
         snprintf(buf, sizeof(buf), "%g", value);
-    
     switch(flags & PF_UNITMASK) {
     case PF_UNIT_DB: return string(buf) + " dB";
     case PF_UNIT_HZ: return string(buf) + " Hz";
@@ -339,22 +338,22 @@ void calf_plugins::set_channel_dash(cairo_iface *context, int channel)
         case 0:
         default:
             dash[0] = 6;
-            dash[1] = 2;
+            dash[1] = 1.5;
             length = 2;
             break;
         case 1:
-            dash[0] = 4;
-            dash[1] = 2;
+            dash[0] = 4.5;
+            dash[1] = 1.5;
             length = 2;
             break;
         case 2:
-            dash[0] = 2;
-            dash[1] = 2;
+            dash[0] = 3;
+            dash[1] = 1.5;
             length = 2;
             break;
         case 3:
-            dash[0] = 1;
-            dash[1] = 2;
+            dash[0] = 1.5;
+            dash[1] = 1.5;
             length = 2;
             break;
     }

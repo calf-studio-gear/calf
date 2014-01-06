@@ -1236,7 +1236,7 @@ const char *organ_wave_names[] = {
     "Bell", "Bell2",
     "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
     "DSaw", "DSqr", "DPls",
-    "P:SynStr","P:WideStr","P:Sine","P:Bell","P:Space","P:Voice","P:Hiss","P:Chant",
+    "P:SynS","P:WideS","P:Sine","P:Bell","P:Space","P:Voice","P:Hiss","P:Chant",
 };
 
 const char *organ_routing_names[] = { "Out", "Flt 1", "Flt 2"  };

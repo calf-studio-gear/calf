@@ -2712,10 +2712,15 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         // input is drawn as bars with less opacity
         *mode = 1;
         context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
-    } else {
+    } else if (last_drawn == 1) {
+        // output is a precise line
         context->set_line_width(0.75);
+    } else {
+        // envelope, attack and release are dotted
+        set_channel_dash(context, last_drawn - 2);
+        context->set_line_width(1);
     }
-    
+                
     // draw curve
     for (int i = 0; i <= points; i++) {
         int pos = (pbuffer_draw + i * 5) % pbuffer_size + last_drawn;
