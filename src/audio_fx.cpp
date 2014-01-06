@@ -1294,17 +1294,51 @@ bool bitreduction::get_gridline(int subindex, int phase, float &pos, bool &verti
 
 //////////////////////////////////////////////////////////////////
 
-//samplerate::samplerate()
-//{
-    //from         = 44100;
-    //to           = 44100;
-//}
-//void samplerate::set_sample_rates (uint32_t f, uint32_t t)
-//{
-    //from = f;
-    //to   = t;
-//}
-//void samplerate::process(float *ins, float *outs, uint32_t offset, uint32_t numsamples)
-//{
-    
-//}
+
+resampleN::resampleN()
+{
+    factor  = 2;
+    srate   = 0;
+    filters = 2;
+}
+resampleN::~resampleN()
+{
+    free(tmp);
+}
+void resampleN::set_params(uint32_t sr, int fctr = 2, int fltrs = 2)
+{
+    srate   = sr;
+    factor  = std::min(16, std::max(1, fctr));
+    filters = std::min(4, std::max(1, fltrs));
+    // set all filters
+    filter[0][0].set_lp_rbj(std::max(25000., (double)srate / 2), 0.8, (float)srate * factor);
+    for (int i = 1; i < filters; i++) {
+        filter[0][i].copy_coeffs(filter[0][0]);
+        filter[1][i].copy_coeffs(filter[0][0]);
+    }
+}
+double *resampleN::upsample(double sample)
+{
+    tmp[0] = sample;
+    if (factor > 1) {
+        for (int f = 0; f < filters; f++)
+            tmp[0] = filter[0][f].process(sample);
+        for (int i = 1; i < factor; i++) {
+            tmp[i] = 0;
+            for (int f = 0; f < filters; f++)
+                tmp[i] = filter[0][0].process(sample);
+        }
+    }
+    return tmp;
+}
+double resampleN::downsample(double *sample)
+{
+    if (factor > 1) {
+        for(int i = 0; i < factor; i++) {
+            for (int f = 0; f < filters; f++) {
+                sample[i] = filter[1][f].process(sample[i]);
+            }
+        }
+    }
+    return sample[0];
+}

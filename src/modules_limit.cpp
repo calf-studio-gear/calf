@@ -69,12 +69,15 @@ void limiter_audio_module::params_changed()
         limit_old = *params[param_limit];
         limiter.reset_asc();
     }
+    resampler[0].set_params(srate, 4, 2);
+    resampler[1].set_params(srate, 4, 2);
+    limiter.set_sample_rate(srate * *params[param_oversampling]);
 }
 
 void limiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    limiter.set_sample_rate(srate);
+    limiter.set_sample_rate(srate * *params[param_oversampling]);
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
     meters.init(params, meter, clip, 5, srate);
@@ -107,13 +110,29 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // out vars
             float outL = inL;
             float outR = inR;
-
+            
+            // upsampling
+            double *samplesL = resampler[0].upsample((double)outL);
+            double *samplesR = resampler[1].upsample((double)outR);
+            
+            float tmpL;
+            float tmpR;
+            
             // process gain reduction
             float fickdich[0];
-            limiter.process(outL, outR, fickdich);
+            for (int i = 0; i < *params[param_oversampling]; i ++) {
+                tmpL = samplesL[i];
+                tmpR = samplesR[i];
+                limiter.process(tmpL, tmpR, fickdich);
+            }
             if(limiter.get_asc())
                 asc_led = srate >> 3;
-
+            
+            // downsampling
+            outL = resampler[0].downsample(samplesL);
+            outR = resampler[1].downsample(samplesR);
+            
+            
             // should never be used. but hackers are paranoid by default.
             // so we make shure NOTHING is above limit
             outL = std::max(outL, -*params[param_limit]);

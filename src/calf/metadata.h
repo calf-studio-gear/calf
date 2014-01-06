@@ -280,6 +280,7 @@ struct limiter_metadata: public plugin_metadata<limiter_metadata>
            param_limit, param_attack, param_release,
            param_att,
            param_asc, param_asc_led, param_asc_coeff,
+           param_oversampling,
            param_count };
     PLUGIN_NAME_ID_LABEL("limiter", "limiter", "Limiter")
 };

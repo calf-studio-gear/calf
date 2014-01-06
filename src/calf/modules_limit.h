@@ -42,6 +42,7 @@ private:
     uint32_t asc_led;
     int mode, mode_old;
     dsp::lookahead_limiter limiter;
+    dsp::resampleN resampler[2];
     vumeters meters;
 public:
     uint32_t srate;

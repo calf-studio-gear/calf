@@ -689,16 +689,21 @@ public:
     bool get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, calf_plugins::cairo_iface *context) const;
 };
 
-//class samplerate
-//{
-//private:
-//public:
-    //uint32_t from;
-    //uint32_t to;
-    //samplerate();
-    //void set_sample_rates(uint32_t from, uint32_t to);
-    //void process(float *ins, float *outs, uint32_t offset, uint32_t numsamples);
-//};
+class resampleN
+{
+private:
+public:
+    uint32_t srate; // sample rate; source for upsampling, target for downsampling
+    int factor; // number of added/removed samples, max 16
+    int filters; // how many lowpasses should be used, max 4
+    double tmp[16];
+    dsp::biquad_d2 filter[2][4];
+    resampleN();
+    ~resampleN();
+    void set_params(uint32_t sr, int factor, int filters);
+    double *upsample(double sample);
+    double downsample(double *sample);
+};
 
 #if 0
 { to keep editor happy
