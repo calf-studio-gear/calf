@@ -1336,3 +1336,36 @@ double resampleN::downsample(double *sample)
     }
     return sample[0];
 }
+
+//////////////////////////////////////////////////////////////////
+
+samplereduction::samplereduction()
+{
+    target  = 0;
+    real    = 0;
+    samples = 0;
+    last    = 0;
+    amount  = 0;
+    round   = 0;
+}
+void samplereduction::set_params(float am)
+{
+    amount  = am;
+    round   = roundf(amount);
+    samples = round;
+}
+double samplereduction::process(double in)
+{
+    samples ++;
+    if (samples >= round) {
+        target += amount;
+        real += round;
+        if (target + amount >= real + 1) {
+            last = in;
+            target = 0;
+            real   = 0;
+        }
+        samples = 0;
+    }
+    return last;
+}

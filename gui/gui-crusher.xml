@@ -34,6 +34,10 @@
                     <knob param="bits" size="5" type="2" />
                     <value param="bits" />
                 </vbox>
+                <hbox>
+                    <label param="mode" expand="0" fill="0"/>
+                    <combo param="mode" expand="0" fill="0"/>
+                </hbox>
             </vbox>
             <if cond="directlink">
                 <frame label="Response">
@@ -48,6 +52,13 @@
                         <value param="dc" />
                     </vbox>
                     <vbox>
+                        <label param="samples" />
+                        <knob param="samples" size="3" />
+                        <value param="samples" />
+                    </vbox>
+                </hbox>
+                <hbox spacing="20" homogeneous="1">
+                    <vbox>
                         <label param="anti-aliasing" />
                         <knob param="anti-aliasing" size="3" />
                         <value param="anti-aliasing" />
@@ -57,10 +68,6 @@
                         <knob param="morph" size="3" />
                         <value param="morph" />
                     </vbox>
-                </hbox>
-                <hbox>
-                    <label param="mode" expand="0" fill="0"/>
-                    <combo param="mode" expand="0" fill="0"/>
                 </hbox>
             </vbox>
         </hbox>

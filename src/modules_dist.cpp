@@ -946,6 +946,8 @@ void crusher_audio_module::params_changed()
                             *params[param_mode],
                             *params[param_dc],
                             *params[param_aa]);
+    samplereduction[0].set_params(*params[param_samples]);
+    samplereduction[1].set_params(*params[param_samples]);
 }
 
 void crusher_audio_module::set_sample_rate(uint32_t sr)
@@ -974,9 +976,12 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // process
         while(offset < numsamples) {
             // cycle through samples
-            outs[0][offset] = bitreduction.process(ins[0][offset] * *params[param_level_in]) * *params[param_level_out];
-            outs[1][offset] = bitreduction.process(ins[1][offset] * *params[param_level_in]) * *params[param_level_out];
-            
+            outs[0][offset] = samplereduction[0].process(ins[0][offset] * *params[param_level_in]);
+            outs[1][offset] = samplereduction[1].process(ins[1][offset] * *params[param_level_in]);
+            outs[0][offset] = outs[0][offset] * *params[param_morph] + ins[0][offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
+            outs[1][offset] = outs[1][offset] * *params[param_morph] + ins[1][offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
+            outs[0][offset] = bitreduction.process(outs[0][offset]) * *params[param_level_out];
+            outs[1][offset] = bitreduction.process(outs[1][offset]) * *params[param_level_out];
             float values[] = {ins[0][offset], ins[1][offset], outs[0][offset], outs[1][offset]};
             meters.process(values);
             // next sample

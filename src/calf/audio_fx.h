@@ -704,6 +704,18 @@ public:
     double downsample(double *sample);
 };
 
+class samplereduction
+{
+private:
+public:
+    float target, real, amount;
+    uint samples, round, cnt;
+    double last;
+    samplereduction();
+    void set_params(float am);
+    double process(double in);
+};
+
 #if 0
 { to keep editor happy
 #endif

@@ -145,6 +145,7 @@ class crusher_audio_module:
 private:
     vumeters meters;
     dsp::bitreduction bitreduction;
+    dsp::samplereduction samplereduction[2];
 public:
     uint32_t srate;
     crusher_audio_module();
