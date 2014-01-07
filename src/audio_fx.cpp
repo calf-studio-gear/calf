@@ -1176,6 +1176,8 @@ bitreduction::bitreduction()
     offset       = 1;
     dc           = 0;
     sqr          = 0;
+    aa           = 0;
+    aa1          = 0;
     redraw_graph = true;
     bypass       = true;
 }
@@ -1198,6 +1200,7 @@ void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd,
     if (round)
         coeff    = floorf(coeff);
     sqr          = sqrt(coeff / 2);
+    aa1          = (1.f - aa) / 2.f;
     redraw_graph = true;
 }
 float bitreduction::add_dc(float s, float dc) const
@@ -1210,7 +1213,8 @@ float bitreduction::remove_dc(float s, float dc) const
 }
 float bitreduction::waveshape(float in) const
 {
-    float n;
+    double y;
+    double k;
     
     // add offset
     in *= offset;
@@ -1222,32 +1226,38 @@ float bitreduction::waveshape(float in) const
     switch (mode) {
         case 0:
         default:
-            n = roundf((in) * coeff) / coeff;
+            // linear
+            y = (in) * coeff;
+            k = roundf(y);
+            if (k - aa1 <= y and y <= k + aa1) {
+                k /= coeff;
+            } else if (y > k + aa1) {
+                k = k / coeff + ((k + 1) / coeff - k / coeff) * 0.5 * (sin(M_PI * (fabs(y - k) - aa1) / aa - M_PI_2) + 1);
+            } else {
+                k = k / coeff - (k / coeff - (k - 1) / coeff) * 0.5 * (sin(M_PI * (fabs(y - k) - aa1) / aa - M_PI_2) + 1);
+            }
             break;
         case 1:
+            // logarithmic
+            y = sqr * log(fabs(in));
             if(in)
-                n = in / fabs(in) * exp(roundf(sqr * log(fabs(in)) + sqr * sqr) / sqr - sqr);
+                k = in / fabs(in) * exp(roundf(y + sqr * sqr) / sqr - sqr);
             else
-                n = 0;
+                k = 0;
+            
             break;
-        //case 2:
-            //if (in - n > 0)
-                //sin((1 * 360.) * M_PI / 180.);
-            //else
-                //sin((1 * 360.) * M_PI / 180.);
-            //break;
     }
     
     // morph between dry and wet signal
-    n += (in - n) * morph;
+    k += (in - k) * morph;
     
     // remove dc
-    n = remove_dc(n, dc);
+    k = remove_dc(k, dc);
     
     // remove offset
-    n /= offset;
+    k /= offset;
     
-    return n;
+    return k;
 }
 float bitreduction::process(float in)
 {
