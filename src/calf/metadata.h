@@ -300,6 +300,7 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
            param_solo0, param_solo1, param_solo2, param_solo3,
            param_effrelease0, param_effrelease1, param_effrelease2, param_effrelease3,
            param_asc, param_asc_led, param_asc_coeff,
+           param_oversampling,
            param_count };
     PLUGIN_NAME_ID_LABEL("multibandlimiter", "multibandlimiter", "Multiband Limiter")
 };

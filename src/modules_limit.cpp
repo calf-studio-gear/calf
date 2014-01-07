@@ -56,7 +56,12 @@ void limiter_audio_module::deactivate()
     is_active = false;
     limiter.deactivate();
 }
-
+void limiter_audio_module::set_srates()
+{
+    resampler[0].set_params(srate, *params[param_oversampling], 2);
+    resampler[1].set_params(srate, *params[param_oversampling], 2);
+    limiter.set_sample_rate(srate * *params[param_oversampling]);
+}
 void limiter_audio_module::params_changed()
 {
     limiter.set_params(*params[param_limit], *params[param_attack], *params[param_release], 1.f, *params[param_asc], pow(0.5, (*params[param_asc_coeff] - 0.5) * 2 * -1), true);
@@ -69,18 +74,16 @@ void limiter_audio_module::params_changed()
         limit_old = *params[param_limit];
         limiter.reset_asc();
     }
-    resampler[0].set_params(srate, 4, 2);
-    resampler[1].set_params(srate, 4, 2);
-    limiter.set_sample_rate(srate * *params[param_oversampling]);
+    set_srates();
 }
 
 void limiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    limiter.set_sample_rate(srate * *params[param_oversampling]);
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
     meters.init(params, meter, clip, 5, srate);
+    set_srates();
 }
 
 uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -124,14 +127,13 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 tmpL = samplesL[i];
                 tmpR = samplesR[i];
                 limiter.process(tmpL, tmpR, fickdich);
+                if(limiter.get_asc())
+                    asc_led = srate >> 3;
             }
-            if(limiter.get_asc())
-                asc_led = srate >> 3;
             
             // downsampling
             outL = resampler[0].downsample(samplesL);
             outR = resampler[1].downsample(samplesR);
-            
             
             // should never be used. but hackers are paranoid by default.
             // so we make shure NOTHING is above limit
@@ -179,6 +181,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     overall_buffer_size = 0;
     _sanitize = false;
     _mode = 0;
+    over = 0;
     for(int i = 0; i < strips; i ++) {
         weight_old[i] = -1.f;
     }
@@ -215,7 +218,16 @@ void multibandlimiter_audio_module::deactivate()
     }
     broadband.deactivate();
 }
-
+void multibandlimiter_audio_module::set_srates()
+{
+    for (int j = 0; j < strips; j ++) {
+        strip[j].set_sample_rate(srate * *params[param_oversampling]);
+    }
+    broadband.set_sample_rate(srate * *params[param_oversampling]);
+    crossover.set_sample_rate(srate * *params[param_oversampling]);
+    resampler[0].set_params(srate, *params[param_oversampling], 2);
+    resampler[1].set_params(srate, *params[param_oversampling], 2);
+}
 void multibandlimiter_audio_module::params_changed()
 {
     // determine mute/solo states
@@ -286,6 +298,10 @@ void multibandlimiter_audio_module::params_changed()
         }
         broadband.reset_asc();
     }
+    if (over != *params[param_oversampling]) {
+        over = *params[param_oversampling];
+        set_srates();
+    }
 }
 
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
@@ -295,12 +311,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size max attack rate
     buffer = (float*) calloc(overall_buffer_size, sizeof(float));
     pos = 0;
-    // set srate of all strips
-    for (int j = 0; j < strips; j ++) {
-        strip[j].set_sample_rate(srate);
-    }
-    broadband.set_sample_rate(srate);
-    crossover.set_sample_rate(srate);
+    set_srates();
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att0, param_att1, param_att2, param_att3};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1};
     meters.init(params, meter, clip, 8, srate);
@@ -336,8 +347,11 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         float _tmpL[channels];
         float _tmpR[channels];
         while(offset < numsamples) {
-            float inL = 0.f;
-            float inR = 0.f;
+            float inL  = 0.f;
+            float inR  = 0.f;
+            float outL = 0.f;
+            float outR = 0.f;
+            
             // cycle through samples
             if(!_sanitize) {
                 inL = ins[0][offset];
@@ -347,58 +361,76 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
             
-            // process crossover
-            xin[0] = inL;
-            xin[1] = inR;
-            crossover.process(xin);
+            // upsampling
+            double *samplesL = resampler[0].upsample((double)inL);
+            double *samplesR = resampler[1].upsample((double)inR);
             
-            // out vars
-            float outL = 0.f;
-            float outR = 0.f;
-            float left;
-            float right;
-            float sum_left = 0.f;
-            float sum_right = 0.f;
-            bool asc_active = false;
-            for (int i = 0; i < strips; i++) {
-                left  = crossover.get_value(0, i);
-                right = crossover.get_value(1, i);
+            for (int o = 0; o < *params[param_oversampling]; o ++) {
+                // process crossover
+                xin[0] = samplesL[o];
+                xin[1] = samplesR[o];
+                crossover.process(xin);
                 
-                // remember filtered values for limiting
-                // (we need multiband_coeff before we can call the limiter bands)
-                _tmpL[i] = left;
-                _tmpR[i] = right;
-
-                // sum up for multiband coefficient
-                sum_left += ((fabs(left) > *params[param_limit]) ? *params[param_limit] * (fabs(left) / left) : left) * weight[i];
-                sum_right += ((fabs(right) > *params[param_limit]) ? *params[param_limit] * (fabs(right) / right) : right) * weight[i];
-            } // process single strip with filter
-
-            // write multiband coefficient to buffer
-            buffer[pos] = std::min(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
-
-            for (int i = 0; i < strips; i++) {
-                // process gain reduction
-                strip[i].process(_tmpL[i], _tmpR[i], buffer);
-                // sum up output of limiters
-                if (solo[i] || no_solo) {
-                    outL += _tmpL[i];
-                    outR += _tmpR[i];
+                // out vars
+                outL = 0.f;
+                outR = 0.f;
+                float left;
+                float right;
+                float sum_left = 0.f;
+                float sum_right = 0.f;
+                bool asc_active = false;
+            
+            
+            
+                for (int i = 0; i < strips; i++) {
+                    left  = crossover.get_value(0, i);
+                    right = crossover.get_value(1, i);
+                    
+                    // remember filtered values for limiting
+                    // (we need multiband_coeff before we can call the limiter bands)
+                    _tmpL[i] = left;
+                    _tmpR[i] = right;
+    
+                    // sum up for multiband coefficient
+                    sum_left += ((fabs(left) > *params[param_limit]) ? *params[param_limit] * (fabs(left) / left) : left) * weight[i];
+                    sum_right += ((fabs(right) > *params[param_limit]) ? *params[param_limit] * (fabs(right) / right) : right) * weight[i];
+                } // process single strip with filter
+    
+                // write multiband coefficient to buffer
+                buffer[pos] = std::min(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
+    
+                for (int i = 0; i < strips; i++) {
+                    // process gain reduction
+                    strip[i].process(_tmpL[i], _tmpR[i], buffer);
+                    // sum up output of limiters
+                    if (solo[i] || no_solo) {
+                        outL += _tmpL[i];
+                        outR += _tmpR[i];
+                    }
+                    asc_active = asc_active || strip[i].get_asc();
+                } // process single strip again for limiter
+                float fickdich[0];
+                broadband.process(outL, outR, fickdich);
+                asc_active = asc_active || broadband.get_asc();
+                
+                // should never be used. but hackers are paranoid by default.
+                // so we make shure NOTHING is above limit
+                outL = std::max(outL, -*params[param_limit]);
+                outL = std::min(outL, *params[param_limit]);
+                outR = std::max(outR, -*params[param_limit]);
+                outR = std::min(outR, *params[param_limit]);
+                
+                if(asc_active)  {
+                    asc_led = srate >> 3;
                 }
-                asc_active = asc_active || strip[i].get_asc();
-            } // process single strip again for limiter
-            float fickdich[0];
-            broadband.process(outL, outR, fickdich);
-            asc_active = asc_active || broadband.get_asc();
-
-            // should never be used. but hackers are paranoid by default.
-            // so we make shure NOTHING is above limit
-            outL = std::max(outL, -*params[param_limit]);
-            outL = std::min(outL, *params[param_limit]);
-            outR = std::max(outR, -*params[param_limit]);
-            outR = std::min(outR, *params[param_limit]);
-
-            batt = broadband.get_attenuation();
+            
+                samplesL[o] = outL;
+                samplesR[o] = outR;
+            }
+            
+            // downsampling
+            outL = resampler[0].downsample(samplesL);
+            outR = resampler[1].downsample(samplesR);
 
             // autolevel
             outL /= *params[param_limit];
@@ -412,13 +444,12 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            if(asc_active)  {
-                asc_led = srate >> 3;
-            }
             // next sample
             ++offset;
             pos = (pos + channels) % buffer_size;
             if(pos == 0) _sanitize = false;
+            
+            batt = broadband.get_attenuation();
             
             float values[] = {inL, inR, outL, outR,
                 bypass > 0.5 ? (float)1.0 : (float)strip[0].get_attenuation() * batt,

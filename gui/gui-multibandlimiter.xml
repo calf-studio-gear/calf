@@ -49,11 +49,16 @@
             </hbox>
         </frame>
         <frame label="Options" expand="0" fill="1" attach-x="0" attach-y="1">
-            <hbox>
+            <hbox spacing="5">
                 <vbox>
                     <label param="minrel" />
                     <toggle param="minrel" />
                     <label />
+                </vbox>
+                <vbox>
+                     <label param="oversampling"/>
+                     <knob param="oversampling" size="3"/>
+                     <value param="oversampling"/>
                 </vbox>
                 <vbox>
                     <label param="asc_coeff" />

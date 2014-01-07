@@ -54,6 +54,7 @@ public:
     void activate();
     void deactivate();
     void params_changed();
+    void set_srates();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
 };
@@ -72,8 +73,10 @@ private:
     bool no_solo;
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;
+    dsp::resampleN resampler[2];
     float xout[strips], xin[2];
     dsp::crossover crossover;
+    float over;
     unsigned int pos;
     unsigned int buffer_size;
     unsigned int overall_buffer_size;
@@ -95,6 +98,7 @@ public:
     void activate();
     void deactivate();
     void params_changed();
+    void set_srates();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
