@@ -944,8 +944,6 @@ void crusher_audio_module::params_changed()
                             *params[param_morph],
                             *params[param_bypass] > 0.5,
                             *params[param_mode],
-                            *params[param_round] > 0.5,
-                            *params[param_offset],
                             *params[param_dc],
                             *params[param_aa]);
 }

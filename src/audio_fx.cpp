@@ -1172,8 +1172,6 @@ bitreduction::bitreduction()
     coeff        = 1;
     morph        = 0;
     mode         = 0;
-    round        = 1;
-    offset       = 1;
     dc           = 0;
     sqr          = 0;
     aa           = 0;
@@ -1184,21 +1182,15 @@ bitreduction::bitreduction()
 void bitreduction::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    filter[0].set_hp_rbj(10, 0.7071, (float)srate);
-    filter[1].copy_coeffs(filter[0]);
 }
-void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, bool rnd, float off, float d, float a)
+void bitreduction::set_params(float b, float mo, bool bp, uint32_t md, float d, float a)
 {
     morph        = 1 - mo;
     bypass       = bp;
-    offset       = off;
     dc           = d;
     aa           = a;
     mode         = md;
-    round        = rnd > 0.5;
     coeff        = powf(2.0f, b) - 1;
-    if (round)
-        coeff    = floorf(coeff);
     sqr          = sqrt(coeff / 2);
     aa1          = (1.f - aa) / 2.f;
     redraw_graph = true;
@@ -1215,9 +1207,6 @@ float bitreduction::waveshape(float in) const
 {
     double y;
     double k;
-    
-    // add offset
-    in *= offset;
     
     // add dc
     in = add_dc(in, dc);
@@ -1239,36 +1228,31 @@ float bitreduction::waveshape(float in) const
             break;
         case 1:
             // logarithmic
-            y = sqr * log(fabs(in));
-            if(in)
-                k = in / fabs(in) * exp(roundf(y + sqr * sqr) / sqr - sqr);
-            else
+            y = sqr * log(fabs(in)) + sqr * sqr;
+            k = roundf(y);
+            if(!in) {
                 k = 0;
-            
+            } else if (k - aa1 <= y and y <= k + aa1) {
+                k = in / fabs(in) * exp(k / sqr - sqr);
+            } else if (y > k + aa1) {
+                k = in / fabs(in) * (exp(k / sqr - sqr) + (exp((k + 1) / sqr - sqr) - exp(k / sqr - sqr)) * 0.5 * (sin((fabs(y - k) - aa1) / aa * M_PI - M_PI_2) + 1));
+            } else {
+                k = in / fabs(in) * (exp(k / sqr - sqr) - (exp(k / sqr - sqr) - exp((k - 1) / sqr - sqr)) * 0.5 * (sin((fabs(y - k) - aa1) / aa * M_PI - M_PI_2) + 1));
+            }
             break;
     }
-    
+            
     // morph between dry and wet signal
     k += (in - k) * morph;
     
     // remove dc
     k = remove_dc(k, dc);
     
-    // remove offset
-    k /= offset;
-    
     return k;
 }
 float bitreduction::process(float in)
 {
-    float n = waveshape(in);
-    // filter if possible dc could appear because of non-rounded quantization
-    if (!round) {
-        n = filter[1].process(filter[0].process(n));
-        filter[0].sanitize();
-        filter[1].sanitize();
-    }
-    return n;
+    return waveshape(in);
 }
 
 bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const

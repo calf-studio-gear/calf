@@ -34,16 +34,6 @@
                     <knob param="bits" size="5" type="2" />
                     <value param="bits" />
                 </vbox>
-                <hbox spacing="20">
-                    <vbox>
-                        <label param="round"/>
-                        <toggle size="1" param="round"/>
-                    </vbox>
-                    <vbox>
-                        <label param="mode" expand="0" fill="0"/>
-                        <combo param="mode" expand="0" fill="0"/>
-                    </vbox>
-                </hbox>
             </vbox>
             <if cond="directlink">
                 <frame label="Response">
@@ -53,27 +43,24 @@
             <vbox spacing="10">
                 <hbox spacing="20" homogeneous="1">
                     <vbox>
-                        <label param="offset" />
-                        <knob param="offset" size="3" type="1" />
-                        <value param="offset" />
-                    </vbox>
-                    <vbox>
                         <label param="dc" />
                         <knob param="dc" size="3" type="1" />
                         <value param="dc" />
                     </vbox>
-                </hbox>
-                <hbox spacing="20" homogeneous="1">
                     <vbox>
                         <label param="anti-aliasing" />
                         <knob param="anti-aliasing" size="3" />
                         <value param="anti-aliasing" />
                     </vbox>
                     <vbox>
-                        <label param="morph" />
+                        <label text="Mix" />
                         <knob param="morph" size="3" />
                         <value param="morph" />
                     </vbox>
+                </hbox>
+                <hbox>
+                    <label param="mode" expand="0" fill="0"/>
+                    <combo param="mode" expand="0" fill="0"/>
                 </hbox>
             </vbox>
         </hbox>

@@ -73,7 +73,7 @@ private:
     bool no_solo;
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;
-    dsp::resampleN resampler[2];
+    dsp::resampleN resampler[strips];
     float xout[strips], xin[2];
     dsp::crossover crossover;
     float over;
