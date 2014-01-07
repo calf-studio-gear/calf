@@ -42,7 +42,7 @@
     <vbox spacing="8">
         <hbox>
             <if cond="directlink">
-                <frame label="Response">
+                <frame label="Osc Waveform">
                     <line-graph param="master" refresh="1" width="200" height="40" expand="0" fill="0" />
                 </frame>
             </if>
