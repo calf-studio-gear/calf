@@ -118,6 +118,8 @@ public:
     float velocity;
     /// Last value of oscillator mix ratio
     float last_xfade;
+    /// Last value of unison amount
+    float last_unison;
     /// Current calculated mod matrix outputs
     float moddest[moddest_count];
      

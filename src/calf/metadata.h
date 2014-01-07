@@ -150,6 +150,8 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         moddest_o1pw,
         moddest_o2pw,
         moddest_o1stretch,
+        moddest_o2unisonamp,
+        moddest_o2unisondetune,
         moddest_count,
     };
     PLUGIN_NAME_ID_LABEL("monosynth", "monosynth", "Monosynth")
