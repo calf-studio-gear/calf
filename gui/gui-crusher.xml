@@ -34,13 +34,10 @@
                     <knob param="bits" size="5" type="2" />
                     <value param="bits" />
                 </vbox>
-                <hbox>
-                    <label param="mode" expand="0" fill="0"/>
-                    <combo param="mode" expand="0" fill="0"/>
-                </hbox>
+                <align><combo param="mode" expand="0" fill="0"/></align>
             </vbox>
             <if cond="directlink">
-                <frame label="Response">
+                <frame label="Bit Reduction">
                     <line-graph refresh="1" width="300" height="120" param="morph"/>
                 </frame>
             </if>
