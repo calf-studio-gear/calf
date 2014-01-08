@@ -356,8 +356,8 @@ tap_distortion::tap_distortion()
     srate = 0;
     meter = 0.f;
     rdrive = rbdr = kpa = kpb = kna = knb = ap = an = imr = kc = srct = sq = pwrq = 0.f;
-    prev_med = prev_out = 0.f;
     drive_old = blend_old = -1.f;
+    over = 1;
 }
 
 void tap_distortion::activate()
@@ -397,24 +397,32 @@ void tap_distortion::set_params(float blend, float drive)
 void tap_distortion::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    over = 1;//srate * 2 > 96000 ? 1 : 2;
+    resampler.set_params(srate, over, 2);
 }
 
 float tap_distortion::process(float in)
 {
+    printf("in: %.5f\n", in);
+    double *samples = resampler.upsample((double)in);
     meter = 0.f;
-    float out = 0.f;
-    float proc = in;
-    float med;
-    if (proc >= 0.0f) {
-        med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
-    } else {
-        med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+    for (int o = 0; o < over; o++) {
+        printf("in: %.5f smp: %.5f\n", in, samples[o]);
+        float proc = samples[o];
+        float med;
+        if (proc >= 0.0f) {
+            med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
+        } else {
+            med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+        }
+        proc = srct * (med - prev_med[o] + prev_out[o]);
+        prev_med[o] = M(med);
+        prev_out[o] = M(proc);
+        samples[o] = proc;
+        meter = std::max(meter, proc);
     }
-    proc = srct * (med - prev_med + prev_out);
-    prev_med = M(med);
-    prev_out = M(proc);
-    out = proc;
-    meter = proc;
+    float out = (float)resampler.downsample(samples);
+    printf("out: %.5f\n", out);
     return out;
 }
 
