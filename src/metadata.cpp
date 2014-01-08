@@ -1198,6 +1198,8 @@ static const char *monosynth_mod_dest_names[] = {
     "O1: PW (%)",
     "O2: PW (%)",
     "O1: Stretch",
+    "O2: Unison Amt (%)",
+    "O2: Unison Detune (log2)",
     NULL
 };
 

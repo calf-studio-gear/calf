@@ -55,6 +55,8 @@ void monosynth_audio_module::reset()
     stack.clear();
     last_pwshift1 = last_pwshift2 = 0;
     last_stretch1 = 65536;
+    last_xfade = 0;
+    last_unison = 0.0;
     queue_note_on_and_off = false;
     prev_wave1 = -1;
     prev_wave2 = -1;
@@ -302,12 +304,18 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
     
     uint32_t vlfo = this->lfo1.phase;
     static const int muls[8] = { 33, -47, 53, -67, 87, -101, 121, -139 };
-    float unison = *params[par_o2unison];
-    float unison_scale = 1.0;
+    float unison = *params[par_o2unison] + moddest[moddest_o2unisonamp] * 0.01;
+    float unison_scale = 1.0, unison_delta = 0.0, last_unison_scale = 1.0, unison_scale_delta = 0.0;
     if (unison > 0)
     {
-        unison_osc.set_freq(fabs(*params[par_o2unisonfrq] / muls[7]), srate);
+        float freq = fabs(*params[par_o2unisonfrq] / muls[7]);
+        if (moddest[moddest_o2unisondetune] != 0)
+            freq *= pow(2.0, moddest[moddest_o2unisondetune]);
+        unison_osc.set_freq(freq, srate);
+        last_unison_scale = 1.0 / (1.0 + 2 * last_unison);
         unison_scale = 1.0 / (1.0 + 2 * unison);
+        unison_delta = (unison - last_unison) * (1.0 / step_size);
+        unison_scale_delta = (unison_scale - last_unison_scale) * (1.0 / step_size);
     }
     for (uint32_t i = 0; i < step_size; i++) 
     {
@@ -321,12 +329,15 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
         float r = 1.0 - o1phase * o1phase;
         float osc1val = osc1.get_phasedist(stretch1, shift1, mix1);
         float osc2val = osc2.get_phaseshifted(shift2, mix2);
-        if (unison > 0)
+        if (unison > 0 || last_unison > 0)
         {
             for (int j = 0; j < 8; j++)
-                osc2val += unison * osc2.get_phaseshifted2(shift2, unison_osc.phase * muls[j], mix2);
+                osc2val += last_unison * osc2.get_phaseshifted2(shift2, unison_osc.phase * muls[j], mix2);
+            osc2val *= last_unison_scale;
+
             unison_osc.step();
-            osc2val *= unison_scale;
+            last_unison += unison_delta;
+            last_unison_scale += unison_scale_delta;
         }
         vlfo += this->lfo1.phasedelta / step_size;
         buffer[i] = lerp(r * osc1val, osc2val, cur_xfade);
@@ -338,6 +349,7 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
         cur_xfade += xfade_step;
     }
     last_xfade = new_xfade;
+    last_unison = unison;
 }
 
 void monosynth_audio_module::calculate_buffer_ser()

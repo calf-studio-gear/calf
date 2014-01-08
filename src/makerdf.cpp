@@ -327,8 +327,8 @@ void make_ttl(string path_prefix)
 
         string ports = "";
         int pn = 0;
-        const char *in_symbols[] = { "in_l", "in_r", "sidechain" };
-        const char *in_names[] = { "In L", "In R", "Sidechain" };
+        const char *in_symbols[] = { "in_l", "in_r", "sidechain", "sidechain2" };
+        const char *in_names[] = { "In L", "In R", "Sidechain", "Sidechain 2" };
         const char *out_symbols[] = { "out_l", "out_r", "out_l_2", "out_r_2", "out_l_3", "out_r_3", "out_l_4", "out_r_4" };
         const char *out_names[] = { "Out L", "Out R", "Out L 2", "Out R 2", "Out L 3", "Out R 3", "Out L 4", "Out R 4" };
         for (int i = 0; i < pi->get_input_count(); i++)

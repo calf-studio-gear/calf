@@ -74,8 +74,6 @@ private:
     dsp::lookahead_limiter strip[strips];
     dsp::lookahead_limiter broadband;
     dsp::resampleN resampler[strips][2];
-    float xout[strips], xin[2];
-    float overbuf[2][16];
     dsp::crossover crossover;
     float over;
     unsigned int pos;
