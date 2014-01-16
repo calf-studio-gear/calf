@@ -70,7 +70,7 @@ struct FreqHandle
 };
 
 #define FREQ_HANDLES 32
-#define HANDLE_WIDTH 16.0
+#define HANDLE_WIDTH 20.0
 
 struct CalfLineGraph
 {
