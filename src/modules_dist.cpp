@@ -188,6 +188,9 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 
                 //subtract gain
                 proc[i] *= onedivlevelin;
+                
+                if (*params[param_level_in] > 1)
+                    proc[i] *= 1 + (*params[param_level_in] - 1) / 32;
             }
             
             maxDrive = dist[0].get_distortion_level() * *params[param_blend];
