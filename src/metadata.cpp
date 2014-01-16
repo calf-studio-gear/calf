@@ -874,7 +874,7 @@ CALF_PORT_PROPS(exciter) = {
     { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend", "Blend harmonics" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_drive", "Harmonics level" },
 
-    { 6000,       2000,         12000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
+    { 7500,       2000,         12000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "ceil_active", "Ceiling active" },
     { 16000,      10000,        20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "ceil", "Ceiling" },
@@ -901,10 +901,10 @@ CALF_PORT_PROPS(bassenhancer) = {
     { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend", "Blend harmonics" },
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_drive", "Harmonics level" },
 
-    { 120,        10,           250,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
+    { 100,        10,           250,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "floor_active", "Floor active" },
-    { 30,         10,           120,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "floor", "Floor" },
+    { 20,         10,           120,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "floor", "Floor" },
     {}
 };
 

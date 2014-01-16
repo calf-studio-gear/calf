@@ -695,7 +695,7 @@ private:
     float meter;
     float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
     int over;
-    float prev_med[2], prev_out[2];
+    float prev_med, prev_out;
     resampleN resampler;
 public:
     uint32_t srate;
@@ -709,13 +709,13 @@ public:
     float get_distortion_level();
     static inline float M(float x)
     {
-        return (fabs(x) > 0.000000001f) ? x : 0.0f;
+        return (fabs(x) > 0.00000001f) ? x : 0.0f;
     }
 
     static inline float D(float x)
     {
         x = fabs(x);
-        return (x > 0.000000001f) ? sqrtf(x) : 0.0f;
+        return (x > 0.00000001f) ? sqrtf(x) : 0.0f;
     }
 };
 

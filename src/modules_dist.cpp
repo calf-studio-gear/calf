@@ -418,6 +418,11 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         hp[1][2].sanitize();
         hp[0][3].sanitize();
         hp[1][3].sanitize();
+        
+        lp[0][0].sanitize();
+        lp[1][0].sanitize();
+        lp[0][1].sanitize();
+        lp[1][1].sanitize();
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -607,6 +612,10 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
         lp[1][2].sanitize();
         lp[0][3].sanitize();
         lp[1][3].sanitize();
+        hp[0][0].sanitize();
+        hp[1][0].sanitize();
+        hp[0][1].sanitize();
+        hp[1][1].sanitize();
     }
     meters.fall(numsamples);
     return outputs_mask;
