@@ -1217,6 +1217,21 @@ float bitreduction::waveshape(float in) const
     in = add_dc(in, dc);
     
     // main rounding calculation depending on mode
+    
+    // the idea for anti-aliasing:
+    // you need a function f which brings you to the scale, where you want to round
+    // and the function f_b (with f(f_b)=id) which brings you back to your original scale.
+    //
+    // then you can use the logic below in the following way:
+    // y = f(in) and k = roundf(y)
+    // if (y > k + aa1)
+    //      k = f_b(k) + ( f_b(k+1) - f_b(k) ) *0.5 * (sin(x - PI/2) + 1)
+    // if (y < k + aa1)
+    //      k = f_b(k) - ( f_b(k+1) - f_b(k) ) *0.5 * (sin(x - PI/2) + 1)
+    //
+    // whereas x = (fabs(f(in) - k) - aa1) * PI / aa 
+    // for both cases.
+    
     switch (mode) {
         case 0:
         default:
