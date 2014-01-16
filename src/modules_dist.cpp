@@ -932,22 +932,22 @@ bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned 
 
 
 /**********************************************************************
- * CRUSHER by Markus Schmidt
+ * CRUSHER by Markus Schmidt and Christian Holschuh
 **********************************************************************/
 
 
 crusher_audio_module::crusher_audio_module()
 {
-    
+    smin = sdiff = 0.f;
 }
 
 void crusher_audio_module::activate()
 {
-    
+    lfo.activate();
 }
 void crusher_audio_module::deactivate()
 {
-    
+    lfo.deactivate();
 }
 
 void crusher_audio_module::params_changed()
@@ -960,6 +960,16 @@ void crusher_audio_module::params_changed()
                             *params[param_aa]);
     samplereduction[0].set_params(*params[param_samples]);
     samplereduction[1].set_params(*params[param_samples]);
+    lfo.set_params(*params[param_lforate], 0, 0.f, srate, 0.5f);
+    // calc lfo offsets
+    float rad  = *params[param_lforange] / 2.f;
+    smin = std::max(*params[param_samples] - rad, 1.f);
+    float sun  = *params[param_samples] - rad - smin;
+    float smax = std::min(*params[param_samples] + rad, 250.f);
+    float sov  = *params[param_samples] + rad - smax;
+    smax -= sun;
+    smin -= sov;
+    sdiff = smax - smin;
 }
 
 void crusher_audio_module::set_sample_rate(uint32_t sr)
@@ -988,6 +998,10 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // process
         while(offset < numsamples) {
             // cycle through samples
+            if (*params[param_lfo] > 0.5) {
+                samplereduction[0].set_params(smin + sdiff * (lfo.get_value() + 0.5));
+                samplereduction[1].set_params(smin + sdiff * (lfo.get_value() + 0.5));
+            }
             outs[0][offset] = samplereduction[0].process(ins[0][offset] * *params[param_level_in]);
             outs[1][offset] = samplereduction[1].process(ins[1][offset] * *params[param_level_in]);
             outs[0][offset] = outs[0][offset] * *params[param_morph] + ins[0][offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
@@ -998,6 +1012,8 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             meters.process(values);
             // next sample
             ++offset;
+            if (*params[param_lforate])
+                lfo.advance(1);
         } // cycle trough samples
     }
     meters.fall(numsamples);

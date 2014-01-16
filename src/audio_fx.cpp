@@ -1372,7 +1372,7 @@ void samplereduction::set_params(float am)
 {
     amount  = am;
     round   = roundf(amount);
-    samples = round;
+    //samples = round;
 }
 double samplereduction::process(double in)
 {
