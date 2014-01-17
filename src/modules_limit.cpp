@@ -172,7 +172,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
 {
     srate               = 0;
     _mode               = 0;
-    over                = -1;
+    over                = 1;
     buffer_size         = 0;
     overall_buffer_size = 0;
     channels            = 2;
@@ -219,18 +219,7 @@ void multibandlimiter_audio_module::deactivate()
     }
     broadband.deactivate();
 }
-void multibandlimiter_audio_module::set_srates()
-{
-    crossover.set_sample_rate(srate);
-    for (int j = 0; j < strips; j ++) {
-        strip[j].set_sample_rate(srate * *params[param_oversampling]);
-    }
-    broadband.set_sample_rate(srate * *params[param_oversampling]);
-    for (int i = 0; i < strips; i++) {
-        resampler[i][0].set_params(srate, *params[param_oversampling], 2);
-        resampler[i][1].set_params(srate, *params[param_oversampling], 2);
-    }
-}
+
 void multibandlimiter_audio_module::params_changed()
 {
     // determine mute/solo states
@@ -305,6 +294,17 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att0, param_att1, param_att2, param_att3};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1};
     meters.init(params, meter, clip, 8, srate);
+}
+
+void multibandlimiter_audio_module::set_srates()
+{
+    broadband.set_sample_rate(srate * over);
+    crossover.set_sample_rate(srate);
+    for (int j = 0; j < strips; j ++) {
+        strip[j].set_sample_rate(srate * over);
+        resampler[j][0].set_params(srate, over, 2);
+        resampler[j][1].set_params(srate, over, 2);
+    }
 }
 
 #define BYPASSED_COMPRESSION(index) \
@@ -391,6 +391,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 // write multiband coefficient to buffer
                 buffer[pos] = std::min(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR)), 1.0);
                 
+                // step forward in multiband buffer
+                pos = (pos + channels) % buffer_size;
+                if(pos == 0) _sanitize = false;
+                
                 // limit and add up strips
                 for (int i = 0; i < strips; i++) {
                     int p = i * 16 + o;
@@ -398,7 +402,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                     // limit
                     tmpL = (float)overL[p];
                     tmpR = (float)overR[p];
-                    strip[i].process(tmpL, tmpR, buffer);
+                    //strip[i].process(tmpL, tmpR, buffer);
                     
                     if (solo[i] || no_solo) {
                         // add
@@ -415,12 +419,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 tmpR = resR[o];
                 broadband.process(tmpL, tmpR, fickdich);
                 resL[o] = (double)tmpL;
-                resR[o] = (double) tmpR;
+                resR[o] = (double)tmpR;
                 asc_active = asc_active || broadband.get_asc();
-                
-                // step forward in multiband buffer
-                pos = (pos + channels) % buffer_size;
-                if(pos == 0) _sanitize = false;
             }
             
             // downsampling
