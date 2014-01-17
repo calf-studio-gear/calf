@@ -139,6 +139,10 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
+/**********************************************************************
+ * CRUSHER by Markus Schmidt and Christian Holschuh
+**********************************************************************/
+
 class crusher_audio_module:
     public audio_module<crusher_metadata>, public line_graph_iface
 {
@@ -146,6 +150,8 @@ private:
     vumeters meters;
     dsp::bitreduction bitreduction;
     dsp::samplereduction samplereduction[2];
+    dsp::simple_lfo lfo;
+    float smin, sdiff;
 public:
     uint32_t srate;
     crusher_audio_module();

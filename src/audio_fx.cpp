@@ -355,9 +355,9 @@ tap_distortion::tap_distortion()
     is_active = false;
     srate = 0;
     meter = 0.f;
-    rdrive = rbdr = kpa = kpb = kna = knb = ap = an = imr = kc = srct = sq = pwrq = 0.f;
-    prev_med = prev_out = 0.f;
+    rdrive = rbdr = kpa = kpb = kna = knb = ap = an = imr = kc = srct = sq = pwrq = prev_med = prev_out = 0.f;
     drive_old = blend_old = -1.f;
+    over = 1;
 }
 
 void tap_distortion::activate()
@@ -397,24 +397,29 @@ void tap_distortion::set_params(float blend, float drive)
 void tap_distortion::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    over = srate * 2 > 96000 ? 1 : 2;
+    resampler.set_params(srate, over, 2);
 }
 
 float tap_distortion::process(float in)
 {
+    double *samples = resampler.upsample((double)in);
     meter = 0.f;
-    float out = 0.f;
-    float proc = in;
-    float med;
-    if (proc >= 0.0f) {
-        med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
-    } else {
-        med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+    for (int o = 0; o < over; o++) {
+        float proc = samples[o];
+        float med;
+        if (proc >= 0.0f) {
+            med = (D(ap + proc * (kpa - proc)) + kpb) * pwrq;
+        } else {
+            med = (D(an - proc * (kna + proc)) + knb) * pwrq * -1.0f;
+        }
+        proc = srct * (med - prev_med + prev_out);
+        prev_med = M(med);
+        prev_out = M(proc);
+        samples[o] = proc;
+        meter = std::max(meter, proc);
     }
-    proc = srct * (med - prev_med + prev_out);
-    prev_med = M(med);
-    prev_out = M(proc);
-    out = proc;
-    meter = proc;
+    float out = (float)resampler.downsample(samples);
     return out;
 }
 
@@ -1212,6 +1217,21 @@ float bitreduction::waveshape(float in) const
     in = add_dc(in, dc);
     
     // main rounding calculation depending on mode
+    
+    // the idea for anti-aliasing:
+    // you need a function f which brings you to the scale, where you want to round
+    // and the function f_b (with f(f_b)=id) which brings you back to your original scale.
+    //
+    // then you can use the logic below in the following way:
+    // y = f(in) and k = roundf(y)
+    // if (y > k + aa1)
+    //      k = f_b(k) + ( f_b(k+1) - f_b(k) ) *0.5 * (sin(x - PI/2) + 1)
+    // if (y < k + aa1)
+    //      k = f_b(k) - ( f_b(k+1) - f_b(k) ) *0.5 * (sin(x - PI/2) + 1)
+    //
+    // whereas x = (fabs(f(in) - k) - aa1) * PI / aa 
+    // for both cases.
+    
     switch (mode) {
         case 0:
         default:
@@ -1288,7 +1308,6 @@ bool bitreduction::get_gridline(int subindex, int phase, float &pos, bool &verti
 
 //////////////////////////////////////////////////////////////////
 
-
 resampleN::resampleN()
 {
     factor  = 2;
@@ -1320,7 +1339,7 @@ double *resampleN::upsample(double sample)
         for (int i = 1; i < factor; i++) {
             tmp[i] = 0;
             for (int f = 0; f < filters; f++)
-                tmp[i] = filter[0][0].process(sample);
+                tmp[i] = filter[0][f].process(sample);
         }
     }
     return tmp;
@@ -1352,7 +1371,7 @@ void samplereduction::set_params(float am)
 {
     amount  = am;
     round   = roundf(amount);
-    samples = round;
+    //samples = round;
 }
 double samplereduction::process(double in)
 {

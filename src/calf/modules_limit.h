@@ -67,7 +67,7 @@ class multibandlimiter_audio_module: public audio_module<multibandlimiter_metada
 private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
-    uint32_t asc_led;
+    uint32_t asc_led, cnt;
     int _mode, mode_old;
     bool solo[strips];
     bool no_solo;
@@ -87,6 +87,7 @@ private:
     float limit_old;
     bool asc_old;
     float attack_old;
+    float oversampling_old;
     bool _sanitize;
     vumeters meters;
 public:

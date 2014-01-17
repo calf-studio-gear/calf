@@ -262,6 +262,12 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
         cairo_arc (cache_cr, _x, _y, mask, 0, 2 * M_PI);
         cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_fill(cache_cr);
+        if (alpha < 0.3) {
+            cairo_move_to(cache_cr, _x, _y);
+            cairo_arc (cache_cr, _x, _y, HANDLE_WIDTH / 2, 0, 2 * M_PI);
+            cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.2);
+            cairo_fill(cache_cr);
+        }
     }
     if(gradient and gradient_rad > 0) {
         // draw the crosshairs with a steady gradient around
@@ -368,7 +374,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     grad = false;
                     cairo_set_source_rgba(c, 0, 0, 0, 0.7);
                 } else {
-                    pat_alpha = 0.15;
+                    pat_alpha = 0.1;
                     grad = true;
                     //cairo_set_source_rgb(c, 0.44, 0.5, 0.21);
                     cairo_set_source_rgba(c, 0, 0, 0, 0.5);
@@ -455,7 +461,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     cairo_fill(c);
                     cairo_pattern_destroy(pat);
                 } else {
-                    int mask = 30 - log10(1 + handle->value_z * 9) * 30 + 7;
+                    int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
                     // (CalfLineGraph* lg, cairo_t* c, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, std::string label, int ox, int oy, int sx, int sy)
                     std::string s = "";
                     calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, s);

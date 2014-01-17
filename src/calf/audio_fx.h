@@ -513,37 +513,6 @@ public:
     }
 };
 
-/// Tom Szilagyi's distortion code, used with permission
-/// KF: I'm not 100% sure how this is supposed to work, but it does.
-/// I'm planning to rewrite it using more modular approach when I have more time.
-class tap_distortion {
-private:
-    float blend_old, drive_old;
-    float meter;
-    float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
-    float prev_med, prev_out;
-public:
-    uint32_t srate;
-    bool is_active;
-    tap_distortion();
-    void activate();
-    void deactivate();
-    void set_params(float blend, float drive);
-    void set_sample_rate(uint32_t sr);
-    float process(float in);
-    float get_distortion_level();
-    static inline float M(float x)
-    {
-        return (fabs(x) > 0.000000001f) ? x : 0.0f;
-    }
-
-    static inline float D(float x)
-    {
-        x = fabs(x);
-        return (x > 0.000000001f) ? sqrtf(x) : 0.0f;
-    }
-};
-
 /// LFO module by Markus
 /// This module provides simple LFO's (sine=0, triangle=1, square=2, saw_up=3, saw_down=4)
 /// get_value() returns a value between -1 and 1
@@ -714,6 +683,40 @@ public:
     samplereduction();
     void set_params(float am);
     double process(double in);
+};
+
+
+/// Tom Szilagyi's distortion code, used with permission
+/// KF: I'm not 100% sure how this is supposed to work, but it does.
+/// I'm planning to rewrite it using more modular approach when I have more time.
+class tap_distortion {
+private:
+    float blend_old, drive_old;
+    float meter;
+    float rdrive, rbdr, kpa, kpb, kna, knb, ap, an, imr, kc, srct, sq, pwrq;
+    int over;
+    float prev_med, prev_out;
+    resampleN resampler;
+public:
+    uint32_t srate;
+    bool is_active;
+    tap_distortion();
+    void activate();
+    void deactivate();
+    void set_params(float blend, float drive);
+    void set_sample_rate(uint32_t sr);
+    float process(float in);
+    float get_distortion_level();
+    static inline float M(float x)
+    {
+        return (fabs(x) > 0.00000001f) ? x : 0.0f;
+    }
+
+    static inline float D(float x)
+    {
+        x = fabs(x);
+        return (x > 0.00000001f) ? sqrtf(x) : 0.0f;
+    }
 };
 
 #if 0

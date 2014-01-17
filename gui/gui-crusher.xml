@@ -27,45 +27,66 @@
         <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
     </table>
-        <hbox spacing="20">
-            <vbox spacing="10">
-                <vbox>
-                    <label param="bits" />
-                    <knob param="bits" size="5" type="2" />
-                    <value param="bits" />
-                </vbox>
-                <align><combo param="mode" expand="0" fill="0"/></align>
-            </vbox>
-            <if cond="directlink">
-                <frame label="Bit Reduction">
-                    <line-graph refresh="1" width="300" height="120" param="morph"/>
-                </frame>
-            </if>
-            <vbox spacing="10">
+    <hbox spacing="20">
+        <if cond="directlink">
+            <frame label="Response">
+                <line-graph refresh="1" width="290" height="120" param="morph"/>
+            </frame>
+        </if>
+        <vbox spacing="10">
+            <label param="bits" />
+            <knob param="bits" size="5" type="2" />
+            <value param="bits" />
+        </vbox>
+        <vbox>
+            <frame label="Shape">
                 <hbox spacing="20" homogeneous="1">
                     <vbox>
                         <label param="dc" />
-                        <knob param="dc" size="3" type="1" />
+                        <knob param="dc" size="2" type="1" />
                         <value param="dc" />
                     </vbox>
                     <vbox>
-                        <label param="samples" />
-                        <knob param="samples" size="3" />
-                        <value param="samples" />
-                    </vbox>
-                </hbox>
-                <hbox spacing="20" homogeneous="1">
-                    <vbox>
                         <label param="anti-aliasing" />
-                        <knob param="anti-aliasing" size="3" />
+                        <knob param="anti-aliasing" size="2" />
                         <value param="anti-aliasing" />
                     </vbox>
                     <vbox>
                         <label text="Mix" />
-                        <knob param="morph" size="3" />
+                        <knob param="morph" size="2" />
                         <value param="morph" />
                     </vbox>
+                    <vbox>
+                        <label text="Logarithmic"/>
+                        <toggle param="mode"/>
+                        <label/>
+                    </vbox>
                 </hbox>
-            </vbox>
-        </hbox>
+            </frame>
+            <frame label="Sample Rate">
+                <hbox spacing="20" homogeneous="1">
+                    <vbox>
+                        <label text="Reduction" />
+                        <knob param="samples" size="2" />
+                        <value param="samples" />
+                    </vbox>
+                    <vbox>
+                        <label param="lforange" />
+                        <knob param="lforange" size="2" />
+                        <value param="lforange" />
+                    </vbox>
+                    <vbox>
+                        <label param="lforate" />
+                        <knob param="lforate" size="2" />
+                        <value param="lforate" />
+                    </vbox>
+                    <vbox>
+                        <label param="lfo" />
+                        <toggle param="lfo" />
+                        <label/>
+                    </vbox>
+                </hbox>
+            </frame>
+        </vbox>
+    </hbox>
 </vbox>
