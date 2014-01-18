@@ -516,9 +516,14 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
     const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
+    std::string last = "";
     for(unsigned int i = 0; i < plugins.size(); i++)
     {
         const plugin_metadata_iface *p = plugins[i];
+        if ((p->get_plugin_info()).plugin_type != last) {
+            s += string("<separator/>");
+            last = (p->get_plugin_info()).plugin_type;
+        }
         string action_name = "Add" + string(p->get_id())+"Action";
         s += string("<menuitem action=\"") + action_name + "\" />";
         GtkActionEntry ae = { action_name.c_str(), NULL, p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
