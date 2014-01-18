@@ -40,6 +40,7 @@ limiter_audio_module::limiter_audio_module()
     asc_led    = 0.f;
     attack_old = -1.f;
     limit_old = -1.f;
+    oversampling_old = -1;
     asc_old = true;
 }
 
@@ -74,7 +75,10 @@ void limiter_audio_module::params_changed()
         limit_old = *params[param_limit];
         limiter.reset_asc();
     }
-    set_srates();
+    if (oversampling_old != *params[param_oversampling]) {
+        oversampling_old = *params[param_oversampling];
+        set_srates();
+    }
 }
 
 void limiter_audio_module::set_sample_rate(uint32_t sr)

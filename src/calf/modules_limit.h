@@ -40,7 +40,7 @@ class limiter_audio_module: public audio_module<limiter_metadata>, public line_g
 private:
     typedef limiter_audio_module AM;
     uint32_t asc_led;
-    int mode, mode_old;
+    int mode, mode_old, oversampling_old;
     dsp::lookahead_limiter limiter;
     dsp::resampleN resampler[2];
     vumeters meters;
