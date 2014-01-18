@@ -80,7 +80,7 @@ void limiter_audio_module::params_changed()
 void limiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att};
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, -param_att};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
     meters.init(params, meter, clip, 5, srate);
     set_srates();
@@ -127,6 +127,8 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 tmpL = samplesL[i];
                 tmpR = samplesR[i];
                 limiter.process(tmpL, tmpR, fickdich);
+                samplesL[i] = tmpL;
+                samplesR[i] = tmpR;
                 if(limiter.get_asc())
                     asc_led = srate >> 3;
             }
