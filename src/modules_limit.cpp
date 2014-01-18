@@ -247,13 +247,18 @@ void multibandlimiter_audio_module::params_changed()
     for (int i = 0; i < strips; i++) {
         rel = *params[param_release] *  pow(0.25, *params[param_release0 + i] * -1);
         rel = (*params[param_minrel] > 0.5) ? std::max(2500 * (1.f / (i ? *params[param_freq0 + i - 1] : 30)), rel) : rel;
-        weight[0] = pow(0.25, *params[param_weight0 + i] * -1);
-        strip[0].set_params(*params[param_limit], *params[param_attack], rel, weight[i], *params[param_asc], pow(0.5, (*params[param_asc_coeff] - 0.5) * 2 * -1), false);
+        weight[i] = pow(0.25, *params[param_weight0 + i] * -1);
+        strip[i].set_params(*params[param_limit], *params[param_attack], rel, weight[i], *params[param_asc], pow(0.5, (*params[param_asc_coeff] - 0.5) * 2 * -1), false);
         *params[param_effrelease0 + i] = rel;
     }
     
     // set broadband limiter
     broadband.set_params(*params[param_limit], *params[param_attack], rel, 1.f, *params[param_asc], pow(0.5, (*params[param_asc_coeff] - 0.5) * 2 * -1));
+    
+    if (over != *params[param_oversampling]) {
+        over = *params[param_oversampling];
+        set_srates();
+    }
     
     // rebuild multiband buffer
     if( *params[param_attack] != attack_old or *params[param_oversampling] != oversampling_old) {
@@ -277,10 +282,6 @@ void multibandlimiter_audio_module::params_changed()
         }
         broadband.reset_asc();
     }
-    if (over != *params[param_oversampling]) {
-        over = *params[param_oversampling];
-        set_srates();
-    }
 }
 
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
@@ -291,7 +292,7 @@ void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(overall_buffer_size, sizeof(float));
     pos = 0;
     set_srates();
-    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_att0, param_att1, param_att2, param_att3};
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, -param_att0, -param_att1, -param_att2, -param_att3};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1};
     meters.init(params, meter, clip, 8, srate);
 }
@@ -371,6 +372,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 // copy to cache
                 memcpy(&overL[i * 16], samplesL, sizeof(double) * over);
                 memcpy(&overR[i * 16], samplesR, sizeof(double) * over);
+                //if(!(cnt%200)) printf("u0: %.5f\n", overL[i*16]);
             }
             
             // cycle over upsampled samples
@@ -398,12 +400,13 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 // limit and add up strips
                 for (int i = 0; i < strips; i++) {
                     int p = i * 16 + o;
-                    
+                    //if(!(cnt%200) and !o) printf("u1: %.5f\n", overL[p]);
                     // limit
                     tmpL = (float)overL[p];
                     tmpR = (float)overR[p];
-                    //strip[i].process(tmpL, tmpR, buffer);
-                    
+                    //if(!(cnt%200)) printf("1: %.5f\n", tmpL);
+                    strip[i].process(tmpL, tmpR, buffer);
+                    //if(!(cnt%200)) printf("2: %.5f\n\n", tmpL);
                     if (solo[i] || no_solo) {
                         // add
                         resL[o] += (double)tmpL;

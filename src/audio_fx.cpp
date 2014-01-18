@@ -612,6 +612,8 @@ void lookahead_limiter::set_sample_rate(uint32_t sr)
     nextdelta = (float*) calloc(overall_buffer_size, sizeof(float));
     nextpos = (int*) malloc(overall_buffer_size * sizeof(int));
     memset(nextpos, -1, overall_buffer_size * sizeof(int));
+    
+    reset();
 }
 
 void lookahead_limiter::set_params(float l, float a, float r, float w, bool ar, float arc, bool d)

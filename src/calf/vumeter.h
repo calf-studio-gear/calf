@@ -38,17 +38,20 @@ struct vumeter
     float clip_falloff;
     /// Amount of samples > 1.f; Clipping occurs if 3 samples are over 0dB
     int count_over;
+    /// reverse VU meter
+    bool reverse;
     
     vumeter()
     {
         falloff = 0.999f;
         clip_falloff = 0.999f;
+        reverse = false;
         reset();
     }
     
     void reset()
     {
-        level = 0;
+        level = reverse ? 1 : 0;
         clip = 0;
     }
     
@@ -62,6 +65,11 @@ struct vumeter
         // ln(0.1) = sample_rate * ln(falloff)
         falloff = pow(0.1, 1 / (sample_rate * time_20dB));
         clip_falloff = falloff;
+    }
+    
+    void set_reverse(bool rev) {
+        reverse = rev;
+        reset();
     }
     /// Copy falloff from another object
     void copy_falloff(const vumeter &src)
@@ -93,7 +101,7 @@ struct vumeter
     }
     inline void process(const float value)
     {
-        level = std::max(level, (float)fabs(value));
+        level = reverse ? std::min(level, (float)fabs(value)) : std::max(level, (float)fabs(value));
         if (level > 1.f)
             count_over ++;
         else
@@ -103,7 +111,10 @@ struct vumeter
     }
     void fall(unsigned int len) {
         // "Age" the old level by falloff^length
-        level *= pow(falloff, len);
+        if (reverse)
+            level /= pow(falloff, len);
+        else
+            level *= pow(falloff, len);
         // Same for clip level (using different fade constant)
         clip *= pow(clip_falloff, len);
         dsp::sanitize(level);

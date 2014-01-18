@@ -600,7 +600,7 @@ CALF_PORT_PROPS(limiter) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "asc_led", "asc active" },
 
     { 0.5f,      0.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "asc_coeff", "ASC Level" },
-    { 1,           1,           8,   0,  PF_INT | PF_SCALE_LINEAR | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "oversampling", "Oversampling" },
+    { 1,           1,           4,   0,  PF_INT | PF_SCALE_LINEAR | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "oversampling", "Oversampling" },
     {}
 };
 
@@ -655,7 +655,7 @@ CALF_PORT_PROPS(multibandlimiter) = {
 
     { 0.5f,      0.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "asc_coeff", "ASC Level" },
     
-    { 1,           1,           8,   0,  PF_INT | PF_SCALE_LINEAR | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "oversampling", "Oversampling" },
+    { 1,           1,           4,   0,  PF_INT | PF_SCALE_LINEAR | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "oversampling", "Oversampling" },
     
     {}
 };

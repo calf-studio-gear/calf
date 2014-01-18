@@ -47,6 +47,7 @@ public:
             meter_data &md = meters[i];
             md.level_idx = lvls[i];
             md.clip_idx = clps[i];
+            md.meter.set_reverse(lvls[i] < -1);
             md.meter.set_falloff(1.f, srate);
         }
         params = prms;
@@ -54,20 +55,21 @@ public:
     void process(float *values) {
         for (size_t i = 0; i < meters.size(); ++i) {
             meter_data &md = meters[i];
-            if ((md.level_idx >= 0 && params[md.level_idx] != NULL) || 
-                (md.clip_idx >= 0 && params[md.clip_idx] != NULL))
+            if ((md.level_idx != -1 && params[(int)fabs(md.level_idx)] != NULL) || 
+                (md.clip_idx != -1 && params[(int)fabs(md.clip_idx)] != NULL))
             {
                 md.meter.process(values[i]);
-                if (md.level_idx >= 0 && params[md.level_idx])
-                    *params[md.level_idx] = md.meter.level;
-                if (md.clip_idx >= 0 && params[md.clip_idx])
-                    *params[md.clip_idx] = md.meter.clip > 0 ? 1.f : 0.f;
+                if (md.level_idx != -1 && params[(int)fabs(md.level_idx)])
+                    *params[(int)fabs(md.level_idx)] = md.meter.level;
+                if (md.clip_idx != -1 && params[(int)fabs(md.clip_idx)])
+                    *params[(int)fabs(md.clip_idx)] = md.meter.clip > 0 ? 1.f : 0.f;
             }
         }
     }
     void fall(unsigned int numsamples) {
         for (size_t i = 0; i < meters.size(); ++i)
-            meters[i].meter.fall(numsamples);
+            if (meters[i].level_idx != -1)
+                meters[i].meter.fall(numsamples);
     }
 };
 

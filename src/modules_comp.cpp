@@ -756,7 +756,7 @@ void compressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
-    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int meter[] = {param_meter_in, param_meter_out, -param_compression};
     int clip[] = {param_clip_in, param_clip_out, -1};
     meters.init(params, meter, clip, 3, srate);
 }
@@ -1031,7 +1031,7 @@ void sidechaincompressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
-    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int meter[] = {param_meter_in, param_meter_out, -param_compression};
     int clip[] = {param_clip_in, param_clip_out, -1};
     meters.init(params, meter, clip, 3, srate);
 }
@@ -1328,10 +1328,10 @@ void multibandcompressor_audio_module::set_sample_rate(uint32_t sr)
     // set srate of crossover
     crossover.set_sample_rate(srate);
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR,
-                   param_output0, param_compression0,
-                   param_output1, param_compression1,
-                   param_output2, param_compression2,
-                   param_output3, param_compression3 };
+                   param_output0, -param_compression0,
+                   param_output1, -param_compression1,
+                   param_output2, -param_compression2,
+                   param_output3, -param_compression3 };
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1, -1, -1, -1, -1};
     meters.init(params, meter, clip, 12, srate);
 }
@@ -1516,7 +1516,7 @@ void monocompressor_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     monocompressor.set_sample_rate(srate);
-    int meter[] = {param_meter_in, param_meter_out, param_compression};
+    int meter[] = {param_meter_in, param_meter_out, -param_compression};
     int clip[] = {param_clip_in, param_clip_out, -1};
     meters.init(params, meter, clip, 3, srate);
 }
@@ -1675,7 +1675,7 @@ void deesser_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     compressor.set_sample_rate(srate);
-    int meter[] = {param_detected, param_compression};
+    int meter[] = {param_detected, -param_compression};
     int clip[] = {param_clip_out, -1};
     meters.init(params, meter, clip, 2, srate);
 }
@@ -1810,7 +1810,7 @@ void gate_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
-    int meter[] = {param_meter_in, param_meter_out, param_gating};
+    int meter[] = {param_meter_in, param_meter_out, -param_gating};
     int clip[] = {param_clip_in, param_clip_out, -1};
     meters.init(params, meter, clip, 3, srate);
 }
@@ -2070,7 +2070,7 @@ void sidechaingate_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
-    int meter[] = {param_meter_in, param_meter_out, param_gating};
+    int meter[] = {param_meter_in, param_meter_out, -param_gating};
     int clip[] = {param_clip_in, param_clip_out, -1};
     meters.init(params, meter, clip, 3, srate);
 }
@@ -2362,10 +2362,10 @@ void multibandgate_audio_module::set_sample_rate(uint32_t sr)
     // set srate of crossover
     crossover.set_sample_rate(srate);
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR,
-                   param_output0, param_gating0,
-                   param_output1, param_gating1,
-                   param_output2, param_gating2,
-                   param_output3, param_gating3 };
+                   param_output0, -param_gating0,
+                   param_output1, -param_gating1,
+                   param_output2, -param_gating2,
+                   param_output3, -param_gating3 };
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1, -1, -1, -1, -1};
     meters.init(params, meter, clip, 12, srate);
 }
