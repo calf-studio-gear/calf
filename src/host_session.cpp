@@ -36,7 +36,7 @@ host_session *host_session::instance = NULL;
 
 host_session::host_session(session_environment_iface *se)
 {
-    client_name = "calf";
+    client_name = "Calf Studio Gear";
     calfjackhost_cmd = "calfjackhost";
     session_env = se;
     autoconnect_midi_index = -1;
@@ -57,7 +57,7 @@ std::string host_session::get_next_instance_name(const std::string &effect_name)
         return effect_name;
     for (int i = 2; ; i++)
     {
-        string tmp = string(effect_name) + i2s(i);
+        string tmp = string(effect_name) + " (" + i2s(i) + ")";
         if (!instances.count(tmp))
             return tmp;
     }

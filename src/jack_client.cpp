@@ -184,7 +184,7 @@ void jack_client::delete_plugins()
 
 void jack_client::create_automation_input()
 {
-    automation_port = jack_port_register(client, "automation_midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    automation_port = jack_port_register(client, "Automation MIDI In", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
     if (!automation_port)
         throw text_exception("Could not create JACK MIDI automation port");
 }
@@ -283,4 +283,3 @@ void jack_client::apply_plugin_order(const std::vector<int> &indices)
     }
     printf("Order: %s\n", s.c_str());
 }
-

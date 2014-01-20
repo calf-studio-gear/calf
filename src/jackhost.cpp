@@ -96,12 +96,12 @@ void jack_host::create_ports() {
     char buf[32];
     char buf2[64];
     string prefix = client->name + ":";
-    static const char *suffixes[] = { "l", "r", "2_l", "2_r", "3_l", "3_r", "4_l", "4_r" };
+    static const char *suffixes[] = { "#1", "#2", "#3", "#4", "#5", "#6", "#7", "#8" };
     port *inputs = get_inputs();
     port *outputs = get_outputs();
     int in_count = metadata->get_input_count(), out_count = metadata->get_output_count();
     for (int i=0; i<in_count; i++) {
-        snprintf(buf, sizeof(buf), "%s_in_%s", instance_name.c_str(), suffixes[i]);
+        snprintf(buf, sizeof(buf), "%s In %s", instance_name.c_str(), suffixes[i]);
         snprintf(buf2, sizeof(buf2), client->input_name.c_str(), client->input_nr++);
         inputs[i].nice_name = buf;
         inputs[i].name = buf2;
@@ -113,7 +113,7 @@ void jack_host::create_ports() {
         jack_port_set_alias(inputs[i].handle, (prefix + buf2).c_str());
     }
     if (metadata->get_midi()) {
-        snprintf(buf, sizeof(buf), "%s_midi_in", instance_name.c_str());
+        snprintf(buf, sizeof(buf), "%s MIDI In", instance_name.c_str());
         snprintf(buf2, sizeof(buf2), client->midi_name.c_str(), client->midi_nr++);
         midi_port.nice_name = buf;
         midi_port.name = buf2;
@@ -123,7 +123,7 @@ void jack_host::create_ports() {
         jack_port_set_alias(midi_port.handle, (prefix + buf2).c_str());
     }
     for (int i=0; i<out_count; i++) {
-        snprintf(buf, sizeof(buf), "%s_out_%s", instance_name.c_str(), suffixes[i]);
+        snprintf(buf, sizeof(buf), "%s Out %s", instance_name.c_str(), suffixes[i]);
         snprintf(buf2, sizeof(buf2), client->output_name.c_str(), client->output_nr++);
         outputs[i].nice_name = buf;
         outputs[i].name = buf2;
