@@ -217,7 +217,9 @@ void make_ttl(string path_prefix)
         "Delay", "Modulator", "Phaser", "Chorus", "Filter",
         "Lowpass", "Highpass", "Bandpass", "Comb", "Allpass",
         "Amplifier", "Distortion", "Waveshaper", "Dynamics", "Compressor",
-        "Expander", "Limiter", "Gate", NULL
+        "Expander", "Limiter", "Gate", "EQ", "ParaEQ", "MultiEQ", "Spatial",
+        "Spectral", "Pitch", "Envelope", "Function", "Constant",
+        NULL
     };
     
     for(const char **p = ptypes; *p; p++) {
