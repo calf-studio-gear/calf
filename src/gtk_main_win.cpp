@@ -25,6 +25,7 @@
 #include <calf/custom_ctl.h>
 #include <calf/preset.h>
 #include <calf/gtk_main_win.h>
+#include <calf/connector.h>
 
 using namespace calf_plugins;
 using namespace std;
@@ -202,10 +203,25 @@ gui_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
     }
     return TRUE;
 }
-
+static gboolean
+connect_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
+{
+    GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
+    //if ((gtk_toggle_button_get_active(tb) != 0) == (strip->connector != NULL))
+        //return FALSE;
+    if (strip->connector) {
+        strip->connector->close();
+        strip->connector = NULL;
+    } else {
+        strip->connector = new calf_connector(strip->plugin, GTK_WIDGET(tb));
+    }
+    return TRUE;
+}
 static gboolean
 extra_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
 {
+    if (strip->connector)
+        strip->connector->close();
     strip->main_win->owner->remove_plugin(strip->plugin);
     return TRUE;
 }
@@ -254,6 +270,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     strip->main_win = this;
     strip->plugin = plugin;
     strip->gui_win = NULL;
+    strip->connector = NULL;
     strip->id = plugins.size();
     
     GtkAttachOptions ao = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL);
@@ -326,6 +343,14 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->button);
 
+    // connect button
+    GtkWidget *con = calf_toggle_button_new("Connect");
+    strip->con = con;
+    gtk_widget_set_size_request(GTK_WIDGET(con), -1, -1);
+    g_signal_connect(GTK_OBJECT(con), "toggled", G_CALLBACK(connect_button_pressed), 
+        (plugin_ctl_iface *)strip);
+    gtk_widget_show(strip->con);
+    
     // delete buton
     GtkWidget *extra = calf_button_new("Remove");
     strip->extra = extra;
@@ -335,8 +360,9 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_widget_show(strip->extra);
     
     // button box @ 1, 2
-    GtkWidget *buttonBox = gtk_hbox_new(TRUE, 10);
+    GtkWidget *buttonBox = gtk_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->button), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->con), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), TRUE, FALSE, 0);
     gtk_table_attach(GTK_TABLE(strip->strip_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)0, 10, 10);
     gtk_widget_show(buttonBox);
@@ -544,6 +570,8 @@ void gtk_main_window::create()
     gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
     gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
     gtk_window_set_icon_name(toplevel, "calf");
+    gtk_window_set_role(toplevel, "calf_rack");
+    
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
     

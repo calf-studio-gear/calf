@@ -323,7 +323,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_window_set_icon_name(toplevel, "calf_plugin");
     gtk_window_set_type_hint(toplevel, GDK_WINDOW_TYPE_HINT_NORMAL);
-    gtk_window_set_role(toplevel, "plugin_ui");
+    gtk_window_set_role(toplevel, "calf_plugin_ui");
     
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
     gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Plugin");

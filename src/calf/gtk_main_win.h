@@ -23,6 +23,7 @@
 
 #include "gui.h"
 #include "gui_config.h"
+#include <calf/connector.h>
 
 namespace calf_plugins {
 
@@ -35,7 +36,8 @@ namespace calf_plugins {
             gtk_main_window *main_win;
             plugin_ctl_iface *plugin;
             plugin_gui_window *gui_win;
-            GtkWidget *strip_table, *name, *button, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
+            calf_connector *connector;
+            GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
             std::vector<GtkWidget *> audio_in, audio_out;
         };
         

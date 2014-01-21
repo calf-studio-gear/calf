@@ -1360,7 +1360,7 @@ calf_button_new(const gchar *label)
 static gboolean
 calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
 {
-    g_assert(CALF_IS_BUTTON(widget) || CALF_IS_TOGGLE_BUTTON(widget));
+    g_assert(CALF_IS_BUTTON(widget) || CALF_IS_TOGGLE_BUTTON(widget) || CALF_IS_RADIO_BUTTON(widget));
     
     if (gtk_widget_is_drawable (widget)) {
         
@@ -1404,7 +1404,7 @@ calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_fill(c);
         
         cairo_rectangle(c, x + pad, y + pad, sx - pad * 2, sy - pad * 2);
-        if (CALF_IS_TOGGLE_BUTTON(widget)) {
+        if (CALF_IS_TOGGLE_BUTTON(widget) or CALF_IS_RADIO_BUTTON(widget)) {
             cairo_new_sub_path (c);
             cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 22, 2);
             cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
@@ -1418,7 +1418,7 @@ calf_button_expose (GtkWidget *widget, GdkEventExpose *event)
         int _h = GTK_WIDGET(GTK_BIN(widget)->child)->allocation.height + 0;
         int _y = y + (sy - _h) / 2;
         cairo_rectangle(c, x + pad, _y, sx - pad * 2, _h);
-        if (CALF_IS_TOGGLE_BUTTON(widget)) {
+        if (CALF_IS_TOGGLE_BUTTON(widget) or CALF_IS_RADIO_BUTTON(widget)) {
             cairo_new_sub_path (c);
             cairo_rectangle(c, x + sx - pad * 2 - 23, y + sy / 2 - 1, 22, 2);
             cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
@@ -1546,6 +1546,65 @@ calf_toggle_button_get_type (void)
     return type;
 }
 
+///////////////////////////////////////// radio button ///////////////////////////////////////////////
+
+GtkWidget *
+calf_radio_button_new(const gchar *label)
+{
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_RADIO_BUTTON, NULL ));
+    gtk_button_set_label(GTK_BUTTON(widget), label);
+    return widget;
+}
+
+static void
+calf_radio_button_class_init (CalfRadioButtonClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_button_expose;
+}
+
+static void
+calf_radio_button_init (CalfRadioButton *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    widget->requisition.width = 40;
+    widget->requisition.height = 20;
+}
+
+GType
+calf_radio_button_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfRadioButtonClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_radio_button_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfRadioButton),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_radio_button_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfRadioButton%u%d", 
+                ((unsigned int)(intptr_t)calf_radio_button_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_RADIO_BUTTON,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
+        }
+    }
+    return type;
+}
 
 ///////////////////////////////////////// tap button ///////////////////////////////////////////////
 

@@ -92,6 +92,11 @@ style "calf-plugin"
     bg_pixmap[NORMAL] = "background_dark.png"
 }
 
+style "calf-connector"
+{
+    bg_pixmap[NORMAL] = "background_black.png"
+}
+
 style "calf-label" {
     font_name  = "Sans 7"
     fg[NORMAL] = "#fff"
@@ -233,6 +238,8 @@ widget "*Calf-Rack*"                              style : highest "calf-rack-wid
 widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-title"
 
 widget "*Calf-Plugin"                             style : highest "calf-plugin"
+
+widget "*Calf-Connector"                          style : highest "calf-connector"
 
 widget "*Calf-Label"                              style : highest "calf-label"
 widget "*Calf-Value"                              style : highest "calf-label"

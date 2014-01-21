@@ -265,6 +265,29 @@ extern GtkWidget *calf_toggle_button_new(const gchar *label);
 extern GType calf_toggle_button_get_type();
 
 
+/// RADIO BUTTON //////////////////////////////////////////////////////
+
+
+#define CALF_TYPE_RADIO_BUTTON          (calf_radio_button_get_type())
+#define CALF_RADIO_BUTTON(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_RADIO_BUTTON, CalfRadioButton))
+#define CALF_IS_RADIO_BUTTON(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_RADIO_BUTTON))
+#define CALF_RADIO_BUTTON_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_RADIO_BUTTON, CalfRadioButtonClass))
+#define CALF_IS_RADIO_BUTTON_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_RADIO_BUTTON))
+
+struct CalfRadioButton
+{
+    GtkRadioButton parent;
+};
+
+struct CalfRadioButtonClass
+{
+    GtkRadioButtonClass parent_class;
+};
+
+extern GtkWidget *calf_radio_button_new(const gchar *label);
+extern GType calf_radio_button_get_type();
+
+
 /// TAP BUTTON /////////////////////////////////////////////////////////
 
 
