@@ -330,7 +330,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     GtkWidget *title = gtk_label_new(NULL);
     gtk_widget_set_name(GTK_WIDGET(title), "Calf-Rack-Title");
     gtk_label_set_markup(GTK_LABEL(title), metadata->get_label());
-    gtk_table_attach(GTK_TABLE(strip->strip_table), title, 1, 2, row, row + 1, ao, ao , 10, 10);
+    gtk_table_attach(GTK_TABLE(strip->strip_table), title, 1, 2, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0 , 10, 10);
     gtk_widget_show(title);
     
     // open button
@@ -358,10 +358,10 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_widget_show(strip->extra);
     
     // button box @ 1, 2
-    GtkWidget *buttonBox = gtk_hbox_new(TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->button), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->con), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), TRUE, FALSE, 0);
+    GtkWidget *buttonBox = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->button), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->con), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), FALSE, FALSE, 0);
     gtk_table_attach(GTK_TABLE(strip->strip_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)0, (GtkAttachOptions)0, 10, 10);
     gtk_widget_show(buttonBox);
     
@@ -371,7 +371,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), FALSE, FALSE, 0);
-        gtk_table_attach(GTK_TABLE(strip->strip_table), midiBox, 2, 3, row, row + 1, ao, (GtkAttachOptions)0, 5, 3);
+        gtk_table_attach(GTK_TABLE(strip->strip_table), midiBox, 2, 3, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0, 5, 3);
         gtk_widget_set_size_request(GTK_WIDGET(label), 25, 25);
         strip->midi_in = label;
         gtk_widget_show_all(midiBox);
@@ -389,11 +389,11 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     strip->audio_in.clear();
     strip->audio_out.clear();
         
-    if (metadata->get_input_count() >= 1) {
+    if (metadata->get_input_count()) {
         
-        strip->inBox  = gtk_vbox_new(FALSE, 1);
+        GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(strip->inBox), gtk_label_new("audio in"),FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("Audio In"),FALSE, FALSE, 0);
         
         for (int i = 0; i < metadata->get_input_count(); i++)
         {
@@ -403,22 +403,26 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             calf_vumeter_set_width(CALF_VUMETER(label), 100);
             calf_vumeter_set_height(CALF_VUMETER(label), 12);
             calf_vumeter_set_position(CALF_VUMETER(label), 2);
-            gtk_box_pack_start(GTK_BOX(strip->inBox), label,FALSE, FALSE, 0);
+            gtk_box_pack_start(GTK_BOX(inBox), label, TRUE, TRUE, 0);
             strip->audio_in.push_back(label);
         }
         
-        if (get_config()->vu_meters)
-            gtk_widget_show_all(strip->inBox);
+        strip->inBox = gtk_alignment_new(0.f, 0.f, 1.f, 0.f);
+        gtk_container_add(GTK_CONTAINER(strip->inBox), inBox);
+        
         gtk_table_attach(GTK_TABLE(strip->strip_table), strip->inBox, 3, 4, row, row + 1, ao, ao, 5, 3);
         
-        gtk_widget_set_size_request(GTK_WIDGET(strip->inBox), 160, -1);
+        if (get_config()->vu_meters)
+            gtk_widget_show_all(strip->inBox);
+            
+        gtk_widget_set_size_request(GTK_WIDGET(strip->inBox), 120, -1);
     }
 
-    if (metadata->get_output_count() >= 1) {
+    if (metadata->get_output_count()) {
         
-        strip->outBox  = gtk_vbox_new(FALSE, 1);
+        GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(strip->outBox), gtk_label_new("audio out"),FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("Audio Out"),TRUE, TRUE, 0);
         
         for (int i = 0; i < metadata->get_output_count(); i++)
         {
@@ -428,27 +432,26 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             calf_vumeter_set_width(CALF_VUMETER(label), 100);
             calf_vumeter_set_height(CALF_VUMETER(label), 12);
             calf_vumeter_set_position(CALF_VUMETER(label), 2);
-            gtk_box_pack_start(GTK_BOX(strip->outBox), label,FALSE, FALSE, 0);
+            gtk_box_pack_start(GTK_BOX(outBox), label,FALSE, FALSE, 0);
             strip->audio_out.push_back(label);
         }
         
-        if (get_config()->vu_meters)
-            gtk_widget_show_all(strip->outBox);
+        strip->outBox = gtk_alignment_new(0.f, 0.f, 1.f, 0.f);
+        gtk_container_add(GTK_CONTAINER(strip->outBox), outBox);
+        
         gtk_table_attach(GTK_TABLE(strip->strip_table), strip->outBox, 4, 5, row, row + 1, ao, ao, 5, 3);
         
-        gtk_widget_set_size_request(GTK_WIDGET(strip->outBox), 160, -1);
+        if (get_config()->vu_meters)
+            gtk_widget_show_all(strip->outBox);
+            
+        gtk_widget_set_size_request(GTK_WIDGET(strip->outBox), 120, -1);
     }
 
     // other stuff bottom right
-    GtkWidget *paramBox = gtk_hbox_new(TRUE, 0);
+    GtkWidget *paramBox = gtk_hbox_new(FALSE, 0);
     
-    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
-    
-    GtkWidget *align = gtk_alignment_new(1, 1, 1, 1);
-    gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(align), TRUE, TRUE, 0);
     GtkWidget *logoImg     = gtk_image_new_from_file(PKGLIBDIR "/logo_button.png");
-    gtk_container_add(GTK_CONTAINER(align), logoImg);
+    gtk_box_pack_start(GTK_BOX(paramBox), GTK_WIDGET(logoImg), TRUE, TRUE, 0);
     
     gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
     gtk_widget_show_all(GTK_WIDGET(paramBox));

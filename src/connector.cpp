@@ -114,7 +114,7 @@ void calf_connector::create_window()
         sprintf(buf, "Input #%d", (i + 1));
         GtkWidget *in = calf_radio_button_new(buf);
         gtk_box_pack_start(GTK_BOX(inputs), in, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(in), 120, 30);
+        gtk_widget_set_size_request(GTK_WIDGET(in), 110, 27);
         gtk_widget_show(GTK_WIDGET(in));
         if (!i)
             last = GTK_RADIO_BUTTON(in);
@@ -129,7 +129,7 @@ void calf_connector::create_window()
         sprintf(buf, "Output #%d", (i + 1));
         GtkWidget *out = calf_radio_button_new(buf);
         gtk_box_pack_start(GTK_BOX(outputs), out, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(out), 120, 30);
+        gtk_widget_set_size_request(GTK_WIDGET(out), 110, 27);
         gtk_widget_show(GTK_WIDGET(out));
         if (!i and !last)
             last = GTK_RADIO_BUTTON(out);
@@ -143,7 +143,7 @@ void calf_connector::create_window()
     if (plugin->get_metadata_iface()->get_midi()) {
         GtkWidget *mid = calf_radio_button_new("MIDI");
         gtk_box_pack_start(GTK_BOX(midi), mid, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(mid), 120, 30);
+        gtk_widget_set_size_request(GTK_WIDGET(mid), 110, 27);
         gtk_radio_button_set_group(GTK_RADIO_BUTTON(mid), gtk_radio_button_get_group(last));
         gtk_widget_show(GTK_WIDGET(mid));
         c++;
