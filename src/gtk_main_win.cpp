@@ -207,8 +207,6 @@ static gboolean
 connect_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
 {
     GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
-    //if ((gtk_toggle_button_get_active(tb) != 0) == (strip->connector != NULL))
-        //return FALSE;
     if (strip->connector) {
         strip->connector->close();
         strip->connector = NULL;
@@ -364,7 +362,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->button), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->con), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(buttonBox), GTK_WIDGET(strip->extra), TRUE, FALSE, 0);
-    gtk_table_attach(GTK_TABLE(strip->strip_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)0, 10, 10);
+    gtk_table_attach(GTK_TABLE(strip->strip_table), buttonBox, 1, 2, row + 1, row + 2, (GtkAttachOptions)0, (GtkAttachOptions)0, 10, 10);
     gtk_widget_show(buttonBox);
     
     // midi box
@@ -402,7 +400,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             label = calf_vumeter_new();
             calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
             calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-            calf_vumeter_set_width(CALF_VUMETER(label), 120);
+            calf_vumeter_set_width(CALF_VUMETER(label), 100);
             calf_vumeter_set_height(CALF_VUMETER(label), 12);
             calf_vumeter_set_position(CALF_VUMETER(label), 2);
             gtk_box_pack_start(GTK_BOX(strip->inBox), label,FALSE, FALSE, 0);
@@ -427,7 +425,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
             label = calf_vumeter_new();
             calf_vumeter_set_falloff(CALF_VUMETER(label), 2.5);
             calf_vumeter_set_hold(CALF_VUMETER(label), 1.5);
-            calf_vumeter_set_width(CALF_VUMETER(label), 120);
+            calf_vumeter_set_width(CALF_VUMETER(label), 100);
             calf_vumeter_set_height(CALF_VUMETER(label), 12);
             calf_vumeter_set_position(CALF_VUMETER(label), 2);
             gtk_box_pack_start(GTK_BOX(strip->outBox), label,FALSE, FALSE, 0);
@@ -442,16 +440,17 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     }
 
     // other stuff bottom right
-    GtkWidget *paramBox = gtk_hbox_new(TRUE, 10);
+    GtkWidget *paramBox = gtk_hbox_new(TRUE, 0);
     
     gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(paramBox), gtk_label_new(NULL), TRUE, TRUE, 0);
     
+    GtkWidget *align = gtk_alignment_new(1, 1, 1, 1);
+    gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(align), TRUE, TRUE, 0);
     GtkWidget *logoImg     = gtk_image_new_from_file(PKGLIBDIR "/logo_button.png");
-    gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(align), logoImg);
     
-    gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)0, 10, 0);
+    gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
     gtk_widget_show_all(GTK_WIDGET(paramBox));
     
     row += 2;
