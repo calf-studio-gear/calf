@@ -18,11 +18,22 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
- 
+
+#include <jack/jack.h>
+
 #ifndef __CALF_CONNECTOR_H
 #define __CALF_CONNECTOR_H
 
 namespace calf_plugins {
+
+class calf_connector;
+
+struct connector_port
+{
+    int type;
+    int id;
+    calf_connector *connector;
+};
 
 class calf_connector {
 private:
@@ -32,11 +43,18 @@ private:
     GtkListStore *jacklist;
     const plugin_ctl_iface *plugin;
     void create_window();
+    connector_port inports[8];
+    connector_port outports[8];
+    connector_port midiports[8];
+    connector_port *active_port;
+    jack_client_t *jackclient;
 public:
+    static void connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path, gpointer data);
+    static void port_clicked(GtkWidget *button, gpointer port_);
+    static void on_destroy_window(GtkWidget *window, gpointer self);
     calf_connector(plugin_ctl_iface *plugin_, GtkWidget *toggle_);
     ~calf_connector();
     void fill_list();
-    static void on_destroy_window(GtkWidget *window, gpointer self);
     void close();
 };
 
