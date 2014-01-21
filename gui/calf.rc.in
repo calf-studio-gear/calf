@@ -71,20 +71,16 @@ style "calf-rack"
 
 style "calf-rack-title"
 {
-    fg[NORMAL] = "#000"
-    font_name  = "Sans Bold 10"
+    fg[NORMAL] = "#918864"
+    font_name  = "Sans 12"
     xthickness = 7
     ythickness = 3
 }
 
 style "calf-rack-widgets"
 {
-    fg[NORMAL]        = "#000"
-    fg[PRELIGHT]      = "#000"
-    fg[ACTIVE]        = "#000"
-    fg[SELECTED]      = "#000"
-    fg[INSENSITIVE]   = "#000"
-    font_name         = "Sans 8"
+    fg[NORMAL]        = "#918864"
+    font_name         = "Sans 5"
 }
 
 style "calf-plugin"
@@ -114,6 +110,8 @@ style "calf-button"
     fg[NORMAL]   = "#07005a"
     fg[PRELIGHT] = "#3392e6"
     fg[ACTIVE]   = "#43b2ff"
+    
+    font_name         = "Sans 8"
     
     xthickness = 3
     ythickness = 3

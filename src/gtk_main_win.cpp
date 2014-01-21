@@ -330,7 +330,8 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
     GtkWidget *title = gtk_label_new(NULL);
     gtk_widget_set_name(GTK_WIDGET(title), "Calf-Rack-Title");
     gtk_label_set_markup(GTK_LABEL(title), metadata->get_label());
-    gtk_table_attach(GTK_TABLE(strip->strip_table), title, 1, 2, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0 , 10, 10);
+    gtk_label_set_justify(GTK_LABEL(title), GTK_JUSTIFY_RIGHT);
+    gtk_table_attach(GTK_TABLE(strip->strip_table), title, 1, 2, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0 , 10, 0);
     gtk_widget_show(title);
     
     // open button
@@ -393,7 +394,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         
         GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("Audio In"),FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("AUDIO IN"),FALSE, FALSE, 0);
         
         for (int i = 0; i < metadata->get_input_count(); i++)
         {
@@ -422,7 +423,7 @@ gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *p
         
         GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("Audio Out"),TRUE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("AUDIO OUT"),TRUE, TRUE, 0);
         
         for (int i = 0; i < metadata->get_output_count(); i++)
         {
