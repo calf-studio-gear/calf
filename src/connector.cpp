@@ -37,7 +37,6 @@ calf_connector::calf_connector(plugin_ctl_iface *plugin_, GtkWidget *toggle_)
     plugin = plugin_;
     toggle = toggle_;
     window = NULL;
-    selector = NULL;
     create_window();
 }
 
@@ -74,6 +73,22 @@ void calf_connector::connector_clicked(GtkCellRendererToggle *cell_renderer, gch
     gtk_list_store_set(GTK_LIST_STORE (data), &iter, 2, !enabled, -1);
 }
 
+void calf_connector::jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, gpointer self)
+{
+    calf_connector *con = (calf_connector *)self;
+    con->fill_list();
+}
+void calf_connector::jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, gpointer self)
+{
+    calf_connector *con = (calf_connector *)self;
+    con->fill_list();
+}
+void calf_connector::jack_port_registration_callback(jack_port_id_t port, int register, gpointer self)
+{
+    calf_connector *con = (calf_connector *)self;
+    con->fill_list();
+}
+    
 void calf_connector::create_window()
 {
     char buf[256];
@@ -130,6 +145,7 @@ void calf_connector::create_window()
     GtkRadioButton *last = NULL;
     GtkRadioButton *first = NULL;
     int c = 0;
+    // inputs
     for (int i = 0; i < plugin->get_metadata_iface()->get_input_count(); i++) {
         sprintf(buf, "Input #%d", (i + 1));
         GtkWidget *in = calf_radio_button_new(buf);
@@ -153,6 +169,7 @@ void calf_connector::create_window()
     if (!c)
         gtk_widget_hide(GTK_WIDGET(inframe));
     c = 0;
+    // outputs
     for (int i = 0; i < plugin->get_metadata_iface()->get_output_count(); i++) {
         sprintf(buf, "Output #%d", (i + 1));
         GtkWidget *out = calf_radio_button_new(buf);
@@ -176,6 +193,7 @@ void calf_connector::create_window()
     if (!c)
         gtk_widget_hide(GTK_WIDGET(outframe));
     c = 0;
+    // midi
     if (plugin->get_metadata_iface()->get_midi()) {
         GtkWidget *mid = calf_radio_button_new("MIDI");
         gtk_box_pack_start(GTK_BOX(midi), mid, false, true, 0);
@@ -194,8 +212,6 @@ void calf_connector::create_window()
     }
     if (!c)
         gtk_widget_hide(GTK_WIDGET(midframe));
-    
-    selector = gtk_radio_button_get_group(last);
     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first), TRUE);
     
@@ -217,6 +233,7 @@ void calf_connector::create_window()
     gtk_container_add(GTK_CONTAINER(scroller), jackview);
     gtk_widget_show(GTK_WIDGET(jackview));
     
+    // toggle column
     col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_title(col, "☑");
     renderer = gtk_cell_renderer_toggle_new();
@@ -225,6 +242,7 @@ void calf_connector::create_window()
     gtk_tree_view_append_column(GTK_TREE_VIEW(jackview), col);
     g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(connector_clicked), (gpointer*)jacklist);
     
+    // text column
     col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_title(col, "Port");
     renderer = gtk_cell_renderer_text_new();
@@ -241,11 +259,19 @@ void calf_connector::create_window()
     jack_status_t status;
     jackclient = jack_client_open("Calf Studio Gear", JackNullOption, &status);
     
+    jack_set_port_connect_callback(jackclient, jack_port_connect_callback, this);
+    //jack_set_port_rename_callback(jackclient, jack_port_rename_callback, this);
+    jack_set_port_registration_callback(jackclient, jack_port_registration_callback , this);
+    
+    jack_activate(jackclient);
+    
     fill_list();
 }
 
 void calf_connector::fill_list()
 {
+    if (!jacklist)
+        return;
     GtkTreeIter iter;
     gtk_list_store_clear(jacklist);
     const char **ports;

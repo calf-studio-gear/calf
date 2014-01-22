@@ -90,7 +90,7 @@ style "calf-plugin"
 
 style "calf-connector"
 {
-    bg_pixmap[NORMAL] = "background_black.png"
+    bg_pixmap[NORMAL] = "background_dark.png"
 }
 
 style "calf-label" {

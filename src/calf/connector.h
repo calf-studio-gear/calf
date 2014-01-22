@@ -39,7 +39,6 @@ class calf_connector {
 private:
     GtkWidget *window;
     GtkWidget *toggle;
-    GSList *selector;
     GtkListStore *jacklist;
     const plugin_ctl_iface *plugin;
     void create_window();
@@ -52,6 +51,9 @@ public:
     static void connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path, gpointer data);
     static void port_clicked(GtkWidget *button, gpointer port_);
     static void on_destroy_window(GtkWidget *window, gpointer self);
+    static void jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
+    static void jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, void *arg);
+    static void jack_port_registration_callback(jack_port_id_t port, int register, void *arg);
     calf_connector(plugin_ctl_iface *plugin_, GtkWidget *toggle_);
     ~calf_connector();
     void fill_list();
