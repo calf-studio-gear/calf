@@ -126,11 +126,11 @@ void calf_connector::create_window()
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), title.c_str());
     gtk_window_set_destroy_with_parent(GTK_WINDOW(window), TRUE);
-    gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
+    //gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     gtk_window_set_icon_name(GTK_WINDOW(window), "calf_plugin");
     gtk_window_set_role(GTK_WINDOW(window), "calf_connector");
     gtk_window_set_default_size(GTK_WINDOW(window), -1, -1);
-    gtk_widget_set_name(GTK_WIDGET(window), "Calf-Connector");
+    //gtk_widget_set_name(GTK_WIDGET(window), "Calf-Connector");
     
     g_signal_connect(G_OBJECT(window), "destroy",
                      G_CALLBACK (on_destroy_window), (gpointer)this);
@@ -139,29 +139,29 @@ void calf_connector::create_window()
     
     GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(false, 0));
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(hbox));
-    gtk_widget_set_name(GTK_WIDGET(hbox), "Calf-Container");
+    //gtk_widget_set_name(GTK_WIDGET(hbox), "Calf-Container");
     
     GtkVBox *ports = GTK_VBOX(gtk_vbox_new(false, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ports), false, false, 0);
-    gtk_container_set_border_width (GTK_CONTAINER(ports), 8);
+    gtk_container_set_border_width (GTK_CONTAINER(ports), 5);
     
-    GtkWidget *inframe = calf_frame_new("Inputs");
+    GtkWidget *inframe = gtk_frame_new("Inputs");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(inframe), false, true, 10);
-    gtk_container_set_border_width (GTK_CONTAINER(inframe), 8);
+    gtk_container_set_border_width (GTK_CONTAINER(inframe), 0);
     
     GtkWidget *inputs = gtk_vbox_new(false, 5);
     gtk_container_add(GTK_CONTAINER(inframe), GTK_WIDGET(inputs));
     
-    GtkWidget *outframe = calf_frame_new("Outputs");
+    GtkWidget *outframe = gtk_frame_new("Outputs");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(outframe), false, true, 10);
-    gtk_container_set_border_width (GTK_CONTAINER(outframe), 8);
+    gtk_container_set_border_width (GTK_CONTAINER(outframe), 0);
     
     GtkWidget *outputs = gtk_vbox_new(false, 5);
     gtk_container_add(GTK_CONTAINER(outframe), GTK_WIDGET(outputs));
     
-    GtkWidget *midframe = calf_frame_new("MIDI");
+    GtkWidget *midframe = gtk_frame_new("MIDI");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(midframe), false, true, 10);
-    gtk_container_set_border_width (GTK_CONTAINER(midframe), 8);
+    gtk_container_set_border_width (GTK_CONTAINER(midframe), 0);
     
     GtkWidget *midi = gtk_vbox_new(false, 5);
     gtk_container_add(GTK_CONTAINER(midframe), GTK_WIDGET(midi));
@@ -175,7 +175,7 @@ void calf_connector::create_window()
     // inputs
     for (int i = 0; i < strip->plugin->in_count; i++) {
         sprintf(buf, "Input #%d", (i + 1));
-        GtkWidget *in = calf_radio_button_new(buf);
+        GtkWidget *in = gtk_radio_button_new_with_label(NULL, buf);
         gtk_box_pack_start(GTK_BOX(inputs), in, false, true, 0);
         gtk_widget_set_size_request(GTK_WIDGET(in), 110, 27);
         gtk_widget_show(GTK_WIDGET(in));
@@ -199,7 +199,7 @@ void calf_connector::create_window()
     // outputs
     for (int i = 0; i < strip->plugin->out_count; i++) {
         sprintf(buf, "Output #%d", (i + 1));
-        GtkWidget *out = calf_radio_button_new(buf);
+        GtkWidget *out = gtk_radio_button_new_with_label(NULL, buf);
         gtk_box_pack_start(GTK_BOX(outputs), out, false, true, 0);
         gtk_widget_set_size_request(GTK_WIDGET(out), 110, 27);
         gtk_widget_show(GTK_WIDGET(out));
@@ -222,7 +222,7 @@ void calf_connector::create_window()
     c = 0;
     // midi
     if (strip->plugin->get_metadata_iface()->get_midi()) {
-        GtkWidget *mid = calf_radio_button_new("MIDI");
+        GtkWidget *mid = gtk_radio_button_new_with_label(NULL, "MIDI");
         gtk_box_pack_start(GTK_BOX(midi), mid, false, true, 0);
         gtk_widget_set_size_request(GTK_WIDGET(mid), 110, 27);
         gtk_radio_button_set_group(GTK_RADIO_BUTTON(mid), gtk_radio_button_get_group(last));
