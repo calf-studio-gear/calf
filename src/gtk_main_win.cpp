@@ -25,7 +25,7 @@
 #include <calf/custom_ctl.h>
 #include <calf/preset.h>
 #include <calf/gtk_main_win.h>
-#include <calf/connector.h>
+#include <calf/jackhost.h>
 
 using namespace calf_plugins;
 using namespace std;
@@ -129,7 +129,7 @@ void gtk_main_window::on_exit_action(GtkWidget *widget, gtk_main_window *main)
     gtk_widget_destroy(GTK_WIDGET(main->toplevel));
 }
 
-void gtk_main_window::add_plugin(plugin_ctl_iface *plugin)
+void gtk_main_window::add_plugin(jack_host *plugin)
 {
     if (toplevel)
     {
@@ -190,7 +190,7 @@ void gtk_main_window::refresh_all_presets(bool builtin_too)
 }
 
 static gboolean
-gui_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
+gui_button_pressed(GtkWidget *button, plugin_strip *strip)
 {
     GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
     if ((gtk_toggle_button_get_active(tb) != 0) == (strip->gui_win != NULL))
@@ -204,19 +204,19 @@ gui_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
     return TRUE;
 }
 static gboolean
-connect_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
+connect_button_pressed(GtkWidget *button, plugin_strip *strip)
 {
-    GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
+    //GtkToggleButton *tb = GTK_TOGGLE_BUTTON(button);
     if (strip->connector) {
         strip->connector->close();
         strip->connector = NULL;
     } else {
-        strip->connector = new calf_connector(strip->plugin, GTK_WIDGET(tb));
+        strip->connector = new calf_connector(strip);
     }
     return TRUE;
 }
 static gboolean
-extra_button_pressed(GtkWidget *button, gtk_main_window::plugin_strip *strip)
+extra_button_pressed(GtkWidget *button, plugin_strip *strip)
 {
     if (strip->connector)
         strip->connector->close();
@@ -262,7 +262,7 @@ void gtk_main_window::show_vu_meters(bool show)
     }
 }
 
-gtk_main_window::plugin_strip *gtk_main_window::create_strip(plugin_ctl_iface *plugin)
+plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
 {
     plugin_strip *strip = new plugin_strip;
     strip->main_win = this;
@@ -608,7 +608,7 @@ void gtk_main_window::create()
             gtk_misc_set_alignment(GTK_MISC(c->widget), 0.5, 0);
         }
     }
-    for (std::vector<plugin_ctl_iface *>::iterator i = plugin_queue.begin(); i != plugin_queue.end(); i++)
+    for (std::vector<jack_host *>::iterator i = plugin_queue.begin(); i != plugin_queue.end(); i++)
     {
         plugin_strip *st = create_strip(*i);
         plugins[*i] = st;

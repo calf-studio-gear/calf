@@ -25,6 +25,7 @@
 #include <calf/giface.h>
 #include <calf/connector.h>
 #include <calf/custom_ctl.h>
+#include <calf/jackhost.h>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -32,10 +33,9 @@
 using namespace std;
 using namespace calf_plugins;
 
-calf_connector::calf_connector(plugin_ctl_iface *plugin_, GtkWidget *toggle_)
+calf_connector::calf_connector(plugin_strip *strip_)
 {
-    plugin = plugin_;
-    toggle = toggle_;
+    strip = strip_;
     window = NULL;
     create_window();
 }
@@ -45,49 +45,76 @@ calf_connector::~calf_connector()
     
 }
 
-void calf_connector::on_destroy_window(GtkWidget *window, gpointer self)
+void calf_connector::on_destroy_window(GtkWidget *window, gpointer data)
 {
-    calf_connector *con = (calf_connector *)self;
-    if (con->toggle)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(con->toggle), FALSE);
-    //delete (calf_connector *)self;
+    calf_connector *self = (calf_connector *)data;
+    if (self->strip->con)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->strip->con), FALSE);
+    self->strip->connector = NULL;
+    delete self;
 }
 
-void calf_connector::port_clicked(GtkWidget *button, gpointer port_)
+void calf_connector::port_clicked(GtkWidget *button, gpointer data)
 {
-    connector_port *port = (connector_port *)port_;
+    connector_port *port = (connector_port *)data;
     if (port == port->connector->active_port)
         return;
     port->connector->active_port = port;
-    port->connector->fill_list();
+    port->connector->fill_list(port->connector);
 }
 
 void calf_connector::connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path_, gpointer data)
 {
+    calf_connector *self = (calf_connector *)data;
     GtkTreeIter iter;
     gchar *port;
     gboolean enabled;
     GtkTreePath* path = gtk_tree_path_new_from_string(path_);
-    gtk_tree_model_get_iter(GTK_TREE_MODEL(data), &iter, path);
-    gtk_tree_model_get(GTK_TREE_MODEL(data), &iter, 0, &port, 2, &enabled, -1);
-    gtk_list_store_set(GTK_LIST_STORE (data), &iter, 2, !enabled, -1);
+    gtk_tree_model_get_iter(GTK_TREE_MODEL(self->jacklist), &iter, path);
+    gtk_tree_model_get(GTK_TREE_MODEL(self->jacklist), &iter, 0, &port, 2, &enabled, -1);
+    gtk_list_store_set(GTK_LIST_STORE (self->jacklist), &iter, 2, !enabled, -1);
+    string source = "";
+    string dest   = "";
+    switch (self->active_port->type) {
+        case 0:
+        default:
+            source = port;
+            dest   = (string)jack_get_client_name(self->jackclient)
+                   + ":" + self->strip->plugin->inputs[self->active_port->id].nice_name;
+            break;
+        case 1:
+            source = (string)jack_get_client_name(self->jackclient)
+                   + ":" + self->strip->plugin->outputs[self->active_port->id].nice_name;
+            dest   = port;
+            break;
+        case 2:
+            source = port;
+            dest   = (string)jack_get_client_name(self->jackclient)
+                   + ":" + self->strip->plugin->midi_port.nice_name;
+            break;
+    }
+    if (!enabled) {
+        jack_connect(self->jackclient, source.c_str(), dest.c_str());
+    } else {
+        jack_disconnect(self->jackclient, source.c_str(), dest.c_str());
+    }
 }
 
-void calf_connector::jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, gpointer self)
-{
-    calf_connector *con = (calf_connector *)self;
-    con->fill_list();
-}
-void calf_connector::jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, gpointer self)
-{
-    calf_connector *con = (calf_connector *)self;
-    con->fill_list();
-}
-void calf_connector::jack_port_registration_callback(jack_port_id_t port, int register, gpointer self)
-{
-    calf_connector *con = (calf_connector *)self;
-    con->fill_list();
-}
+//void calf_connector::jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, gpointer data)
+//{
+    //calf_connector *self = (calf_connector *)data;
+    //self->fill_list(data);
+//}
+//void calf_connector::jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, gpointer data)
+//{
+    //calf_connector *self = (calf_connector *)data;
+    //self->fill_list(data);
+//}
+//void calf_connector::jack_port_registration_callback(jack_port_id_t port, int register, gpointer data)
+//{
+    //calf_connector *self = (calf_connector *)data;
+    //self->fill_list(data);
+//}
     
 void calf_connector::create_window()
 {
@@ -95,7 +122,7 @@ void calf_connector::create_window()
     
     // CREATE WINDOW
     
-    string title = "Calf " + (string)plugin->get_metadata_iface()->get_label() + " Connector";
+    string title = "Calf " + (string)strip->plugin->get_metadata_iface()->get_label() + " Connector";
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), title.c_str());
     gtk_window_set_destroy_with_parent(GTK_WINDOW(window), TRUE);
@@ -110,13 +137,13 @@ void calf_connector::create_window()
     
     // CONTAINER STUFF
     
-    GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(false, 8));
+    GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(false, 0));
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(hbox));
-    gtk_container_set_border_width (GTK_CONTAINER(window), 8);
     gtk_widget_set_name(GTK_WIDGET(hbox), "Calf-Container");
     
     GtkVBox *ports = GTK_VBOX(gtk_vbox_new(false, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ports), false, false, 0);
+    gtk_container_set_border_width (GTK_CONTAINER(ports), 8);
     
     GtkWidget *inframe = calf_frame_new("Inputs");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(inframe), false, true, 10);
@@ -146,7 +173,7 @@ void calf_connector::create_window()
     GtkRadioButton *first = NULL;
     int c = 0;
     // inputs
-    for (int i = 0; i < plugin->get_metadata_iface()->get_input_count(); i++) {
+    for (int i = 0; i < strip->plugin->in_count; i++) {
         sprintf(buf, "Input #%d", (i + 1));
         GtkWidget *in = calf_radio_button_new(buf);
         gtk_box_pack_start(GTK_BOX(inputs), in, false, true, 0);
@@ -170,7 +197,7 @@ void calf_connector::create_window()
         gtk_widget_hide(GTK_WIDGET(inframe));
     c = 0;
     // outputs
-    for (int i = 0; i < plugin->get_metadata_iface()->get_output_count(); i++) {
+    for (int i = 0; i < strip->plugin->out_count; i++) {
         sprintf(buf, "Output #%d", (i + 1));
         GtkWidget *out = calf_radio_button_new(buf);
         gtk_box_pack_start(GTK_BOX(outputs), out, false, true, 0);
@@ -194,7 +221,7 @@ void calf_connector::create_window()
         gtk_widget_hide(GTK_WIDGET(outframe));
     c = 0;
     // midi
-    if (plugin->get_metadata_iface()->get_midi()) {
+    if (strip->plugin->get_metadata_iface()->get_midi()) {
         GtkWidget *mid = calf_radio_button_new("MIDI");
         gtk_box_pack_start(GTK_BOX(midi), mid, false, true, 0);
         gtk_widget_set_size_request(GTK_WIDGET(mid), 110, 27);
@@ -240,7 +267,7 @@ void calf_connector::create_window()
     gtk_tree_view_column_pack_start(col, renderer, TRUE);
     gtk_tree_view_column_add_attribute(col, renderer, "active", 2);
     gtk_tree_view_append_column(GTK_TREE_VIEW(jackview), col);
-    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(connector_clicked), (gpointer*)jacklist);
+    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(connector_clicked), this);
     
     // text column
     col = gtk_tree_view_column_new();
@@ -256,51 +283,113 @@ void calf_connector::create_window()
     g_object_unref(jacklist);
     
     // JACK STUFF
-    jack_status_t status;
-    jackclient = jack_client_open("Calf Studio Gear", JackNullOption, &status);
     
-    jack_set_port_connect_callback(jackclient, jack_port_connect_callback, this);
+    jackclient = strip->plugin->client->client;
+    
+    //jack_set_port_connect_callback(jackclient, jack_port_connect_callback, this);
     //jack_set_port_rename_callback(jackclient, jack_port_rename_callback, this);
-    jack_set_port_registration_callback(jackclient, jack_port_registration_callback , this);
+    //jack_set_port_registration_callback(jackclient, jack_port_registration_callback , this);
     
-    jack_activate(jackclient);
-    
-    fill_list();
+    fill_list(this);
 }
 
-void calf_connector::fill_list()
+void calf_connector::fill_list(gpointer data)
 {
-    if (!jacklist)
+    calf_connector *self = (calf_connector *)data;
+    if (!self->jacklist)
         return;
     GtkTreeIter iter;
-    gtk_list_store_clear(jacklist);
+    gtk_list_store_clear(self->jacklist);
     const char **ports;
-    switch (active_port->type) {
+    switch (self->active_port->type) {
         case 0:
         default:
-            ports = jack_get_ports(jackclient, ".*:.*", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
+            ports = jack_get_ports(self->jackclient, ".*:.*", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
             break;
         case 1:
-            ports = jack_get_ports(jackclient, ".*:.*", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
+            ports = jack_get_ports(self->jackclient, ".*:.*", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
             break;
         case 2:
-            ports = jack_get_ports(jackclient, ".*:.*", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
+            ports = jack_get_ports(self->jackclient, ".*:.*", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
             break;
     }
-    int c = 0;
     if (!ports)
         return;
-    while (ports[c] != NULL) {
-        gtk_list_store_append(jacklist, &iter);
-        gtk_list_store_set(jacklist, &iter, 0, ports[c], 1, ports[c], 2,  FALSE, -1);
-        //jack_free(ports[c]);
-        c++;
+    int c = 0;
+    do {
+        gtk_list_store_append(self->jacklist, &iter);
+        if (gtk_list_store_iter_is_valid(self->jacklist, &iter))
+            gtk_list_store_set(self->jacklist, &iter, 0, ports[c], 1, ports[c], 2,  FALSE, -1);
+    } while (ports[++c]);
+    jack_free(ports);
+    self->set_toggles(data);
+}
+
+void calf_connector::set_toggles(gpointer data)
+{
+    calf_connector *self = (calf_connector *)data;
+    if (!self->jacklist)
+        return;
+    const char** cons;
+    const char** ports;
+    char path[16];
+    GtkTreeIter iter;
+    jack_port_t *port = NULL;
+    int p = 0, c = 0, f = 0, portflag = 0;
+    const char * porttype;
+    string s  = "", nn = "";
+    switch (self->active_port->type) {
+        case 0:
+        default:
+            portflag = JackPortIsOutput;
+            porttype = JACK_DEFAULT_AUDIO_TYPE;
+            nn       = (string)jack_get_client_name(jackclient)
+                     + ":" + self->strip->plugin->inputs[active_port->id].nice_name;
+            break;
+        case 1:
+            portflag = JackPortIsInput;
+            porttype = JACK_DEFAULT_AUDIO_TYPE;
+            nn       = (string)jack_get_client_name(jackclient)
+                     + ":" + self->strip->plugin->outputs[active_port->id].nice_name;
+            break;
+        case 2:
+            portflag = JackPortIsOutput;
+            porttype = JACK_DEFAULT_MIDI_TYPE;
+            nn       = (string)jack_get_client_name(jackclient)
+                     + ":" + self->strip->plugin->midi_port.nice_name;
+            break;
     }
+    port  = jack_port_by_name(self->jackclient, nn.c_str());
+    cons  = jack_port_get_all_connections(self->jackclient, port);
+    ports = jack_get_ports(self->jackclient,
+                           NULL,
+                           porttype,
+                           portflag);
+    if (!ports or !cons) {
+        jack_free(cons);
+        jack_free(ports);
+        return;
+    }
+    p = 0;
+    do {
+        sprintf(path, "%d", p);
+        gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(self->jacklist), &iter, path);
+        c = f = 0;
+        do {
+            if (cons[c] == ports[p]) {
+                gtk_list_store_set (jacklist, &iter, 2, TRUE, -1);
+                f = 1;
+            }
+        } while (cons[++c]);
+        if (!f)
+            gtk_list_store_set (jacklist, &iter, 2, FALSE, -1);
+    } while (ports[++p]);
+    jack_free(cons);
+    jack_free(ports);
 }
 
 void calf_connector::close()
 {
     if (window)
         gtk_widget_destroy(GTK_WIDGET(window));
-    //delete (calf_connector *)this;
 }

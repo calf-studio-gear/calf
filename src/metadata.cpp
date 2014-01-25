@@ -64,10 +64,10 @@ const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference" };
 #define SHELF_PARAMS \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "ls_active", "LS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "ls_level", "Level L" }, \
-    { 200,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "ls_freq", "Freq L" }, \
+    { 100,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "ls_freq", "Freq L" }, \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "hs_active", "HS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "hs_level", "Level H" }, \
-    { 4000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hs_freq", "Freq H" },
+    { 5000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hs_freq", "Freq H" },
 
 #define EQ_BAND_PARAMS(band, frequency) \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "p" #band "_active", "F" #band " Active" }, \
@@ -689,7 +689,7 @@ CALF_PORT_PROPS(equalizer5band) = {
     SHELF_PARAMS
     EQ_BAND_PARAMS(1, 250)
     EQ_BAND_PARAMS(2, 1000)
-    EQ_BAND_PARAMS(3, 2500)
+    EQ_BAND_PARAMS(3, 4000)
     EQ_DISPLAY_PARAMS
     {}
 };
@@ -707,9 +707,9 @@ CALF_PORT_PROPS(equalizer8band) = {
     METERING_PARAMS
     LPHP_PARAMS
     SHELF_PARAMS
-    EQ_BAND_PARAMS(1, 250)
-    EQ_BAND_PARAMS(2, 1000)
-    EQ_BAND_PARAMS(3, 2500)
+    EQ_BAND_PARAMS(1, 100)
+    EQ_BAND_PARAMS(2, 500)
+    EQ_BAND_PARAMS(3, 2000)
     EQ_BAND_PARAMS(4, 5000)
     EQ_DISPLAY_PARAMS
     {}
@@ -731,9 +731,9 @@ CALF_PORT_PROPS(equalizer12band) = {
     EQ_BAND_PARAMS(3, 250)
     EQ_BAND_PARAMS(4, 500)
     EQ_BAND_PARAMS(5, 1000)
-    EQ_BAND_PARAMS(6, 2500)
+    EQ_BAND_PARAMS(6, 2000)
     EQ_BAND_PARAMS(7, 4000)
-    EQ_BAND_PARAMS(8, 6000)
+    EQ_BAND_PARAMS(8, 8000)
     EQ_DISPLAY_PARAMS
     {}
 };

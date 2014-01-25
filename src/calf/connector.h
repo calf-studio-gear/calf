@@ -20,12 +20,15 @@
  */
 
 #include <jack/jack.h>
+#include <calf/gtk_main_win.h>
+
 
 #ifndef __CALF_CONNECTOR_H
 #define __CALF_CONNECTOR_H
 
 namespace calf_plugins {
 
+class plugin_strip;
 class calf_connector;
 
 struct connector_port
@@ -37,26 +40,26 @@ struct connector_port
 
 class calf_connector {
 private:
-    GtkWidget *window;
-    GtkWidget *toggle;
     GtkListStore *jacklist;
-    const plugin_ctl_iface *plugin;
-    void create_window();
+    jack_client_t *jackclient;
     connector_port inports[8];
     connector_port outports[8];
     connector_port midiports[8];
     connector_port *active_port;
-    jack_client_t *jackclient;
+    GtkWidget *window;
+    plugin_strip *strip;
+    void create_window();
 public:
-    static void connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path, gpointer data);
-    static void port_clicked(GtkWidget *button, gpointer port_);
-    static void on_destroy_window(GtkWidget *window, gpointer self);
-    static void jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
-    static void jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, void *arg);
-    static void jack_port_registration_callback(jack_port_id_t port, int register, void *arg);
-    calf_connector(plugin_ctl_iface *plugin_, GtkWidget *toggle_);
+    calf_connector(plugin_strip *strip_);
     ~calf_connector();
-    void fill_list();
+    static void connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path, gpointer data);
+    static void port_clicked(GtkWidget *button, gpointer data);
+    static void on_destroy_window(GtkWidget *window, gpointer data);
+    //static void jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
+    //static void jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, void *arg);
+    //static void jack_port_registration_callback(jack_port_id_t port, int register, void *arg);
+    void fill_list(gpointer data);
+    void set_toggles(gpointer data);
     void close();
 };
 

@@ -24,23 +24,26 @@
 #include "gui.h"
 #include "gui_config.h"
 #include <calf/connector.h>
+#include <calf/jackhost.h>
 
 namespace calf_plugins {
-
+    
+    class gtk_main_window;
+    
+    struct plugin_strip
+    {
+        int id;
+        gtk_main_window *main_win;
+        jack_host *plugin;
+        plugin_gui_window *gui_win;
+        calf_connector *connector;
+        GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
+        std::vector<GtkWidget *> audio_in, audio_out;
+    };
+    
     class gtk_main_window: public main_window_iface, public gui_environment, public calf_utils::config_listener_iface
     {
     public:
-        struct plugin_strip
-        {
-            int id;
-            gtk_main_window *main_win;
-            plugin_ctl_iface *plugin;
-            plugin_gui_window *gui_win;
-            calf_connector *connector;
-            GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
-            std::vector<GtkWidget *> audio_in, audio_out;
-        };
-        
         struct add_plugin_params
         {
             gtk_main_window *main_win;
@@ -56,7 +59,7 @@ namespace calf_plugins {
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
-        std::vector<plugin_ctl_iface *> plugin_queue;
+        std::vector<jack_host *> plugin_queue;
         bool is_closed;
         bool draw_rackmounts;
         int source_id;
@@ -68,7 +71,7 @@ namespace calf_plugins {
         window_update_controller refresh_controller;
     
     protected:
-        plugin_strip *create_strip(plugin_ctl_iface *plugin);
+        plugin_strip *create_strip(jack_host *plugin);
         void update_strip(plugin_ctl_iface *plugin);
         void sort_strips();
         static gboolean on_idle(void *data);
@@ -83,7 +86,7 @@ namespace calf_plugins {
         gtk_main_window();
         void set_owner(main_window_owner_iface *_owner) { owner = _owner; }
         void new_plugin(const char *name) { owner->new_plugin(name); }
-        void add_plugin(plugin_ctl_iface *plugin);
+        void add_plugin(jack_host *plugin);
         void del_plugin(plugin_ctl_iface *plugin);
         void set_window(plugin_ctl_iface *iface, plugin_gui_window *window);
         void refresh_all_presets(bool builtin_too);

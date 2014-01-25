@@ -28,6 +28,7 @@
 #include <gtk/gtk.h>
 #include "giface.h"
 #include "gui_config.h"
+#include "jackhost.h"
 
 namespace calf_plugins {
 
@@ -239,7 +240,7 @@ struct main_window_iface: public progress_report_iface
     /// Create the actual window associated with this interface
     virtual void create() = 0;
     /// Add the plugin to the window
-    virtual void add_plugin(plugin_ctl_iface *plugin) = 0;
+    virtual void add_plugin(jack_host *plugin) = 0;
     /// Remove the plugin from the window
     virtual void del_plugin(plugin_ctl_iface *plugin) = 0;
     /// Refresh the plugin UI
