@@ -149,21 +149,21 @@ void calf_connector::create_window()
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(inframe), false, true, 10);
     gtk_container_set_border_width (GTK_CONTAINER(inframe), 0);
     
-    GtkWidget *inputs = gtk_vbox_new(false, 5);
+    GtkWidget *inputs = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(inframe), GTK_WIDGET(inputs));
     
     GtkWidget *outframe = gtk_frame_new("Outputs");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(outframe), false, true, 10);
     gtk_container_set_border_width (GTK_CONTAINER(outframe), 0);
     
-    GtkWidget *outputs = gtk_vbox_new(false, 5);
+    GtkWidget *outputs = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(outframe), GTK_WIDGET(outputs));
     
     GtkWidget *midframe = gtk_frame_new("MIDI");
     gtk_box_pack_start(GTK_BOX(ports), GTK_WIDGET(midframe), false, true, 10);
     gtk_container_set_border_width (GTK_CONTAINER(midframe), 0);
     
-    GtkWidget *midi = gtk_vbox_new(false, 5);
+    GtkWidget *midi = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(midframe), GTK_WIDGET(midi));
     
     gtk_widget_show_all(window);
