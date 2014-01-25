@@ -242,6 +242,12 @@ void calf_connector::create_window()
     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first), TRUE);
     
+    // Close button
+    GtkWidget *close = gtk_button_new_with_label("Close");
+    g_signal_connect(G_OBJECT(close), "clicked", G_CALLBACK(close_window), this);
+    gtk_box_pack_start(GTK_BOX(ports), close, true, true, 0);
+    gtk_widget_show(GTK_WIDGET(close));
+    
     // LIST STUFF
     
     GtkTreeViewColumn *col;
@@ -392,4 +398,9 @@ void calf_connector::close()
 {
     if (window)
         gtk_widget_destroy(GTK_WIDGET(window));
+}
+void calf_connector::close_window(GtkWidget *button, gpointer data)
+{
+    calf_connector *self = (calf_connector *)data;
+    gtk_widget_destroy(GTK_WIDGET(self->window));
 }

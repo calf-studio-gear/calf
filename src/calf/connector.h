@@ -49,12 +49,13 @@ private:
     GtkWidget *window;
     plugin_strip *strip;
     void create_window();
-public:
-    calf_connector(plugin_strip *strip_);
-    ~calf_connector();
     static void connector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path, gpointer data);
     static void port_clicked(GtkWidget *button, gpointer data);
     static void on_destroy_window(GtkWidget *window, gpointer data);
+    static void close_window(GtkWidget *button, gpointer data);
+public:
+    calf_connector(plugin_strip *strip_);
+    ~calf_connector();
     //static void jack_port_connect_callback(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
     //static void jack_port_rename_callback(jack_port_id_t port, const char *old_name, const char *new_name, void *arg);
     //static void jack_port_registration_callback(jack_port_id_t port, int register, void *arg);
