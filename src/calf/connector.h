@@ -53,6 +53,11 @@ private:
     static void port_clicked(GtkWidget *button, gpointer data);
     static void on_destroy_window(GtkWidget *window, gpointer data);
     static void close_window(GtkWidget *button, gpointer data);
+    static void disconnect_inputs(GtkWidget *button, gpointer data);
+    static void disconnect_outputs(GtkWidget *button, gpointer data);
+    static void disconnect_midi(GtkWidget *button, gpointer data);
+    static void disconnect_all(GtkWidget *button, gpointer data);
+    void _disconnect(int type);
 public:
     calf_connector(plugin_strip *strip_);
     ~calf_connector();

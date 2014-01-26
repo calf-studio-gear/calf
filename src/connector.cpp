@@ -242,6 +242,27 @@ void calf_connector::create_window()
     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(first), TRUE);
     
+    // Disconnect input button
+    GtkWidget *inbut = gtk_button_new_with_label("Disconnect Ins");
+    g_signal_connect(G_OBJECT(inbut), "clicked", G_CALLBACK(disconnect_inputs), this);
+    gtk_box_pack_start(GTK_BOX(inputs), inbut, true, true, 0);
+    gtk_widget_show(GTK_WIDGET(inbut));
+    // Disconnect output button
+    GtkWidget *outbut = gtk_button_new_with_label("Disconnect Outs");
+    g_signal_connect(G_OBJECT(outbut), "clicked", G_CALLBACK(disconnect_outputs), this);
+    gtk_box_pack_start(GTK_BOX(outputs), outbut, true, true, 0);
+    gtk_widget_show(GTK_WIDGET(outbut));
+    // Disconnect midi button
+    GtkWidget *midibut = gtk_button_new_with_label("Disconnect MIDI");
+    g_signal_connect(G_OBJECT(midibut), "clicked", G_CALLBACK(disconnect_midi), this);
+    gtk_box_pack_start(GTK_BOX(midi), midibut, true, true, 0);
+    gtk_widget_show(GTK_WIDGET(midibut));
+    // Disconnect all button
+    GtkWidget *allbut = gtk_button_new_with_label("Disconnect All");
+    g_signal_connect(G_OBJECT(allbut), "clicked", G_CALLBACK(disconnect_all), this);
+    gtk_box_pack_start(GTK_BOX(ports), allbut, false, true, 0);
+    gtk_widget_show(GTK_WIDGET(allbut));
+    
     // Close button
     GtkWidget *close = gtk_button_new_with_label("Close");
     g_signal_connect(G_OBJECT(close), "clicked", G_CALLBACK(close_window), this);
@@ -371,7 +392,7 @@ void calf_connector::set_toggles(gpointer data)
                            NULL,
                            porttype,
                            portflag);
-    if (!ports or !cons) {
+    if (!ports) {
         jack_free(cons);
         jack_free(ports);
         return;
@@ -382,16 +403,84 @@ void calf_connector::set_toggles(gpointer data)
         gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(self->jacklist), &iter, path);
         c = f = 0;
         do {
-            if (cons[c] == ports[p]) {
+            if (cons and cons[c] == ports[p]) {
                 gtk_list_store_set (jacklist, &iter, 2, TRUE, -1);
                 f = 1;
             }
         } while (cons[++c]);
-        if (!f)
+        if (!f) {
             gtk_list_store_set (jacklist, &iter, 2, FALSE, -1);
+        }
     } while (ports[++p]);
     jack_free(cons);
     jack_free(ports);
+}
+
+void calf_connector::disconnect_inputs(GtkWidget *button, gpointer data)
+{
+    ((calf_connector *)data)->_disconnect(0);
+}
+void calf_connector::disconnect_outputs(GtkWidget *button, gpointer data)
+{
+    ((calf_connector *)data)->_disconnect(1);
+}
+void calf_connector::disconnect_midi(GtkWidget *button, gpointer data)
+{
+    ((calf_connector *)data)->_disconnect(2);
+}
+void calf_connector::disconnect_all(GtkWidget *button, gpointer data)
+{
+    ((calf_connector *)data)->_disconnect(-1);
+}
+
+void calf_connector::_disconnect(int type)
+{
+    string nn = "";
+    const char** cons;
+    jack_port_t *port = NULL;
+    int c = 0;
+    if (type == 0 or type == -1) {
+        for (int i = 0; i < strip->plugin->in_count; i++) {
+            nn   = (string)jack_get_client_name(jackclient)
+                 + ":" + strip->plugin->inputs[i].nice_name;
+            port = jack_port_by_name(jackclient, nn.c_str());
+            cons = jack_port_get_all_connections(jackclient, port);
+            if (cons) {
+                c = 0;
+                do {
+                    jack_disconnect(jackclient, cons[c], jack_port_name(port));
+                } while (cons[++c]);
+            }
+        }
+    }
+    if (type == 1 or type == -1) {
+        for (int i = 0; i < strip->plugin->out_count; i++) {
+            nn   = (string)jack_get_client_name(jackclient)
+                 + ":" + strip->plugin->outputs[i].nice_name;
+            port = jack_port_by_name(jackclient, nn.c_str());
+            cons = jack_port_get_all_connections(jackclient, port);
+            if (cons) {
+                c = 0;
+                do {
+                    jack_disconnect(jackclient, jack_port_name(port), cons[c]);
+                } while (cons[++c]);
+            }
+        }
+    }
+    if (type == 2 or type == -1) {
+        nn   = (string)jack_get_client_name(jackclient)
+             + ":" + strip->plugin->midi_port.nice_name;
+        port = jack_port_by_name(jackclient, nn.c_str());
+        cons = jack_port_get_all_connections(jackclient, port);
+        if (cons) {
+            c = 0;
+            do {
+                jack_disconnect(jackclient, cons[c], jack_port_name(port));
+            } while (cons[++c]);
+        }
+    }
+    set_toggles(this);
+    jack_free(cons);
 }
 
 void calf_connector::close()
