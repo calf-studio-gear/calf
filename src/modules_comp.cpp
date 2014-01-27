@@ -259,7 +259,7 @@ bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &v
 
 bool gain_reduction_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
 }
 
@@ -485,7 +485,7 @@ bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &
 
 bool gain_reduction2_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
 }
 
@@ -719,7 +719,7 @@ bool expander_audio_module::get_gridline(int subindex, float &pos, bool &vertica
 
 bool expander_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
 }
 
