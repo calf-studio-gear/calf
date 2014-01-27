@@ -788,9 +788,6 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             L *= *params[param_level_out];
             R *= *params[param_level_out];
             
-            //Lo *= *params[param_level_out];
-            //Ro *= *params[param_level_out];
-            
             // output
             outs[0][i] = L;
             outs[1][i] = R;

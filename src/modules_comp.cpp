@@ -1043,25 +1043,12 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
-            switch ((CalfScRoute)*params[param_sc_route]) {
-                case STEREO:
-                    outs[0][offset] = ins[0][offset];
-                    outs[1][offset] = ins[1][offset];
-                    break;
-                case RIGHT_LEFT:
-                    outs[0][offset] = ins[0][offset];
-                    outs[1][offset] = ins[0][offset];
-                    break;
-                case LEFT_RIGHT:
-                    outs[0][offset] = ins[1][offset];
-                    outs[1][offset] = ins[1][offset];
-                    break;
-            }
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
             float values[] = {0, 0, 1};
             meters.process(values);
             ++offset;
         }
-        // displays, too
     } else {
         // process
 
@@ -1071,57 +1058,39 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             // cycle through samples
             float outL = 0.f;
             float outR = 0.f;
-            float inL = ins[0][offset];
-            float inR = ins[1][offset];
-            float Lin = ins[0][offset];
-            float Rin = ins[1][offset];
+            float inL  = ins[0][offset];
+            float inR  = ins[1][offset];
+            float Lin  = ins[0][offset];
+            float Rin  = ins[1][offset];
+            
+            float in2L = ins[2] ? ins[2][offset] : 0;
+            float in2R = ins[3] ? ins[3][offset] : 0;
             
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
 
-            float leftAC = inL;
+            float leftAC  = inL;
             float rightAC = inR;
-            float leftSC = inL;
+            float leftSC  = inL;
             float rightSC = inR;
-            float leftMC = inL;
+            float leftMC  = inL;
             float rightMC = inR;
             
-            switch ((CalfScRoute)*params[param_sc_route]) {
-                case STEREO:
-                    leftAC = inL;
-                    rightAC = inR;
-                    leftSC = inL;
-                    rightSC = inR;
-                    leftMC = inL;
-                    rightMC = inR;
-                    break;
-                case RIGHT_LEFT:
-                    leftAC = inL;
-                    rightAC = inL;
-                    leftSC = inR;
-                    rightSC = inR;
-                    leftMC = inL;
-                    rightMC = inL;
-                    break;
-                case LEFT_RIGHT:
-                    leftAC = inR;
-                    rightAC = inR;
-                    leftSC = inL;
-                    rightSC = inL;
-                    leftMC = inR;
-                    rightMC = inR;
-                    break;
+            if (*params[param_sc_route] > 0.5) {
+                leftAC  = inL;
+                rightAC = inR;
+                leftSC  = in2L * *params[param_sc_level];
+                rightSC = in2R * *params[param_sc_level];
+                leftMC  = inL;
+                rightMC = inR;
             }
-            
-            leftSC  *= *params[param_sc_level];
-            rightSC *= *params[param_sc_level];
             
             switch ((CalfScModes)*params[param_sc_mode]) {
                 default:
                 case WIDEBAND:
                     compressor.process(leftAC, rightAC, &leftSC, &rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     break;
                 case DEESSER_WIDE:
@@ -1130,38 +1099,38 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                 case WEIGHTED_2:
                 case WEIGHTED_3:
                 case BANDPASS_2:
-                    leftSC = f2L.process(f1L.process(leftSC));
+                    leftSC  = f2L.process(f1L.process(leftSC));
                     rightSC = f2R.process(f1R.process(rightSC));
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     compressor.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
                 case DEESSER_SPLIT:
-                    leftSC = f2L.process(leftSC);
+                    leftSC  = f2L.process(leftSC);
                     rightSC = f2R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     compressor.process(leftSC, rightSC, &leftSC, &rightSC);
-                    leftAC = f1L.process(leftAC);
-                    rightAC = f1R.process(rightAC);
-                    leftAC += leftSC;
+                    leftAC   = f1L.process(leftAC);
+                    rightAC  = f1R.process(rightAC);
+                    leftAC  += leftSC;
                     rightAC += rightSC;
                     break;
                 case DERUMBLER_SPLIT:
-                    leftSC = f1L.process(leftSC);
+                    leftSC  = f1L.process(leftSC);
                     rightSC = f1R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     compressor.process(leftSC, rightSC, &leftSC, &rightSC);
-                    leftAC = f2L.process(leftAC);
-                    rightAC = f2R.process(rightAC);
-                    leftAC += leftSC;
+                    leftAC   = f2L.process(leftAC);
+                    rightAC  = f2R.process(rightAC);
+                    leftAC  += leftSC;
                     rightAC += rightSC;
                     break;
                 case BANDPASS_1:
-                    leftSC = f1L.process(leftSC);
+                    leftSC  = f1L.process(leftSC);
                     rightSC = f1R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     compressor.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
@@ -2082,20 +2051,6 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
-            switch ((CalfScRoute)*params[param_sc_route]) {
-                case STEREO:
-                    outs[0][offset] = ins[0][offset];
-                    outs[1][offset] = ins[1][offset];
-                    break;
-                case RIGHT_LEFT:
-                    outs[0][offset] = ins[0][offset];
-                    outs[1][offset] = ins[0][offset];
-                    break;
-                case LEFT_RIGHT:
-                    outs[0][offset] = ins[1][offset];
-                    outs[1][offset] = ins[1][offset];
-                    break;
-            }
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
             float values[] = {0, 0, 1};
@@ -2111,54 +2066,37 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             // cycle through samples
             float outL = 0.f;
             float outR = 0.f;
-            float inL = ins[0][offset];
-            float inR = ins[1][offset];
+            float inL  = ins[0][offset];
+            float inR  = ins[1][offset];
+            
+            float in2L = ins[2] ? ins[2][offset] : 0;
+            float in2R = ins[3] ? ins[3][offset] : 0;
+            
             // in level
             inR *= *params[param_level_in];
             inL *= *params[param_level_in];
             
-            float leftAC = inL;
+            float leftAC  = inL;
             float rightAC = inR;
-            float leftSC = inL;
+            float leftSC  = inL;
             float rightSC = inR;
-            float leftMC = inL;
+            float leftMC  = inL;
             float rightMC = inR;
             
-            switch ((CalfScRoute)*params[param_sc_route]) {
-                case STEREO:
-                    leftAC = inL;
-                    rightAC = inR;
-                    leftSC = inL;
-                    rightSC = inR;
-                    leftMC = inL;
-                    rightMC = inR;
-                    break;
-                case RIGHT_LEFT:
-                    leftAC = inL;
-                    rightAC = inL;
-                    leftSC = inR;
-                    rightSC = inR;
-                    leftMC = inL;
-                    rightMC = inL;
-                    break;
-                case LEFT_RIGHT:
-                    leftAC = inR;
-                    rightAC = inR;
-                    leftSC = inL;
-                    rightSC = inL;
-                    leftMC = inR;
-                    rightMC = inR;
-                    break;
+            if (*params[param_sc_route] > 0.5) {
+                leftAC  = inL;
+                rightAC = inR;
+                leftSC  = in2L * *params[param_sc_level];
+                rightSC = in2R * *params[param_sc_level];
+                leftMC  = inL;
+                rightMC = inR;
             }
-            
-            leftSC  *= *params[param_sc_level];
-            rightSC *= *params[param_sc_level];
             
             switch ((CalfScModes)*params[param_sc_mode]) {
                 default:
                 case WIDEBAND:
                     gate.process(leftAC, rightAC, &leftSC, &rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     break;
                 case HIGHGATE_WIDE:
@@ -2167,38 +2105,38 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
                 case WEIGHTED_2:
                 case WEIGHTED_3:
                 case BANDPASS_2:
-                    leftSC = f2L.process(f1L.process(leftSC));
+                    leftSC  = f2L.process(f1L.process(leftSC));
                     rightSC = f2R.process(f1R.process(rightSC));
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     gate.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;
                 case HIGHGATE_SPLIT:
-                    leftSC = f2L.process(leftSC);
+                    leftSC  = f2L.process(leftSC);
                     rightSC = f2R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     gate.process(leftSC, rightSC, &leftSC, &rightSC);
-                    leftAC = f1L.process(leftAC);
-                    rightAC = f1R.process(rightAC);
-                    leftAC += leftSC;
+                    leftAC   = f1L.process(leftAC);
+                    rightAC  = f1R.process(rightAC);
+                    leftAC  += leftSC;
                     rightAC += rightSC;
                     break;
                 case LOWGATE_SPLIT:
-                    leftSC = f1L.process(leftSC);
+                    leftSC  = f1L.process(leftSC);
                     rightSC = f1R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     gate.process(leftSC, rightSC, &leftSC, &rightSC);
-                    leftAC = f2L.process(leftAC);
-                    rightAC = f2R.process(rightAC);
-                    leftAC += leftSC;
+                    leftAC   = f2L.process(leftAC);
+                    rightAC  = f2R.process(rightAC);
+                    leftAC  += leftSC;
                     rightAC += rightSC;
                     break;
                 case BANDPASS_1:
-                    leftSC = f1L.process(leftSC);
+                    leftSC  = f1L.process(leftSC);
                     rightSC = f1R.process(rightSC);
-                    leftMC = leftSC;
+                    leftMC  = leftSC;
                     rightMC = rightSC;
                     gate.process(leftAC, rightAC, &leftSC, &rightSC);
                     break;

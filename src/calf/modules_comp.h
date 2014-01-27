@@ -175,11 +175,6 @@ private:
         BANDPASS_1,
         BANDPASS_2
     };
-    enum CalfScRoute {
-        STEREO,
-        RIGHT_LEFT,
-        LEFT_RIGHT
-    };
     float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
     float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
     CalfScModes sc_mode;
@@ -340,11 +335,6 @@ private:
         WEIGHTED_3,
         BANDPASS_1,
         BANDPASS_2
-    };
-    enum CalfScRoute {
-        STEREO,
-        RIGHT_LEFT,
-        LEFT_RIGHT
     };
     float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
     float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
