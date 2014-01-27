@@ -735,6 +735,6 @@ bool pulsator_audio_module::get_gridline(int index, int subindex, int phase, flo
 }
 bool pulsator_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : 0);
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
 }
