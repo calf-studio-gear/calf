@@ -24,7 +24,8 @@ img {
 h1 {
 /*    color: #D5F16A;*/
     color: #ddd;
-    font-size: 50px;
+    font-size: 4em;
+    line-height: 1.3em;
     font-weight: normal;
     letter-spacing: -0.08em;
 /*    background: url(../images/style_p.png) transparent;*/
@@ -88,7 +89,7 @@ strong {
     padding: 0 30px 30px 80px;
 }
 .thumbnail {
-    width: 320px;
+    width: 42%;
     float: right;
     margin: 10px;
 /*    border: 2px solid black;*/

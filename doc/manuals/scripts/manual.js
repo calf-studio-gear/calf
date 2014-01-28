@@ -142,6 +142,7 @@ $(document).ready(function () {
         show_title: false,
     });
     $(window).resize(resize);
+    resize();
 });
 
 var hide_menu = function (id) {
