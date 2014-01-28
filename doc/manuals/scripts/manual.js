@@ -141,6 +141,7 @@ $(document).ready(function () {
         social_tools: '',
         show_title: false,
     });
+    $(window).resize(resize);
 });
 
 var hide_menu = function (id) {
@@ -159,4 +160,11 @@ var show_menu = function (id) {
     $(id).animate({
         opacity: 1.0
     }, 300);
+}
+var resize = function () {
+    var width = $(".wrapper").width();
+    $("body").css({
+        'font-size'   : ((width / 1500 + 0.25) * 1.1) + "em",
+        'line-height' : ((width / 1500 + 1) * 1.1) + "em"
+    });
 }

@@ -81,10 +81,11 @@ strong {
 
 .wrapper {
     clear: both;
-    width: 740px;
+    min-width: 600px;
+    max-width: 1280px;
     margin: auto;
     text-align: left;
-    padding: 0 0 30px 60px;
+    padding: 0 30px 30px 80px;
 }
 .thumbnail {
     width: 320px;
@@ -121,9 +122,9 @@ strong {
     transition-duration: 0.3s;
     background: #555;
     padding: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -moz-border-radius: 4px !important;
+    -webkit-border-radius: 4px !important;
+    border-radius: 4px !important;
 }
 .menu .micon:hover {
     width: 66px;
@@ -139,6 +140,7 @@ strong {
     letter-spacing: -0.09em;
 }
 .menu .submenu {
+    z-index: 1000000;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -205,6 +207,9 @@ strong {
 }
 #index {
     background: #555;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px;
+    border-radius: 12px;
 }
 #index img.iicon {
     vertical-align: bottom;
