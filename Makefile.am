@@ -20,16 +20,22 @@ clean-local:
 install-data-local:
 	install -d -m 755 $(DESTDIR)$(docdir)
 	install -d -m 755 $(DESTDIR)$(docdir)/images
+	install -d -m 755 $(DESTDIR)$(docdir)/images/icons
+	install -d -m 755 $(DESTDIR)$(docdir)/images/prettyPhoto
+	install -d -m 755 $(DESTDIR)$(docdir)/images/prettyPhoto/dark_rounded
 	install -d -m 755 $(DESTDIR)$(docdir)/scripts
 	install -c -m 644 $(top_srcdir)/doc/manuals/*.html $(DESTDIR)$(docdir)
 	install -c -m 644 $(top_srcdir)/doc/manuals/images/*.png $(DESTDIR)$(docdir)/images/
-	install -c -m 644 $(top_srcdir)/gui/background_dark.png $(DESTDIR)$(docdir)/images/
+	install -c -m 644 $(top_srcdir)/doc/manuals/images/prettyPhoto/dark_rounded/* $(DESTDIR)$(docdir)/images/prettyPhoto/dark_rounded/
+	install -c -m 644 $(top_srcdir)/doc/manuals/images/icons/* $(DESTDIR)$(docdir)/images/icons/
 	install -c -m 644 $(top_srcdir)/doc/manuals/scripts/*.css $(DESTDIR)$(docdir)/scripts/
 	install -c -m 644 $(top_srcdir)/doc/manuals/scripts/*.js $(DESTDIR)$(docdir)/scripts/
         
 uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/*.html
 	rm -f $(DESTDIR)$(docdir)/images/*.png
+	rm -f $(DESTDIR)$(docdir)/images/icons/*.png
+	rm -f $(DESTDIR)$(docdir)/images/prettyPhoto/dark_rounded/*
 	rm -f $(DESTDIR)$(docdir)/scripts/*.css
 	rm -f $(DESTDIR)$(docdir)/scripts/*.js
-	rmdir $(DESTDIR)$(docdir)/scripts $(DESTDIR)$(docdir)/images $(DESTDIR)$(docdir) || true
+	rmdir $(DESTDIR)$(docdir)/scripts $(DESTDIR)$(docdir)/images/icons $(DESTDIR)$(docdir)/images/prettyPhoto/dark_rounded $(DESTDIR)$(docdir)/images/prettyPhoto $(DESTDIR)$(docdir)/images $(DESTDIR)$(docdir) || true
