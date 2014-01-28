@@ -1,31 +1,43 @@
 $(document).ready(function () {
+    // subpage configuration
     var items = [
         [
-            "Basics",
+            "Index",
             [
                 ["Index", "index.html", "images/Index.png"],
                 ["About", "About.html", "images/About.png"],
                 ["Controls", "Controls.html", "images/Calf - Controls.png"],
                 ["Calf Rack", "Calf.html", "images/Calf.png"]
-            ]
+            ],
+            "icons/index.png"
         ],
         [
             "Synthesizer",
             [
                 ["(Organ)", "Organ.html", "images/Calf - Organ - Tone Generator.png"],
                 ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.png"],
-            ]
+            ],
+            "icons/synthesizer.png"
         ],
         [
-            "Delay FX",
+            "Modulation",
             [
-                ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.png"],
-                ["(Reverb)", "Reverb.html", "images/Calf - Reverb.png"],
                 ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.png"],
-                ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
                 ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
+                ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
+                ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
+                ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.png"],
+            ],
+            "icons/modulation.png"
+        ],
+        [
+            "Delay",
+            [
+                ["(Reverb)", "Reverb.html", "images/Calf - Reverb.png"],
+                ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.png"],
                 ["Compensation Delay Line", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.png"],
-            ]
+            ],
+            "icons/delay.png"
         ],
         [
             "Dynamics",
@@ -33,63 +45,118 @@ $(document).ready(function () {
                 ["Compressor", "Compressor.html", "images/Calf - Compressor.png"],
                 ["Sidechain Compressor", "Sidechain Compressor.html", "images/Calf - Sidechain Compressor.png"],
                 ["Multiband Compressor", "Multiband Compressor.html", "images/Calf - Multiband Compressor.png"],
+                ["Mono Compressor", "Mono Compressor.html", "images/Calf - Mono Compressor.png"],
                 ["Deesser", "Deesser.html", "images/Calf - Deesser.png"],
-                ["Limiter", "Limiter.html", "images/Calf - Limiter.png"],
-                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"],
                 ["Gate", "Gate.html", "images/Calf - Gate.png"],
                 ["Sidechain Gate", "Sidechain Gate.html", "images/Calf - Sidechain Gate.png"],
                 ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.png"],
+                ["Limiter", "Limiter.html", "images/Calf - Limiter.png"],
+                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"],
                 ["Transient Designer", "Transient Designer.html", "images/Calf - Transient Designer.png"]
-            ]
+            ],
+            "icons/dynamics.png"
         ],
         [
-            "Filter",
+            "Filters",
             [
                 ["Filter", "Filter.html", "images/Calf - Filter.png"],
                 ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.png"],
                 ["Equalizer 5 Band", "Equalizer 5 Band.html", "images/Calf - Equalizer 5 Band.png"],
                 ["Equalizer 8 Band", "Equalizer 8 Band.html", "images/Calf - Equalizer 8 Band.png"],
                 ["Equalizer 12 Band", "Equalizer 12 Band.html", "images/Calf - Equalizer 12 Band.png"],
-            ]
+                ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.png"],
+                ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.png"],
+                ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.png"],
+            ],
+            "icons/filters.png"
         ],
         [
-            "Other",
+            "Distortion",
             [
-                ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.png"],
-                ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
                 ["(Saturator)", "Saturator.html", "images/Calf - Saturator.png"],
                 ["Exciter", "Exciter.html", "images/Calf - Exciter.png"],
                 ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
+                ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.png"],
+            ],
+            "icons/distortion.png"
+        ],
+        [
+            "Tools",
+            [
                 ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.png"],
                 ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"],
                 ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.png"],
-                ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.png"],
-            ]
+            ],
+            "icons/tools.png"
         ]
     ];
-
-    var header = '<div class="header"><img src="images/style_logo.png" align="middle" />';
-    var menu = "";
+    
+    // Build menu structure
+    var menu = $("<div class='menu'/>");
+    $("body").prepend(menu);
     for(var i = 0; i < items.length; i++) {
-        menu += "<div class='menu'><h3>" + items[i][0] + "</h3><ul>";
+        var submenu = $("<ul class='submenu' id='menu_" + items[i][0] + "'/>").appendTo(menu);
+        var icon = $("<img src='images/" + items[i][2] + "' alt='" + items[i][0] + "' class='micon' id='" + items[i][0] + "'/>").appendTo(menu);
+        $("<span>" + items[i][0] + "</span>").appendTo(menu);
+        icon.mouseenter(function (e) {
+            show_menu("#menu_" + $(this).attr("id"));
+        });
+        icon.mouseleave(function (e) {
+            hide_menu("#menu_" + $(this).attr("id"));
+        });
+        submenu.mouseenter(function (e) {
+            show_menu(this);
+        });
+        submenu.mouseleave(function (e) {
+            hide_menu(this);
+        });
         for(var j = 0; j < items[i][1].length; j++) {
-            menu += "<li>";
-            if(items[i][1][j][2]) {
-//                menu += "<a class='thickbox' href='" + items[i][1][j][2] + "' title='" + items[i][1][j][0] + "'>";
-//                menu += "<a href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">"
-                menu += "<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">";
-//                menu += "</a>";
+            if (!j) {
+                $("<li><img class='marrow' src='images/marrow.png'/><h3>" + items[i][0] + "</h3></li>").appendTo(submenu);
+                if ($("#index")) {
+                    $("<h3><img src='images/" + items[i][2] + "' class='iicon'/>" + items[i][0] + "</h3>").appendTo($("#index"));
+                    var iul = $("<ul/>").appendTo($("#index"));
+                }
             }
-            cl=""
-            if(items[i][1][j][0][0] == "(")
-                cl=" class='inactive'"
-            menu += "<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a></li>";
+            var li = $("<li/>").appendTo(submenu);
+            if ($("#index") && items[i][1][j][2]) {
+                var ili = $("<li/>").appendTo(iul);
+                $("<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">").appendTo(ili);
+                $("<a href='" + items[i][1][j][1] + "'>" + items[i][1][j][0] + "</a>").appendTo(ili);
+            }
+            var cl=items[i][1][j][0][0] == "(" ? " class='inactive'" : "";
+            var a = $("<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a>").appendTo(li);
+            a.click(function (e) {
+                hide_menu("#menu_" + $(this).parent().parent().attr("id"));
+            });
+            if (i >= items.length - 1)
+                $("<br clear='all'/>").appendTo($("#index"));
         }
-        menu +="<br clear='all'></ul><br clear='all'/></div>";
+        submenu.css({
+            top: Math.min(icon.position().top + 5, $(window).height() - submenu.outerHeight())
+        });
     }
-    header += menu + "<br clear='all'></div>";
-    $("body").prepend("<div class='headerbg'>" + header + "</div>");
-    $(".index").prepend(menu);
-    $("h2").append("&nbsp;&laquo;").prepend("&raquo;&nbsp;");
-
+    $(".prettyPhoto").prettyPhoto({
+        theme: 'dark_rounded',
+        social_tools: '',
+        show_title: false,
+    });
 });
+
+var hide_menu = function (id) {
+    $(id).clearQueue();
+    $(id).stop();
+    $(id).animate({
+        opacity: 0
+    }, 300, function () { $(this).css({display: "none"});});
+}
+var show_menu = function (id) {
+    $(id).clearQueue();
+    $(id).stop();
+    $(id).css({
+        display: "block"
+    });
+    $(id).animate({
+        opacity: 1.0
+    }, 300);
+}
