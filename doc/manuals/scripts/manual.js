@@ -121,8 +121,8 @@ $(document).ready(function () {
             var li = $("<li/>").appendTo(submenu);
             if ($("#index") && items[i][1][j][2]) {
                 var ili = $("<li/>").appendTo(iul);
-                $("<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">").appendTo(ili);
-                $("<a href='" + items[i][1][j][1] + "'>" + items[i][1][j][0] + "</a>").appendTo(ili);
+                var l = $("<a href='" + items[i][1][j][1] + "'><span>" + items[i][1][j][0] + "</span></a>").appendTo(ili);
+                $("<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">").prependTo(l);
             }
             var cl=items[i][1][j][0][0] == "(" ? " class='inactive'" : "";
             var a = $("<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a>").appendTo(li);
