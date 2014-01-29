@@ -90,7 +90,15 @@ style "calf-plugin"
 
 style "calf-connector"
 {
-    bg_pixmap[NORMAL] = "background_dark.png"
+    #bg_pixmap[NORMAL] = "background_dark.png"
+}
+style "calf-connector-children"
+{
+    font_name  = "Sans 8"
+}
+style "calf-connector-title"
+{
+    font_name  = "Sans 13"
 }
 
 style "calf-label" {
@@ -237,7 +245,10 @@ widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-tit
 
 widget "*Calf-Plugin"                             style : highest "calf-plugin"
 
-widget "*Calf-Connector"                          style : highest "calf-connector"
+widget "*Connector"                               style : highest "calf-connector"
+widget "*Connector*View*"                         style : highest "calf-connector-children"
+widget "*Connector*Ports*"                        style : highest "calf-connector-children"
+widget "*Connector*Title*"                        style : highest "calf-connector-title"
 
 widget "*Calf-Label"                              style : highest "calf-label"
 widget "*Calf-Value"                              style : highest "calf-label"
@@ -263,4 +274,4 @@ widget "*Calf*Scale2"                             style : highest "calf-scale-bi
 widget_class "*Scrollbar*"                        style : highest "calf-scrollbar"
 
 widget_class "*Calf*GtkTreeView*"                 style : highest "calf-treeview"
-widget_class "*Calf*TreeView*Button*"                       style : highest "calf-treehead"
+widget_class "*Calf*TreeView*Button*"             style : highest "calf-treehead"

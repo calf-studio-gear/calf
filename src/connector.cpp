@@ -370,9 +370,9 @@ void calf_connector::create_window()
     //gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     gtk_window_set_icon_name(GTK_WINDOW(window), "calf_plugin");
     gtk_window_set_role(GTK_WINDOW(window), "calf_connector");
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 400);
+    gtk_window_set_default_size(GTK_WINDOW(window), 900, 400);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-    //gtk_widget_set_name(GTK_WIDGET(window), "Calf-Connector");
+    gtk_widget_set_name(GTK_WIDGET(window), "Connector");
     
     g_signal_connect(G_OBJECT(window), "destroy",
                      G_CALLBACK (on_destroy_window), (gpointer)this);
@@ -385,7 +385,7 @@ void calf_connector::create_window()
     //gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Container");
     gtk_container_set_border_width (GTK_CONTAINER(vbox), 8);
     
-    GtkTable *table = GTK_TABLE(gtk_table_new(2, 4, FALSE));
+    GtkTable *table = GTK_TABLE(gtk_table_new(2, 5, FALSE));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(table), true, true, 0);
     gtk_table_set_row_spacings(table, 5);
     gtk_table_set_col_spacings(table, 5);
@@ -394,8 +394,8 @@ void calf_connector::create_window()
     // FRAMES AND CONTAINER
     
     // Button frame
-    GtkWidget *butframe = gtk_frame_new("Disconnect");
-    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(butframe), 1, 3, 1, 2, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL), 0, 0);
+    GtkWidget *butframe = gtk_frame_new("Bulk Disconnect");
+    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(butframe), 1, 4, 1, 2, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL), 0, 0);
     // Button container
     GtkWidget *buttons = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(butframe), GTK_WIDGET(buttons));
@@ -403,6 +403,8 @@ void calf_connector::create_window()
     // Input frame
     GtkWidget *inframe = gtk_frame_new("Plug-In Inputs");
     gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(inframe), 1, 2, 0, 1, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), 0, 0);
+    gtk_widget_set_name(GTK_WIDGET(inframe), "Ports");
+    gtk_widget_set_size_request(GTK_WIDGET(inframe), 100, -1);
     //gtk_widget_set_size_request(GTK_WIDGET(inframe), -1, 200);
     // Input container
     GtkWidget *inputs = gtk_vbox_new(false, 2);
@@ -415,7 +417,9 @@ void calf_connector::create_window()
     
     // Output frame
     GtkWidget *outframe = gtk_frame_new("Plug-In Outputs");
-    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(outframe), 2, 3, 0, 1, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), 0, 0);
+    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(outframe), 3, 4, 0, 1, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), 0, 0);
+    gtk_widget_set_name(GTK_WIDGET(outframe), "Ports");
+    gtk_widget_set_size_request(GTK_WIDGET(outframe), 100, -1);
     //gtk_widget_set_size_request(GTK_WIDGET(outframe), -1, 200);
     // Output container
     GtkWidget *outputs = gtk_vbox_new(false, 2);
@@ -437,6 +441,12 @@ void calf_connector::create_window()
     g_signal_connect(G_OBJECT(midibut), "clicked", G_CALLBACK(disconnect_midi), this);
     gtk_box_pack_start(GTK_BOX(buttons), midibut, false, false, 0);
     gtk_widget_show(GTK_WIDGET(midibut));
+    
+    // LABEL
+    GtkWidget *label = gtk_label_new(strip->plugin->get_metadata_iface()->get_label());
+    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label), 2, 3, 0, 1, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL), 10, 0);
+    gtk_widget_set_name(GTK_WIDGET(label), "Title");
+    gtk_label_set_angle(GTK_LABEL(label), 90);
     
     gtk_widget_show_all(window);
     
@@ -482,7 +492,7 @@ void calf_connector::create_window()
     // text column
     col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_expand(col, TRUE);
-    gtk_tree_view_column_set_title(col, "Available Audio Outputs");
+    gtk_tree_view_column_set_title(col, "Available JACK Audio Outputs");
     renderer = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start(col, renderer, TRUE);
     gtk_tree_view_column_add_attribute(col, renderer, "text", 1);
@@ -508,8 +518,8 @@ void calf_connector::create_window()
     
     // scroller
     outscroller = gtk_scrolled_window_new(NULL, NULL);
-    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(outscroller), 3, 4, 0, 2);
-    gtk_widget_set_size_request(GTK_WIDGET(outscroller), 300, -1);
+    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(outscroller), 4, 5, 0, 2);
+    gtk_widget_set_size_request(GTK_WIDGET(outscroller), 280, -1);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(outscroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_show(GTK_WIDGET(outscroller));
     
@@ -530,7 +540,7 @@ void calf_connector::create_window()
     
     // text column
     col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(col, "Available Audio Inputs");
+    gtk_tree_view_column_set_title(col, "Available JACK Audio Inputs");
     renderer = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start(col, renderer, TRUE);
     gtk_tree_view_column_add_attribute(col, renderer, "text", 1);
@@ -546,7 +556,7 @@ void calf_connector::create_window()
     // scroller
     midiscroller = gtk_scrolled_window_new(NULL, NULL);
     gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(midiscroller), 0, 1, 1, 2, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL), 0, 0);
-    gtk_widget_set_size_request(GTK_WIDGET(midiscroller), 300, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(midiscroller), 280, -1);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(midiscroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_show(GTK_WIDGET(midiscroller));
     
@@ -559,7 +569,7 @@ void calf_connector::create_window()
     // text column
     col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_expand(col, TRUE);
-    gtk_tree_view_column_set_title(col, "Available MIDI Outputs");
+    gtk_tree_view_column_set_title(col, "Available JACK MIDI Outputs");
     renderer = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start(col, renderer, TRUE);
     gtk_tree_view_column_add_attribute(col, renderer, "text", 1);
@@ -591,7 +601,6 @@ void calf_connector::create_window()
         sprintf(buf, "Input #%d", (i + 1));
         GtkWidget *in = gtk_radio_button_new_with_label(NULL, buf);
         gtk_box_pack_start(GTK_BOX(inputs), in, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(in), 110, -1);
         gtk_widget_show(GTK_WIDGET(in));
         if (!i)
             last = GTK_RADIO_BUTTON(in);
@@ -622,7 +631,6 @@ void calf_connector::create_window()
         sprintf(buf, "Output #%d", (i + 1));
         GtkWidget *out = gtk_radio_button_new_with_label(NULL, buf);
         gtk_box_pack_start(GTK_BOX(outputs), out, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(out), 110, -1);
         gtk_widget_show(GTK_WIDGET(out));
         if (!i and !last)
             last = GTK_RADIO_BUTTON(out);
@@ -652,7 +660,6 @@ void calf_connector::create_window()
     if (strip->plugin->get_metadata_iface()->get_midi()) {
         GtkWidget *mid = gtk_radio_button_new_with_label(NULL, "MIDI");
         gtk_box_pack_start(GTK_BOX(midi), mid, false, true, 0);
-        gtk_widget_set_size_request(GTK_WIDGET(mid), 110, -1);
         midiports[c].type = 2;
         midiports[c].id = c;
         midiports[c].connector = this;
