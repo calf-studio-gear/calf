@@ -38,7 +38,6 @@ calf_connector::calf_connector(plugin_strip *strip_)
     strip = strip_;
     window = NULL;
     create_window();
-    active_in = active_out = active_midi = NULL;
 }
 
 calf_connector::~calf_connector()
@@ -345,7 +344,8 @@ void calf_connector::close()
 void calf_connector::close_window(GtkWidget *button, gpointer data)
 {
     calf_connector *self = (calf_connector *)data;
-    gtk_widget_destroy(GTK_WIDGET(self->window));
+    if (self->window)
+        gtk_widget_destroy(GTK_WIDGET(self->window));
 }
 void calf_connector::on_destroy_window(GtkWidget *window, gpointer data)
 {
@@ -370,7 +370,8 @@ void calf_connector::create_window()
     //gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     gtk_window_set_icon_name(GTK_WINDOW(window), "calf_plugin");
     gtk_window_set_role(GTK_WINDOW(window), "calf_connector");
-    gtk_window_set_default_size(GTK_WINDOW(window), -1, 400);
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 400);
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     //gtk_widget_set_name(GTK_WIDGET(window), "Calf-Connector");
     
     g_signal_connect(G_OBJECT(window), "destroy",
@@ -581,6 +582,7 @@ void calf_connector::create_window()
     
     // ALL THOSE PORT BUTTONS
     
+    active_in = active_out = active_midi = NULL;
     GtkRadioButton *last  = NULL;
     GtkRadioButton *first = NULL;
     int c = 0;
