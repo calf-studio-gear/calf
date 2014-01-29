@@ -122,7 +122,7 @@ div.pp_pic_holder{display:none;position:absolute;width:100px;z-index:10000}
 .pp_content_container .pp_left{padding-left:20px}
 .pp_content_container .pp_right{padding-right:20px}
 .pp_content_container .pp_details{float:left;margin:10px 0 2px}
-.pp_description{display:none;margin:0;background:#000}
+.pp_description{display:none;margin:0;background:transparent}
 .pp_social{float:left;margin:0}
 .pp_social .facebook{float:left;margin-left:5px;width:55px;overflow:hidden}
 .pp_social .twitter{float:left}

@@ -10,12 +10,11 @@ body, html {
     padding : 0;
 }
 a {
-    color: #0af;
+    color: #06b;
     font-weight: bold;
     text-decoration: none;
 }
 a:hover {
-    color: #0af;
     text-decoration: underline;
 }
 img {
