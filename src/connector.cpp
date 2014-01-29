@@ -102,7 +102,7 @@ void calf_connector::inconnector_clicked(GtkCellRendererToggle *cell_renderer, g
     self->toggle_port(self, self->inlist, path_, &port, enabled);
     string source = port;
     string dest   = (string)jack_get_client_name(self->jackclient)
-                  + ":" + self->strip->plugin->inputs[self->active_in->id].nice_name;
+                  + ":" + self->strip->plugin->inputs[self->active_in ? self->active_in->id : 0].nice_name;
     self->connect(self->jackclient, (gchar*)source.c_str(), (gchar*)dest.c_str(), enabled);
 }
 void calf_connector::outconnector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path_, gpointer data)
@@ -112,7 +112,7 @@ void calf_connector::outconnector_clicked(GtkCellRendererToggle *cell_renderer, 
     gboolean enabled;
     self->toggle_port(self, self->outlist, path_, &port, enabled);
     string source = (string)jack_get_client_name(self->jackclient)
-                  + ":" + self->strip->plugin->outputs[self->active_out->id].nice_name;
+                  + ":" + self->strip->plugin->outputs[self->active_out ? self->active_out->id : 0].nice_name;
     string dest   = port;
     self->connect(self->jackclient, (gchar*)source.c_str(), (gchar*)dest.c_str(), enabled);
 }
@@ -246,8 +246,6 @@ void calf_connector::set_toggles(calf_connector *self, int type)
             list     = self->outlist;
             break;
         case 2:
-            if (!self->active_midi)
-                return;
             portflag = JackPortIsOutput;
             porttype = JACK_DEFAULT_MIDI_TYPE;
             nn       = (string)jack_get_client_name(self->jackclient)
@@ -497,7 +495,7 @@ void calf_connector::create_window()
     gtk_tree_view_column_pack_start(col, renderer, FALSE);
     gtk_tree_view_column_add_attribute(col, renderer, "active", 2);
     gtk_tree_view_append_column(GTK_TREE_VIEW(inview), col);
-    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(inconnector_clicked), this);
+    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(inconnector_clicked), (gpointer*)this);
     
     
     gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(inview)),
@@ -527,7 +525,7 @@ void calf_connector::create_window()
     gtk_tree_view_column_pack_start(col, renderer, FALSE);
     gtk_tree_view_column_add_attribute(col, renderer, "active", 2);
     gtk_tree_view_append_column(GTK_TREE_VIEW(outview), col);
-    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(outconnector_clicked), this);
+    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(outconnector_clicked), (gpointer*)this);
     
     // text column
     col = gtk_tree_view_column_new();
@@ -574,7 +572,7 @@ void calf_connector::create_window()
     gtk_tree_view_column_pack_start(col, renderer, FALSE);
     gtk_tree_view_column_add_attribute(col, renderer, "active", 2);
     gtk_tree_view_append_column(GTK_TREE_VIEW(midiview), col);
-    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(midiconnector_clicked), this);
+    g_signal_connect(GTK_OBJECT(renderer), "toggled", G_CALLBACK(midiconnector_clicked), (gpointer*)this);
     
     gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(midiview)),
                                 GTK_SELECTION_NONE);
