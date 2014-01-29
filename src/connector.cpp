@@ -395,7 +395,7 @@ void calf_connector::create_window()
     
     // Button frame
     GtkWidget *butframe = gtk_frame_new("Disconnect");
-    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(butframe), 2, 3, 1, 2, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(butframe), 1, 3, 1, 2, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL), 0, 0);
     // Button container
     GtkWidget *buttons = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(butframe), GTK_WIDGET(buttons));
@@ -428,7 +428,7 @@ void calf_connector::create_window()
     
     // MIDI frame
     GtkWidget *midiframe = gtk_frame_new("Plug-In MIDI");
-    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(midiframe), 1, 2, 1, 2, (GtkAttachOptions)GTK_FILL, (GtkAttachOptions)(GTK_FILL), 0, 0);
+    //gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(midiframe), 1, 2, 1, 2, (GtkAttachOptions)GTK_FILL, (GtkAttachOptions)(GTK_FILL), 0, 0);
     // MIDI container
     GtkWidget *midi = gtk_vbox_new(false, 2);
     gtk_container_add(GTK_CONTAINER(midiframe), GTK_WIDGET(midi));
@@ -461,22 +461,22 @@ void calf_connector::create_window()
     
     GtkTreeViewColumn *col;
     GtkCellRenderer *renderer;
-    GtkWidget *scroller;
+    GtkWidget *inscroller, *outscroller, *midiscroller;
     GtkWidget *inview, *outview, *midiview;
     
     // INPUT LIST
     
     // scroller
-    scroller = gtk_scrolled_window_new(NULL, NULL);
-    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(scroller), 0, 1, 0, 1);
-    gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_widget_show(GTK_WIDGET(scroller));
+    inscroller = gtk_scrolled_window_new(NULL, NULL);
+    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(inscroller), 0, 1, 0, 1);
+    gtk_widget_set_size_request(GTK_WIDGET(inscroller), 300, -1);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(inscroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_show(GTK_WIDGET(inscroller));
     
     // list store / tree view
     inlist = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
     inview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(inlist));
-    gtk_container_add(GTK_CONTAINER(scroller), inview);
+    gtk_container_add(GTK_CONTAINER(inscroller), inview);
     gtk_widget_show(GTK_WIDGET(inview));
     
     // text column
@@ -507,16 +507,16 @@ void calf_connector::create_window()
     // OUTPUT LIST
     
     // scroller
-    scroller = gtk_scrolled_window_new(NULL, NULL);
-    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(scroller), 3, 4, 0, 2);
-    gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_widget_show(GTK_WIDGET(scroller));
+    outscroller = gtk_scrolled_window_new(NULL, NULL);
+    gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(outscroller), 3, 4, 0, 2);
+    gtk_widget_set_size_request(GTK_WIDGET(outscroller), 300, -1);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(outscroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_show(GTK_WIDGET(outscroller));
     
     // list store / tree view
     outlist = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
     outview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(outlist));
-    gtk_container_add(GTK_CONTAINER(scroller), outview);
+    gtk_container_add(GTK_CONTAINER(outscroller), outview);
     gtk_widget_show(GTK_WIDGET(outview));
     
     // toggle column
@@ -544,16 +544,16 @@ void calf_connector::create_window()
     // MIDI LIST
     
     // scroller
-    scroller = gtk_scrolled_window_new(NULL, NULL);
-    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(scroller), 0, 1, 1, 2, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL), 0, 0);
-    gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_widget_show(GTK_WIDGET(scroller));
+    midiscroller = gtk_scrolled_window_new(NULL, NULL);
+    gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(midiscroller), 0, 1, 1, 2, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL), 0, 0);
+    gtk_widget_set_size_request(GTK_WIDGET(midiscroller), 300, -1);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(midiscroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_widget_show(GTK_WIDGET(midiscroller));
     
     // list store / tree view
     midilist = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
     midiview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(midilist));
-    gtk_container_add(GTK_CONTAINER(scroller), midiview);
+    gtk_container_add(GTK_CONTAINER(midiscroller), midiview);
     gtk_widget_show(GTK_WIDGET(midiview));
     
     // text column
@@ -612,6 +612,7 @@ void calf_connector::create_window()
         gtk_widget_set_sensitive(GTK_WIDGET(inframe), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(inview), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(inbut), FALSE);
+        gtk_widget_hide(GTK_WIDGET(inbut));
     }
     first = NULL;
     last  = NULL;
@@ -642,6 +643,7 @@ void calf_connector::create_window()
         gtk_widget_set_sensitive(GTK_WIDGET(outframe), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(outview), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(outbut), FALSE);
+        gtk_widget_hide(GTK_WIDGET(outbut));
     }
     first = NULL;
     last  = NULL;
@@ -664,9 +666,12 @@ void calf_connector::create_window()
         c++;
     }
     if (!c) {
-        gtk_widget_set_sensitive(GTK_WIDGET(midiframe), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(midiview), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(midibut), FALSE);
+        //gtk_widget_set_sensitive(GTK_WIDGET(midiframe), FALSE);
+        //gtk_widget_set_sensitive(GTK_WIDGET(midiview), FALSE);
+        //gtk_widget_set_sensitive(GTK_WIDGET(midibut), FALSE);
+        gtk_widget_hide(GTK_WIDGET(midiview));
+        gtk_widget_hide(GTK_WIDGET(midibut));
+        gtk_container_child_set(GTK_CONTAINER(table), GTK_WIDGET(inscroller), "bottom-attach", 2, NULL);
     }
     
     // JACK STUFF
