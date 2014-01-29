@@ -470,7 +470,7 @@ void calf_connector::create_window()
     scroller = gtk_scrolled_window_new(NULL, NULL);
     gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(scroller), 0, 1, 0, 1);
     gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_show(GTK_WIDGET(scroller));
     
     // list store / tree view
@@ -510,7 +510,7 @@ void calf_connector::create_window()
     scroller = gtk_scrolled_window_new(NULL, NULL);
     gtk_table_attach_defaults(GTK_TABLE(table), GTK_WIDGET(scroller), 3, 4, 0, 2);
     gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_show(GTK_WIDGET(scroller));
     
     // list store / tree view
@@ -547,7 +547,7 @@ void calf_connector::create_window()
     scroller = gtk_scrolled_window_new(NULL, NULL);
     gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(scroller), 0, 1, 1, 2, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL), 0, 0);
     gtk_widget_set_size_request(GTK_WIDGET(scroller), 300, -1);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroller), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_widget_show(GTK_WIDGET(scroller));
     
     // list store / tree view
