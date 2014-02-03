@@ -14,7 +14,7 @@ $(document).ready(function () {
         [
             "Synthesizer",
             [
-                ["(Organ)", "Organ.html", "images/Calf - Organ - Tone Generator.png"],
+                ["(Organ)", "Organ.html", "images/Calf - Organ - Sound Processor.png"],
                 ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.png"],
             ],
             "icons/synthesizer.png"

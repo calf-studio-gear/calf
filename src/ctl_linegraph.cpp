@@ -701,7 +701,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // context used for the actual surface we want to draw on. It is
     // switched over the drawing process via calf_line_graph_switch_context
-    cairo_t *ctx, *_ctx;
+    cairo_t *ctx  = NULL;
+    cairo_t *_ctx = NULL;
     
     // the contexts for both moving curve caches
     cairo_t *moving_c[2];
