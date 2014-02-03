@@ -6,86 +6,86 @@ $(document).ready(function () {
             [
                 ["Index", "index.html", "images/Index.png"],
                 ["About", "About.html", "images/About.png"],
-                ["Controls", "Controls.html", "images/Calf - Controls.png"],
-                ["Calf Rack", "Calf.html", "images/Calf.png"]
+                ["Controls", "Controls.html", "images/Calf - Controls.jpg"],
+                ["Calf Rack", "Calf.html", "images/Calf.jpg"]
             ],
             "icons/index.png"
         ],
         [
             "Synthesizer",
             [
-                ["(Organ)", "Organ.html", "images/Calf - Organ - Sound Processor.png"],
-                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.png"],
+                ["(Organ)", "Organ.html", "images/Calf - Organ - Sound Processor.jpg"],
+                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.jpg"],
             ],
             "icons/synthesizer.png"
         ],
         [
             "Modulation",
             [
-                ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.png"],
-                ["(Phaser)", "Phaser.html", "images/Calf - Phaser.png"],
-                ["(Flanger)", "Flanger.html", "images/Calf - Flanger.png"],
-                ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.png"],
-                ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.png"],
+                ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.jpg"],
+                ["(Phaser)", "Phaser.html", "images/Calf - Phaser.jpg"],
+                ["(Flanger)", "Flanger.html", "images/Calf - Flanger.jpg"],
+                ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.jpg"],
+                ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.jpg"],
             ],
             "icons/modulation.png"
         ],
         [
             "Delay",
             [
-                ["(Reverb)", "Reverb.html", "images/Calf - Reverb.png"],
-                ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.png"],
-                ["Compensation Delay Line", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.png"],
+                ["(Reverb)", "Reverb.html", "images/Calf - Reverb.jpg"],
+                ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.jpg"],
+                ["Compensation Delay Line", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.jpg"],
             ],
             "icons/delay.png"
         ],
         [
             "Dynamics",
             [
-                ["Compressor", "Compressor.html", "images/Calf - Compressor.png"],
-                ["Sidechain Compressor", "Sidechain Compressor.html", "images/Calf - Sidechain Compressor.png"],
-                ["Multiband Compressor", "Multiband Compressor.html", "images/Calf - Multiband Compressor.png"],
-                ["Mono Compressor", "Mono Compressor.html", "images/Calf - Mono Compressor.png"],
-                ["Deesser", "Deesser.html", "images/Calf - Deesser.png"],
-                ["Gate", "Gate.html", "images/Calf - Gate.png"],
-                ["Sidechain Gate", "Sidechain Gate.html", "images/Calf - Sidechain Gate.png"],
-                ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.png"],
-                ["Limiter", "Limiter.html", "images/Calf - Limiter.png"],
-                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.png"],
-                ["Transient Designer", "Transient Designer.html", "images/Calf - Transient Designer.png"]
+                ["Compressor", "Compressor.html", "images/Calf - Compressor.jpg"],
+                ["Sidechain Compressor", "Sidechain Compressor.html", "images/Calf - Sidechain Compressor.jpg"],
+                ["Multiband Compressor", "Multiband Compressor.html", "images/Calf - Multiband Compressor.jpg"],
+                ["Mono Compressor", "Mono Compressor.html", "images/Calf - Mono Compressor.jpg"],
+                ["Deesser", "Deesser.html", "images/Calf - Deesser.jpg"],
+                ["Gate", "Gate.html", "images/Calf - Gate.jpg"],
+                ["Sidechain Gate", "Sidechain Gate.html", "images/Calf - Sidechain Gate.jpg"],
+                ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.jpg"],
+                ["Limiter", "Limiter.html", "images/Calf - Limiter.jpg"],
+                ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.jpg"],
+                ["Transient Designer", "Transient Designer.html", "images/Calf - Transient Designer.jpg"]
             ],
             "icons/dynamics.png"
         ],
         [
             "Filters",
             [
-                ["Filter", "Filter.html", "images/Calf - Filter.png"],
-                ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.png"],
-                ["Equalizer 5 Band", "Equalizer 5 Band.html", "images/Calf - Equalizer 5 Band.png"],
-                ["Equalizer 8 Band", "Equalizer 8 Band.html", "images/Calf - Equalizer 8 Band.png"],
-                ["Equalizer 12 Band", "Equalizer 12 Band.html", "images/Calf - Equalizer 12 Band.png"],
-                ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.png"],
-                ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.png"],
-                ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.png"],
+                ["Filter", "Filter.html", "images/Calf - Filter.jpg"],
+                ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.jpg"],
+                ["Equalizer 5 Band", "Equalizer 5 Band.html", "images/Calf - Equalizer 5 Band.jpg"],
+                ["Equalizer 8 Band", "Equalizer 8 Band.html", "images/Calf - Equalizer 8 Band.jpg"],
+                ["Equalizer 12 Band", "Equalizer 12 Band.html", "images/Calf - Equalizer 12 Band.jpg"],
+                ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.jpg"],
+                ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.jpg"],
+                ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.jpg"],
             ],
             "icons/filters.png"
         ],
         [
             "Distortion",
             [
-                ["(Saturator)", "Saturator.html", "images/Calf - Saturator.png"],
-                ["Exciter", "Exciter.html", "images/Calf - Exciter.png"],
-                ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.png"],
-                ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.png"],
+                ["(Saturator)", "Saturator.html", "images/Calf - Saturator.jpg"],
+                ["Exciter", "Exciter.html", "images/Calf - Exciter.jpg"],
+                ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.jpg"],
+                ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.jpg"],
             ],
             "icons/distortion.png"
         ],
         [
             "Tools",
             [
-                ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.png"],
-                ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.png"],
-                ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.png"],
+                ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.jpg"],
+                ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.jpg"],
+                ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.jpg"],
             ],
             "icons/tools.png"
         ]
