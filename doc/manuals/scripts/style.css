@@ -87,6 +87,37 @@ strong {
     text-align: left;
     padding: 0 30px 30px 80px;
 }
+.footer {
+    padding-bottom: 20px;
+}
+.footer a {
+    font-weight: normal;
+    color: #666;
+    display: block;
+    float: right;
+    margin: 5px;
+    padding: 3px 12px;
+    background: rgb(238,238,238); /* Old browsers */
+    background: -moz-linear-gradient(top, rgba(238,238,238,1) 0%, rgba(204,204,204,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(204,204,204,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+.footer a:hover {
+    color: white;
+    text-decoration: none;
+    -moz-box-shadow:    0 2px 4px rgba(0,0,0,0.25);
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    box-shadow:         0 2px 4px rgba(0,0,0,0.25);
+
+}
+
 .thumbnail {
     width: 42%;
     float: right;
