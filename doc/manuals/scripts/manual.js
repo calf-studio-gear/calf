@@ -5,7 +5,7 @@ $(document).ready(function () {
             "Index",
             [
                 ["Index", "index.html", "images/Index.png"],
-                ["About", "About.html", "images/About.png"],
+                ["About", "About.html", "images/Calf Studio Gear.png"],
                 ["Controls", "Controls.html", "images/Calf - Controls.jpg"],
                 ["Calf Rack", "Calf.html", "images/Calf.jpg"]
             ],
