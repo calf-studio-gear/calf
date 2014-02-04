@@ -758,7 +758,6 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
     
     widget  = calf_button_new ((gchar*)get_props().name);
     g_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
-    g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (button_press_event), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
     return widget;
 }
@@ -766,23 +765,7 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
 void button_param_control::button_clicked(GtkButton *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
-    
     jhp->get();
-}
-
-void button_param_control::button_press_event(GtkButton *widget, GdkEvent *event, gpointer value)
-{
-#if 0
-    param_control *jhp = (param_control *)value;
-    
-    static int last_time = 0;
-    
-    if (event->button.type == GDK_BUTTON_PRESS)
-    {
-        printf("tempo=%f\n", 60000.0 / (event->button.time - last_time));
-        last_time = event->button.time;
-    }
-#endif
 }
 
 void button_param_control::get()
