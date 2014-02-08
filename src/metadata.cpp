@@ -800,6 +800,90 @@ CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus
 
 ////////////////////////////////////////////////////////////////////////////
 
+#define VOCODER_BAND_PARAMS(band) \
+    {           1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "volume" #band, "Vol " #band }, \
+    {           0,          -1,  1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pan" #band, "Pan " #band }, \
+    { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "noise" #band, "Noise " #band }, \
+    {           0,           0,  1, 0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "active" #band, "Active " #band },
+    
+
+CALF_PORT_NAMES(vocoder) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(vocoder) = {
+    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono" },
+    
+    { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier_in", "Carrier In" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_inL", "Carrier In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_inR", "Carrier In R" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_clip_inL", "Carrier Clip In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_clip_inR", "Carrier Clip In R" },
+    
+    { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "mod_in", "Modulator In" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mod_inL", "Modulator In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mod_inR", "Modulator In R" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mod_clip_inL", "Modulator Clip In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mod_clip_inR", "Modulator Clip In R" },
+    
+    { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "out", "Out" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "outL", "Out L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "outR", "Out R" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outL", "Clip Out L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "Clip Out R" },
+    
+    { 1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier", "Carrier" },
+    { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "modulator", "Modulator" },
+    { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "processed", "Processed" },
+    
+    { 0,           0,  3, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_knob", "Bands" },
+    { 4,           4, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_disp", "Bands Amount" },
+    
+    { 1.f,  0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 10.f, 0.1f, 5000.f, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
+    
+    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer" },
+    
+    VOCODER_BAND_PARAMS(1)
+    VOCODER_BAND_PARAMS(2)
+    VOCODER_BAND_PARAMS(3)
+    VOCODER_BAND_PARAMS(4)
+    VOCODER_BAND_PARAMS(5)
+    VOCODER_BAND_PARAMS(6)
+    VOCODER_BAND_PARAMS(7)
+    VOCODER_BAND_PARAMS(8)
+    VOCODER_BAND_PARAMS(9)
+    VOCODER_BAND_PARAMS(10)
+    VOCODER_BAND_PARAMS(11)
+    VOCODER_BAND_PARAMS(12)
+    VOCODER_BAND_PARAMS(13)
+    VOCODER_BAND_PARAMS(14)
+    VOCODER_BAND_PARAMS(15)
+    VOCODER_BAND_PARAMS(16)
+    VOCODER_BAND_PARAMS(17)
+    VOCODER_BAND_PARAMS(18)
+    VOCODER_BAND_PARAMS(19)
+    VOCODER_BAND_PARAMS(20)
+    VOCODER_BAND_PARAMS(21)
+    VOCODER_BAND_PARAMS(22)
+    VOCODER_BAND_PARAMS(23)
+    VOCODER_BAND_PARAMS(24)
+    VOCODER_BAND_PARAMS(25)
+    VOCODER_BAND_PARAMS(26)
+    VOCODER_BAND_PARAMS(27)
+    VOCODER_BAND_PARAMS(28)
+    VOCODER_BAND_PARAMS(29)
+    VOCODER_BAND_PARAMS(30)
+    VOCODER_BAND_PARAMS(31)
+    VOCODER_BAND_PARAMS(32)
+    
+    {}
+};
+
+CALF_PLUGIN_INFO(vocoder) = { 0x8514, "Vocoder", "Calf Vocoder", "Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "FilterPlugin" };
+
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(pulsator) = {"In L", "In R", "Out L", "Out R"};
 
 const char *pulsator_mode_names[] = { "Sine", "Triangle", "Square", "Saw up", "Saw down" };

@@ -342,6 +342,38 @@ typedef xover_audio_module<xover2_metadata> xover2_audio_module;
 typedef xover_audio_module<xover3_metadata> xover3_audio_module;
 typedef xover_audio_module<xover4_metadata> xover4_audio_module;
 
+/**********************************************************************
+ * VOCODER by Markus Schmidt & Christian Holschuh
+**********************************************************************/
+
+class vocoder_audio_module: public audio_module<vocoder_metadata>, public frequency_response_line_graph {
+public:
+    int bands, bands_old, bypass;
+    uint32_t srate;
+    bool is_active;
+    dsp::biquad_d2 detector[2][32], modulator[2][32];
+    double envelope[2][32];
+    vumeters meters;
+    double attack, release, fcoeff;
+    vocoder_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr)
+    {
+        srate = sr;
+        int meter[] = {param_carrier_inL, param_carrier_inR,  param_mod_inL, param_mod_inR, param_outL, param_outR};
+        int clip[] = {param_carrier_clip_inL, param_carrier_clip_inR, param_mod_clip_inL, param_mod_clip_inR, param_clip_outL, param_clip_outR};
+        meters.init(params, meter, clip, 6, sr);
+    }
+    virtual float freq_gain(int index, double freq) const {
+        return detector[0][index].freq_gain(freq, (float)srate);
+    }
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_layers(int index, int generation, unsigned int &layers) const;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 };
 
 #endif

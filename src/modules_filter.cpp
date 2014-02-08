@@ -854,3 +854,178 @@ bool xover_audio_module<XoverBaseClass>::get_layers(int index, int generation, u
 template class xover_audio_module<xover2_metadata>;
 template class xover_audio_module<xover3_metadata>;
 template class xover_audio_module<xover4_metadata>;
+
+
+/**********************************************************************
+ * Vocoder by Markus Schmidt and Christian Holschuh
+**********************************************************************/
+
+vocoder_audio_module::vocoder_audio_module()
+{
+    is_active = false;
+    srate     = 0;
+    attack    = 0;
+    release   = 0;
+    bands     = 0;
+    fcoeff    = log10(20.f);
+}
+
+void vocoder_audio_module::activate()
+{
+    is_active = true;
+}
+
+void vocoder_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void vocoder_audio_module::params_changed()
+{
+    attack  = exp(log(0.01)/( *params[param_attack]  * srate * 0.001));
+    release = exp(log(0.01)/( *params[param_release] * srate * 0.001));
+    
+    bands =  4 * (1 << (int)*params[param_bands_knob]);
+    if (bands != bands_old) {
+        bands_old = bands;
+        for (int i = 0; i < 32; i++) {
+            // set active LED
+            *params[param_active0 + i * 4] = i < bands ? 1 : 0;
+            if(i < bands) {
+                // set all actually used filters
+                detector[0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), 1.0, (double)srate);
+                detector[1][i].copy_coeffs(detector[0][i]);
+                modulator[1][i].copy_coeffs(detector[0][i]);
+                modulator[1][i].copy_coeffs(detector[0][i]);
+            }
+        }
+        //redraw_graph = true;
+    }
+}
+
+uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    uint32_t orig_numsamples = numsamples;
+    bool bypass = *params[param_bypass] > 0.f;
+    numsamples += offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 0, 0};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+        // process
+        while(offset < numsamples) {
+            // cycle through samples
+            double outL = 0;
+            double outR = 0;
+            
+            // carrier with level
+            double cL = ins[0][offset] * *params[param_carrier_in];
+            double cR = ins[(ins[1] && !*params[param_mono] > 0.5f) ? 1 : 0][offset] * *params[param_carrier_in];
+            
+            // modulator with level
+            double mL = ins[2][offset] * *params[param_mod_in];
+            double mR = ins[(ins[3] && !*params[param_mono] > 0.5f) ? 3 : 2][offset] * *params[param_mod_in];
+            
+            // noise generator
+            double nL = (float)rand() / (float)RAND_MAX;
+            double nR = *params[param_mono] > 0.5f ? nL : (float)rand() / (float)RAND_MAX;
+            
+            for (int i = 0; i < bands; i++) {
+                
+                // filter modulator
+                double mL_ = detector[0][i].process(mL);
+                double mR_ = ins[3] ? detector[1][i].process(mR) : mL;
+                
+                // filter carrier with noise
+                double cL_ = modulator[0][i].process(cL + nL * *params[param_noise0 + i * 4]);
+                double cR_ = ins[1] ? modulator[1][i].process(cL + nR * *params[param_noise0 + i * 4]) : cL;
+                
+                // level by envelope
+                cL_ *= envelope[0][i];
+                cR_ *= envelope[1][i];
+                
+                // add band volume setting
+                cL_ *= *params[param_volume0 + i * 4];
+                cR_ *= *params[param_volume0 + i * 4];
+                
+                // add to outputs with proc level
+                outL += cL_ * *params[param_proc];
+                outR += cR_ * *params[param_proc];
+                
+                // advance envelopes
+                envelope[0][i] = (fabs(mL_) > envelope[0][i] ? attack : release) * (envelope[0][i] - fabs(mL_)) + fabs(mL_);
+                envelope[1][i] = (fabs(mR_) > envelope[1][i] ? attack : release) * (envelope[1][i] - fabs(mR_)) + fabs(mR_);
+            }
+            
+            // dry carrier
+            outL += cL * *params[param_carrier];
+            outR += cR * *params[param_carrier];
+            
+            // dry modulator
+            outL += cL * *params[param_mod];
+            outR += cR * *params[param_mod];
+            
+            // out level
+            outL *= *params[param_out];
+            outR *= *params[param_out];
+            
+            // send to outputs
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            float values[] = {(float)cL, (float)cR, (float)mL, (float)mR, (float)outL, (float)outR};
+            meters.process(values);
+            
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        // clean up
+        for (int i = 0; i < 32; i++) {
+            detector[0][i].sanitize();
+            detector[1][i].sanitize();
+            modulator[0][i].sanitize();
+            modulator[1][i].sanitize();
+        }
+    }
+    meters.fall(orig_numsamples);
+    return outputs_mask;
+}
+bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+
+    if (phase and *params[param_analyzer]) {
+        if (subindex)
+            return false;
+        //bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+        //return r;
+    } else if (phase and !*params[param_analyzer]) {
+        redraw_graph = false;
+        return false;
+    } else {
+        // quit
+        if (subindex >= bands) {
+            redraw_graph = false;
+            return false;
+        } else {
+            for (int i = 0; i < points; i++) {
+                double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+                data[i] = dB_grid(detector[0][i].freq_gain(subindex, freq), 256, 0.4);
+            }
+        }
+    }
+    return true;
+}
+bool vocoder_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    redraw_graph = redraw_graph || !generation;
+    layers = *params[param_analyzer] ? LG_REALTIME_GRAPH : 0;
+    layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+    redraw_graph |= (bool)*params[param_analyzer];
+    return redraw_graph or !generation;
+}

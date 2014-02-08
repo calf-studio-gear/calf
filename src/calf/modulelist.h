@@ -41,6 +41,7 @@
     PER_MODULE_ITEM(xover2, false, "xover2")
     PER_MODULE_ITEM(xover3, false, "xover3")
     PER_MODULE_ITEM(xover4, false, "xover4")
+    PER_MODULE_ITEM(vocoder, false, "vocoder")
     
     // distortion
     PER_MODULE_ITEM(saturator, false, "saturator")

@@ -416,6 +416,53 @@ struct xover4_metadata: public plugin_metadata<xover4_metadata>
     PLUGIN_NAME_ID_LABEL("xover4band", "xover4", "X-Over 4 Band")
 };
 
+/// Markus and Chrischis Vocoder - metadata
+struct vocoder_metadata: public plugin_metadata<vocoder_metadata>
+{
+    enum { in_count = 4, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_mono,
+           param_carrier_in, param_carrier_inL, param_carrier_inR, param_carrier_clip_inL, param_carrier_clip_inR,
+           param_mod_in, param_mod_inL, param_mod_inR, param_mod_clip_inL, param_mod_clip_inR,
+           param_out, param_outL, param_outR, param_clip_outL, param_clip_outR,
+           param_carrier, param_mod, param_proc,
+           param_bands_knob, param_bands_disp,
+           param_attack, param_release, param_analyzer,
+           param_volume0, param_pan0, param_noise0, param_active0,
+           param_volume1, param_pan1, param_noise1, param_active1,
+           param_volume2, param_pan2, param_noise2, param_active2,
+           param_volume3, param_pan3, param_noise3, param_active3,
+           param_volume4, param_pan4, param_noise4, param_active4,
+           param_volume5, param_pan5, param_noise5, param_active5,
+           param_volume6, param_pan6, param_noise6, param_active6,
+           param_volume7, param_pan7, param_noise7, param_active7,
+           param_volume8, param_pan8, param_noise8, param_active8,
+           param_volume9, param_pan9, param_noise9, param_active9,
+           param_volume10, param_pan10, param_noise10, param_active10,
+           param_volume11, param_pan11, param_noise11, param_active11,
+           param_volume12, param_pan12, param_noise12, param_active12,
+           param_volume13, param_pan13, param_noise13, param_active13,
+           param_volume14, param_pan14, param_noise14, param_active14,
+           param_volume15, param_pan15, param_noise15, param_active15,
+           param_volume16, param_pan16, param_noise16, param_active16,
+           param_volume17, param_pan17, param_noise17, param_active17,
+           param_volume18, param_pan18, param_noise18, param_active18,
+           param_volume19, param_pan19, param_noise19, param_active19,
+           param_volume20, param_pan20, param_noise20, param_active20,
+           param_volume21, param_pan21, param_noise21, param_active21,
+           param_volume22, param_pan22, param_noise22, param_active22,
+           param_volume23, param_pan23, param_noise23, param_active23,
+           param_volume24, param_pan24, param_noise24, param_active24,
+           param_volume25, param_pan25, param_noise25, param_active25,
+           param_volume26, param_pan26, param_noise26, param_active26,
+           param_volume27, param_pan27, param_noise27, param_active27,
+           param_volume28, param_pan28, param_noise28, param_active28,
+           param_volume29, param_pan29, param_noise29, param_active29,
+           param_volume30, param_pan30, param_noise30, param_active30,
+           param_volume31, param_pan31, param_noise31, param_active31,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("vocoder", "vocoder", "Vocoder")
+};
+
 /// Markus's Pulsator - metadata
 struct pulsator_metadata: public plugin_metadata<pulsator_metadata>
 {
