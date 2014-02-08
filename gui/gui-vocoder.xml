@@ -83,14 +83,14 @@
         <frame label="Mixer">
             <hbox spacing="10">
                 <vbox>
-                    <label text="Modulator" expand="0" fill="0"/>
-                    <knob param="modulator" expand="0" fill="0"/>
-                    <value param="modulator" expand="0" fill="0"/>
-                </vbox>
-                <vbox>
                     <label text="Carrier" expand="0" fill="0"/>
                     <knob param="carrier" expand="0" fill="0"/>
                     <value param="carrier" expand="0" fill="0"/>
+                </vbox>
+                <vbox>
+                    <label text="Modulator" expand="0" fill="0"/>
+                    <knob param="modulator" expand="0" fill="0"/>
+                    <value param="modulator" expand="0" fill="0"/>
                 </vbox>
                 <vbox>
                     <label text="Processed" expand="0" fill="0"/>

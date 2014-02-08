@@ -895,11 +895,11 @@ void vocoder_audio_module::params_changed()
                 // set all actually used filters
                 detector[0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), 1.0, (double)srate);
                 detector[1][i].copy_coeffs(detector[0][i]);
-                modulator[1][i].copy_coeffs(detector[0][i]);
+                modulator[0][i].copy_coeffs(detector[0][i]);
                 modulator[1][i].copy_coeffs(detector[0][i]);
             }
         }
-        //redraw_graph = true;
+        redraw_graph = true;
     }
 }
 
@@ -1000,11 +1000,9 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
 {
 
     if (phase and *params[param_analyzer]) {
-        if (subindex)
-            return false;
         //bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         //return r;
-    } else if (phase and !*params[param_analyzer]) {
+    } else if (phase and (!*params[param_analyzer] or subindex)) {
         redraw_graph = false;
         return false;
     } else {
