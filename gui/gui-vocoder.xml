@@ -62,9 +62,10 @@
             </hbox>
         </frame>
         <frame label="Bands">
-            <vbox>
-                <knob param="bands" size="3"/>
-            </vbox>
+            <knob param="bands" size="3"/>
+        </frame>
+        <frame label="High-Q">
+            <toggle param="hiq"/>
         </frame>
         <frame label="Response">
             <hbox>
@@ -119,7 +120,7 @@
     <frame label="Frequency Response">
         <vbox>
             <if cond="directlink">
-                <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1"/>
+                <line-graph refresh="1" width="600" height="200" param="bypass" expand="1" fill="1" crosshairs="1"/>
             </if>
             <align align-x="1.0" scale-x="0.0" scale-y="1.0">
                 <hbox spacing="8">

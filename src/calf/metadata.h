@@ -424,7 +424,7 @@ struct vocoder_metadata: public plugin_metadata<vocoder_metadata>
            param_carrier_in, param_carrier_inL, param_carrier_inR, param_carrier_clip_inL, param_carrier_clip_inR,
            param_mod_in, param_mod_inL, param_mod_inR, param_mod_clip_inL, param_mod_clip_inR,
            param_out, param_outL, param_outR, param_clip_outL, param_clip_outR,
-           param_carrier, param_mod, param_proc, param_bands,
+           param_carrier, param_mod, param_proc, param_bands, param_hiq,
            param_attack, param_release, param_analyzer,
            param_volume0, param_pan0, param_noise0, param_active0,
            param_volume1, param_pan1, param_noise1, param_active1,
