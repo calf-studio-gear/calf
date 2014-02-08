@@ -63,7 +63,7 @@
         </frame>
         <frame label="Bands">
             <vbox>
-                <knob param="bands_knob" size="3"/>
+                <knob param="bands" size="3"/>
             </vbox>
         </frame>
         <frame label="Response">

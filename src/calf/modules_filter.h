@@ -368,9 +368,6 @@ public:
         int clip[] = {param_carrier_clip_inL, param_carrier_clip_inR, param_mod_clip_inL, param_mod_clip_inR, param_clip_outL, param_clip_outR};
         meters.init(params, meter, clip, 6, sr);
     }
-    virtual float freq_gain(int index, double freq) const {
-        return detector[0][index].freq_gain(freq, (float)srate);
-    }
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_layers(int index, int generation, unsigned int &layers) const;
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);

@@ -885,7 +885,7 @@ void vocoder_audio_module::params_changed()
     attack  = exp(log(0.01)/( *params[param_attack]  * srate * 0.001));
     release = exp(log(0.01)/( *params[param_release] * srate * 0.001));
     
-    bands =  4 * (1 << (int)*params[param_bands_knob]);
+    bands = *params[param_bands];
     if (bands != bands_old) {
         bands_old = bands;
         for (int i = 0; i < 32; i++) {
@@ -893,16 +893,16 @@ void vocoder_audio_module::params_changed()
             *params[param_active0 + i * 4] = i < bands ? 1 : 0;
             if(i < bands) {
                 // set all actually used filters
-                detector[0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), 1.0, (double)srate);
+                detector[0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), pow(0.707, 1.0 / (bands / 4)), (double)srate);
                 detector[1][i].copy_coeffs(detector[0][i]);
                 modulator[0][i].copy_coeffs(detector[0][i]);
                 modulator[1][i].copy_coeffs(detector[0][i]);
             }
         }
-        redraw_graph = true;
     }
     //void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
     _analyzer.set_params(256, 1, 6, 0, 1, 0, 0, 0, 15, 2, 0, 0);
+    redraw_graph = true;
 }
 
 uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -930,25 +930,33 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             
             // carrier with level
             double cL = ins[0][offset] * *params[param_carrier_in];
-            double cR = ins[(!*params[param_mono] > 0.5f) ? 1 : 0][offset] * *params[param_carrier_in];
+            double cR = ins[1][offset] * *params[param_carrier_in];
             
             // modulator with level
             double mL = ins[2][offset] * *params[param_mod_in];
-            double mR = ins[(!*params[param_mono] > 0.5f) ? 3 : 2][offset] * *params[param_mod_in];
+            double mR = ins[3][offset] * *params[param_mod_in];
             
             // noise generator
             double nL = (float)rand() / (float)RAND_MAX;
-            double nR = *params[param_mono] > 0.5f ? nL : (float)rand() / (float)RAND_MAX;
+            double nR = (float)rand() / (float)RAND_MAX;
             
             for (int i = 0; i < bands; i++) {
+                double mL_ = mL;
+                double mR_ = mR;
+                double cL_ = cL + nL * *params[param_noise0 + i * 4];
+                double cR_ = cR + nR * *params[param_noise0 + i * 4];
                 
                 // filter modulator
-                double mL_ = detector[0][i].process(mL);
-                double mR_ = detector[1][i].process(mR);
-                
+                if (*params[param_mono] > 0.5) {
+                    mL_ = detector[0][i].process(std::max(mL_, mR_));
+                    mR_ = mL_;
+                } else {
+                    mL_ = detector[0][i].process(mL);
+                    mR_ = detector[1][i].process(mR);
+                }
                 // filter carrier with noise
-                double cL_ = modulator[0][i].process(cL + nL * *params[param_noise0 + i * 4]);
-                double cR_ = modulator[1][i].process(cL + nR * *params[param_noise0 + i * 4]);
+                cL_ = modulator[0][i].process(cL_);
+                cR_ = modulator[1][i].process(cR_);
                 
                 // level by envelope
                 cL_ *= envelope[0][i];
@@ -1026,10 +1034,14 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (phase and *params[param_analyzer]) {
+        if (subindex) {
+            redraw_graph = false;
+            return false;
+        }
         bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         context->set_source_rgba(0,0,0,0.1);
         return r;
-    } else if (phase and (!*params[param_analyzer] or subindex)) {
+    } else if (phase) {
         redraw_graph = false;
         return false;
     } else {
@@ -1040,7 +1052,7 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
         } else {
             for (int i = 0; i < points; i++) {
                 double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-                data[i] = dB_grid(detector[0][subindex].freq_gain(freq, srate), 256, 0.4);
+                data[i] = dB_grid(detector[0][subindex].freq_gain(freq, srate) * *params[param_volume0 + subindex * 4], 256, 0.4);
             }
         }
     }
