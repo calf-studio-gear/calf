@@ -806,6 +806,7 @@ CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus
     { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "noise" #band, "Noise " #band }, \
     {           0,           0,  1, 0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "active" #band, "Active " #band },
     
+const char *vocoder_analyzer_modes[] = {"Off", "Carrier", "Modulator", "Processed", "Output"};
 
 CALF_PORT_NAMES(vocoder) = {"In L", "In R", "Out L", "Out R"};
 
@@ -838,10 +839,10 @@ CALF_PORT_PROPS(vocoder) = {
     { 0,           0,  3, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_knob", "Bands" },
     { 4,           4, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_disp", "Bands Amount" },
     
-    { 6.f, 0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 6.f,  0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
     { 20.f, 0.1f, 5000.f, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     
-    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer" },
+    { 0,           0,  4, 0, PF_ENUM | PF_CTL_COMBO, vocoder_analyzer_modes, "analyzer", "Analyzer" },
     
     VOCODER_BAND_PARAMS(1)
     VOCODER_BAND_PARAMS(2)

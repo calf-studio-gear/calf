@@ -901,6 +901,8 @@ void vocoder_audio_module::params_changed()
         }
         redraw_graph = true;
     }
+    //void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
+    _analyzer.set_params(256, 1, 6, 0, 1, 0, 0, 0, 15, 2, 0, 0);
 }
 
 uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -923,6 +925,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // cycle through samples
             double outL = 0;
             double outR = 0;
+            double pL   = 0;
+            double pR   = 0;
             
             // carrier with level
             double cL = ins[0][offset] * *params[param_carrier_in];
@@ -955,13 +959,16 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 cR_ *= *params[param_volume0 + i * 4];
                 
                 // add to outputs with proc level
-                outL += cL_ * *params[param_proc];
-                outR += cR_ * *params[param_proc];
+                pL += cL_ * *params[param_proc];
+                pR += cR_ * *params[param_proc];
                 
                 // advance envelopes
                 envelope[0][i] = (fabs(mL_) > envelope[0][i] ? attack : release) * (envelope[0][i] - fabs(mL_)) + fabs(mL_);
                 envelope[1][i] = (fabs(mR_) > envelope[1][i] ? attack : release) * (envelope[1][i] - fabs(mR_)) + fabs(mR_);
             }
+            
+            outL = pL;
+            outR = pR;
             
             // dry carrier
             outL += cL * *params[param_carrier];
@@ -971,6 +978,25 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outL += mL * *params[param_mod];
             outR += mR * *params[param_mod];
             
+            // analyzer
+            switch ((int)*params[param_analyzer]) {
+                case 0:
+                default:
+                    break;
+                case 1:
+                    _analyzer.process((float)cL, (float)cR);
+                    break;
+                case 2:
+                    _analyzer.process((float)mL, (float)mR);
+                    break;
+                case 3:
+                    _analyzer.process((float)pL, (float)pR);
+                    break;
+                case 4:
+                    _analyzer.process((float)outL, (float)outR);
+                    break;
+            }
+            
             // out level
             outL *= *params[param_out];
             outR *= *params[param_out];
@@ -979,6 +1005,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
             
+            // meters
             float values[] = {(float)cL, (float)cR, (float)mL, (float)mR, (float)outL, (float)outR};
             meters.process(values);
             
@@ -998,10 +1025,10 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 }
 bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-printf("drawing\n");
     if (phase and *params[param_analyzer]) {
-        //bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
-        //return r;
+        bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+        context->set_source_rgba(0,0,0,0.1);
+        return r;
     } else if (phase and (!*params[param_analyzer] or subindex)) {
         redraw_graph = false;
         return false;

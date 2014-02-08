@@ -354,6 +354,7 @@ public:
     dsp::biquad_d2 detector[2][32], modulator[2][32];
     double envelope[2][32];
     vumeters meters;
+    analyzer _analyzer;
     double attack, release, fcoeff;
     vocoder_audio_module();
     void activate();
@@ -362,6 +363,7 @@ public:
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
+        _analyzer.set_sample_rate(sr);
         int meter[] = {param_carrier_inL, param_carrier_inR,  param_mod_inL, param_mod_inR, param_outL, param_outR};
         int clip[] = {param_carrier_clip_inL, param_carrier_clip_inR, param_mod_clip_inL, param_mod_clip_inR, param_clip_outL, param_clip_outR};
         meters.init(params, meter, clip, 6, sr);

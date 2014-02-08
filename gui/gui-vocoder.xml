@@ -116,9 +116,19 @@
         
     </hbox>
     
-    <if cond="directlink">
-        <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1"/>
-    </if>
+    <frame label="Frequency Response">
+        <vbox>
+            <if cond="directlink">
+                <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1"/>
+            </if>
+            <align align-x="1.0" scale-x="0.0" scale-y="1.0">
+                <hbox spacing="8">
+                    <label text="Analyzer"/>
+                    <combo param="analyzer"/>
+                </hbox>
+            </align>
+        </vbox>
+    </frame>
     
     
     <hbox>

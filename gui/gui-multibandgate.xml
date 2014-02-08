@@ -30,12 +30,12 @@
     
     <frame label="X-Over">
         <vbox>
-            <hbox>
-                <label text="                                              "/>
-                <label text="                                              "/>
-                <label param="mode"/>
-                <combo param="mode"/>
-            </hbox>
+            <align align-x="1.0" scale-x="0.1" scale-y="1.0">
+                <hbox spacing="8">
+                    <label param="mode"/>
+                    <combo param="mode"/>
+                </hbox>
+            </align>
             <if cond="directlink">
                 <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
             </if>
