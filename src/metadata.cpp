@@ -831,15 +831,15 @@ CALF_PORT_PROPS(vocoder) = {
     { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outL", "Clip Out L" },
     { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "Clip Out R" },
     
-    { 1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier", "Carrier" },
+    { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier", "Carrier" },
     { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "modulator", "Modulator" },
-    { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "processed", "Processed" },
+    { 1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "processed", "Processed" },
     
     { 0,           0,  3, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_knob", "Bands" },
     { 4,           4, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands_disp", "Bands Amount" },
     
-    { 1.f,  0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
-    { 10.f, 0.1f, 5000.f, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
+    { 6.f, 0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 20.f, 0.1f, 5000.f, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
     
     { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer" },
     

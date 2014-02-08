@@ -926,11 +926,11 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             
             // carrier with level
             double cL = ins[0][offset] * *params[param_carrier_in];
-            double cR = ins[(ins[1] && !*params[param_mono] > 0.5f) ? 1 : 0][offset] * *params[param_carrier_in];
+            double cR = ins[(!*params[param_mono] > 0.5f) ? 1 : 0][offset] * *params[param_carrier_in];
             
             // modulator with level
             double mL = ins[2][offset] * *params[param_mod_in];
-            double mR = ins[(ins[3] && !*params[param_mono] > 0.5f) ? 3 : 2][offset] * *params[param_mod_in];
+            double mR = ins[(!*params[param_mono] > 0.5f) ? 3 : 2][offset] * *params[param_mod_in];
             
             // noise generator
             double nL = (float)rand() / (float)RAND_MAX;
@@ -940,11 +940,11 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 
                 // filter modulator
                 double mL_ = detector[0][i].process(mL);
-                double mR_ = ins[3] ? detector[1][i].process(mR) : mL;
+                double mR_ = detector[1][i].process(mR);
                 
                 // filter carrier with noise
                 double cL_ = modulator[0][i].process(cL + nL * *params[param_noise0 + i * 4]);
-                double cR_ = ins[1] ? modulator[1][i].process(cL + nR * *params[param_noise0 + i * 4]) : cL;
+                double cR_ = modulator[1][i].process(cL + nR * *params[param_noise0 + i * 4]);
                 
                 // level by envelope
                 cL_ *= envelope[0][i];
@@ -968,8 +968,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outR += cR * *params[param_carrier];
             
             // dry modulator
-            outL += cL * *params[param_mod];
-            outR += cR * *params[param_mod];
+            outL += mL * *params[param_mod];
+            outR += mR * *params[param_mod];
             
             // out level
             outL *= *params[param_out];
