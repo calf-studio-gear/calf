@@ -998,7 +998,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 }
 bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-
+printf("drawing\n");
     if (phase and *params[param_analyzer]) {
         //bool r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
         //return r;
@@ -1013,7 +1013,7 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
         } else {
             for (int i = 0; i < points; i++) {
                 double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-                data[i] = dB_grid(detector[0][i].freq_gain(subindex, freq), 256, 0.4);
+                data[i] = dB_grid(detector[0][subindex].freq_gain(freq, srate), 256, 0.4);
             }
         }
     }
