@@ -968,9 +968,9 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     cL_ = modulator[0][j][i].process(cL_);
                     cR_ = modulator[1][j][i].process(cR_);
                 }
-                // level by envelope
-                cL_ *= envelope[0][i];
-                cR_ *= envelope[1][i];
+                // level by envelope with levelling
+                cL_ *= envelope[0][i] * order * 4;
+                cR_ *= envelope[1][i] * order * 4;
                 
                 // add band volume setting
                 cL_ *= *params[param_volume0 + i * 4];

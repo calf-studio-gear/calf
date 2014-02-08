@@ -61,11 +61,24 @@
                 </table>
             </hbox>
         </frame>
-        <frame label="Bands">
-            <knob param="bands" size="3"/>
-        </frame>
-        <frame label="High-Q">
-            <toggle param="hiq"/>
+        <frame label="Options">
+            <hbox spacing="8">
+                <vbox>
+                    <label param="hiq"/>
+                    <toggle param="hiq"/>
+                    <label/>
+                </vbox>
+                <vbox>
+                    <label param="bands"/>
+                    <knob param="bands"/>
+                    <value param="bands"/>
+                </vbox>
+                <vbox>
+                    <label param="mono"/>
+                    <toggle param="mono"/>
+                    <label/>
+                </vbox>
+            </hbox>
         </frame>
         <frame label="Response">
             <hbox>
@@ -82,7 +95,7 @@
             </hbox>
         </frame>
         <frame label="Mixer">
-            <hbox spacing="10">
+            <hbox spacing="8">
                 <vbox>
                     <label text="Carrier" expand="0" fill="0"/>
                     <knob param="carrier" expand="0" fill="0"/>

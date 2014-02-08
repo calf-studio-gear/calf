@@ -812,7 +812,7 @@ CALF_PORT_NAMES(vocoder) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(vocoder) = {
     { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
-    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono" },
+    { 1,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Link" },
     
     { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier_in", "Carrier In" },
     { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_inL", "Carrier In L" },
@@ -836,7 +836,7 @@ CALF_PORT_PROPS(vocoder) = {
     { 0, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "modulator", "Modulator" },
     { 1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "processed", "Processed" },
     
-    { 16,          4, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands", "Bands" },
+    { 16,          3, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "bands", "Bands" },
     {  1,          0,  1, 0, PF_BOOL | PF_CTL_TOGGLE , NULL, "hiq", "High-Q" },
     
     { 10.f, 0.1f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
