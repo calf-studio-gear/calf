@@ -98,6 +98,8 @@ enum parameter_flags
   PF_UNIT_NOTE    = 0x0A000000,  ///< MIDI note number
   PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
   PF_UNIT_SAMPLES = 0x0C000000,  ///< samples
+  
+  PF_SYNC_BPM     = 0x10000000, ///< sync a bpm setting with the host environment
 };
 
 /// A fake infinity value (because real infinity may break some hosts)
