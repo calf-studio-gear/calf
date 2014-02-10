@@ -353,7 +353,7 @@ public:
     bool is_active;
     static const int maxorder = 8;
     dsp::biquad_d2 detector[2][maxorder][32], modulator[2][maxorder][32];
-    double envelope[2][32];
+    double env_mods[2][32], env_carriers[2][32], env_mod[2], env_carrier[2], proc_coeff[2];
     vumeters meters;
     analyzer _analyzer;
     double attack, release, fcoeff;

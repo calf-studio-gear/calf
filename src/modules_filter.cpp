@@ -871,8 +871,13 @@ vocoder_audio_module::vocoder_audio_module()
     bands_old = -1;
     order     = 0;
     order_old = -1;
+    proc_coeff[0] = 0;
+    proc_coeff[1] = 0;
     fcoeff    = log10(20.f);
-    memset(envelope, 0, 32 * 2 * sizeof(double));
+    memset(env_mods, 0, 32 * 2 * sizeof(double));
+    memset(env_carriers, 0, 32 * 2 * sizeof(double));
+    memset(env_mod, 0, 2 * sizeof(double));
+    memset(env_carrier, 0, 2 * sizeof(double));
 }
 
 void vocoder_audio_module::activate()
@@ -938,6 +943,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             double outR = 0;
             double pL   = 0;
             double pR   = 0;
+            double ccL  = 0;
+            double ccR  = 0;
             
             // carrier with level
             double cL = ins[0][offset] * *params[param_carrier_in];
@@ -947,6 +954,12 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             double mL = ins[2][offset] * *params[param_mod_in];
             double mR = ins[3][offset] * *params[param_mod_in];
             
+            // advance envelopes
+            env_mod[0] = (fabs(mL) > env_mod[0] ? attack : release) * (env_mod[0] - fabs(mL)) + fabs(mL);
+            env_mod[1] = (fabs(mR) > env_mod[1] ? attack : release) * (env_mod[1] - fabs(mR)) + fabs(mR);
+            env_carrier[0] = (fabs(cL) > env_carrier[0] ? attack : release) * (env_carrier[0] - fabs(cL)) + fabs(cL);
+            env_carrier[1] = (fabs(cR) > env_carrier[1] ? attack : release) * (env_carrier[1] - fabs(cR)) + fabs(cR);
+                
             // noise generator
             double nL = (float)rand() / (float)RAND_MAX;
             double nR = (float)rand() / (float)RAND_MAX;
@@ -958,8 +971,10 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 double cR_ = cR + nR * *params[param_noise0 + i * band_params];
                 
                 // advance envelopes
-                envelope[0][i] = (fabs(mL_) > envelope[0][i] ? attack : release) * (envelope[0][i] - fabs(mL_)) + fabs(mL_);
-                envelope[1][i] = (fabs(mR_) > envelope[1][i] ? attack : release) * (envelope[1][i] - fabs(mR_)) + fabs(mR_);
+                env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
+                env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
+                env_carriers[0][i] = (fabs(cL_) > env_carriers[0][i] ? attack : release) * (env_carriers[0][i] - fabs(cL_)) + fabs(cL_);
+                env_carriers[1][i] = (fabs(cR_) > env_carriers[1][i] ? attack : release) * (env_carriers[1][i] - fabs(cR_)) + fabs(cR_);
                 
                 for (int j = 0; j < order; j++) {
                     // filter modulator
@@ -975,8 +990,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     cR_ = modulator[1][j][i].process(cR_);
                 }
                 // level by envelope with levelling
-                cL_ *= envelope[0][i] * order * 4;
-                cR_ *= envelope[1][i] * order * 4;
+                cL_ *= env_mods[0][i] / proc_coeff[0];
+                cR_ *= env_mods[1][i] / proc_coeff[1];
                 
                 // add band volume setting
                 cL_ *= *params[param_volume0 + i * band_params];
@@ -994,8 +1009,14 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 pL += cL_ * *params[param_proc];
                 pR += cR_ * *params[param_proc];
                 
+                // calc proc_coeff
+                ccL += (env_carriers[0][i] * env_mods[0][i]);
+                ccR += (env_carriers[1][i] * env_mods[1][i]);
             }
             
+            proc_coeff[0] = ccL ? env_mod[0] * env_carrier[0] / ccL : 1;
+            proc_coeff[1] = ccR ? env_mod[1] * env_carrier[1] / ccR : 1;
+                
             outL = pL;
             outR = pR;
             
