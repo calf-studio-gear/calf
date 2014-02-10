@@ -24,8 +24,6 @@
         </vbox>
     </frame>
 
-    <!-- -->
-
     <frame label="Mixing">
         <hbox>
             <table expand="0" rows="2" cols="2">

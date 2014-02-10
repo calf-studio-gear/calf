@@ -836,11 +836,6 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     widget  = calf_toggle_new ();
     
     CALF_TOGGLE(widget)->size = get_int("size", 2);
-    if(CALF_TOGGLE(widget)->size > 2) {
-        CALF_TOGGLE(widget)->size = 2;
-    } else if (CALF_TOGGLE(widget)->size < 1) {
-        CALF_TOGGLE(widget)->size = 1;
-    }
     
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
@@ -1583,10 +1578,14 @@ GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_at
     require_int_attribute("rows");
     require_int_attribute("cols");
     int homog = get_int("homogeneous", 0);
+    int sx = get_int("spacing-x", 2);
+    int sy = get_int("spacing-y", 2);
     GtkWidget *table = gtk_table_new(get_int("rows", 1), get_int("cols", 1), false);
     if(homog > 0) {
         gtk_table_set_homogeneous(GTK_TABLE(table), TRUE);
     }
+    gtk_table_set_col_spacings(GTK_TABLE(table), sx);
+    gtk_table_set_row_spacings(GTK_TABLE(table), sy);
     container = GTK_CONTAINER(table);
     gtk_widget_set_name(GTK_WIDGET(table), "Calf-Table");
     return table;

@@ -95,7 +95,7 @@ struct CalfToggle
     int size;
     int width;
     int height;
-    GdkPixbuf *toggle_image[2];
+    GdkPixbuf *toggle_image[3];
 };
 
 struct CalfToggleClass

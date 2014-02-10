@@ -463,16 +463,18 @@ calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
     
     CalfToggle *self = CALF_TOGGLE(widget);
     
-    int x = widget->allocation.x + widget->allocation.width / 2 - self->size * 15 - self->size * 2;
-    int y = widget->allocation.y + widget->allocation.height / 2 - self->size * 10 - self->size * 3;
-    int width = self->size * 34;
-    int height = self->size * 26;
+    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
+    float sy = self->size ? self->size : 1;
+    int x = widget->allocation.x + widget->allocation.width / 2 - sx * 15 - sx * 2;
+    int y = widget->allocation.y + widget->allocation.height / 2 - sy * 10 - sy * 3;
+    int width  = sx * 34;
+    int height = sy * 26;
     
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
                     widget->style->fg_gc[0],
-                    self->toggle_image[self->size - 1],
-                    20 - self->size * 2,
-                    20 - self->size * 3 + (self->size * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
+                    self->toggle_image[self->size],
+                    20 - sx * 2,
+                    20 - sy * 3 + (sy * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
                     x,
                     y,
                     width,
@@ -488,9 +490,12 @@ calf_toggle_size_request (GtkWidget *widget,
     g_assert(CALF_IS_TOGGLE(widget));
 
     CalfToggle *self = CALF_TOGGLE(widget);
-
-    requisition->width  = 30 * self->size;
-    requisition->height = 20 * self->size;
+    
+    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
+    float sy = self->size ? self->size : 1;
+    
+    requisition->width  = 30 * sx;
+    requisition->height = 20 * sy;
 }
 
 static gboolean
@@ -540,8 +545,9 @@ calf_toggle_init (CalfToggle *self)
     widget->requisition.height = 20;
     self->size = 1;
     GError *error = NULL;
-    self->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
-    self->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
+    self->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle0_silver.png", &error);
+    self->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
+    self->toggle_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
     g_assert(self->toggle_image != NULL);
 }
 
@@ -556,9 +562,11 @@ static gboolean calf_toggle_value_changed(gpointer obj)
 {
     GtkWidget *widget = (GtkWidget *)obj;
     CalfToggle *self = CALF_TOGGLE(widget);
+    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
+    float sy = self->size ? self->size : 1;
     gtk_widget_queue_draw_area(widget,
-                               widget->allocation.x - self->size * 2,
-                               widget->allocation.y - self->size * 3,
+                               widget->allocation.x - sx * 2,
+                               widget->allocation.y - sy * 3,
                                self->size * 34,
                                self->size * 26);
     return FALSE;

@@ -866,11 +866,13 @@ vocoder_audio_module::vocoder_audio_module()
     srate     = 0;
     attack    = 0;
     release   = 0;
+    fcoeff    = 0;
     bands     = 0;
     bands_old = -1;
     order     = 0;
     order_old = -1;
     fcoeff    = log10(20.f);
+    memset(envelope, 0, 32 * 2 * sizeof(double));
 }
 
 void vocoder_audio_module::activate()
@@ -895,7 +897,7 @@ void vocoder_audio_module::params_changed()
         order_old = order;
         for (int i = 0; i < 32; i++) {
             // set active LED
-            *params[param_active0 + i * 4] = i < bands ? 1 : 0;
+            *params[param_active0 + i * band_params] = i < bands ? 1 : 0;
             if(i < bands) {
                 // set all actually used filters
                 detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), pow(1, 1.0 / order), (double)srate);
@@ -952,12 +954,16 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             for (int i = 0; i < bands; i++) {
                 double mL_ = mL;
                 double mR_ = mR;
-                double cL_ = cL + nL * *params[param_noise0 + i * 4];
-                double cR_ = cR + nR * *params[param_noise0 + i * 4];
+                double cL_ = cL + nL * *params[param_noise0 + i * band_params];
+                double cR_ = cR + nR * *params[param_noise0 + i * band_params];
+                
+                // advance envelopes
+                envelope[0][i] = (fabs(mL_) > envelope[0][i] ? attack : release) * (envelope[0][i] - fabs(mL_)) + fabs(mL_);
+                envelope[1][i] = (fabs(mR_) > envelope[1][i] ? attack : release) * (envelope[1][i] - fabs(mR_)) + fabs(mR_);
                 
                 for (int j = 0; j < order; j++) {
                     // filter modulator
-                    if (*params[param_mono] > 0.5) {
+                    if (*params[param_link] > 0.5) {
                         mL_ = detector[0][j][i].process(std::max(mL_, mR_));
                         mR_ = mL_;
                     } else {
@@ -973,16 +979,21 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 cR_ *= envelope[1][i] * order * 4;
                 
                 // add band volume setting
-                cL_ *= *params[param_volume0 + i * 4];
-                cR_ *= *params[param_volume0 + i * 4];
+                cL_ *= *params[param_volume0 + i * band_params];
+                cR_ *= *params[param_volume0 + i * band_params];
+                
+                // add filtered modulator
+                cL_ += mL_ * *params[param_mod0 + i * 5];
+                cR_ += mR_ * *params[param_mod0 + i * 5];
+                
+                // Balance
+                cL_ *= *params[param_pan0] > 0 ? -*params[param_pan0] + 1 : 1;
+                cR_ *= *params[param_pan0] < 0 ? *params[param_pan0] + 1 : 1;
                 
                 // add to outputs with proc level
                 pL += cL_ * *params[param_proc];
                 pR += cR_ * *params[param_proc];
                 
-                // advance envelopes
-                envelope[0][i] = (fabs(mL_) > envelope[0][i] ? attack : release) * (envelope[0][i] - fabs(mL_)) + fabs(mL_);
-                envelope[1][i] = (fabs(mR_) > envelope[1][i] ? attack : release) * (envelope[1][i] - fabs(mR_)) + fabs(mR_);
             }
             
             outL = pL;
@@ -1066,7 +1077,7 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
                 float level = 1;
                 for (int j = 0; j < order; j++)
                     level *= detector[0][0][subindex].freq_gain(freq, srate);
-                level *= *params[param_volume0 + subindex * 4];
+                level *= *params[param_volume0 + subindex * band_params];
                 data[i] = dB_grid(level, 256, 0.4);
             }
         }
