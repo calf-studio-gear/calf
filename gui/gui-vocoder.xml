@@ -1,39 +1,4 @@
 <vbox spacing="12">
-<!--
-    <hbox>
-        <frame label="Carrier">
-            <hbox>
-                <knob param="carrier_in" type="1"/>
-                <value param="carrier_in"/>
-                <vbox>
-                    <vumeter param="carrier_inL" position="2" mode="0" hold="1.5" falloff="2.5" />
-                    <vumeter param="carrier_inR" position="2" mode="0" hold="1.5" falloff="2.5" />
-                </vbox>
-                <vbox>
-                    <led param="carrier_clip_inL" />
-                    <led param="carrier_clip_inR" />
-                </vbox>
-            </hbox>
-        </frame>
-    
-        <frame label="Modulator">
-            <hbox>
-                <knob param="mod_in" type="1"/>
-                <value param="mod_in"/>
-                <vbox>
-                    <vumeter param="mod_inL" position="2" mode="0" hold="1.5" falloff="2.5" />
-                    <vumeter param="mod_inR" position="2" mode="0" hold="1.5" falloff="2.5" />
-                </vbox>
-                <vbox>
-                    <led param="mod_clip_inL" />
-                    <led param="mod_clip_inR" />
-                </vbox>
-            </hbox>
-        </frame>
-    
-    
-    </hbox>
--->
     <hbox spacing="5">
         <frame label="Carrier">
             <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
@@ -122,8 +87,6 @@
                     <toggle param="link" size="1"/>
                 </vbox>
             </hbox>
-            
-            
                     
         </vbox>
         <frame label="Filters" expand="1" fill="1">
