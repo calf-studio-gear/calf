@@ -808,7 +808,8 @@ CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Markus
     { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "noise" #band, "Noise " #band }, \
     { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "mod" #band, "Dry " #band }, \
     {           0,           0,  1, 0, PF_BOOL | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "active" #band, "Active " #band },\
-    {           0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band, "Solo " #band },
+    {           0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band, "Solo " #band }, \
+    {           0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level" #band, "Level " #band },
     
 const char *vocoder_analyzer_modes[] = {"Off", "Carrier", "Modulator", "Processed", "Output"};
 

@@ -102,233 +102,266 @@
     <hbox>
         <table rows="8" cols="33" spacing-x="0" spacing-y="0">
             <label text="Active" attach-x="0" attach-y="0" expand-x="0"/>
-            <label text="Level" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
-            <label text="Dry" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
-            <label text="Noise" attach-x="0" attach-y="3" attach-h="2" expand-x="0"/>
+             <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
+            <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
+            <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
+            <label text="Noise" attach-x="0" attach-y="4" attach-h="1" expand-x="0"/>
             <label text="Bal" attach-x="0" attach-y="5" attach-h="1" expand-x="0"/>
             <label text="Solo" attach-x="0" attach-y="6" attach-h="1" expand-x="0"/>
             <label text="#" attach-x="0" attach-y="7"/>
             <led    param="active1" attach-x="1" attach-y="0" mode="7"/>
-            <vscale param="volume1" attach-x="1" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod1"    attach-x="1" attach-y="2" size="1"/>
-            <knob   param="noise1"  attach-x="1" attach-y="3" size="1"/>
+            <led    param="level1" attach-x="1" attach-y="1" mode="6"/>
+            <vscale param="volume1" attach-x="1" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod1"    attach-x="1" attach-y="3" size="1"/>
+            <knob   param="noise1"  attach-x="1" attach-y="4" size="1"/>
             <knob   param="pan1"    attach-x="1" attach-y="5" type="1" size="1"/>
             <toggle param="solo1"   attach-x="1" attach-y="6" size="0"/>
             <label  text="1"        attach-x="1" attach-y="7"/>
             <led    param="active2" attach-x="2" attach-y="0" mode="7"/>
-            <vscale param="volume2" attach-x="2" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod2"    attach-x="2" attach-y="2" size="1"/>
-            <knob   param="noise2"  attach-x="2" attach-y="3" size="1"/>
+            <led    param="level2" attach-x="2" attach-y="1" mode="6"/>
+            <vscale param="volume2" attach-x="2" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod2"    attach-x="2" attach-y="3" size="1"/>
+            <knob   param="noise2"  attach-x="2" attach-y="4" size="1"/>
             <knob   param="pan2"    attach-x="2" attach-y="5" type="1" size="1"/>
             <toggle param="solo2"   attach-x="2" attach-y="6" size="0"/>
             <label  text="2"        attach-x="2" attach-y="7"/>
             <led    param="active3" attach-x="3" attach-y="0" mode="7"/>
-            <vscale param="volume3" attach-x="3" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod3"    attach-x="3" attach-y="2" size="1"/>
-            <knob   param="noise3"  attach-x="3" attach-y="3" size="1"/>
+            <led    param="level3" attach-x="3" attach-y="1" mode="6"/>
+            <vscale param="volume3" attach-x="3" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod3"    attach-x="3" attach-y="3" size="1"/>
+            <knob   param="noise3"  attach-x="3" attach-y="4" size="1"/>
             <knob   param="pan3"    attach-x="3" attach-y="5" type="1" size="1"/>
             <toggle param="solo3"   attach-x="3" attach-y="6" size="0"/>
             <label  text="3"        attach-x="3" attach-y="7"/>
             <led    param="active4" attach-x="4" attach-y="0" mode="7"/>
-            <vscale param="volume4" attach-x="4" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod4"    attach-x="4" attach-y="2" size="1"/>
-            <knob   param="noise4"  attach-x="4" attach-y="3" size="1"/>
+            <led    param="level4" attach-x="4" attach-y="1" mode="6"/>
+            <vscale param="volume4" attach-x="4" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod4"    attach-x="4" attach-y="3" size="1"/>
+            <knob   param="noise4"  attach-x="4" attach-y="4" size="1"/>
             <knob   param="pan4"    attach-x="4" attach-y="5" type="1" size="1"/>
             <toggle param="solo4"   attach-x="4" attach-y="6" size="0"/>
             <label  text="4"        attach-x="4" attach-y="7"/>
             <led    param="active5" attach-x="5" attach-y="0" mode="7"/>
-            <vscale param="volume5" attach-x="5" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod5"    attach-x="5" attach-y="2" size="1"/>
-            <knob   param="noise5"  attach-x="5" attach-y="3" size="1"/>
+            <led    param="level5" attach-x="5" attach-y="1" mode="6"/>
+            <vscale param="volume5" attach-x="5" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod5"    attach-x="5" attach-y="3" size="1"/>
+            <knob   param="noise5"  attach-x="5" attach-y="4" size="1"/>
             <knob   param="pan5"    attach-x="5" attach-y="5" type="1" size="1"/>
             <toggle param="solo5"   attach-x="5" attach-y="6" size="0"/>
             <label  text="5"        attach-x="5" attach-y="7"/>
             <led    param="active6" attach-x="6" attach-y="0" mode="7"/>
-            <vscale param="volume6" attach-x="6" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod6"    attach-x="6" attach-y="2" size="1"/>
-            <knob   param="noise6"  attach-x="6" attach-y="3" size="1"/>
+            <led    param="level6" attach-x="6" attach-y="1" mode="6"/>
+            <vscale param="volume6" attach-x="6" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod6"    attach-x="6" attach-y="3" size="1"/>
+            <knob   param="noise6"  attach-x="6" attach-y="4" size="1"/>
             <knob   param="pan6"    attach-x="6" attach-y="5" type="1" size="1"/>
             <toggle param="solo6"   attach-x="6" attach-y="6" size="0"/>
             <label  text="6"        attach-x="6" attach-y="7"/>
             <led    param="active7" attach-x="7" attach-y="0" mode="7"/>
-            <vscale param="volume7" attach-x="7" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod7"    attach-x="7" attach-y="2" size="1"/>
-            <knob   param="noise7"  attach-x="7" attach-y="3" size="1"/>
+            <led    param="level7" attach-x="7" attach-y="1" mode="6"/>
+            <vscale param="volume7" attach-x="7" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod7"    attach-x="7" attach-y="3" size="1"/>
+            <knob   param="noise7"  attach-x="7" attach-y="4" size="1"/>
             <knob   param="pan7"    attach-x="7" attach-y="5" type="1" size="1"/>
             <toggle param="solo7"   attach-x="7" attach-y="6" size="0"/>
             <label  text="7"        attach-x="7" attach-y="7"/>
             <led    param="active8" attach-x="8" attach-y="0" mode="7"/>
-            <vscale param="volume8" attach-x="8" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod8"    attach-x="8" attach-y="2" size="1"/>
-            <knob   param="noise8"  attach-x="8" attach-y="3" size="1"/>
+            <led    param="level8" attach-x="8" attach-y="1" mode="6"/>
+            <vscale param="volume8" attach-x="8" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod8"    attach-x="8" attach-y="3" size="1"/>
+            <knob   param="noise8"  attach-x="8" attach-y="4" size="1"/>
             <knob   param="pan8"    attach-x="8" attach-y="5" type="1" size="1"/>
             <toggle param="solo8"   attach-x="8" attach-y="6" size="0"/>
             <label  text="8"        attach-x="8" attach-y="7"/>
             <led    param="active9" attach-x="9" attach-y="0" mode="7"/>
-            <vscale param="volume9" attach-x="9" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod9"    attach-x="9" attach-y="2" size="1"/>
-            <knob   param="noise9"  attach-x="9" attach-y="3" size="1"/>
+            <led    param="level9" attach-x="9" attach-y="1" mode="6"/>
+            <vscale param="volume9" attach-x="9" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod9"    attach-x="9" attach-y="3" size="1"/>
+            <knob   param="noise9"  attach-x="9" attach-y="4" size="1"/>
             <knob   param="pan9"    attach-x="9" attach-y="5" type="1" size="1"/>
             <toggle param="solo9"   attach-x="9" attach-y="6" size="0"/>
             <label  text="9"        attach-x="9" attach-y="7"/>
             <led    param="active10" attach-x="10" attach-y="0" mode="7"/>
-            <vscale param="volume10" attach-x="10" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod10"    attach-x="10" attach-y="2" size="1"/>
-            <knob   param="noise10"  attach-x="10" attach-y="3" size="1"/>
+            <led    param="level10" attach-x="10" attach-y="1" mode="6"/>
+            <vscale param="volume10" attach-x="10" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod10"    attach-x="10" attach-y="3" size="1"/>
+            <knob   param="noise10"  attach-x="10" attach-y="4" size="1"/>
             <knob   param="pan10"    attach-x="10" attach-y="5" type="1" size="1"/>
             <toggle param="solo10"   attach-x="10" attach-y="6" size="0"/>
             <label  text="10"        attach-x="10" attach-y="7"/>
             <led    param="active11" attach-x="11" attach-y="0" mode="7"/>
-            <vscale param="volume11" attach-x="11" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod11"    attach-x="11" attach-y="2" size="1"/>
-            <knob   param="noise11"  attach-x="11" attach-y="3" size="1"/>
+            <led    param="level11" attach-x="11" attach-y="1" mode="6"/>
+            <vscale param="volume11" attach-x="11" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod11"    attach-x="11" attach-y="3" size="1"/>
+            <knob   param="noise11"  attach-x="11" attach-y="4" size="1"/>
             <knob   param="pan11"    attach-x="11" attach-y="5" type="1" size="1"/>
             <toggle param="solo11"   attach-x="11" attach-y="6" size="0"/>
             <label  text="11"        attach-x="11" attach-y="7"/>
             <led    param="active12" attach-x="12" attach-y="0" mode="7"/>
-            <vscale param="volume12" attach-x="12" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod12"    attach-x="12" attach-y="2" size="1"/>
-            <knob   param="noise12"  attach-x="12" attach-y="3" size="1"/>
+            <led    param="level12" attach-x="12" attach-y="1" mode="6"/>
+            <vscale param="volume12" attach-x="12" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod12"    attach-x="12" attach-y="3" size="1"/>
+            <knob   param="noise12"  attach-x="12" attach-y="4" size="1"/>
             <knob   param="pan12"    attach-x="12" attach-y="5" type="1" size="1"/>
             <toggle param="solo12"   attach-x="12" attach-y="6" size="0"/>
             <label  text="12"        attach-x="12" attach-y="7"/>
             <led    param="active13" attach-x="13" attach-y="0" mode="7"/>
-            <vscale param="volume13" attach-x="13" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod13"    attach-x="13" attach-y="2" size="1"/>
-            <knob   param="noise13"  attach-x="13" attach-y="3" size="1"/>
+            <led    param="level13" attach-x="13" attach-y="1" mode="6"/>
+            <vscale param="volume13" attach-x="13" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod13"    attach-x="13" attach-y="3" size="1"/>
+            <knob   param="noise13"  attach-x="13" attach-y="4" size="1"/>
             <knob   param="pan13"    attach-x="13" attach-y="5" type="1" size="1"/>
             <toggle param="solo13"   attach-x="13" attach-y="6" size="0"/>
             <label  text="13"        attach-x="13" attach-y="7"/>
             <led    param="active14" attach-x="14" attach-y="0" mode="7"/>
-            <vscale param="volume14" attach-x="14" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod14"    attach-x="14" attach-y="2" size="1"/>
-            <knob   param="noise14"  attach-x="14" attach-y="3" size="1"/>
+            <led    param="level14" attach-x="14" attach-y="1" mode="6"/>
+            <vscale param="volume14" attach-x="14" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod14"    attach-x="14" attach-y="3" size="1"/>
+            <knob   param="noise14"  attach-x="14" attach-y="4" size="1"/>
             <knob   param="pan14"    attach-x="14" attach-y="5" type="1" size="1"/>
             <toggle param="solo14"   attach-x="14" attach-y="6" size="0"/>
             <label  text="14"        attach-x="14" attach-y="7"/>
             <led    param="active15" attach-x="15" attach-y="0" mode="7"/>
-            <vscale param="volume15" attach-x="15" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod15"    attach-x="15" attach-y="2" size="1"/>
-            <knob   param="noise15"  attach-x="15" attach-y="3" size="1"/>
+            <led    param="level15" attach-x="15" attach-y="1" mode="6"/>
+            <vscale param="volume15" attach-x="15" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod15"    attach-x="15" attach-y="3" size="1"/>
+            <knob   param="noise15"  attach-x="15" attach-y="4" size="1"/>
             <knob   param="pan15"    attach-x="15" attach-y="5" type="1" size="1"/>
             <toggle param="solo15"   attach-x="15" attach-y="6" size="0"/>
             <label  text="15"        attach-x="15" attach-y="7"/>
             <led    param="active16" attach-x="16" attach-y="0" mode="7"/>
-            <vscale param="volume16" attach-x="16" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod16"    attach-x="16" attach-y="2" size="1"/>
-            <knob   param="noise16"  attach-x="16" attach-y="3" size="1"/>
+            <led    param="level16" attach-x="16" attach-y="1" mode="6"/>
+            <vscale param="volume16" attach-x="16" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod16"    attach-x="16" attach-y="3" size="1"/>
+            <knob   param="noise16"  attach-x="16" attach-y="4" size="1"/>
             <knob   param="pan16"    attach-x="16" attach-y="5" type="1" size="1"/>
             <toggle param="solo16"   attach-x="16" attach-y="6" size="0"/>
             <label  text="16"        attach-x="16" attach-y="7"/>
             <led    param="active17" attach-x="17" attach-y="0" mode="7"/>
-            <vscale param="volume17" attach-x="17" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod17"    attach-x="17" attach-y="2" size="1"/>
-            <knob   param="noise17"  attach-x="17" attach-y="3" size="1"/>
+            <led    param="level17" attach-x="17" attach-y="1" mode="6"/>
+            <vscale param="volume17" attach-x="17" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod17"    attach-x="17" attach-y="3" size="1"/>
+            <knob   param="noise17"  attach-x="17" attach-y="4" size="1"/>
             <knob   param="pan17"    attach-x="17" attach-y="5" type="1" size="1"/>
             <toggle param="solo17"   attach-x="17" attach-y="6" size="0"/>
             <label  text="17"        attach-x="17" attach-y="7"/>
             <led    param="active18" attach-x="18" attach-y="0" mode="7"/>
-            <vscale param="volume18" attach-x="18" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod18"    attach-x="18" attach-y="2" size="1"/>
-            <knob   param="noise18"  attach-x="18" attach-y="3" size="1"/>
+            <led    param="level18" attach-x="18" attach-y="1" mode="6"/>
+            <vscale param="volume18" attach-x="18" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod18"    attach-x="18" attach-y="3" size="1"/>
+            <knob   param="noise18"  attach-x="18" attach-y="4" size="1"/>
             <knob   param="pan18"    attach-x="18" attach-y="5" type="1" size="1"/>
             <toggle param="solo18"   attach-x="18" attach-y="6" size="0"/>
             <label  text="18"        attach-x="18" attach-y="7"/>
             <led    param="active19" attach-x="19" attach-y="0" mode="7"/>
-            <vscale param="volume19" attach-x="19" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod19"    attach-x="19" attach-y="2" size="1"/>
-            <knob   param="noise19"  attach-x="19" attach-y="3" size="1"/>
+            <led    param="level19" attach-x="19" attach-y="1" mode="6"/>
+            <vscale param="volume19" attach-x="19" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod19"    attach-x="19" attach-y="3" size="1"/>
+            <knob   param="noise19"  attach-x="19" attach-y="4" size="1"/>
             <knob   param="pan19"    attach-x="19" attach-y="5" type="1" size="1"/>
             <toggle param="solo19"   attach-x="19" attach-y="6" size="0"/>
             <label  text="19"        attach-x="19" attach-y="7"/>
             <led    param="active20" attach-x="20" attach-y="0" mode="7"/>
-            <vscale param="volume20" attach-x="20" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod20"    attach-x="20" attach-y="2" size="1"/>
-            <knob   param="noise20"  attach-x="20" attach-y="3" size="1"/>
+            <led    param="level20" attach-x="20" attach-y="1" mode="6"/>
+            <vscale param="volume20" attach-x="20" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod20"    attach-x="20" attach-y="3" size="1"/>
+            <knob   param="noise20"  attach-x="20" attach-y="4" size="1"/>
             <knob   param="pan20"    attach-x="20" attach-y="5" type="1" size="1"/>
             <toggle param="solo20"   attach-x="20" attach-y="6" size="0"/>
             <label  text="20"        attach-x="20" attach-y="7"/>
             <led    param="active21" attach-x="21" attach-y="0" mode="7"/>
-            <vscale param="volume21" attach-x="21" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod21"    attach-x="21" attach-y="2" size="1"/>
-            <knob   param="noise21"  attach-x="21" attach-y="3" size="1"/>
+            <led    param="level21" attach-x="21" attach-y="1" mode="6"/>
+            <vscale param="volume21" attach-x="21" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod21"    attach-x="21" attach-y="3" size="1"/>
+            <knob   param="noise21"  attach-x="21" attach-y="4" size="1"/>
             <knob   param="pan21"    attach-x="21" attach-y="5" type="1" size="1"/>
             <toggle param="solo21"   attach-x="21" attach-y="6" size="0"/>
             <label  text="21"        attach-x="21" attach-y="7"/>
             <led    param="active22" attach-x="22" attach-y="0" mode="7"/>
-            <vscale param="volume22" attach-x="22" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod22"    attach-x="22" attach-y="2" size="1"/>
-            <knob   param="noise22"  attach-x="22" attach-y="3" size="1"/>
+            <led    param="level22" attach-x="22" attach-y="1" mode="6"/>
+            <vscale param="volume22" attach-x="22" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod22"    attach-x="22" attach-y="3" size="1"/>
+            <knob   param="noise22"  attach-x="22" attach-y="4" size="1"/>
             <knob   param="pan22"    attach-x="22" attach-y="5" type="1" size="1"/>
             <toggle param="solo22"   attach-x="22" attach-y="6" size="0"/>
             <label  text="22"        attach-x="22" attach-y="7"/>
             <led    param="active23" attach-x="23" attach-y="0" mode="7"/>
-            <vscale param="volume23" attach-x="23" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod23"    attach-x="23" attach-y="2" size="1"/>
-            <knob   param="noise23"  attach-x="23" attach-y="3" size="1"/>
+            <led    param="level23" attach-x="23" attach-y="1" mode="6"/>
+            <vscale param="volume23" attach-x="23" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod23"    attach-x="23" attach-y="3" size="1"/>
+            <knob   param="noise23"  attach-x="23" attach-y="4" size="1"/>
             <knob   param="pan23"    attach-x="23" attach-y="5" type="1" size="1"/>
             <toggle param="solo23"   attach-x="23" attach-y="6" size="0"/>
             <label  text="23"        attach-x="23" attach-y="7"/>
             <led    param="active24" attach-x="24" attach-y="0" mode="7"/>
-            <vscale param="volume24" attach-x="24" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod24"    attach-x="24" attach-y="2" size="1"/>
-            <knob   param="noise24"  attach-x="24" attach-y="3" size="1"/>
+            <led    param="level24" attach-x="24" attach-y="1" mode="6"/>
+            <vscale param="volume24" attach-x="24" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod24"    attach-x="24" attach-y="3" size="1"/>
+            <knob   param="noise24"  attach-x="24" attach-y="4" size="1"/>
             <knob   param="pan24"    attach-x="24" attach-y="5" type="1" size="1"/>
             <toggle param="solo24"   attach-x="24" attach-y="6" size="0"/>
             <label  text="24"        attach-x="24" attach-y="7"/>
             <led    param="active25" attach-x="25" attach-y="0" mode="7"/>
-            <vscale param="volume25" attach-x="25" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod25"    attach-x="25" attach-y="2" size="1"/>
-            <knob   param="noise25"  attach-x="25" attach-y="3" size="1"/>
+            <led    param="level25" attach-x="25" attach-y="1" mode="6"/>
+            <vscale param="volume25" attach-x="25" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod25"    attach-x="25" attach-y="3" size="1"/>
+            <knob   param="noise25"  attach-x="25" attach-y="4" size="1"/>
             <knob   param="pan25"    attach-x="25" attach-y="5" type="1" size="1"/>
             <toggle param="solo25"   attach-x="25" attach-y="6" size="0"/>
             <label  text="25"        attach-x="25" attach-y="7"/>
             <led    param="active26" attach-x="26" attach-y="0" mode="7"/>
-            <vscale param="volume26" attach-x="26" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod26"    attach-x="26" attach-y="2" size="1"/>
-            <knob   param="noise26"  attach-x="26" attach-y="3" size="1"/>
+            <led    param="level26" attach-x="26" attach-y="1" mode="6"/>
+            <vscale param="volume26" attach-x="26" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod26"    attach-x="26" attach-y="3" size="1"/>
+            <knob   param="noise26"  attach-x="26" attach-y="4" size="1"/>
             <knob   param="pan26"    attach-x="26" attach-y="5" type="1" size="1"/>
             <toggle param="solo26"   attach-x="26" attach-y="6" size="0"/>
             <label  text="26"        attach-x="26" attach-y="7"/>
             <led    param="active27" attach-x="27" attach-y="0" mode="7"/>
-            <vscale param="volume27" attach-x="27" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod27"    attach-x="27" attach-y="2" size="1"/>
-            <knob   param="noise27"  attach-x="27" attach-y="3" size="1"/>
+            <led    param="level27" attach-x="27" attach-y="1" mode="6"/>
+            <vscale param="volume27" attach-x="27" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod27"    attach-x="27" attach-y="3" size="1"/>
+            <knob   param="noise27"  attach-x="27" attach-y="4" size="1"/>
             <knob   param="pan27"    attach-x="27" attach-y="5" type="1" size="1"/>
             <toggle param="solo27"   attach-x="27" attach-y="6" size="0"/>
             <label  text="27"        attach-x="27" attach-y="7"/>
             <led    param="active28" attach-x="28" attach-y="0" mode="7"/>
-            <vscale param="volume28" attach-x="28" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod28"    attach-x="28" attach-y="2" size="1"/>
-            <knob   param="noise28"  attach-x="28" attach-y="3" size="1"/>
+            <led    param="level28" attach-x="28" attach-y="1" mode="6"/>
+            <vscale param="volume28" attach-x="28" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod28"    attach-x="28" attach-y="3" size="1"/>
+            <knob   param="noise28"  attach-x="28" attach-y="4" size="1"/>
             <knob   param="pan28"    attach-x="28" attach-y="5" type="1" size="1"/>
             <toggle param="solo28"   attach-x="28" attach-y="6" size="0"/>
             <label  text="28"        attach-x="28" attach-y="7"/>
             <led    param="active29" attach-x="29" attach-y="0" mode="7"/>
-            <vscale param="volume29" attach-x="29" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod29"    attach-x="29" attach-y="2" size="1"/>
-            <knob   param="noise29"  attach-x="29" attach-y="3" size="1"/>
+            <led    param="level29" attach-x="29" attach-y="1" mode="6"/>
+            <vscale param="volume29" attach-x="29" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod29"    attach-x="29" attach-y="3" size="1"/>
+            <knob   param="noise29"  attach-x="29" attach-y="4" size="1"/>
             <knob   param="pan29"    attach-x="29" attach-y="5" type="1" size="1"/>
             <toggle param="solo29"   attach-x="29" attach-y="6" size="0"/>
             <label  text="29"        attach-x="29" attach-y="7"/>
             <led    param="active30" attach-x="30" attach-y="0" mode="7"/>
-            <vscale param="volume30" attach-x="30" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod30"    attach-x="30" attach-y="2" size="1"/>
-            <knob   param="noise30"  attach-x="30" attach-y="3" size="1"/>
+            <led    param="level30" attach-x="30" attach-y="1" mode="6"/>
+            <vscale param="volume30" attach-x="30" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod30"    attach-x="30" attach-y="3" size="1"/>
+            <knob   param="noise30"  attach-x="30" attach-y="4" size="1"/>
             <knob   param="pan30"    attach-x="30" attach-y="5" type="1" size="1"/>
             <toggle param="solo30"   attach-x="30" attach-y="6" size="0"/>
             <label  text="30"        attach-x="30" attach-y="7"/>
             <led    param="active31" attach-x="31" attach-y="0" mode="7"/>
-            <vscale param="volume31" attach-x="31" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod31"    attach-x="31" attach-y="2" size="1"/>
-            <knob   param="noise31"  attach-x="31" attach-y="3" size="1"/>
+            <led    param="level31" attach-x="31" attach-y="1" mode="6"/>
+            <vscale param="volume31" attach-x="31" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod31"    attach-x="31" attach-y="3" size="1"/>
+            <knob   param="noise31"  attach-x="31" attach-y="4" size="1"/>
             <knob   param="pan31"    attach-x="31" attach-y="5" type="1" size="1"/>
             <toggle param="solo31"   attach-x="31" attach-y="6" size="0"/>
             <label  text="31"        attach-x="31" attach-y="7"/>
             <led    param="active32" attach-x="32" attach-y="0" mode="7"/>
-            <vscale param="volume32" attach-x="32" attach-y="1" inverted="1" size="1" height="160"/>
-            <knob   param="mod32"    attach-x="32" attach-y="2" size="1"/>
-            <knob   param="noise32"  attach-x="32" attach-y="3" size="1"/>
+            <led    param="level32" attach-x="32" attach-y="1" mode="6"/>
+            <vscale param="volume32" attach-x="32" attach-y="2" inverted="1" size="1" height="160"/>
+            <knob   param="mod32"    attach-x="32" attach-y="3" size="1"/>
+            <knob   param="noise32"  attach-x="32" attach-y="4" size="1"/>
             <knob   param="pan32"    attach-x="32" attach-y="5" type="1" size="1"/>
             <toggle param="solo32"   attach-x="32" attach-y="6" size="0"/>
             <label  text="32"        attach-x="32" attach-y="7"/>
