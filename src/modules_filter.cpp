@@ -900,31 +900,44 @@ void vocoder_audio_module::params_changed()
     if (bands != bands_old or order != order_old) {
         bands_old = bands;
         order_old = order;
-        for (int i = 0; i < 32; i++) {
-            // set active LED
-            *params[param_active0 + i * band_params] = i < bands ? 1 : 0;
-            if(i < bands) {
-                // set all actually used filters
-                detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), pow(1, 1.0 / order), (double)srate);
-                for (int j = 0; j < order; j++) {
-                    if (j)
-                        detector[0][j][i].copy_coeffs(detector[0][0][i]);
-                    detector[1][j][i].copy_coeffs(detector[0][0][i]);
-                    modulator[0][j][i].copy_coeffs(detector[0][0][i]);
-                    modulator[1][j][i].copy_coeffs(detector[0][0][i]);
-                }
+        for (int i = 0; i < bands; i++) {
+            // set all actually used filters
+            detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), pow(1, 1.0 / order), (double)srate);
+            for (int j = 0; j < order; j++) {
+                if (j)
+                    detector[0][j][i].copy_coeffs(detector[0][0][i]);
+                detector[1][j][i].copy_coeffs(detector[0][0][i]);
+                modulator[0][j][i].copy_coeffs(detector[0][0][i]);
+                modulator[1][j][i].copy_coeffs(detector[0][0][i]);
             }
         }
     }
-    //void analyzer::set_params(float resolution, float offset, int accuracy, int hold, int smoothing, int mode, int scale, int post, int speed, int windowing, int view, int freeze)
+    set_leds();
     _analyzer.set_params(256, 1, 6, 0, 1, 0, 0, 0, 15, 2, 0, 0);
     redraw_graph = true;
+}
+
+int vocoder_audio_module::get_solo() {
+    int solo = 0;
+    for (int i = 0; i < bands; i++)
+        solo += *params[param_solo0 + i * band_params] ? 1 : 0;
+    return solo;
+}
+void vocoder_audio_module::set_leds() {
+    int solo = get_solo();
+    for (int i = 0; i < 32; i++) {
+        float l = 0;
+        if (i < bands)
+            l = (!*params[param_solo0 + i * band_params] and solo) ? 1 : 0.5;
+        *params[param_active0 + i * band_params] = l;
+    }
 }
 
 uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     uint32_t orig_numsamples = numsamples;
     bool bypass = *params[param_bypass] > 0.f;
+    int solo = get_solo();
     numsamples += offset;
     if(bypass) {
         // everything bypassed
@@ -970,43 +983,44 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 double cL_ = cL + nL * *params[param_noise0 + i * band_params];
                 double cR_ = cR + nR * *params[param_noise0 + i * band_params];
                 
-                for (int j = 0; j < order; j++) {
-                    // filter modulator
-                    if (*params[param_link] > 0.5) {
-                        mL_ = detector[0][j][i].process(std::max(mL_, mR_));
-                        mR_ = mL_;
-                    } else {
-                        mL_ = detector[0][j][i].process(mL_);
-                        mR_ = detector[1][j][i].process(mR_);
+                if ((solo and *params[param_solo0 + i * band_params]) or !solo) {
+                    for (int j = 0; j < order; j++) {
+                        // filter modulator
+                        if (*params[param_link] > 0.5) {
+                            mL_ = detector[0][j][i].process(std::max(mL_, mR_));
+                            mR_ = mL_;
+                        } else {
+                            mL_ = detector[0][j][i].process(mL_);
+                            mR_ = detector[1][j][i].process(mR_);
+                        }
+                        // filter carrier with noise
+                        cL_ = modulator[0][j][i].process(cL_);
+                        cR_ = modulator[1][j][i].process(cR_);
                     }
-                    // filter carrier with noise
-                    cL_ = modulator[0][j][i].process(cL_);
-                    cR_ = modulator[1][j][i].process(cR_);
+                    // level by envelope with levelling
+                    cL_ *= env_mods[0][i] * proc_coeff[0];
+                    cR_ *= env_mods[1][i] * proc_coeff[1];
+                    
+                    // add band volume setting
+                    cL_ *= *params[param_volume0 + i * band_params];
+                    cR_ *= *params[param_volume0 + i * band_params];
+                    
+                    // add filtered modulator
+                    cL_ += mL_ * *params[param_mod0 + i * band_params];
+                    cR_ += mR_ * *params[param_mod0 + i * band_params];
+                    
+                    // Balance
+                    cL_ *= *params[param_pan0] > 0 ? -*params[param_pan0] + 1 : 1;
+                    cR_ *= *params[param_pan0] < 0 ? *params[param_pan0] + 1 : 1;
+                    
+                    // add to outputs with proc level
+                    pL += cL_ * *params[param_proc];
+                    pR += cR_ * *params[param_proc];
+                    
+                    // calc proc_coeff
+                    ccL += (env_carriers[0][i] * env_mods[0][i]);
+                    ccR += (env_carriers[1][i] * env_mods[1][i]);
                 }
-                // level by envelope with levelling
-                cL_ *= env_mods[0][i] * proc_coeff[0];
-                cR_ *= env_mods[1][i] * proc_coeff[1];
-                
-                // add band volume setting
-                cL_ *= *params[param_volume0 + i * band_params];
-                cR_ *= *params[param_volume0 + i * band_params];
-                
-                // add filtered modulator
-                cL_ += mL_ * *params[param_mod0 + i * band_params];
-                cR_ += mR_ * *params[param_mod0 + i * band_params];
-                
-                // Balance
-                cL_ *= *params[param_pan0] > 0 ? -*params[param_pan0] + 1 : 1;
-                cR_ *= *params[param_pan0] < 0 ? *params[param_pan0] + 1 : 1;
-                
-                // add to outputs with proc level
-                pL += cL_ * *params[param_proc];
-                pR += cR_ * *params[param_proc];
-                
-                // calc proc_coeff
-                ccL += (env_carriers[0][i] * env_mods[0][i]);
-                ccR += (env_carriers[1][i] * env_mods[1][i]);
-                
                 // advance envelopes
                 env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
                 env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
