@@ -353,7 +353,7 @@ public:
     bool is_active;
     static const int maxorder = 8;
     dsp::biquad_d2 detector[2][maxorder][32], modulator[2][maxorder][32];
-    double envelope[2][32];
+    double env_mods[2][32];
     vumeters meters;
     analyzer _analyzer;
     double attack, release, fcoeff;
@@ -361,6 +361,8 @@ public:
     void activate();
     void deactivate();
     void params_changed();
+    void set_leds();
+    int get_solo() const;
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
