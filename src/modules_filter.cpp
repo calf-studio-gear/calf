@@ -1092,6 +1092,8 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
         if (solo and !*params[param_solo0 + subindex * band_params])
             context->set_source_rgba(0,0,0,0.15);
         context->set_line_width(0.99);
+        int drawn = 0;
+        double fq = pow(10, fcoeff + (0.5f + (float)subindex) * 3.f / (float)bands);
         for (int i = 0; i < points; i++) {
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             float level = 1;
@@ -1099,6 +1101,12 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
                 level *= detector[0][0][subindex].freq_gain(freq, srate);
             level *= *params[param_volume0 + subindex * band_params];
             data[i] = dB_grid(level, 256, 0.4);
+            if (!drawn and freq > fq) {
+                drawn = 1;
+                char str[2];
+                sprintf(str, "%d", subindex + 1);
+                draw_cairo_label(context, str, i, context->size_y * (1 - (data[i] + 1) / 2.f), 0, 0, 0.5);
+            }
         }
     }
     return true;

@@ -155,6 +155,7 @@ struct cairo_iface
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
     virtual void set_line_width(float width) = 0;
     virtual void set_dash(const double *dash, int length) = 0;
+    virtual void draw_label(const char *label, float x, float y, int pos, float margin, float align) = 0;
     virtual ~cairo_iface() {}
 };
 
@@ -165,6 +166,30 @@ public:
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) { cairo_set_source_rgba(context, r, g, b, a); }
     virtual void set_line_width(float width) { cairo_set_line_width(context, width); }
     virtual void set_dash(const double *dash, int length) { cairo_set_dash(context, dash, length, 0); }
+    virtual void draw_label(const char *label, float x, float y, int pos, float margin, float align) {
+        cairo_text_extents_t extents;
+        cairo_text_extents(context, label, &extents);
+        switch(pos) {
+            case 0:
+            default:
+                // top
+                cairo_move_to(context, x - extents.width / 2, y - margin);
+                break;
+            case 1:
+                // right
+                cairo_move_to(context, x + margin, y + 2);
+                break;
+            case 2:
+                // bottom
+                cairo_move_to(context, x - extents.width / 2, y + margin + extents.height);
+                break;
+            case 3:
+                // left
+                cairo_move_to(context, x - margin - extents.width, y + 2);
+                break;
+        }
+        cairo_show_text(context, label);
+    }
 };
 
 struct progress_report_iface
@@ -785,6 +810,7 @@ public:
 /// set drawing color based on channel index (0 or 1)
 void set_channel_color(cairo_iface *context, int channel, float alpha = 0.6);
 void set_channel_dash(cairo_iface *context, int channel);
+void draw_cairo_label(cairo_iface *context, const char *label, float x, float y, int pos, float margin, float align);
 
 struct preset_access_iface
 {
