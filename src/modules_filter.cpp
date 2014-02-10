@@ -970,12 +970,6 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 double cL_ = cL + nL * *params[param_noise0 + i * band_params];
                 double cR_ = cR + nR * *params[param_noise0 + i * band_params];
                 
-                // advance envelopes
-                env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
-                env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
-                env_carriers[0][i] = (fabs(cL_) > env_carriers[0][i] ? attack : release) * (env_carriers[0][i] - fabs(cL_)) + fabs(cL_);
-                env_carriers[1][i] = (fabs(cR_) > env_carriers[1][i] ? attack : release) * (env_carriers[1][i] - fabs(cR_)) + fabs(cR_);
-                
                 for (int j = 0; j < order; j++) {
                     // filter modulator
                     if (*params[param_link] > 0.5) {
@@ -1012,6 +1006,13 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 // calc proc_coeff
                 ccL += (env_carriers[0][i] * env_mods[0][i]);
                 ccR += (env_carriers[1][i] * env_mods[1][i]);
+                
+                // advance envelopes
+                env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
+                env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
+                env_carriers[0][i] = (fabs(cL_) > env_carriers[0][i] ? attack : release) * (env_carriers[0][i] - fabs(cL_)) + fabs(cL_);
+                env_carriers[1][i] = (fabs(cR_) > env_carriers[1][i] ? attack : release) * (env_carriers[1][i] - fabs(cR_)) + fabs(cR_);
+                
             }
             
             proc_coeff[0] = ccL ? env_mod[0] * env_carrier[0] / ccL : 1;
