@@ -1010,8 +1010,10 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     cR_ += mR_ * *params[param_mod0 + i * band_params];
                     
                     // Balance
-                    cL_ *= *params[param_pan0] > 0 ? -*params[param_pan0] + 1 : 1;
-                    cR_ *= *params[param_pan0] < 0 ? *params[param_pan0] + 1 : 1;
+                    cL_ *= (*params[param_pan0 + i * band_params] > 0
+                         ? -*params[param_pan0 + i * band_params] + 1 : 1);
+                    cR_ *= (*params[param_pan0 + i * band_params] < 0
+                          ? *params[param_pan0 + i * band_params] + 1 : 1);
                     
                     // add to outputs with proc level
                     pL += cL_ * *params[param_proc];
