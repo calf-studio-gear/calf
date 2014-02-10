@@ -105,8 +105,8 @@
             <label text="Level" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
             <label text="Dry" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
             <label text="Noise" attach-x="0" attach-y="3" attach-h="2" expand-x="0"/>
-            <label text="Solo" attach-x="0" attach-y="5" attach-h="1" expand-x="0"/>
-            <label text="Bal" attach-x="0" attach-y="6" attach-h="1" expand-x="0"/>
+            <label text="Bal" attach-x="0" attach-y="5" attach-h="1" expand-x="0"/>
+            <label text="Solo" attach-x="0" attach-y="6" attach-h="1" expand-x="0"/>
             <label text="#" attach-x="0" attach-y="7"/>
             <led    param="active1" attach-x="1" attach-y="0"/>
             <vscale param="volume1" attach-x="1" attach-y="1" inverted="1" size="1" height="160"/>
