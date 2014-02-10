@@ -67,6 +67,7 @@ $(document).ready(function () {
                 ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.jpg"],
                 ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.jpg"],
                 ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.jpg"],
+                ["(Vocoder)", "Vocoder.html", "images/Calf - Vocoder.jpg"],
             ],
             "icons/filters.png"
         ],
