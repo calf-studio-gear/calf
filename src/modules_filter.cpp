@@ -917,7 +917,7 @@ void vocoder_audio_module::params_changed()
     redraw_graph = true;
 }
 
-int vocoder_audio_module::get_solo() {
+int vocoder_audio_module::get_solo() const {
     int solo = 0;
     for (int i = 0; i < bands; i++)
         solo += *params[param_solo0 + i * band_params] ? 1 : 0;
@@ -929,6 +929,8 @@ void vocoder_audio_module::set_leds() {
         float l = 0;
         if (i < bands)
             l = (!*params[param_solo0 + i * band_params] and solo) ? 1 : 0.5;
+        if (*params[param_active0 + i * band_params] != l)
+            redraw_graph = true;
         *params[param_active0 + i * band_params] = l;
     }
 }
@@ -1108,16 +1110,18 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
         if (subindex >= bands) {
             redraw_graph = false;
             return false;
-        } else {
-            context->set_line_width(0.99);
-            for (int i = 0; i < points; i++) {
-                double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-                float level = 1;
-                for (int j = 0; j < order; j++)
-                    level *= detector[0][0][subindex].freq_gain(freq, srate);
-                level *= *params[param_volume0 + subindex * band_params];
-                data[i] = dB_grid(level, 256, 0.4);
-            }
+        }
+        int solo = get_solo();
+        if (solo and !*params[param_solo0 + subindex * band_params])
+            context->set_source_rgba(0,0,0,0.15);
+        context->set_line_width(0.99);
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            float level = 1;
+            for (int j = 0; j < order; j++)
+                level *= detector[0][0][subindex].freq_gain(freq, srate);
+            level *= *params[param_volume0 + subindex * band_params];
+            data[i] = dB_grid(level, 256, 0.4);
         }
     }
     return true;

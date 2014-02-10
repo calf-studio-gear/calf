@@ -362,7 +362,7 @@ public:
     void deactivate();
     void params_changed();
     void set_leds();
-    int get_solo();
+    int get_solo() const;
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;
