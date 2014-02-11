@@ -1108,7 +1108,7 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
             data[i] = dB_grid(level, 256, 0.4);
             if (!drawn and freq > fq) {
                 drawn = 1;
-                char str[2];
+                char str[32];
                 sprintf(str, "%d", subindex + 1);
                 draw_cairo_label(context, str, i, context->size_y * (1 - (data[i] + 1) / 2.f), 0, 0, 0.5);
             }
