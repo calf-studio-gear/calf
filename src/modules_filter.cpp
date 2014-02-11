@@ -1008,8 +1008,9 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     pL += cL_ * *params[param_proc];
                     pR += cR_ * *params[param_proc];
                     
+                    // LED
                     float val = std::max(0.0, 1 + log(((env_mods[0][i] + env_mods[1][i]) / 2) * order * 4) / log(2) / 10);
-                    *params[param_level0 + i * band_params] = val;
+                    *params[param_level0 + i * band_params] = *params[param_detectors] > 0.5 ? val : 0;
                 }
                 // advance envelopes
                 env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);

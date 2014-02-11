@@ -420,7 +420,7 @@ struct xover4_metadata: public plugin_metadata<xover4_metadata>
 struct vocoder_metadata: public plugin_metadata<vocoder_metadata>
 {
     enum { in_count = 4, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_link,
+    enum { param_bypass, param_link, param_detectors,
            param_carrier_in, param_carrier_inL, param_carrier_inR, param_carrier_clip_inL, param_carrier_clip_inR,
            param_mod_in, param_mod_inL, param_mod_inR, param_mod_clip_inL, param_mod_clip_inR,
            param_out, param_outL, param_outR, param_clip_outL, param_clip_outR,

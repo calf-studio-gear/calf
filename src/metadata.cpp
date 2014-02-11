@@ -818,6 +818,7 @@ CALF_PORT_NAMES(vocoder) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(vocoder) = {
     { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 1,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "link", "Link" },
+    { 1,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "detectors", "Detectors" },
     
     { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "carrier_in", "Carrier In" },
     { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "carrier_inL", "Carrier In L" },

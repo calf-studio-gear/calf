@@ -92,7 +92,7 @@
         <frame label="Filters" expand="1" fill="1">
             <vbox expand="1" fill="1">
                 <if cond="directlink">
-                    <line-graph refresh="1" width="600" height="100" param="bypass" expand="1" fill="1" shrink="1" crosshairs="1"/>
+                    <line-graph refresh="1" width="594" height="100" param="bypass" expand="1" fill="1" shrink="1" crosshairs="1"/>
                 </if>
             </vbox>
         </frame>
@@ -100,7 +100,7 @@
     
     
     <hbox>
-        <table rows="8" cols="33" spacing-x="0" spacing-y="0">
+        <table rows="8" cols="34" spacing-x="0" spacing-y="0">
             <label text="Active" attach-x="0" attach-y="0" expand-x="0"/>
              <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
             <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
@@ -365,6 +365,14 @@
             <knob   param="pan32"    attach-x="32" attach-y="5" type="1" size="1"/>
             <toggle param="solo32"   attach-x="32" attach-y="6" size="0"/>
             <label  text="32"        attach-x="32" attach-y="7"/>
+            <label text="Active" attach-x="33" attach-y="0" expand-x="0"/>
+            <toggle param="detectors"   attach-x="33" attach-y="1" size="0"/>
+            <label text="Level" attach-x="33" attach-y="2" attach-h="1" expand-x="0"/>
+            <label text="Dry" attach-x="33" attach-y="3" attach-h="1" expand-x="0"/>
+            <label text="Noise" attach-x="33" attach-y="4" attach-h="1" expand-x="0"/>
+            <label text="Bal" attach-x="33" attach-y="5" attach-h="1" expand-x="0"/>
+            <label text="Solo" attach-x="33" attach-y="6" attach-h="1" expand-x="0"/>
+            <label text="#" attach-x="33" attach-y="7"/>
         </table>
     </hbox>
 </vbox>
