@@ -872,6 +872,7 @@ vocoder_audio_module::vocoder_audio_module()
     order     = 0;
     order_old = -1;
     fcoeff    = log10(20.f);
+    log2_     = log(2);
     memset(env_mods, 0, 32 * 2 * sizeof(double));
 }
 
@@ -936,6 +937,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     bool bypass = *params[param_bypass] > 0.f;
     int solo = get_solo();
     numsamples += offset;
+    float led[32] = {0};
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
@@ -1007,18 +1009,17 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     // add to outputs with proc level
                     pL += cL_ * *params[param_proc];
                     pR += cR_ * *params[param_proc];
-                    
-                    // LED
-                    float val = std::max(0.0, 1 + log(((env_mods[0][i] + env_mods[1][i]) / 2) * order * 4) / log(2) / 10);
-                    *params[param_level0 + i * band_params] = *params[param_detectors] > 0.5 ? val : 0;
                 }
+                // LED
+                if (*params[param_detectors] > 0.5)
+                    if (env_mods[0][i] + env_mods[1][i] > led[i])
+                        led[i] = env_mods[0][i] + env_mods[1][i];
+                    
                 // advance envelopes
                 env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
                 env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
             }
-            for (int i = bands; i < 32; i ++) {
-                *params[param_level0 + i * band_params] = 0;
-            }
+            
             outL = pL;
             outR = pR;
             
@@ -1073,6 +1074,14 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 modulator[1][j][i].sanitize();
             }
         }
+    }
+    
+    // LED
+    for (int i = 0; i < 32; i++) {
+        float val = 0;
+        if (*params[param_detectors] > 0.5)
+            val = std::max(0.0, 1 + log((led[i] / 2) * order) / log2_ / 10);
+        *params[param_level0 + i * band_params] = val;
     }
     meters.fall(orig_numsamples);
     return outputs_mask;

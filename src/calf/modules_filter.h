@@ -356,7 +356,7 @@ public:
     double env_mods[2][32];
     vumeters meters;
     analyzer _analyzer;
-    double attack, release, fcoeff;
+    double attack, release, fcoeff, log2_;
     vocoder_audio_module();
     void activate();
     void deactivate();

@@ -362,7 +362,7 @@ void calf_plugins::set_channel_dash(cairo_iface *context, int channel)
 
 void calf_plugins::draw_cairo_label(cairo_iface *context, const char *label, float x, float y, int pos, float margin, float align)
 {
-    //context->draw_label(label, x, y, pos, margin, align);
+    context->draw_label(label, x, y, pos, margin, align);
 }
 ////////////////////////////////////////////////////////////////////////
 
