@@ -24,7 +24,7 @@
 #include <assert.h>
 #include <limits.h>
 #include "biquad.h"
-#include "inertia.h"
+#include "bypass.h"
 #include "audio_fx.h"
 #include "giface.h"
 #include "metadata.h"
@@ -45,6 +45,7 @@ private:
     dsp::biquad_d2 lp[2][4], hp[2][4];
     dsp::biquad_d2 p[2];
     dsp::tap_distortion dist[2];
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;

@@ -124,9 +124,9 @@ void saturator_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             if(in_count > 1 && out_count > 1) {
@@ -145,6 +145,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             ++offset;
         }
     } else {
+        uint32_t orig_offset = offset;
         // process
         while(offset < numsamples) {
             // cycle through samples
@@ -240,6 +241,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
         hp[1][3].sanitize();
         p[0].sanitize();
         p[1].sanitize();
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
