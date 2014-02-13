@@ -166,7 +166,8 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
     // this may change as more complex plugins are added
-    if (unit == (PF_UNIT_BPM >> 24))
+    
+    if ((pp.flags & PF_SYNC_BPM))
         ss << ind << "lv2:designation <http://lv2plug.in/ns/ext/time#beatsPerMinute> ;\n";
     
     ss << "    ]";

@@ -119,6 +119,8 @@ vintage_delay_audio_module::vintage_delay_audio_module()
 
 void vintage_delay_audio_module::params_changed()
 {
+    if (*params[par_sync] > 0.5f)
+        *params[par_bpm] = *params[par_bpm_host];
     float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
     deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
     deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);

@@ -73,7 +73,7 @@ struct reverb_metadata: public plugin_metadata<reverb_metadata>
 
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
-    enum { par_bpm, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, par_width, param_count };
+    enum { par_bpm, par_bpm_host, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, par_width, par_sync, param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("vintagedelay", "vintagedelay", "Vintage Delay")
 };
@@ -420,46 +420,46 @@ struct xover4_metadata: public plugin_metadata<xover4_metadata>
 struct vocoder_metadata: public plugin_metadata<vocoder_metadata>
 {
     enum { in_count = 4, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_link,
+    enum { param_bypass, param_link, param_detectors,
            param_carrier_in, param_carrier_inL, param_carrier_inR, param_carrier_clip_inL, param_carrier_clip_inR,
            param_mod_in, param_mod_inL, param_mod_inR, param_mod_clip_inL, param_mod_clip_inR,
            param_out, param_outL, param_outR, param_clip_outL, param_clip_outR,
            param_carrier, param_mod, param_proc, param_bands, param_hiq,
            param_attack, param_release, param_analyzer,
-           param_volume0, param_pan0, param_noise0, param_mod0, param_active0, param_solo0,
-           param_volume1, param_pan1, param_noise1, param_mod1, param_active1, param_solo1,
-           param_volume2, param_pan2, param_noise2, param_mod2, param_active2, param_solo2,
-           param_volume3, param_pan3, param_noise3, param_mod3, param_active3, param_solo3,
-           param_volume4, param_pan4, param_noise4, param_mod4, param_active4, param_solo4,
-           param_volume5, param_pan5, param_noise5, param_mod5, param_active5, param_solo5,
-           param_volume6, param_pan6, param_noise6, param_mod6, param_active6, param_solo6,
-           param_volume7, param_pan7, param_noise7, param_mod7, param_active7, param_solo7,
-           param_volume8, param_pan8, param_noise8, param_mod8, param_active8, param_solo8,
-           param_volume9, param_pan9, param_noise9, param_mod9, param_active9, param_solo9,
-           param_volume10, param_pan10, param_noise10, param_mod10, param_active10, param_solo10,
-           param_volume11, param_pan11, param_noise11, param_mod11, param_active11, param_solo11,
-           param_volume12, param_pan12, param_noise12, param_mod12, param_active12, param_solo12,
-           param_volume13, param_pan13, param_noise13, param_mod13, param_active13, param_solo13,
-           param_volume14, param_pan14, param_noise14, param_mod14, param_active14, param_solo14,
-           param_volume15, param_pan15, param_noise15, param_mod15, param_active15, param_solo15,
-           param_volume16, param_pan16, param_noise16, param_mod16, param_active16, param_solo16,
-           param_volume17, param_pan17, param_noise17, param_mod17, param_active17, param_solo17,
-           param_volume18, param_pan18, param_noise18, param_mod18, param_active18, param_solo18,
-           param_volume19, param_pan19, param_noise19, param_mod19, param_active19, param_solo19,
-           param_volume20, param_pan20, param_noise20, param_mod20, param_active20, param_solo20,
-           param_volume21, param_pan21, param_noise21, param_mod21, param_active21, param_solo21,
-           param_volume22, param_pan22, param_noise22, param_mod22, param_active22, param_solo22,
-           param_volume23, param_pan23, param_noise23, param_mod23, param_active23, param_solo23,
-           param_volume24, param_pan24, param_noise24, param_mod24, param_active24, param_solo24,
-           param_volume25, param_pan25, param_noise25, param_mod25, param_active25, param_solo25,
-           param_volume26, param_pan26, param_noise26, param_mod26, param_active26, param_solo26,
-           param_volume27, param_pan27, param_noise27, param_mod27, param_active27, param_solo27,
-           param_volume28, param_pan28, param_noise28, param_mod28, param_active28, param_solo28,
-           param_volume29, param_pan29, param_noise29, param_mod29, param_active29, param_solo29,
-           param_volume30, param_pan30, param_noise30, param_mod30, param_active30, param_solo30,
-           param_volume31, param_pan31, param_noise31, param_mod31, param_active31, param_solo31,
+           param_volume0, param_pan0, param_noise0, param_mod0, param_active0, param_solo0, param_level0,
+           param_volume1, param_pan1, param_noise1, param_mod1, param_active1, param_solo1, param_level1,
+           param_volume2, param_pan2, param_noise2, param_mod2, param_active2, param_solo2, param_level2,
+           param_volume3, param_pan3, param_noise3, param_mod3, param_active3, param_solo3, param_level3,
+           param_volume4, param_pan4, param_noise4, param_mod4, param_active4, param_solo4, param_level4,
+           param_volume5, param_pan5, param_noise5, param_mod5, param_active5, param_solo5, param_level5,
+           param_volume6, param_pan6, param_noise6, param_mod6, param_active6, param_solo6, param_level6,
+           param_volume7, param_pan7, param_noise7, param_mod7, param_active7, param_solo7, param_level7,
+           param_volume8, param_pan8, param_noise8, param_mod8, param_active8, param_solo8, param_level8,
+           param_volume9, param_pan9, param_noise9, param_mod9, param_active9, param_solo9, param_level9,
+           param_volume10, param_pan10, param_noise10, param_mod10, param_active10, param_solo10, param_level10,
+           param_volume11, param_pan11, param_noise11, param_mod11, param_active11, param_solo11, param_level11,
+           param_volume12, param_pan12, param_noise12, param_mod12, param_active12, param_solo12, param_level12,
+           param_volume13, param_pan13, param_noise13, param_mod13, param_active13, param_solo13, param_level13,
+           param_volume14, param_pan14, param_noise14, param_mod14, param_active14, param_solo14, param_level14,
+           param_volume15, param_pan15, param_noise15, param_mod15, param_active15, param_solo15, param_level15,
+           param_volume16, param_pan16, param_noise16, param_mod16, param_active16, param_solo16, param_level16,
+           param_volume17, param_pan17, param_noise17, param_mod17, param_active17, param_solo17, param_level17,
+           param_volume18, param_pan18, param_noise18, param_mod18, param_active18, param_solo18, param_level18,
+           param_volume19, param_pan19, param_noise19, param_mod19, param_active19, param_solo19, param_level19,
+           param_volume20, param_pan20, param_noise20, param_mod20, param_active20, param_solo20, param_level20,
+           param_volume21, param_pan21, param_noise21, param_mod21, param_active21, param_solo21, param_level21,
+           param_volume22, param_pan22, param_noise22, param_mod22, param_active22, param_solo22, param_level22,
+           param_volume23, param_pan23, param_noise23, param_mod23, param_active23, param_solo23, param_level23,
+           param_volume24, param_pan24, param_noise24, param_mod24, param_active24, param_solo24, param_level24,
+           param_volume25, param_pan25, param_noise25, param_mod25, param_active25, param_solo25, param_level25,
+           param_volume26, param_pan26, param_noise26, param_mod26, param_active26, param_solo26, param_level26,
+           param_volume27, param_pan27, param_noise27, param_mod27, param_active27, param_solo27, param_level27,
+           param_volume28, param_pan28, param_noise28, param_mod28, param_active28, param_solo28, param_level28,
+           param_volume29, param_pan29, param_noise29, param_mod29, param_active29, param_solo29, param_level29,
+           param_volume30, param_pan30, param_noise30, param_mod30, param_active30, param_solo30, param_level30,
+           param_volume31, param_pan31, param_noise31, param_mod31, param_active31, param_solo31, param_level31,
            param_count };
-    enum { band_params = 6 };
+    enum { band_params = 7 };
     PLUGIN_NAME_ID_LABEL("vocoder", "vocoder", "Vocoder")
 };
 

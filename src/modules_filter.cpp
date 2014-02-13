@@ -872,6 +872,7 @@ vocoder_audio_module::vocoder_audio_module()
     order     = 0;
     order_old = -1;
     fcoeff    = log10(20.f);
+    log2_     = log(2);
     memset(env_mods, 0, 32 * 2 * sizeof(double));
 }
 
@@ -913,10 +914,10 @@ void vocoder_audio_module::params_changed()
 }
 
 int vocoder_audio_module::get_solo() const {
-    int solo = 0;
     for (int i = 0; i < bands; i++)
-        solo += *params[param_solo0 + i * band_params] ? 1 : 0;
-    return solo;
+        if (*params[param_solo0 + i * band_params])
+            return 1;
+    return 0;
 }
 void vocoder_audio_module::set_leds() {
     int solo = get_solo();
@@ -936,6 +937,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     bool bypass = *params[param_bypass] > 0.f;
     int solo = get_solo();
     numsamples += offset;
+    float led[32] = {0};
     if(bypass) {
         // everything bypassed
         while(offset < numsamples) {
@@ -1008,11 +1010,16 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                     pL += cL_ * *params[param_proc];
                     pR += cR_ * *params[param_proc];
                 }
+                // LED
+                if (*params[param_detectors] > 0.5)
+                    if (env_mods[0][i] + env_mods[1][i] > led[i])
+                        led[i] = env_mods[0][i] + env_mods[1][i];
+                    
                 // advance envelopes
                 env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
                 env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
             }
-                
+            
             outL = pL;
             outR = pR;
             
@@ -1068,6 +1075,14 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             }
         }
     }
+    
+    // LED
+    for (int i = 0; i < 32; i++) {
+        float val = 0;
+        if (*params[param_detectors] > 0.5)
+            val = std::max(0.0, 1 + log((led[i] / 2) * order) / log2_ / 10);
+        *params[param_level0 + i * band_params] = val;
+    }
     meters.fall(orig_numsamples);
     return outputs_mask;
 }
@@ -1092,6 +1107,8 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
         if (solo and !*params[param_solo0 + subindex * band_params])
             context->set_source_rgba(0,0,0,0.15);
         context->set_line_width(0.99);
+        int drawn = 0;
+        double fq = pow(10, fcoeff + (0.5f + (float)subindex) * 3.f / (float)bands);
         for (int i = 0; i < points; i++) {
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             float level = 1;
@@ -1099,6 +1116,12 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
                 level *= detector[0][0][subindex].freq_gain(freq, srate);
             level *= *params[param_volume0 + subindex * band_params];
             data[i] = dB_grid(level, 256, 0.4);
+            if (!drawn and freq > fq) {
+                drawn = 1;
+                char str[32];
+                sprintf(str, "%d", subindex + 1);
+                draw_cairo_label(context, str, i, context->size_y * (1 - (data[i] + 1) / 2.f), 0, 0, 0.5);
+            }
         }
     }
     return true;

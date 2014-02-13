@@ -12,6 +12,8 @@
                         <label text="Tap"/>
                         <tap param="bpm"/>
                         <label/>
+                        <toggle param="sync"/>
+                        <label param="sync"/>
                     </vbox>
                 </hbox>
                 <label attach-x="1" attach-y="0" param="subdiv" />
