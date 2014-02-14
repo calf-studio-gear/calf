@@ -518,7 +518,22 @@ void simple_lfo::set_params(float f, int m, float o, uint32_t sr, float a)
     srate = sr;
     amount = a;
 }
-
+void simple_lfo::set_freq(float f)
+{
+    freq = f;
+}
+void simple_lfo::set_mode(int m)
+{
+    mode = m;
+}
+void simple_lfo::set_offset(float o)
+{
+    offset = o;
+}
+void simple_lfo::set_amount(float a)
+{
+    amount = a;
+}
 bool simple_lfo::get_graph(float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)

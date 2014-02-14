@@ -478,9 +478,16 @@ struct ringmodulator_metadata: public plugin_metadata<ringmodulator_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
            param_mod_mode, param_mod_freq, param_mod_amount, param_mod_phase, param_mod_detune,
-           param_lfo1_mode, param_lfo1_freq, param_lfo1_amount, param_lfo1_reset,
-           param_lfo2_mode, param_lfo2_freq, param_lfo2_amount, param_lfo2_reset,
-           param_mix, param_count };
+           
+           param_lfo1_mode, param_lfo1_freq, param_lfo1_reset,
+           param_lfo1_mod_freq_lo, param_lfo1_mod_freq_hi, param_lfo1_mod_freq_active,
+           param_lfo1_mod_detune_lo, param_lfo1_mod_detune_hi, param_lfo1_mod_detune_active,
+           
+           param_lfo2_mode, param_lfo2_freq, param_lfo2_reset, 
+           param_lfo2_lfo1_freq_lo, param_lfo2_lfo1_freq_hi, param_lfo2_lfo1_freq_active,
+           param_lfo2_mod_amount_lo, param_lfo2_mod_amount_hi, param_lfo2_mod_amount_active,
+           
+           param_count };
     PLUGIN_NAME_ID_LABEL("ringmodulator", "ringmodulator", "Ring Modulator")
 };
 

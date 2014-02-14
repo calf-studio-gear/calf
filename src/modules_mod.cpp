@@ -770,29 +770,12 @@ void ringmodulator_audio_module::deactivate()
 
 void ringmodulator_audio_module::params_changed()
 {
-    lfo1.set_params(*params[param_lfo1_freq],
-                    *params[param_lfo1_mode],
-                    0,
-                    srate,
-                    *params[param_lfo1_amount]);
-                    
-    lfo2.set_params(*params[param_lfo2_freq],
-                    *params[param_lfo2_mode],
-                    0,
-                    srate,
-                    *params[param_lfo2_amount]);
-                    
+    lfo1.set_params(*params[param_lfo1_freq], *params[param_lfo1_mode], 0, srate, 1);
+    lfo2.set_params(*params[param_lfo2_freq], *params[param_lfo2_mode], 0, srate, 1);
     modL.set_params(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), *params[param_mod_detune] / 2),
-                    *params[param_mod_mode],
-                    0,
-                    srate,
-                    *params[param_mod_amount]);
-                    
+                    *params[param_mod_mode], 0, srate, 1);
     modR.set_params(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), *params[param_mod_detune] / -2),
-                    *params[param_mod_mode],
-                    *params[param_mod_phase],
-                    srate,
-                    *params[param_mod_amount]);
+                    *params[param_mod_mode], *params[param_mod_phase], srate, 1);
     
     clear_reset = false;
     
@@ -839,6 +822,42 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
         // process
         while(offset < samples) {
             // cycle through samples
+            
+            // set oscillators
+            // mod frequency
+            if (*params[param_lfo1_mod_freq_active] > 0.5) {
+                float freq = (*params[param_lfo1_mod_freq_hi]
+                            - *params[param_lfo1_mod_freq_lo])
+                            * ((lfo1.get_value() + 1) / 2.)
+                            + *params[param_lfo1_mod_freq_lo];
+                modL.set_freq(freq);
+                modR.set_freq(freq);
+            }
+            // mod detune
+            if (*params[param_lfo1_mod_detune_active] > 0.5) {
+                float detune = (*params[param_lfo1_mod_detune_hi]
+                              - *params[param_lfo1_mod_detune_lo])
+                              * ((lfo1.get_value() + 1) / 2.)
+                              + *params[param_lfo1_mod_detune_lo];
+                modL.set_freq(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), detune / 2));
+                modR.set_freq(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), detune / -2));
+            }
+            // lfo1 frequency
+            if (*params[param_lfo2_lfo1_freq_active] > 0.5) {
+                lfo1.set_freq((*params[param_lfo2_lfo1_freq_hi]
+                             - *params[param_lfo2_lfo1_freq_lo])
+                             * ((lfo2.get_value() + 1) / 2.)
+                             + *params[param_lfo2_lfo1_freq_lo]);
+            }
+            // mod amount
+            float mod_amount = *params[param_mod_amount];
+            if (*params[param_lfo2_mod_amount_active] > 0.5) {
+                mod_amount *= (*params[param_lfo2_mod_amount_hi]
+                             - *params[param_lfo2_mod_amount_lo])
+                             * ((lfo2.get_value() + 1) / 2.)
+                             + *params[param_lfo2_mod_amount_lo];
+            }
+            
             float outL = 0.f;
             float outR = 0.f;
             float inL = ins[0][offset];
@@ -849,17 +868,14 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             inL *= *params[param_level_in];
             
             // modulator
-            float modulL = modL.get_value();
-            float modulR = modR.get_value();
+            float modulL = modL.get_value() * mod_amount;
+            float modulR = modR.get_value() * mod_amount;
             
             float procL = inL * modulL;
             float procR = inR * modulR;
             
-            //procL *= (lfo1.get_value() * 0.5 + *params[param_amount] / 2);
-            //procR *= (lfo2.get_value() * 0.5 + *params[param_amount] / 2);
-            
-            outL = procL + inL * (1 - *params[param_mod_amount]);
-            outR = procR + inR * (1 - *params[param_mod_amount]);
+            outL = procL + inL * (1 - mod_amount);
+            outR = procR + inR * (1 - mod_amount);
             
             outL *=  *params[param_level_out];
             outR *=  *params[param_level_out];

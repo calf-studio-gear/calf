@@ -525,6 +525,10 @@ private:
 public:
     simple_lfo();
     void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f);
+    void set_freq(float f);
+    void set_mode(int m);
+    void set_amount(float a);
+    void set_offset(float o);
     float get_value();
     void advance(uint32_t count);
     void set_phase(float ph);
