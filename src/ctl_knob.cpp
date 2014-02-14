@@ -184,6 +184,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source_rgba(ctx, col, col, col,0.5);
     cairo_set_line_width(ctx, widths[self->knob_size] / 2.);
     cairo_stroke(ctx);
+    cairo_destroy(ctx);
     
     return TRUE;
 }
