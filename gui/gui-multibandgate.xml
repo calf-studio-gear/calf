@@ -260,7 +260,7 @@
         <frame label="Sub band">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo0"/>
+                    <line-graph refresh="1" width="160" height="160" param="solo0" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass0" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -273,7 +273,7 @@
         <frame label="Low band">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo1"/>
+                    <line-graph refresh="1" width="160" height="160" param="solo1" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass1" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -286,7 +286,7 @@
         <frame label="Mid band">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo2"/>
+                    <line-graph refresh="1" width="160" height="160" param="solo2" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass2" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -299,7 +299,7 @@
         <frame label="High band">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo3"/>
+                    <line-graph refresh="1" width="160" height="160" param="solo3" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass3" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>

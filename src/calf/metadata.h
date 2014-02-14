@@ -472,6 +472,18 @@ struct pulsator_metadata: public plugin_metadata<pulsator_metadata>
     PLUGIN_NAME_ID_LABEL("pulsator", "pulsator", "Pulsator")
 };
 
+/// Markus's Ring Modulator - metadata
+struct ringmodulator_metadata: public plugin_metadata<ringmodulator_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
+           param_mod_mode, param_mod_freq, param_mod_amount, param_mod_phase, param_mod_detune,
+           param_lfo1_mode, param_lfo1_freq, param_lfo1_amount, param_lfo1_reset,
+           param_lfo2_mode, param_lfo2_freq, param_lfo2_amount, param_lfo2_reset,
+           param_mix, param_count };
+    PLUGIN_NAME_ID_LABEL("ringmodulator", "ringmodulator", "Ring Modulator")
+};
+
 /// Markus's Saturator - metadata
 struct saturator_metadata: public plugin_metadata<saturator_metadata>
 {

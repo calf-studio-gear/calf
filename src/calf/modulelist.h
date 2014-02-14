@@ -12,6 +12,7 @@
     PER_MODULE_ITEM(flanger, false, "flanger")
     PER_MODULE_ITEM(pulsator, false, "pulsator")
     PER_MODULE_ITEM(rotary_speaker, false, "rotaryspeaker")
+    PER_MODULE_ITEM(ringmodulator, false, "ringmodulator")
     
     // delay/reverb
     PER_MODULE_ITEM(reverb, false, "reverb")

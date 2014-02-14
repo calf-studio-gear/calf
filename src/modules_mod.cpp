@@ -738,3 +738,182 @@ bool pulsator_audio_module::get_layers(int index, int generation, unsigned int &
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
 }
+
+
+/**********************************************************************
+ * RING MODULATOR by Markus Schmidt
+**********************************************************************/
+
+ringmodulator_audio_module::ringmodulator_audio_module()
+{
+    is_active = false;
+    srate = 0;
+}
+
+void ringmodulator_audio_module::activate()
+{
+    is_active = true;
+    lfo1.activate();
+    lfo2.activate();
+    modL.activate();
+    modR.activate();
+    params_changed();
+}
+void ringmodulator_audio_module::deactivate()
+{
+    is_active = false;
+    lfo1.deactivate();
+    lfo2.deactivate();
+    modL.deactivate();
+    modR.deactivate();
+}
+
+void ringmodulator_audio_module::params_changed()
+{
+    lfo1.set_params(*params[param_lfo1_freq],
+                    *params[param_lfo1_mode],
+                    0,
+                    srate,
+                    *params[param_lfo1_amount]);
+                    
+    lfo2.set_params(*params[param_lfo2_freq],
+                    *params[param_lfo2_mode],
+                    0,
+                    srate,
+                    *params[param_lfo2_amount]);
+                    
+    modL.set_params(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), *params[param_mod_detune] / 2),
+                    *params[param_mod_mode],
+                    0,
+                    srate,
+                    *params[param_mod_amount]);
+                    
+    modR.set_params(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), *params[param_mod_detune] / -2),
+                    *params[param_mod_mode],
+                    *params[param_mod_phase],
+                    srate,
+                    *params[param_mod_amount]);
+    
+    clear_reset = false;
+    
+    if (*params[param_lfo1_reset] >= 0.5) {
+        clear_reset = true;
+        lfo1.set_phase(0.f);
+    }
+    if (*params[param_lfo2_reset] >= 0.5) {
+        clear_reset = true;
+        lfo2.set_phase(0.f);
+    }
+    
+    //redraw_graph = true;
+}
+
+void ringmodulator_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, sr);
+}
+
+uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    uint32_t samples = numsamples + offset;
+    if(bypass) {
+        // everything bypassed
+        while(offset < samples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+        // LFO's should go on
+        lfo1.advance(numsamples);
+        lfo1.advance(numsamples);
+        modL.advance(numsamples);
+        modR.advance(numsamples);
+        
+        float values[] = {0, 0, 0, 0};
+        meters.process(values);
+    } else {
+        // process
+        while(offset < samples) {
+            // cycle through samples
+            float outL = 0.f;
+            float outR = 0.f;
+            float inL = ins[0][offset];
+            float inR = ins[1][offset];
+            
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            
+            // modulator
+            float modulL = modL.get_value();
+            float modulR = modR.get_value();
+            
+            float procL = inL * modulL;
+            float procR = inR * modulR;
+            
+            //procL *= (lfo1.get_value() * 0.5 + *params[param_amount] / 2);
+            //procR *= (lfo2.get_value() * 0.5 + *params[param_amount] / 2);
+            
+            outL = procL + inL * (1 - *params[param_mod_amount]);
+            outR = procR + inR * (1 - *params[param_mod_amount]);
+            
+            outL *=  *params[param_level_out];
+            outR *=  *params[param_level_out];
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            // next sample
+            ++offset;
+            
+            // advance lfo's
+            lfo1.advance(1);
+            lfo2.advance(1);
+            modL.advance(1);
+            modR.advance(1);
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+
+        } // cycle trough samples
+    }
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+bool ringmodulator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (!is_active or phase or subindex > 1) {
+        redraw_graph = false;
+        return false;
+    }
+    set_channel_color(context, subindex);
+    return (subindex ? lfo2 : lfo1).get_graph(data, points, context, mode);
+}
+
+bool ringmodulator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active or !phase or subindex > 1)
+        return false;
+    set_channel_color(context, subindex);
+    return (subindex ? lfo2 : lfo1).get_dot(x, y, size, context);
+}
+
+bool ringmodulator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (phase or subindex)
+        return false;
+    pos = 0;
+    vertical = false;
+    return true;
+}
+bool ringmodulator_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
+    return true;
+}

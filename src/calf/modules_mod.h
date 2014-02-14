@@ -209,6 +209,39 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
+
+/**********************************************************************
+ * RING MODULATOR by Markus Schmidt
+**********************************************************************/
+
+class ringmodulator_audio_module: public audio_module<ringmodulator_metadata>, public frequency_response_line_graph  {
+private:
+    bool clear_reset;
+    dsp::simple_lfo lfo1, lfo2, modL, modR;
+    vumeters meters;
+public:
+    uint32_t srate;
+    bool is_active;
+    ringmodulator_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    void params_reset()
+    {
+        if (clear_reset) {
+            *params[param_lfo1_reset] = 0.f;
+            *params[param_lfo2_reset] = 0.f;
+            clear_reset = false;
+        }
+    }
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
 };
 
 #endif

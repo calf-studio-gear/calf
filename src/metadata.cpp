@@ -911,6 +911,39 @@ CALF_PLUGIN_INFO(pulsator) = { 0x8514, "Pulsator", "Calf Pulsator", "Markus Schm
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(ringmodulator) = {"In L", "In R", "Out L", "Out R"};
+
+const char *ringmod_mode_names[] = { "Sine", "Triangle", "Square", "Saw up", "Saw down" };
+
+CALF_PORT_PROPS(ringmodulator) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, ringmod_mode_names, "mod_mode", "Modulator" },
+    { 1000,        1,       20000,     0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "mod_freq", "Mod Freq" },
+    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "mod_amount", "Mod Amount" },
+    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "mod_phase", "Mod Phase" },
+    { 0,           -200,        200,  401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "mod_detune", "Mod Detune" },
+    
+    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, ringmod_mode_names, "lfo1_mode", "LFO 1" },
+    { 1,           0.01,        100,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo1_freq", "LFO 1 Freq" },
+    { 1,           0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo1_amount", "LFO 1 Amount" },
+    { 0,           0,           1,     2,  PF_BOOL | PF_CTL_BUTTON , NULL, "lfo1_reset", "Reset 1" },
+    
+    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, ringmod_mode_names, "lfo2_mode", "LFO 2" },
+    { 1,           0.01,        100,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_freq", "LFO 2 Freq" },
+    { 1,           0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo2_amount", "LFO 2 Amount" },
+    { 0,           0,           1,     2,  PF_BOOL | PF_CTL_BUTTON , NULL, "lfo2_reset", "Reset 2" },
+    
+    { 1,           0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "mix", "Mix" },
+    
+    {}
+};
+
+CALF_PLUGIN_INFO(ringmodulator) = { 0x8514, "Ring Modulator", "Calf Ring Modulator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(saturator) = {"In L", "In R", "Out L", "Out R"};
 
 CALF_PORT_PROPS(saturator) = {
