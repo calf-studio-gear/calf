@@ -1,0 +1,110 @@
+<vbox spacing="8">
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" type="1" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+        
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" type="1" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+    </table>
+    <hbox>
+        
+        <vbox>
+            <label text="Mode"/>
+            <combo param="mod_mode"/>
+            <label/>
+        </vbox>
+        
+        <vbox>
+            <label text="Amount"/>
+            <knob param="mod_amount" size="3"/>
+            <value param="mod_amount"/>
+        </vbox>
+        
+        <vbox>
+            <label text="Frequency"/>
+            <knob param="mod_freq" size="5"/>
+            <value param="mod_freq"/>
+        </vbox>
+        
+        <vbox>
+            <label text="Detune"/>
+            <knob param="mod_detune" size="3" type="1"/>
+            <value param="mod_detune"/>
+        </vbox>
+        
+        <vbox>
+            <label text="Phase"/>
+            <knob param="mod_phase" size="3"/>
+            <value param="mod_phase"/>
+        </vbox>
+        
+    </hbox>
+    <hbox spacing="20">
+        <frame label="LFO 1">
+            <vbox spacing="8">
+                <hbox spacing="8">
+                    <vbox>
+                        <label text="Amount"/>
+                        <knob param="lfo1_amount" size="3"/>
+                        <value param="lfo1_amount"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Frequency"/>
+                        <knob param="lfo1_freq" size="5"/>
+                        <value param="lfo1_freq"/>
+                    </vbox>
+                </hbox>
+                <hbox spacing="8">
+                    <button param="lfo1_reset"/>
+                    <combo param="lfo1_mode"/>
+                </hbox>
+            </vbox>
+        </frame>
+        
+            <if cond="directlink">
+                <line-graph refresh="1" width="150" height="150" square="1" param="lfo1_freq"/>
+            </if>
+        
+        <frame label="LFO 2">
+            <vbox spacing="8">
+                <hbox spacing="8">
+                    <vbox>
+                        <label text="Frequency"/>
+                        <knob param="lfo2_freq" size="5"/>
+                        <value param="lfo2_freq"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Amount"/>
+                        <knob param="lfo2_amount" size="3"/>
+                        <value param="lfo2_amount"/>
+                    </vbox>
+                </hbox>
+                <hbox spacing="8">
+                    <combo param="lfo2_mode"/>
+                    <button param="lfo2_reset"/>
+                </hbox>
+            </vbox>
+        </frame>
+    </hbox>
+</vbox>
