@@ -923,6 +923,7 @@ CALF_PORT_PROPS(ringmodulator) = {
     { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "mod_amount", "Mod Amount" },
     { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "mod_phase", "Mod Phase" },
     { 0,           -200,        200,  401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "mod_detune", "Mod Detune" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mod_listen", "Listen" },
     
     { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, ringmod_mode_names, "lfo1_mode", "LFO 1" },
     { 0.1,         0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo1_freq", "LFO 1 Freq" },
@@ -933,16 +934,18 @@ CALF_PORT_PROPS(ringmodulator) = {
     { -100,        -200,        200,  401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo1_mod_detune_lo", "Mod Detune LO" },
     { 100,         -200,        200,  401, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_CENTS, NULL, "lfo1_mod_detune_hi", "Mod Detune HI" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo1_mod_detune_active", "Mod Detune Active" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo1_activity", "Activity 1" },
     
     { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, ringmod_mode_names, "lfo2_mode", "LFO 2" },
-    { 1,           0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_freq", "LFO 2 Freq" },
+    { 0.2,         0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_freq", "LFO 2 Freq" },
     { 0,           0,           1,     2,  PF_BOOL | PF_CTL_BUTTON , NULL, "lfo2_reset", "Reset 2" },
-    { 1,           0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_lfo1_freq_lo", "LFO Freq LO" },
-    { 1,           0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_lfo1_freq_hi", "LFO Freq HI" },
+    { 0.05,        0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_lfo1_freq_lo", "LFO Freq LO" },
+    { 0.5,         0.01,        10,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_lfo1_freq_hi", "LFO Freq HI" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo2_lfo1_freq_active", "LFO 1 Freq Active" },
-    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo2_mod_amount_lo", "Mod Amount LO" },
-    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo2_mod_amount_hi", "Mod Amount HI" },
+    { 0.33,        0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo2_mod_amount_lo", "Mod Amount LO" },
+    { 0.66,        0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "lfo2_mod_amount_hi", "Mod Amount HI" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo2_mod_amount_active", "Mod Amount Active" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "lfo2_activity", "Activity 2" },
     
     {}
 };

@@ -803,6 +803,8 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
 {
     bool bypass = *params[param_bypass] > 0.5f;
     uint32_t samples = numsamples + offset;
+    float led1 = 0;
+    float led2 = 0;
     if(bypass) {
         // everything bypassed
         while(offset < samples) {
@@ -874,8 +876,8 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             float procL = inL * modulL;
             float procR = inR * modulR;
             
-            outL = procL + inL * (1 - mod_amount);
-            outR = procR + inR * (1 - mod_amount);
+            outL = *params[param_mod_listen] > 0.5 ? modulL : procL + inL * (1 - mod_amount);
+            outR = *params[param_mod_listen] > 0.5 ? modulR : procR + inR * (1 - mod_amount);
             
             outL *=  *params[param_level_out];
             outR *=  *params[param_level_out];
@@ -886,6 +888,10 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             
             // next sample
             ++offset;
+            
+            // leds
+            led1 = std::max(led1, lfo1.get_value() / 2 + 0.5f);
+            led2 = std::max(led2, lfo2.get_value() / 2 + 0.5f);
             
             // advance lfo's
             lfo1.advance(1);
@@ -898,6 +904,8 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
 
         } // cycle trough samples
     }
+    *params[param_lfo1_activity] = led1;
+    *params[param_lfo2_activity] = led2;
     meters.fall(numsamples);
     return outputs_mask;
 }

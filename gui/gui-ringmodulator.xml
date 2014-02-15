@@ -27,135 +27,147 @@
         <knob param="level_out" type="1" attach-x="7" attach-y="1" attach-h="2" expand-x="0" />
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
+    
     <hbox>
-        
-        <vbox>
-            <label text="Mode"/>
-            <combo param="mod_mode"/>
-            <label/>
-        </vbox>
-        
-        <vbox>
-            <label text="Amount"/>
-            <knob param="mod_amount" size="3"/>
-            <value param="mod_amount"/>
-        </vbox>
-        
-        <vbox>
-            <label text="Frequency"/>
-            <knob param="mod_freq" size="5"/>
-            <value param="mod_freq"/>
-        </vbox>
-        
-        <vbox>
-            <label text="Detune"/>
-            <knob param="mod_detune" size="3" type="1"/>
-            <value param="mod_detune"/>
-        </vbox>
-        
-        <vbox>
-            <label text="Phase"/>
-            <knob param="mod_phase" size="3"/>
-            <value param="mod_phase"/>
-        </vbox>
-        
-    </hbox>
-    <hbox spacing="20">
         <frame label="LFO 1">
-            <table rows="3" cols="4">
-                <vbox attach-x="0" attach-y="0">
-                    <label text="Active"/>
-                    <toggle param="lfo1_mod_freq_active"/>
-                    <label/>
-                </vbox>
-                <vbox attach-x="1" attach-y="0">
-                    <label text="Mod Freq LO"/>
-                    <knob param="lfo1_mod_freq_lo"/>
-                    <value param="lfo1_mod_freq_lo"/>
-                </vbox>
-                <vbox attach-x="2" attach-y="0">
-                    <label text="Mod Freq HI"/>
-                    <knob param="lfo1_mod_freq_hi"/>
-                    <value param="lfo1_mod_freq_hi"/>
-                </vbox>
-                
+            <table rows="5" cols="4">
+                <label text="Modulator Frequency" attach-x="0" attach-y="0" attach-w="3"/>
                 <vbox attach-x="0" attach-y="1">
                     <label text="Active"/>
-                    <toggle param="lfo1_mod_detune_active"/>
+                    <toggle param="lfo1_mod_freq_active" size="1"/>
                     <label/>
                 </vbox>
                 <vbox attach-x="1" attach-y="1">
-                    <label text="Mod Detune LO"/>
-                    <knob param="lfo1_mod_detune_lo"/>
-                    <value param="lfo1_mod_detune_lo"/>
+                    <label text="LO"/>
+                    <knob param="lfo1_mod_freq_lo" size="2"/>
+                    <value param="lfo1_mod_freq_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="1">
-                    <label text="Mod Detune HI"/>
-                    <knob param="lfo1_mod_detune_hi"/>
+                    <label text="HI"/>
+                    <knob param="lfo1_mod_freq_hi" size="2"/>
+                    <value param="lfo1_mod_freq_hi"/>
+                </vbox>
+                
+                <label text="Modulator Detune" attach-x="0" attach-y="2" attach-w="3"/>
+                <vbox attach-x="0" attach-y="3">
+                    <label text="Active"/>
+                    <toggle param="lfo1_mod_detune_active" size="1"/>
+                    <label/>
+                </vbox>
+                <vbox attach-x="1" attach-y="3">
+                    <label text="LO"/>
+                    <knob param="lfo1_mod_detune_lo" size="2"/>
+                    <value param="lfo1_mod_detune_lo"/>
+                </vbox>
+                <vbox attach-x="2" attach-y="3">
+                    <label text="HI"/>
+                    <knob param="lfo1_mod_detune_hi" size="2"/>
                     <value param="lfo1_mod_detune_hi"/>
                 </vbox>
                 
-                <vbox attach-x="3" attach-y="0" attach-h="2">
+                <vbox attach-x="3" attach-y="0" attach-h="4">
+                    <label/>
                     <label text="Frequency"/>
-                    <knob param="lfo1_freq" size="5"/>
+                    <knob param="lfo1_freq" size="4"/>
                     <value param="lfo1_freq"/>
+                    <label/>
                 </vbox>
                 
-                <combo param="lfo1_mode" attach-x="0" attach-y="2" attach-w="3"/>
-                <button param="lfo1_reset" attach-x="3" attach-y="2"/>
+                <combo param="lfo1_mode" attach-x="1" attach-y="4" attach-w="2"/>
+                <button param="lfo1_reset" attach-x="3" attach-y="4"/>
+                <led param="lfo1_activity" mode="4" attach-x="0" attach-y="4"/>
                 
             </table>
             
         </frame>
         
-            <if cond="directlink">
-                <line-graph refresh="1" width="150" height="150" square="1" param="lfo1_freq"/>
-            </if>
+        <frame label="Modulator">
             
-        <frame label="LFO 2">
-            
-            <table rows="3" cols="4">
-                <vbox attach-x="1" attach-y="0">
-                    <label text="LFO Freq LO"/>
-                    <knob param="lfo2_lfo1_freq_lo"/>
-                    <value param="lfo2_lfo1_freq_lo"/>
+            <table rows="4" cols="2">
+                <label attach-x="0" attach-y="0"/>
+                <vbox attach-x="0" attach-y="1">
+                    <label text="Detune"/>
+                    <knob param="mod_detune" size="2" type="1"/>
+                    <value param="mod_detune"/>
                 </vbox>
-                <vbox attach-x="2" attach-y="0">
-                    <label text="LFO Freq HI"/>
-                    <knob param="lfo2_lfo1_freq_hi"/>
-                    <value param="lfo2_lfo1_freq_hi"/>
-                </vbox>
-                <vbox attach-x="3" attach-y="0">
-                    <label text="Active"/>
-                    <toggle param="lfo2_lfo1_freq_active"/>
-                    <label/>
+                <vbox attach-x="0" attach-y="2">
+                    <label text="Phase"/>
+                    <knob param="mod_phase" size="2"/>
+                    <value param="mod_phase"/>
                 </vbox>
                 
+                <vbox attach-x="1" attach-y="1" attach-h="2">
+                    <label text="Frequency"/>
+                    <knob param="mod_freq" size="5"/>
+                    <value param="mod_freq"/>
+                </vbox>
+                
+                <vbox attach-x="2" attach-y="1">
+                    <label text="Amount"/>
+                    <knob param="mod_amount" size="2"/>
+                    <value param="mod_amount"/>
+                </vbox>
+                <vbox attach-x="2" attach-y="2">
+                    <label text="Listen"/>
+                    <toggle param="mod_listen"/>
+                    <label/>
+                </vbox>
+                <vbox attach-x="0" attach-y="3" attach-w="3">
+                    <label text="Waveform"/>
+                    <combo param="mod_mode"/>
+                </vbox>
+            </table>
+            
+        </frame>
+        
+        <frame label="LFO 2">
+            
+            <table rows="5" cols="4">
+                <label text="LFO 1 Frequency" attach-x="1" attach-y="0" attach-w="3"/>
                 <vbox attach-x="1" attach-y="1">
-                    <label text="Mod Amount LO"/>
-                    <knob param="lfo2_mod_amount_lo"/>
-                    <value param="lfo2_mod_amount_lo"/>
+                    <label text="LO"/>
+                    <knob param="lfo2_lfo1_freq_lo" size="2"/>
+                    <value param="lfo2_lfo1_freq_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="1">
-                    <label text="Mod Amount HI"/>
-                    <knob param="lfo2_mod_amount_hi"/>
-                    <value param="lfo2_mod_amount_hi"/>
+                    <label text="HI"/>
+                    <knob param="lfo2_lfo1_freq_hi" size="2"/>
+                    <value param="lfo2_lfo1_freq_hi"/>
                 </vbox>
                 <vbox attach-x="3" attach-y="1">
                     <label text="Active"/>
-                    <toggle param="lfo2_mod_amount_active"/>
+                    <toggle param="lfo2_lfo1_freq_active" size="1"/>
                     <label/>
                 </vbox>
                 
-                <vbox attach-x="0" attach-y="0" attach-h="2">
-                    <label text="Frequency"/>
-                    <knob param="lfo2_freq" size="5"/>
-                    <value param="lfo2_freq"/>
+                <label text="Modulator Amount" attach-x="1" attach-y="2" attach-w="3"/>
+                <vbox attach-x="1" attach-y="3">
+                    <label text="LO"/>
+                    <knob param="lfo2_mod_amount_lo" size="2"/>
+                    <value param="lfo2_mod_amount_lo"/>
+                </vbox>
+                <vbox attach-x="2" attach-y="3">
+                    <label text="HI"/>
+                    <knob param="lfo2_mod_amount_hi" size="2"/>
+                    <value param="lfo2_mod_amount_hi"/>
+                </vbox>
+                <vbox attach-x="3" attach-y="3">
+                    <label text="Active"/>
+                    <toggle param="lfo2_mod_amount_active" size="1"/>
+                    <label/>
                 </vbox>
                 
-                <button param="lfo2_reset" attach-x="0" attach-y="2"/>
-                <combo param="lfo2_mode" attach-x="1" attach-y="2" attach-w="3"/>
+                <vbox attach-x="0" attach-y="0" attach-h="4">
+                    <label/>
+                    <label text="Frequency"/>
+                    <knob param="lfo2_freq" size="4"/>
+                    <value param="lfo2_freq"/>
+                    <label/>
+                </vbox>
                 
+                <button param="lfo2_reset" attach-x="0" attach-y="4"/>
+                <combo param="lfo2_mode" attach-x="1" attach-y="4" attach-w="2"/>
+                <led param="lfo2_activity" mode="4" attach-x="3" attach-y="4"/>
             </table>
         </frame>
         
