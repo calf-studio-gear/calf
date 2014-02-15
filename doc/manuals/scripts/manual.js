@@ -27,6 +27,7 @@ $(document).ready(function () {
                 ["(Flanger)", "Flanger.html", "images/Calf - Flanger.jpg"],
                 ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.jpg"],
                 ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.jpg"],
+                ["Ring Modulator", "Ring Modulator.html", "images/Calf - Ring Modulator.jpg"],
             ],
             "icons/modulation.png"
         ],
