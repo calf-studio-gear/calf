@@ -827,11 +827,12 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             
             // set oscillators
             // mod frequency
+            float freq = 0;
             if (*params[param_lfo1_mod_freq_active] > 0.5) {
-                float freq = (*params[param_lfo1_mod_freq_hi]
-                            - *params[param_lfo1_mod_freq_lo])
-                            * ((lfo1.get_value() + 1) / 2.)
-                            + *params[param_lfo1_mod_freq_lo];
+                freq = (*params[param_lfo1_mod_freq_hi]
+                      - *params[param_lfo1_mod_freq_lo])
+                        * ((lfo1.get_value() + 1) / 2.)
+                      + *params[param_lfo1_mod_freq_lo];
                 modL.set_freq(freq);
                 modR.set_freq(freq);
             }
@@ -841,8 +842,8 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
                               - *params[param_lfo1_mod_detune_lo])
                               * ((lfo1.get_value() + 1) / 2.)
                               + *params[param_lfo1_mod_detune_lo];
-                modL.set_freq(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), detune / 2));
-                modR.set_freq(*params[param_mod_freq] * pow(pow(2, 1.0 / 1200.0), detune / -2));
+                modL.set_freq((freq ? freq : *params[param_mod_freq]) * pow(pow(2, 1.0 / 1200.0), detune / 2));
+                modR.set_freq((freq ? freq : *params[param_mod_freq]) * pow(pow(2, 1.0 / 1200.0), detune / -2));
             }
             // lfo1 frequency
             if (*params[param_lfo2_lfo1_freq_active] > 0.5) {
@@ -854,10 +855,10 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             // mod amount
             float mod_amount = *params[param_mod_amount];
             if (*params[param_lfo2_mod_amount_active] > 0.5) {
-                mod_amount *= (*params[param_lfo2_mod_amount_hi]
-                             - *params[param_lfo2_mod_amount_lo])
-                             * ((lfo2.get_value() + 1) / 2.)
-                             + *params[param_lfo2_mod_amount_lo];
+                mod_amount = (*params[param_lfo2_mod_amount_hi]
+                            - *params[param_lfo2_mod_amount_lo])
+                            * ((lfo2.get_value() + 1) / 2.)
+                            + *params[param_lfo2_mod_amount_lo];
             }
             
             float outL = 0.f;

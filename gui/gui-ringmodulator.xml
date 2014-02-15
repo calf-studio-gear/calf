@@ -38,12 +38,12 @@
                     <label/>
                 </vbox>
                 <vbox attach-x="1" attach-y="1">
-                    <label text="LO"/>
+                    <label text="Min"/>
                     <knob param="lfo1_mod_freq_lo" size="2"/>
                     <value param="lfo1_mod_freq_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="1">
-                    <label text="HI"/>
+                    <label text="Max"/>
                     <knob param="lfo1_mod_freq_hi" size="2"/>
                     <value param="lfo1_mod_freq_hi"/>
                 </vbox>
@@ -55,12 +55,12 @@
                     <label/>
                 </vbox>
                 <vbox attach-x="1" attach-y="3">
-                    <label text="LO"/>
+                    <label text="Min"/>
                     <knob param="lfo1_mod_detune_lo" size="2"/>
                     <value param="lfo1_mod_detune_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="3">
-                    <label text="HI"/>
+                    <label text="Max"/>
                     <knob param="lfo1_mod_detune_hi" size="2"/>
                     <value param="lfo1_mod_detune_hi"/>
                 </vbox>
@@ -125,12 +125,12 @@
             <table rows="5" cols="4">
                 <label text="LFO 1 Frequency" attach-x="1" attach-y="0" attach-w="3"/>
                 <vbox attach-x="1" attach-y="1">
-                    <label text="LO"/>
+                    <label text="Min"/>
                     <knob param="lfo2_lfo1_freq_lo" size="2"/>
                     <value param="lfo2_lfo1_freq_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="1">
-                    <label text="HI"/>
+                    <label text="Max"/>
                     <knob param="lfo2_lfo1_freq_hi" size="2"/>
                     <value param="lfo2_lfo1_freq_hi"/>
                 </vbox>
@@ -142,12 +142,12 @@
                 
                 <label text="Modulator Amount" attach-x="1" attach-y="2" attach-w="3"/>
                 <vbox attach-x="1" attach-y="3">
-                    <label text="LO"/>
+                    <label text="Min"/>
                     <knob param="lfo2_mod_amount_lo" size="2"/>
                     <value param="lfo2_mod_amount_lo"/>
                 </vbox>
                 <vbox attach-x="2" attach-y="3">
-                    <label text="HI"/>
+                    <label text="Max"/>
                     <knob param="lfo2_mod_amount_hi" size="2"/>
                     <value param="lfo2_mod_amount_hi"/>
                 </vbox>
