@@ -201,9 +201,9 @@ calf_led_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_LED(widget));
-
-    requisition->width = 24;
-    requisition->height = 18;
+    CalfLed *self = CALF_LED(widget);
+    requisition->width = self->size ? 24 : 19;
+    requisition->height = self->size ? 18 : 14;
 }
 
 static void
@@ -248,8 +248,8 @@ calf_led_init (CalfLed *self)
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->led_value = 0.f;
     self->cache_surface = NULL;
-    widget->requisition.width = self->size ? 24 : 12;
-    widget->requisition.height = self->size ? 18 : 9;
+    widget->requisition.width = self->size ? 24 : 19;
+    widget->requisition.height = self->size ? 18 : 14;
 }
 
 void calf_led_set_value(CalfLed *led, float value)
