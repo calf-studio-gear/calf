@@ -38,6 +38,7 @@ struct CalfLed
     GtkWidget parent;
     cairo_surface_t *cache_surface;
     int led_mode;
+    int size;
     float led_value;
 };
 

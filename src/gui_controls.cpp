@@ -588,6 +588,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
     widget = calf_led_new ();
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-led");
     CALF_LED(widget)->led_mode = get_int("mode", 0);
+    CALF_LED(widget)->size = get_int("size", 1);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-LED");
     return widget;
 }

@@ -248,8 +248,8 @@ calf_led_init (CalfLed *self)
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
     self->led_value = 0.f;
     self->cache_surface = NULL;
-    widget->requisition.width = 24;
-    widget->requisition.height = 18;
+    widget->requisition.width = self->size ? 24 : 12;
+    widget->requisition.height = self->size ? 18 : 9;
 }
 
 void calf_led_set_value(CalfLed *led, float value)

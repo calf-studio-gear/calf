@@ -65,13 +65,11 @@
                     <value param="lfo1_mod_detune_hi"/>
                 </vbox>
                 
-                <vbox attach-x="3" attach-y="0" attach-h="4">
-                    <label/>
-                    <label text="Frequency"/>
+                <align attach-x="3" attach-y="0" attach-h="4"><vbox spacing="17">
+                    <hbox spacing="3"><label text="Frequency"/><align><led param="lfo2_lfo1_freq_active" mode="1" size="0" expand="0" fill="0"/></align></hbox>
                     <knob param="lfo1_freq" size="4"/>
                     <value param="lfo1_freq"/>
-                    <label/>
-                </vbox>
+                </vbox></align>
                 
                 <combo param="lfo1_mode" attach-x="1" attach-y="4" attach-w="2"/>
                 <button param="lfo1_reset" attach-x="3" attach-y="4"/>
@@ -86,7 +84,7 @@
             <table rows="4" cols="2">
                 <label attach-x="0" attach-y="0"/>
                 <vbox attach-x="0" attach-y="1">
-                    <label text="Detune"/>
+                    <hbox spacing="3"><label text="Detune"/><align><led param="lfo1_mod_detune_active" mode="1" size="0" expand="0" fill="0"/></align></hbox>
                     <knob param="mod_detune" size="2" type="1"/>
                     <value param="mod_detune"/>
                 </vbox>
@@ -96,14 +94,14 @@
                     <value param="mod_phase"/>
                 </vbox>
                 
-                <vbox attach-x="1" attach-y="1" attach-h="2">
-                    <label text="Frequency"/>
+                <vbox attach-x="1" attach-y="1" attach-h="2" spacing="9">
+                    <hbox spacing="3"><label text="Frequency"/><align><led param="lfo1_mod_freq_active" mode="1" size="0" expand="0" fill="0"/></align></hbox>
                     <knob param="mod_freq" size="5"/>
                     <value param="mod_freq"/>
                 </vbox>
                 
                 <vbox attach-x="2" attach-y="1">
-                    <label text="Amount"/>
+                    <hbox spacing="3"><label text="Amount"/><align><led param="lfo2_mod_amount_active" mode="1" size="0" expand="0" fill="0"/></align></hbox>
                     <knob param="mod_amount" size="2"/>
                     <value param="mod_amount"/>
                 </vbox>
@@ -157,13 +155,13 @@
                     <label/>
                 </vbox>
                 
-                <vbox attach-x="0" attach-y="0" attach-h="4">
+                <align attach-x="0" attach-y="0" attach-h="4"><vbox spacing="17">
                     <label/>
                     <label text="Frequency"/>
                     <knob param="lfo2_freq" size="4"/>
                     <value param="lfo2_freq"/>
                     <label/>
-                </vbox>
+                </vbox></align>
                 
                 <button param="lfo2_reset" attach-x="0" attach-y="4"/>
                 <combo param="lfo2_mode" attach-x="1" attach-y="4" attach-w="2"/>
