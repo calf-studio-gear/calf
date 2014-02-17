@@ -122,9 +122,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     float pos2 = (rad - margins[self->knob_size]) / rad;
     float pos3 = (rad - margins[self->knob_size] - widths[self->knob_size] / 2.) / rad;
     cairo_pattern_t *pat = cairo_pattern_create_radial(ox + rad, oy + rad, 0, ox + rad, oy + rad, rad);
-    cairo_pattern_add_color_stop_rgba(pat, pos1, 0, 0.8, 1, 0.6);
+    cairo_pattern_add_color_stop_rgba(pat, pos1, 0, 0.9, 1, 0.75);
     cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
-    cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.8, 1, 0.6);
+    cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
     cairo_set_source(ctx, pat);
     if (neg_l)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
