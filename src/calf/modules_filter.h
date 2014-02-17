@@ -31,6 +31,7 @@
 #include "plugin_tools.h"
 #include "loudness.h"
 #include "analyzer.h"
+#include "bypass.h"
 
 namespace calf_plugins {
 
@@ -65,6 +66,7 @@ private:
     dsp::biquad_d2 hp[3][2], lp[3][2];
     dsp::biquad_d2 lsL, lsR, hsL, hsR;
     dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    dsp::bypass bypass;
     int keep_gliding;
     mutable int last_peak;
     inline void process_hplp(float &left, float &right);
@@ -272,7 +274,8 @@ private:
 class emphasis_audio_module: public audio_module<emphasis_metadata>, public frequency_response_line_graph {
 public:
     dsp::riaacurve riaacurvL, riaacurvR;
-    int mode, type, bypass;
+    dsp::bypass bypass;
+    int mode, type, bypass_;
     typedef std::complex<double> cfloat;
     uint32_t srate;
     bool is_active;
@@ -348,11 +351,12 @@ typedef xover_audio_module<xover4_metadata> xover4_audio_module;
 
 class vocoder_audio_module: public audio_module<vocoder_metadata>, public frequency_response_line_graph {
 public:
-    int bands, bands_old, bypass, order, order_old;
+    int bands, bands_old, order, order_old;
     uint32_t srate;
     bool is_active;
     static const int maxorder = 8;
     dsp::biquad_d2 detector[2][maxorder][32], modulator[2][maxorder][32];
+    dsp::bypass bypass;
     double env_mods[2][32];
     vumeters meters;
     analyzer _analyzer;

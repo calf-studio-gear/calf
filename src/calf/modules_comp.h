@@ -30,6 +30,7 @@
 #include "loudness.h"
 #include "metadata.h"
 #include "plugin_tools.h"
+#include "bypass.h"
 
 namespace calf_plugins {
 
@@ -139,6 +140,7 @@ class compressor_audio_module: public audio_module<compressor_metadata>, public 
 private:
     typedef compressor_audio_module AM;
     gain_reduction_audio_module compressor;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
@@ -183,6 +185,7 @@ private:
     float f1_active, f2_active;
     gain_reduction_audio_module compressor;
     dsp::biquad_d2 f1L, f1R, f2L, f2R;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
@@ -216,7 +219,8 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
-    int mode, page, bypass;
+    dsp::bypass bypass;
+    int mode, page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -244,6 +248,7 @@ private:
     typedef monocompressor_audio_module AM;
     gain_reduction2_audio_module monocompressor;
     vumeters meters;
+    dsp::bypass bypass;
 public:
     typedef std::complex<double> cfloat;
     uint32_t srate;
@@ -276,6 +281,7 @@ private:
     float detected;
     gain_reduction_audio_module compressor;
     dsp::biquad_d2 hpL, hpR, lpL, lpR, pL, pR;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;
@@ -300,6 +306,7 @@ class gate_audio_module: public audio_module<gate_metadata>, public line_graph_i
 private:
     typedef gate_audio_module AM;
     expander_audio_module gate;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
@@ -344,6 +351,7 @@ private:
     float f1_active, f2_active;
     expander_audio_module gate;
     dsp::biquad_d2 f1L, f1R, f2L, f2R;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
@@ -378,7 +386,8 @@ private:
     float meter_inL, meter_inR, meter_outL, meter_outR;
     expander_audio_module gate[strips];
     dsp::crossover crossover;
-    int mode, page, bypass;
+    dsp::bypass bypass;
+    int mode, page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -410,6 +419,7 @@ class transientdesigner_audio_module:
     bool active;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     dsp::transients transients;
+    dsp::bypass bypass;
     int display_old;
     mutable int pixels;
     mutable float *pbuffer;

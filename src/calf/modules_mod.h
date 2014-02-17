@@ -30,6 +30,7 @@
 #include "metadata.h"
 #include "multichorus.h"
 #include "plugin_tools.h"
+#include "bypass.h"
 
 namespace calf_plugins {
 
@@ -186,6 +187,7 @@ private:
     int mode_old, amount_old;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;
@@ -218,6 +220,7 @@ class ringmodulator_audio_module: public audio_module<ringmodulator_metadata>, p
 private:
     bool clear_reset;
     dsp::simple_lfo lfo1, lfo2, modL, modR;
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;

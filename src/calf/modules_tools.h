@@ -33,6 +33,7 @@
 #include "loudness.h"
 #include <math.h>
 #include "plugin_tools.h"
+#include "bypass.h"
 
 namespace calf_plugins {
 
@@ -49,7 +50,7 @@ class stereo_audio_module:
     float LL, LR, RL, RR;
     uint32_t srate;
     bool active;
-    
+    dsp::bypass bypass;
     float meter_inL, meter_inR, meter_outL, meter_outR, meter_phase;
     vumeters meters;
     
@@ -82,7 +83,7 @@ class mono_audio_module:
     typedef mono_audio_module AM;
     uint32_t srate;
     bool active;
-    
+    dsp::bypass bypass;
     float meter_in, meter_outL, meter_outR;
     vumeters meters;
     

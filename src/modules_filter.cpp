@@ -249,8 +249,8 @@ inline void equalizerNband_audio_module<BaseClass, has_lphp>::process_hplp(float
 template<class BaseClass, bool has_lphp>
 uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[AM::param_bypass] > 0.f;
-    if (keep_gliding && !bypass)
+    bool bypassed = bypass.update(*params[AM::param_bypass] > 0.5f, numsamples);
+    if (keep_gliding && !bypassed)
     {
         // ensure that if params have changed, the params_changed method is
         // called every 8 samples to interpolate filter parameters
@@ -265,7 +265,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             params_changed();
     }
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -277,6 +277,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
         }
     } else {
         // process
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             float outL = 0.f;
@@ -337,6 +338,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         // clean up
         for(int i = 0; i < 3; ++i) {
             hp[i][0].sanitize();
@@ -623,11 +625,11 @@ void emphasis_audio_module::deactivate()
 
 void emphasis_audio_module::params_changed()
 {
-    if (mode != *params[param_mode] or type != *params[param_type] or bypass != *params[param_bypass])
+    if (mode != *params[param_mode] or type != *params[param_type] or bypass_ != *params[param_bypass])
         redraw_graph = true;
-    mode   = *params[param_mode];
-    type   = *params[param_type];
-    bypass = *params[param_bypass];
+    mode    = *params[param_mode];
+    type    = *params[param_type];
+    bypass_ = *params[param_bypass];
     riaacurvL.set(srate, mode, type);
     riaacurvR.set(srate, mode, type);
 }
@@ -635,8 +637,9 @@ void emphasis_audio_module::params_changed()
 uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     uint32_t orig_numsamples = numsamples;
-    bool bypass = *params[param_bypass] > 0.f;
-    if (!bypass)
+    uint32_t orig_offset = offset;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    if (!bypassed)
     {
         // ensure that if params have changed, the params_changed method is
         // called every 8 samples to interpolate filter parameters
@@ -649,7 +652,7 @@ uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         }
     }
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -689,6 +692,7 @@ uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         // clean up
         riaacurvL.sanitize();
         riaacurvR.sanitize();
@@ -700,7 +704,7 @@ bool emphasis_audio_module::get_graph(int index, int subindex, int phase, float 
 {
     if (phase or subindex)
         return false;
-    if (bypass)
+    if (bypass_)
         context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
@@ -934,11 +938,12 @@ void vocoder_audio_module::set_leds() {
 uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     uint32_t orig_numsamples = numsamples;
-    bool bypass = *params[param_bypass] > 0.f;
+    uint32_t orig_offset = offset;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     int solo = get_solo();
     numsamples += offset;
     float led[32] = {0};
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1065,6 +1070,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         // clean up
         for (int i = 0; i < bands; i++) {
             for (int j = 0; j < order; j++) {

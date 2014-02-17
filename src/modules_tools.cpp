@@ -107,8 +107,10 @@ void stereo_audio_module::params_changed() {
 }
 
 uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
     for(uint32_t i = offset; i < offset + numsamples; i++) {
-        if(*params[param_bypass] > 0.5) {
+        if(bypassed) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[1][i];
             meter_inL  = 0.f;
@@ -249,6 +251,8 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
         meters.process(values);
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -300,8 +304,10 @@ void mono_audio_module::params_changed() {
 }
 
 uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
     for(uint32_t i = offset; i < offset + numsamples; i++) {
-        if(*params[param_bypass] > 0.5) {
+        if(bypassed) {
             outs[0][i] = ins[0][i];
             outs[1][i] = ins[0][i];
             meter_in    = 0.f;
@@ -386,6 +392,8 @@ uint32_t mono_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
         float values[] = {meter_in, meter_outL, meter_outR};
         meters.process(values);
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }

@@ -644,9 +644,9 @@ void pulsator_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t samples = numsamples + offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < samples) {
             outs[0][offset] = ins[0][offset];
@@ -661,6 +661,7 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         meters.process(values);
     } else {
         // process
+        uint32_t orig_offset = offset;
         while(offset < samples) {
             // cycle through samples
             float outL = 0.f;
@@ -702,6 +703,7 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             meters.process(values);
 
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -801,11 +803,11 @@ void ringmodulator_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t samples = numsamples + offset;
     float led1 = 0;
     float led2 = 0;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < samples) {
             outs[0][offset] = ins[0][offset];
@@ -822,6 +824,7 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
         meters.process(values);
     } else {
         // process
+        uint32_t orig_offset = offset;
         while(offset < samples) {
             // cycle through samples
             
@@ -904,6 +907,7 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
             meters.process(values);
 
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     *params[param_lfo1_activity] = led1;
     *params[param_lfo2_activity] = led2;

@@ -29,6 +29,7 @@
 #include "giface.h"
 #include "metadata.h"
 #include "plugin_tools.h"
+#include "bypass.h"
 
 namespace calf_plugins {
 
@@ -43,6 +44,7 @@ private:
     int mode, mode_old, oversampling_old;
     dsp::lookahead_limiter limiter;
     dsp::resampleN resampler[2];
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;
@@ -75,6 +77,7 @@ private:
     dsp::lookahead_limiter broadband;
     dsp::resampleN resampler[strips][2];
     dsp::crossover crossover;
+    dsp::bypass bypass;
     float over;
     unsigned int pos;
     unsigned int buffer_size;

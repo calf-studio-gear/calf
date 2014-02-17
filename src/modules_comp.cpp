@@ -763,9 +763,9 @@ void compressor_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -777,7 +777,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         // displays, too
     } else {
         // process
-
+        uint32_t orig_offset = offset;
         compressor.update_curve();
 
         while(offset < numsamples) {
@@ -815,6 +815,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -1038,9 +1039,9 @@ void sidechaincompressor_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1051,7 +1052,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
         }
     } else {
         // process
-
+        uint32_t orig_offset = offset;
         compressor.update_curve();
 
         while(offset < numsamples) {
@@ -1157,6 +1158,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         f1L.sanitize();
         f1R.sanitize();
         f2L.sanitize();
@@ -1220,7 +1222,7 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
     mode       = 0;
     redraw     = 0;
     page       = 0;
-    bypass     = 0;
+    bypass_    = 0;
     crossover.init(2, 4, 44100);
 }
 
@@ -1270,9 +1272,9 @@ void multibandcompressor_audio_module::params_changed()
     }
     
     int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
-    if (b != bypass) {
+    if (b != bypass_) {
         redraw = strips * 2 + strips;
-        bypass = b;
+        bypass_ = b;
     }
     
     crossover.set_mode(mode + 1);
@@ -1307,12 +1309,12 @@ void multibandcompressor_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
     
     for (int i = 0; i < strips; i++)
         strip[i].update_curve();
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1323,6 +1325,7 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
         }
     } else {
         // process all strips
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -1369,6 +1372,7 @@ uint32_t multibandcompressor_audio_module::process(uint32_t offset, uint32_t num
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     } // process all strips (no bypass)
     meters.fall(numsamples);
     return outputs_mask;
@@ -1492,9 +1496,9 @@ void monocompressor_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1504,7 +1508,7 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
         }
     } else {
         // process
-
+        uint32_t orig_offset = offset;
         monocompressor.update_curve();
 
         while(offset < numsamples) {
@@ -1542,6 +1546,7 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -1651,9 +1656,9 @@ void deesser_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed81e8da266
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1664,7 +1669,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         }
     } else {
         // process
-
+        uint32_t orig_offset = offset;
         detected_led -= std::min(detected_led,  numsamples);
         compressor.update_curve();
 
@@ -1731,6 +1736,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         hpL.sanitize();
         hpR.sanitize();
         lpL.sanitize();
@@ -1786,9 +1792,9 @@ void gate_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -1800,7 +1806,7 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
     } else {
         // process
         gate.update_curve();
-
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             float outL = 0.f;
@@ -1829,6 +1835,7 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -2046,9 +2053,9 @@ void sidechaingate_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -2059,7 +2066,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
         }
     } else {
         // process
-
+        uint32_t orig_offset = offset;
         gate.update_curve();
 
         while(offset < numsamples) {
@@ -2160,6 +2167,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         f1L.sanitize();
         f1R.sanitize();
         f2L.sanitize();
@@ -2224,7 +2232,7 @@ multibandgate_audio_module::multibandgate_audio_module()
     mode       = 0;
     redraw     = 0;
     page       = 0;
-    bypass     = 0;
+    bypass_    = 0;
     crossover.init(2, 4, 44100);
 }
 
@@ -2273,9 +2281,9 @@ void multibandgate_audio_module::params_changed()
     }
     
     int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3];
-    if (b != bypass) {
+    if (b != bypass_) {
         redraw = strips * 2 + strips;
-        bypass = b;
+        bypass_ = b;
     }
     
     crossover.set_mode(mode + 1);
@@ -2310,11 +2318,11 @@ void multibandgate_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
     for (int i = 0; i < strips; i++)
         gate[i].update_curve();
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -2325,6 +2333,7 @@ uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsample
         }
     } else {
         // process all strips
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -2370,6 +2379,7 @@ uint32_t multibandgate_audio_module::process(uint32_t offset, uint32_t numsample
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
 
     } // process all strips (no bypass)
     meters.fall(numsamples);
@@ -2501,6 +2511,8 @@ void transientdesigner_audio_module::params_changed() {
 }
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    uint32_t orig_offset = offset;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
         float R = ins[1][i];
@@ -2509,7 +2521,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         meter_outL  = 0.f;
         meter_outR  = 0.f;
         float s = (fabs(L) + fabs(R)) / 2;
-        if(*params[param_bypass] > 0.5) {
+        if(bypassed) {
             outs[0][i]  = ins[0][i];
             outs[1][i]  = ins[1][i];
             
@@ -2585,6 +2597,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
         meters.process(values);
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }

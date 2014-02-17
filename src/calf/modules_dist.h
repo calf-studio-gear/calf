@@ -70,6 +70,7 @@ private:
     dsp::biquad_d2 hp[2][4];
     dsp::biquad_d2 lp[2][2];
     dsp::tap_distortion dist[2];
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;
@@ -94,6 +95,7 @@ private:
     dsp::biquad_d2 lp[2][4];
     dsp::biquad_d2 hp[2][2];
     dsp::tap_distortion dist[2];
+    dsp::bypass bypass;
     vumeters meters;
 public:
     uint32_t srate;
@@ -121,6 +123,7 @@ class tapesimulator_audio_module:
     dsp::biquad_d2 lp[2][2];
     dsp::biquad_d2 noisefilters[2][3];
     dsp::transients transients;
+    dsp::bypass bypass;
     const static int channels = 2;
     dsp::simple_lfo lfo1, lfo2;
     float lp_old;
@@ -152,6 +155,7 @@ private:
     dsp::bitreduction bitreduction;
     dsp::samplereduction samplereduction[2];
     dsp::simple_lfo lfo;
+    dsp::bypass bypass;
     float smin, sdiff;
 public:
     uint32_t srate;

@@ -92,9 +92,10 @@ void limiter_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -158,12 +159,13 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            float values[] = {inL, inR, outL, outR, bypass > 0.5 ? (float)1.0 : (float)limiter.get_attenuation()};
+            float values[] = {inL, inR, outL, outR, bypassed ? (float)1.0 : (float)limiter.get_attenuation()};
             meters.process (values);
 
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     } // process (no bypass)
     meters.fall(numsamples);
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
@@ -325,10 +327,11 @@ void multibandlimiter_audio_module::set_srates()
 
 uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
     numsamples += offset;
     float batt = 0.f;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -466,10 +469,10 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             batt = broadband.get_attenuation();
             
             float values[] = {inL, inR, outL, outR,
-                bypass > 0.5 ? (float)1.0 : (float)strip[0].get_attenuation() * batt,
-                bypass > 0.5 ? (float)1.0 : (float)strip[1].get_attenuation() * batt,
-                bypass > 0.5 ? (float)1.0 : (float)strip[2].get_attenuation() * batt,
-                bypass > 0.5 ? (float)1.0 : (float)strip[3].get_attenuation() * batt};
+                bypassed ? (float)1.0 : (float)strip[0].get_attenuation() * batt,
+                bypassed ? (float)1.0 : (float)strip[1].get_attenuation() * batt,
+                bypassed ? (float)1.0 : (float)strip[2].get_attenuation() * batt,
+                bypassed ? (float)1.0 : (float)strip[3].get_attenuation() * batt};
             meters.process(values);
             
             
@@ -517,6 +520,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //}
             cnt++;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     } // process (no bypass)
     if (params[param_asc_led] != NULL) *params[param_asc_led] = asc_led;
     meters.fall(numsamples);

@@ -317,9 +317,9 @@ void exciter_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             if(in_count > 1 && out_count > 1) {
@@ -340,7 +340,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // displays, too
         meter_drive = 0.f;
     } else {
-        
+        uint32_t orig_offset = offset;
         meter_drive = 0.f;
         
         float in2out = *params[param_listen] > 0.f ? 0.f : 1.f;
@@ -414,6 +414,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         // clean up
         hp[0][0].sanitize();
         hp[1][0].sanitize();
@@ -502,9 +503,9 @@ void bassenhancer_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             if(in_count > 1 && out_count > 1) {
@@ -524,6 +525,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
         }
     } else {
         // process
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             float out[2], in[2] = {0.f, 0.f};
@@ -608,6 +610,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
             // next sample
             ++offset;
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
         // clean up
         lp[0][0].sanitize();
         lp[1][0].sanitize();
@@ -675,12 +678,14 @@ void tapesimulator_audio_module::params_changed() {
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
         float R = ins[1][i];
         float Lin = ins[0][i];
         float Rin = ins[1][i];
-        if(*params[param_bypass] > 0.5) {
+        if(bypassed) {
             outs[0][i]  = ins[0][i];
             outs[1][i]  = ins[1][i];
             clip_inL    = 0.f;
@@ -820,6 +825,8 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             }
         }
     }
+    if (bypassed)
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     // draw meters
     SET_IF_CONNECTED(clip_inL);
     SET_IF_CONNECTED(clip_inR);
@@ -982,9 +989,9 @@ void crusher_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypass = *params[param_bypass] > 0.5f;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
-    if(bypass) {
+    if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
@@ -995,6 +1002,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         }
     } else {
         // process
+        uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
             if (*params[param_lfo] > 0.5) {
@@ -1014,6 +1022,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             if (*params[param_lforate])
                 lfo.advance(1);
         } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
