@@ -36,50 +36,51 @@
             <value param="level_in"/>
             <label/>
         </vbox>
-        <frame label="Saturation">
+        <frame label="Settings">
+            <vbox spacing="8">
+                <hbox spacing="10">
+                    <vbox>
+                        <label text="Noise"/>
+                        <knob param="noise" size="3"/>
+                        <value param="noise"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Mechanical"/>
+                        <knob param="mechanical" size="3"/>
+                        <value param="mechanical"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Filter"/>
+                        <knob param="lowpass" size="3"/>
+                        <value param="lowpass"/>
+                    </vbox>
+                </hbox>
+                <hbox>
+                    <vbox>
+                        <toggle param="post"/>
+                        <label text="Muffle"/>
+                    </vbox>
+                    <vbox>
+                        <toggle param="magnetical"/>
+                        <label text="Magnetical"/>
+                    </vbox>
+                    <vbox>
+                        <toggle param="speed"/>
+                        <label text="Fast"/>
+                    </vbox>
+                </hbox>
+            </vbox>
+        </frame>
+        <frame label="Frequency Response">
             <if cond="directlink">
-                <line-graph refresh="1" width="180" height="180" param="level_in" square="1"/>
+                <line-graph refresh="1" width="250" height="160" param="lowpass"/>
             </if>
         </frame>
-        <vbox>
-            <frame label="Frequency Response">
-                <if cond="directlink">
-                    <line-graph refresh="1" width="300" height="100" param="lowpass"/>
-                </if>
-            </frame>
-            <hbox spacing="10">
-                <vbox>
-                    <label text="Filter"/>
-                    <knob param="lowpass" size="2"/>
-                    <value param="lowpass"/>
-                </vbox>
-                <vbox>
-                    <label text="Noise"/>
-                    <knob param="noise" size="2"/>
-                    <value param="noise"/>
-                </vbox>
-                <vbox>
-                    <label text="Mechanical"/>
-                    <knob param="mechanical" size="2"/>
-                    <value param="mechanical"/>
-                </vbox>
-                <vbox>
-                    <label text="Muffle"/>
-                    <toggle param="post"/>
-                    <label/>
-                </vbox>
-                <vbox>
-                    <label text="Magnetical"/>
-                    <toggle param="magnetical"/>
-                    <label/>
-                </vbox>
-                <vbox>
-                    <label text="Tape Speed"/>
-                    <combo param="speed"/>
-                    <label/><label/>
-                </vbox>
-            </hbox>
-        </vbox>
+        <frame label="Saturation">
+            <if cond="directlink">
+                <line-graph refresh="1" width="160" height="160" param="level_in" square="1"/>
+            </if>
+        </frame>
     </hbox>
     
 </vbox>
