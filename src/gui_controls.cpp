@@ -1541,13 +1541,18 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    page = 0;
+    //const parameter_properties &props = get_props();
+    page = gui->plugin->get_param_value(param_no);
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
     container = GTK_CONTAINER(nb);
     gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
-    g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     return nb;
+}
+void notebook_param_control::created() {
+    g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
+    set();
 }
 void notebook_param_control::get()
 {
@@ -1559,7 +1564,8 @@ void notebook_param_control::set()
     if (param_no < 0)
         return;
     _GUARD_CHANGE_
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), (gint)gui->plugin->get_param_value(param_no));
+    page = (gint)gui->plugin->get_param_value(param_no);
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
 }
 void notebook_param_control::add(GtkWidget *w, control_base *base)
 {

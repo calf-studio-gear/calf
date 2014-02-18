@@ -189,12 +189,11 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             current_control->create(this, param_no);
             current_control->set_std_properties();
             current_control->init_xml(element);
-            current_control->set();
-            current_control->hook_params();
             current_control->add_context_menu_handler();
             if (current_control->is_container()) {
                 gtk_container_set_border_width(current_control->container, current_control->get_int("border"));
                 container_stack.push_back(current_control);
+                control_stack.push_back(current_control);
             }
             return;
         }
@@ -205,6 +204,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
 void plugin_gui::xml_element_end(void *data, const char *element)
 {
     plugin_gui *gui = (plugin_gui *)data;
+    unsigned int ss = gui->container_stack.size();
     if (gui->ignore_stack) {
         gui->ignore_stack--;
         return;
@@ -216,15 +216,29 @@ void plugin_gui::xml_element_end(void *data, const char *element)
     if (gui->current_control and !gui->current_control->is_container())
     {
         (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
+        gui->current_control->hook_params();
+        gui->current_control->set();
+        gui->current_control->created();
+        gtk_widget_show_all(gui->current_control->widget);
         gui->current_control = NULL;
         return;
     }
-    unsigned int ss = gui->container_stack.size();
     if (ss > 1) {
         gui->container_stack[ss - 2]->add(GTK_WIDGET(gui->container_stack[ss - 1]->container), gui->container_stack[ss - 1]);
+        gtk_widget_show_all(GTK_WIDGET(gui->container_stack[ss - 1]->container));
     }
-    else
+    else {
         gui->top_container = gui->container_stack[0];
+        gtk_widget_show_all(GTK_WIDGET(gui->container_stack[0]->container));
+    }
+    int css = gui->control_stack.size();
+    if (ss > 1 and gui->container_stack[ss - 1]->is_container() and css) {
+        gui->control_stack[css - 1]->hook_params();
+        gui->control_stack[css - 1]->set();
+        gui->control_stack[css - 1]->created();
+        
+        gui->control_stack.pop_back();
+    }
     gui->container_stack.pop_back();
     gui->current_control = NULL;
 }
@@ -237,6 +251,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     parser = XML_ParserCreate("UTF-8");
     plugin = _plugin;
     container_stack.clear();
+    control_stack.clear();
     ignore_stack = 0;
     
     param_name_map.clear();

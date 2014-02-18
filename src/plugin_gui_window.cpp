@@ -360,15 +360,14 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     const char *xml = _jh->get_metadata_iface()->get_gui_xml();
     assert(xml);
     container = gui->create_from_xml(_jh, xml);
-    
+    gtk_widget_show_all(GTK_WIDGET(container));
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_show(GTK_WIDGET(sw));
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(container));
     gtk_widget_set_name(GTK_WIDGET(sw), "Calf-Container");
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
-    
-    gtk_widget_show_all(GTK_WIDGET(sw));
     
     gui->show_rack_ears(environment->get_config()->rack_ears);
     

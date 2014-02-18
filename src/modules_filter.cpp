@@ -895,14 +895,16 @@ void vocoder_audio_module::params_changed()
     attack  = exp(log(0.01)/( *params[param_attack]  * srate * 0.001));
     release = exp(log(0.01)/( *params[param_release] * srate * 0.001));
     
-    bands = *params[param_bands];
-    order = round((bands - 4) / 28.f * (maxorder / (*params[param_hiq] ? 1 : 2) - 1) + 1);
-    if (bands != bands_old or order != order_old) {
+    int b = *params[param_bands];
+    bands = (b + 2) * 4 + (b > 1 ? (b - 2) * 4 : 0);
+    order = std::min(8.f, *params[param_order]);
+    float q = pow(10, (fmodf(std::min(8.999f, *params[param_order]), 1.f) * (7.f / pow(1.3, order))) / 20);
+    if (bands != bands_old or *params[param_order] != order_old) {
         bands_old = bands;
-        order_old = order;
+        order_old = *params[param_order];
         for (int i = 0; i < bands; i++) {
             // set all actually used filters
-            detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), pow(1, 1.0 / order), (double)srate);
+            detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), q, (double)srate);
             for (int j = 0; j < order; j++) {
                 if (j)
                     detector[0][j][i].copy_coeffs(detector[0][0][i]);
@@ -911,8 +913,8 @@ void vocoder_audio_module::params_changed()
                 modulator[1][j][i].copy_coeffs(detector[0][0][i]);
             }
         }
+        redraw_graph = true;
     }
-    set_leds();
     _analyzer.set_params(256, 1, 6, 0, 1, 0, 0, 0, 15, 2, 0, 0);
     redraw_graph = true;
 }
@@ -922,17 +924,6 @@ int vocoder_audio_module::get_solo() const {
         if (*params[param_solo0 + i * band_params])
             return 1;
     return 0;
-}
-void vocoder_audio_module::set_leds() {
-    int solo = get_solo();
-    for (int i = 0; i < 32; i++) {
-        float l = 0;
-        if (i < bands)
-            l = (!*params[param_solo0 + i * band_params] and solo) ? 1 : 0.5;
-        if (*params[param_active0 + i * band_params] != l)
-            redraw_graph = true;
-        *params[param_active0 + i * band_params] = l;
-    }
 }
 
 uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -994,8 +985,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                         cR_ = modulator[1][j][i].process(cR_);
                     }
                     // level by envelope with levelling
-                    cL_ *= env_mods[0][i] * order * 4;
-                    cR_ *= env_mods[1][i] * order * 4;
+                    cL_ *= env_mods[0][i] * 4;
+                    cR_ *= env_mods[1][i] * 4;
                     
                     // add band volume setting
                     cL_ *= *params[param_volume0 + i * band_params];

@@ -76,6 +76,7 @@ struct notebook_param_control: public param_control
     int page;
     virtual bool is_container() { return true; };
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void created();
     virtual void add(GtkWidget *w, control_base *base);
     virtual void get();
     virtual void set();

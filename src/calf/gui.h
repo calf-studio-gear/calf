@@ -90,6 +90,7 @@ struct param_control: public control_base
     virtual void init_xml(const char *element) {}
     /// called to create a widget for a control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no)=0;
+    virtual void created(){};
     /// called to transfer the value from control to parameter(s)
     virtual void get()=0;
     /// called to transfer the value from parameter(s) to control
@@ -122,6 +123,7 @@ protected:
     XML_Parser parser;
     param_control *current_control;
     std::vector<control_base *> container_stack;
+    std::vector<param_control *> control_stack;
     control_base *top_container;
     std::map<std::string, int> param_name_map;
     int ignore_stack;
