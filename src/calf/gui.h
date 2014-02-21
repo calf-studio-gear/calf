@@ -100,6 +100,7 @@ struct param_control: public control_base
     virtual void hook_params();
     virtual void on_idle() {}
     virtual void set_std_properties();
+    virtual void set_visibilty(bool state);
     virtual void add_context_menu_handler();
     virtual ~param_control();
     virtual void do_popup_menu();
