@@ -1204,7 +1204,7 @@ CALF_PORT_PROPS(crusher) = {
     { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "morph", "Morph" },
     { 0,     0,     1,      0,  PF_ENUM | PF_CTL_COMBO, crusher_mode_names, "mode", "Mode" },
     { 1,     0.25,  4,      0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "dc", "DC" },
-    { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "anti-aliasing", "Anti-Aliasing" },
+    { 0.5,   0,     1,      0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "anti_aliasing", "Anti-Aliasing" },
     { 1,     1,   250,      0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "samples", "Sample Reduction" },
     { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo", "LFO Active" },
     { 20,    1,   250,      0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "lforange", "LFO Depth" },
