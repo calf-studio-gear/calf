@@ -632,7 +632,6 @@ void pulsator_audio_module::params_changed()
         offset_old   = *params[param_offset];
         redraw_graph = true;
     }
-    printf("%f\n", *params[param_reset]);
 }
 
 void pulsator_audio_module::set_sample_rate(uint32_t sr)

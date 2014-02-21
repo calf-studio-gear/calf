@@ -119,6 +119,14 @@ void param_control::set_std_properties()
     }
 }
 
+void param_control::set_visibilty(bool state)
+{
+    if (state)
+        gtk_widget_show(widget);
+    else
+        gtk_widget_hide(widget);
+}
+
 void param_control::hook_params()
 {
     if (param_no != -1) {
