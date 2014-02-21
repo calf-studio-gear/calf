@@ -756,9 +756,9 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    
     widget  = calf_button_new ((gchar*)get_props().name);
-    g_signal_connect (GTK_OBJECT (widget), "clicked", G_CALLBACK (button_clicked), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "pressed", G_CALLBACK (button_clicked), (gpointer)this);
+    g_signal_connect (GTK_OBJECT (widget), "released", G_CALLBACK (button_clicked), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
     return widget;
 }
@@ -772,7 +772,7 @@ void button_param_control::button_clicked(GtkButton *widget, gpointer value)
 void button_param_control::get()
 {
     const parameter_properties &props = get_props();
-    gui->set_param_value(param_no, props.max, this);
+    gui->set_param_value(param_no, gtk_widget_get_state(widget) == GTK_STATE_ACTIVE ? props.max : props.min, this);
 }
 
 void button_param_control::set()
