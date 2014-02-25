@@ -79,6 +79,7 @@ $(document).ready(function () {
                 ["Exciter", "Exciter.html", "images/Calf - Exciter.jpg"],
                 ["Bass Enhancer", "Bass Enhancer.html", "images/Calf - Bass Enhancer.jpg"],
                 ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.jpg"],
+                ["Crusher", "Crusher.html", "images/Calf - Crusher.jpg"],
             ],
             "icons/distortion.png"
         ],
