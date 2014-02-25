@@ -197,7 +197,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
         weight_old[i] = -1.f;
     }
     
-    crossover.init(2, 4, 44100);
+    crossover.init(channels, strips, 44100);
 }
 multibandlimiter_audio_module::~multibandlimiter_audio_module()
 {
@@ -270,8 +270,8 @@ void multibandlimiter_audio_module::params_changed()
     
     // rebuild multiband buffer
     if( *params[param_attack] != attack_old or *params[param_oversampling] != oversampling_old) {
-        int bs           = (int)(srate * (*params[param_attack] / 1000.f) * channels * *params[param_oversampling]);
-        buffer_size      = bs - bs % (channels * (int)*params[param_oversampling]); // buffer size attack rate
+        int bs           = (int)(srate * (*params[param_attack] / 1000.f) * channels * over);
+        buffer_size      = bs - bs % channels; // buffer size attack rate
         attack_old       = *params[param_attack];
         oversampling_old = *params[param_oversampling];
         _sanitize        = true;
@@ -295,10 +295,6 @@ void multibandlimiter_audio_module::params_changed()
 void multibandlimiter_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
-    // rebuild buffer
-    overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels * 16) + channels * 16; // buffer size max attack rate
-    buffer = (float*) calloc(overall_buffer_size, sizeof(float));
-    pos = 0;
     set_srates();
     int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, -param_att0, -param_att1, -param_att2, -param_att3};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1, -1, -1};
@@ -314,6 +310,10 @@ void multibandlimiter_audio_module::set_srates()
         resampler[j][0].set_params(srate, over, 2);
         resampler[j][1].set_params(srate, over, 2);
     }
+    // rebuild buffer
+    overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels * over) + channels; // buffer size max attack rate
+    buffer = (float*) calloc(overall_buffer_size, sizeof(float));
+    pos = 0;
 }
 
 #define BYPASSED_COMPRESSION(index) \
