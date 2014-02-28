@@ -47,9 +47,9 @@
                         <value param="dc" />
                     </vbox>
                     <vbox>
-                        <label param="anti-aliasing" />
-                        <knob param="anti-aliasing" size="2" />
-                        <value param="anti-aliasing" />
+                        <label param="anti_aliasing" />
+                        <knob param="anti_aliasing" size="2" />
+                        <value param="anti_aliasing" />
                     </vbox>
                     <vbox>
                         <label text="Mix" />

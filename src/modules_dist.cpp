@@ -688,32 +688,12 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
         if(bypassed) {
             outs[0][i]  = ins[0][i];
             outs[1][i]  = ins[1][i];
-            clip_inL    = 0.f;
-            clip_inR    = 0.f;
-            clip_outL   = 0.f;
-            clip_outR   = 0.f;
-            meter_inL   = 0.f;
-            meter_inR   = 0.f;
-            meter_outL  = 0.f;
-            meter_outR  = 0.f;
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
         } else {
-            // let meters fall a bit
-            clip_inL    -= std::min(clip_inL,  numsamples);
-            clip_inR    -= std::min(clip_inR,  numsamples);
-            clip_outL   -= std::min(clip_outL, numsamples);
-            clip_outR   -= std::min(clip_outR, numsamples);
-            meter_inL    = 0.f;
-            meter_inR    = 0.f;
-            meter_outL   = 0.f;
-            meter_outR   = 0.f;
-            
-            // GUI stuff
-            if(L > meter_inL) meter_inL = L;
-            if(R > meter_inR) meter_inR = R;
-            if(L > 1.f) clip_inL  = srate >> 3;
-            if(R > 1.f) clip_inR  = srate >> 3;
-            
             // transients
+            float inL = 0;
+            float inR = 0;
             if(*params[param_magnetical] > 0.5f) {
                 float values[] = {L, R};
                 transients.process(values);
@@ -762,6 +742,9 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             L *= *params[param_level_in];
             R *= *params[param_level_in];
             
+            inL = L;
+            inR = R;
+            
             // save for drawing input/output curve
             float Lc = L;
             float Rc = R;
@@ -799,12 +782,6 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             outs[0][i] = L;
             outs[1][i] = R;
             
-            // clip LED's
-            if(L > 1.f) clip_outL = srate >> 3;
-            if(R > 1.f) clip_outR = srate >> 3;
-            if(L > meter_outL) meter_outL = L;
-            if(R > meter_outR) meter_outR = R;
-            
             // sanitize filters
             lp[0][0].sanitize();
             lp[1][0].sanitize();
@@ -814,34 +791,27 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             // LFO's should go on
             lfo1.advance(1);
             lfo2.advance(1);
-        
-            float s = (fabs(Lo) + fabs(Ro)) / 2;
-            if (s > rms) {
-                rms = s;
-            }
-            float in = (fabs(Lc) + fabs(Rc)) / 2;
-            if (in > input) {
-                input = in;
-            }
+            
+            // dot
+            rms = std::max((double)rms, (fabs(Lo) + fabs(Ro)) / 2);
+            input = std::max((double)input, (fabs(Lc) + fabs(Rc)) / 2);
+            
+            float values[] = {inL, inR, outs[0][i], outs[1][i]};
+            meters.process(values);
         }
     }
     if (bypassed)
         bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
-    // draw meters
-    SET_IF_CONNECTED(clip_inL);
-    SET_IF_CONNECTED(clip_inR);
-    SET_IF_CONNECTED(clip_outL);
-    SET_IF_CONNECTED(clip_outR);
-    SET_IF_CONNECTED(meter_inL);
-    SET_IF_CONNECTED(meter_inR);
-    SET_IF_CONNECTED(meter_outL);
-    SET_IF_CONNECTED(meter_outR);
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
 void tapesimulator_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
     transients.set_sample_rate(srate);
     noisefilters[0][0].set_hp_rbj(120.f, 0.707, (float)srate);
     noisefilters[1][0].copy_coeffs(noisefilters[0][0]);

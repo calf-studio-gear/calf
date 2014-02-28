@@ -124,6 +124,7 @@ class tapesimulator_audio_module:
     dsp::biquad_d2 noisefilters[2][3];
     dsp::transients transients;
     dsp::bypass bypass;
+    vumeters meters;
     const static int channels = 2;
     dsp::simple_lfo lfo1, lfo2;
     float lp_old;
