@@ -401,3 +401,152 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
     }
     return outputs_mask;
 }
+
+/**********************************************************************
+ * HAAS enhancer by Vladimir Sadovnikov
+**********************************************************************/
+
+haas_enhancer_audio_module::haas_enhancer_audio_module()
+{
+    buffer              = NULL;
+    srate               = 0;
+    buf_size            = 0;
+    write_ptr           = 0;
+
+    m_source            = 2;
+    s_delay[0]          = 0;
+    s_delay[1]          = 0;
+    s_bal_l[0]          = 0.0f;
+    s_bal_l[1]          = 0.0f;
+    s_bal_r[0]          = 0.0f;
+    s_bal_r[1]          = 0.0f;
+}
+
+haas_enhancer_audio_module::~haas_enhancer_audio_module()
+{
+    if (buffer != NULL)
+    {
+        delete [] buffer;
+        buffer = NULL;
+    }
+}
+
+void haas_enhancer_audio_module::params_changed()
+{
+    m_source            = (uint32_t)(*params[par_m_source]);
+    s_delay[0]          = (uint32_t)(*params[par_s_delay0] * 0.001 * srate);
+    s_delay[1]          = (uint32_t)(*params[par_s_delay1] * 0.001 * srate);
+    
+    float phase0        = ((*params[par_s_phase0]) > 0.5f) ? 1.0f : -1.0f;
+    float phase1        = ((*params[par_s_phase1]) > 0.5f) ? 1.0f : -1.0f;
+    
+    s_bal_l[0]          = (*params[par_s_balance0]) * (*params[par_s_gain0]) * phase0;
+    s_bal_r[0]          = (1.0 - *params[par_s_balance0]) * (*params[par_s_gain0]) * phase0;
+    s_bal_l[1]          = (*params[par_s_balance1]) * (*params[par_s_gain1]) * phase1;
+    s_bal_r[1]          = (1.0 - *params[par_s_balance1]) * (*params[par_s_gain1]) * phase1;
+}
+
+void haas_enhancer_audio_module::activate()
+{
+    write_ptr   = 0;
+}
+
+void haas_enhancer_audio_module::deactivate()
+{
+}
+
+void haas_enhancer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    float *old_buf = buffer;
+
+    uint32_t min_buf_size = (uint32_t)(srate * HAAS_ENHANCER_MAX_DELAY);
+    uint32_t new_buf_size = 1;
+    while (new_buf_size < min_buf_size)
+        new_buf_size <<= 1;
+
+    float *new_buf = new float[new_buf_size];
+    for (size_t i=0; i<new_buf_size; i++)
+        new_buf[i] = 0.0f;
+
+    // Assign new pointer and size
+    buffer         = new_buf;
+    buf_size       = new_buf_size;
+
+    // Delete old buffer
+    if (old_buf != NULL)
+        delete [] old_buf;
+}
+
+uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (*params[par_bypass] > 0.5f) {
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            ++offset;
+        }
+    } else {
+        // Sample variables
+        float mid, side[2], side_l, side_r;
+        float mtr_mid = 0.0, mtr_side_l = 0.0, mtr_side_r = 0.0;
+
+        // Boundaries and pointers
+        uint32_t b_mask = buf_size-1;
+        uint32_t end    = offset + numsamples;
+        uint32_t w_ptr  = write_ptr;
+
+        // Delays for mid and side. Unsigned math, that's why we add buf_size
+        uint32_t s0_ptr = (w_ptr + buf_size - s_delay[0]) & b_mask;
+        uint32_t s1_ptr = (w_ptr + buf_size - s_delay[1]) & b_mask;
+
+        for (uint32_t i=offset; i<end; i++)
+        {
+            // Get middle sample
+            switch (m_source)
+            {
+                case 0: mid = ins[0][i]; break;
+                case 1: mid = ins[1][i]; break;
+                case 2: mid = (ins[0][i] + ins[1][i]) * 0.5f; break;
+                case 3: mid = (ins[0][i] - ins[1][i]) * 0.5f; break;
+                default: mid = 0.0f;
+            }
+
+            // Store middle
+            buffer[w_ptr]       = mid;
+
+            // Calculate side
+            mid                 = mid * (*params[par_m_gain]);
+            side[0]             = buffer[s0_ptr] * (*params[par_s_gain]);
+            side[1]             = buffer[s1_ptr] * (*params[par_s_gain]);
+            side_l              = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
+            side_r              = side[1] * s_bal_r[1] - side[0] * s_bal_r[0];
+
+            // Output stereo image
+            outs[0][i]          = mid + side_l;
+            outs[1][i]          = mid + side_r;
+
+            // Update pointers
+            w_ptr               = (w_ptr + 1) & b_mask;
+            s0_ptr              = (s0_ptr + 1) & b_mask;
+            s1_ptr              = (s1_ptr + 1) & b_mask;
+
+            // Update meters
+            if (mtr_mid < mid)
+                mtr_mid = mid;
+            if (mtr_side_l < side_l)
+                mtr_side_l = side_l;
+            if (mtr_side_r < side_r)
+                mtr_side_r = side_r;
+        }
+
+        write_ptr = w_ptr;
+
+        // Output meters
+        *params[mtr_m]   = mtr_mid;
+        *params[mtr_s_l] = mtr_side_l;
+        *params[mtr_s_r] = mtr_side_r;
+    }
+
+    return outputs_mask;
+}

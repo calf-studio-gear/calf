@@ -18,6 +18,9 @@
     PER_MODULE_ITEM(reverb, false, "reverb")
     PER_MODULE_ITEM(vintage_delay, false, "vintagedelay")
     PER_MODULE_ITEM(comp_delay, true, "compdelay")
+#ifdef ENABLE_EXPERIMENTAL
+    PER_MODULE_ITEM(haas_enhancer, true, "haasenhancer")
+#endif
     
     // dynamics
     PER_MODULE_ITEM(compressor, false, "compressor")
