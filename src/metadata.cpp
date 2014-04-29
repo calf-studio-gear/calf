@@ -245,37 +245,37 @@ CALF_PLUGIN_INFO(comp_delay) = { 0x8485, "CompensationDelay", "Calf Compensation
 CALF_PORT_NAMES(haas_enhancer) = {"In L", "In R", "Out L", "Out R"};
 
 const char *haas_enhancer_source[] = {
-    "Left (L)",
-    "Right (R)",
+    "Left",
+    "Right",
     "Mid (L+R)",
     "Side (L-R)",
     "Mute",
 };
 
 CALF_PORT_PROPS(haas_enhancer) = {
-    {    2,      0,    4,     1, PF_ENUM | PF_CTL_COMBO, haas_enhancer_source, "m_source", "Middle source" },
-    {  0.0,    0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "m_phase", "Middle phase" },
+    BYPASS_AND_LEVEL_PARAMS
+    {  1.0,    0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side gain" },
+    METERING_PARAMS
+    
+    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideL", "Side L" },
+    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideR", "Side R" },
+    
+    {    2,        0,    4,     1, PF_ENUM | PF_CTL_COMBO, haas_enhancer_source, "m_source", "Middle source" },
+    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "m_phase", "Middle phase" },
 
-    { 2.05,    0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay1", "Side channel 1 delay" },
-    {  0.5,    0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Side channel 1 balance" },
-    {  1.0,    0.0, 10.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Side channel 1 gain" },
-    {  0.0,    0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Side channel 1 phase" },
+    { 2.05,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay1", "Side channel 1 delay" },
+    {  0.5,      0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Side channel 1 balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Side channel 1 gain" },
+    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Side channel 1 phase" },
 
-    { 2.12,    0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay2", "Side channel 2 delay" },
-    {  0.5,    0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Side channel 2 balance" },
-    {  1.0,    0.0, 10.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Side channel 2 gain" },
-    {  1.0,    0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Side channel 2 phase" },
+    { 2.12,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay2", "Side channel 2 delay" },
+    {  0.5,      0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Side channel 2 balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Side channel 2 gain" },
+    {  1.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Side channel 2 phase" },
 
-    {  1.0,    0.0, 10.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "m_gain", "Middle gain" },
-    {  1.0,    0.0, 10.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side gain" },
-    {  0,        0,    1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
-
-    { 0,         0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mtr_m", "Middle" },
-    { 0,         0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mtr_s_l", "Side L" },
-    { 0,         0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "mtr_s_r", "Side R" },
     {}
 };
-CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf HAAS Stereo Enhancer", "Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "HaasPlugin" };
+CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf Haas Stereo Enhancer", "Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

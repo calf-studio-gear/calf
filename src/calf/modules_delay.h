@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <limits.h>
 #include "biquad.h"
+#include "bypass.h"
 #include "inertia.h"
 #include "audio_fx.h"
 #include "giface.h"
@@ -139,6 +140,9 @@ public:
     uint32_t srate;
     uint32_t buf_size; // guaranteed to be power of 2
     uint32_t write_ptr;
+    
+    dsp::bypass bypass;
+    vumeters meters;
     
     uint32_t m_source, s_delay[2];
     float s_bal_l[2], s_bal_r[2];

@@ -476,20 +476,26 @@ void haas_enhancer_audio_module::set_sample_rate(uint32_t sr)
     // Delete old buffer
     if (old_buf != NULL)
         delete [] old_buf;
+        
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, -param_meter_sideL, -param_meter_sideR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1};
+    meters.init(params, meter, clip, 6, srate);
 }
 
 uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    if (*params[par_bypass] > 0.5f) {
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    if (bypassed) {
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 0, 0};
+            meters.process(values);
             ++offset;
         }
     } else {
         // Sample variables
         float mid, side[2], side_l, side_r;
-        float mtr_mid = 0.0, mtr_side_l = 0.0, mtr_side_r = 0.0;
 
         // Boundaries and pointers
         uint32_t b_mask = buf_size-1;
@@ -516,37 +522,27 @@ uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsample
             buffer[w_ptr]       = mid;
 
             // Calculate side
-            mid                 = mid * (*params[par_m_gain]);
+            mid                 = mid * *params[param_level_in];
             side[0]             = buffer[s0_ptr] * (*params[par_s_gain]);
             side[1]             = buffer[s1_ptr] * (*params[par_s_gain]);
             side_l              = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
             side_r              = side[1] * s_bal_r[1] - side[0] * s_bal_r[0];
 
             // Output stereo image
-            outs[0][i]          = mid + side_l;
-            outs[1][i]          = mid + side_r;
+            outs[0][i]          = (mid + side_l) * *params[param_level_out];
+            outs[1][i]          = (mid + side_r) * *params[param_level_out];
 
             // Update pointers
             w_ptr               = (w_ptr + 1) & b_mask;
             s0_ptr              = (s0_ptr + 1) & b_mask;
             s1_ptr              = (s1_ptr + 1) & b_mask;
 
-            // Update meters
-            if (mtr_mid < mid)
-                mtr_mid = mid;
-            if (mtr_side_l < side_l)
-                mtr_side_l = side_l;
-            if (mtr_side_r < side_r)
-                mtr_side_r = side_r;
+            float values[] = {ins[0][i], ins[1][i], outs[0][i], outs[1][i], side_l, side_r};
+            meters.process (values);
         }
-
+        bypass.crossfade(ins, outs, 2, offset, numsamples);
         write_ptr = w_ptr;
-
-        // Output meters
-        *params[mtr_m]   = mtr_mid;
-        *params[mtr_s_l] = mtr_side_l;
-        *params[mtr_s_r] = mtr_side_r;
     }
-
+    meters.fall(numsamples);
     return outputs_mask;
 }
