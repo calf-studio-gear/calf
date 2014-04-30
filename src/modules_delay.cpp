@@ -440,10 +440,10 @@ void haas_enhancer_audio_module::params_changed()
     float phase0        = ((*params[par_s_phase0]) > 0.5f) ? 1.0f : -1.0f;
     float phase1        = ((*params[par_s_phase1]) > 0.5f) ? 1.0f : -1.0f;
     
-    s_bal_l[0]          = (*params[par_s_balance0]) * (*params[par_s_gain0]) * phase0;
-    s_bal_r[0]          = (1.0 - *params[par_s_balance0]) * (*params[par_s_gain0]) * phase0;
-    s_bal_l[1]          = (*params[par_s_balance1]) * (*params[par_s_gain1]) * phase1;
-    s_bal_r[1]          = (1.0 - *params[par_s_balance1]) * (*params[par_s_gain1]) * phase1;
+    s_bal_l[0]          = (*params[par_s_balance0] + 1) / 2 * (*params[par_s_gain0]) * phase0;
+    s_bal_r[0]          = (1.0 - (*params[par_s_balance0] + 1) / 2) * (*params[par_s_gain0]) * phase0;
+    s_bal_l[1]          = (*params[par_s_balance1] + 1) / 2 * (*params[par_s_gain1]) * phase1;
+    s_bal_r[1]          = (1.0 - (*params[par_s_balance1] + 1) / 2) * (*params[par_s_gain1]) * phase1;
 }
 
 void haas_enhancer_audio_module::activate()
@@ -477,72 +477,74 @@ void haas_enhancer_audio_module::set_sample_rate(uint32_t sr)
     if (old_buf != NULL)
         delete [] old_buf;
         
-    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, -param_meter_sideL, -param_meter_sideR};
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_meter_sideL, param_meter_sideR};
     int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1};
     meters.init(params, meter, clip, 6, srate);
 }
 
 uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
-    if (bypassed) {
-        while(offset < numsamples) {
+    bool bypassed  = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t end   = offset + numsamples;
+    uint32_t off_  = offset;
+    uint32_t w_ptr = write_ptr;
+    
+    // Sample variables
+    float mid, side[2], side_l, side_r;
+    // Boundaries and pointers
+    uint32_t b_mask = buf_size-1;
+            
+    while(offset < end) {
+        float values[] = {0, 0, 0, 0, 0, 0};
+        float *p = values;
+        
+        // Get middle sample
+        switch (m_source)
+        {
+            case 0:  mid = ins[0][offset]; break;
+            case 1:  mid = ins[1][offset]; break;
+            case 2:  mid = (ins[0][offset] + ins[1][offset]) * 0.5f; break;
+            case 3:  mid = (ins[0][offset] - ins[1][offset]) * 0.5f; break;
+            default: mid = 0.0f;
+        }
+
+        // Store middle
+        buffer[w_ptr] = mid * *params[param_level_in];
+            
+        if (bypassed) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
-            float values[] = {0, 0, 0, 0, 0, 0};
-            meters.process(values);
-            ++offset;
-        }
-    } else {
-        // Sample variables
-        float mid, side[2], side_l, side_r;
-
-        // Boundaries and pointers
-        uint32_t b_mask = buf_size-1;
-        uint32_t end    = offset + numsamples;
-        uint32_t w_ptr  = write_ptr;
-
-        // Delays for mid and side. Unsigned math, that's why we add buf_size
-        uint32_t s0_ptr = (w_ptr + buf_size - s_delay[0]) & b_mask;
-        uint32_t s1_ptr = (w_ptr + buf_size - s_delay[1]) & b_mask;
-
-        for (uint32_t i=offset; i<end; i++)
-        {
-            // Get middle sample
-            switch (m_source)
-            {
-                case 0: mid = ins[0][i]; break;
-                case 1: mid = ins[1][i]; break;
-                case 2: mid = (ins[0][i] + ins[1][i]) * 0.5f; break;
-                case 3: mid = (ins[0][i] - ins[1][i]) * 0.5f; break;
-                default: mid = 0.0f;
-            }
-
-            // Store middle
-            buffer[w_ptr]       = mid;
-
+        } else {
+            // Delays for mid and side. Unsigned math, that's why we add buf_size
+            uint32_t s0_ptr = (w_ptr + buf_size - s_delay[0]) & b_mask;
+            uint32_t s1_ptr = (w_ptr + buf_size - s_delay[1]) & b_mask;
+    
             // Calculate side
-            mid                 = mid * *params[param_level_in];
-            side[0]             = buffer[s0_ptr] * (*params[par_s_gain]);
-            side[1]             = buffer[s1_ptr] * (*params[par_s_gain]);
-            side_l              = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
-            side_r              = side[1] * s_bal_r[1] - side[0] * s_bal_r[0];
-
+            mid     = mid * *params[param_level_in];
+            side[0] = buffer[s0_ptr] * (*params[par_s_gain]);
+            side[1] = buffer[s1_ptr] * (*params[par_s_gain]);
+            side_l  = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
+            side_r  = side[1] * s_bal_r[1] - side[0] * s_bal_r[0];
+    
             // Output stereo image
-            outs[0][i]          = (mid + side_l) * *params[param_level_out];
-            outs[1][i]          = (mid + side_r) * *params[param_level_out];
-
+            outs[0][offset] = (mid + side_l) * *params[param_level_out];
+            outs[1][offset] = (mid + side_r) * *params[param_level_out];
+    
             // Update pointers
-            w_ptr               = (w_ptr + 1) & b_mask;
-            s0_ptr              = (s0_ptr + 1) & b_mask;
-            s1_ptr              = (s1_ptr + 1) & b_mask;
-
-            float values[] = {ins[0][i], ins[1][i], outs[0][i], outs[1][i], side_l, side_r};
-            meters.process (values);
+            s0_ptr = (s0_ptr + 1) & b_mask;
+            s1_ptr = (s1_ptr + 1) & b_mask;
+            
+            *p++ = ins[0][offset];  *p++ = ins[1][offset];
+            *p++ = outs[0][offset]; *p++ = outs[1][offset];
+            *p++ = side_l;          *p++ = side_r;
         }
-        bypass.crossfade(ins, outs, 2, offset, numsamples);
-        write_ptr = w_ptr;
+        meters.process (values);
+        w_ptr = (w_ptr + 1) & b_mask;
+        ++offset;
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, 2, off_, end);
+    write_ptr = w_ptr;
     meters.fall(numsamples);
     return outputs_mask;
 }

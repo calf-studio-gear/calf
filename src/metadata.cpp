@@ -254,24 +254,23 @@ const char *haas_enhancer_source[] = {
 
 CALF_PORT_PROPS(haas_enhancer) = {
     BYPASS_AND_LEVEL_PARAMS
-    {  1.0,    0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side gain" },
+    {  1.0,    0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side Gain" },
     METERING_PARAMS
-    
     {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideL", "Side L" },
     {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideR", "Side R" },
     
     {    2,        0,    4,     1, PF_ENUM | PF_CTL_COMBO, haas_enhancer_source, "m_source", "Middle source" },
     {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "m_phase", "Middle phase" },
 
-    { 2.05,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay1", "Side channel 1 delay" },
-    {  0.5,      0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Side channel 1 balance" },
-    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Side channel 1 gain" },
-    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Side channel 1 phase" },
+    { 2.05,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay1", "Left Delay" },
+    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Left Balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Left Gain" },
+    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Left Phase" },
 
-    { 2.12,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "s_delay2", "Side channel 2 delay" },
-    {  0.5,      0.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Side channel 2 balance" },
-    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Side channel 2 gain" },
-    {  1.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Side channel 2 phase" },
+    { 2.12,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay2", "Right Delay" },
+    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Right Balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Right Gain" },
+    {  1.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Right Phase" },
 
     {}
 };
@@ -1097,7 +1096,7 @@ CALF_PORT_PROPS(mono) = {
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phasel", "Phase L" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phaser", "Phase R" },
 
-    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "delay", "Delay" },
+    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "delay", "Delay" },
     { 0.f,           -1.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "stereo_base", "Stereo Base" },
     { 0,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "stereo_phase", "Stereo Phase" },
     { 1,           1,           100,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "sc_level", "S/C Level" },
@@ -1132,7 +1131,7 @@ CALF_PORT_PROPS(stereo) = {
     { 0.f,      -1.f,            1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "mpan", "M Panorama" },
 
     { 0.f,           -1.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "stereo_base", "Stereo Base" },
-    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "delay", "Delay" },
+    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "delay", "Delay" },
 
     { 0.f,      0.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_COEF | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_phase", "Phase Correlation" },
     

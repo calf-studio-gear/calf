@@ -98,7 +98,7 @@ struct haas_enhancer_metadata: public plugin_metadata<haas_enhancer_metadata>
         param_count
     };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
-    PLUGIN_NAME_ID_LABEL("haasenhancer", "haasenhancer", "HAAS Stereo Enhancer")
+    PLUGIN_NAME_ID_LABEL("haasenhancer", "haasenhancer", "Haas Stereo Enhancer")
 };
 
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
