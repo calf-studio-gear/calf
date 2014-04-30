@@ -521,6 +521,8 @@ uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsample
     
             // Calculate side
             mid     = mid * *params[param_level_in];
+            if (*params[par_m_phase] > 0.5f)
+                mid = -mid;
             side[0] = buffer[s0_ptr] * (*params[par_s_gain]);
             side[1] = buffer[s1_ptr] * (*params[par_s_gain]);
             side_l  = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
