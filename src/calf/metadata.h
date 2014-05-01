@@ -85,6 +85,22 @@ struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
     PLUGIN_NAME_ID_LABEL("compdelay", "compdelay", "Compensation Delay Line")
 };
 
+struct haas_enhancer_metadata: public plugin_metadata<haas_enhancer_metadata>
+{
+    enum {
+        param_bypass, param_level_in, param_level_out,
+        par_s_gain,
+        STEREO_VU_METER_PARAMS,
+        param_meter_sideL, param_meter_sideR,
+        par_m_source, par_m_phase,
+        par_s_delay0, par_s_balance0, par_s_gain0, par_s_phase0,
+        par_s_delay1, par_s_balance1, par_s_gain1, par_s_phase1,
+        param_count
+    };
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
+    PLUGIN_NAME_ID_LABEL("haasenhancer", "haasenhancer", "Haas Stereo Enhancer")
+};
+
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
 {
 public:

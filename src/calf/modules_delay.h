@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <limits.h>
 #include "biquad.h"
+#include "bypass.h"
 #include "inertia.h"
 #include "audio_fx.h"
 #include "giface.h"
@@ -119,6 +120,35 @@ public:
 
     comp_delay_audio_module();
     virtual ~comp_delay_audio_module();
+
+    void params_changed();
+    void activate();
+    void deactivate();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/**********************************************************************
+ * HAAS enhancer by Vladimir Sadovnikov 
+**********************************************************************/
+#define HAAS_ENHANCER_MAX_DELAY            (10 * 0.001) /* 10 MSec */
+
+class haas_enhancer_audio_module: public audio_module<haas_enhancer_metadata>
+{
+public:
+    float *buffer;
+    uint32_t srate;
+    uint32_t buf_size; // guaranteed to be power of 2
+    uint32_t write_ptr;
+    
+    dsp::bypass bypass;
+    vumeters meters;
+    
+    uint32_t m_source, s_delay[2];
+    float s_bal_l[2], s_bal_r[2];
+
+    haas_enhancer_audio_module();
+    virtual ~haas_enhancer_audio_module();
 
     void params_changed();
     void activate();

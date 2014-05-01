@@ -18,6 +18,7 @@
     PER_MODULE_ITEM(reverb, false, "reverb")
     PER_MODULE_ITEM(vintage_delay, false, "vintagedelay")
     PER_MODULE_ITEM(comp_delay, true, "compdelay")
+    PER_MODULE_ITEM(haas_enhancer, true, "haasenhancer")
     
     // dynamics
     PER_MODULE_ITEM(compressor, false, "compressor")
