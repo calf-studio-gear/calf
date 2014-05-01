@@ -950,7 +950,7 @@ CALF_PORT_PROPS(ringmodulator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(ringmodulator) = { 0x8514, "Ring Modulator", "Calf Ring Modulator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(ringmodulator) = { 0x8514, "RingModulator", "Calf Ring Modulator", "Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
