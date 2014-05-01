@@ -83,6 +83,20 @@ float control_base::get_float(const char *name, float def_value)
     return value;
 }
 
+void control_base::set_visibilty(bool state)
+{
+    if (state) {
+        if (is_container())
+            gtk_widget_show(widget);
+        else
+            gtk_widget_show(GTK_WIDGET(container));
+    } else {
+        if (is_container())
+            gtk_widget_hide(widget);
+        else
+            gtk_widget_hide(GTK_WIDGET(container));
+    }
+}
 /******************************** container base class **********************/
 
 void control_container::set_std_properties()
@@ -117,14 +131,6 @@ void param_control::set_std_properties()
             gtk_widget_set_name(widget, name.c_str());
         }
     }
-}
-
-void param_control::set_visibilty(bool state)
-{
-    if (state)
-        gtk_widget_show(widget);
-    else
-        gtk_widget_hide(widget);
 }
 
 void param_control::hook_params()

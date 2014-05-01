@@ -98,7 +98,7 @@ CALF_PORT_PROPS(flanger) = {
     {}
 };
 
-CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "FlangerPlugin" };
+CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +116,7 @@ CALF_PORT_PROPS(phaser) = {
     { 1.0,        0, 4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry Amount" },
 };
 
-CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "PhaserPlugin" };
+CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -242,41 +242,6 @@ CALF_PORT_PROPS(comp_delay) = {
 CALF_PLUGIN_INFO(comp_delay) = { 0x8485, "CompensationDelay", "Calf Compensation Delay Line", "Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
-CALF_PORT_NAMES(haas_enhancer) = {"In L", "In R", "Out L", "Out R"};
-
-const char *haas_enhancer_source[] = {
-    "Left",
-    "Right",
-    "Mid (L+R)",
-    "Side (L-R)",
-    "Mute",
-};
-
-CALF_PORT_PROPS(haas_enhancer) = {
-    BYPASS_AND_LEVEL_PARAMS
-    {  1.0,    0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side Gain" },
-    METERING_PARAMS
-    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideL", "Side L" },
-    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideR", "Side R" },
-    
-    {    2,        0,    4,     1, PF_ENUM | PF_CTL_COMBO, haas_enhancer_source, "m_source", "Middle source" },
-    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "m_phase", "Middle phase" },
-
-    { 2.05,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay1", "Left Delay" },
-    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Left Balance" },
-    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Left Gain" },
-    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Left Phase" },
-
-    { 2.12,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay2", "Right Delay" },
-    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Right Balance" },
-    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Right Gain" },
-    {  1.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Right Phase" },
-
-    {}
-};
-CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf Haas Stereo Enhancer", "Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "SpatialPlugin" };
-
-////////////////////////////////////////////////////////////////////////////
 
 CALF_PORT_NAMES(rotary_speaker) = {"In L", "In R", "Out L", "Out R"};
 
@@ -319,7 +284,7 @@ CALF_PORT_PROPS(multichorus) = {
     { 0.75,       0,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "overlap", "Overlap" },
 };
 
-CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ChorusPlugin" };
+CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1076,38 +1041,6 @@ CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer",
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(mono) = {"In", "Out L", "Out R"};
-CALF_PORT_PROPS(mono) = {
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
-    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
-    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_in", "Input" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_outL", "Output L" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_outR", "Output R" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_in", "0dB-In" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outL", "0dB-OutL" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "0dB-OutR" },
-
-    { 0.f,      -1.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "balance_out", "Balance" },
-
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "softclip", "Softclip" },
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mutel", "Mute L" },
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "muter", "Mute R" },
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phasel", "Phase L" },
-    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phaser", "Phase R" },
-
-    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "delay", "Delay" },
-    { 0.f,           -1.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "stereo_base", "Stereo Base" },
-    { 0,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "stereo_phase", "Stereo Phase" },
-    { 1,           1,           100,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "sc_level", "S/C Level" },
-    {}
-};
-
-CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmidt", calf_plugins::calf_copyright_info, "ConverterPlugin" };
-
-
-////////////////////////////////////////////////////////////////////////////
-
 CALF_PORT_NAMES(stereo) = {"In L", "In R", "Out L", "Out R"};
 const char *stereo_mode_names[] = { "LR > LR (Stereo Default)", "LR > MS (Stereo to Mid-Side)", "MS > LR (Mid-Side to Stereo)", "LR > LL (Mono Left Channel)", "LR > RR (Mono Right Channel)", "LR > L+R (Mono Sum L+R)", "LR > RL (Stereo Flip Channels)" };
 CALF_PORT_PROPS(stereo) = {
@@ -1140,7 +1073,75 @@ CALF_PORT_PROPS(stereo) = {
     {}
 };
 
-CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus Schmidt", calf_plugins::calf_copyright_info, "ConverterPlugin" };
+CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(haas_enhancer) = {"In L", "In R", "Out L", "Out R"};
+
+const char *haas_enhancer_source[] = {
+    "Left",
+    "Right",
+    "Mid (L+R)",
+    "Side (L-R)",
+    "Mute",
+};
+
+CALF_PORT_PROPS(haas_enhancer) = {
+    BYPASS_AND_LEVEL_PARAMS
+    {  1.0,    0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "s_gain", "Side Gain" },
+    METERING_PARAMS
+    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideL", "Side L" },
+    {    0,        0,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_sideR", "Side R" },
+    
+    {    2,        0,    4,     1, PF_ENUM | PF_CTL_COMBO, haas_enhancer_source, "m_source", "Middle source" },
+    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "m_phase", "Middle phase" },
+
+    { 2.05,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay1", "Left Delay" },
+    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance1", "Left Balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain1", "Left Gain" },
+    {  0.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase1", "Left Phase" },
+
+    { 2.12,      0.0, 10.0,  0.01, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "s_delay2", "Right Delay" },
+    {  0.0,     -1.0,  1.0,  0.01, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "s_balance2", "Right Balance" },
+    {  1.0, 0.015625, 64.0,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "s_gain2", "Right Gain" },
+    {  1.0,      0.0,  1.0,   1.0, PF_BOOL | PF_CTL_TOGGLE, NULL, "s_phase2", "Right Phase" },
+
+    {}
+};
+CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf Haas Stereo Enhancer", "Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(mono) = {"In", "Out L", "Out R"};
+CALF_PORT_PROPS(mono) = {
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_in", "Input" },
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level_out", "Output" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_in", "Input" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_outL", "Output L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_outR", "Output R" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_in", "0dB-In" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outL", "0dB-OutL" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_outR", "0dB-OutR" },
+
+    { 0.f,      -1.f,           1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "balance_out", "Balance" },
+
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "softclip", "Softclip" },
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mutel", "Mute L" },
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "muter", "Mute R" },
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phasel", "Phase L" },
+    { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "phaser", "Phase R" },
+
+    { 0.f,         -20.f,        20.f,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "delay", "Delay" },
+    { 0.f,           -1.f,           1.f,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "stereo_base", "Stereo Base" },
+    { 0,        0, 360,  91, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DEG, NULL, "stereo_phase", "Stereo Phase" },
+    { 1,           1,           100,    0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "sc_level", "S/C Level" },
+    {}
+};
+
+CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+
 
 ////////////////////////////////////////////////////////////////////////////
 

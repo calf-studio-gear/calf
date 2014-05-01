@@ -46,6 +46,7 @@ struct control_base
 {
     virtual bool is_container() { return false; };
     GtkContainer *container;
+    GtkWidget *widget, *entrywin;
     std::string control_name;
     typedef std::map<std::string, std::string> xml_attribute_map;
     xml_attribute_map attribs;
@@ -54,6 +55,7 @@ struct control_base
     void require_int_attribute(const char *name);
     int get_int(const char *name, int def_value = 0);
     float get_float(const char *name, float def_value = 0.f);
+    virtual void set_visibilty(bool state);
     virtual void add(GtkWidget *w, control_base *base) { gtk_container_add(container, w); }
     /// called after creation, so that all standard properties can be set
     virtual void set_std_properties() = 0;
@@ -73,7 +75,6 @@ struct param_control: public control_base
 {    
     int param_no;
     std::string param_variable;
-    GtkWidget *widget, *entrywin;
     int in_change;
     bool has_entry;
     float old_displayed_value;
@@ -100,7 +101,6 @@ struct param_control: public control_base
     virtual void hook_params();
     virtual void on_idle() {}
     virtual void set_std_properties();
-    virtual void set_visibilty(bool state);
     virtual void add_context_menu_handler();
     virtual ~param_control();
     virtual void do_popup_menu();

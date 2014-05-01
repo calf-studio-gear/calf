@@ -545,18 +545,41 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
 {
     string s = plugin_pre_xml;
     const plugin_registry::plugin_vector &plugins = plugin_registry::instance().get_all();
-    std::string last = "";
-    for(unsigned int i = 0; i < plugins.size(); i++)
+    std::string type = "";
+    std::string tmp  = "";
+    unsigned int count = 0;
+    unsigned int size = plugins.size();
+    
+    const plugin_metadata_iface *p = plugins[0];
+    std::string last = (p->get_plugin_info()).plugin_type;
+    
+    for(unsigned int i = 0; i <= size; i++)
     {
-        const plugin_metadata_iface *p = plugins[i];
-        if ((p->get_plugin_info()).plugin_type != last) {
-            s += string("<separator/>");
-            last = (p->get_plugin_info()).plugin_type;
+        if (i < size) {
+            p = plugins[i];
+            type = (p->get_plugin_info()).plugin_type;
         }
-        string action_name = "Add" + string(p->get_id())+"Action";
-        s += string("<menuitem action=\"") + action_name + "\" />";
-        GtkActionEntry ae = { action_name.c_str(), NULL, p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
-        gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_id()), action_destroy_notify);
+        if (type != last or i >= size) {
+            if (count > 1) {
+                std::string title = last.substr(0, last.length() - 6);
+                GtkAction *ae = gtk_action_new( title.c_str(), title.c_str(), NULL, NULL );
+                gtk_action_group_add_action(actions, ae);
+                s += "<menu action='" + title + "'>" + tmp + "</menu>";
+            } else {
+                s += tmp;
+            }
+            tmp = "";
+            last = type;
+            count = 0;
+            s += tmp;
+        }
+        if (i < size) {
+            string action_name = "Add" + string(p->get_id()) + "Action";
+            GtkActionEntry ae = { action_name.c_str(), NULL, p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
+            gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_id()), action_destroy_notify);
+            tmp += string("<menuitem action=\"") + action_name + "\" />";
+            count += 1;
+        }
     }
     return s + plugin_post_xml;
 }
