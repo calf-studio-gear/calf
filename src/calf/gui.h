@@ -41,6 +41,7 @@ public:
 };
 
 class plugin_gui;
+class jack_host;
 
 struct control_base
 {
