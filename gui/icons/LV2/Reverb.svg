@@ -1,0 +1,38 @@
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="32" width="32" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <defs>
+  <clipPath id="e">
+   <rect rx="6" ry="6" height="84" width="84" y="6" x="6" fill="#fff"/>
+  </clipPath>
+  <linearGradient id="b" x1="48" gradientUnits="userSpaceOnUse" y1="20.221" x2="48" y2="138.66">
+   <stop stop-color="#fff" offset="0"/>
+   <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+  </linearGradient>
+  <filter id="c" height="1.384" width="1.384" color-interpolation-filters="sRGB" y="-.192" x="-.192">
+   <feGaussianBlur stdDeviation="5.28"/>
+  </filter>
+  <filter id="d" color-interpolation-filters="sRGB">
+   <feGaussianBlur stdDeviation="1.71"/>
+  </filter>
+  <linearGradient id="f" x1="45.448" gradientUnits="userSpaceOnUse" y1="92.54" gradientTransform="scale(1.0059 .99417)" x2="45.448" y2="7.0165">
+   <stop offset="0"/>
+   <stop stop-opacity=".58824" offset="1"/>
+  </linearGradient>
+  <linearGradient id="a" y2="335.67" gradientUnits="userSpaceOnUse" x2="304.81" gradientTransform="translate(40,-40)" y1="335.36" x1="277">
+   <stop stop-color="#fff" offset="0"/>
+   <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g transform="translate(-195 -132.36)">
+  <g display="none" transform="matrix(.39062 0 0 .39062 441.75 356.68)">
+   <rect opacity=".9" rx="15.36" ry="15.36" height="85" filter="url(#d)" width="86" y="7" x="5" fill="url(#f)"/>
+  </g>
+  <g display="none" transform="matrix(.39062 0 0 .39062 441.75 356.68)">
+   <rect height="66" stroke="#fff" stroke-linecap="round" stroke-width="1.28" fill="url(#b)" rx="30.72" ry="30.72" width="66" opacity=".5" clip-path="url(#e)" filter="url(#c)" y="15" x="15"/>
+  </g>
+  <g transform="translate(-120,-140)">
+   <rect opacity=".5" rx="0" ry="0" height="32" width="32" y="272.36" x="315"/>
+   <path opacity="0.28" d="m277 314.36c5.2303 9.741 12.991 17.381 28 19v9h-28z" transform="translate(40,-40)" fill="#fff"/>
+   <path d="m317 274.38v28h2v-24.656c-0.81302-1.2819-1.4516-2.4297-2-3.3438zm4 6.2188v21.781h2v-19.438c-0.71948-0.79062-1.4129-1.5697-2-2.3438zm4 4.4062v17.375h3v-15c-1.0967-0.77252-2.0955-1.5473-3-2.375zm5 3.6875v13.688h5v-11.312c-1.8455-0.69603-3.5044-1.4898-5-2.375zm7 3.0938v10.594h8v-9c-2.971-0.30136-5.6249-0.85897-8-1.5938z" fill="url(#a)"/>
+  </g>
+ </g>
+</svg>

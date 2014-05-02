@@ -1273,7 +1273,7 @@ const char *monosynth_filter_choices[] = {
     "2x6dB/oct Bandpass",
 };
 
-CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(monosynth) = {
     { monosynth_metadata::wave_saw,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
@@ -1383,7 +1383,7 @@ void monosynth_metadata::get_configure_vars(vector<string> &names) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 plugin_command_info *organ_metadata::get_commands()
 {
@@ -1589,7 +1589,7 @@ CALF_PORT_NAMES(fluidsynth) = {
     "Out L", "Out R",
 };
 
-CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "FluidSynth Team / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "FluidSynth Team / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(fluidsynth) = {
     { 0.5,         0,   1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
@@ -1672,7 +1672,7 @@ CALF_PORT_NAMES(wavetable) = {
     "Out L", "Out R",
 };
 
-CALF_PLUGIN_INFO(wavetable) = { 0x8701, "Wavetable", "Calf Wavetable", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "SynthesizerPlugin" };
+CALF_PLUGIN_INFO(wavetable) = { 0x8701, "Wavetable", "Calf Wavetable", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(wavetable) = {
     { wavetable_metadata::wt_count - 1,       0,  wavetable_metadata::wt_count - 1, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, wavetable_names, "o1wave", "Osc1 Wave" },
