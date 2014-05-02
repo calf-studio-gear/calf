@@ -529,6 +529,27 @@ static const char *plugin_post_xml =
 "  </menubar>\n"
 "</ui>\n"
 ;
+#define countof(X) ( (size_t) ( sizeof(X)/sizeof*(X) ) )
+void gtk_main_window::register_icons()
+{
+    const char *names[]={"Allpass", "Amplifier", "Analyser", "Bandpass", "Chorus", "Comb", "Compressor", "Constant", "Converter", "Delay", "Distortion", "Dynamics", "Envelope", "EQ", "Expander", "Filter", "Flanger", "Function", "Gate", "Generator", "Highpass", "Instrument", "Limiter", "Mixer", "Modulator", "MultiEQ", "Oscillator", "ParaEQ", "Phaser", "Pitch", "Reverb", "Simulator", "Spatial", "Spectral", "Utility", "Waveshaper"};
+    size_t i;
+    GtkIconFactory *factory = gtk_icon_factory_new ();
+    gtk_icon_factory_add_default(factory);
+    for (i = 0; i < countof(names); i++) {
+        char name[1024];
+        strcpy(name, "LV2_");
+        strcat(name, names[i]);
+        if (!gtk_icon_factory_lookup(factory, name)) {
+            std::string iname = std::string(PKGLIBDIR) + "icons/LV2/" + names[i] + ".svg";
+            GdkPixbuf *buf    = gdk_pixbuf_new_from_file_at_size(iname.c_str(), 64, 64, NULL);
+            GtkIconSet *icon  = gtk_icon_set_new_from_pixbuf(buf);
+            gtk_icon_factory_add (factory, name, icon);
+            gtk_icon_set_unref(icon);
+            g_object_unref(buf);
+        }
+    }
+}
 
 void gtk_main_window::add_plugin_action(GtkWidget *src, gpointer data)
 {
@@ -561,19 +582,10 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
             type = type.substr(0, type.length() - 6);
         }
         if (type != last or i >= size or !i) {
-            if (!gtk_icon_factory_lookup(factory, ("LV2_" + type).c_str())) {
-                std::string iname = std::string(PKGLIBDIR) + "icons/LV2/" + type + ".svg";
-                //printf("%s\n", iname.c_str());
-                GdkPixbuf *buf    = gdk_pixbuf_new_from_file_at_size(iname.c_str(), 128, 128, NULL);
-                GtkIconSet *icon  = gtk_icon_set_new_from_pixbuf(buf);
-                gtk_icon_factory_add (factory, ("LV2_" + type).c_str(), icon);
-                gtk_icon_factory_add_default (factory);
-                //printf("FACTORY %s\n", ("LV2_" + type).c_str());
-            }
+            
             if (i) {
                 if (count > 1) {
                     s += "<menu action='" + last + "'>" + tmp + "</menu>";
-                    //printf("menu %s\n", ("LV2_" + last).c_str());
                     GtkAction *a = gtk_action_new(last.c_str(), last.c_str(), NULL, ("LV2_" + last).c_str());
                     gtk_action_group_add_action(actions, a);
                 } else {
@@ -586,7 +598,6 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
         }
         if (i < size) {
             string action_name = "Add" + string(p->get_id()) + "Action";
-            //printf("single %s\n", ("LV2_" + type).c_str());
             // TODO:
             // add lv2 stock icons to plug-ins and not just to menus
             // GTK_STOCK_OPEN -> ("LV2_" + type).c_str()
@@ -606,6 +617,7 @@ static void window_destroy_cb(GtkWindow *window, gpointer data)
 
 void gtk_main_window::create()
 {
+    register_icons();
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     std::string title = "Calf JACK Host";
     gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
@@ -629,9 +641,6 @@ void gtk_main_window::create()
     gtk_widget_set_size_request(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), 640, -1);
     
     gtk_widget_set_name(GTK_WIDGET(gtk_ui_manager_get_widget(ui_mgr, "/ui/menubar")), "Calf-Menu");
-    
-    factory = gtk_icon_factory_new ();
-    gtk_icon_factory_add_default (factory);
     
     plugin_actions = gtk_action_group_new("plugins");
     string plugin_xml = make_plugin_list(plugin_actions);
