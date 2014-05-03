@@ -82,6 +82,15 @@ if USE_LV2_GUI
 endif
 	rm -f $(DESTDIR)$(lv2dir)/*.ttl
 	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/
+if USE_SORDI
+	for f in $(DESTDIR)$(lv2dir)/*.ttl; do \
+	    sout=`sordi -o turtle "$$f"`; \
+	    if test $$? != 0; then \
+	        echo "RDF file $$f is corrupted:"; \
+	        echo $$sout"<<<"; \
+	    fi; \
+	done
+endif
 endif
 
 #remove calf.so, calf.rdf and - if empty - ladspa dir in usr/share

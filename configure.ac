@@ -63,6 +63,9 @@ PKG_CHECK_MODULES(GLIB_DEPS, glib-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0, true, AC_MS
 # Fluidsynth
 PKG_CHECK_MODULES(FLUIDSYNTH_DEPS, fluidsynth >= 1.0.7, true, AC_MSG_ERROR([fluidsynth library not found]))
 
+# Sordi
+AC_CHECK_PROG(SORDI_ENABLED, sordi, yes, no)
+
 if test "$have_jack_header" = "yes"; then
   PKG_CHECK_MODULES(JACK_DEPS, jack >= 0.103.0,
     AC_CHECK_LIB([jack], [jack_port_register], JACK_FOUND="yes", ),)
@@ -166,6 +169,7 @@ AM_CONDITIONAL(USE_LV2_GUI, test "$LV2_GUI_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH, test "$LASH_ENABLED" = "yes")
 AM_CONDITIONAL(USE_LASH_0_6, test "$LASH_0_6_ENABLED" = "yes")
 AM_CONDITIONAL(USE_DEBUG, test "$set_enable_debug" = "yes")
+AM_CONDITIONAL(USE_SORDI, test "$SORDI_ENABLED" = "yes")
 
 ############################################################################################
 # Create autoconf symbols for config.h
@@ -190,7 +194,9 @@ fi
 if test "$set_enable_experimental" = "yes"; then
   AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
 fi
-
+if test "$SORDI_ENABLED" = "yes"; then
+  AC_DEFINE(USE_SORDI, 1, "Sordi sanity checks are enabled")
+fi
 ############################################################################################
 # Output directories
 if test "$LV2_ENABLED" == "yes"; then
