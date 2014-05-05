@@ -532,13 +532,20 @@ static const char *plugin_post_xml =
 #define countof(X) ( (size_t) ( sizeof(X)/sizeof*(X) ) )
 void gtk_main_window::register_icons()
 {
-    const char *names[]={"Allpass", "Amplifier", "Analyser", "Bandpass", "Chorus", "Comb", "Compressor", "Constant", "Converter", "Delay", "Distortion", "Dynamics", "Envelope", "EQ", "Expander", "Filter", "Flanger", "Function", "Gate", "Generator", "Highpass", "Instrument", "Limiter", "Mixer", "Modulator", "MultiEQ", "Oscillator", "ParaEQ", "Phaser", "Pitch", "Reverb", "Simulator", "Spatial", "Spectral", "Utility", "Waveshaper"};
-    size_t i;
-    GtkIconFactory *factory = gtk_icon_factory_new ();
-    gtk_icon_factory_add_default(factory);
-    for (i = 0; i < countof(names); i++) {
+    const char *names[]={"Allpass", "Amplifier", "Analyser",
+                         "Bandpass", "Chorus", "Comb", "Compressor",
+                         "Constant", "Converter", "Delay", "Distortion",
+                         "Dynamics", "Envelope", "EQ", "Expander",
+                         "Filter", "Flanger", "Function", "Gate",
+                         "Generator", "Highpass", "Instrument",
+                         "Limiter", "Mixer", "Modulator", "MultiEQ",
+                         "Oscillator", "ParaEQ", "Phaser", "Pitch",
+                         "Reverb", "Simulator", "Spatial", "Spectral",
+                         "Utility", "Waveshaper"};
+    factory = gtk_icon_factory_new ();
+    for (size_t i = 0; i < countof(names); i++) {
         char name[1024];
-        strcpy(name, "LV2_");
+        strcpy(name, "LV2-");
         strcat(name, names[i]);
         if (!gtk_icon_factory_lookup(factory, name)) {
             std::string iname = std::string(PKGLIBDIR) + "icons/LV2/" + names[i] + ".svg";
@@ -549,6 +556,7 @@ void gtk_main_window::register_icons()
             g_object_unref(buf);
         }
     }
+    gtk_icon_factory_add_default(factory);
 }
 
 void gtk_main_window::add_plugin_action(GtkWidget *src, gpointer data)
@@ -586,7 +594,7 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
             if (i) {
                 if (count > 1) {
                     s += "<menu action='" + last + "'>" + tmp + "</menu>";
-                    GtkAction *a = gtk_action_new(last.c_str(), last.c_str(), NULL, ("LV2_" + last).c_str());
+                    GtkAction *a = gtk_action_new(last.c_str(), last.c_str(), NULL, ("LV2-" + last).c_str());
                     gtk_action_group_add_action(actions, a);
                 } else {
                     s += tmp;
@@ -597,13 +605,14 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
             count = 0;
         }
         if (i < size) {
-            string action_name = "Add" + string(p->get_id()) + "Action";
+            std::string action = "Add" + string(p->get_id()) + "Action";
+            std::string stock  = "LV2-" + type;
             // TODO:
             // add lv2 stock icons to plug-ins and not just to menus
             // GTK_STOCK_OPEN -> ("LV2_" + type).c_str()
-            GtkActionEntry ae  = { action_name.c_str(), GTK_STOCK_OPEN, p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
+            GtkActionEntry ae  = { action.c_str(), stock.c_str(), p->get_label(), NULL, NULL, (GCallback)add_plugin_action };
             gtk_action_group_add_actions_full(actions, &ae, 1, (gpointer)new add_plugin_params(this, p->get_id()), action_destroy_notify);
-            tmp   += string("<menuitem always-show-image=\"true\" action=\"") + action_name + "\" />";
+            tmp   += string("<menuitem always-show-image=\"true\" action=\"") + action + "\" />";
             count += 1;
         }
     }

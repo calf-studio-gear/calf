@@ -58,6 +58,7 @@ namespace calf_plugins {
         GtkWidget *strips_table;
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
+        GtkIconFactory *factory;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
         std::vector<jack_host *> plugin_queue;
         bool is_closed;
