@@ -83,13 +83,7 @@ endif
 	rm -f $(DESTDIR)$(lv2dir)/*.ttl
 	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/
 if USE_SORDI
-	for f in $(DESTDIR)$(lv2dir)/*.ttl; do \
-	    sout=`sordi -o turtle "$$f"`; \
-	    if test $$? != 0; then \
-	        echo "RDF file $$f is corrupted:"; \
-	        echo $$sout"<<<"; \
-	    fi; \
-	done
+	for f in $(DESTDIR)$(lv2dir)/*.ttl; do sout=`sordi -o turtle "$$f"`; if test $$? != 0; then echo "RDF file $$f is corrupted:"; echo $$sout"<<<"; fi; done
 endif
 endif
 
