@@ -1556,7 +1556,10 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     //const parameter_properties &props = get_props();
-    page = gui->plugin->get_param_value(param_no);
+    if (param_no < 0)
+        page = 0;
+    else
+        page = gui->plugin->get_param_value(param_no);
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
     container = GTK_CONTAINER(nb);
