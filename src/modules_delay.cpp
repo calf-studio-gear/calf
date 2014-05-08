@@ -354,8 +354,8 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     float *old_buf = buffer;
 
-    uint32_t min_buf_size = (uint32_t)(srate * COMP_DELAY_MAX_DELAY);
-    uint32_t new_buf_size = 1;
+    uint32_t min_buf_size = (uint32_t)(srate * COMP_DELAY_MAX_DELAY * 2);
+    uint32_t new_buf_size = 2;
     while (new_buf_size < min_buf_size)
         new_buf_size <<= 1;
 
@@ -374,31 +374,46 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    if (*params[param_bypass] > 0.5f) {
-        while(offset < numsamples) {
+    bool bypassed   = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    bool stereo     = ins[1];
+    uint32_t w_ptr  = write_ptr;
+    uint32_t b_mask = buf_size - 2;
+    uint32_t end    = offset + numsamples;
+    uint32_t off    = offset;
+    
+    if (bypassed) {
+        while(offset < end) {
             outs[0][offset] = ins[0][offset];
+            buffer[w_ptr]   = ins[0][offset];
+            if (stereo)
+                outs[1][offset]   = ins[1][offset];
+                buffer[w_ptr + 1] = ins[1][offset];
+            w_ptr = (w_ptr + 2) & b_mask;
             ++offset;
         }
     } else {
-        uint32_t b_mask = buf_size-1;
-        uint32_t end    = offset + numsamples;
-        uint32_t w_ptr  = write_ptr;
         uint32_t r_ptr  = (write_ptr + buf_size - delay) & b_mask; // Unsigned math, that's why we add buf_size
         float dry       = *params[par_dry];
         float wet       = *params[par_wet];
-    
+        float L = 0, R = 0;
+        
         for (uint32_t i=offset; i<end; i++)
         {
-            float sample = ins[0][i];
-            buffer[w_ptr] = sample;
-    
-            outs[0][i] = dry * sample + wet * buffer[r_ptr];
-    
-            w_ptr = (w_ptr + 1) & b_mask;
-            r_ptr = (r_ptr + 1) & b_mask;
+            L = ins[0][i];
+            buffer[w_ptr] = L;
+            outs[0][i] = dry * L + wet * buffer[r_ptr];
+            if (stereo)
+                R = ins[1][i];
+                buffer[w_ptr + 1] = R;
+                outs[1][i] = dry * R + wet * buffer[r_ptr + 1];
+            
+            w_ptr = (w_ptr + 2) & b_mask;
+            r_ptr = (r_ptr + 2) & b_mask;
         }
-        write_ptr = w_ptr;
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, stereo ? 2 : 1, off, numsamples);
+    write_ptr = w_ptr;
     return outputs_mask;
 }
 
@@ -545,7 +560,7 @@ uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsample
         ++offset;
     }
     if (!bypassed)
-        bypass.crossfade(ins, outs, 2, off_, end);
+        bypass.crossfade(ins, outs, 2, off_, numsamples);
     write_ptr = w_ptr;
     meters.fall(numsamples);
     return outputs_mask;

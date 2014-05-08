@@ -117,7 +117,8 @@ public:
     uint32_t buf_size; // guaranteed to be power of 2
     uint32_t delay;
     uint32_t write_ptr;
-
+    dsp::bypass bypass;
+    
     comp_delay_audio_module();
     virtual ~comp_delay_audio_module();
 

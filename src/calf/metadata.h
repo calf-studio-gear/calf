@@ -81,7 +81,7 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
 {
     enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_temp, param_bypass, param_count };
-    enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("compdelay", "compdelay", "Compensation Delay Line")
 };
 

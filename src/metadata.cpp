@@ -227,14 +227,14 @@ CALF_PORT_PROPS(vintage_delay) = {
 CALF_PLUGIN_INFO(vintage_delay) = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Krzysztof Foltman", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
-CALF_PORT_NAMES(comp_delay) = { "In", "Out" };
+CALF_PORT_NAMES(comp_delay) = { "In L", "In R", "Out L", "Out R" };
 
 CALF_PORT_PROPS(comp_delay) = {
     {  0,        0,    10,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "distance_mm", "Distance (mm)"},
     {  0,        0,    100,   1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "distance_cm", "Distance (cm)"},
     {  0,        0,    100,   1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "distance_m", "Distance (m)"},
-    {  0,        0,    4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry Amount" },
-    { 1.0,       0,    4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "wet", "Wet Amount" },
+    {  0.000244140625,        0.000244140625,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry Amount" },
+    { 1.0,       0.000244140625,    1,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "wet", "Wet Amount" },
     {  20,       -50,  50,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB, NULL, "temp", "Temperature °C"},
     {  0,        0,    1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     {}
