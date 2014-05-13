@@ -138,7 +138,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             } else {
                 outs[0][offset] = ins[0][offset];
             }
-            float values[] = {0, 0, 0};
+            float values[] = {0, 0, 0, 0};
             meters.process(values);
             ++offset;
         }
@@ -149,7 +149,6 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             // cycle through samples
             float out[2], in[2] = {0.f, 0.f};
             int c = 0;
-            float maxDrive = 0.f;
             if(in_count > 1 && out_count > 1) {
                 // stereo in/stereo out
                 // handle full stereo
@@ -192,10 +191,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                     proc[i] *= 1 + (*params[param_level_in] - 1) / 32;
             }
             
-            maxDrive = dist[0].get_distortion_level() * *params[param_blend];
-            
             if(in_count > 1 && out_count > 1) {
-                maxDrive = dist[1].get_distortion_level() * *params[param_blend];
                 // full stereo
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[0][offset] = out[0];
@@ -213,7 +209,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[0][offset] = out[0];
             }
-            float values[] = {(in[0] + in[1]) / 2, (out[0] + out[1]) / 2, maxDrive / 20};
+            float values[] = {in[0],  in[1], out[0], out[1]};
             meters.process(values);
 
             // next sample
