@@ -513,7 +513,9 @@ struct ringmodulator_metadata: public plugin_metadata<ringmodulator_metadata>
 struct saturator_metadata: public plugin_metadata<saturator_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_level_in, param_level_out, param_mix, MONO_VU_METER_PARAMS, param_drive, param_blend, param_meter_drive,
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_mix, param_drive, param_blend,
            param_lp_pre_freq, param_hp_pre_freq, param_lp_post_freq, param_hp_post_freq,
            param_p_freq, param_p_level, param_p_q, param_count };
     PLUGIN_NAME_ID_LABEL("saturator", "saturator", "Saturator")
