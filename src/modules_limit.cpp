@@ -392,6 +392,33 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 resR[o] = 0;
                 
                 // cycle over strips for multiband coefficient
+                
+                // -------------------------------------------
+                // The Multiband Coefficient
+                //
+                // The Multiband Coefficient tries to make sure, that after
+                // summing up the 4 limited strips, the signal does not raise
+                // above the limit. It works as a correction factor. Because
+                // we use this concept, we can introduce a weighting to each
+                // strip.
+                // a1, a2, a3, ... : signals in strips
+                // then a1 + a2 + a3 + ... might raise above the limit, because
+                // the strips will be limited and the filters, which produced
+                // the signals from source signals, are not complete precisely.
+                // Morethough, external signals might be added in here in future
+                // versions.
+                //
+                // So introduce correction factor:
+                // Sum( a_i * weight_i) = limit / multi_coeff
+                //
+                // The multi_coeff now can be used in each strip i, to calculate
+                // the real limit for strip i according to the signals in the
+                // other strips and the weighting of the own strip i.
+                // strip_limit_i = limit * multicoeff * weight_i
+                //
+                // -------------------------------------------
+                
+                
                 for (int i = 0; i < strips; i++) {
                     // sum up for multiband coefficient
                     int p = i * 16 + o;
