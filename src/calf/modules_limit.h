@@ -108,6 +108,49 @@ public:
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
+class sidechainlimiter_audio_module: public audio_module<sidechainlimiter_metadata>, public frequency_response_line_graph {
+private:
+    typedef sidechainlimiter_audio_module AM;
+    static const int strips = 5;
+    uint32_t asc_led, cnt;
+    int _mode, mode_old;
+    bool solo[strips];
+    bool no_solo;
+    dsp::lookahead_limiter strip[strips];
+    dsp::lookahead_limiter broadband;
+    dsp::resampleN resampler[strips][2];
+    dsp::crossover crossover;
+    dsp::bypass bypass;
+    float over;
+    unsigned int pos;
+    unsigned int buffer_size;
+    unsigned int overall_buffer_size;
+    float *buffer;
+    int channels;
+    float striprel[strips];
+    float weight[strips];
+    float weight_old[strips];
+    float limit_old;
+    bool asc_old;
+    float attack_old;
+    float oversampling_old;
+    bool _sanitize;
+    vumeters meters;
+public:
+    uint32_t srate;
+    bool is_active;
+    sidechainlimiter_audio_module();
+    ~sidechainlimiter_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_srates();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
 };
 
 #endif

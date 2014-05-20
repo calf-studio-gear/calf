@@ -30,6 +30,7 @@
     PER_MODULE_ITEM(multibandgate, false, "multibandgate")
     PER_MODULE_ITEM(limiter, false, "limiter")
     PER_MODULE_ITEM(multibandlimiter, false, "multibandlimiter")
+    PER_MODULE_ITEM(sidechainlimiter, false, "sidechainlimiter")
     PER_MODULE_ITEM(transientdesigner, false, "transientdesigner")
     
     // filters

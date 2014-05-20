@@ -287,7 +287,7 @@ struct limiter_metadata: public plugin_metadata<limiter_metadata>
     PLUGIN_NAME_ID_LABEL("limiter", "limiter", "Limiter")
 };
 
-/// Markus's multibandlimiter - metadata
+/// Markus's and Chrischis multibandlimiter - metadata
 struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
@@ -305,6 +305,27 @@ struct multibandlimiter_metadata: public plugin_metadata<multibandlimiter_metada
            param_oversampling,
            param_count };
     PLUGIN_NAME_ID_LABEL("multibandlimiter", "multibandlimiter", "Multiband Limiter")
+};
+
+/// Markus's and Chrischis sidechainlimiter - metadata
+struct sidechainlimiter_metadata: public plugin_metadata<sidechainlimiter_metadata>
+{
+    enum { in_count = 4, out_count = 2, ins_optional = 2, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_meter_scL, param_meter_scR,
+           param_freq0, param_freq1, param_freq2,
+           param_mode,
+           param_limit, param_attack, param_release, param_minrel,
+           param_att0, param_att1, param_att2, param_att3, param_att_sc,
+           param_weight0, param_weight1, param_weight2, param_weight3, param_weight_sc,
+           param_release0, param_release1, param_release2, param_release3, param_release_sc,
+           param_solo0, param_solo1, param_solo2, param_solo3, param_solo_sc,
+           param_effrelease0, param_effrelease1, param_effrelease2, param_effrelease3, param_effrelease_sc,
+           param_asc, param_asc_led, param_asc_coeff,
+           param_oversampling, param_level_sc,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("sidechainlimiter", "sidechainlimiter", "Sidechain Limiter")
 };
 
 /// Damien's RIAA and CD Emphasis - metadata
