@@ -354,8 +354,8 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     float *old_buf = buffer;
 
-    uint32_t min_buf_size = (uint32_t)(srate * COMP_DELAY_MAX_DELAY);
-    uint32_t new_buf_size = 1;
+    uint32_t min_buf_size = (uint32_t)(srate * COMP_DELAY_MAX_DELAY * 2);
+    uint32_t new_buf_size = 2;
     while (new_buf_size < min_buf_size)
         new_buf_size <<= 1;
 
@@ -374,30 +374,194 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    if (*params[param_bypass] > 0.5f) {
-        while(offset < numsamples) {
+    bool bypassed   = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    bool stereo     = ins[1];
+    uint32_t w_ptr  = write_ptr;
+    uint32_t b_mask = buf_size - 2;
+    uint32_t end    = offset + numsamples;
+    uint32_t off    = offset;
+    
+    if (bypassed) {
+        while(offset < end) {
             outs[0][offset] = ins[0][offset];
+            buffer[w_ptr]   = ins[0][offset];
+            if (stereo)
+                outs[1][offset]   = ins[1][offset];
+                buffer[w_ptr + 1] = ins[1][offset];
+            w_ptr = (w_ptr + 2) & b_mask;
             ++offset;
         }
     } else {
-        uint32_t b_mask = buf_size-1;
-        uint32_t end    = offset + numsamples;
-        uint32_t w_ptr  = write_ptr;
         uint32_t r_ptr  = (write_ptr + buf_size - delay) & b_mask; // Unsigned math, that's why we add buf_size
         float dry       = *params[par_dry];
         float wet       = *params[par_wet];
-    
+        float L = 0, R = 0;
+        
         for (uint32_t i=offset; i<end; i++)
         {
-            float sample = ins[0][i];
-            buffer[w_ptr] = sample;
-    
-            outs[0][i] = dry * sample + wet * buffer[r_ptr];
-    
-            w_ptr = (w_ptr + 1) & b_mask;
-            r_ptr = (r_ptr + 1) & b_mask;
+            L = ins[0][i];
+            buffer[w_ptr] = L;
+            outs[0][i] = dry * L + wet * buffer[r_ptr];
+            if (stereo)
+                R = ins[1][i];
+                buffer[w_ptr + 1] = R;
+                outs[1][i] = dry * R + wet * buffer[r_ptr + 1];
+            
+            w_ptr = (w_ptr + 2) & b_mask;
+            r_ptr = (r_ptr + 2) & b_mask;
         }
-        write_ptr = w_ptr;
     }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, stereo ? 2 : 1, off, numsamples);
+    write_ptr = w_ptr;
+    return outputs_mask;
+}
+
+/**********************************************************************
+ * HAAS enhancer by Vladimir Sadovnikov
+**********************************************************************/
+
+haas_enhancer_audio_module::haas_enhancer_audio_module()
+{
+    buffer              = NULL;
+    srate               = 0;
+    buf_size            = 0;
+    write_ptr           = 0;
+
+    m_source            = 2;
+    s_delay[0]          = 0;
+    s_delay[1]          = 0;
+    s_bal_l[0]          = 0.0f;
+    s_bal_l[1]          = 0.0f;
+    s_bal_r[0]          = 0.0f;
+    s_bal_r[1]          = 0.0f;
+}
+
+haas_enhancer_audio_module::~haas_enhancer_audio_module()
+{
+    if (buffer != NULL)
+    {
+        delete [] buffer;
+        buffer = NULL;
+    }
+}
+
+void haas_enhancer_audio_module::params_changed()
+{
+    m_source            = (uint32_t)(*params[par_m_source]);
+    s_delay[0]          = (uint32_t)(*params[par_s_delay0] * 0.001 * srate);
+    s_delay[1]          = (uint32_t)(*params[par_s_delay1] * 0.001 * srate);
+    
+    float phase0        = ((*params[par_s_phase0]) > 0.5f) ? 1.0f : -1.0f;
+    float phase1        = ((*params[par_s_phase1]) > 0.5f) ? 1.0f : -1.0f;
+    
+    s_bal_l[0]          = (*params[par_s_balance0] + 1) / 2 * (*params[par_s_gain0]) * phase0;
+    s_bal_r[0]          = (1.0 - (*params[par_s_balance0] + 1) / 2) * (*params[par_s_gain0]) * phase0;
+    s_bal_l[1]          = (*params[par_s_balance1] + 1) / 2 * (*params[par_s_gain1]) * phase1;
+    s_bal_r[1]          = (1.0 - (*params[par_s_balance1] + 1) / 2) * (*params[par_s_gain1]) * phase1;
+}
+
+void haas_enhancer_audio_module::activate()
+{
+    write_ptr   = 0;
+}
+
+void haas_enhancer_audio_module::deactivate()
+{
+}
+
+void haas_enhancer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    float *old_buf = buffer;
+
+    uint32_t min_buf_size = (uint32_t)(srate * HAAS_ENHANCER_MAX_DELAY);
+    uint32_t new_buf_size = 1;
+    while (new_buf_size < min_buf_size)
+        new_buf_size <<= 1;
+
+    float *new_buf = new float[new_buf_size];
+    for (size_t i=0; i<new_buf_size; i++)
+        new_buf[i] = 0.0f;
+
+    // Assign new pointer and size
+    buffer         = new_buf;
+    buf_size       = new_buf_size;
+
+    // Delete old buffer
+    if (old_buf != NULL)
+        delete [] old_buf;
+        
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_meter_sideL, param_meter_sideR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1, -1};
+    meters.init(params, meter, clip, 6, srate);
+}
+
+uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypassed  = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t end   = offset + numsamples;
+    uint32_t off_  = offset;
+    uint32_t w_ptr = write_ptr;
+    
+    // Sample variables
+    float mid, side[2], side_l, side_r;
+    // Boundaries and pointers
+    uint32_t b_mask = buf_size-1;
+            
+    while(offset < end) {
+        float values[] = {0, 0, 0, 0, 0, 0};
+        float *p = values;
+        
+        // Get middle sample
+        switch (m_source)
+        {
+            case 0:  mid = ins[0][offset]; break;
+            case 1:  mid = ins[1][offset]; break;
+            case 2:  mid = (ins[0][offset] + ins[1][offset]) * 0.5f; break;
+            case 3:  mid = (ins[0][offset] - ins[1][offset]) * 0.5f; break;
+            default: mid = 0.0f;
+        }
+
+        // Store middle
+        buffer[w_ptr] = mid * *params[param_level_in];
+            
+        if (bypassed) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+        } else {
+            // Delays for mid and side. Unsigned math, that's why we add buf_size
+            uint32_t s0_ptr = (w_ptr + buf_size - s_delay[0]) & b_mask;
+            uint32_t s1_ptr = (w_ptr + buf_size - s_delay[1]) & b_mask;
+    
+            // Calculate side
+            mid     = mid * *params[param_level_in];
+            if (*params[par_m_phase] > 0.5f)
+                mid = -mid;
+            side[0] = buffer[s0_ptr] * (*params[par_s_gain]);
+            side[1] = buffer[s1_ptr] * (*params[par_s_gain]);
+            side_l  = side[0] * s_bal_l[0] - side[1] * s_bal_l[1];
+            side_r  = side[1] * s_bal_r[1] - side[0] * s_bal_r[0];
+    
+            // Output stereo image
+            outs[0][offset] = (mid + side_l) * *params[param_level_out];
+            outs[1][offset] = (mid + side_r) * *params[param_level_out];
+    
+            // Update pointers
+            s0_ptr = (s0_ptr + 1) & b_mask;
+            s1_ptr = (s1_ptr + 1) & b_mask;
+            
+            *p++ = ins[0][offset];  *p++ = ins[1][offset];
+            *p++ = outs[0][offset]; *p++ = outs[1][offset];
+            *p++ = side_l;          *p++ = side_r;
+        }
+        meters.process (values);
+        w_ptr = (w_ptr + 1) & b_mask;
+        ++offset;
+    }
+    if (!bypassed)
+        bypass.crossfade(ins, outs, 2, off_, numsamples);
+    write_ptr = w_ptr;
+    meters.fall(numsamples);
     return outputs_mask;
 }

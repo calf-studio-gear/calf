@@ -81,8 +81,24 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
 {
     enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_temp, param_bypass, param_count };
-    enum { in_count = 1, out_count = 1, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("compdelay", "compdelay", "Compensation Delay Line")
+};
+
+struct haas_enhancer_metadata: public plugin_metadata<haas_enhancer_metadata>
+{
+    enum {
+        param_bypass, param_level_in, param_level_out,
+        par_s_gain,
+        STEREO_VU_METER_PARAMS,
+        param_meter_sideL, param_meter_sideR,
+        par_m_source, par_m_phase,
+        par_s_delay0, par_s_balance0, par_s_gain0, par_s_phase0,
+        par_s_delay1, par_s_balance1, par_s_gain1, par_s_phase1,
+        param_count
+    };
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
+    PLUGIN_NAME_ID_LABEL("haasenhancer", "haasenhancer", "Haas Stereo Enhancer")
 };
 
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
@@ -518,7 +534,9 @@ struct ringmodulator_metadata: public plugin_metadata<ringmodulator_metadata>
 struct saturator_metadata: public plugin_metadata<saturator_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
-    enum { param_bypass, param_level_in, param_level_out, param_mix, MONO_VU_METER_PARAMS, param_drive, param_blend, param_meter_drive,
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_mix, param_drive, param_blend,
            param_lp_pre_freq, param_hp_pre_freq, param_lp_post_freq, param_hp_post_freq,
            param_p_freq, param_p_level, param_p_q, param_count };
     PLUGIN_NAME_ID_LABEL("saturator", "saturator", "Saturator")

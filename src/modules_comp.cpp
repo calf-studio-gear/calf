@@ -1546,7 +1546,7 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1, orig_offset, numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;

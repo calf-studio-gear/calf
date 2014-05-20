@@ -58,6 +58,7 @@ namespace calf_plugins {
         GtkWidget *strips_table;
         GtkUIManager *ui_mgr;
         GtkActionGroup *std_actions, *plugin_actions;
+        GtkIconFactory *factory;
         std::map<plugin_ctl_iface *, plugin_strip *> plugins;
         std::vector<jack_host *> plugin_queue;
         bool is_closed;
@@ -100,6 +101,7 @@ namespace calf_plugins {
         void save_file_from_sighandler();
         void show_rack_ears(bool show);
         void show_vu_meters(bool show);
+        void register_icons();
         /// Implementation of progress_report_iface function
         virtual void report_progress(float percentage, const std::string &message);
         /// Mark condition as true

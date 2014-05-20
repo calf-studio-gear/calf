@@ -83,6 +83,20 @@ float control_base::get_float(const char *name, float def_value)
     return value;
 }
 
+void control_base::set_visibilty(bool state)
+{
+    if (state) {
+        if (is_container())
+            gtk_widget_show(widget);
+        else
+            gtk_widget_show(GTK_WIDGET(container));
+    } else {
+        if (is_container())
+            gtk_widget_hide(widget);
+        else
+            gtk_widget_hide(GTK_WIDGET(container));
+    }
+}
 /******************************** container base class **********************/
 
 void control_container::set_std_properties()
@@ -117,14 +131,6 @@ void param_control::set_std_properties()
             gtk_widget_set_name(widget, name.c_str());
         }
     }
-}
-
-void param_control::set_visibilty(bool state)
-{
-    if (state)
-        gtk_widget_show(widget);
-    else
-        gtk_widget_hide(widget);
 }
 
 void param_control::hook_params()
@@ -1550,7 +1556,10 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     //const parameter_properties &props = get_props();
-    page = gui->plugin->get_param_value(param_no);
+    if (param_no < 0)
+        page = 0;
+    else
+        page = gui->plugin->get_param_value(param_no);
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
     container = GTK_CONTAINER(nb);

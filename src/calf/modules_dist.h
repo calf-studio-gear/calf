@@ -41,7 +41,6 @@ private:
     float hp_pre_freq_old, lp_pre_freq_old;
     float hp_post_freq_old, lp_post_freq_old;
     float p_level_old, p_freq_old, p_q_old;
-    float meter_drive;
     dsp::biquad_d2 lp[2][4], hp[2][4];
     dsp::biquad_d2 p[2];
     dsp::tap_distortion dist[2];
