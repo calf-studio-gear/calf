@@ -27,6 +27,7 @@
     PER_MODULE_ITEM(compressor,          false, "compressor")
     PER_MODULE_ITEM(sidechaincompressor, false, "sidechaincompressor")
     PER_MODULE_ITEM(multibandcompressor, false, "multibandcompressor")
+
     PER_MODULE_ITEM(monocompressor,      false, "monocompressor")
     PER_MODULE_ITEM(deesser,             false, "deesser")
     
@@ -38,6 +39,7 @@
     // Limiter
     PER_MODULE_ITEM(limiter,             false, "limiter")
     PER_MODULE_ITEM(multibandlimiter,    false, "multibandlimiter")
+    PER_MODULE_ITEM(sidechainlimiter,    false, "sidechainlimiter")
     
     // Envelope
     PER_MODULE_ITEM(transientdesigner,   false, "transientdesigner")
