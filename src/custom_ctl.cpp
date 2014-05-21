@@ -774,6 +774,11 @@ GtkWidget *
 calf_combobox_new()
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_COMBOBOX, NULL ));
+    GtkCellRenderer *column = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), column, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), column,
+                                   "text", 0,
+                                   NULL);
     return widget;
 }
 static gboolean
@@ -872,7 +877,7 @@ calf_combobox_get_type (void)
                 free(name);
                 continue;
             }
-            type = g_type_register_static(GTK_TYPE_COMBO_BOX_TEXT,
+            type = g_type_register_static(GTK_TYPE_COMBO_BOX,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);

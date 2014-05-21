@@ -29,7 +29,7 @@
 #include <cairo/cairo.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkframe.h>
-#include <gtk/gtkcomboboxtext.h>
+#include <gtk/gtkcombobox.h>
 #include <gtk/gtknotebook.h>
 #include <gtk/gtkrange.h>
 #include <gtk/gtkscale.h>
@@ -143,12 +143,12 @@ extern GType calf_frame_get_type();
 
 struct CalfCombobox
 {
-    GtkComboBoxText parent;
+    GtkComboBox parent;
 };
 
 struct CalfComboboxClass
 {
-    GtkComboBoxTextClass parent_class;
+    GtkComboBoxClass parent_class;
 };
 
 extern GtkWidget *calf_combobox_new();
