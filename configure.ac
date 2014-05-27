@@ -37,6 +37,10 @@ AC_SUBST(JACK_DEPS_CFLAGS)
 AC_SUBST(JACK_DEPS_LIBS)
 AC_SUBST(FLUIDSYNTH_DEPS_CFLAGS)
 AC_SUBST(FLUIDSYNTH_DEPS_LIBS)
+AC_SUBST(LV2_DEPS_CFLAGS)
+AC_SUBST(LV2_DEPS_LIBS)
+AC_SUBST(FFTW3_DEPS_CFLAGS)
+AC_SUBST(FFTW3_DEPS_LIBS)
 
 ############################################################################################
 # Detect dependencies
@@ -53,6 +57,7 @@ AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found])
 AC_CHECK_HEADER(fftw3.h, true, AC_MSG_ERROR([FFTW3 header (fftw3.h) not found]))
 AC_CHECK_LIB(fftw3, true, AC_MSG_ERROR([FFTW3 library (libfftw3) not found]))
 AC_CHECK_LIB(fftw3f, true, AC_MSG_ERROR([Single-precision FFTW3 library (libfftw3f) not found]))
+PKG_CHECK_MODULES(FFTW3_DEPS, fftw3, true, AC_MSG_ERROR([FFTW3 library (libfftw3) not found]))
 
 # JACK
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
@@ -153,6 +158,7 @@ fi
 if test "$set_enable_debug" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O0 -g -Wall"
 else
+  # TODO: remove -finline options if clang is used
   CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
 fi
 

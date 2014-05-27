@@ -11,7 +11,8 @@ noinst_PROGRAMS = calfbenchmark
 pkglib_LTLIBRARIES = calf.la
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(srcdir)
-AM_CXXFLAGS = -ffast-math -finline-limit=80 $(FLUIDSYNTH_DEPS_CFLAGS)
+# TODO: Remove -finline flags is clang is used
+AM_CXXFLAGS = -ffast-math -finline-limit=80 $(FLUIDSYNTH_DEPS_CFLAGS) $(LV2_DEPS_CFLAGS)
 
 if USE_GUI
 AM_CXXFLAGS += $(GUI_DEPS_CFLAGS)
@@ -21,7 +22,7 @@ AM_CXXFLAGS += $(JACK_DEPS_CFLAGS)
 noinst_LTLIBRARIES += libcalfgui.la
 bin_PROGRAMS += calfjackhost 
 calfjackhost_SOURCES = gtk_session_env.cpp host_session.cpp jack_client.cpp jackhost.cpp gtk_main_win.cpp connector.cpp session_mgr.cpp
-calfjackhost_LDADD = libcalfgui.la calf.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS) -lfftw3f
+calfjackhost_LDADD = libcalfgui.la calf.la $(JACK_DEPS_LIBS) $(GUI_DEPS_LIBS) $(FLUIDSYNTH_DEPS_LIBS) $(FFTW3_DEPS_LIBS) -lfftw3f
 if USE_LASH
 AM_CXXFLAGS += $(LASH_DEPS_CFLAGS)
 calfjackhost_LDADD += $(LASH_DEPS_LIBS)
@@ -30,14 +31,14 @@ endif
 
 AM_CXXFLAGS += $(GLIB_DEPS_CFLAGS)
 noinst_PROGRAMS += calfmakerdf
-calfmakerdf_SOURCES = makerdf.cpp 
-calfmakerdf_LDADD = calf.la 
+calfmakerdf_SOURCES = makerdf.cpp
+calfmakerdf_LDADD = calf.la
 
 calfbenchmark_SOURCES = benchmark.cpp
 calfbenchmark_LDADD = calf.la
 
-calf_la_SOURCES = audio_fx.cpp analyzer.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp 
-calf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) $(GLIB_DEPS_LIBS) -lfftw3f
+calf_la_SOURCES = audio_fx.cpp analyzer.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp
+calf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) $(GLIB_DEPS_LIBS) $(FFTW3_DEPS_LIBS) -lfftw3f
 if USE_DEBUG
 calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static 
 else
