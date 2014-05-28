@@ -565,3 +565,143 @@ uint32_t haas_enhancer_audio_module::process(uint32_t offset, uint32_t numsample
     meters.fall(numsamples);
     return outputs_mask;
 }
+
+/**********************************************************************
+ * REVERSE DELAY
+**********************************************************************/
+
+reverse_delay_audio_module::reverse_delay_audio_module()
+{
+    for (int i = 0; i < MAX_DELAY; i++) {
+        buffers[0][i] = 0.f;
+        buffers[1][i] = 0.f;
+    }
+
+    counters[0] = 0;
+    counters[1] = 0;
+
+    feedback_buf[0] = 0;
+    feedback_buf[1] = 0;
+}
+
+void reverse_delay_audio_module::params_changed()
+{
+    if (*params[par_sync] > 0.5f)
+        *params[par_bpm] = *params[par_bpm_host];
+
+    //Max delay line length: (60*192000/30)*16 = 6144000, see buffers declaration
+    float unit = 60.0 * srate / (*params[par_bpm] * *params[par_divide]);
+    deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
+    deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);
+
+    fb_val.set_inertia(*params[par_feedback]);
+    dry.set_inertia(*params[par_amount]);
+
+    counters[0] = 0;
+    counters[1] = 0;
+
+    ow[0].set_coef((*params[par_window] + 0.005), deltime_l/2);
+    ow[1].set_coef((*params[par_window] + 0.005), deltime_r/2);
+
+    width.set_inertia(*params[par_width]);
+
+    //Cleanup delay line buffers if reset
+    if(*params[par_reset])
+    {
+        for (int i = 0; i < MAX_DELAY; i++) {
+            buffers[0][i] = 0.f;
+            buffers[1][i] = 0.f;
+        }
+
+        feedback_buf[0] = 0;
+        feedback_buf[1] = 0;
+    }
+}
+
+void reverse_delay_audio_module::activate()
+{
+}
+
+void reverse_delay_audio_module::deactivate()
+{
+}
+
+void reverse_delay_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    fb_val.set_sample_rate(sr);
+    dry.set_sample_rate(sr);
+    width.set_sample_rate(sr);
+}
+
+static float reverse_delay_line_impl(float in, float* buf, int* counter, int length)
+{
+    float out = 0;
+
+    //Read data
+    if(*counter < length - 1)
+    {
+        unsigned int read_counter = length - 1 - (*counter);
+        out = buf[read_counter];
+    }
+
+    //Write data
+    *(buf + (*counter)) = in;
+    (*counter)++;
+    if ((*counter) > length-1)
+        (*counter) = 0;
+
+    return (out);
+}
+
+uint32_t reverse_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+
+    uint32_t ostate = 3; // XXXKF optimize!
+    uint32_t end = offset + numsamples;
+
+    //Loop
+    for(uint32_t i = offset; i < end; i++)
+    {
+        //Update sync led's
+        if(counters[0] < deltime_l/4)
+            *params[par_sync_led_l] = true;
+        else
+            *params[par_sync_led_l] = false;
+
+        if(counters[1] < deltime_r/4)
+            *params[par_sync_led_r] = true;
+        else
+            *params[par_sync_led_r] = false;
+
+        //Process
+        float feedback_val = fb_val.get();
+        float st_width_val = width.get();
+
+        float inL = ins[0][i] + st_width_val*ins[1][i];
+        float inR = ins[1][i]*(1 - st_width_val);
+        float outL = 0;
+        float outR = 0;
+
+
+        inL = inL + feedback_buf[0]* feedback_val*(1 - st_width_val) + feedback_buf[1]* st_width_val*feedback_val;
+        inR = inR + feedback_buf[1]* feedback_val*(1 - st_width_val) + feedback_buf[0]* st_width_val*feedback_val;
+
+        outL = reverse_delay_line_impl(inL, &buffers[0][0], &counters[0], deltime_l);
+        outR = reverse_delay_line_impl(inR, &buffers[1][0], &counters[1], deltime_r);
+        feedback_buf[0] = outL;
+        feedback_buf[1] = outR;
+
+        outL*= ow[0].get();
+        outR*= ow[1].get();
+
+        outL = outL*(1 + dry.get()) + inL*(1 - dry.get());
+        outR = outR*(1 + dry.get()) + inR*(1 - dry.get());
+
+        outs[0][i] = outL;
+        outs[1][i] = outR;
+
+    }
+
+    return ostate;
+}

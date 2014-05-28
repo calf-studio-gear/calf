@@ -243,6 +243,29 @@ CALF_PLUGIN_INFO(comp_delay) = { 0x8485, "CompensationDelay", "Calf Compensation
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(reverse_delay) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(reverse_delay) = {
+    { 120,      30,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM, NULL, "bpm", "Tempo" },
+    { 120,       1,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM | PF_SYNC_BPM, NULL, "bpm_host", "Host BPM" },
+    {  4,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "subdiv", "Subdivide"},
+    {  5,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_l", "Time L"},
+    {  5,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_r", "Time R"},
+    { 0.5,       0,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "feedback", "Feedback" },
+    { 0,        -1,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "amount", "Dry/Wet" },
+    { 0,       0,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "width", "Stereo Width" },
+    { 0,         0,    1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "sync", "Sync BPM" },
+    { 0,         0,    1,     0, PF_INT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "sync_led_l", "Left" },
+    { 0,         0,    1,     0, PF_INT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "sync_led_r", "Right" },
+    { 0,         0,    1,     2, PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
+    { 0.5,       0,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "window", "Window" },
+    {}
+};
+
+CALF_PLUGIN_INFO(reverse_delay) = { 0x8482, "ReverseDelay", "Calf Reverse Delay", "drgreenthumb", calf_plugins::calf_copyright_info, "DelayPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(rotary_speaker) = {"In L", "In R", "Out L", "Out R"};
 
 const char *rotary_speaker_speed_names[] = { "Off", "Chorale", "Tremolo", "HoldPedal", "ModWheel", "Manual" };

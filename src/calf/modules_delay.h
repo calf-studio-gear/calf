@@ -158,5 +158,35 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
+/**********************************************************************
+ * REVERSE DELAY
+**********************************************************************/
+
+class reverse_delay_audio_module: public audio_module<reverse_delay_metadata>
+{
+public:
+    enum { MAX_DELAY = 6144000, ADDR_MASK = MAX_DELAY - 1 };
+    float buffers[2][MAX_DELAY];
+    int counters[2];
+    dsp::overlap_window ow[2];
+    int deltime_l, deltime_r;
+
+    dsp::gain_smoothing fb_val, dry, width;
+
+    float feedback_buf[2];
+
+    uint32_t srate;
+
+    uint32_t line_state_old;
+
+    reverse_delay_audio_module();
+
+    void params_changed();
+    void activate();
+    void deactivate();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 };
 #endif

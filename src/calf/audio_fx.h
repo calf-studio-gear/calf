@@ -723,6 +723,69 @@ public:
     }
 };
 
+/*
+   Class for warping clicks avoiding between chunks
+   Used in reverse delay
+*/
+class overlap_window
+{
+private:
+    float val;
+    float step;
+    float acc;
+    unsigned int active_samples;
+    unsigned int full_samples;
+    unsigned int counter;
+
+public:
+    overlap_window() {
+        val = 0;
+        step = 0;
+        acc = 0;
+        active_samples = 0;
+        full_samples = 0;
+        counter = 0;
+    }
+    void set_coef(float t /* 0..1 */, unsigned int full_samples) {
+        set_full(0, full_samples, t*full_samples);
+    }
+    bool set_full(float min_val, unsigned int full_samples, unsigned int active_samples) {
+        if(active_samples >= full_samples) return false;
+
+        acc = min_val;
+        val = min_val;
+        this->full_samples = full_samples;
+        this->active_samples = active_samples;
+        counter = 0;
+        step = (1 - min_val)/(active_samples/2);
+
+        return true;
+    }
+    float get() {
+        if(counter >= 0 && counter < active_samples/2) {
+            acc += step;
+            counter++;
+            return acc;
+        }
+        else if(counter >= active_samples/2 && counter <= full_samples - active_samples/2) {
+            counter++;
+            return 1;
+        }
+        else if(counter > full_samples - active_samples/2 && counter < full_samples) {
+            acc -= step;
+            counter++;
+            return acc;
+        }
+        else if(counter >= full_samples) {
+            float ret_val = acc;
+            acc = val;
+            counter = 0;
+            return ret_val;
+        }
+        return 1;
+    }
+};
+
 #if 0
 { to keep editor happy
 #endif

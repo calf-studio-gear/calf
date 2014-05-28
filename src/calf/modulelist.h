@@ -22,6 +22,7 @@
     // Delay
     PER_MODULE_ITEM(vintage_delay,       false, "vintagedelay")
     PER_MODULE_ITEM(comp_delay,          false, "compdelay")
+    PER_MODULE_ITEM(reverse_delay,       false, "reversedelay")
     
     // Compressor
     PER_MODULE_ITEM(compressor,          false, "compressor")

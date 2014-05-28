@@ -1,0 +1,76 @@
+<hbox spacing="10">
+    <frame label="Delay time">
+        <vbox>
+            <table rows="4" cols="2">
+                <hbox attach-x="0" attach-y="0" attach-h="3" spacing="12" pad-x="10" pad-y="15">
+                    <vbox>
+                        <label param="bpm" />
+                        <knob param="bpm" size="5" />
+                        <value param="bpm"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Tap"/>
+                        <tap param="bpm"/>
+                        <label/>
+                        <toggle param="sync"/>
+                        <label param="sync"/>
+                    </vbox>
+                </hbox>
+                <label attach-x="1" attach-y="0" param="subdiv" />
+                <hscale attach-x="2" attach-y="0" param="subdiv" />
+                <label attach-x="1" attach-y="1" param="time_l" />
+                <hscale attach-x="2" attach-y="1" param="time_l" />
+                <label attach-x="1" attach-y="2" param="time_r"  />
+                <hscale attach-x="2" attach-y="2" param="time_r" />
+            </table>
+        </vbox>
+    </frame>
+    <frame label="Synchronize">
+        <vbox>
+            <table rows="2" cols="1">
+                <hbox attach-x="0" attach-y="0">
+                    <vbox attach-x="0" attach-y="0">
+                        <label param="sync_led_l" />
+                        <led param="sync_led_l"/>
+                    </vbox>
+                    <vbox attach-x="1" attach-y="0">
+                        <label param="sync_led_r" />
+                        <led param="sync_led_r"/>
+                    </vbox>
+                </hbox>
+                <vbox attach-x="0" attach-y="1">
+                    <label text="Line Reset"/>
+                    <align expand="0" attach-x="0" attach-y="1"><button param="reset" /></align>
+                </vbox>
+            </table>
+        </vbox>
+    </frame>
+    <frame label="Mixing">
+        <hbox>
+            <table expand="0" rows="2" cols="2">
+                <vbox fill="0" attach-x="0" attach-y="0" pad-x="10">
+                    <label param="feedback" fill="0" expand="0"  />
+                    <knob param="feedback" fill="0" expand="0" />
+                    <value param="feedback" fill="0" expand="0" />
+                </vbox>
+                <vbox fill="0" attach-x="1" attach-y="0" pad-x="10">
+                    <label param="amount"/>
+                    <knob param="amount"/>
+                    <value param="amount"/>
+                </vbox>
+
+                <vbox fill="0" attach-x="0" attach-y="1" fill-y="1" pad-x="10">
+                    <label param="window" fill="0" expand="0"/>
+                    <knob param="window" fill="0" expand="0"/>
+                    <value param="window" fill="0" expand="0"/>
+                </vbox>
+
+                <vbox fill="0" attach-x="1" attach-y="1" >
+                    <label param="width" />
+                    <knob param="width" />
+                    <value param="width" />
+                </vbox>
+            </table>
+        </hbox>
+    </frame>
+</hbox>
