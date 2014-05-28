@@ -22,6 +22,7 @@
 #include <calf/gui.h>
 #include <calf/giface.h>
 #include <calf/lv2_data_access.h>
+#include <calf/lv2_options.h>
 #include <calf/lv2_ui.h>
 #include <calf/lv2_uri_map.h>
 #include <calf/lv2_external_ui.h>
@@ -279,6 +280,9 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           LV2UI_Widget*                   widget,
                           const LV2_Feature* const*       features)
 {
+    static int argc = 0;
+    gtk_init(&argc, NULL);
+
     const plugin_metadata_iface *md = plugin_registry::instance().get_by_uri(plugin_uri);
     if (!md)
         return NULL;
@@ -292,13 +296,45 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     plugin_gui *gui = new plugin_gui(window);
     const char *xml = proxy->plugin_metadata->get_gui_xml();
     assert(xml);
-    *(GtkWidget **)(widget) = gui->create_from_xml(proxy, xml);
+    gui->optwidget = gui->create_from_xml(proxy, xml);
     proxy->enable_all_sends();
     proxy->send_configures(gui);
-    if (*(GtkWidget **)(widget))
+    if (gui->optwidget)
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
     gui->show_rack_ears(proxy->get_config()->rack_ears);
     
+    *(GtkWidget **)(widget) = gui->optwidget;
+
+    // find window title
+    const LV2_Options_Option* options = NULL;
+    const LV2_URI_Map_Feature* uriMap = NULL;
+
+    for (int i=0; features[i]; i++)
+    {
+        if (!strcmp(features[i]->URI, LV2_OPTIONS__options))
+            options = (const LV2_Options_Option*)features[i]->data;
+        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
+            uriMap = (const LV2_URI_Map_Feature*)features[i]->data;
+    }
+
+    if (!options || !uriMap)
+        return (LV2UI_Handle)gui;
+
+    const uint32_t uridWindowTitle = uriMap->uri_to_id(uriMap->callback_data, NULL, LV2_UI__windowTitle);
+
+    if (!uridWindowTitle)
+        return (LV2UI_Handle)gui;
+
+    for (int i=0; options[i].key; i++)
+    {
+        if (options[i].key == uridWindowTitle)
+        {
+            const char* windowTitle = (const char*)options[i].value;
+            gui->opttitle = strdup(windowTitle);
+            break;
+        }
+    }
+
     return (LV2UI_Handle)gui;
 }
 
@@ -308,6 +344,10 @@ void gui_cleanup(LV2UI_Handle handle)
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     if (proxy->source_id)
         g_source_remove(proxy->source_id);
+    if (gui->optwindow)
+        gtk_widget_destroy(gui->optwindow);
+    if (gui->opttitle)
+        free((void*)gui->opttitle);
     delete gui;
 }
 
@@ -330,8 +370,69 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     }
 }
 
+void gui_destroy(GtkWidget*, gpointer data)
+{
+    plugin_gui *gui = (plugin_gui *)data;
+
+    gui->optclosed = true;
+    gui->optwindow = NULL;
+}
+
+int gui_show(LV2UI_Handle handle)
+{
+    plugin_gui *gui = (plugin_gui *)handle;
+
+    if (! gui->optwindow)
+    {
+        gui->optwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        g_signal_connect(G_OBJECT(gui->optwindow), "destroy", G_CALLBACK(gui_destroy), (gpointer)gui);
+
+        if (gui->optwidget)
+            gtk_container_add(GTK_CONTAINER(gui->optwindow), gui->optwidget);
+
+        if (gui->opttitle)
+            gtk_window_set_title(GTK_WINDOW(gui->optwindow), gui->opttitle);
+
+        gtk_window_set_resizable(GTK_WINDOW(gui->optwindow), false);
+    }
+
+    gtk_widget_show_all(gui->optwindow);
+    gtk_window_present(GTK_WINDOW(gui->optwindow));
+
+    return 0;
+}
+
+int gui_hide(LV2UI_Handle handle)
+{
+    plugin_gui *gui = (plugin_gui *)handle;
+
+    if (gui->optwindow)
+        gtk_widget_hide_all(gui->optwindow);
+
+    return 0;
+}
+
+int gui_idle(LV2UI_Handle handle)
+{
+    plugin_gui *gui = (plugin_gui *)handle;
+
+    if (gui->optclosed)
+        return 1;
+
+    if (gui->optwindow)
+        gtk_main_iteration();
+
+    return 0;
+}
+
 const void *gui_extension(const char *uri)
 {
+    static const LV2UI_Show_Interface show = { gui_show, gui_hide };
+    static const LV2UI_Idle_Interface idle = { gui_idle };
+    if (!strcmp(uri, LV2_UI__showInterface))
+        return &show;
+    if (!strcmp(uri, LV2_UI__idleInterface))
+        return &idle;
     return NULL;
 }
 

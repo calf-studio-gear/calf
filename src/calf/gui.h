@@ -157,6 +157,12 @@ public:
     std::vector<param_control *> params;
     std::vector<int> read_serials;
 
+    /* For optional lv2ui:show interface. */
+    bool optclosed;
+    GtkWidget* optwidget;
+    GtkWidget* optwindow;
+    const char* opttitle;
+
     plugin_gui(plugin_gui_window *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
     param_control *create_control_from_xml(const char *element, const char *attributes[]);

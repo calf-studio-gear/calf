@@ -42,6 +42,10 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
     container = NULL;
     effect_name = NULL;
     preset_access = new gui_preset_access(this);
+    optclosed = false;
+    optwidget = NULL;
+    optwindow = NULL;
+    opttitle = NULL;
 }
 
 param_control *plugin_gui::create_control_from_xml(const char *element, const char *attributes[])
