@@ -32,6 +32,7 @@
 #include "loudness.h"
 #include "analyzer.h"
 #include "bypass.h"
+#include "orfanidis_eq.h"
 
 namespace calf_plugins {
 
@@ -98,6 +99,41 @@ public:
 typedef equalizerNband_audio_module<equalizer5band_metadata,  false> equalizer5band_audio_module;
 typedef equalizerNband_audio_module<equalizer8band_metadata,  true>  equalizer8band_audio_module;
 typedef equalizerNband_audio_module<equalizer12band_metadata, true>  equalizer12band_audio_module;
+
+/**********************************************************************
+ * EQUALIZER 30 BAND
+**********************************************************************/
+
+class equalizer30band_audio_module: public audio_module<equalizer30band_metadata> {
+    orfanidis_eq::conversions conv;
+    orfanidis_eq::freq_grid fg;
+    std::vector<orfanidis_eq::eq2*> eq_arrL;
+    std::vector<orfanidis_eq::eq2*> eq_arrR;
+
+    orfanidis_eq::filter_type flt_type;
+    orfanidis_eq::filter_type flt_type_old;
+
+    dsp::switcher<orfanidis_eq::filter_type> swL;
+    dsp::switcher<orfanidis_eq::filter_type> swR;
+
+    bool is_freq_grid_init;
+    void set_freq_grid();
+
+public:
+    uint32_t srate;
+    bool is_active;
+    dsp::bypass bypass;
+    dsp::bypass eq_switch;
+    vumeters meters;
+    equalizer30band_audio_module();
+    ~equalizer30band_audio_module();
+
+    void activate();
+    void deactivate();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
 
 /**********************************************************************
  * FILTER MODULE by Krzysztof Foltman

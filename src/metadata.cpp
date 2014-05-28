@@ -825,6 +825,115 @@ CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer
 
 ////////////////////////////////////////////////////////////////////////////
 
+#define GRAPHICEQ_BAND_PARAMS(band) \
+    {           0, -1, 1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain" #band, "Gain " #band },\
+    {           33, 10, 25000, 0,   PF_INT | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL,  NULL, "freq" #band, "Freq " #band },\
+    {           0, -32, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain_scale" #band, "Gain Scale " #band },
+
+#define GRAPHICEQ_GAIN_PARAMS(band) \
+    {           0, -1,  1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain" #band, "Gain " #band },\
+    {           0, -31, 32, 0, PF_INT | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain_scale" #band, "Gain Scale " #band },
+
+const char *equalizer30band_filters_modes[] = {"Butterworth", "Chebyshev 1", "Chebyshev 2"};
+
+const char *equalizer30band_gainscale_modes1[] = {"6 dB", "12 dB", "18 dB", "24 dB", "30 dB"};
+const char *equalizer30band_gainscale_modes2[] = {"6 dB", "12 dB", "18 dB", "24 dB", "30 dB"};
+
+CALF_PORT_NAMES(equalizer30band) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(equalizer30band) = {
+
+    { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level_in", "In Level" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_in_vuL", "Level In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_in_vuR", "Level In R" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_in_clipL", "Level Clip In L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_in_clipR", "Level Clip In R" },
+
+    { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 0,           0,  2, 0, PF_ENUM | PF_CTL_COMBO, equalizer30band_filters_modes, "filters", "Filters Type" },
+
+    { 0,           0,  4, 0, PF_INT | PF_ENUM | PF_CTL_COMBO | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, equalizer30band_gainscale_modes1, "gainscale1", "Gain scale 1" },
+    { 0,           0,  4, 0, PF_INT | PF_ENUM | PF_CTL_COMBO | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, equalizer30band_gainscale_modes2, "gainscale2", "Gain scale 2" },
+
+    { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level_out", "Out Level" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_out_vuL", "Level Out L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_out_vuR", "Level Out R" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_out_clipL", "Level Clip Out L" },
+    { 0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_out_clipR", "Level Clip Out R" },
+
+    //1 - 30 Bands
+    GRAPHICEQ_GAIN_PARAMS(10)
+    GRAPHICEQ_BAND_PARAMS(11)
+    GRAPHICEQ_BAND_PARAMS(12)
+    GRAPHICEQ_BAND_PARAMS(13)
+    GRAPHICEQ_BAND_PARAMS(14)
+    GRAPHICEQ_BAND_PARAMS(15)
+    GRAPHICEQ_BAND_PARAMS(16)
+    GRAPHICEQ_BAND_PARAMS(17)
+    GRAPHICEQ_BAND_PARAMS(18)
+    GRAPHICEQ_BAND_PARAMS(19)
+    GRAPHICEQ_BAND_PARAMS(110)
+    GRAPHICEQ_BAND_PARAMS(111)
+    GRAPHICEQ_BAND_PARAMS(112)
+    GRAPHICEQ_BAND_PARAMS(113)
+    GRAPHICEQ_BAND_PARAMS(114)
+    GRAPHICEQ_BAND_PARAMS(115)
+    GRAPHICEQ_BAND_PARAMS(116)
+    GRAPHICEQ_BAND_PARAMS(117)
+    GRAPHICEQ_BAND_PARAMS(118)
+    GRAPHICEQ_BAND_PARAMS(119)
+    GRAPHICEQ_BAND_PARAMS(120)
+    GRAPHICEQ_BAND_PARAMS(121)
+    GRAPHICEQ_BAND_PARAMS(122)
+    GRAPHICEQ_BAND_PARAMS(123)
+    GRAPHICEQ_BAND_PARAMS(124)
+    GRAPHICEQ_BAND_PARAMS(125)
+    GRAPHICEQ_BAND_PARAMS(126)
+    GRAPHICEQ_BAND_PARAMS(127)
+    GRAPHICEQ_BAND_PARAMS(128)
+    GRAPHICEQ_BAND_PARAMS(129)
+    GRAPHICEQ_BAND_PARAMS(130)
+
+    //2 - 30 Bands
+    GRAPHICEQ_GAIN_PARAMS(20)
+    GRAPHICEQ_BAND_PARAMS(21)
+    GRAPHICEQ_BAND_PARAMS(22)
+    GRAPHICEQ_BAND_PARAMS(23)
+    GRAPHICEQ_BAND_PARAMS(24)
+    GRAPHICEQ_BAND_PARAMS(25)
+    GRAPHICEQ_BAND_PARAMS(26)
+    GRAPHICEQ_BAND_PARAMS(27)
+    GRAPHICEQ_BAND_PARAMS(28)
+    GRAPHICEQ_BAND_PARAMS(29)
+    GRAPHICEQ_BAND_PARAMS(210)
+    GRAPHICEQ_BAND_PARAMS(211)
+    GRAPHICEQ_BAND_PARAMS(212)
+    GRAPHICEQ_BAND_PARAMS(213)
+    GRAPHICEQ_BAND_PARAMS(214)
+    GRAPHICEQ_BAND_PARAMS(215)
+    GRAPHICEQ_BAND_PARAMS(216)
+    GRAPHICEQ_BAND_PARAMS(217)
+    GRAPHICEQ_BAND_PARAMS(218)
+    GRAPHICEQ_BAND_PARAMS(219)
+    GRAPHICEQ_BAND_PARAMS(220)
+    GRAPHICEQ_BAND_PARAMS(221)
+    GRAPHICEQ_BAND_PARAMS(222)
+    GRAPHICEQ_BAND_PARAMS(223)
+    GRAPHICEQ_BAND_PARAMS(224)
+    GRAPHICEQ_BAND_PARAMS(225)
+    GRAPHICEQ_BAND_PARAMS(226)
+    GRAPHICEQ_BAND_PARAMS(227)
+    GRAPHICEQ_BAND_PARAMS(228)
+    GRAPHICEQ_BAND_PARAMS(229)
+    GRAPHICEQ_BAND_PARAMS(230)
+
+    {}
+};
+
+CALF_PLUGIN_INFO(equalizer30band) = { 0x8514, "Equalizer30Band", "Calf Equalizer 30 Band", "drgreenthumb", calf_plugins::calf_copyright_info, "EQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 #define XOVER_BAND_PARAMS(band) \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level" #band, "Gain " #band }, \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "active" #band, "Active " #band }, \

@@ -495,6 +495,192 @@ template class equalizerNband_audio_module<equalizer5band_metadata, false>;
 template class equalizerNband_audio_module<equalizer8band_metadata, true>;
 template class equalizerNband_audio_module<equalizer12band_metadata, true>;
 
+/**********************************************************************
+ * EQUALIZER 30 BAND
+**********************************************************************/
+
+void equalizer30band_audio_module::set_freq_grid()
+{
+    //Initialize freq indicators
+    unsigned int param_ptr = 0;
+    for(unsigned j = 0; j < fg.get_number_of_bands(); j++)
+    {
+        *params[param_freq11 + param_ptr] = fg.get_rounded_freq(j);
+        *params[param_freq21 + param_ptr] = fg.get_rounded_freq(j);
+        param_ptr += 3;
+    }
+
+    is_freq_grid_init = true;
+}
+
+equalizer30band_audio_module::equalizer30band_audio_module() :
+    conv(orfanidis_eq::eq_min_max_gain_db),
+    swL(10000), swR(10000)
+{
+    is_active = false;
+    srate     = 0;
+
+    is_freq_grid_init = false;
+
+    //Construct equalizers
+    using namespace orfanidis_eq;
+
+    fg.set_30_bands();
+
+    eq2* ptr30L = new eq2(fg, butterworth);
+    eq2* ptr30R = new eq2(fg, butterworth);
+    eq_arrL.push_back(ptr30L);
+    eq_arrR.push_back(ptr30R);
+
+    ptr30L = new eq2(fg, chebyshev1);
+    ptr30R = new eq2(fg, chebyshev1);
+    eq_arrL.push_back(ptr30L);
+    eq_arrR.push_back(ptr30R);
+
+    ptr30L = new eq2(fg, chebyshev2);
+    ptr30R = new eq2(fg, chebyshev2);
+    eq_arrL.push_back(ptr30L);
+    eq_arrR.push_back(ptr30R);
+
+    flt_type = butterworth;
+    flt_type_old = none;
+
+    //Set switcher
+    swL.set_previous(butterworth);
+    swL.set(butterworth);
+
+    swR.set_previous(butterworth);
+    swR.set(butterworth);
+}
+
+equalizer30band_audio_module::~equalizer30band_audio_module()
+{
+    for (unsigned int i = 0; i < eq_arrL.size(); i++)
+        delete eq_arrL[i];
+
+    for (unsigned int i = 0; i < eq_arrR.size(); i++)
+        delete eq_arrR[i];
+}
+
+void equalizer30band_audio_module::activate()
+{
+    is_active = true;
+
+    //Update freq grid
+    if(is_freq_grid_init == false)
+        set_freq_grid();
+}
+
+void equalizer30band_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void equalizer30band_audio_module::params_changed()
+{
+    using namespace orfanidis_eq;
+
+    //Change gain indicators
+    *params[param_gain_scale10] = (*params[param_gain10])*(gain_step+(*params[param_gainscale1])*gain_step);
+    *params[param_gain_scale20] = (*params[param_gain20])*(gain_step+(*params[param_gainscale2])*gain_step);
+
+    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+        *params[param_gain_scale11 + band_params*i] = (*params[param_gain11 + band_params*i])*
+                (gain_step+(*params[param_gainscale1])*gain_step);
+
+    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+        *params[param_gain_scale21 + band_params*i] = (*params[param_gain21 + band_params*i])*
+                (gain_step+(*params[param_gainscale2])*gain_step);
+
+    //Pass gains to eq's
+    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+        eq_arrL[*params[param_filters]]->change_band_gain_db(i,*params[param_gain_scale11 + band_params*i]);
+
+    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+        eq_arrR[*params[param_filters]]->change_band_gain_db(i,*params[param_gain_scale21 + band_params*i]);
+
+    //Upadte filter type
+    flt_type = (filter_type)(*params[param_filters] + 1);
+}
+
+void equalizer30band_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+
+    //Change sample rate for eq's
+    for(unsigned int i = 0; i < eq_arrL.size(); i++)
+    {
+        eq_arrL[i]->set_sample_rate(srate);
+        eq_arrL[i]->set_sample_rate(srate);
+    }
+
+    int meter[] = {param_level_in_vuL, param_level_in_vuR, param_level_out_vuL, param_level_out_vuR};
+    int clip[] = {param_level_in_clipL, param_level_in_clipR, param_level_out_clipL, param_level_out_clipR};
+    meters.init(params, meter, clip, 4, sr);
+}
+
+uint32_t equalizer30band_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    uint32_t orig_numsamples = numsamples;
+    uint32_t orig_offset = offset;
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    numsamples += offset;
+    if(bypassed) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+        // process
+        while(offset < numsamples) {
+
+            double inL = ins[0][offset] * *params[param_level_in];
+            double inR = ins[1][offset] * *params[param_level_in];
+
+            double outL = inL;
+            double outR = inR;
+
+            unsigned int eq_index = swL.get_state() - 1;
+            eq_arrL[eq_index]->sbs_process(&inL, &outL);
+            eq_arrR[eq_index]->sbs_process(&inR, &outR);
+
+            //If filter type switched
+            if(flt_type_old != flt_type)
+            {
+                swL.set(flt_type);
+                swR.set(flt_type);
+                flt_type_old = flt_type;
+            }
+
+            outL *= swL.get_ramp();
+            outR *= swR.get_ramp();
+
+            outL = outL* conv.fast_db_2_lin(*params[param_gain_scale10]);
+            outR = outR* conv.fast_db_2_lin(*params[param_gain_scale20]);
+
+            outL = outL* *params[param_level_out];
+            outR = outR* *params[param_level_out];
+
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+
+            // meters
+            float values[] = {(float)inL, (float)inR, (float)outL, (float)outR};
+            meters.process(values);
+
+            // next sample
+            ++offset;
+        } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+    }
+
+    meters.fall(orig_numsamples);
+    return outputs_mask;
+}
 
 /**********************************************************************
  * FILTERKLAVIER by Hans Baier 

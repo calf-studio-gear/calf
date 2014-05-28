@@ -253,6 +253,67 @@ public:
     // to read param, use get()
 };
     
+template < typename T >
+class switcher
+{
+private:
+    T cont_val_cur;
+    T cont_val_prev;
+    bool is_active;
+    double step;
+    double acc;
+public:
+    switcher(unsigned int samples) : cont_val_cur(), cont_val_prev()
+    {
+        step = 1.0/samples;
+        acc = 0;
+        is_active = false;
+    }
+
+    void set(T ctr)
+    {
+        cont_val_cur = ctr;
+        is_active = true;
+    }
+
+    void set_previous(T ctr)
+    {
+        cont_val_prev = ctr;
+    }
+
+    T get_state()
+    {
+        return cont_val_prev;
+    }
+
+    double get_ramp()
+    {
+        if(is_active) {
+            if(acc < 0.5) {
+                /// Decrease value to zero
+                acc+= step;
+                return 1 - 2*acc;
+            }
+            else if(acc >= 0.5 && acc <= 1.0) {
+                /// Switch and increase value to one
+                cont_val_prev = cont_val_cur;
+                acc+= step;
+                return (acc - 0.5)*2;
+            }
+            else if(acc > 1) {
+                /// Switching finished
+                acc = 0;
+                is_active = false;
+                return 1;
+            }
+            else
+                return 1;
+        }
+        else
+            return 1;
+    }
+};
+
 }
 
 #endif
