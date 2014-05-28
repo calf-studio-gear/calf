@@ -55,7 +55,7 @@
                 </vbox>
                 <vbox fill="0" attach-x="1" attach-y="0" pad-x="10">
                     <label param="amount"/>
-                    <knob param="amount"/>
+                    <knob param="amount" type="1"/>
                     <value param="amount"/>
                 </vbox>
 
