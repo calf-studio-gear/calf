@@ -531,14 +531,16 @@ GtkWidget *value_param_control::create(plugin_gui *_gui, int _param_no)
     if (param_no != -1)
     {
         const parameter_properties &props = get_props();
-        gtk_label_set_width_chars (GTK_LABEL (widget), props.get_char_count());
+        int width = get_int("width", 0);
+        gtk_label_set_width_chars (GTK_LABEL (widget),
+            width ? width : props.get_char_count());
     }
     else
     {
         require_attribute("key");
         require_int_attribute("width");
         param_variable = attribs["key"];
-        gtk_label_set_width_chars (GTK_LABEL (widget), get_int("width"));        
+        gtk_label_set_width_chars (GTK_LABEL (widget), get_int("width"));
     }
     gtk_misc_set_alignment (GTK_MISC (widget), get_float("align-x", 0.5), get_float("align-y", 0.5));
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Value");

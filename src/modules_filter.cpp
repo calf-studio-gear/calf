@@ -581,16 +581,16 @@ void equalizer30band_audio_module::params_changed()
     using namespace orfanidis_eq;
 
     //Change gain indicators
-    *params[param_gain_scale10] = (*params[param_gain10])*(gain_step+(*params[param_gainscale1])*gain_step);
-    *params[param_gain_scale20] = (*params[param_gain20])*(gain_step+(*params[param_gainscale2])*gain_step);
+    *params[param_gain_scale10] = *params[param_gain10] * *params[param_gainscale1];
+    *params[param_gain_scale20] = *params[param_gain20] * *params[param_gainscale2];
 
     for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
         *params[param_gain_scale11 + band_params*i] = (*params[param_gain11 + band_params*i])*
-                (gain_step+(*params[param_gainscale1])*gain_step);
+                *params[param_gainscale1];
 
     for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
         *params[param_gain_scale21 + band_params*i] = (*params[param_gain21 + band_params*i])*
-                (gain_step+(*params[param_gainscale2])*gain_step);
+                *params[param_gainscale2];
 
     //Pass gains to eq's
     for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)

@@ -20,6 +20,8 @@
  */
 #include <config.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <math.h>
 #include <calf/giface.h>
 #include <calf/utils.h>
 
@@ -159,6 +161,22 @@ float parameter_properties::get_increment() const
         increment = 1.0 / (max - min);
     return increment;
 }
+std::string human_readable(float value, uint32_t base, char *format)
+{
+    // format is something like "%.2f%sB" for e.g. "1.23kB"
+    // base is something like 1000 or 1024
+    char buf[32];
+    const char *suf[] = { "", "k", "m", "g", "t", "p", "e" };
+    if (value == 0) {
+        sprintf(buf, format, 0.f, "");
+        return string(buf);
+    }
+    double val = abs(value);
+    int place = (int)(log(val) / log(base));
+    double num = val / pow(base, place);
+    sprintf(buf, format, (float)((value > 0) - (value < 0)) * num, suf[place]);
+    return string(buf);
+}
 
 int parameter_properties::get_char_count() const
 {
@@ -173,14 +191,17 @@ int parameter_properties::get_char_count() const
         len = std::max(len, strlen(buf)) + 2;
         return (int)len;
     }
-    return std::max(to_string(min).length(), std::max(to_string(max).length(), to_string(min + (max-min) * 0.987654).length()));
+    std::string min_ = human_readable(min, 1000, (char*)"%g%s");
+    std::string max_ = human_readable(max, 1000, (char*)"%g%s");
+    return std::max((int)min_.length(), std::max((int)max_.length(), 1));
 }
+
 
 std::string parameter_properties::to_string(float value) const
 {
     char buf[32];
     if ((flags & PF_SCALEMASK) == PF_SCALE_PERC) {
-        snprintf(buf, sizeof(buf), "%0.f%%", 100.0 * value);
+        snprintf(buf, sizeof(buf), "%0.2f%%", 100.0 * value);
         return string(buf);
     }
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
@@ -189,6 +210,7 @@ std::string parameter_properties::to_string(float value) const
         snprintf(buf, sizeof(buf), "%0.1f dB", dsp::amp2dB(value));
         return string(buf);
     }
+    std::string s_;
     switch(flags & PF_TYPEMASK)
     {
     case PF_INT:
@@ -196,13 +218,38 @@ std::string parameter_properties::to_string(float value) const
     case PF_ENUM:
     case PF_ENUM_MULTI:
         value = (int)value;
+        s_ = human_readable(value, 1000, (char*)"%g%s");
+        snprintf(buf, sizeof(buf), "%s", s_.c_str());
+        //printf("%.2f %s\n", value, buf);
+        break;
+    case PF_FLOAT:
+        switch (flags & PF_DIGITMASK) {
+            case PF_DIGIT_0:
+                snprintf(buf, sizeof(buf), "%.0f", value);
+                break;
+            case PF_DIGIT_1:
+                snprintf(buf, sizeof(buf), "%.1f", value);
+                break;
+            case PF_DIGIT_2:
+                snprintf(buf, sizeof(buf), "%.2f", value);
+                break;
+            case PF_DIGIT_3:
+                snprintf(buf, sizeof(buf), "%.3f", value);
+                break;
+            case PF_DIGIT_ALL:
+            default:
+                snprintf(buf, sizeof(buf), "%g", value);
+                break;
+        }
+        break;
+    default:
+        snprintf(buf, sizeof(buf), "%g", value);
         break;
     }
 
     if ((flags & PF_SCALEMASK) == PF_SCALE_LOG_INF && IS_FAKE_INFINITY(value))
-        snprintf(buf, sizeof(buf), "+inf"); // XXXKF change to utf-8 infinity
-    else
-        snprintf(buf, sizeof(buf), "%g", value);
+        snprintf(buf, sizeof(buf), "∞"); // XXXKF change to utf-8 infinity
+    
     switch(flags & PF_UNITMASK) {
     case PF_UNIT_DB: return string(buf) + " dB";
     case PF_UNIT_HZ: return string(buf) + " Hz";

@@ -1,271 +1,254 @@
-<vbox spacing="12">
-    <hbox spacing="5">
-        <frame label="Input">
-            <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
-                <label text="In Level" attach-x="0" attach-y="0" expand-x="0" />
-                <knob param="level_in" type="1" attach-x="0" attach-y="1" attach-h="2" expand-x="0" />
-                <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
-                <label attach-x="2" attach-y="0" expand-x="1" text="Input" />
-                <vumeter param="level_in_vuL" width="140" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="2" attach-y="1" expand-x="1" />
-                <vumeter param="level_in_vuR" width="140" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="2" attach-y="2" expand-x="1" />
-                <label attach-x="3" attach-y="0" expand-x="0" text="Clip" />
-                <led param="level_in_clipL" attach-x="3" attach-y="1" expand-x="0" />
-                <led param="level_in_clipR" attach-x="3" attach-y="2" expand-x="0" />
-            </table>
-        </frame>
-        <vbox spacing="12">
-            <hbox spacing="12">
-                <label text="   " attach-x="0" attach-y="0" expand-x="0" />
-            </hbox>
-            <hbox>
-            <frame label="Filters Type">
-                <hbox spacing="5">
-                    <combo param="filters"/>
-                </hbox>
-            </frame>
-            <frame label="Bypass">
-                <vbox spacing="5">
-                    <toggle param="bypass" size="1"/>
-                </vbox>
-            </frame>
-            </hbox>
-        </vbox>
-        <frame label="Output">
-            <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
-                <label attach-x="0" attach-y="0" expand-x="1" text="Output"/>
-                <vumeter param="level_out_vuL" width="140" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="0" attach-y="1" expand-x="1"/>
-                <vumeter param="level_out_vuR" width="140" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="0" attach-y="2" expand-x="1"/>
-                <label attach-x="1" attach-y="0" expand-x="0" text="Clip"/>
-                <led param="level_out_clipL" attach-x="1" attach-y="1" expand-x="0"/>
-                <led param="level_out_clipR" attach-x="1" attach-y="2" expand-x="0"/>
-                <label text="Out Level" attach-x="2" attach-y="0" expand-x="0"/>
-                <knob param="level_out" type="1" attach-x="2" attach-y="1" attach-h="2" expand-x="0"/>
-                <value param="level_out" attach-x="2" attach-y="3" expand-x="0"/>
-            </table>
-        </frame>
-    </hbox>
+<vbox spacing="5">
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="level_in_vuL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="level_in_vuR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="level_in_clipL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="level_in_clipR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label param="filters" attach-x="4" attach-y="0" expand-x="0" />
+        <combo param="filters" attach-x="4" attach-y="1" expand-x="0" attach-h="2" />
+        
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="level_out_vuL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="level_out_vuR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="level_out_clipL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="level_out_clipR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+    </table>
+    
     <frame label="Left">
-        <hbox page="30 Bands">
-            <hbox spacing="5">
-                <label text=" "/>
-            </hbox>
-            <frame label="Gain">
-                <hbox spacing="5">
-                    <combo param="gainscale1"/>
-                </hbox>
-            </frame>
-            <hbox spacing="5">
-                <label text=" "/>
-            </hbox>
-                <label/>
-                    <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="24 Bands">
-                        <value  param="gain_scale10"  attach-x="2" attach-y="1"/>
-                        <vscale param="gain10" attach-x="2" attach-y="2" inverted="1" size="1" height="160"/>
-                        <label text="   " attach-x="3" attach-y="2" attach-h="1" expand-x="0"/>
-                        <value  param="gain_scale11"  attach-x="4" attach-y="1"/>
-                        <vscale param="gain11" attach-x="4" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq11"        attach-x="4" attach-y="7"/>
-                        <value  param="gain_scale12"  attach-x="5" attach-y="1"/>
-                        <vscale param="gain12" attach-x="5" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq12"        attach-x="5" attach-y="7"/>
-                        <value  param="gain_scale13"  attach-x="6" attach-y="1"/>
-                        <vscale param="gain13" attach-x="6" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq13"        attach-x="6" attach-y="7"/>
-                        <value  param="gain_scale14"  attach-x="7" attach-y="1"/>
-                        <vscale param="gain14" attach-x="7" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq14"        attach-x="7" attach-y="7"/>
-                        <value  param="gain_scale15"  attach-x="8" attach-y="1"/>
-                        <vscale param="gain15" attach-x="8" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq15"        attach-x="8" attach-y="7"/>
-                        <value  param="gain_scale16"  attach-x="9" attach-y="1"/>
-                        <vscale param="gain16" attach-x="9" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq16"        attach-x="9" attach-y="7"/>
-                        <value  param="gain_scale17"  attach-x="10" attach-y="1"/>
-                        <vscale param="gain17" attach-x="10" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq17"        attach-x="10" attach-y="7"/>
-                        <value  param="gain_scale18"  attach-x="11" attach-y="1"/>
-                        <vscale param="gain18" attach-x="11" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq18"        attach-x="11" attach-y="7"/>
-                        <value  param="gain_scale19"  attach-x="12" attach-y="1"/>
-                        <vscale param="gain19" attach-x="12" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq19"        attach-x="12" attach-y="7"/>
-                        <value  param="gain_scale110"  attach-x="13" attach-y="1"/>
-                        <vscale param="gain110" attach-x="13" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq110"        attach-x="13" attach-y="7"/>
-                        <value  param="gain_scale111"  attach-x="14" attach-y="1"/>
-                        <vscale param="gain111" attach-x="14" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq111"        attach-x="14" attach-y="7"/>
-                        <value  param="gain_scale112"  attach-x="15" attach-y="1"/>
-                        <vscale param="gain112" attach-x="15" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq112"        attach-x="15" attach-y="7"/>
-                        <value  param="gain_scale113"  attach-x="16" attach-y="1"/>
-                        <vscale param="gain113" attach-x="16" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq113"        attach-x="16" attach-y="7"/>
-                        <value  param="gain_scale114"  attach-x="17" attach-y="1"/>
-                        <vscale param="gain114" attach-x="17" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq114"        attach-x="17" attach-y="7"/>
-                        <value  param="gain_scale115"  attach-x="18" attach-y="1"/>
-                        <vscale param="gain115" attach-x="18" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq115"        attach-x="18" attach-y="7"/>
-                        <value  param="gain_scale116"  attach-x="19" attach-y="1"/>
-                        <vscale param="gain116" attach-x="19" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq116"        attach-x="19" attach-y="7"/>
-                        <value  param="gain_scale117"  attach-x="20" attach-y="1"/>
-                        <vscale param="gain117" attach-x="20" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq117"        attach-x="20" attach-y="7"/>
-                        <value  param="gain_scale118"  attach-x="21" attach-y="1"/>
-                        <vscale param="gain118" attach-x="21" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq118"        attach-x="21" attach-y="7"/>
-                        <value  param="gain_scale119"  attach-x="22" attach-y="1"/>
-                        <vscale param="gain119" attach-x="22" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq119"        attach-x="22" attach-y="7"/>
-                        <value  param="gain_scale120"  attach-x="23" attach-y="1"/>
-                        <vscale param="gain120" attach-x="23" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq120"        attach-x="23" attach-y="7"/>
-                        <value  param="gain_scale121"  attach-x="24" attach-y="1"/>
-                        <vscale param="gain121" attach-x="24" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq121"        attach-x="24" attach-y="7"/>
-                        <value  param="gain_scale122"  attach-x="25" attach-y="1"/>
-                        <vscale param="gain122" attach-x="25" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq122"        attach-x="25" attach-y="7"/>
-                        <value  param="gain_scale123"  attach-x="26" attach-y="1"/>
-                        <vscale param="gain123" attach-x="26" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq123"        attach-x="26" attach-y="7"/>
-                        <value  param="gain_scale124"  attach-x="27" attach-y="1"/>
-                        <vscale param="gain124" attach-x="27" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq124"        attach-x="27" attach-y="7"/>
-                        <value  param="gain_scale125"  attach-x="28" attach-y="1"/>
-                        <vscale param="gain125" attach-x="28" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq125"        attach-x="28" attach-y="7"/>
-                        <value  param="gain_scale126"  attach-x="29" attach-y="1"/>
-                        <vscale param="gain126" attach-x="29" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq126"        attach-x="29" attach-y="7"/>
-                        <value  param="gain_scale127"  attach-x="30" attach-y="1"/>
-                        <vscale param="gain127" attach-x="30" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq127"        attach-x="30" attach-y="7"/>
-                        <value  param="gain_scale128"  attach-x="31" attach-y="1"/>
-                        <vscale param="gain128" attach-x="31" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq128"        attach-x="31" attach-y="7"/>
-                        <value  param="gain_scale129"  attach-x="32" attach-y="1"/>
-                        <vscale param="gain129" attach-x="32" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq129"        attach-x="32" attach-y="7"/>
-                        <value  param="gain_scale130"  attach-x="33" attach-y="1"/>
-                        <vscale param="gain130" attach-x="33" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq130"        attach-x="33" attach-y="7"/>
-                    </table>
-                <label/>
-            </hbox>
-        </frame>
-        <frame label="Right">
-            <hbox page="30 Bands">
-                <hbox spacing="5">
-                    <label text=" "/>
-                </hbox>
-                <frame label="Gain">
-                   <hbox spacing="5">
-                       <combo param="gainscale2"/>
-                   </hbox>
-                </frame>
-                <hbox spacing="5">
-                    <label text=" "/>
-                </hbox>
-                    <label/>
-                        <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="24 Bands">
-                        <value  param="gain_scale20"  attach-x="2" attach-y="1"/>
-                        <vscale param="gain20" attach-x="2" attach-y="2" inverted="1" size="1" height="160"/>
-                        <label text="   " attach-x="3" attach-y="2" attach-h="1" expand-x="0"/>
-                        <value  param="gain_scale21"  attach-x="4" attach-y="1"/>
-                        <vscale param="gain21" attach-x="4" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq21"        attach-x="4" attach-y="7"/>
-                        <value  param="gain_scale22"  attach-x="5" attach-y="1"/>
-                        <vscale param="gain22" attach-x="5" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq22"        attach-x="5" attach-y="7"/>
-                        <value  param="gain_scale23"  attach-x="6" attach-y="1"/>
-                        <vscale param="gain23" attach-x="6" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq23"        attach-x="6" attach-y="7"/>
-                        <value  param="gain_scale24"  attach-x="7" attach-y="1"/>
-                        <vscale param="gain24" attach-x="7" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq24"        attach-x="7" attach-y="7"/>
-                        <value  param="gain_scale25"  attach-x="8" attach-y="1"/>
-                        <vscale param="gain25" attach-x="8" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq25"        attach-x="8" attach-y="7"/>
-                        <value  param="gain_scale26"  attach-x="9" attach-y="1"/>
-                        <vscale param="gain26" attach-x="9" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq26"        attach-x="9" attach-y="7"/>
-                        <value  param="gain_scale27"  attach-x="10" attach-y="1"/>
-                        <vscale param="gain27" attach-x="10" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq27"        attach-x="10" attach-y="7"/>
-                        <value  param="gain_scale28"  attach-x="11" attach-y="1"/>
-                        <vscale param="gain28" attach-x="11" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq28"        attach-x="11" attach-y="7"/>
-                        <value  param="gain_scale29"  attach-x="12" attach-y="1"/>
-                        <vscale param="gain29" attach-x="12" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq29"        attach-x="12" attach-y="7"/>
-                        <value  param="gain_scale210"  attach-x="13" attach-y="1"/>
-                        <vscale param="gain210" attach-x="13" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq210"        attach-x="13" attach-y="7"/>
-                        <value  param="gain_scale211"  attach-x="14" attach-y="1"/>
-                        <vscale param="gain211" attach-x="14" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq211"        attach-x="14" attach-y="7"/>
-                        <value  param="gain_scale212"  attach-x="15" attach-y="1"/>
-                        <vscale param="gain212" attach-x="15" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq212"        attach-x="15" attach-y="7"/>
-                        <value  param="gain_scale213"  attach-x="16" attach-y="1"/>
-                        <vscale param="gain213" attach-x="16" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq213"        attach-x="16" attach-y="7"/>
-                        <value  param="gain_scale214"  attach-x="17" attach-y="1"/>
-                        <vscale param="gain214" attach-x="17" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq214"        attach-x="17" attach-y="7"/>
-                        <value  param="gain_scale215"  attach-x="18" attach-y="1"/>
-                        <vscale param="gain215" attach-x="18" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq215"        attach-x="18" attach-y="7"/>
-                        <value  param="gain_scale216"  attach-x="19" attach-y="1"/>
-                        <vscale param="gain216" attach-x="19" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq216"        attach-x="19" attach-y="7"/>
-                        <value  param="gain_scale217"  attach-x="20" attach-y="1"/>
-                        <vscale param="gain217" attach-x="20" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq217"        attach-x="20" attach-y="7"/>
-                        <value  param="gain_scale218"  attach-x="21" attach-y="1"/>
-                        <vscale param="gain218" attach-x="21" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq218"        attach-x="21" attach-y="7"/>
-                        <value  param="gain_scale219"  attach-x="22" attach-y="1"/>
-                        <vscale param="gain219" attach-x="22" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq219"        attach-x="22" attach-y="7"/>
-                        <value  param="gain_scale220"  attach-x="23" attach-y="1"/>
-                        <vscale param="gain220" attach-x="23" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq220"        attach-x="23" attach-y="7"/>
-                        <value  param="gain_scale221"  attach-x="24" attach-y="1"/>
-                        <vscale param="gain221" attach-x="24" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq221"        attach-x="24" attach-y="7"/>
-                        <value  param="gain_scale222"  attach-x="25" attach-y="1"/>
-                        <vscale param="gain222" attach-x="25" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq222"        attach-x="25" attach-y="7"/>
-                        <value  param="gain_scale223"  attach-x="26" attach-y="1"/>
-                        <vscale param="gain223" attach-x="26" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq223"        attach-x="26" attach-y="7"/>
-                        <value  param="gain_scale224"  attach-x="27" attach-y="1"/>
-                        <vscale param="gain224" attach-x="27" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq224"        attach-x="27" attach-y="7"/>
-                        <value  param="gain_scale225"  attach-x="28" attach-y="1"/>
-                        <vscale param="gain225" attach-x="28" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq225"        attach-x="28" attach-y="7"/>
-                        <value  param="gain_scale226"  attach-x="29" attach-y="1"/>
-                        <vscale param="gain226" attach-x="29" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq226"        attach-x="29" attach-y="7"/>
-                        <value  param="gain_scale227"  attach-x="30" attach-y="1"/>
-                        <vscale param="gain227" attach-x="30" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq227"        attach-x="30" attach-y="7"/>
-                        <value  param="gain_scale228"  attach-x="31" attach-y="1"/>
-                        <vscale param="gain228" attach-x="31" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq228"        attach-x="31" attach-y="7"/>
-                        <value  param="gain_scale229"  attach-x="32" attach-y="1"/>
-                        <vscale param="gain229" attach-x="32" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq229"        attach-x="32" attach-y="7"/>
-                        <value  param="gain_scale230"  attach-x="33" attach-y="1"/>
-                        <vscale param="gain230" attach-x="33" attach-y="2" inverted="1" size="1" height="160"/>
-                        <value  param="freq230"        attach-x="33" attach-y="7"/>
-                    </table>
-                <label/>
-            </hbox>
-         </frame>
+        <hbox>
+            <table rows="3" cols="30" spacing-x="0" spacing-y="0">
+                <label text="dB" attach-x="0" attach-y="0" />
+                <label text="Hz" attach-x="0" attach-y="2" />
+                <value  param="gain_scale11"   attach-x="1"  attach-y="0"/>
+                <vscale param="gain11"         attach-x="1"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq11"         attach-x="1"  attach-y="2" width="4"/>
+                <value  param="gain_scale12"   attach-x="2"  attach-y="0"/>
+                <vscale param="gain12"         attach-x="2"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq12"         attach-x="2"  attach-y="2" width="4"/>
+                <value  param="gain_scale13"   attach-x="3"  attach-y="0"/>
+                <vscale param="gain13"         attach-x="3"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq13"         attach-x="3"  attach-y="2" width="4"/>
+                <value  param="gain_scale14"   attach-x="4"  attach-y="0"/>
+                <vscale param="gain14"         attach-x="4"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq14"         attach-x="4"  attach-y="2" width="4"/>
+                <value  param="gain_scale15"   attach-x="5"  attach-y="0"/>
+                <vscale param="gain15"         attach-x="5"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq15"         attach-x="5"  attach-y="2" width="4"/>
+                <value  param="gain_scale16"   attach-x="6"  attach-y="0"/>
+                <vscale param="gain16"         attach-x="6"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq16"         attach-x="6"  attach-y="2" width="4"/>
+                <value  param="gain_scale17"   attach-x="7"  attach-y="0"/>
+                <vscale param="gain17"         attach-x="7"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq17"         attach-x="7"  attach-y="2" width="4"/>
+                <value  param="gain_scale18"   attach-x="8"  attach-y="0"/>
+                <vscale param="gain18"         attach-x="8"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq18"         attach-x="8"  attach-y="2" width="4"/>
+                <value  param="gain_scale19"   attach-x="9"  attach-y="0"/>
+                <vscale param="gain19"         attach-x="9"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq19"         attach-x="9"  attach-y="2" width="4"/>
+                <value  param="gain_scale110"  attach-x="10"  attach-y="0"/>
+                <vscale param="gain110"        attach-x="10"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq110"        attach-x="10"  attach-y="2" width="4"/>
+                <value  param="gain_scale111"  attach-x="11" attach-y="0"/>
+                <vscale param="gain111"        attach-x="11" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq111"        attach-x="11" attach-y="2" width="4"/>
+                <value  param="gain_scale112"  attach-x="12" attach-y="0"/>
+                <vscale param="gain112"        attach-x="12" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq112"        attach-x="12" attach-y="2" width="4"/>
+                <value  param="gain_scale113"  attach-x="13" attach-y="0"/>
+                <vscale param="gain113"        attach-x="13" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq113"        attach-x="13" attach-y="2" width="4"/>
+                <value  param="gain_scale114"  attach-x="14" attach-y="0"/>
+                <vscale param="gain114"        attach-x="14" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq114"        attach-x="14" attach-y="2" width="4"/>
+                <value  param="gain_scale115"  attach-x="15" attach-y="0"/>
+                <vscale param="gain115"        attach-x="15" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq115"        attach-x="15" attach-y="2" width="4"/>
+                <value  param="gain_scale116"  attach-x="16" attach-y="0"/>
+                <vscale param="gain116"        attach-x="16" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq116"        attach-x="16" attach-y="2" width="4"/>
+                <value  param="gain_scale117"  attach-x="17" attach-y="0"/>
+                <vscale param="gain117"        attach-x="17" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq117"        attach-x="17" attach-y="2" width="4"/>
+                <value  param="gain_scale118"  attach-x="18" attach-y="0"/>
+                <vscale param="gain118"        attach-x="18" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq118"        attach-x="18" attach-y="2" width="4"/>
+                <value  param="gain_scale119"  attach-x="19" attach-y="0"/>
+                <vscale param="gain119"        attach-x="19" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq119"        attach-x="19" attach-y="2" width="4"/>
+                <value  param="gain_scale120"  attach-x="20" attach-y="0"/>
+                <vscale param="gain120"        attach-x="20" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq120"        attach-x="20" attach-y="2" width="4"/>
+                <value  param="gain_scale121"  attach-x="21" attach-y="0"/>
+                <vscale param="gain121"        attach-x="21" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq121"        attach-x="21" attach-y="2" width="4"/>
+                <value  param="gain_scale122"  attach-x="22" attach-y="0"/>
+                <vscale param="gain122"        attach-x="22" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq122"        attach-x="22" attach-y="2" width="4"/>
+                <value  param="gain_scale123"  attach-x="23" attach-y="0"/>
+                <vscale param="gain123"        attach-x="23" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq123"        attach-x="23" attach-y="2" width="4"/>
+                <value  param="gain_scale124"  attach-x="24" attach-y="0"/>
+                <vscale param="gain124"        attach-x="24" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq124"        attach-x="24" attach-y="2" width="4"/>
+                <value  param="gain_scale125"  attach-x="25" attach-y="0"/>
+                <vscale param="gain125"        attach-x="25" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq125"        attach-x="25" attach-y="2" width="4"/>
+                <value  param="gain_scale126"  attach-x="26" attach-y="0"/>
+                <vscale param="gain126"        attach-x="26" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq126"        attach-x="26" attach-y="2" width="4"/>
+                <value  param="gain_scale127"  attach-x="27" attach-y="0"/>
+                <vscale param="gain127"        attach-x="27" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq127"        attach-x="27" attach-y="2" width="4"/>
+                <value  param="gain_scale128"  attach-x="28" attach-y="0"/>
+                <vscale param="gain128"        attach-x="28" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq128"        attach-x="28" attach-y="2" width="4"/>
+                <value  param="gain_scale129"  attach-x="29" attach-y="0"/>
+                <vscale param="gain129"        attach-x="29" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq129"        attach-x="29" attach-y="2" width="4"/>
+                <value  param="gain_scale130"  attach-x="30" attach-y="0"/>
+                <vscale param="gain130"        attach-x="30" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq130"        attach-x="30" attach-y="2" width="4"/>
+            </table>
+            <vbox spacing="20">
+                <vbox>
+                    <label text="Gain Scale"/>
+                    <knob param="gainscale1" size="3"/>
+                    <value param="gainscale1"/>
+                </vbox>
+                <vbox>
+                    <label text="Gain"/>
+                    <knob param="gain10" type="1"/>
+                    <value param="gain_scale10"/>
+                </vbox>
+            </vbox>
+        </hbox>
+    </frame>
+    <frame label="Right">
+        <hbox>
+            <table rows="3" cols="30" spacing-x="0" spacing-y="0">
+                <label text="dB" attach-x="0" attach-y="0" />
+                <label text="Hz" attach-x="0" attach-y="2" />
+                <value  param="gain_scale21"   attach-x="1"  attach-y="0"/>
+                <vscale param="gain21"         attach-x="1"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq21"         attach-x="1"  attach-y="2" width="4"/>
+                <value  param="gain_scale22"   attach-x="2"  attach-y="0"/>
+                <vscale param="gain22"         attach-x="2"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq22"         attach-x="2"  attach-y="2" width="4"/>
+                <value  param="gain_scale23"   attach-x="3"  attach-y="0"/>
+                <vscale param="gain23"         attach-x="3"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq23"         attach-x="3"  attach-y="2" width="4"/>
+                <value  param="gain_scale24"   attach-x="4"  attach-y="0"/>
+                <vscale param="gain24"         attach-x="4"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq24"         attach-x="4"  attach-y="2" width="4"/>
+                <value  param="gain_scale25"   attach-x="5"  attach-y="0"/>
+                <vscale param="gain25"         attach-x="5"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq25"         attach-x="5"  attach-y="2" width="4"/>
+                <value  param="gain_scale26"   attach-x="6"  attach-y="0"/>
+                <vscale param="gain26"         attach-x="6"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq26"         attach-x="6"  attach-y="2" width="4"/>
+                <value  param="gain_scale27"   attach-x="7"  attach-y="0"/>
+                <vscale param="gain27"         attach-x="7"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq27"         attach-x="7"  attach-y="2" width="4"/>
+                <value  param="gain_scale28"   attach-x="8"  attach-y="0"/>
+                <vscale param="gain28"         attach-x="8"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq28"         attach-x="8"  attach-y="2" width="4"/>
+                <value  param="gain_scale29"   attach-x="9"  attach-y="0"/>
+                <vscale param="gain29"         attach-x="9"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq29"         attach-x="9"  attach-y="2" width="4"/>
+                <value  param="gain_scale210"  attach-x="10"  attach-y="0"/>
+                <vscale param="gain210"        attach-x="10"  attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq210"        attach-x="10"  attach-y="2" width="4"/>
+                <value  param="gain_scale211"  attach-x="11" attach-y="0"/>
+                <vscale param="gain211"        attach-x="11" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq211"        attach-x="11" attach-y="2" width="4"/>
+                <value  param="gain_scale212"  attach-x="12" attach-y="0"/>
+                <vscale param="gain212"        attach-x="12" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq212"        attach-x="12" attach-y="2" width="4"/>
+                <value  param="gain_scale213"  attach-x="13" attach-y="0"/>
+                <vscale param="gain213"        attach-x="13" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq213"        attach-x="13" attach-y="2" width="4"/>
+                <value  param="gain_scale214"  attach-x="14" attach-y="0"/>
+                <vscale param="gain214"        attach-x="14" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq214"        attach-x="14" attach-y="2" width="4"/>
+                <value  param="gain_scale215"  attach-x="15" attach-y="0"/>
+                <vscale param="gain215"        attach-x="15" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq215"        attach-x="15" attach-y="2" width="4"/>
+                <value  param="gain_scale216"  attach-x="16" attach-y="0"/>
+                <vscale param="gain216"        attach-x="16" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq216"        attach-x="16" attach-y="2" width="4"/>
+                <value  param="gain_scale217"  attach-x="17" attach-y="0"/>
+                <vscale param="gain217"        attach-x="17" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq217"        attach-x="17" attach-y="2" width="4"/>
+                <value  param="gain_scale218"  attach-x="18" attach-y="0"/>
+                <vscale param="gain218"        attach-x="18" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq218"        attach-x="18" attach-y="2" width="4"/>
+                <value  param="gain_scale219"  attach-x="19" attach-y="0"/>
+                <vscale param="gain219"        attach-x="19" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq219"        attach-x="19" attach-y="2" width="4"/>
+                <value  param="gain_scale220"  attach-x="20" attach-y="0"/>
+                <vscale param="gain220"        attach-x="20" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq220"        attach-x="20" attach-y="2" width="4"/>
+                <value  param="gain_scale221"  attach-x="21" attach-y="0"/>
+                <vscale param="gain221"        attach-x="21" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq221"        attach-x="21" attach-y="2" width="4"/>
+                <value  param="gain_scale222"  attach-x="22" attach-y="0"/>
+                <vscale param="gain222"        attach-x="22" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq222"        attach-x="22" attach-y="2" width="4"/>
+                <value  param="gain_scale223"  attach-x="23" attach-y="0"/>
+                <vscale param="gain223"        attach-x="23" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq223"        attach-x="23" attach-y="2" width="4"/>
+                <value  param="gain_scale224"  attach-x="24" attach-y="0"/>
+                <vscale param="gain224"        attach-x="24" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq224"        attach-x="24" attach-y="2" width="4"/>
+                <value  param="gain_scale225"  attach-x="25" attach-y="0"/>
+                <vscale param="gain225"        attach-x="25" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq225"        attach-x="25" attach-y="2" width="4"/>
+                <value  param="gain_scale226"  attach-x="26" attach-y="0"/>
+                <vscale param="gain226"        attach-x="26" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq226"        attach-x="26" attach-y="2" width="4"/>
+                <value  param="gain_scale227"  attach-x="27" attach-y="0"/>
+                <vscale param="gain227"        attach-x="27" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq227"        attach-x="27" attach-y="2" width="4"/>
+                <value  param="gain_scale228"  attach-x="28" attach-y="0"/>
+                <vscale param="gain228"        attach-x="28" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq228"        attach-x="28" attach-y="2" width="4"/>
+                <value  param="gain_scale229"  attach-x="29" attach-y="0"/>
+                <vscale param="gain229"        attach-x="29" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq229"        attach-x="29" attach-y="2" width="4"/>
+                <value  param="gain_scale230"  attach-x="30" attach-y="0"/>
+                <vscale param="gain230"        attach-x="30" attach-y="1" inverted="1" size="1" height="160"/>
+                <value  param="freq230"        attach-x="30" attach-y="2" width="4"/>
+            </table>
+            <vbox spacing="20">
+                <vbox>
+                    <label text="Gain Scale"/>
+                    <knob param="gainscale2" size="3"/>
+                    <value param="gainscale2"/>
+                </vbox>
+                <vbox>
+                    <label text="Gain"/>
+                    <knob param="gain20" type="1"/>
+                    <value param="gain_scale20"/>
+                </vbox>
+            </vbox>
+        </hbox>
+    </frame>
 </vbox>

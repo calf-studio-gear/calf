@@ -80,10 +80,17 @@ enum parameter_flags
 
   PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
   PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation
-  PF_PROP_OUTPUT_GAIN=0x050000, ///< epp:outputGain + skip epp:hasStrictBounds
-  PF_PROP_OUTPUT    = 0x080000, ///< output port
-  PF_PROP_OPTIONAL  = 0x100000, ///< connection optional
-  PF_PROP_GRAPH     = 0x200000, ///< add graph
+  PF_PROP_OUTPUT_GAIN=0x030000, ///< epp:outputGain + skip epp:hasStrictBounds
+  PF_PROP_OUTPUT    = 0x040000, ///< output port
+  PF_PROP_OPTIONAL  = 0x050000, ///< connection optional
+  PF_PROP_GRAPH     = 0x060000, ///< add graph
+  
+  PF_DIGITMASK    = 0xF00000,
+  PF_DIGIT_0      = 0x100000,
+  PF_DIGIT_1      = 0x200000,
+  PF_DIGIT_2      = 0x300000,
+  PF_DIGIT_3      = 0x400000,
+  PF_DIGIT_ALL    = 0x500000,
   
   PF_UNITMASK     = 0xFF000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels
