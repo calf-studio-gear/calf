@@ -60,17 +60,17 @@ enum parameter_flags
   PF_SCALE_QUAD = 0x50, ///< quadratic scale (decent for some gain/amplitude values)
   PF_SCALE_LOG_INF = 0x60, ///< log scale + +inf (FAKE_INFINITY)
 
-  PF_CTLMASK =     0x0F00, ///< bit mask for control type
-  PF_CTL_DEFAULT = 0x0000, ///< try to figure out automatically
-  PF_CTL_KNOB =    0x0100, ///< knob
-  PF_CTL_FADER =   0x0200, ///< fader (slider)
-  PF_CTL_TOGGLE =  0x0300, ///< toggle button
-  PF_CTL_COMBO =   0x0400, ///< combo box
-  PF_CTL_RADIO =   0x0500, ///< radio button
-  PF_CTL_BUTTON =  0x0600, ///< push button
-  PF_CTL_METER  =  0x0700, ///< volume meter
-  PF_CTL_LED    =  0x0800, ///< light emitting diode
-  PF_CTL_LABEL  =  0x0900, ///< label
+  PF_CTLMASK =        0x000F00, ///< bit mask for control type
+  PF_CTL_DEFAULT =    0x000000, ///< try to figure out automatically
+  PF_CTL_KNOB =       0x000100, ///< knob
+  PF_CTL_FADER =      0x000200, ///< fader (slider)
+  PF_CTL_TOGGLE =     0x000300, ///< toggle button
+  PF_CTL_COMBO =      0x000400, ///< combo box
+  PF_CTL_RADIO =      0x000500, ///< radio button
+  PF_CTL_BUTTON =     0x000600, ///< push button
+  PF_CTL_METER  =     0x000700, ///< volume meter
+  PF_CTL_LED    =     0x000800, ///< light emitting diode
+  PF_CTL_LABEL  =     0x000900, ///< label
   
   PF_CTLOPTIONS     = 0x00F000, ///< bit mask for control (widget) options
   PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control (unused)
@@ -78,21 +78,15 @@ enum parameter_flags
   PF_CTLO_LABEL     = 0x004000, ///< add a text display to the control (meters only)
   PF_CTLO_REVERSE   = 0x008000, ///< use VU_MONOCHROME_REVERSE mode (meters only)
 
+  PF_PROP_MASK     =  0x3F0000, ///< bit mask for properties
   PF_PROP_NOBOUNDS =  0x010000, ///< no epp:hasStrictBounds
   PF_PROP_EXPENSIVE = 0x020000, ///< epp:expensive, may trigger expensive calculation
-  PF_PROP_OUTPUT_GAIN=0x030000, ///< epp:outputGain + skip epp:hasStrictBounds
-  PF_PROP_OUTPUT    = 0x040000, ///< output port
-  PF_PROP_OPTIONAL  = 0x050000, ///< connection optional
-  PF_PROP_GRAPH     = 0x060000, ///< add graph
-  
-  PF_DIGITMASK    = 0xF00000,
-  PF_DIGIT_0      = 0x100000,
-  PF_DIGIT_1      = 0x200000,
-  PF_DIGIT_2      = 0x300000,
-  PF_DIGIT_3      = 0x400000,
-  PF_DIGIT_ALL    = 0x500000,
-  
-  PF_UNITMASK     = 0xFF000000,  ///< bit mask for units   \todo reduce to use only 5 bits
+  PF_PROP_OUTPUT_GAIN=0x040000, ///< epp:outputGain + skip epp:hasStrictBounds
+  PF_PROP_OPTIONAL  = 0x080000, ///< connection optional
+  PF_PROP_GRAPH     = 0x100000, ///< add graph
+  PF_PROP_OUTPUT    = 0x200000, ///< output port (flag, cannot be combined with others)
+
+  PF_UNITMASK     = 0x0F000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels
   PF_UNIT_COEF    = 0x02000000,  ///< multiply-by factor
   PF_UNIT_HZ      = 0x03000000,  ///< Hertz
@@ -107,6 +101,13 @@ enum parameter_flags
   PF_UNIT_SAMPLES = 0x0C000000,  ///< samples
   
   PF_SYNC_BPM     = 0x10000000, ///< sync a bpm setting with the host environment
+
+  PF_DIGITMASK    = 0xE0000000,
+  PF_DIGIT_0      = 0x20000000,
+  PF_DIGIT_1      = 0x40000000,
+  PF_DIGIT_2      = 0x60000000,
+  PF_DIGIT_3      = 0x80000000,
+  PF_DIGIT_ALL    = 0xA0000000,
 };
 
 /// A fake infinity value (because real infinity may break some hosts)
