@@ -207,27 +207,47 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
             cairo_stroke(cache_cr);
         }
         // create blinder pattern
-        vu->pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0, 1, 1, 1, 0.25);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0.5, 0.5, 0.5, 0.5, 0.0);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 1, 0.0, 0.0, 0.0, 0.25);
-        cairo_rectangle( cache_cr, led_x, led_y, led_w, led_h);
-        cairo_set_source( cache_cr, vu->pat );
+        cairo_pattern_t *pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
+        cairo_pattern_add_color_stop_rgba (pat, 0, 1, 1, 1, 0.25);
+        cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.5, 0.5, 0.5, 0.0);
+        cairo_pattern_add_color_stop_rgba (pat, 1, 0.0, 0.0, 0.0, 0.25);
+        cairo_rectangle(cache_cr, led_x, led_y, led_w, led_h);
+        cairo_set_source(cache_cr, pat);
         cairo_fill(cache_cr);
         
+        // create overlay
+        vu->cache_overlay = cairo_surface_create_similar(window_surface, 
+                                  CAIRO_CONTENT_COLOR,
+                                  widget->allocation.width,
+                                  widget->allocation.height);
+        cairo_t *over_cr = cairo_create(vu->cache_overlay);
+        
+        // copy surface to overlay
+        cairo_set_source_surface(over_cr, vu->cache_surface, 0, 0);
+        cairo_rectangle(over_cr, 0, 0, width, height);
+        cairo_fill(over_cr);
+        
         // create blinder pattern
-        vu->pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0, 0.2, 0.2, 0.2, 0.7);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0.4, 0.05, 0.05, 0.05, 0.7);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 0.401, 0.05, 0.05, 0.05, 0.9);
-        cairo_pattern_add_color_stop_rgba (vu->pat, 1, 0.05, 0.05, 0.05, 0.75);
-        cairo_destroy( cache_cr );
+        pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
+        cairo_pattern_add_color_stop_rgba (pat, 0, 0.2, 0.2, 0.2, 0.7);
+        cairo_pattern_add_color_stop_rgba (pat, 0.4, 0.05, 0.05, 0.05, 0.7);
+        cairo_pattern_add_color_stop_rgba (pat, 0.401, 0.05, 0.05, 0.05, 0.9);
+        cairo_pattern_add_color_stop_rgba (pat, 1, 0.05, 0.05, 0.05, 0.75);
+        
+        // draw on top of overlay
+        cairo_set_source(over_cr, pat);
+        cairo_rectangle(over_cr, 0, 0, width, height);
+        cairo_paint(over_cr);
+        
+        // clean up
+        cairo_destroy(cache_cr);
+        cairo_destroy(over_cr);
     }
     
     // draw LED blinder
     cairo_set_source_surface( c, vu->cache_surface, 0,0 );
     cairo_paint( c );
-    cairo_set_source( c, vu->pat );
+    cairo_set_source_surface( c, vu->cache_overlay, 0, 0 );
     
     // get microseconds
     timeval tv;
@@ -376,6 +396,17 @@ calf_vumeter_size_request (GtkWidget *widget,
 }
 
 static void
+calf_vumeter_unrealize (GtkWidget *widget, CalfVUMeter *vu)
+{
+    if( vu->cache_surface )
+        cairo_surface_destroy( vu->cache_surface );
+    vu->cache_surface = NULL;
+    if( vu->cache_overlay )
+        cairo_surface_destroy( vu->cache_overlay );
+    vu->cache_overlay = NULL;
+}
+
+static void
 calf_vumeter_size_allocate (GtkWidget *widget,
                            GtkAllocation *allocation)
 {
@@ -386,9 +417,7 @@ calf_vumeter_size_allocate (GtkWidget *widget,
 
     parent_class->size_allocate( widget, allocation );
 
-    if( vu->cache_surface )
-        cairo_surface_destroy( vu->cache_surface );
-    vu->cache_surface = NULL;
+    calf_vumeter_unrealize(widget, vu);
 }
 
 static void
@@ -397,6 +426,7 @@ calf_vumeter_class_init (CalfVUMeterClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->expose_event = calf_vumeter_expose;
     widget_class->size_request = calf_vumeter_size_request;
+    widget_class->size_allocate = calf_vumeter_size_allocate;
     widget_class->size_allocate = calf_vumeter_size_allocate;
 }
 
@@ -413,6 +443,7 @@ calf_vumeter_init (CalfVUMeter *self)
     self->meter_width = 0;
     self->disp_value = 0.f;
     self->value = 0.f;
+    g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_vumeter_unrealize), (gpointer)self);
 }
 
 GtkWidget *

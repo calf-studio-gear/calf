@@ -62,7 +62,7 @@ struct CalfVUMeter
     float disp_value;
     int vumeter_position;
     cairo_surface_t *cache_surface;
-    cairo_pattern_t *pat;
+    cairo_surface_t *cache_overlay;
 };
 
 struct CalfVUMeterClass
