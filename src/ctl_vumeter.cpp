@@ -427,7 +427,6 @@ calf_vumeter_class_init (CalfVUMeterClass *klass)
     widget_class->expose_event = calf_vumeter_expose;
     widget_class->size_request = calf_vumeter_size_request;
     widget_class->size_allocate = calf_vumeter_size_allocate;
-    widget_class->size_allocate = calf_vumeter_size_allocate;
 }
 
 static void
