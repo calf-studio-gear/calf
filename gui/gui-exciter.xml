@@ -40,8 +40,8 @@
                 <label param="blend" />
                 <hscale param="blend" />
                 <hbox>
-                    <label align-x="0.0" text="2nd" />
-                    <label align-x="1.0" text="3rd" />
+                    <label align-x="0.0" text="3rd" />
+                    <label align-x="1.0" text="2nd" />
                 </hbox>
                 <label param="meter_drive" />
                 <vumeter param="meter_drive" position="2" hold="1.5" falloff="2.5" />
