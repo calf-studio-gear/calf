@@ -28,6 +28,7 @@
 
 #include <gtk/gtk.h>
 #include <calf/giface.h>
+#include <calf/gui.h>
 
 G_BEGIN_DECLS
 

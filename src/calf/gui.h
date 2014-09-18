@@ -341,6 +341,39 @@ struct activate_command_params
 
 void activate_command(GtkAction *action, activate_command_params *params);
 
+class cairo_impl: public calf_plugins::cairo_iface
+{
+public:
+    cairo_t *context;
+    virtual void set_source_rgba(float r, float g, float b, float a = 1.f) { cairo_set_source_rgba(context, r, g, b, a); }
+    virtual void set_line_width(float width) { cairo_set_line_width(context, width); }
+    virtual void set_dash(const double *dash, int length) { cairo_set_dash(context, dash, length, 0); }
+    virtual void draw_label(const char *label, float x, float y, int pos, float margin, float align) {
+        cairo_text_extents_t extents;
+        cairo_text_extents(context, label, &extents);
+        switch(pos) {
+            case 0:
+            default:
+                // top
+                cairo_move_to(context, x - extents.width / 2, y - margin);
+                break;
+            case 1:
+                // right
+                cairo_move_to(context, x + margin, y + 2);
+                break;
+            case 2:
+                // bottom
+                cairo_move_to(context, x - extents.width / 2, y + margin + extents.height);
+                break;
+            case 3:
+                // left
+                cairo_move_to(context, x - margin - extents.width, y + 2);
+                break;
+        }
+        cairo_show_text(context, label);
+    }
+};
+
 };
 
 #endif
