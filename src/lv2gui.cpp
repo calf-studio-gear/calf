@@ -24,7 +24,7 @@
 #include <calf/lv2_data_access.h>
 #include <calf/lv2_options.h>
 #include <calf/lv2_ui.h>
-#include <calf/lv2_uri_map.h>
+#include <calf/lv2_urid.h>
 #include <calf/lv2_external_ui.h>
 #include <calf/lv2helpers.h>
 #include <calf/utils.h>
@@ -54,8 +54,8 @@ struct plugin_proxy_base
     LV2_Handle instance_handle;
     /// Data access feature instance
     LV2_Extension_Data_Feature *data_access;
-    /// URI map feature
-    LV2_URI_Map_Feature *uri_map;
+    /// URID map feature
+    LV2_URID_Map *urid_map;
     /// External UI host feature (must be set when instantiating external UI plugins)
     lv2_external_ui_host *ext_ui_host;
     
@@ -92,8 +92,8 @@ struct plugin_proxy_base
     /// Obtain phase graph interface if available
     const phase_graph_iface *get_phase_graph_iface() const;
     
-    /// Map an URI to an integer value using a given URI map
-    uint32_t map_uri(const char *mapURI, const char *keyURI);
+    /// Map an URI to an integer value using a given URID map
+    uint32_t map_urid(const char *uri);
 
 };
 
@@ -160,11 +160,11 @@ void plugin_proxy_base::resolve_instance()
     }
 }
 
-uint32_t plugin_proxy_base::map_uri(const char *mapURI, const char *keyURI)
+uint32_t plugin_proxy_base::map_urid(const char *uri)
 {
-    if (!uri_map)
+    if (!urid_map)
         return 0;
-    return uri_map->uri_to_id(uri_map->callback_data, mapURI, keyURI);
+    return urid_map->map(urid_map->handle, uri);
 }
 
 const line_graph_iface *plugin_proxy_base::get_line_graph_iface() const
@@ -307,20 +307,20 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 
     // find window title
     const LV2_Options_Option* options = NULL;
-    const LV2_URI_Map_Feature* uriMap = NULL;
+    const LV2_URID_Map* uridMap = NULL;
 
     for (int i=0; features[i]; i++)
     {
         if (!strcmp(features[i]->URI, LV2_OPTIONS__options))
             options = (const LV2_Options_Option*)features[i]->data;
-        else if (!strcmp(features[i]->URI, LV2_URI_MAP_URI))
-            uriMap = (const LV2_URI_Map_Feature*)features[i]->data;
+        else if (!strcmp(features[i]->URI, LV2_URID_MAP_URI))
+            uridMap = (const LV2_URID_Map*)features[i]->data;
     }
 
-    if (!options || !uriMap)
+    if (!options || !uridMap)
         return (LV2UI_Handle)gui;
 
-    const uint32_t uridWindowTitle = uriMap->uri_to_id(uriMap->callback_data, NULL, LV2_UI__windowTitle);
+    const uint32_t uridWindowTitle = uridMap->map(uridMap->handle, LV2_UI__windowTitle);
 
     if (!uridWindowTitle)
         return (LV2UI_Handle)gui;

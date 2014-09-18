@@ -27,10 +27,12 @@
 #include <vector>
 #include <lv2.h>
 #include <calf/giface.h>
-#include <calf/lv2_event.h>
+#include <calf/lv2_atom.h>
+#include <calf/lv2_atom_util.h>
+#include <calf/lv2_midi.h>
 #include <calf/lv2_state.h>
 #include <calf/lv2_progress.h>
-#include <calf/lv2_uri_map.h>
+#include <calf/lv2_urid.h>
 #include <string.h>
 
 namespace calf_plugins {
@@ -41,9 +43,8 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     audio_module_iface *module;
     bool set_srate;
     int srate_to_set;
-    LV2_Event_Buffer *event_data;
-    LV2_URI_Map_Feature *uri_map;
-    LV2_Event_Feature *event_feature;
+    LV2_Atom_Sequence *event_data;
+    LV2_URID_Map *urid_map;
     uint32_t midi_event_type;
     LV2_Progress *progress_report_feature;
     float **ins, **outs, **params;
@@ -57,7 +58,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         out_count = metadata->get_output_count();
         real_param_count = metadata->get_param_count();
         
-        uri_map = NULL;
+        urid_map = NULL;
         event_data = NULL;
         progress_report_feature = NULL;
         midi_event_type = 0xFFFFFFFF;
@@ -92,13 +93,13 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         module->get_metadata_iface()->get_configure_vars(vars);
         if (vars.empty())
             return;
-        assert(uri_map);
-        uint32_t string_type = uri_map->uri_to_id(uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        assert(urid_map);
+        uint32_t string_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
         assert(string_type);
         for (size_t i = 0; i < vars.size(); ++i)
         {
             std::string    pred  = std::string("urn:calf:") + vars[i];
-            const uint32_t key   = uri_map->uri_to_id(uri_map->callback_data, NULL, pred.c_str());
+            const uint32_t key   = urid_map->map(urid_map->handle, pred.c_str());
             size_t         len   = 0;
             uint32_t       type  = 0;
             uint32_t       flags = 0;
@@ -120,38 +121,42 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     }
     
     void process_events(uint32_t &offset) {
-        struct LV2_Midi_Event: public LV2_Event {
-            unsigned char data[1];
-        };
-        unsigned char *data = (unsigned char *)(event_data->data);
-        for (uint32_t i = 0; i < event_data->event_count; i++) {
-            LV2_Midi_Event *item = (LV2_Midi_Event *)data;
-            uint32_t ts = item->frames;
-            // printf("Event: timestamp %d subframes %d type %d vs %d\n", item->frames, item->subframes, item->type, mod->midi_event_type);
+        LV2_ATOM_SEQUENCE_FOREACH(event_data, ev) {
+            const uint8_t* const data = (const uint8_t*)(ev + 1);
+            uint32_t ts = ev->time.frames;
+            // printf("Event: timestamp %d type %d vs %d\n", ts, ev->body.type, midi_event_type);
             if (ts > offset)
             {
                 module->process_slice(offset, ts);
                 offset = ts;
             }
-            if (item->type == midi_event_type) 
+            if (ev->body.type == midi_event_type)
             {
-                // printf("Midi message %x %x %x %x %d\n", item->data[0], item->data[1], item->data[2], item->data[3], item->size);
-                int channel = item->data[0] & 15;
-                switch(item->data[0] >> 4)
+                // printf("Midi message %x %x %x %d\n", data[0], data[1], data[2], ev->body.size);
+                int channel = data[0] & 0x0f;
+                switch (lv2_midi_message_type(data))
                 {
-                case 8: module->note_off(channel, item->data[1], item->data[2]); break;
-                case 9: module->note_on(channel, item->data[1], item->data[2]); break;
-                case 11: module->control_change(channel, item->data[1], item->data[2]); break;
-                case 12: module->program_change(channel, item->data[1]); break;
-                case 13: module->channel_pressure(channel, item->data[1]); break;
-                case 14: module->pitch_bend(channel, item->data[1] + 128 * item->data[2] - 8192); break;
+                case LV2_MIDI_MSG_INVALID: break;
+                case LV2_MIDI_MSG_NOTE_OFF : module->note_off(channel, data[1], data[2]); break;
+                case LV2_MIDI_MSG_NOTE_ON: module->note_on(channel, data[1], data[2]); break;
+                case LV2_MIDI_MSG_CONTROLLER: module->control_change(channel, data[1], data[2]); break;
+                case LV2_MIDI_MSG_PGM_CHANGE: module->program_change(channel, data[1]); break;
+                case LV2_MIDI_MSG_CHANNEL_PRESSURE: module->channel_pressure(channel, data[1]); break;
+                case LV2_MIDI_MSG_BENDER: module->pitch_bend(channel, data[1] + 128 * data[2] - 8192); break;
+                case LV2_MIDI_MSG_NOTE_PRESSURE: break;
+                case LV2_MIDI_MSG_SYSTEM_EXCLUSIVE: break;
+                case LV2_MIDI_MSG_MTC_QUARTER: break;
+                case LV2_MIDI_MSG_SONG_POS: break;
+                case LV2_MIDI_MSG_SONG_SELECT: break;
+                case LV2_MIDI_MSG_TUNE_REQUEST: break;
+                case LV2_MIDI_MSG_CLOCK: break;
+                case LV2_MIDI_MSG_START: break;
+                case LV2_MIDI_MSG_CONTINUE: break;
+                case LV2_MIDI_MSG_STOP: break;
+                case LV2_MIDI_MSG_ACTIVE_SENSE: break;
+                case LV2_MIDI_MSG_RESET: break;
                 }
-            }
-            else
-            if (item->type == 0 && event_feature)
-                event_feature->lv2_event_unref(event_feature->callback_data, item);
-            // printf("timestamp %f item size %d first byte %x\n", item->timestamp, item->size, item->data[0]);
-            data += ((sizeof(LV2_Event) + item->size + 7))&~7;
+            }            
         }
     }
 
@@ -221,7 +226,7 @@ struct lv2_wrapper
             mod->params[i] = (float *)DataLocation;
         }
         else if (md->get_midi() && port == ins + outs + params) {
-            mod->event_data = (LV2_Event_Buffer *)DataLocation;
+            mod->event_data = (LV2_Atom_Sequence *)DataLocation;
         }
     }
 
@@ -245,18 +250,12 @@ struct lv2_wrapper
         mod->set_srate = true;
         while(*features)
         {
-            if (!strcmp((*features)->URI, LV2_URI_MAP_URI))
+            if (!strcmp((*features)->URI, LV2_URID_MAP_URI))
             {
-                mod->uri_map = (LV2_URI_Map_Feature *)((*features)->data);
-                mod->midi_event_type = mod->uri_map->uri_to_id(
-                    mod->uri_map->callback_data, 
-                    "http://lv2plug.in/ns/ext/event",
-                    "http://lv2plug.in/ns/ext/midi#MidiEvent");
-            }
-            else if (!strcmp((*features)->URI, LV2_EVENT_URI))
-            {
-                mod->event_feature = (LV2_Event_Feature *)((*features)->data);
-            }
+                mod->urid_map = (LV2_URID_Map *)((*features)->data);
+                mod->midi_event_type = mod->urid_map->map(
+                    mod->urid_map->handle, LV2_MIDI__MidiEvent);
+            }           
             else if (!strcmp((*features)->URI, LV2_PROGRESS_URI))
             {
                 mod->progress_report_feature = (LV2_Progress *)((*features)->data);
@@ -323,20 +322,20 @@ static const void *cb_ext_data(const char *URI)
             {
                 std::string pred = std::string("urn:calf:") + key;
                 (*store)(callback_data,
-                         inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, pred.c_str()),
+                         inst->urid_map->map(inst->urid_map->handle, pred.c_str()),
                          value,
                          strlen(value) + 1,
                          string_data_type,
                          LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
             }
         };
-        // A host that supports State MUST support URI-Map as well.
-        assert(inst->uri_map);
+        // A host that supports State MUST support URID-Map as well.
+        assert(inst->urid_map);
         store_state s;
         s.store = store;
         s.callback_data = handle;
         s.inst = inst;
-        s.string_data_type = inst->uri_map->uri_to_id(inst->uri_map->callback_data, NULL, "http://lv2plug.in/ns/ext/atom#String");
+        s.string_data_type = inst->urid_map->map(inst->urid_map->handle, LV2_ATOM__String);
 
         inst->send_configures(&s);
         return LV2_STATE_SUCCESS;

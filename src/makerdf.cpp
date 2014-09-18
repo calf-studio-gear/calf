@@ -23,9 +23,8 @@
 #include <calf/utils.h>
 #if USE_LV2
 #include <lv2.h>
-#include <calf/lv2_event.h>
 #include <calf/lv2_state.h>
-#include <calf/lv2_uri_map.h>
+#include <calf/lv2_urid.h>
 #endif
 #include <getopt.h>
 #include <string.h>
@@ -70,8 +69,9 @@ static void add_port(string &ports, const char *symbol, const char *name, const 
     ss << ind << "lv2:name \"" << name << "\" ;\n";
     if (optional)
         ss << ind << "lv2:portProperty lv2:connectionOptional ;\n";
-    if (!strcmp(type, "lv2ev:EventPort")) {
-        ss << ind << "lv2ev:supportsEvent lv2midi:MidiEvent ;\n";
+    if (!strcmp(type, "atom:AtomPort")) {
+        ss << ind << "atom:bufferType atom:Sequence ;\n"
+           << ind << "atom:supports lv2midi:MidiEvent ;" << endl;
     }
     if (!strcmp(std::string(symbol, 0, 4).c_str(), "in_l")) 
         ss << ind << "lv2:designation pg:left ;\n"
@@ -191,7 +191,7 @@ void make_ttl(string path_prefix)
         "@prefix dct: <http://purl.org/dc/terms/> .\n"
         "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
         "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .\n"
-        "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .\n"
+        "@prefix atom: <http://lv2plug.in/ns/ext/atom#> .\n"
         "@prefix lv2midi: <http://lv2plug.in/ns/ext/midi#> .\n"
         "@prefix lv2ctx: <http://lv2plug.in/ns/dev/contexts#> .\n"
         "@prefix strport: <http://lv2plug.in/ns/dev/string-port#> .\n"
@@ -308,10 +308,10 @@ void make_ttl(string path_prefix)
         if (pi->get_midi())
         {
             if (pi->requires_midi()) {
-                ttl += "    lv2:requiredFeature <" LV2_URI_MAP_URI "> ;\n";                
+                ttl += "    lv2:requiredFeature <" LV2_URID_MAP_URI "> ;\n";
             }
             else {
-                ttl += "    lv2:optionalFeature <" LV2_URI_MAP_URI "> ;\n";                
+                ttl += "    lv2:optionalFeature <" LV2_URID_MAP_URI "> ;\n";
             }
         }
         
@@ -349,7 +349,7 @@ void make_ttl(string path_prefix)
             if (add_ctl_port(ports, *pi->get_param_props(i), pn, pi, i))
                 pn++;
         if (pi->get_midi()) {
-            add_port(ports, "event_in", "Event", "Input", pn++, "lv2ev:EventPort", true);
+            add_port(ports, "midi_in", "MIDI", "Input", pn++, "atom:AtomPort", true);
         }
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";
