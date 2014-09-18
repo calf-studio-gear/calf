@@ -358,7 +358,7 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     assert(proxy);
     float v = *(float *)buffer;
     int param = port - proxy->plugin_metadata->get_param_port_offset();
-    if (param >= proxy->plugin_metadata->get_param_count())
+    if (param < 0 || param >= proxy->plugin_metadata->get_param_count())
         return;
     if (!proxy->sends[param])
         return;
