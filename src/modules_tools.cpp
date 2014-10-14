@@ -210,7 +210,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             float _sb = *params[param_stereo_base];
             if(_sb < 0) _sb *= 0.5;
             
-            float __l = L +_sb * L - _sb * R;
+            float __l = L + _sb * L - _sb * R;
             float __r = R + _sb * R - _sb * L;
             
             L = __l;

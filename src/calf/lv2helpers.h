@@ -23,8 +23,8 @@
 
 #if USE_LV2
 
-#include <calf/lv2_event.h>
-#include <calf/lv2_uri_map.h>
+#include <calf/lv2_atom.h>
+#include <calf/lv2_urid.h>
 
 #endif
 #endif

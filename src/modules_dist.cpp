@@ -143,6 +143,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             ++offset;
         }
     } else {
+        uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
         // process
         while(offset < numsamples) {
@@ -235,7 +236,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
         hp[1][3].sanitize();
         p[0].sanitize();
         p[1].sanitize();
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -334,6 +335,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // displays, too
         meter_drive = 0.f;
     } else {
+        uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
         meter_drive = 0.f;
         
@@ -408,7 +410,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         // clean up
         hp[0][0].sanitize();
         hp[1][0].sanitize();
@@ -519,6 +521,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
         }
     } else {
         // process
+        uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
@@ -604,7 +607,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         // clean up
         lp[0][0].sanitize();
         lp[1][0].sanitize();
@@ -966,6 +969,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         }
     } else {
         // process
+        uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
@@ -986,7 +990,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             if (*params[param_lforate])
                 lfo.advance(1);
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;

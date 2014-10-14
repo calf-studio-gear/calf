@@ -277,6 +277,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
         }
     } else {
         // process
+        uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
         while(offset < numsamples) {
             // cycle through samples
@@ -338,7 +339,7 @@ uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offs
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         // clean up
         for(int i = 0; i < 3; ++i) {
             hp[i][0].sanitize();
@@ -675,7 +676,7 @@ uint32_t equalizer30band_audio_module::process(uint32_t offset, uint32_t numsamp
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
     }
 
     meters.fall(orig_numsamples);
@@ -878,7 +879,7 @@ uint32_t emphasis_audio_module::process(uint32_t offset, uint32_t numsamples, ui
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         // clean up
         riaacurvL.sanitize();
         riaacurvR.sanitize();
@@ -1247,7 +1248,7 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         // clean up
         for (int i = 0; i < bands; i++) {
             for (int j = 0; j < order; j++) {

@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#include "lv2_uri_map.h"
+#include "lv2_urid.h"
 #include "lv2.h"
 
 #define LV2_OPTIONS_URI    "http://lv2plug.in/ns/ext/options"
@@ -79,9 +79,9 @@ typedef enum {
 typedef struct _LV2_Options_Option {
 	LV2_Options_Context context;  /**< Context (type of subject). */
 	uint32_t            subject;  /**< Subject. */
-	uint32_t            key;      /**< Key (property). */
+	LV2_URID            key;      /**< Key (property). */
 	uint32_t            size;     /**< Size of value in bytes. */
-	uint32_t            type;     /**< Type of value (datatype). */
+	LV2_URID            type;     /**< Type of value (datatype). */
 	const void*         value;    /**< Pointer to value (object). */
 } LV2_Options_Option;
 
