@@ -22,7 +22,6 @@
 #define CALF_MODULES_TOOLS_H
 
 #include <assert.h>
-#include <fftw3.h>
 #include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
