@@ -102,17 +102,20 @@ $(document).ready(function () {
         var icon = $("<img src='images/" + items[i][2] + "' alt='" + items[i][0] + "' class='micon' id='" + items[i][0] + "'/>").appendTo(menu);
         $("<span>" + items[i][0] + "</span>").appendTo(menu);
         icon.mouseenter(function (e) {
-            show_menu("#menu_" + $(this).attr("id"));
+            $(".menu").addClass("mover");
+            show_menu("#menu_" + $(this).attr("id"), "#" + $(this).attr("id"));
         });
         icon.mouseleave(function (e) {
+            $(".menu").removeClass("mover");
             hide_menu("#menu_" + $(this).attr("id"));
         });
         submenu.mouseenter(function (e) {
-            show_menu(this);
+            show_menu(this, "#" + $(this).attr("id").substr(5));
         });
         submenu.mouseleave(function (e) {
             hide_menu(this);
         });
+        resize();
         for(var j = 0; j < items[i][1].length; j++) {
             if (!j) {
                 $("<li><img class='marrow' src='images/marrow.png'/><h3>" + items[i][0] + "</h3></li>").appendTo(submenu);
@@ -135,9 +138,6 @@ $(document).ready(function () {
             if (i >= items.length - 1)
                 $("<br clear='all'/>").appendTo($("#index"));
         }
-        submenu.css({
-            top: Math.min(icon.position().top + 5, $(window).height() - submenu.outerHeight())
-        });
     }
     $(".prettyPhoto").prettyPhoto({
         theme: 'dark_rounded',
@@ -145,6 +145,7 @@ $(document).ready(function () {
         show_title: false,
     });
     $(window).resize(resize);
+    $(window).scroll(scroll);
     resize();
 });
 
@@ -155,11 +156,16 @@ var hide_menu = function (id) {
         opacity: 0
     }, 300, function () { $(this).css({display: "none"});});
 }
-var show_menu = function (id) {
+var show_menu = function (id, icon) {
     $(id).clearQueue();
     $(id).stop();
+    var w = $(window).innerHeight();
+    var t = $(window).scrollTop();
+    var y = Math.max(-t, Math.min(w - $(".menu").outerHeight(), 0));
+    var t_ = Math.min($(icon).position().top + 5, w - $(id).outerHeight() - y);
     $(id).css({
-        display: "block"
+        display: "block",
+        top: t_
     });
     $(id).animate({
         opacity: 1.0
@@ -171,4 +177,12 @@ var resize = function () {
         'font-size'   : ((width / 1500 + 0.25) * 1.1) + "em",
         'line-height' : ((width / 1500 + 1) * 1.1) + "em"
     });
+}
+
+var scroll = function () {
+    var h = $(".menu").outerHeight();
+    var w = $(window).innerHeight();
+    var t = $(window).scrollTop();
+    $(".menu").css("top", Math.max(-t, Math.min(w - h, 0)));
+    console.log(t, h, w)
 }

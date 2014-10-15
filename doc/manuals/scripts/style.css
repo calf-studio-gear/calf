@@ -139,11 +139,17 @@ strong {
 }
 .menu {
     width: 56px;
-    height: 100%;
+    min-height: 100%;
     position: fixed;
     left: 0;
     top: 0;
     background: #555;
+    transition-property: padding-bottom;
+    transition-duration: 0.3s;
+    padding-bottom: 16px;
+}
+.menu.mover {
+    padding-bottom: 0px;
 }
 .menu .micon {
     width: 50px;
