@@ -22,7 +22,6 @@
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
-#include <fftw3.h>
 #include <calf/giface.h>
 #include <calf/analyzer.h>
 #include <calf/modules_dev.h>
@@ -75,8 +74,6 @@ analyzer::analyzer() {
     fft_freezeL = (float*) calloc(max_fft_cache_size, sizeof(float));
     fft_freezeR = (float*) calloc(max_fft_cache_size, sizeof(float));
     
-    fft_plan = NULL;
-    
     analyzer_phase_drawn = 0;
 }
 analyzer::~analyzer()
@@ -94,10 +91,6 @@ analyzer::~analyzer()
     free(fft_inR);
     free(fft_inL);
     free(spline_buffer);
-    if (fft_plan) {
-        fftwf_destroy_plan(fft_plan);
-        fft_plan = NULL;
-    }
 }
 void analyzer::set_sample_rate(uint32_t sr) {
     srate = sr;
@@ -152,10 +145,6 @@ void analyzer::process(float L, float R) {
 bool analyzer::do_fft(int subindex, int points) const
 {
     if (recreate_plan) {
-        // recreate fftw plan
-        if (fft_plan) fftwf_destroy_plan (fft_plan);
-        //fft_plan = rfftw_create_plan(_accuracy, FFTW_FORWARD, 0);
-        fft_plan = fftwf_plan_r2r_1d(_accuracy, NULL, NULL, FFTW_R2HC, FFTW_ESTIMATE);
         lintrans = -1;
         recreate_plan = false;
         sanitize = true;
@@ -354,12 +343,11 @@ bool analyzer::do_fft(int subindex, int points) const
             // run fft
             // this takes our latest buffer and returns an array with
             // non-normalized
-            if (fft_plan)
-                fftwf_execute_r2r(fft_plan, fft_inL, fft_outL);
+            fft.execute_r2r(_acc + 7, fft_inL, fft_outL, fft_temp, false);
             //run fft for for right channel too. it is needed for stereo image 
             //and stereo difference modes
-            if(_mode >= 3 and fft_plan) {
-                fftwf_execute_r2r(fft_plan, fft_inR, fft_outR);
+            if(_mode >= 3) {
+                fft.execute_r2r(_acc + 7, fft_inR, fft_outR, fft_temp, false);
             }
             // ...and set some values for later use
             analyzer_phase_drawn = 0;     

@@ -32,7 +32,9 @@ namespace dsp {
 template<class T, int O>
 class fft
 {
+public:
     typedef typename std::complex<T> complex;
+private:
     int scramble[1<<O];
     complex sines[1<<O];
 public:
@@ -59,7 +61,7 @@ public:
             sines[i + 2 * N90] = -(sines[i] = complex(c, s));
         }
     }
-    void calculate(complex *input, complex *output, bool inverse)
+    void calculate(complex *input, complex *output, bool inverse) const
     {
         int N=1<<O;
         int N1=N-1;
@@ -104,6 +106,69 @@ public:
                 const complex &c=output[i];
                 output[i]=complex(c.imag(),c.real());
             }
+        }
+    }
+    template<class InType>
+    void calculateN(InType *input, complex *output, bool inverse, int order) const
+    {
+        assert(order <= O);
+        int N=1<<order;
+        int rsh=O - order;
+        int N1=(N-1) << rsh;
+        int i;
+        // Scramble the input data
+        if (inverse)
+        {
+            float mf=1.0/N;
+            for (i=0; i<N; i++)
+            {
+                const complex &c=input[scramble[i] >> rsh];
+                output[i]=mf*complex(c.imag(),c.real());
+            }
+        }
+        else
+            for (i=0; i<N; i++)
+                output[i]=input[scramble[i] >> rsh];
+
+        // O butterfiles
+        for (i=0; i<order; i++)
+        {
+            int PO=1<<i, PNO=1<<(order-i-1);
+            int j,k;
+            for (j=0; j<PNO; j++)
+            {
+                int base=j<<(i+1);
+                for (k=0; k<PO; k++)
+                {
+                    int B1=base+k;
+                    int B2=base+k+(1<<i);
+                    complex r1=output[B1];
+                    complex r2=output[B2];
+                    output[B1]=r1+r2*sines[(B1<<(O-i-1))&N1];
+                    output[B2]=r1+r2*sines[(B2<<(O-i-1))&N1];
+                }
+            }
+        }
+        if (inverse)
+        {
+            for (i=0; i<N; i++)
+            {
+                const complex &c=output[i];
+                output[i]=complex(c.imag(),c.real());
+            }
+        }
+    }
+    void execute_r2r(int order, float *input, float *output, complex *tmp, bool inverse = false) const
+    {
+        calculateN<float>(input, tmp, inverse, order);
+        size_t s = 1 << order;
+        size_t s2 = 1 << (order - 1);
+        output[0] = tmp[0].real();
+        output[s2] = tmp[0].imag();
+        for (size_t i = 1; i < s2; ++i)
+        {
+            output[i] = tmp[i].real();
+            output[s - 1 - i] = tmp[i].imag();
         }
     }
 };

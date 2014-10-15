@@ -22,7 +22,6 @@
 #define CALF_ANALYZER_H
 
 #include <assert.h>
-#include <fftw3.h>
 #include <limits.h>
 #include "biquad.h"
 #include "inertia.h"
@@ -32,6 +31,7 @@
 #include "loudness.h"
 #include <math.h>
 #include "plugin_tools.h"
+#include "fft.h"
 
 #define MATH_E 2.718281828
 
@@ -78,7 +78,9 @@ protected:
     int *spline_buffer;
     int fpos;
     mutable bool sanitize, recreate_plan;
-    mutable fftwf_plan fft_plan;
+    static const int MAX_FFT_ORDER = 15;
+    dsp::fft<float, MAX_FFT_ORDER> fft;
+    mutable dsp::fft<float, MAX_FFT_ORDER>::complex fft_temp[1 << MAX_FFT_ORDER];
     static const int max_fft_cache_size = 32768;
     static const int max_fft_buffer_size = max_fft_cache_size * 2;
     float *fft_inL, *fft_outL;

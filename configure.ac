@@ -39,8 +39,6 @@ AC_SUBST(FLUIDSYNTH_DEPS_CFLAGS)
 AC_SUBST(FLUIDSYNTH_DEPS_LIBS)
 AC_SUBST(LV2_DEPS_CFLAGS)
 AC_SUBST(LV2_DEPS_LIBS)
-AC_SUBST(FFTW3_DEPS_CFLAGS)
-AC_SUBST(FFTW3_DEPS_LIBS)
 
 ############################################################################################
 # Detect dependencies
@@ -54,10 +52,6 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h time.h math.h])
 
 AC_CHECK_HEADER(expat.h, true, AC_MSG_ERROR([Expat XML library not found]))
 AC_CHECK_LIB(expat, XML_Parse, true, AC_MSG_ERROR([Expat XML library not found]))
-AC_CHECK_HEADER(fftw3.h, true, AC_MSG_ERROR([FFTW3 header (fftw3.h) not found]))
-AC_CHECK_LIB(fftw3, true, AC_MSG_ERROR([FFTW3 library (libfftw3) not found]))
-AC_CHECK_LIB(fftw3f, true, AC_MSG_ERROR([Single-precision FFTW3 library (libfftw3f) not found]))
-PKG_CHECK_MODULES(FFTW3_DEPS, fftw3, true, AC_MSG_ERROR([FFTW3 library (libfftw3) not found]))
 
 # JACK
 AC_CHECK_HEADERS([jack/jack.h], have_jack_header=yes, have_jack_header=no)
@@ -249,10 +243,6 @@ AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     
     Installation prefix:         $prefix
     
-    Note: due to usage of GPL-licensed libraries (FFTW) in this version,
-    the linked binary will be covered by GPL, even though the source is
-    LGPL-licensed. The only way to get an LGPL binary is by removing
-    or reimplementing parts that depend on FFTW.
 ])
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
