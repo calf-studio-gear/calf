@@ -161,7 +161,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     // XXX This value does not seem to match the definition of the property
     //if (pp.step > 1)
     //    ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
-    if (unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
+    if (((pp.flags & PF_SCALEMASK) != PF_SCALE_GAIN) && unit > 0 && unit < (sizeof(units) / sizeof(char *)) && units[unit - 1] != NULL)
         ss << ind << "ue:unit " << units[unit - 1] << " ;\n";
     
     // for now I assume that the only tempo passed is the tempo the plugin should operate with
