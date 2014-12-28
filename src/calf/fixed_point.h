@@ -209,7 +209,7 @@ public:
     /// @param UseBits can be used when there's a risk of exceeding range of U because max(fpart)*max(v1 or v2) > range of U
     template<class U, int UseBits, class MulType> 
     inline U lerp_by_fract_int(U v1, U v2) const {
-        int fp = fpart<UseBits>();
+        unsigned int fp = fpart<UseBits>();
         assert ( fp >=0 && fp <= (1ULL<<UseBits));
         // printf("diff = 
         return v1 + shr(((MulType)(v2-v1) * fp), UseBits);
