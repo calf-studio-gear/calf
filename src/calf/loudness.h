@@ -157,19 +157,20 @@ public:
             b2 = (-2.f*t+j*t*t)*g;
         }
 
-        r1.sanitize();
-
         //swap a1 b1, a2 b2
-        r1.set_bilinear_direct(a0, a1, a2, b1, b2);
+        biquad_coeffs coeffs;
+        coeffs.set_bilinear_direct(a0, a1, a2, b1, b2);
 
         // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
         // find actual gain
-        float gain1kHz = freq_gain(1000.0, sr);
+        float gain1kHz = coeffs.freq_gain(1000.0, sr);
         // divide one filter's x[n-m] coefficients by that value
         float gc = 1.0 / gain1kHz;
-        r1.a0 *= gc;
-        r1.a1 *= gc;
-        r1.a2 *= gc;
+        r1.a0 = coeffs.a0 * gc;
+        r1.a1 = coeffs.a1 * gc;
+        r1.a2 = coeffs.a2 * gc;
+        r1.b1 = coeffs.b1;
+        r1.b2 = coeffs.b2;
         r1.sanitize();
 
         float cutfreq = std::min(0.45f * sr, 21000.f);
