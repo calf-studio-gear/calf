@@ -103,6 +103,7 @@ void calf_connector::inconnector_clicked(GtkCellRendererToggle *cell_renderer, g
     string dest   = (string)jack_get_client_name(self->jackclient)
                   + ":" + self->strip->plugin->inputs[self->active_in ? self->active_in->id : 0].nice_name;
     self->connect(self->jackclient, (gchar*)source.c_str(), (gchar*)dest.c_str(), enabled);
+    self->set_toggles(self, 0);
 }
 void calf_connector::outconnector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path_, gpointer data)
 {
@@ -114,6 +115,7 @@ void calf_connector::outconnector_clicked(GtkCellRendererToggle *cell_renderer, 
                   + ":" + self->strip->plugin->outputs[self->active_out ? self->active_out->id : 0].nice_name;
     string dest   = port;
     self->connect(self->jackclient, (gchar*)source.c_str(), (gchar*)dest.c_str(), enabled);
+    self->set_toggles(self, 1);
 }
 void calf_connector::midiconnector_clicked(GtkCellRendererToggle *cell_renderer, gchar *path_, gpointer data)
 {
@@ -125,6 +127,7 @@ void calf_connector::midiconnector_clicked(GtkCellRendererToggle *cell_renderer,
     string dest   = (string)jack_get_client_name(self->jackclient)
                   + ":" + self->strip->plugin->midi_port.nice_name;
     self->connect(self->jackclient, (gchar*)source.c_str(), (gchar*)dest.c_str(), enabled);
+    self->set_toggles(self, 2);
 }
 
 // DISCONNECT CLICKS
