@@ -351,9 +351,9 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_widget_show(strip->con);
     
     // delete buton
-    GtkWidget *extra = calf_button_new("Clear");
+    GtkWidget *extra = calf_button_new("Remove");
     strip->extra = extra;
-    gtk_widget_set_size_request(GTK_WIDGET(extra), 80, -1);
+    //gtk_widget_set_size_request(GTK_WIDGET(extra), 100, -1);
     g_signal_connect(GTK_OBJECT(extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->extra);
