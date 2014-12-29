@@ -210,6 +210,7 @@ if test "$LV2_ENABLED" == "yes"; then
 fi
 
 ############################################################################################
+
 # Other defines
 AC_DEFINE_UNQUOTED(PKGLIBDIR,"$prefix/share/calf/",[Calf shared data directory (bitmaps, GUI XML etc.)])
 AC_DEFINE_UNQUOTED(PKGDOCDIR,"$prefix/share/doc/calf/",[Calf documentation directory])
@@ -219,6 +220,7 @@ AC_DEFINE_UNQUOTED(PKGDOCDIR,"$prefix/share/doc/calf/",[Calf documentation direc
 AC_CONFIG_FILES([Makefile
                  calf.desktop
                  gui/Makefile
+                 gui/icons/LV2/Makefile
                  icons/Makefile
                  src/Makefile
                  src/calf/Makefile])
