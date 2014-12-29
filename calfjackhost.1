@@ -30,6 +30,12 @@ automatically connect all MIDI ports to \fBsystem:midi_capture_\fIn\fR
 \fB--version\fR
 prints a version string (calf some.version.number)
 .TP
+\fB--load\fR \fIsession\fR
+Loads the session state from a file
+.TP
+\fB--state\fR \fIsession\fR
+Loads the session state from a file, if such a file exists
+.TP
 \fB--help\fR
 prints a help text
 .PP
@@ -39,6 +45,36 @@ plugin's input). If it's placed after last plugin name, that plugin's audio outp
 (first output pair). 
 
 Plugin names (should be self-explanatory):
+ * pulsator (autopanner/tremolo)
+ * ringmodulator
+ * tapesimulator
+ * compdelay (compensation delay)
+ * reversedelay
+ * compressor
+ * sidechaincompressor
+ * multibandcompressor
+ * monocompressor
+ * deesser
+ * gate
+ * sidechaingate
+ * multibandgate
+ * limiter
+ * multibandlimiter
+ * sidechainlimiter
+ * transientdesigner
+ * filterclavier (keyboard-controlled tunable filter)
+ * emphasis
+ * vocoder
+ * eq5, eq8, eq12, eq30
+ * saturator
+ * crusher (bit crusher)
+ * exciter
+ * bassenhancer
+ * stereo
+ * haasenhancer
+ * mono
+ * xover2, xover3, xover4 (speaker crossovers)
+ * analyzer (spectrum analyzer / spectrogram plugin)
  * flanger
  * filter
  * reverb
@@ -75,6 +111,9 @@ output; connects monosynth's MIDI input to JACK's system:midi_capture_2)
 
 (takes signal from system:capture_1 and _2, puts it through reverb, and then
 sends to system:playback_1 and _2)
+
+Note: none of the automatic connection features will work if autoconnection
+is disabled for session management purposes.
 
 .SH "SEE ALSO"
 calf(7)
