@@ -26,6 +26,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <sys/time.h>
+#include <algorithm>
 #include <iostream>
 
 using namespace calf_plugins;
@@ -124,26 +125,26 @@ void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int
     if(lights > 0) {
         // light sources
         int div = 1;
-        int light_w = sx;
-        while(light_w / div > 300)
+        while(sx / div > 300)
             div += 1;
-        int w = sx / div;
+        float w = float(sx) / float(div);
         cairo_rectangle(c, x + ox, y + oy, sx, sy);
         for(int i = 0; i < div; i ++) {
             cairo_pattern_t *pt = cairo_pattern_create_radial(
                x + ox + w * i + w / 2.f, y + oy, 1,
-               x + ox + w * i + w / 2.f, y + ox + sy * 0.25, w / 2.f);
+               x + ox + w * i + w / 2.f, std::min(w / 2.0 + y + oy, y + oy + sy * 0.25) - 1, w / 2.f);
             cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
             cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
             cairo_set_source (c, pt);
             cairo_fill_preserve(c);
             pt = cairo_pattern_create_radial(
                x + ox + w * i + w / 2.f, y + oy + sy, 1,
-               x + ox + w * i + w / 2.f, y + ox + sy * 0.75, w / 2.f);
+               x + ox + w * i + w / 2.f, std::max(sy - w / 2.0 + y + oy, y + oy + sy * 0.75) + 1, w / 2.f);
             cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
             cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
             cairo_set_source (c, pt);
             cairo_fill_preserve(c);
+            cairo_pattern_destroy(pt);
         }
     }
 }
