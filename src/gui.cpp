@@ -172,6 +172,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         cc->set_std_properties();
         gtk_container_set_border_width(cc->container, cc->get_int("border"));
 
+        all_containers.push_back(cc);
         container_stack.push_back(cc);
         current_control = NULL;
         return;
@@ -236,7 +237,7 @@ void plugin_gui::xml_element_end(void *data, const char *element)
         gtk_widget_show_all(GTK_WIDGET(gui->container_stack[0]->container));
     }
     int css = gui->control_stack.size();
-    if (ss > 1 and gui->container_stack[ss - 1]->is_container() and css) {
+    if (ss > 1 and (*gui->container_stack.rbegin())->is_container() and css) {
         gui->control_stack[css - 1]->hook_params();
         gui->control_stack[css - 1]->set();
         gui->control_stack[css - 1]->created();
@@ -549,10 +550,10 @@ plugin_gui::~plugin_gui()
 {
     cleanup_automation_entries();
     delete preset_access;
-    for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); i++)
-    {
+    for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); ++i)
         delete *i;
-    }
+    for (std::vector<control_container *>::iterator i = all_containers.begin(); i != all_containers.end(); ++i)
+        delete *i;
 }
 
 /***************************** GUI environment ********************************************/
