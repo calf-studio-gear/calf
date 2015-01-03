@@ -136,9 +136,9 @@ struct preset_list
     std::vector<plugin_snapshot> plugins;
 
     /// Return the name of the built-in or user-defined preset file
-    static std::string get_preset_filename(bool builtin);
+    static std::string get_preset_filename(bool builtin, const std::string *pkglibdir_path = NULL);
     /// Load default preset list (built-in or user-defined)
-    bool load_defaults(bool builtin);
+    bool load_defaults(bool builtin, const std::string *pkglibdir_path = NULL);
     /// Load preset list from an in-memory XML string
     void parse(const std::string &data, bool in_rack_mode);
     /// Load preset list from XML file

@@ -39,6 +39,9 @@ static struct option long_options[] = {
     {"version", 0, 0, 'v'},
     {"mode", 1, 0, 'm'},
     {"path", 1, 0, 'p'},
+#if USE_LV2
+    {"data-dir", 1, 0, 'd'},
+#endif
     {0,0,0,0},
 };
 
@@ -175,7 +178,7 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     return true;
 }
 
-void make_ttl(string path_prefix)
+void make_ttl(string path_prefix, const string *data_dir)
 {
     if (path_prefix.empty())
     {
@@ -375,7 +378,7 @@ void make_ttl(string path_prefix)
     // Prefixes for the manifest TTL
     string ttl = presets_ttl_head;
     
-    calf_plugins::get_builtin_presets().load_defaults(true);
+    calf_plugins::get_builtin_presets().load_defaults(true, data_dir);
     calf_plugins::preset_vector &factory_presets = calf_plugins::get_builtin_presets().presets;
 
     ttl += "\n";
@@ -580,9 +583,16 @@ int main(int argc, char *argv[])
 {
     string mode = "rdf";
     string path_prefix;
+#if USE_LV2
+    string pkglibdir_path;
+#endif
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "hvm:p:", long_options, &option_index);
+        int c = getopt_long(argc, argv, "hvm:p:"
+#if USE_LV2
+        "d:"
+#endif
+            , long_options, &option_index);
         if (c == -1)
             break;
         switch(c) {
@@ -600,6 +610,18 @@ int main(int argc, char *argv[])
                     return 1;
                 }
                 break;
+#if USE_LV2
+            case 'd':
+                pkglibdir_path = optarg;
+                if (pkglibdir_path.empty())
+                {
+                    fprintf(stderr, "calfmakerdf: Data directory must not be empty\n");
+                    exit(1);
+                }
+                if (pkglibdir_path[path_prefix.length() - 1] != '/')
+                    pkglibdir_path += '/';
+                break;
+#endif
             case 'p':
                 path_prefix = optarg;
                 if (path_prefix.empty())
@@ -612,14 +634,12 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-    if (false)
-    {
-    }
 #if USE_LV2
-    else if (mode == "ttl")
-        make_ttl(path_prefix);
+    if (mode == "ttl")
+        make_ttl(path_prefix, !pkglibdir_path.empty() ? &pkglibdir_path : NULL);
+    else
 #endif
-    else if (mode == "gui")
+    if (mode == "gui")
         make_gui(path_prefix);
     else
     {

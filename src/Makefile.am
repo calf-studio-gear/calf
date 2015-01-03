@@ -82,7 +82,7 @@ if USE_LV2_GUI
 	install -c -m 755 $(top_builddir)/src/.libs/calflv2gui.so $(DESTDIR)$(lv2dir)/calflv2gui.so
 endif
 	rm -f $(DESTDIR)$(lv2dir)/*.ttl
-	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/
+	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/ -d $(DESTDIR)$(pkgdatadir)/
 if USE_SORDI
 	for f in $(DESTDIR)$(lv2dir)/*.ttl; do sout=`sordi -o turtle "$$f"`; if test $$? != 0; then echo "RDF file $$f is corrupted:"; echo $$sout"<<<"; fi; done
 endif
