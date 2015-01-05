@@ -550,9 +550,9 @@ plugin_gui::~plugin_gui()
 {
     cleanup_automation_entries();
     delete preset_access;
-    for (vector<param_control *>::reverse_iterator i = params.rbegin(); i != params.rend(); ++i)
+    for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); ++i)
         delete *i;
-    for (vector<control_container *>::iterator i = all_containers.begin(); i != all_containers.end(); ++i)
+    for (std::vector<control_container *>::iterator i = all_containers.begin(); i != all_containers.end(); ++i)
         delete *i;
 }
 
