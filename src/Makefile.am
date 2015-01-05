@@ -40,9 +40,9 @@ calfbenchmark_LDADD = calf.la
 calf_la_SOURCES = audio_fx.cpp analyzer.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp
 calf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) $(GLIB_DEPS_LIBS) 
 if USE_DEBUG
-calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -Wl,-z,nodelete
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static 
 else
-calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor" -Wl,-z,nodelete
+calf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"  
 endif
 
 if USE_LV2_GUI
@@ -54,9 +54,9 @@ noinst_LTLIBRARIES += calflv2gui.la
 calflv2gui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp custom_ctl.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp
 
 if USE_DEBUG
-calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static -Wl,-z,nodelete
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static
 else
-calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2ui_descriptor" $(GUI_DEPS_LIBS) -disable-static -Wl,-z,nodelete
+calflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2ui_descriptor" $(GUI_DEPS_LIBS) -disable-static
 endif
 
 endif
