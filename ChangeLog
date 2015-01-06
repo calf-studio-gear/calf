@@ -1,14 +1,23 @@
 Version 0.0.60.0 (unreleased)
 + Awesome new bitmap-based GUI by Markus Schmidt
-+ New plugins by Markus Schmidt:
++ New plugins by Markus Schmidt and Christian Holschuh:
   * several EQs (5, 8, 12 bands)
-  * new compressors (sidechain, multiband, deesser)
+  * new compressors/limiters/gates (sidechain, multiband, deesser)
+  * spectral analyzer/spectrogram plugin
   * new distortion plugins (based on code by Tom Szilagyi)
   * amplitude modulator plugin (pulsator)
+  * transient designer
++ Other plugins
+  * crossover plugins (Damien Zammit)
+  * emphasis - industry standard EQ curves (Damien Zammit)
+  * Haas stereo enhancer (Vladimir Sadovnikov)
+  * compensation delay line (Vladimir Sadovnikov)
 + New experimental plugin - a simple wrapper for Fluidsynth
 + JACK host: save/load of sessions
++ JACK host: auto-connection (incompatible with session managers)
 + Vintage Delay: fix another reinitialisation bug that caused, 
   noise bursts on enable/disable, add Width and LR/RL modes
++ Bypass feature on some plugins
 + many improvements to Monosynth:
   * modulation matrix (not compatible with all plugin standards yet)
   * PWM in both oscillators

@@ -130,10 +130,12 @@ void plugin_preset::get_from(plugin_ctl_iface *plugin)
     plugin->send_configures(&tmp);
 }
     
-string calf_plugins::preset_list::get_preset_filename(bool builtin)
+string calf_plugins::preset_list::get_preset_filename(bool builtin, const std::string *pkglibdir_path)
 {
     if (builtin)
     {
+        if (pkglibdir_path)
+            return (*pkglibdir_path) + "/presets.xml";
         return PKGLIBDIR "/presets.xml";
     }
     else
@@ -340,11 +342,11 @@ void preset_list::xml_character_data_handler(void *user_data, const XML_Char *da
     }
 }
 
-bool preset_list::load_defaults(bool builtin)
+bool preset_list::load_defaults(bool builtin, const std::string *pkglibdir_path)
 {
     try {
         struct stat st;
-        string name = preset_list::get_preset_filename(builtin);
+        string name = preset_list::get_preset_filename(builtin, pkglibdir_path);
         if (!stat(name.c_str(), &st)) {
             load(name.c_str(), false);
             if (!presets.empty())

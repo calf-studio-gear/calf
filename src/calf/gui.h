@@ -134,6 +134,7 @@ protected:
     GtkWidget *leftBox, *rightBox;
     int context_menu_param_no;
     uint32_t context_menu_last_designator;
+    std::vector<control_container *> all_containers;
 
     struct automation_menu_entry {
         plugin_gui *gui;
