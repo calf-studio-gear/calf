@@ -166,6 +166,14 @@ gboolean param_control::on_button_press_event(GtkWidget *widget, GdkEventButton 
     }
     else if (event->button == 2)
     {
+        if (!strcmp(gtk_widget_get_name(widget), "Calf-LineGraph")) {
+            CalfLineGraph *clg = CALF_LINE_GRAPH(widget);
+            if (clg->freqhandles && clg->handle_hovered >= 0)  {
+                FreqHandle * fh = &clg->freq_handles[clg->handle_hovered];
+                self->param_no = fh->param_x_no;
+            } else
+                return FALSE;
+        }
         self->create_value_entry(widget, event->x_root, event->y_root);
         return TRUE;
     }

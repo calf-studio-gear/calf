@@ -191,8 +191,8 @@ int parameter_properties::get_char_count() const
         len = std::max(len, strlen(buf)) + 2;
         return (int)len;
     }
-    std::string min_ = human_readable(min, 1000, (char*)"%g%s");
-    std::string max_ = human_readable(max, 1000, (char*)"%g%s");
+    std::string min_ = to_string(min);
+    std::string max_ = to_string(max);
     return std::max((int)min_.length(), std::max((int)max_.length(), 1));
 }
 
