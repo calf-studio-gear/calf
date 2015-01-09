@@ -251,7 +251,7 @@ void jack_client::calculate_plugin_order(std::vector<int> &indices)
             if (already_added.count(item))
                 return;
             already_added.insert(item);
-            for(multimap<int, int>::const_iterator i = run_before.find(item); i != run_before.end() && i->first == item; i++)
+            for(multimap<int, int>::const_iterator i = run_before.find(item); i != run_before.end() && i->first == item; ++i)
                 add_with_dependent(i->second);
             indices.push_back(item);
         }

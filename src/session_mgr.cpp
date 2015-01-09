@@ -116,7 +116,7 @@ void old_lash_session_manager::connect(const std::string &name)
 {
     if (lash_client)
     {
-        send_lash(LASH_Client_Name, name.c_str());
+        send_lash(LASH_Client_Name, name);
     }
     lash_session_manager_base::connect(name);
 }

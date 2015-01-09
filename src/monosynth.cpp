@@ -302,7 +302,6 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
     float rnd_start = 1 - *params[par_window1] * 0.5f;
     float scl = rnd_start < 1.0 ? 1.f / (1 - rnd_start) : 0.f;
     
-    uint32_t vlfo = this->lfo1.phase;
     static const int muls[8] = { 33, -47, 53, -67, 87, -101, 121, -139 };
     float unison = *params[par_o2unison] + moddest[moddest_o2unisonamp] * 0.01;
     float unison_scale = 1.0, unison_delta = 0.0, last_unison_scale = 1.0, unison_scale_delta = 0.0;
@@ -339,7 +338,6 @@ void monosynth_audio_module::calculate_buffer_oscs(float lfo1)
             last_unison += unison_delta;
             last_unison_scale += unison_scale_delta;
         }
-        vlfo += this->lfo1.phasedelta / step_size;
         buffer[i] = lerp(r * osc1val, osc2val, cur_xfade);
         osc1.advance();
         osc2.advance();

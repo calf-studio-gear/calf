@@ -152,7 +152,7 @@ void gtk_main_window::del_plugin(plugin_ctl_iface *plugin)
     if (strip->gui_win)
         strip->gui_win->close();
     vector<GtkWidget *> to_destroy;
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); ++i)
     {
         if (i->second == strip)
             to_destroy.push_back(i->second->strip_table);
@@ -179,7 +179,7 @@ void gtk_main_window::set_window(plugin_ctl_iface *plugin, plugin_gui_window *gu
 
 void gtk_main_window::refresh_all_presets(bool builtin_too)
 {
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); ++i)
     {
         if (i->second && i->second->gui_win) {
             char ch = '0';
@@ -477,7 +477,7 @@ void gtk_main_window::sort_strips()
     int float_size = get_config()->float_size; // amout of rows/cols before line break
     int posx, posy;
     gtk_table_resize(GTK_TABLE(strips_table), (int)(plugins.size() / float_size + 1), float_size);
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); ++i)
     {
         switch (rack_float) {
             case 0:
@@ -667,7 +667,7 @@ void gtk_main_window::create()
             gtk_misc_set_alignment(GTK_MISC(c->widget), 0.5, 0);
         }
     }
-    for (std::vector<jack_host *>::iterator i = plugin_queue.begin(); i != plugin_queue.end(); i++)
+    for (std::vector<jack_host *>::iterator i = plugin_queue.begin(); i != plugin_queue.end(); ++i)
     {
         plugin_strip *st = create_strip(*i);
         plugins[*i] = st;
@@ -715,7 +715,7 @@ void gtk_main_window::on_closed()
     is_closed = true;
     toplevel = NULL;
 
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); i++)
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); ++i)
     {
         if (i->second && i->second->gui_win) {
             i->second->gui_win->close();
@@ -738,7 +738,7 @@ gboolean gtk_main_window::on_idle(void *data)
     if (!self->refresh_controller.check_redraw(GTK_WIDGET(self->toplevel)))
         return TRUE;
 
-    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); i++)
+    for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = self->plugins.begin(); i != self->plugins.end(); ++i)
     {
         if (i->second)
         {

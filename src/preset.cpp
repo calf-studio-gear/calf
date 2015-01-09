@@ -53,7 +53,7 @@ std::string plugin_preset::to_xml()
         else
             ss << "  <param value=\"" << values[i] << "\" />\n";
     }
-    for (map<string, string>::iterator i = variables.begin(); i != variables.end(); i++)
+    for (map<string, string>::iterator i = variables.begin(); i != variables.end(); ++i)
     {
         ss << "  <var name=\"" << xml_escape(i->first) << "\">" << xml_escape(i->second) << "</var>\n";
     }

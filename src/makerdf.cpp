@@ -422,7 +422,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         
         preset_data[ilm->second.first] += presets_ttl;
     }
-    for (map<string, string>::iterator i = preset_data.begin(); i != preset_data.end(); i++)
+    for (map<string, string>::iterator i = preset_data.begin(); i != preset_data.end(); ++i)
     {
         FILE *f = open_and_check(path_prefix + "presets-" + i->first + ".ttl");
         fprintf(f, "%s\n", i->second.c_str());

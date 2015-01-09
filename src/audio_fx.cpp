@@ -1007,7 +1007,7 @@ void transients::process(float *in) {
     // amplification factor from attack and release curve
     float ampfactor = attdiff * att_level + reldiff * rel_level;
     old_return = new_return;
-    new_return = 1 + (ampfactor < 0 ? exp(ampfactor) - 1 : ampfactor);
+    new_return = 1 + (ampfactor < 0 ? expm1(ampfactor) : ampfactor);
     if (new_return / old_return > maxdelta) 
         new_return = old_return * maxdelta;
     if (new_return / old_return < 1 / maxdelta)

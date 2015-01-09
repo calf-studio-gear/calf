@@ -217,7 +217,7 @@ void basic_synth::render_to(float (*output)[2], int nsamples)
 
 basic_synth::~basic_synth()
 {
-    for (voice_array::iterator i = allocated_voices.begin(); i != allocated_voices.end(); i++)
+    for (voice_array::iterator i = allocated_voices.begin(); i != allocated_voices.end(); ++i)
         delete *i;
 }
 

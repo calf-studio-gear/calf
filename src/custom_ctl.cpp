@@ -230,8 +230,6 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int cy = oy + sy / 2;
     
     // some values as pointers for the audio plug-in call
-    std::string legend;
-    float *data = new float[2 * sx];
     float * phase_buffer = 0;
     int length = 0;
     int mode = 2;
@@ -346,7 +344,6 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_destroy(c);
     cairo_destroy(ctx_back);
     cairo_destroy(ctx_cache);
-    delete []data;
     // printf("exposed %p %dx%d %d+%d\n", widget->window, event->area.x, event->area.y, event->area.width, event->area.height);
     return TRUE;
 }

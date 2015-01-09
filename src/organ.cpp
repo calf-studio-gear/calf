@@ -734,7 +734,7 @@ void organ_voice::render_block(int snapshot) {
         uint32_t rate = (dphase * hm).get();
         if (waveid >= wave_count_small)
         {
-            float *data = (*big_waves)[waveid - wave_count_small].get_level(rate >> (ORGAN_BIG_WAVE_BITS - ORGAN_WAVE_BITS + ORGAN_BIG_WAVE_SHIFT));
+            data = (*big_waves)[waveid - wave_count_small].get_level(rate >> (ORGAN_BIG_WAVE_BITS - ORGAN_WAVE_BITS + ORGAN_BIG_WAVE_SHIFT));
             if (!data)
                 continue;
             hm.set(hm.get() >> ORGAN_BIG_WAVE_SHIFT);
@@ -986,7 +986,7 @@ bool drawbar_organ::check_percussion() {
 void drawbar_organ::pitch_bend(int amt)
 {
     parameters->pitch_bend = pow(2.0, (amt * parameters->pitch_bend_range) / (1200.0 * 8192.0));
-    for (voice_array::iterator i = active_voices.begin(); i != active_voices.end(); i++)
+    for (voice_array::iterator i = active_voices.begin(); i != active_voices.end(); ++i)
     {
         organ_voice *v = dynamic_cast<organ_voice *>(*i);
         v->update_pitch();

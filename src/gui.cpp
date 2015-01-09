@@ -394,7 +394,7 @@ void plugin_gui::refresh(int param_no, param_control *originator)
     {
         if (it->second != originator)
             it->second->set();
-        it++;
+        ++it;
     }
 }
 
@@ -515,7 +515,7 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
     }
     
-    for(multimap<uint32_t, automation_range>::const_iterator i = mappings.begin(); i != mappings.end(); i++)
+    for(multimap<uint32_t, automation_range>::const_iterator i = mappings.begin(); i != mappings.end(); ++i)
     {
         automation_menu_entry *ame = new automation_menu_entry(this, i->first);
         automation_menu_callback_data.push_back(ame);

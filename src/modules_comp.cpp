@@ -298,8 +298,8 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
 void gain_reduction2_audio_module::activate()
 {
     is_active = true;
-    float l, r;
-    l = r = 0.f;
+    float l;
+    l = 0.f;
     float byp = bypass;
     bypass = 0.0;
     process(l);

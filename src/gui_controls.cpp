@@ -1488,7 +1488,6 @@ void listview_param_control::send_configure(const char *key, const char *value)
     int row = -1, col = -1;
     if (parse_table_key(key, orig_key.c_str(), is_rows, row, col))
     {
-        string suffix = string(key + orig_key.length());
         if (is_rows && tmif->get_table_rows() == 0)
         {
             int rows = atoi(value);

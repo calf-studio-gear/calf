@@ -68,7 +68,7 @@ void gui_preset_access::store_preset()
     GtkTreeModel *model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
     gtk_combo_box_set_model(GTK_COMBO_BOX(preset_name_combo), model);
     gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(preset_name_combo), 0);
-    for(preset_vector::const_iterator i = get_user_presets().presets.begin(); i != get_user_presets().presets.end(); i++)
+    for(preset_vector::const_iterator i = get_user_presets().presets.begin(); i != get_user_presets().presets.end(); ++i)
     {
         if (i->plugin != gui->effect_name)
             continue;
@@ -95,7 +95,7 @@ void gui_preset_access::store_preset()
             tmp = get_user_presets();
         }
         bool found = false;
-        for(preset_vector::const_iterator i = tmp.presets.begin(); i != tmp.presets.end(); i++)
+        for(preset_vector::const_iterator i = tmp.presets.begin(); i != tmp.presets.end(); ++i)
         {
             if (i->plugin == gui->effect_name && i->name == sp.name)
             {
