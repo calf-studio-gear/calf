@@ -31,41 +31,41 @@ namespace calf_plugins {
 /////////////////////////////////////////////////////////////////////////////////////////////
 // containers
 
-struct table_container: public control_container
+struct table_container: public control_base
 {
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
-    virtual void add(GtkWidget *w, control_base *base);
+    virtual GtkWidget *create(plugin_gui *_gui);
+    virtual void add(control_base *base);
 };
 
-struct alignment_container: public control_container
+struct alignment_container: public control_base
 {
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+    virtual GtkWidget *create(plugin_gui *_gui);
 };
 
-struct frame_container: public control_container
+struct frame_container: public control_base
 {
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+    virtual GtkWidget *create(plugin_gui *_gui);
 };
 
-struct box_container: public control_container
+struct box_container: public control_base
 {
-    virtual void add(GtkWidget *w, control_base *base);
+    virtual void add(control_base *base);
 };
 
 struct vbox_container: public box_container
 {
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+    virtual GtkWidget *create(plugin_gui *_gui);
 };
 
 struct hbox_container: public box_container
 {
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+    virtual GtkWidget *create(plugin_gui *_gui);
 };
 
-struct scrolled_container: public control_container
+struct scrolled_container: public control_base
 {
-    virtual void add(GtkWidget *w, control_base *base);
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes);
+    virtual void add(control_base *base);
+    virtual GtkWidget *create(plugin_gui *_gui);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ struct notebook_param_control: public param_control
     virtual bool is_container() { return true; };
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void created();
-    virtual void add(GtkWidget *w, control_base *base);
+    virtual void add(control_base *base);
     virtual void get();
     virtual void set();
     static void notebook_page_changed(GtkWidget *widget, GtkWidget *page, guint id, gpointer user);
@@ -132,7 +132,6 @@ struct hscale_param_control: public param_control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
-    virtual void init_xml(const char *element);
     static void hscale_value_changed(GtkHScale *widget, gpointer value);
     static gchar *hscale_format_value(GtkScale *widget, double arg1, gpointer value);
 };
@@ -143,7 +142,6 @@ struct vscale_param_control: public param_control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
-    virtual void init_xml(const char *element);
     static void vscale_value_changed(GtkHScale *widget, gpointer value);
 };
 

@@ -86,28 +86,34 @@ float control_base::get_float(const char *name, float def_value)
 void control_base::set_visibilty(bool state)
 {
     if (state) {
-        if (is_container())
-            gtk_widget_show(widget);
-        else
-            gtk_widget_show(GTK_WIDGET(container));
+        gtk_widget_show(widget);
     } else {
-        if (is_container())
-            gtk_widget_hide(widget);
-        else
-            gtk_widget_hide(GTK_WIDGET(container));
+        gtk_widget_hide(widget);
     }
 }
-/******************************** container base class **********************/
 
-void control_container::set_std_properties()
+void control_base::set_std_properties()
 {
-    if (attribs.find("widget-name") != attribs.end())
+    if (widget && attribs.find("widget-name") != attribs.end())
     {
         string name = attribs["widget-name"];
-        if (container) {
-            gtk_widget_set_name(GTK_WIDGET(container), name.c_str());
-        }
+        gtk_widget_set_name(widget, name.c_str());
     }
+    if (widget && GTK_IS_CONTAINER(widget))
+    {
+        gtk_container_set_border_width(GTK_CONTAINER(widget), get_int("border"));
+    }
+}
+
+static void on_control_destroy(GtkWidget *w, gpointer p)
+{
+    delete (control_base *)p;
+}
+
+void control_base::created()
+{
+    set_std_properties();
+    g_signal_connect(GTK_OBJECT(widget), "destroy", (GCallback)on_control_destroy, this);
 }
 
 /************************* param-associated control base class **************/
@@ -121,16 +127,16 @@ param_control::param_control()
     has_entry = false;
 }
 
-
-void param_control::set_std_properties()
+GtkWidget *param_control::create(plugin_gui *_gui)
 {
-    if (attribs.find("widget-name") != attribs.end())
+    if (attribs.count("param"))
     {
-        string name = attribs["widget-name"];
-        if (widget) {
-            gtk_widget_set_name(widget, name.c_str());
-        }
+        int pno = _gui->get_param_no_by_name(attribs["param"]);
+        param_variable = _gui->plugin->get_metadata_iface()->get_param_props(pno)->short_name;
+        return create(_gui, pno);
     }
+    else
+        return create(_gui, -1);
 }
 
 void param_control::hook_params()
@@ -139,6 +145,13 @@ void param_control::hook_params()
         gui->add_param_ctl(param_no, this);
     }
     gui->params.push_back(this);
+}
+
+void param_control::created() {
+    control_base::created();
+    set();
+    hook_params();
+    add_context_menu_handler();
 }
 
 param_control::~param_control()
@@ -415,11 +428,7 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_widget_set_name(GTK_WIDGET(widget), name);
     gtk_widget_set_size_request (widget, size * 100, -1);
     g_free(name);
-    return widget;
-}
 
-void hscale_param_control::init_xml(const char *element)
-{
     if (attribs.count("width"))
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);
     if (attribs.count("position"))
@@ -428,6 +437,7 @@ void hscale_param_control::init_xml(const char *element)
         if (v == "top") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_TOP);
         if (v == "bottom") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_BOTTOM);
     }
+    return widget;
 }
 
 void hscale_param_control::set()
@@ -482,13 +492,11 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     gtk_widget_set_size_request (widget, -1, size * 100);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
     g_free(name);
-    return widget;
-}
 
-void vscale_param_control::init_xml(const char *element)
-{
     if (attribs.count("height"))
         gtk_widget_set_size_request (widget, -1, get_int("height", 200));
+
+    return widget;
 }
 
 void vscale_param_control::set()
@@ -1571,12 +1579,12 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
         page = gui->plugin->get_param_value(param_no);
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
-    container = GTK_CONTAINER(nb);
     gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     return nb;
 }
-void notebook_param_control::created() {
+void notebook_param_control::created()
+{
     g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
     set();
 }
@@ -1593,9 +1601,9 @@ void notebook_param_control::set()
     page = (gint)gui->plugin->get_param_value(param_no);
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
 }
-void notebook_param_control::add(GtkWidget *w, control_base *base)
+void notebook_param_control::add(control_base *base)
 {
-    gtk_notebook_append_page(GTK_NOTEBOOK(widget), w, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
+    gtk_notebook_append_page(GTK_NOTEBOOK(widget), base->widget, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
 }
 void notebook_param_control::notebook_page_changed(GtkWidget *widget, GtkWidget *page, guint id, gpointer user)
 {
@@ -1606,7 +1614,7 @@ void notebook_param_control::notebook_page_changed(GtkWidget *widget, GtkWidget 
 
 /******************************** GtkTable container ********************************/
 
-GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *table_container::create(plugin_gui *_gui)
 {
     require_int_attribute("rows");
     require_int_attribute("cols");
@@ -1619,12 +1627,12 @@ GtkWidget *table_container::create(plugin_gui *_gui, const char *element, xml_at
     }
     gtk_table_set_col_spacings(GTK_TABLE(table), sx);
     gtk_table_set_row_spacings(GTK_TABLE(table), sy);
-    container = GTK_CONTAINER(table);
+    widget = table;
     gtk_widget_set_name(GTK_WIDGET(table), "Calf-Table");
     return table;
 }
 
-void table_container::add(GtkWidget *widget, control_base *base)
+void table_container::add(control_base *base)
 {
     base->require_int_attribute("attach-x");
     base->require_int_attribute("attach-y");
@@ -1636,59 +1644,55 @@ void table_container::add(GtkWidget *widget, control_base *base)
     int filly = (base->get_int("fill-y", !shrinky) ? GTK_FILL : 0) | (base->get_int("expand-y", !shrinky) ? GTK_EXPAND : 0) | (base->get_int("shrink-y", 0) ? GTK_SHRINK : 0);
     int padx = base->get_int("pad-x", 2);
     int pady = base->get_int("pad-y", 2);
-    gtk_table_attach(GTK_TABLE(container), widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
+    gtk_table_attach(GTK_TABLE(widget), base->widget, x, x + w, y, y + h, (GtkAttachOptions)fillx, (GtkAttachOptions)filly, padx, pady);
 } 
 
 /******************************** alignment container ********************************/
 
-GtkWidget *alignment_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *alignment_container::create(plugin_gui *_gui)
 {
-    GtkWidget *align = gtk_alignment_new(get_float("align-x", 0.5), get_float("align-y", 0.5), get_float("scale-x", 0), get_float("scale-y", 0));
-    container = GTK_CONTAINER(align);
-    gtk_widget_set_name(GTK_WIDGET(align), "Calf-Align");
-    return align;
+    widget = gtk_alignment_new(get_float("align-x", 0.5), get_float("align-y", 0.5), get_float("scale-x", 0), get_float("scale-y", 0));
+    gtk_widget_set_name(widget, "Calf-Align");
+    return widget;
 }
 
 /******************************** GtkFrame container ********************************/
 
-GtkWidget *frame_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *frame_container::create(plugin_gui *_gui)
 {
-    GtkWidget *widget = calf_frame_new(attribs["label"].c_str());
-    container = GTK_CONTAINER(widget);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Frame");
+    widget = calf_frame_new(attribs["label"].c_str());
+    gtk_widget_set_name(widget, "Calf-Frame");
     return widget;
 }
 
 /******************************** GtkBox type of containers ********************************/
 
-void box_container::add(GtkWidget *w, control_base *base)
+void box_container::add(control_base *base)
 {
-    gtk_container_add_with_properties(container, w, "expand", get_int("expand", 1), "fill", get_int("fill", 1), NULL);
+    gtk_container_add_with_properties(GTK_CONTAINER(widget), base->widget, "expand", get_int("expand", 1), "fill", get_int("fill", 1), NULL);
 }
 
 /******************************** GtkHBox container ********************************/
 
-GtkWidget *hbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *hbox_container::create(plugin_gui *_gui)
 {
-    GtkWidget *hbox = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
-    container = GTK_CONTAINER(hbox);
-    gtk_widget_set_name(GTK_WIDGET(hbox), "Calf-HBox");
-    return hbox;
+    widget = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
+    gtk_widget_set_name(widget, "Calf-HBox");
+    return widget;
 }
 
 /******************************** GtkVBox container ********************************/
 
-GtkWidget *vbox_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *vbox_container::create(plugin_gui *_gui)
 {
-    GtkWidget *vbox = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
-    container = GTK_CONTAINER(vbox);
-    gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-VBox");
-    return vbox;
+    widget = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
+    gtk_widget_set_name(widget, "Calf-VBox");
+    return widget;
 }
 
 /******************************** GtkNotebook container ********************************/
 
-GtkWidget *scrolled_container::create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)
+GtkWidget *scrolled_container::create(plugin_gui *_gui)
 {
     GtkAdjustment *horiz = NULL, *vert = NULL;
     int width = get_int("width", 0), height = get_int("height", 0);
@@ -1696,14 +1700,13 @@ GtkWidget *scrolled_container::create(plugin_gui *_gui, const char *element, xml
         horiz = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("x", 0), 0, width, get_int("step-x", 1), get_int("page-x", width / 10), 100));
     if (height)
         vert = GTK_ADJUSTMENT(gtk_adjustment_new(get_int("y", 0), 0, width, get_int("step-y", 1), get_int("page-y", height / 10), 10));
-    GtkWidget *sw = gtk_scrolled_window_new(horiz, vert);
-    gtk_widget_set_size_request(sw, get_int("req-x", -1), get_int("req-y", -1));
-    container = GTK_CONTAINER(sw);
-    gtk_widget_set_name(GTK_WIDGET(sw), "Calf-ScrolledWindow");
-    return sw;
+    widget = gtk_scrolled_window_new(horiz, vert);
+    gtk_widget_set_size_request(widget, get_int("req-x", -1), get_int("req-y", -1));
+    gtk_widget_set_name(widget, "Calf-ScrolledWindow");
+    return widget;
 }
 
-void scrolled_container::add(GtkWidget *w, control_base *base)
+void scrolled_container::add(control_base *base)
 {
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(container), w);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(widget), base->widget);
 }

@@ -37,7 +37,6 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
 {
     ignore_stack = 0;
     top_container = NULL;
-    current_control = NULL;
     param_count = 0;
     container = NULL;
     effect_name = NULL;
@@ -48,7 +47,7 @@ plugin_gui::plugin_gui(plugin_gui_window *_window)
     opttitle = NULL;
 }
 
-param_control *plugin_gui::create_control_from_xml(const char *element, const char *attributes[])
+control_base *plugin_gui::create_widget_from_xml(const char *element, const char *attributes[])
 {
     if (!strcmp(element, "knob"))
         return new knob_param_control;
@@ -96,11 +95,6 @@ param_control *plugin_gui::create_control_from_xml(const char *element, const ch
         return new listview_param_control;
     if (!strcmp(element, "notebook"))
         return new notebook_param_control;
-    return NULL;
-}
-
-control_container *plugin_gui::create_container_from_xml(const char *element, const char *attributes[])
-{
     if (!strcmp(element, "table"))
         return new table_container;
     if (!strcmp(element, "vbox"))
@@ -164,99 +158,45 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
         ignore_stack = 1;
         return;
     }
-    control_container *cc = create_container_from_xml(element, attributes);
-    if (cc != NULL)
-    {
-        cc->attribs = xam;
-        cc->create(this, element, xam);
-        cc->set_std_properties();
-        gtk_container_set_border_width(cc->container, cc->get_int("border"));
-
-        all_containers.push_back(cc);
-        container_stack.push_back(cc);
-        current_control = NULL;
-        return;
-    }
-    if (!container_stack.empty())
-    {
-        current_control = create_control_from_xml(element, attributes);
-        if (current_control)
-        {
-            current_control->control_name = element;
-            current_control->attribs = xam;
-            int param_no = -1;
-            if (xam.count("param"))
-            {
-                param_no = get_param_no_by_name(xam["param"]);
-            }
-            if (param_no != -1)
-                current_control->param_variable = plugin->get_metadata_iface()->get_param_props(param_no)->short_name;
-            current_control->create(this, param_no);
-            current_control->set_std_properties();
-            current_control->init_xml(element);
-            current_control->add_context_menu_handler();
-            if (current_control->is_container()) {
-                gtk_container_set_border_width(current_control->container, current_control->get_int("border"));
-                container_stack.push_back(current_control);
-                control_stack.push_back(current_control);
-            }
-            return;
-        }
-    }
-    g_error("Unxpected element %s in GUI definition\n", element);
+    control_base *cc = create_widget_from_xml(element, attributes);
+    if (cc == NULL)
+        g_error("Unxpected element %s in GUI definition\n", element);
+    
+    cc->attribs = xam;
+    cc->create(this);
+    stack.push_back(cc);
 }
 
 void plugin_gui::xml_element_end(void *data, const char *element)
 {
     plugin_gui *gui = (plugin_gui *)data;
-    unsigned int ss = gui->container_stack.size();
     if (gui->ignore_stack) {
         gui->ignore_stack--;
         return;
     }
     if (!strcmp(element, "if"))
-    {
         return;
-    }
-    if (gui->current_control and !gui->current_control->is_container())
+
+    control_base *control = gui->stack.back();
+    control->created();
+    
+    gui->stack.pop_back();
+    if (gui->stack.empty())
     {
-        (*gui->container_stack.rbegin())->add(gui->current_control->widget, gui->current_control);
-        gui->current_control->hook_params();
-        gui->current_control->set();
-        gui->current_control->created();
-        gtk_widget_show_all(gui->current_control->widget);
-        gui->current_control = NULL;
-        return;
+        gui->top_container = control;
+        gtk_widget_show_all(control->widget);
     }
-    if (ss > 1) {
-        gui->container_stack[ss - 2]->add(GTK_WIDGET(gui->container_stack[ss - 1]->container), gui->container_stack[ss - 1]);
-        gtk_widget_show_all(GTK_WIDGET(gui->container_stack[ss - 1]->container));
-    }
-    else {
-        gui->top_container = gui->container_stack[0];
-        gtk_widget_show_all(GTK_WIDGET(gui->container_stack[0]->container));
-    }
-    int css = gui->control_stack.size();
-    if (ss > 1 and (*gui->container_stack.rbegin())->is_container() and css) {
-        gui->control_stack[css - 1]->hook_params();
-        gui->control_stack[css - 1]->set();
-        gui->control_stack[css - 1]->created();
-        
-        gui->control_stack.pop_back();
-    }
-    gui->container_stack.pop_back();
-    gui->current_control = NULL;
+    else
+        gui->stack.back()->add(control);
 }
 
 
 GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xml)
 {
-    current_control = NULL;
     top_container = NULL;
     parser = XML_ParserCreate("UTF-8");
     plugin = _plugin;
-    container_stack.clear();
-    control_stack.clear();
+    stack.clear();
     ignore_stack = 0;
     
     param_name_map.clear();
@@ -314,7 +254,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBox),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
         
-    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(top_container->container), 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
+    gtk_table_attach(GTK_TABLE(decoTable), top_container->widget, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
     gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
     
@@ -550,10 +490,6 @@ plugin_gui::~plugin_gui()
 {
     cleanup_automation_entries();
     delete preset_access;
-    for (std::vector<param_control *>::iterator i = params.begin(); i != params.end(); ++i)
-        delete *i;
-    for (std::vector<control_container *>::iterator i = all_containers.begin(); i != all_containers.end(); ++i)
-        delete *i;
 }
 
 /***************************** GUI environment ********************************************/

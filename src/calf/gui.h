@@ -43,37 +43,40 @@ public:
 class plugin_gui;
 class jack_host;
 
-struct control_base
+class control_base
 {
-    virtual bool is_container() { return false; };
-    GtkContainer *container;
-    GtkWidget *widget, *entrywin;
-    std::string control_name;
+public:
     typedef std::map<std::string, std::string> xml_attribute_map;
+
+    GtkWidget *widget;
+    std::string control_name;
     xml_attribute_map attribs;
     plugin_gui *gui;
+public:
     void require_attribute(const char *name);
     void require_int_attribute(const char *name);
     int get_int(const char *name, int def_value = 0);
     float get_float(const char *name, float def_value = 0.f);
+
+public:
+    virtual GtkWidget *create(plugin_gui *_gui) { return NULL; }
+    virtual bool is_container() { return GTK_IS_CONTAINER(widget); };
     virtual void set_visibilty(bool state);
-    virtual void add(GtkWidget *w, control_base *base) { gtk_container_add(container, w); }
-    /// called after creation, so that all standard properties can be set
-    virtual void set_std_properties() = 0;
-};
-
-
-struct control_container: public control_base
-{
-    virtual GtkWidget *create(plugin_gui *_gui, const char *element, xml_attribute_map &attributes)=0;
+    virtual void add(control_base *ctl) { gtk_container_add(GTK_CONTAINER(widget), ctl->widget); }
+    /// called from created() to set all the properties
     virtual void set_std_properties();
-    virtual ~control_container() {}
+    /// called after the control is created
+    virtual void created();
+    virtual ~control_base() {}
 };
 
 #define _GUARD_CHANGE_ if (in_change) return; guard_change __gc__(this);
 
-struct param_control: public control_base
+class param_control: public control_base
 {    
+protected:
+    GtkWidget *entrywin;
+public:
     int param_no;
     std::string param_variable;
     int in_change;
@@ -89,20 +92,22 @@ struct param_control: public control_base
     param_control();
     inline const parameter_properties &get_props();
     
-    virtual void init_xml(const char *element) {}
+    virtual GtkWidget *create(plugin_gui *_gui);
     /// called to create a widget for a control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no)=0;
-    virtual void created(){};
     /// called to transfer the value from control to parameter(s)
     virtual void get()=0;
     /// called to transfer the value from parameter(s) to control
     virtual void set()=0;
+    /// called after the control is created
+    virtual void created();
     /// called on DSSI configure()
     virtual void configure(const char *key, const char *value) {}
+    /// called from created() to add hooks for parameters
     virtual void hook_params();
-    virtual void on_idle() {}
-    virtual void set_std_properties();
+    /// called from created() to add context menu handlers
     virtual void add_context_menu_handler();
+    virtual void on_idle() {}
     virtual ~param_control();
     virtual void do_popup_menu();
     static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, void *user_data);
@@ -123,9 +128,6 @@ protected:
     int param_count;
     std::multimap<int, param_control *> par2ctl;
     XML_Parser parser;
-    param_control *current_control;
-    std::vector<control_base *> container_stack;
-    std::vector<param_control *> control_stack;
     control_base *top_container;
     std::map<std::string, int> param_name_map;
     int ignore_stack;
@@ -134,7 +136,7 @@ protected:
     GtkWidget *leftBox, *rightBox;
     int context_menu_param_no;
     uint32_t context_menu_last_designator;
-    std::vector<control_container *> all_containers;
+    std::vector<control_base *> stack;
 
     struct automation_menu_entry {
         plugin_gui *gui;
@@ -166,8 +168,7 @@ public:
 
     plugin_gui(plugin_gui_window *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
-    param_control *create_control_from_xml(const char *element, const char *attributes[]);
-    control_container *create_container_from_xml(const char *element, const char *attributes[]);
+    control_base *create_widget_from_xml(const char *element, const char *attributes[]);
 
     void add_param_ctl(int param, param_control *ctl) { par2ctl.insert(std::pair<int, param_control *>(param, ctl)); }
     void refresh();
