@@ -2559,7 +2559,22 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_outL = L;
             meter_outR = R;
         }
-        // fill pixel buffer
+        // fill pixel buffer (pbuffer)
+        //
+        // the pixel buffer is an array holding all necessary values for
+        // the line graph per pixel. its length is 5 times the available
+        // pixel width of the graph multiplied with the maximum zoom
+        // to hold input, output, attack, release and envelope data.
+        //
+        // here we write the pixel buffer, get_graph will read its
+        // contents later in a drawing event.
+        //
+        // pbuffer_pos is the actual position in the array we are writing
+        // to. It points to the first position of a set of the 5 values.
+        // 
+        // Since we have more audio samples than pixels we add a couple
+        // of samples to one pixel before we step forward with pbuffer_pos.
+        
         if (pbuffer_available) {
             // sanitize the buffer position if enough samples have
             // been captured. This is recognized by a negative value
@@ -2599,7 +2614,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         and pbuffer_available) {
             int diff = (int)(srate / 10 / pixels);
             diff += diff & 1;
-            attack_pos = (pbuffer_pos - diff + pbuffer_size) % pbuffer_size;
+            attack_pos = (pbuffer_pos - diff * 5 + pbuffer_size) % pbuffer_size;
             attcount = 0;
         }
         float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
@@ -2632,7 +2647,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         // if drawn in the min display zoom level multiplied by 5 for
         // keeping the input and the output fabs signals and all graphs
         // of the envelopes
-        pbuffer_size = (int)(points * 5.f * 100.f);
+        pbuffer_size = (int)(points * 5 * 100);
         // create array
         pbuffer = (float*) calloc(pbuffer_size, sizeof(float));
         
@@ -2649,8 +2664,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
     // to amount of pixels before pbuffer_pos or to attack_pos
     if (subindex == 0) {
         int pos = hold ? attack_pos : pbuffer_pos;
-        pbuffer_draw = *params[param_display_threshold] > display_max ? pos
-                     : (pbuffer_size + pos - pixels * 5) % pbuffer_size;
+        pbuffer_draw = hold ? pos : (pbuffer_size + pos - pixels * 5) % pbuffer_size;
     }
     
     // get outa here if max graph is reached
