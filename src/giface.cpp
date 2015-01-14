@@ -193,7 +193,8 @@ int parameter_properties::get_char_count() const
     }
     std::string min_ = to_string(min);
     std::string max_ = to_string(max);
-    return std::max((int)min_.length(), std::max((int)max_.length(), 1));
+    std::string mid_ = to_string(min + (max - min) * 1. / 3);
+    return std::max((int)min_.length(), std::max((int)max_.length(), std::max((int)mid_.length(), 3)));
 }
 
 
