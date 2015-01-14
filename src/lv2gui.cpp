@@ -344,6 +344,13 @@ void gui_cleanup(LV2UI_Handle handle)
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     if (proxy->source_id)
         g_source_remove(proxy->source_id);
+    if (gui->optwidget && GTK_IS_CONTAINER(gui->optwidget))
+    {
+        GList *children = gtk_container_get_children(GTK_CONTAINER(gui->optwidget));
+        for(GList *p = children; p; p = p->next)
+            gtk_widget_destroy(GTK_WIDGET(p->data));
+        g_list_free(children);
+    }
     if (gui->optwindow)
         gtk_widget_destroy(gui->optwindow);
     if (gui->opttitle)
