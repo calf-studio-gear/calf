@@ -361,6 +361,8 @@ void gui_cleanup(LV2UI_Handle handle)
 void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, uint32_t format, const void *buffer)
 {
     plugin_gui *gui = (plugin_gui *)handle;
+    if (gui->optclosed)
+        return;
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     assert(proxy);
     float v = *(float *)buffer;
