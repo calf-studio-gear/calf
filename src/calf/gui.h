@@ -171,6 +171,7 @@ public:
     control_base *create_widget_from_xml(const char *element, const char *attributes[]);
 
     void add_param_ctl(int param, param_control *ctl) { par2ctl.insert(std::pair<int, param_control *>(param, ctl)); }
+    void remove_param_ctl(int param, param_control *ctl);
     void refresh();
     void refresh(int param_no, param_control *originator = NULL);
     int get_param_no_by_name(std::string param_name);
@@ -191,6 +192,8 @@ public:
     void on_control_popup(param_control *ctl, int param_no);
     /// Clean up callback data allocated for the automation pop-up menu
     void cleanup_automation_entries();
+    /// Destroy all the widgets in the container
+    void destroy_child_widgets(GtkWidget *parent);
     ~plugin_gui();
     static void xml_element_start(void *data, const char *element, const char *attributes[]);
     static void xml_element_end(void *data, const char *element);

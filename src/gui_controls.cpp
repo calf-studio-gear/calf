@@ -144,7 +144,6 @@ void param_control::hook_params()
     if (param_no != -1) {
         gui->add_param_ctl(param_no, this);
     }
-    gui->params.push_back(this);
 }
 
 void param_control::created() {
@@ -156,6 +155,8 @@ void param_control::created() {
 
 param_control::~param_control()
 {
+    if (param_no != -1)
+        gui->remove_param_ctl(param_no, this);
     //if (GTK_IS_WIDGET(widget))
     //    gtk_widget_destroy(widget);
 }

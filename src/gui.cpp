@@ -291,6 +291,33 @@ void plugin_gui::send_status(const char *key, const char *value)
     }
 }
 
+void plugin_gui::remove_param_ctl(int param, param_control *ctl)
+{
+    std::multimap<int, param_control *>::iterator it = par2ctl.find(param);
+    while(it != par2ctl.end() && it->first == param)
+    {
+        if (it->second == ctl)
+        {
+            std::multimap<int, param_control *>::iterator orig = it;
+            ++orig;
+            par2ctl.erase(it, orig);
+            it = orig;
+        }
+        else
+            ++it;
+    }
+    unsigned last = params.size() - 1;
+    for (unsigned i = 0; i < params.size(); ++i)
+    {
+        if (params[i] == ctl)
+        {
+            if (i != last)
+                std::swap(params[i], params[last]);
+            params.erase(params.begin() + last, params.end());
+        }
+    }
+}
+
 void plugin_gui::on_idle()
 {
     set<unsigned> changed;
@@ -484,6 +511,17 @@ void plugin_gui::on_control_popup(param_control *ctl, int param_no)
     
     gtk_widget_show_all(menu);
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, gtk_get_current_event_time());
+}
+
+void plugin_gui::destroy_child_widgets(GtkWidget *parent)
+{
+    if (parent && GTK_IS_CONTAINER(parent))
+    {
+        GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
+        for(GList *p = children; p; p = p->next)
+            gtk_widget_destroy(GTK_WIDGET(p->data));
+        g_list_free(children);
+    }
 }
 
 plugin_gui::~plugin_gui()

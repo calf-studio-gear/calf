@@ -241,7 +241,9 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
 
 void plugin_gui_window::on_window_destroyed(GtkWidget *window, gpointer data)
 {
-    delete (plugin_gui_window *)data;
+    plugin_gui_window *self = (plugin_gui_window *)data;
+    self->gui->destroy_child_widgets(GTK_WIDGET(self->toplevel));
+    delete self;
 }
 
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch)
