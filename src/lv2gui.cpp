@@ -71,6 +71,8 @@ struct plugin_proxy_base
     int param_count;
     /// Number of the first parameter port
     int param_offset;
+    /// Signal handler for main widget destroyed
+    gulong widget_destroyed_signal;
     
     plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features);
 
@@ -111,6 +113,7 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     
     param_count = metadata->get_param_count();
     param_offset = metadata->get_param_port_offset();
+    widget_destroyed_signal = 0;
     
     /// Block all updates until GUI is ready
     sends.resize(param_count, false);
@@ -272,6 +275,14 @@ static gboolean plugin_on_idle(void *data)
     return TRUE;
 }
 
+static void on_gui_widget_destroy(GtkWidget*, gpointer data)
+{
+    plugin_gui *gui = (plugin_gui *)data;
+    // Remove the reference to the widget, so that it's not being manipulated
+    // after it's been destroyed
+    gui->optwidget = NULL;
+}
+
 LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                           const char*                     plugin_uri,
                           const char*                     bundle_path,
@@ -300,7 +311,10 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     proxy->enable_all_sends();
     proxy->send_configures(gui);
     if (gui->optwidget)
+    {
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
+        proxy->widget_destroyed_signal = g_signal_connect(G_OBJECT(gui->optwidget), "destroy", G_CALLBACK(on_gui_widget_destroy), (gpointer)gui);
+    }
     gui->show_rack_ears(proxy->get_config()->rack_ears);
     
     *(GtkWidget **)(widget) = gui->optwidget;
@@ -344,7 +358,14 @@ void gui_cleanup(LV2UI_Handle handle)
     lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
     if (proxy->source_id)
         g_source_remove(proxy->source_id);
+    // If the widget still exists, remove the handler
+    if (gui->optwidget)
+    {
+        g_signal_handler_disconnect(gui->optwidget, proxy->widget_destroyed_signal);
+        proxy->widget_destroyed_signal = 0;
+    }
     gui->destroy_child_widgets(gui->optwidget);
+    gui->optwidget = NULL;
     if (gui->optwindow)
         gtk_widget_destroy(gui->optwindow);
     if (gui->opttitle)
