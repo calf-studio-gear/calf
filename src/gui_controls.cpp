@@ -144,6 +144,7 @@ void param_control::hook_params()
     if (param_no != -1) {
         gui->add_param_ctl(param_no, this);
     }
+    gui->params.push_back(this);
 }
 
 void param_control::created() {
