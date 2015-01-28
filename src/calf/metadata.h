@@ -73,7 +73,7 @@ struct envelopefilter_metadata: public plugin_metadata<envelopefilter_metadata>
            param_mix, param_q, param_mode,
            param_attack, param_release,
            param_upper, param_lower, param_gain,
-           param_sidechain,
+           param_sidechain, param_response,
            param_count };
     PLUGIN_NAME_ID_LABEL("envelopefilter", "envelopefilter", "Envelope Filter")
 };
