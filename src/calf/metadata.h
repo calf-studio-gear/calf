@@ -64,6 +64,20 @@ struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
     bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
 };
 
+/// Envelope Filter - metadata
+struct envelopefilter_metadata: public plugin_metadata<envelopefilter_metadata>
+{
+    enum { in_count = 4, out_count = 2, ins_optional = 2, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_mix, param_q, param_mode,
+           param_attack, param_release,
+           param_upper, param_lower, param_gain,
+           param_sidechain,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("envelopefilter", "envelopefilter", "Envelope Filter")
+};
+
 struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
     enum { par_clip, par_meter_wet, par_meter_out, par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, param_count };

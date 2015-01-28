@@ -48,6 +48,7 @@
     // Filter
     PER_MODULE_ITEM(filter,              false, "filter")
     PER_MODULE_ITEM(filterclavier,       false, "filterclavier")
+    PER_MODULE_ITEM(envelopefilter,      false, "envelopefilter")
     PER_MODULE_ITEM(emphasis,            false, "emphasis")
     PER_MODULE_ITEM(vocoder,             false, "vocoder")
     

@@ -416,6 +416,173 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
+/**********************************************************************
+ * ENVELOPE FILTER by Markus Schmidt
+**********************************************************************/
+
+class envelopefilter_audio_module: public audio_module<envelopefilter_metadata>, public dsp::biquad_filter_module,
+public frequency_response_line_graph
+{
+public:
+    uint32_t srate;
+    bool is_active;
+    
+    dsp::bypass bypass;
+    vumeters meters;
+    
+    float envelope, attack, release, envelope_old, attack_old, release_old, q_old;
+    float gain, gain_old, upper, upper_old, lower, lower_old;
+    float coefa, coefb, coefz;
+    int mode, mode_old;
+    
+    envelopefilter_audio_module()
+    {
+        envelope = envelope_old = 0;
+        lower = 10; lower_old = 0;
+        upper = 10; upper_old = 0;
+        gain  = 1;  gain_old  = 0;
+        attack = release = attack_old = release_old = -1;
+        mode = mode_old = q_old = 0;
+        coefa = coefb = 0;
+        coefz = 2;
+    }
+    
+    void activate()
+    {
+        params_changed();
+        filter_activate();
+        is_active = true;
+    }
+    
+    void deactivate()
+    {
+        is_active = false;
+    }
+    
+    void set_sample_rate(uint32_t sr)
+    {
+        srate = sr;
+        dsp::biquad_filter_module::srate = sr;
+        int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR};
+        int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
+    }
+    
+    void params_changed()
+    {
+        if (*params[param_attack] != attack_old) {
+            attack_old = *params[param_attack];
+            attack     = exp(log(0.01)/( attack_old * srate * 0.001));
+        }
+        if (*params[param_release] != release_old) {
+            release_old = *params[param_release];
+            release     = exp(log(0.01)/( release_old * srate * 0.001));
+        }
+        if (*params[param_mode] != mode_old) {
+            mode = dsp::fastf2i_drm(*params[param_mode]);
+            mode_old = *params[param_mode];
+            calc_filter();
+        }
+        if (*params[param_q] != q_old) {
+            q_old = *params[param_q];
+            calc_filter();
+        }
+        if (*params[param_upper] != upper_old) {
+            upper = *params[param_upper];
+            upper_old = *params[param_upper];
+            calc_coef();
+            calc_filter();
+        }
+        if (*params[param_lower] != lower_old) {
+            lower = *params[param_lower];
+            lower_old = *params[param_lower];
+            calc_coef();
+            calc_filter();
+        }
+        if (*params[param_gain] != gain_old) {
+            gain = *params[param_gain];
+            gain_old = *params[param_gain];
+            calc_filter();
+        }
+    }
+    
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+    {
+        bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+        uint32_t end = numsamples + offset;
+        while(offset < end) {
+            float D;
+            if (*params[param_sidechain] > 0.5)
+                D = std::max(fabs(ins[2][offset]), fabs(ins[3][offset])) * *params[param_gain];
+            else
+                D = std::max(fabs(ins[0][offset]), fabs(ins[1][offset])) * *params[param_gain];
+                
+            // advance envelope
+            envelope = (D > envelope ? attack : release) * (envelope - D) + D;
+            if (envelope != envelope_old) {
+                envelope_old = envelope;
+                redraw_graph = true;
+                dsp::biquad_filter_module::calculate_filter(get_freq(envelope), *params[param_q], mode, 1.0);
+            }
+                
+            if(bypassed) {
+                outs[0][offset]  = ins[0][offset];
+                outs[1][offset]  = ins[1][offset];
+                float values[] = {0, 0, 0, 0};
+                meters.process(values);
+            } else {
+                const float inL  = ins[0][offset] * *params[param_level_in];
+                const float inR  = ins[1][offset] * *params[param_level_in];
+                float outL = outs[0][offset];
+                float outR = outs[1][offset];
+                
+                // process filters
+                dsp::biquad_filter_module::process_channel(0, &inL, &outL, 1, inputs_mask & 1);
+                dsp::biquad_filter_module::process_channel(1, &inR, &outR, 1, inputs_mask & 2);
+                
+                // mix and out level
+                outs[0][offset] = (outL * *params[param_mix] + inL * (*params[param_mix] * -1 + 1)) * *params[param_level_out];
+                outs[1][offset] = (outR * *params[param_mix] + inR * (*params[param_mix] * -1 + 1)) * *params[param_level_out];
+                
+                // meters
+                float values[] = {inL, inR, outs[0][offset], outs[1][offset]};
+                meters.process(values);
+            }
+            // step on
+            offset += 1;
+        }
+        if (bypassed)
+            bypass.crossfade(ins, outs, 2, offset - numsamples, numsamples);
+        meters.fall(numsamples);
+        return outputs_mask;
+    }
+    
+    float freq_gain(int index, double freq) const {
+        return dsp::biquad_filter_module::freq_gain(index, (float)freq, (float)srate);
+    }
+    
+    void calc_filter ()
+    {
+        redraw_graph = true;
+        dsp::biquad_filter_module::calculate_filter(get_freq(envelope), *params[param_q], mode, 1.0);
+    }
+    
+    void calc_coef ()
+    {
+        coefa = log10(upper) - log10(lower);
+        coefb = log10(lower);
+    }
+    
+    float get_freq(float envelope) const {
+        float diff = upper - lower;
+        float freq = pow(10, coefa * envelope + coefb);
+        if (diff < 0)
+            return  std::max(upper, std::min(lower, freq));
+        return std::min(upper, std::max(lower, freq));
+    }
+    
+};
+
 };
 
 #endif

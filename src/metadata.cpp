@@ -193,6 +193,33 @@ CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(envelopefilter) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(envelopefilter) = {
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
+    { 2,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
+    METERING_PARAMS
+    { 1,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "mix", "Mix" },
+    { 4,     0.707,   32,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "res", "Resonance" },
+    { biquad_filter_module::mode_6db_bp,
+      biquad_filter_module::mode_12db_lp,
+      biquad_filter_module::mode_count - 1,
+                                1,  PF_ENUM | PF_CTL_COMBO, filter_choices, "mode", "Mode" },
+    { 20.f, 1.0f, 500.f,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack", "Attack" },
+    { 200.f,10.f, 5000.f, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release", "Release" },
+    { 4000,   10,20000,   0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "upper", "Upper" },
+    { 100,    10,20000,   0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "lower", "Lower" },
+    { 1,0.015625,   64,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "gain", "Activation" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "sidechain", "Sidechain" },
+    
+    {}
+};
+
+CALF_PLUGIN_INFO(envelopefilter) = { 0x8432, "EnvelopeFilter", "Calf Envelope Filter", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "FilterPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(vintage_delay) = {"In L", "In R", "Out L", "Out R"};
 
 const char *vintage_delay_mixmodes[] = {
