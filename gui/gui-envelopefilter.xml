@@ -1,0 +1,107 @@
+<vbox>
+    <table expand-y="0" expand-x="1" spacing="5" rows="3" cols="10">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label param="sidechain" attach-x="5" attach-y="0" expand-x="0" />
+        <toggle param="sidechain" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label attach-x="6" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="2" expand-x="1" />
+        
+        <label attach-x="7" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="7" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="7" attach-y="2" expand-x="0" />
+        
+        <label param="mix" attach-x="8" attach-y="0" expand-x="0" />
+        <knob param="mix" attach-x="8" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <value param="mix" attach-x="8" attach-y="3" expand-x="0" />
+        
+        <label param="level_out" attach-x="9" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="9" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="9" attach-y="3" expand-x="0" />
+    </table>
+    <hbox spacing="10">
+        <vbox spacing="15">
+            <hbox spacing="0">
+                <vbox>
+                    <label param="gain" />
+                    <knob param="gain" size="4" type="1"/>
+                    <value param="gain" />
+                </vbox>
+                <vbox>
+                    <label param="attack" />
+                    <knob param="attack" size="2" />
+                    <value param="attack" />
+                </vbox>
+                <vbox>
+                    <label param="release" />
+                    <knob param="release" size="2" />
+                    <value param="release" />
+                </vbox>
+                <vbox>
+                    <label param="res" />
+                    <knob param="res" size="4" />
+                    <value param="res" />
+                </vbox>
+            </hbox>
+            <vbox expand="0" fill="0">
+                <hbox>
+                    <label param="mode" expand="0" fill="0" />
+                    <combo param="mode" expand="0" fill="0" />
+                </hbox>
+            </vbox>
+        </vbox>
+        <if cond="directlink">
+            <frame label="Frequency Response">
+                <vbox>
+                    <line-graph refresh="1" width="360" height="140" param="res" crosshairs="1" freqhandles="4" handle1-x="lower" label1="Lower" handle2-x="upper" label2="Upper" />
+                </vbox>
+            </frame>
+        </if>
+    </hbox>
+</vbox>
+<!--
+<table rows="2" cols="2" >
+    <table attach-x="0" attach-y="0" shrink-y="1" expand-x="1" cols="3" rows="1" >
+        <label param="mode" attach-x="0" attach-y="0" shrink-x="1"/>
+        <label attach-x="1" attach-y="0" shrink-x="1" pad-x="10" />
+        <combo param="mode" attach-x="2" attach-y="0" />
+    </table>
+    <hbox attach-x="0" attach-y="1" shrink-y="1" expand-x="1" fill-x="1">
+        <vbox border="10">
+            <label param="res" />
+            <knob param="res" />
+            <value param="res" />
+        </vbox>
+        <vbox border="10">
+            <label param="freq" />
+            <knob param="freq" size="5" />
+            <value param="freq" />
+        </vbox>
+        <vbox border="10">
+            <label param="inertia" />
+            <knob param="inertia"/>
+            <value param="inertia" />
+        </vbox>
+    </hbox>
+    <if cond="directlink">
+        <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0" attach-h="2">
+            <line-graph refresh="1" width="360" height="160" param="freq" crosshairs="1" freqhandles="3" handle1-x="freq"/>
+        </frame>
+    </if>
+</table>
+-->
