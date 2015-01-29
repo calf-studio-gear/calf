@@ -43,6 +43,11 @@
         <vbox spacing="15">
             <hbox spacing="0" homogeneous="1">
                 <vbox>
+                    <label param="response" />
+                    <knob param="response" size="2" type="1" />
+                    <value param="response" />
+                </vbox>
+                <vbox>
                     <label param="attack" />
                     <knob param="attack" size="2" />
                     <value param="attack" />
@@ -51,11 +56,6 @@
                     <label param="release" />
                     <knob param="release" size="2" />
                     <value param="release" />
-                </vbox>
-                <vbox>
-                    <label param="response" />
-                    <knob param="response" size="2" type="1" />
-                    <value param="response" />
                 </vbox>
             </hbox>
             <vbox expand="0" fill="0">

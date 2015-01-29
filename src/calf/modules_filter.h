@@ -575,7 +575,8 @@ public:
     
     float get_freq(float envelope) const {
         float diff = upper - lower;
-        float freq = pow(10, coefa * envelope + coefb);
+        float env  = pow(envelope, pow(2, *params[param_response] * -2));
+        float freq = pow(10, coefa * env + coefb);
         if (diff < 0)
             return  std::max(upper, std::min(lower, freq));
         return std::min(upper, std::max(lower, freq));
