@@ -518,7 +518,7 @@ public:
                 D = std::max(fabs(ins[0][offset]), fabs(ins[1][offset])) * *params[param_gain];
                 
             // advance envelope
-            envelope = (D > envelope ? attack : release) * (envelope - D) + D;
+            envelope = std::min(1.f, (D > envelope ? attack : release) * (envelope - D) + D);
             if (envelope != envelope_old) {
                 envelope_old = envelope;
                 redraw_graph = true;
