@@ -119,6 +119,7 @@ class tapesimulator_audio_module:
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
     bool mech_old;
+    mutable bool redraw_output;
     dsp::biquad_d2 lp[2][2];
     dsp::biquad_d2 noisefilters[2][3];
     dsp::transients transients;
@@ -126,7 +127,7 @@ class tapesimulator_audio_module:
     vumeters meters;
     const static int channels = 2;
     dsp::simple_lfo lfo1, lfo2;
-    float lp_old;
+    float lp_old, output_old;
     mutable float rms, input;
 public:
     uint32_t srate;

@@ -641,6 +641,7 @@ tapesimulator_audio_module::tapesimulator_audio_module() {
     meter_outL      = 0.f;
     meter_outR      = 0.f;
     lp_old          = -1.f;
+    output_old      = -1.f;
     rms             = 0.f;
     mech_old        = false;
     transients.set_channels(channels);
@@ -672,6 +673,10 @@ void tapesimulator_audio_module::params_changed() {
                           1);
     lfo1.set_params((*params[param_speed] + 1) / 2, 0, 0.f, srate, 1.f);
     lfo2.set_params((*params[param_speed] + 1) / 9.38, 0, 0.f, srate, 1.f);
+    if (*params[param_level_out] != output_old) {
+        output_old = *params[param_level_out];
+        redraw_output = true;
+    }
 }
 
 uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -877,7 +882,7 @@ bool tapesimulator_audio_module::get_dot(int index, int subindex, int phase, flo
 {
     if (index == param_level_in and !subindex and phase) {
         x = log(input) / log(2) / 14.f + 5.f / 7.f;
-        y = dB_grid(rms);
+        y = dB_grid(rms * *params[param_level_out]);
         rms = 0.f;
         input = 0.f;
         return true;
@@ -891,8 +896,10 @@ bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned 
     if (!generation)
         layers |= LG_CACHE_GRID;
     // compression: dot in realtime, graphs as cache on new surfaces
-    if (index == param_level_in and !generation)
+    if (index == param_level_in and (!generation or redraw_output)) {
         layers |= LG_CACHE_GRAPH;
+        redraw_output = false;
+    }
     if (index == param_level_in)
         layers |= LG_REALTIME_DOT;
     // frequency: both graphs in realtime
