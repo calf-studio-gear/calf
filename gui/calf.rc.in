@@ -6,7 +6,7 @@ style "calf-default"
     
     GtkRange       ::trough-border        = 0
     GtkScale       ::slider-length        = 46
-    GtkRange       ::slider-width         = 35
+    GtScale        ::slider-width         = 46
     GtkScale       ::trough-side-details  = 0
     GtkRange       ::activate-slider      = 0
     
@@ -175,7 +175,7 @@ style "calf-scale-small"
 {
     fg[NORMAL] = "white"
     GtkScale::slider-length = 38
-    GtkRange::slider-width  = 25
+    GtkRange::slider-width  = 38
 }
 
 
