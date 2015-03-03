@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="scripts/prettyPhoto.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/jquery.prettyPhoto.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Envelope Filter</h1>
+            <a href="images/Calf - Envelope Filter.jpg" title="Calf - Envelope Filter" class="prettyPhoto"><img class="thumbnail" src="images/Calf - Envelope Filter.jpg" /></a>
+            <h2>Functionality</h2>
+            <p>
+            Envelope Filter is a <a href="Filter.html" title="Calf Filter">Filter</a> whose frequency is set
+            according to the envelope of the input or sidechain signal. It is also known as "Auto Wah" effect.
+            The behavior of the envelope can be altered by Attack, Release and Response settings. 
+            </p>
+            <h2>Tips</h2>
+            <p>
+                Imagine you already have adjusted the Activation knob and
+                the filter is wobbling nicely between Lower and Upper frequency but
+                you  would still like to alter the amount of time it remains in the
+                upper or lower frequency range
+                use the Response setting to alter the dynamics of your signal:
+                <ul><li>
+                        If the filter opens less than expected raise the Response value</li>
+                    <li>
+                        If the filter is open most of the time reduce the Response value</li>
+                </ul>
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input Gain:</strong> Control the input level before the signal is processed</li>
+                <li><strong>Input Level:</strong> The level after the input knob</li>
+                <li><strong>Clip:</strong> Flashes if input level rises above 0dB</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                <li><strong>Sidechain:</strong> Use the sidechain instead of the original signal input to determine the envelope</li>
+                <li><strong>Output:</strong> Control the output of the plugin - clipping could destroy your signal</li>
+                <li><strong>Output Level:</strong> The level after processing and after the output knob</li>
+                <li><strong>Clip:</strong> Flashes, if the signal rises about 0dB in the output stage</li>
+                <li><strong>Mix:</strong> Determine the amount of the filtered signal in the output.</li>
+                <li><strong>Output Gain:</strong> The level at the output of the processor</li>
+                <li><strong>Activation:</strong> Alter the gain of the input or sidechain signal before the envelope is calculated</li>
+                <li><strong>Attack:</strong> The amount of time the envelope needs to follow the attack phase of the signal</li>
+                <li><strong>Release:</strong> Amount of time the envelope needs to fall back to its minimum</li>
+                <li><strong>Response:</strong> Alter the dynamics of the input signal. Use negative values to enhance (like gating would do) or positive values to reduce (like a compressor would do) the dynamics of the signal.</li>
+                <li><strong>Resonance:</strong> Add an accentuation to the center frequency. Used on a bandpass the surrounding frequencies are decreased in level and the band gets more narrow, a bandreject is narrowed down to a thin needle</li>
+                <li><strong>Mode:</strong> Choose the type of the filter</li>
+                <li><strong>Lower:</strong> The lowest frequency of the filter</li>
+                <li><strong>Upper:</strong> The highest frequency the filter could be set to</li>
+            </ul>
+            <div class="footer"><a href="index.html" title="Index">Index</a><a href="#" title="Top">Top</a></a></div>
+        </div>
+    </body>
+</html>

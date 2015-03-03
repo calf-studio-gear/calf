@@ -13,21 +13,63 @@
             <a href="images/Calf - Ring Modulator.jpg" title="Calf - Ring Modulator" class="prettyPhoto"><img class="thumbnail" src="images/Calf - Ring Modulator.jpg" /></a>
             <h2>Functionality</h2>
             <p>
-                
+                Ring Modulator distorts the original signal with a LFO-generated
+                signal - the so called "modulator". The modulator can be altered in frequency
+                even by another LFO which adds some kind of modulating distortion to the signal.
+                A third LFO is used to modulate different aspects of the ring modulator to
+                create even more strange effects.
             </p>
             <h2>Tips</h2>
-            <p>
-                
-            </p>
+                <ul><li>This effect can be used for subtle modulation effects as well as heavy distortion
+                to create e.g. some robotic-like voices.</li>
+                <li>The little red LEDs light up when a value is controlled by one of the LFOs and the corresponding knob is deactivated.</li>
             <h2>Controls</h2>
             <ul>
                 <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                <li><strong>Input:</strong> Control the input level before the signal is processed</li>
-                <li><strong>In L/In R:</strong> The level after the input knob</li>
+                <li><strong>Input Gain:</strong> Control the input level before the signal is processed</li>
+                <li><strong>Input Level:</strong> The level after the input knob</li>
                 <li><strong>0dB:</strong> Flashes if input level rises above 0dB</li>
                 <li><strong>Output:</strong> Control the output of the plugin - clipping could destroy your signal</li>
-                <li><strong>Out L/Out R:</strong> The level after processing and after the output knob</li>
+                <li><strong>Output Level:</strong> The level after processing and after the output knob</li>
                 <li><strong>0dB:</strong> Flashes, if the signal rises about 0dB in the output stage</li>
+                <li><strong>Output Gain:</strong> The level at the output of the processor</li>
+                <li><strong>Modulator:</strong>
+                    <ul>
+                        <li><strong>Frequency:</strong> The frequency of the modulator</li>
+                        <li><strong>Detune:</strong> Detune the modulators frequency between left and right channel</li>
+                        <li><strong>Phase:</strong> Shift the phase of the right channels modulator against the left channel</li>
+                        <li><strong>Amount:</strong> Set the amount of how much the original signal is modulated</li>
+                        <li><strong>Listen:</strong> Listen to the modulators signal</li>
+                        <li><strong>Waveform:</strong> The waveform of the modulator</li>
+                    </ul>
+                <li><strong>LFO 1:</strong>
+                    <ul>
+                        <li><strong>Active (Modulator Frequency):</strong> Activate modulation of the modulators frequency by this LFO</li>
+                        <li><strong>Min (Modulator Frequency):</strong> Set the minimum frequency the modulator reaches when LFO 1 is at the lowest point</li>
+                        <li><strong>Max (Modulator Frequency):</strong> Set the maximum frequency the modulator reaches when LFO 1 is at the highest point</li>
+                        <li><strong>Active (Modulator Detune):</strong> Activate modulation of the modulators frequency by this LFO</li>
+                        <li><strong>Min (Modulator Detune):</strong> Set the minimum cents of detuning the modulator when LFO 1 is at the lowest point</li>
+                        <li><strong>Max (Modulator Detune):</strong> Set the maximum cents of detuning the modulator when LFO 1 is at the highest point</li>
+                        <li><strong>Fequency:</strong> The frequency of LFO 1</li>
+                        <li><strong>LED:</strong> A visual control of LFO 1's state</li>
+                        <li><strong>Waveform selector:</strong> Select the waveform for LFO 1</li>
+                        <li><strong>Reset:</strong> A click on this button resets the LFO to 0 (automate it for syncing LFO 1 to your material)</li>
+                    </ul>
+                </li>
+                <li><strong>LFO 2:</strong>
+                    <ul>
+                        <li><strong>Active (LFO 1 Frequency):</strong> Activate modulation of LFO 1's frequency by this LFO</li>
+                        <li><strong>Min (LFO 1 Frequency):</strong> Set the minimum frequency LFO 1 reaches when LFO 2 is at the lowest point</li>
+                        <li><strong>Max (LFO 1 Frequency):</strong> Set the maximum frequency LFO 1 reaches when LFO 2 is at the highest point</li>
+                        <li><strong>Active (Modulator Amount):</strong> Activate modulation of the modulators amount by this LFO</li>
+                        <li><strong>Min (Modulator Amount):</strong> Set the minimum value of the modulators amount when LFO 2 is at the lowest point</li>
+                        <li><strong>Max (Modulator Amount):</strong> Set the maximum cents of the modulators amount when LFO 2 is at the highest point</li>
+                        <li><strong>Fequency:</strong> The frequency of LFO 2</li>
+                        <li><strong>LED:</strong> A visual control of LFO 2's state</li>
+                        <li><strong>Waveform selector:</strong> Select the waveform for LFO 2</li>
+                        <li><strong>Reset:</strong> A click on this button resets the LFO to 0 (automate it for syncing LFO 2 to your material)</li>
+                    </ul>
+                </li>
             </ul>
             <div class="footer"><a href="index.html" title="Index">Index</a><a href="#" title="Top">Top</a></a></div>
         </div>

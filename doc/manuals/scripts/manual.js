@@ -15,7 +15,9 @@ $(document).ready(function () {
             "Synthesizer",
             [
                 ["(Organ)", "Organ.html", "images/Calf - Organ - Sound Processor.jpg"],
-                ["(Monosynth)", "Monosynth.html", "images/Calf - Monosynth - Audio Path.jpg"],
+                ["Monosynth", "Monosynth.html", "images/Calf - Monosynth - Audio Path.jpg"],
+                ["(Fluidsynth)", "Fluidsynth.html", "images/Calf - Fluidsynth.jpg"],
+                ["(Wavetable)", "Wavetable.html", "images/Calf - Wavetable.jpg"],
             ],
             "icons/synthesizer.png"
         ],
@@ -23,8 +25,8 @@ $(document).ready(function () {
             "Modulation",
             [
                 ["(Multi Chorus)", "Multi Chorus.html", "images/Calf - Multi Chorus.jpg"],
-                ["(Phaser)", "Phaser.html", "images/Calf - Phaser.jpg"],
-                ["(Flanger)", "Flanger.html", "images/Calf - Flanger.jpg"],
+                ["Phaser", "Phaser.html", "images/Calf - Phaser.jpg"],
+                ["Flanger", "Flanger.html", "images/Calf - Flanger.jpg"],
                 ["(Rotary Speaker)", "Rotary Speaker.html", "images/Calf - Rotary Speaker.jpg"],
                 ["Pulsator", "Pulsator.html", "images/Calf - Pulsator.jpg"],
                 ["Ring Modulator", "Ring Modulator.html", "images/Calf - Ring Modulator.jpg"],
@@ -34,8 +36,8 @@ $(document).ready(function () {
         [
             "Delay",
             [
-                ["(Reverb)", "Reverb.html", "images/Calf - Reverb.jpg"],
-                ["(Vintage Delay)", "Vintage Delay.html", "images/Calf - Vintage Delay.jpg"],
+                ["Reverb", "Reverb.html", "images/Calf - Reverb.jpg"],
+                ["Vintage Delay", "Vintage Delay.html", "images/Calf - Vintage Delay.jpg"],
                 ["Compensation Delay Line", "Compensation Delay Line.html", "images/Calf - Compensation Delay Line.jpg"],
             ],
             "icons/delay.png"
@@ -53,6 +55,7 @@ $(document).ready(function () {
                 ["Multiband Gate", "Multiband Gate.html", "images/Calf - Multiband Gate.jpg"],
                 ["Limiter", "Limiter.html", "images/Calf - Limiter.jpg"],
                 ["Multiband Limiter", "Multiband Limiter.html", "images/Calf - Multiband Limiter.jpg"],
+                ["Sidechain Limiter", "Sidechain Limiter.html", "images/Calf - Sidechain Limiter.jpg"],
                 ["Transient Designer", "Transient Designer.html", "images/Calf - Transient Designer.jpg"]
             ],
             "icons/dynamics.png"
@@ -61,13 +64,13 @@ $(document).ready(function () {
             "Filters",
             [
                 ["Filter", "Filter.html", "images/Calf - Filter.jpg"],
-                ["(Filterclavier)", "Filterclavier.html", "images/Calf - Filterclavier.jpg"],
+                ["Filterclavier", "Filterclavier.html", "images/Calf - Filterclavier.jpg"],
+                ["Envelope Filter", "Envelope Filter.html", "images/Calf - Envelope Filter.jpg"],
+                ["Emphasis", "Emphasis.html", "images/Calf - Emphasis.jpg"],
                 ["Equalizer 5 Band", "Equalizer 5 Band.html", "images/Calf - Equalizer 5 Band.jpg"],
                 ["Equalizer 8 Band", "Equalizer 8 Band.html", "images/Calf - Equalizer 8 Band.jpg"],
                 ["Equalizer 12 Band", "Equalizer 12 Band.html", "images/Calf - Equalizer 12 Band.jpg"],
-                ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.jpg"],
-                ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.jpg"],
-                ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.jpg"],
+                ["(Equalizer 30 Band)", "Equalizer 30 Band.html", "images/Calf - Equalizer 30 Band.jpg"],
                 ["(Vocoder)", "Vocoder.html", "images/Calf - Vocoder.jpg"],
             ],
             "icons/filters.png"
@@ -88,7 +91,11 @@ $(document).ready(function () {
             [
                 ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.jpg"],
                 ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.jpg"],
+                ["(Haas Stereo Enhancer)", "Haas Stereo Enhancer.html", "images/Calf - Haas Stereo Enhancer.jpg"],
                 ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.jpg"],
+                ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.jpg"],
+                ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.jpg"],
+                ["(X-Over 4 Band)", "X-Over 4 Band.html", "images/Calf - X-Over 4 Band.jpg"],
             ],
             "icons/tools.png"
         ]
@@ -129,6 +136,8 @@ $(document).ready(function () {
                 var ili = $("<li/>").appendTo(iul);
                 var l = $("<a href='" + items[i][1][j][1] + "'><span>" + items[i][1][j][0] + "</span></a>").appendTo(ili);
                 $("<img src=\"" + items[i][1][j][2] + "\" alt=\"" + items[i][1][j][0] + "\">").prependTo(l);
+                if (items[i][1][j][0].substr(0,1) == "(")
+                    ili.addClass("inactive");
             }
             var cl=items[i][1][j][0][0] == "(" ? " class='inactive'" : "";
             var a = $("<a" + cl + " href=\"" + items[i][1][j][1] + "\" title=\"" + items[i][1][j][0] + "\">" + items[i][1][j][0] + "</a>").appendTo(li);

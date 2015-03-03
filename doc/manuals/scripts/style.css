@@ -89,6 +89,7 @@ strong {
 }
 .footer {
     padding-bottom: 20px;
+    clear: both;
 }
 .footer a {
     font-weight: normal;
@@ -288,6 +289,11 @@ strong {
     margin: 8px;
     float: left;
     text-align: center;
+}
+#index li.inactive {
+    opacity: 0.5;
+    -webkit-filter: grayscale(1); -webkit-filter: grayscale(100%);
+    filter: gray; filter: grayscale(100%);
 }
 #index a {
     display: block;
