@@ -271,8 +271,12 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
 static gboolean plugin_on_idle(void *data)
 {
     plugin_gui *self = (plugin_gui *)data;
-    self->on_idle();
-    return TRUE;
+    if (self->optwidget) {
+        self->on_idle();
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 static void on_gui_widget_destroy(GtkWidget*, gpointer data)
@@ -473,4 +477,3 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
     
     return NULL;
 }
-
