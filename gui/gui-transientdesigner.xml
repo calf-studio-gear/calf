@@ -15,7 +15,7 @@
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
-        <label param="listen" attach-x="5" attach-y="0" expand-x="0" />
+        <label text="Env Listen" attach-x="5" attach-y="0" expand-x="0" />
         <toggle param="listen" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label param="lookahead" attach-y="0" attach-x="6" expand-x="0"/>
@@ -52,8 +52,8 @@
             </frame>
         </if>
         
-        <vbox>
-            <hbox>
+        <vbox spacing="8">
+            <hbox spacing="15">
                 <vbox>
                     <label param="attack_boost"/>
                     <knob param="attack_boost" size="5" type="1"/>
