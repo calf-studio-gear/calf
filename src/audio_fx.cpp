@@ -949,14 +949,12 @@ void transients::calc_relfac()
 {
     relfac = pow(0.5f, 1.f / (0.001 * rel_time * srate));
 }
-void transients::process(float *in) {
+void transients::process(float *in, float s) {
+    s = fabs(s);
     // fill lookahead buffer
-    float s = 0;
     for (int i = 0; i < channels; i++) {
         lookbuf[lookpos + i] = in[i];
-        s += fabs(in[i]);
     }
-    s /= channels;
     
     // envelope follower
     // this is the real envelope follower curve. It raises as

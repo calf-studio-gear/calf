@@ -610,7 +610,7 @@ public:
     transients();
     ~transients();
     void calc_relfac();
-    void process(float *in);
+    void process(float *in, float s);
     void waveshape(float *in);
     void set_channels(int ch);
     void set_sample_rate(uint32_t sr);

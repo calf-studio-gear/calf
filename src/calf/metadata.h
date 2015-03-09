@@ -720,7 +720,7 @@ struct transientdesigner_metadata: public plugin_metadata<transientdesigner_meta
            param_attack_time, param_attack_boost,
            param_sustain_threshold, param_release_time, param_release_boost,
            param_display, param_display_threshold, param_lookahead,
-           param_input, param_output, param_envelope, param_attack, param_release,
+           param_view, param_hipass, param_lopass, param_hp_mode, param_lp_mode, param_listen,
            param_count };
     PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
 };

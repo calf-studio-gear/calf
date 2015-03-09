@@ -1400,7 +1400,8 @@ CALF_PORT_PROPS(analyzer) = {
 CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Calf Studio Gear / Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "AnalyserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
-
+const char *transientdesigner_view_names[] = { "Output", "Envelope", "Attack", "Release" };
+const char *transientdesigner_filter_modes[] = { "Off", "12dB", "24dB", "36dB" };
 CALF_PORT_NAMES(transientdesigner) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(transientdesigner) = {
     BYPASS_AND_LEVEL_PARAMS
@@ -1414,11 +1415,12 @@ CALF_PORT_PROPS(transientdesigner) = {
     { 2000.f, 50.f,  5000.f, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "display", "Display" },
     { pow(2.0,-12.0), pow(2.0,-12.0),1, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "display_threshold", "Threshold" },
     { 0,      0,     100,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SAMPLES, NULL, "lookahead", "Lookahead" },
-    { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "input", "Input" },
-    { 1,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "output", "Output" },
-    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "envelope", "Envelope" },
-    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "attack", "Attack" },
-    { 0,     0,     1,      0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "release", "Release" },
+    { 0,     0,     3,      0,  PF_ENUM | PF_CTL_COMBO, transientdesigner_view_names, "view", "View Mode" },
+    { 100,    20,20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "hipass", "Highpass" },
+    { 5000,   20,20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lopass", "Lowpass" },
+    { 0,        0,      3, 0,  PF_ENUM | PF_CTL_COMBO, transientdesigner_filter_modes, "hp_mode", "HP-Mode" },
+    { 0,        0,      3, 0,  PF_ENUM | PF_CTL_COMBO, transientdesigner_filter_modes, "lp_mode", "LP-Mode" },
+    { 0,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
     {}
 };
 
