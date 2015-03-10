@@ -2486,7 +2486,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     attcount        = 0;
     attacked        = false;
     attack_pos      = 0;
-    display_old     = 0.f;
+    display_old     = 0;
     pbuffer_available = false;
     display_max     = pow(2,-12);
     transients.set_channels(channels);
@@ -2515,8 +2515,7 @@ void transientdesigner_audio_module::params_changed() {
                           *params[param_release_time],
                           *params[param_release_boost],
                           *params[param_sustain_threshold],
-                          *params[param_lookahead],
-                          *params[param_mix]);
+                          *params[param_lookahead]);
     if (hp_f_old != *params[param_hipass]) {
         hp[0].set_hp_rbj(*params[param_hipass], 0.707, (float)srate, 1.0);
         hp[1].copy_coeffs(hp[0]);
@@ -2571,10 +2570,12 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
                 s = hp[k].process(s);
             for (int j = 0; j < *params[param_lp_mode]; j ++)
                 s = lp[j].process(s);
+                
             float values[] = {L, R};
             transients.process(values, s);
-            L = values[0];
-            R = values[1];
+            
+            L = values[0] * *params[param_mix] + L * (*params[param_mix] * -1 + 1);
+            R = values[1] * *params[param_mix] + R * (*params[param_mix] * -1 + 1);
             
             // levels out
             L *= *params[param_level_out];
@@ -2649,8 +2650,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             attack_pos = (pbuffer_pos - diff * 5 + pbuffer_size) % pbuffer_size;
             attcount = 0;
         }
-        float values[] = {meter_inL, meter_inR, meter_outL, meter_outR};
-        meters.process(values);
+        float mval[] = {meter_inL, meter_inR, meter_outL, meter_outR};
+        meters.process(mval);
     }
     if (!bypassed)
         bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
@@ -2687,7 +2688,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         return true;
     }
     
-    if (subindex >= 2)
+    if (subindex >= 2 or (*params[param_bypass] > 0.5f and subindex >= 1))
         return false;
     if (points <= 0)
         return false;

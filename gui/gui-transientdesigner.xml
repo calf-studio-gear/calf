@@ -100,7 +100,7 @@
                         </vbox>
                         <label/>
                         <vbox spacing="4">
-                            <label text="Threshold"/>
+                            <label text="Snap"/>
                             <knob param="display_threshold" size="2" />
                             <value param="display_threshold"/>
                         </vbox>
