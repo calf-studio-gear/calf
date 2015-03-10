@@ -909,7 +909,6 @@ transients::transients() {
     lookahead       = 0;
     lookpos         = 0;
     channels        = 1;
-    cnt             = 0;
     sustain_ended   = false;
 }
 transients::~transients()
@@ -1003,25 +1002,19 @@ void transients::process(float *in, float s) {
     // amplification factor from attack and release curve
     double ampfactor = attdiff * att_level + reldiff * rel_level;
     old_return = new_return;
-    new_return = 1 + (ampfactor < 0 ? expm1(ampfactor) : ampfactor);
+    new_return = 1 + (ampfactor < 0 ? std::max(-1 + 1e-15, exp(ampfactor) - 1) : ampfactor);
     if (new_return / old_return > maxdelta) 
         new_return = old_return * maxdelta;
     else if (new_return / old_return < 1 / maxdelta)
         new_return = old_return / maxdelta;
-    
+        
     int pos = (lookpos + looksize * channels - lookahead * channels) % (looksize * channels);
     
-    for (int i = 0; i < channels; i++) {
+    for (int i = 0; i < channels; i++)
         in[i] = lookbuf[pos + i] * new_return;
-    }
     
-    //if (in[0] > 0.5)
-        //fprintf(stderr, "%.5f\n", in[0]);
-        
     // advance lookpos
     lookpos = (lookpos + channels) % (looksize * channels);
-    
-    cnt += 1;
 }
 
 
