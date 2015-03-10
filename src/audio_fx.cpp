@@ -1016,8 +1016,8 @@ void transients::process(float *in) {
     for (int i = 0; i < channels; i++) {
         in[i] = lookbuf[pos + i] * new_return;
     }
-    if (in[0] > 0.5)
-        fprintf(stderr, "%.5f\n", in[0]);
+    //if (in[0] > 0.5)
+        //fprintf(stderr, "%.5f\n", in[0]);
     // advance lookpos
     lookpos = (lookpos + channels) % (looksize * channels);
     
