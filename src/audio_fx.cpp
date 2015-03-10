@@ -910,7 +910,6 @@ transients::transients() {
     lookpos         = 0;
     channels        = 1;
     cnt             = 0;
-    mix             = 1;
     sustain_ended   = false;
 }
 transients::~transients()
@@ -933,8 +932,7 @@ void transients::set_sample_rate(uint32_t sr) {
     maxdelta = pow(4, 1.f / (0.001 * srate));
     calc_relfac();
 }
-void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look, float mx) {
-    mix        = mx;
+void transients::set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look) {
     lookahead  = look;
     sust_thres = sust_th;
     att_time   = att_t;
@@ -973,7 +971,7 @@ void transients::process(float *in) {
     // It never can rise above the envelope. It reaches 70.7%
     // of the envelope in a certain amount of time set by the user
     
-    float attdelta = (envelope - attack)
+    double attdelta = (envelope - attack)
                    * 0.707
                    / (srate * att_time * 0.001);
     if (sustain_ended == true and envelope / attack - 1 > 0.2f)
@@ -999,25 +997,27 @@ void transients::process(float *in) {
     release = std::max(envelope, release);
     
     // difference between attack and envelope
-    float attdiff = attack > 0 ? log(envelope / attack) : 0;
+    double attdiff = attack > 0 ? log(envelope / attack) : 0;
     
     // difference between release and envelope
-    float reldiff = envelope > 0 ? log(release / envelope) : 0;
+    double reldiff = envelope > 0 ? log(release / envelope) : 0;
     
     // amplification factor from attack and release curve
-    float ampfactor = attdiff * att_level + reldiff * rel_level;
+    double ampfactor = attdiff * att_level + reldiff * rel_level;
     old_return = new_return;
     new_return = 1 + (ampfactor < 0 ? expm1(ampfactor) : ampfactor);
     if (new_return / old_return > maxdelta) 
         new_return = old_return * maxdelta;
-    if (new_return / old_return < 1 / maxdelta)
+    else if (new_return / old_return < 1 / maxdelta)
         new_return = old_return / maxdelta;
     
     int pos = (lookpos + looksize * channels - lookahead * channels) % (looksize * channels);
-    for (int i = 0; i < channels; i++) {
-        in[i] = lookbuf[pos + i] * new_return * mix + lookbuf[pos + i] * (mix * -1 + 1);
-    }
     
+    for (int i = 0; i < channels; i++) {
+        in[i] = lookbuf[pos + i] * new_return;
+    }
+    if (in[0] > 0.5)
+        fprintf(stderr, "%.5f\n", in[0]);
     // advance lookpos
     lookpos = (lookpos + channels) % (looksize * channels);
     

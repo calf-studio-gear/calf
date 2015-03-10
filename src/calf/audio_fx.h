@@ -596,12 +596,12 @@ public:
 
 class transients {
 private:
-    float attack_coef, release_coef;
+    double attack_coef, release_coef;
 public:
-    float envelope, attack, release;
+    double envelope, attack, release;
     bool sustain_ended;
-    float old_return, new_return, maxdelta, relfac;
-    float att_time, att_level, rel_time, rel_level, sust_thres, mix;
+    double old_return, new_return, maxdelta, relfac;
+    float att_time, att_level, rel_time, rel_level, sust_thres;
     static const int looksize = 101;
     int lookahead, lookpos;
     float *lookbuf;
@@ -614,7 +614,7 @@ public:
     void waveshape(float *in);
     void set_channels(int ch);
     void set_sample_rate(uint32_t sr);
-    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look, float mix);
+    void set_params(float att_t, float att_l, float rel_t, float rel_l, float sust_th, int look);
     int cnt;
 };
 
