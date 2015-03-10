@@ -2779,7 +2779,7 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, int p
 bool transientdesigner_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     if (index == param_hipass) {
-        layers = (redraw ? LG_CACHE_GRAPH : LG_NONE) | (generation ? LG_NONE : LG_CACHE_GRID);
+        layers = (redraw || !generation ? LG_CACHE_GRAPH : LG_NONE) | (generation ? LG_NONE : LG_CACHE_GRID);
         return true;
     }
     layers = LG_REALTIME_GRAPH | (generation ? 0 : LG_CACHE_GRID);
