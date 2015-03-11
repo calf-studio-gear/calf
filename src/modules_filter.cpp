@@ -250,7 +250,7 @@ template<class BaseClass, bool has_lphp>
 uint32_t equalizerNband_audio_module<BaseClass, has_lphp>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypassed = bypass.update(*params[AM::param_bypass] > 0.5f, numsamples);
-    if (keep_gliding && !bypassed)
+    if (keep_gliding)
     {
         // ensure that if params have changed, the params_changed method is
         // called every 8 samples to interpolate filter parameters
