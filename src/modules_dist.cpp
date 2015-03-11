@@ -697,7 +697,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             float inR = 0;
             if(*params[param_magnetical] > 0.5f) {
                 float values[] = {L, R};
-                transients.process(values);
+                transients.process(values, (L + R) / 2.f);
                 L = values[0];
                 R = values[1];
             }

@@ -2486,11 +2486,12 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     attcount        = 0;
     attacked        = false;
     attack_pos      = 0;
-    display_old     = 0.f;
+    display_old     = 0;
     pbuffer_available = false;
-    last_drawn      = 0;
     display_max     = pow(2,-12);
     transients.set_channels(channels);
+    hp_f_old = hp_m_old = lp_f_old = lp_m_old = 0;
+    redraw = false;
 }
 transientdesigner_audio_module::~transientdesigner_audio_module()
 {
@@ -2515,6 +2516,28 @@ void transientdesigner_audio_module::params_changed() {
                           *params[param_release_boost],
                           *params[param_sustain_threshold],
                           *params[param_lookahead]);
+    if (hp_f_old != *params[param_hipass]) {
+        hp[0].set_hp_rbj(*params[param_hipass], 0.707, (float)srate, 1.0);
+        hp[1].copy_coeffs(hp[0]);
+        hp[2].copy_coeffs(hp[0]);
+        redraw = true;
+        hp_f_old = *params[param_hipass];
+    }
+    if (lp_f_old != *params[param_lopass]) {
+        lp[0].set_lp_rbj(*params[param_lopass], 0.707, (float)srate, 1.0);
+        lp[1].copy_coeffs(lp[0]);
+        lp[2].copy_coeffs(lp[0]);
+        redraw = true;
+        lp_f_old = *params[param_lopass];
+    }
+    if (hp_m_old != *params[param_hp_mode]) {
+        redraw = true;
+        hp_m_old = *params[param_hp_mode];
+    }
+    if (lp_m_old != *params[param_lp_mode]) {
+        redraw = true;
+        lp_m_old = *params[param_lp_mode];
+    }
 }
 
 uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
@@ -2542,8 +2565,14 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             meter_inR = R;
             
             // transient designer
+            float s = (L + R) / 2.f;
+            for (int k = 0; k < *params[param_hp_mode]; k ++)
+                s = hp[k].process(s);
+            for (int j = 0; j < *params[param_lp_mode]; j ++)
+                s = lp[j].process(s);
+                
             float values[] = {L, R};
-            transients.process(values);
+            transients.process(values, s);
             
             L = values[0] * *params[param_mix] + L * (*params[param_mix] * -1 + 1);
             R = values[1] * *params[param_mix] + R * (*params[param_mix] * -1 + 1);
@@ -2553,9 +2582,13 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             R *= *params[param_level_out];
             
             // output
-            outs[0][i] = L;
-            outs[1][i] = R;
-            
+            if (*params[param_listen] > 0.5) {
+                outs[0][i] = s;
+                outs[1][i] = s;
+            } else {
+                outs[0][i] = L;
+                outs[1][i] = R;
+            }
             meter_outL = L;
             meter_outR = R;
         }
@@ -2585,9 +2618,16 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // add samples to the buffer at the actual address
             pbuffer[pbuffer_pos]     = std::max(s, pbuffer[pbuffer_pos]);
             pbuffer[pbuffer_pos + 1] = std::max((float)(fabs(L) + fabs(R)), (float)pbuffer[pbuffer_pos + 1]);
-            pbuffer[pbuffer_pos + 2] = transients.envelope;
-            pbuffer[pbuffer_pos + 3] = transients.attack;
-            pbuffer[pbuffer_pos + 4] = transients.release;
+            
+            if (bypassed) {
+                pbuffer[pbuffer_pos + 2] = 0;
+                pbuffer[pbuffer_pos + 3] = 0;
+                pbuffer[pbuffer_pos + 4] = 0;
+            } else {
+                pbuffer[pbuffer_pos + 2] = transients.envelope;
+                pbuffer[pbuffer_pos + 3] = transients.attack;
+                pbuffer[pbuffer_pos + 4] = transients.release;
+            }
             
             pbuffer_sample += 1;
             
@@ -2637,6 +2677,26 @@ void transientdesigner_audio_module::set_sample_rate(uint32_t sr)
 }
 bool transientdesigner_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
+    if (index == param_hipass) {
+        // frequency response
+        if (subindex) return false;
+        float ret;
+        double freq;
+        for (int i = 0; i < points; i++) {
+            ret = 1.f;
+            freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if(*params[param_hp_mode])
+                ret *= pow(hp[0].freq_gain(freq, (float)srate), *params[param_hp_mode]);
+            if(*params[param_lp_mode])
+                ret *= pow(lp[0].freq_gain(freq, (float)srate), *params[param_lp_mode]);
+            data[i] = dB_grid(ret);
+        }
+        redraw = false;
+        return true;
+    }
+    
+    if (subindex >= 2 or (*params[param_bypass] > 0.5f and subindex >= 1))
+        return false;
     if (points <= 0)
         return false;
     if (points != pixels) {
@@ -2667,37 +2727,22 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         pbuffer_draw = hold ? pos : (pbuffer_size + pos - pixels * 5) % pbuffer_size;
     }
     
-    // get outa here if max graph is reached
-    if (last_drawn >= 5) {
-        last_drawn = 0;
-        return false;
-    }
+    int draw_curve = 0;
+    if (subindex)
+        draw_curve = subindex + *params[param_view];
     
-    // get the next graph to draw leaving out inactive
-    while (last_drawn < 5 and !*params[param_input + last_drawn] > 0.5)
-        last_drawn ++;
-        
-    // get outa here if max graph is reached
-    if (last_drawn >= 5) {
-        last_drawn = 0;
-        return false;
-    }
-    if (!last_drawn) {
+    if (!draw_curve) {
         // input is drawn as bars with less opacity
         *mode = 1;
         context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
-    } else if (last_drawn == 1) {
-        // output is a precise line
-        context->set_line_width(0.75);
     } else {
-        // envelope, attack and release are dotted
-        set_channel_dash(context, last_drawn - 2);
-        context->set_line_width(1);
+        // output/envelope is a precise line
+        context->set_line_width(0.75);
     }
                 
     // draw curve
     for (int i = 0; i <= points; i++) {
-        int pos = (pbuffer_draw + i * 5) % pbuffer_size + last_drawn;
+        int pos = (pbuffer_draw + i * 5) % pbuffer_size + draw_curve;
         if (hold
         and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos)
             or (pbuffer_pos < attack_pos and pos < attack_pos)))
@@ -2710,11 +2755,14 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
             data[i] = dB_grid(fabs(pbuffer[pos]) + 2.51e-10, 128, 0.6);
         }
     }
-    last_drawn ++;
     return true;
 }
 bool transientdesigner_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
+    if (index == param_hipass)
+        // frequency response
+        return get_freq_gridline(subindex, pos, vertical, legend, context);
+    
     if (subindex >= 16 or phase)
         return false;
     float gain = 16.f / (1 << subindex);
@@ -2730,6 +2778,10 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, int p
 
 bool transientdesigner_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
+    if (index == param_hipass) {
+        layers = (redraw || !generation ? LG_CACHE_GRAPH : LG_NONE) | (generation ? LG_NONE : LG_CACHE_GRID);
+        return true;
+    }
     layers = LG_REALTIME_GRAPH | (generation ? 0 : LG_CACHE_GRID);
     return true;
 }
