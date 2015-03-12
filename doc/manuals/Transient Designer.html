@@ -22,17 +22,20 @@
                 <li><strong>Input L/R (VU-meter):</strong> The level of the original signal</li>
                 <li><strong>0dB (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
                 <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
-                <li><strong>Mix:</strong> Decide how much of the processed signal should be mixed into the original signal</li>
+                <li><strong>Lookahead:</strong> If you encounter problems like accentuated attacks while changing the release raise the lookahead time to get more accurate results.</li>
+                <li><strong>Env Listen:</strong> Listen to the envelope signal. This is useful when setting the envelope filters.</li>
                 <li><strong>Output L/R (VU-meter):</strong> The level of the processed signal</li>
                 <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Mix:</strong> Decide how much of the processed signal should be mixed into the original signal</li>
                 <li><strong>Output (knob):</strong> Raise the overall volume after the process</li>
-                <li><strong>Attack Time:</strong> This knob sets the duration of the attack phase. Technically it means that the attack curve reaches estimated 70.7% of the top of the actual signal (the envelope curve at that point to be more precisely) after the adjusted time.
+                <li><strong>Envelope Filter:</strong> Use the high pass and/or the low pass filter to prevent Transient Designer to react on unwanted frequency ranges, e.g. a cross-talking hi-hat on a snare drum track.</li>
                 <li><strong>Attack Boost:</strong> Set the gain reduction or amplification in the attack phase. The more the attack curve differs from the actual signal (the envelope curve to be more precisely) the more the boost factor will alter the signal</li>
-                <li><strong>Release Time:</strong> This knob sets the duration of the release phase (after the sustain phase). Technically it means that the release curve reaches estimated 29.3% of the difference between the actual signal (the envelope curve at that point to be more precisely) and the release curve after the adjusted time.
                 <li><strong>Release Boost:</strong> Set the gain reduction or amplification in the release and sustain phase. The more the release curve differs from the actual signal (the envelope curve to be more precisely) the more the boost factor will alter the signal</li>
-                <li><strong>Sustain Threshold:</strong> The release phase starts after the sustain phase has ended. The release phase starts after the original signal falls below the threshold level of the highest peak inside the transient</li>
+                <li><strong>Release:</strong> This knob sets the duration of the release phase (after the sustain phase). Technically it means that the release curve reaches estimated 29.3% of the difference between the actual signal (the envelope curve at that point to be more precisely) and the release curve after the adjusted time.
+                <li><strong>Attack:</strong> This knob sets the duration of the attack phase. Technically it means that the attack curve reaches estimated 70.7% of the top of the actual signal (the envelope curve at that point to be more precisely) after the adjusted time.
+                <li><strong>Sustain Thres:</strong> The release phase starts after the sustain phase has ended. The release phase starts after the original signal falls below the threshold level of the highest peak inside the transient</li>
                 <li><strong>Display:</strong> Sets the amount of time to be displayed in the graph</li>
-                <li><strong>Display Threshold:</strong> If this threshold is above -inf the curve is hold some milliseconds before a transient of the actual threshold value appears.
+                <li><strong>Snap:</strong> If this threshold is above -inf the curve is hold some milliseconds before a transient of the actual threshold value appears.
             </ul>
             <div class="footer"><a href="index.html" title="Index">Index</a><a href="#" title="Top">Top</a></a></div>
         </div>

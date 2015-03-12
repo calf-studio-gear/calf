@@ -15,13 +15,13 @@
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
-        <label text="Env Listen" attach-x="5" attach-y="0" expand-x="0" />
-        <toggle param="listen" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
-        
-        <label param="lookahead" attach-y="0" attach-x="6" expand-x="0"/>
-        <knob param="lookahead" size="2" attach-y="1" attach-h="2" attach-x="6" expand-x="0"/>
-        <value param="lookahead" attach-y="3" attach-x="6" expand-x="0"/>
+        <label param="lookahead" attach-y="0" attach-x="5" expand-x="0"/>
+        <knob param="lookahead" size="2" attach-y="1" attach-h="2" attach-x="5" expand-x="0"/>
+        <value param="lookahead" attach-y="3" attach-x="5" expand-x="0"/>
                 
+        <label text="Env Listen" attach-x="6" attach-y="0" expand-x="0" />
+        <toggle param="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
         <label attach-x="7" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="2" expand-x="1" />
