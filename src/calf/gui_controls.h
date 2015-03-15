@@ -214,7 +214,9 @@ struct combo_box_param_control: public param_control, public send_updates_iface
 {
     GtkListStore *lstore;
     std::map<std::string, GtkTreeIter> key2pos;
+    std::string last_list;
     std::string last_key;
+    bool populating;
     
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();

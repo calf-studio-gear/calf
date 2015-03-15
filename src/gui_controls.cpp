@@ -281,6 +281,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     lstore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING); // value, key
+    populating = false;
     
     const parameter_properties &props = get_props();
     widget  = calf_combobox_new ();
@@ -317,6 +318,8 @@ void combo_box_param_control::get()
 void combo_box_param_control::combo_value_changed(GtkComboBox *widget, gpointer value)
 {
     combo_box_param_control *jhp = (combo_box_param_control *)value;
+    if (jhp->populating)
+        return;
     if (jhp->attribs.count("setter-key"))
     {
         GtkTreeIter iter;
@@ -338,6 +341,10 @@ void combo_box_param_control::send_status(const char *key, const char *value)
 {
     if (attribs.count("key") && key == attribs["key"])
     {
+        if (value == last_list)
+            return;
+        populating = true;
+        last_list = value;
         gtk_list_store_clear (lstore);
         key2pos.clear();
         std::string v = value;
@@ -363,6 +370,7 @@ void combo_box_param_control::send_status(const char *key, const char *value)
             i++;
         }
         set_to_last_key();
+        populating = false;
     }
     if (attribs.count("current-key") && key == attribs["current-key"])
     {

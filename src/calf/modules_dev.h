@@ -54,7 +54,7 @@ protected:
     /// Last selected preset+128*bank in each channel
     uint32_t last_selected_presets[16];
     /// Serial number of status data
-    int status_serial;
+    volatile int status_serial;
     /// Preset number to set on next process() call
     volatile int set_presets[16];
     volatile bool soundfont_loaded;

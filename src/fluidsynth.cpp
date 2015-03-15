@@ -232,11 +232,11 @@ void fluidsynth_audio_module::send_configures(send_configure_iface *sci)
 
 int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int last_serial)
 {
-    if (status_serial != last_serial)
+    int cur_serial = status_serial;
+    if (cur_serial != last_serial)
     {
         sui->send_status("sf_name", soundfont_name.c_str());
         sui->send_status("preset_list", soundfont_preset_list.c_str());
-        sui->send_status("preset_key", calf_utils::i2s(last_selected_presets[0]).c_str());
         for (int i = 0; i < 16; ++i)
         {
             string id = i ? calf_utils::i2s(i + 1) : string();
@@ -250,7 +250,7 @@ int fluidsynth_audio_module::send_status_updates(send_updates_iface *sui, int la
                 sui->send_status(key.c_str(), it->second.c_str());
         }
     }
-    return status_serial;
+    return cur_serial;
 }
 
 fluidsynth_audio_module::~fluidsynth_audio_module()
