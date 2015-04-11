@@ -927,6 +927,16 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
     void get_configure_vars(std::vector<std::string> &names) const;
 };
 
+struct pitch_metadata: public plugin_metadata<pitch_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { 
+        par_threshold,
+        param_count
+    };
+    PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")
+};
+
 };
 
 #endif

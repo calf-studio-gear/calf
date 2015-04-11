@@ -79,5 +79,8 @@
     // Analyser
     PER_MODULE_ITEM(analyzer,            false, "analyzer")
 
+    // Pitch tools
+    PER_MODULE_ITEM(pitch,               false, "pitch")
+
 #undef PER_MODULE_ITEM
 #endif

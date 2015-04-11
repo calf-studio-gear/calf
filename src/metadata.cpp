@@ -1945,6 +1945,16 @@ void wavetable_metadata::get_configure_vars(std::vector<std::string> &names) con
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(pitch) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(pitch) = {
+    { 0.125,      0.000976563, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold", "Threshold" },
+    {}
+};
+
+CALF_PLUGIN_INFO(pitch) = { 0x85AA, "Pitch", "Calf Pitch Tols", "Calf Studio Gear", calf_plugins::calf_copyright_info, "PitchPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 calf_plugins::plugin_registry::plugin_registry()
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back((new name##_metadata));
