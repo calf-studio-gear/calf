@@ -1947,7 +1947,7 @@ void wavetable_metadata::get_configure_vars(std::vector<std::string> &names) con
 
 CALF_PORT_NAMES(pitch) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(pitch) = {
-    { 0.125,      0.000976563, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "pd_threshold", "Pitch Det:Threshold" },
+    { 0.9,  0.1, 1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pd_threshold", "Pitch Det:Peak Threshold" },
     { 1,      1, 8,    3, PF_INT | PF_CTL_KNOB, NULL, "pd_subdivide", "Pitch Det:Subdiv" },
     {}
 };
