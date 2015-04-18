@@ -26,6 +26,8 @@
 #include <calf/modules_pitch.h>
 #include <calf/utils.h>
 
+#if ENABLE_EXPERIMENTAL
+
 // http://www.cs.otago.ac.nz/tartini/papers/A_Smarter_Way_to_Find_Pitch.pdf
 
 using namespace calf_plugins;
@@ -204,3 +206,5 @@ uint32_t pitch_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
     }
     return outputs_mask;
 }
+
+#endif
