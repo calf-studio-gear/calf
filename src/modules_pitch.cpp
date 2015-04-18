@@ -112,7 +112,7 @@ void pitch_audio_module::recompute()
             break;
         }
     }
-    if (maxpt > 0)
+    if (maxpt > 0 && maxpt < BufferSize / 2 - 1)
     {
         float y1 = magarr[maxpos - 1];
         float y2 = magarr[maxpos];
