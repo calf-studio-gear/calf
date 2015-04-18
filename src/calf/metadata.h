@@ -931,7 +931,8 @@ struct pitch_metadata: public plugin_metadata<pitch_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
     enum { 
-        par_threshold,
+        par_pd_threshold,
+        par_pd_subdivide,
         param_count
     };
     PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")

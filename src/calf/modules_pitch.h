@@ -24,7 +24,10 @@ protected:
     enum { BufferSize = 4096 };
     uint32_t srate;
     pfft transform;
+    float inputbuf[BufferSize];
     pfft::complex waveform[2 * BufferSize], spectrum[2 * BufferSize], autocorr[2 * BufferSize];
+    float magarr[BufferSize / 2];
+    float sumsquares[BufferSize + 1], sumsquares_last;
     uint32_t write_ptr;
     
     void recompute();
