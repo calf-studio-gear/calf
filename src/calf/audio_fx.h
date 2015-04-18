@@ -762,7 +762,7 @@ public:
         return true;
     }
     float get() {
-        if(counter >= 0 && counter < active_samples/2) {
+        if(counter < active_samples/2) {
             acc += step;
             counter++;
             return acc;

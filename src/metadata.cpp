@@ -1603,7 +1603,7 @@ void monosynth_metadata::get_configure_vars(vector<string> &names) const
 
 CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
-plugin_command_info *organ_metadata::get_commands()
+plugin_command_info *organ_metadata::get_commands() const
 {
     static plugin_command_info cmds[] = {
         { "cmd_panic", "Panic!", "Stop all sounds and reset all controllers" },
