@@ -162,7 +162,7 @@ static const GtkActionEntry actions[] = {
     { "PresetMenuAction", NULL, "_Preset", NULL, "Preset operations", NULL },
     { "BuiltinPresetMenuAction", NULL, "_Built-in", NULL, "Built-in (factory) presets", NULL },
     { "UserPresetMenuAction", NULL, "_User", NULL, "User (your) presets", NULL },
-    { "CommandMenuAction", NULL, "_Command", NULL, "Plugin-related commands", NULL },
+    { "CommandMenuAction", NULL, "_Commands", NULL, "Plugin-related commands", NULL },
     { "HelpMenuAction", NULL, "_Help", NULL, "Help-related commands", NULL },
     { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
     { "about", "gtk-about", "_About...", NULL, "About this plugin", (GCallback)about_action },
@@ -274,10 +274,10 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
     return preset_xml;
 }
 
-string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
+string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp, const plugin_metadata_iface *metadata)
 {
     string command_xml = command_pre_xml;
-    plugin_command_info *ci = gui->plugin->get_metadata_iface()->get_commands();
+    plugin_command_info *ci = metadata->get_commands();
     if (!ci)
         return "";
     for(int i = 0; ci->name; i++, ci++)
@@ -286,7 +286,7 @@ string plugin_gui_window::make_gui_command_list(GtkActionGroup *grp)
         ss << "          <menuitem name=\"" << ci->name << "\" action=\"" << ci->label << "\"/>\n";
         
         GtkActionEntry ae = { ci->label, NULL, ci->name, NULL, ci->description, (GCallback)activate_command };
-        gtk_action_group_add_actions_full(command_actions, &ae, 1, (gpointer)new activate_command_params(gui, i), activate_preset_params::action_destroy_notify);
+        gtk_action_group_add_actions_full(grp, &ae, 1, (gpointer)new activate_command_params(gui, i), activate_preset_params::action_destroy_notify);
         command_xml += ss.str();
     }
     command_xml += command_post_xml;
@@ -342,9 +342,12 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_action_group_add_actions(std_actions, actions, sizeof(actions)/sizeof(actions[0]), this);
     GError *error = NULL;
     gtk_ui_manager_insert_action_group(ui_mgr, std_actions, 0);
-    gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);    
+    gtk_ui_manager_add_ui_from_string(ui_mgr, ui_xml, -1, &error);
     
     command_actions = gtk_action_group_new("commands");
+    string command_xml = make_gui_command_list(command_actions, _jh->get_metadata_iface());
+    gtk_ui_manager_insert_action_group(ui_mgr, command_actions, 0);
+    gtk_ui_manager_add_ui_from_string(ui_mgr, command_xml.c_str(), -1, &error);
 
     char ch = '0';
     fill_gui_presets(true, ch);
