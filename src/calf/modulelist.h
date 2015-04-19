@@ -79,8 +79,10 @@
     // Analyser
     PER_MODULE_ITEM(analyzer,            false, "analyzer")
 
+#ifdef ENABLE_EXPERIMENTAL
     // Pitch tools
     PER_MODULE_ITEM(pitch,               false, "pitch")
+#endif
 
 #undef PER_MODULE_ITEM
 #endif
