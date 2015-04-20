@@ -13,33 +13,28 @@
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
         
-        <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
+        <label param="mode" attach-x="4" attach-y="0" expand-x="0"/>
+        <combo param="mode" attach-x="4" attach-y="1" expand-x="0" attach-h="2"/>
+            
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
         
-        <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
-        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     
     <frame label="X-Over">
-        <vbox>
-            <align align-x="1.0" scale-x="0.1" scale-y="1.0">
-                <hbox spacing="8">
-                    <label param="mode"/>
-                    <combo param="mode"/>
-                </hbox>
-            </align>
-            <if cond="directlink">
-                <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
-            </if>
-        </vbox>
+        <if cond="directlink">
+            <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+        </if>
     </frame>
     
     <notebook param="notebook">

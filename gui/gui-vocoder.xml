@@ -102,7 +102,7 @@
     <notebook param="bands">
         <hbox page="8 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -178,7 +178,7 @@
         </hbox>
         <hbox page="12 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -282,7 +282,7 @@
         </hbox>
         <hbox page="16 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -414,7 +414,7 @@
         </hbox>
         <hbox page="24 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="24 Bands">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3" page="24 Bands">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -600,7 +600,7 @@
             </table>
             <label/>
         </hbox>
-        <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="32 Bands">
+        <table rows="8" cols="34" spacing-x="0" spacing-y="3" page="32 Bands">
              <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
             <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
             <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>

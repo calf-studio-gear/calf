@@ -71,15 +71,15 @@ style "calf-rack"
 
 style "calf-rack-title"
 {
-    fg[NORMAL] = "#918864"
-    font_name  = "Sans 12"
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    font_name  = "Open Sans Condensed 11"
     xthickness = 7
     ythickness = 3
 }
 
 style "calf-rack-widgets"
 {
-    fg[NORMAL]        = "#918864"
+    fg[NORMAL]        = { 0, 0.11, 0.11 }
     font_name         = "Sans 5"
 }
 

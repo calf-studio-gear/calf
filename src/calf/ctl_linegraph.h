@@ -88,7 +88,7 @@ struct CalfLineGraph
     int mode, movesurf;
     int generation;
     unsigned int layers;
-    static const int pad_x = 5, pad_y = 5;
+    static const int pad_x = 0, pad_y = 0;
     int size_x, size_y;
     float zoom, offset;
     int param_zoom, param_offset;

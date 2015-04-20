@@ -37,10 +37,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_KNOB(widget));
     
-    float widths[6]  = {0, 2, 4, 4.5, 4.5, 5.5};
-    float margins[6] = {0, 2, 3, 5.5, 5, 7.5};
-    float pins_m[6]  = {0, 4, 8, 12, 11, 21};
-    float pins_s[6]  = {0, 3, 4, 4, 4, 5};
+    float widths[6]  = {0, 2.0, 3.0, 3.5, 3.5, 7};
+    float margins[6] = {0, 3.0, 2.8, 3.5, 4.0, 6.5};
+    float pins_m[6]  = {0, 6,   8,   8,   11,  16};
+    float pins_s[6]  = {0, 3,   4,   4,   4,   4};
     
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
@@ -50,7 +50,11 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     ox += (widget->allocation.width - self->knob_size * 20) / 2;
     oy += (widget->allocation.height - self->knob_size * 20) / 2;
     int size  = self->knob_size * 20;
-    int rad   = size / 2;
+    float rad;
+    if (self->knob_size > 1)
+        rad = size / 2;
+    else
+        rad = 12.5;
     int from  = self->knob_type == 3 ? 270 : 135;
     int to    = self->knob_type == 3 ? -90 : 45;
     int phase = (adj->value - adj->lower) * 270 / (adj->upper - adj->lower) + 135;
@@ -98,10 +102,6 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             phase = 273;
     }
     
-    static const double dash[] = {2, 1};
-    cairo_set_dash(ctx, dash, 2, 0);
-    cairo_set_line_width(ctx, widths[self->knob_size]);
-    
     // draw background
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
                     widget->style->fg_gc[0],
@@ -111,23 +111,29 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                     gdk_pixbuf_get_height(CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget))->knob_image[self->knob_size - 1]),
                     GDK_RGB_DITHER_NORMAL, 0, 0);
     
+    static const double dash[] = {3, 2};
+    cairo_set_line_width(ctx, widths[self->knob_size]);
+    if(self->knob_size > 1)
+        cairo_set_dash(ctx, dash, 2, 0);
+    
     // draw unlit
     if (neg_b)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
     else
         cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
-    cairo_set_source_rgb(ctx, 0, 0.1, 0.1);
+    cairo_set_source_rgba(ctx, 0, 0, 0, 0.22);//0, 0.1, 0.1);
     cairo_stroke(ctx);
-    
+    //cairo_set_line_width(ctx, 1);//widths[self->knob_size] - 2);
     // draw lit
     float pos1 = (rad - margins[self->knob_size] + widths[self->knob_size] / 2.) / rad;
     float pos2 = (rad - margins[self->knob_size]) / rad;
     float pos3 = (rad - margins[self->knob_size] - widths[self->knob_size] / 2.) / rad;
     cairo_pattern_t *pat = cairo_pattern_create_radial(ox + rad, oy + rad, 0, ox + rad, oy + rad, rad);
-    cairo_pattern_add_color_stop_rgba(pat, pos1, 0, 0.9, 1, 0.75);
-    cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
-    cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
-    cairo_set_source(ctx, pat);
+    //cairo_pattern_add_color_stop_rgba(pat, pos1, 0, 0.9, 1, 0.75);
+    //cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
+    //cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
+    //cairo_set_source(ctx, pat);
+    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, 1);
     if (neg_l)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
     else
@@ -135,41 +141,41 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_stroke(ctx);
     
     // draw light
-    float x = ox + rad + (rad - margins[self->knob_size]) * cos(phase * (M_PI / 180.));
-    float y = oy + rad + (rad - margins[self->knob_size]) * sin(phase * (M_PI / 180.));
-    if (neg_b)
-        cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
-    else
-        cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
-    pat = cairo_pattern_create_radial(x, y, widths[self->knob_size] / 2, x, y, widths[self->knob_size]);
-    cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1);
-    cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0.5, 0.8, 0.);
-    cairo_set_source(ctx, pat);
-    cairo_stroke(ctx);
+    //float x = ox + rad + (rad - margins[self->knob_size]) * cos(phase * (M_PI / 180.));
+    //float y = oy + rad + (rad - margins[self->knob_size]) * sin(phase * (M_PI / 180.));
+    //if (neg_b)
+        //cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
+    //else
+        //cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
+    //pat = cairo_pattern_create_radial(x, y, widths[self->knob_size] / 2, x, y, widths[self->knob_size]);
+    //cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1);
+    //cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0.5, 0.8, 0.);
+    //cairo_set_source(ctx, pat);
+    //cairo_stroke(ctx);
     
     // draw shine
-    cairo_rectangle(ctx, ox, oy, size, size);
-    pat = cairo_pattern_create_radial(x, y, 0, x, y, widths[self->knob_size] * 1.5);
-    cairo_pattern_add_color_stop_rgba(pat, 0, 0.8, 1, 1, 0.7);
-    cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0.75, 1, 0.);
-    cairo_set_source(ctx, pat);
-    cairo_fill(ctx);
+    //cairo_rectangle(ctx, ox, oy, size, size);
+    //pat = cairo_pattern_create_radial(x, y, 0, x, y, widths[self->knob_size] * 1.5);
+    //cairo_pattern_add_color_stop_rgba(pat, 0, 0.8, 1, 1, 0.7);
+    //cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0.75, 1, 0.);
+    //cairo_set_source(ctx, pat);
+    //cairo_fill(ctx);
     
     // draw other shine
-    if (neg_l)
-        cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size] + widths[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
-    else
-        cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
-    pos1 = (rad - margins[self->knob_size] + widths[self->knob_size]) / rad;
-    pos2 = (rad - margins[self->knob_size]) / rad;
-    pos3 = (rad - margins[self->knob_size] - widths[self->knob_size]) / rad;
-    pat = cairo_pattern_create_radial(ox + rad, oy + rad, 0, ox + rad, oy + rad, rad);
-    cairo_pattern_add_color_stop_rgba(pat, pos1,   0, 1, 1, 0.);
-    cairo_pattern_add_color_stop_rgba(pat, pos2, 0.8, 1, 1, 0.6);
-    cairo_pattern_add_color_stop_rgba(pat, pos3,   0, 1, 1, 0.);
-    cairo_set_source(ctx, pat);
-    cairo_set_line_width(ctx, widths[self->knob_size] * 2.);
-    cairo_stroke(ctx);
+    //if (neg_l)
+        //cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size] + widths[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
+    //else
+        //cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
+    //pos1 = (rad - margins[self->knob_size] + widths[self->knob_size]) / rad;
+    //pos2 = (rad - margins[self->knob_size]) / rad;
+    //pos3 = (rad - margins[self->knob_size] - widths[self->knob_size]) / rad;
+    //pat = cairo_pattern_create_radial(ox + rad, oy + rad, 0, ox + rad, oy + rad, rad);
+    //cairo_pattern_add_color_stop_rgba(pat, pos1,   0, 1, 1, 0.);
+    //cairo_pattern_add_color_stop_rgba(pat, pos2, 0.8, 1, 1, 0.6);
+    //cairo_pattern_add_color_stop_rgba(pat, pos3,   0, 1, 1, 0.);
+    //cairo_set_source(ctx, pat);
+    //cairo_set_line_width(ctx, widths[self->knob_size] * 2.);
+    //cairo_stroke(ctx);
     
      
     cairo_pattern_destroy(pat);
@@ -182,8 +188,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_move_to(ctx, x1, y1);
     cairo_line_to(ctx, x2, y2);
     cairo_set_dash(ctx, dash, 0, 0);
-    float col = 0;
-    cairo_set_source_rgba(ctx, col, col, col,0.5);
+    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, 0.99);
     cairo_set_line_width(ctx, widths[self->knob_size] / 2.);
     cairo_stroke(ctx);
     cairo_destroy(ctx);
