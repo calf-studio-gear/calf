@@ -121,15 +121,17 @@ void pitch_audio_module::recompute()
         float y3 = magarr[maxpos + 1];
         
         float pos2 = maxpos + 0.5 * (y1 - y3) / (y1 - 2 * y2 + y3);
-        float f2 = (srate / pos2) / 440;
-        float rf2 = 1200 * logf(f2) / logf(2.f) - 300;
+        float f2 = (srate / pos2) / *params[par_pd_tune];
+        float lf2 = logf(f2);
+        float rf2 = 1200 * lf2 / logf(2.f) - 300;
         rf2 -= 1200.f * floor(rf2 / 1200.f);
         int note = round(rf2 / 100.f);
         rf2 -= note * 100;
         if (note == 12)
             note -= 12;
         static const char notenames[] = "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0";
-        printf("pos %d mag %f freq %f posx %f freqx %f note %s%+fct\n", maxpos, maxpt, srate * 1.0 / maxpos, pos2, srate / pos2, notenames + 3 * note, rf2);
+        int mnote = 12 * lf2 + 69;
+        printf("pos %d mag %f freq %f posx %f freqx %f midi %d note %s%+fct\n", maxpos, maxpt, srate * 1.0 / maxpos, pos2, srate / pos2, mnote, notenames + 3 * note, rf2);
     }
 }
 

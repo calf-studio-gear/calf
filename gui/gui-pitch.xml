@@ -10,10 +10,15 @@
             <knob param="pd_subdivide" expand="0" fill="0"/>
             <value param="pd_subdivide" expand="0" fill="0"/>
         </vbox>
+        <vbox border="10" expand="0" fill="0" shrink="1">
+            <label param="pd_tune" expand="0" fill="0"/>
+            <knob param="pd_tune" expand="0" fill="0" type="1"/>
+            <value param="pd_tune" expand="0" fill="0"/>
+        </vbox>
     </hbox>
     <if cond="directlink">
         <frame label="Autocorrelation/Spectrum" expand="1" fill="1">
-            <line-graph refresh="1" width="360" height="160" param="pd_threshold" />
+            <line-graph refresh="1" width="400" height="160" param="pd_threshold" />
         </frame>
     </if>
 </vbox>

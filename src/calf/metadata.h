@@ -933,6 +933,7 @@ struct pitch_metadata: public plugin_metadata<pitch_metadata>
     enum { 
         par_pd_threshold,
         par_pd_subdivide,
+        par_pd_tune, par_pd_midi,
         param_count
     };
     PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")
