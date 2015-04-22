@@ -1802,6 +1802,9 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
     int rad = sx / 2;
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
+    int marg = 10;
+    int fpt  = 9;
+    float fsize = fpt * sy / 25; // 9pt @ 25px height
     
     // cairo initialization stuff
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -1830,16 +1833,57 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
     
     static const char notenames[] = "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0";
     const char * note = notenames + (tuner->note % 12) * 3;
-    //int oct = int(tuner->note / 12) - 2;
-    
+    int oct = int(tuner->note / 12) - 2;
+    cairo_set_source_rgba(c, 0.35, 0.4, 0.2, 0.9);
+    cairo_text_extents_t te;
     if (tuner->note) {
+        // Note name
         cairo_select_font_face(c, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(c, 9 * sy / 25);
-        cairo_text_extents_t te;
+        cairo_set_font_size(c, fsize);
         cairo_text_extents (c, note, &te);
-        cairo_set_source_rgba(c, 0.35, 0.4, 0.2, 0.9);
-        cairo_move_to (c, ox + 10 - te.x_bearing, oy + 10 - te.y_bearing);
+        cairo_move_to (c, ox + marg - te.x_bearing, oy + marg - te.y_bearing);
         cairo_show_text (c, note);
+        // octave
+        char octn[4];
+        sprintf(octn, "%d", oct);
+        cairo_set_font_size(c, fsize / 2);
+        cairo_text_extents (c, octn, &te);
+        cairo_show_text(c, octn);
+        // right hand side
+        cairo_set_font_size(c, fsize / 4);
+        cairo_select_font_face(c, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        char * mnotet = "MIDI Note: ";
+        char mnotev[4];
+        sprintf(mnotev, "%d", tuner->note);
+        char * centst = "Cents: ";
+        char centsv[16];
+        sprintf(centsv, "%.4f", tuner->cents);
+        
+        // calc text extends
+        cairo_text_extents (c, mnotet, &te);
+        int mtw = te.width;
+        cairo_text_extents (c, "999", &te);
+        int mvw = te.width;
+        cairo_text_extents (c, centst, &te);
+        int ctw = te.width;
+        cairo_text_extents (c, "-9.9999", &te);
+        int cvw = te.width;
+        int th  = te.height;
+        float xb = te.x_bearing;
+        
+        float tw = std::max(ctw, mtw);
+        float vw = std::max(cvw, mvw);
+        
+        // draw MIDI note
+        cairo_move_to(c, ox + sx - tw - vw - marg * 2, oy + marg - te.y_bearing);
+        cairo_show_text(c, mnotet);
+        cairo_move_to(c, ox + sx - vw - xb - marg, oy + marg - te.y_bearing);
+        cairo_show_text(c, mnotev);
+        // draw cents
+        cairo_move_to(c, ox + sx - tw - vw - marg * 2, oy + marg + te.height + 5 - te.y_bearing);
+        cairo_show_text(c, centst);
+        cairo_move_to(c, ox + sx - vw - xb - marg, oy + marg + te.height + 5 - te.y_bearing);
+        cairo_show_text(c, centsv);
     }
     
     cairo_destroy(c);
