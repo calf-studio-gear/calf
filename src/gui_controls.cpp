@@ -1173,8 +1173,6 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     
     widget                     = calf_line_graph_new ();
     
-    gtk_widget_set_name(GTK_WIDGET(widget), "calf-graph");
-    
     CalfLineGraph *clg         = CALF_LINE_GRAPH(widget);
     widget->requisition.width  = get_int("width", 40);
     widget->requisition.height = get_int("height", 40);
@@ -1411,7 +1409,6 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     widget = calf_phase_graph_new ();
-    gtk_widget_set_name(GTK_WIDGET(widget), "calf-phase");
     CalfPhaseGraph *clg = CALF_PHASE_GRAPH(widget);
     widget->requisition.width = get_int("size", 40);
     widget->requisition.height = get_int("size", 40);
@@ -1431,6 +1428,49 @@ void phase_graph_param_control::set()
 }
 
 phase_graph_param_control::~phase_graph_param_control()
+{
+}
+
+
+/******************************** Tuner ********************************/
+
+void tuner_param_control::on_idle()
+{
+    if (get_int("refresh", 0))
+        set();
+}
+
+GtkWidget *tuner_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    widget = calf_tuner_new ();
+    //CalfTuner *tuner = CALF_TUNER(widget);
+    widget->requisition.width = get_int("width", 40);
+    widget->requisition.height = get_int("height", 40);
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Tuner");
+    
+    const string &cents_name = attribs["param_cents"];
+    if (cents_name != "")
+        cents_no = gui->get_param_no_by_name(cents_name);
+    else
+        cents_no = 0;
+    return widget;
+}
+
+void tuner_param_control::set()
+{
+    _GUARD_CHANGE_
+    GtkWidget *tw = gtk_widget_get_toplevel(widget);
+    CalfTuner *tuner = CALF_TUNER(widget);
+    tuner->note = gui->plugin->get_param_value(param_no);
+    tuner->cents = gui->plugin->get_param_value(cents_no);
+    if (tw && GTK_WIDGET_TOPLEVEL(tw) && widget->window) {
+        gtk_widget_queue_draw(widget);
+    }
+}
+
+tuner_param_control::~tuner_param_control()
 {
 }
 

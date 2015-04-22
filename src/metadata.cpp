@@ -1949,8 +1949,9 @@ CALF_PORT_NAMES(pitch) = {"In L", "In R", "Out L", "Out R"};
 CALF_PORT_PROPS(pitch) = {
     { 0.9,  0.1,   1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pd_threshold", "Pitch Det:Peak Threshold" },
     { 1,      1,   8,    3, PF_INT | PF_CTL_KNOB, NULL, "pd_subdivide", "Pitch Det:Subdiv" },
-    { 440,    427, 453,  0.1, PF_FLOAT | PF_CTL_KNOB, NULL, "pd_tune", "Pitch Det:Tune" },
-    { 0,      0,   127,  1, PF_INT | PF_PROP_OUTPUT, NULL, "pd_midi", "Pitch Det:MIDI" },
+    { 440,    427, 453,  0.1, PF_FLOAT | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "tune", "Tune" },
+    { 0,      0,   127,  1, PF_INT | PF_PROP_OUTPUT, NULL, "note", "MIDI Note" },
+    { 0,     -100, 100,  1, PF_FLOAT | PF_PROP_OUTPUT, NULL, "cents", "Cents" },
     {}
 };
 
