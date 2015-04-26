@@ -116,6 +116,15 @@ public:
                 j = 353.f;
                 k = 3180.f;
                 break;
+            case 3: //"RIAA"
+            default:
+                tau1 = 0.003180f;
+                tau2 = 0.000318f;
+                tau3 = 0.000075f;
+                i = 1.f / (2.f * M_PI * tau1);
+                j = 1.f / (2.f * M_PI * tau2);
+                k = 1.f / (2.f * M_PI * tau3);
+            break;
 	    case 4: //"CD Mastering"
 	        tau1 = 0.000050f;
                 tau2 = 0.000015f;
@@ -124,11 +133,18 @@ public:
                 j = 1.f / (2.f * M_PI * tau2);
                 k = 1.f / (2.f * M_PI * tau3);
             break;
-            case 3: //"RIAA"
-            default:
-                tau1 = 0.003180f;
-                tau2 = 0.000318f;
-                tau3 = 0.000075f;
+	    case 5: //"50µs FM (Europe)"
+	        tau1 = 0.000050f;
+                tau2 = tau1 / 10;// not used
+                tau3 = tau1 / 20;//
+                i = 1.f / (2.f * M_PI * tau1);
+                j = 1.f / (2.f * M_PI * tau2);
+                k = 1.f / (2.f * M_PI * tau3);
+            break;
+	    case 6: //"75µs FM (US)"
+	        tau1 = 0.000075f;
+                tau2 = tau1 / 10;// not used
+                tau3 = tau1 / 20;//
                 i = 1.f / (2.f * M_PI * tau1);
                 j = 1.f / (2.f * M_PI * tau2);
                 k = 1.f / (2.f * M_PI * tau3);
@@ -163,7 +179,8 @@ public:
 
         // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
         // find actual gain
-        float gain1kHz = coeffs.freq_gain(1000.0, sr);
+        // Note: for FM emphasis, use 100 Hz for normalization instead
+        float gain1kHz = coeffs.freq_gain((type == 5 || type == 6) ? 100.0 : 1000.0, sr);
         // divide one filter's x[n-m] coefficients by that value
         float gc = 1.0 / gain1kHz;
         r1.a0 = coeffs.a0 * gc;

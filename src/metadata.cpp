@@ -777,13 +777,13 @@ CALF_PLUGIN_INFO(sidechainlimiter) = { 0x8522, "SidechainLimiter", "Calf Sidecha
 CALF_PORT_NAMES(emphasis) = {"In L", "In R", "Out L", "Out R"};
 
 const char *emphasis_filter_modes[] = { "Reproduction", "Production"};
-const char *emphasis_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA", "Compact Disc (CD)"};
+const char *emphasis_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA", "Compact Disc (CD)", "50µs (FM)", "75µs (FM)" };
 
 CALF_PORT_PROPS(emphasis) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_modes, "mode", "Filter Mode" },
-    { 4,      0,  4,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
+    { 4,      0,  6,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
     {}
 };
 CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Calf Studio Gear / Damien Zammit", calf_plugins::calf_copyright_info, "FilterPlugin" };
