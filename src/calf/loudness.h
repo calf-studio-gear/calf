@@ -93,7 +93,7 @@ public:
     /// Produce one output sample from one input sample
     float process(float sample)
     {
-        return brickw.process(r1.process(sample));
+        return r1.process(brickw.process(sample));
     }
     
     /// Set sample rate (updates filter coefficients)
