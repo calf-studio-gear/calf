@@ -174,7 +174,7 @@ public:
         r1.sanitize();
 
         float cutfreq = std::min(0.45f * sr, 21000.f);
-        brickw.set_lp_rbj(cutfreq, 1.f, sr, 1.f);
+        brickw.set_lp_rbj(cutfreq, 0.707f, sr, 1.f);
         brickw.sanitize();
     }
     
