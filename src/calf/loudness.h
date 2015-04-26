@@ -135,16 +135,16 @@ public:
             break;
 	    case 5: //"50µs FM (Europe)"
 	        tau1 = 0.000050f;
-                tau2 = tau1 / 10;// not used
-                tau3 = tau1 / 20;//
+                tau2 = tau1 / 20;// not used
+                tau3 = tau1 / 50;//
                 i = 1.f / (2.f * M_PI * tau1);
                 j = 1.f / (2.f * M_PI * tau2);
                 k = 1.f / (2.f * M_PI * tau3);
             break;
 	    case 6: //"75µs FM (US)"
 	        tau1 = 0.000075f;
-                tau2 = tau1 / 10;// not used
-                tau3 = tau1 / 20;//
+                tau2 = tau1 / 20;// not used
+                tau3 = tau1 / 50;//
                 i = 1.f / (2.f * M_PI * tau1);
                 j = 1.f / (2.f * M_PI * tau2);
                 k = 1.f / (2.f * M_PI * tau3);
@@ -157,37 +157,57 @@ public:
 
         float t = 1.f / sr;
 
-        if (mode == 0) { //Reproduction
-            g = 1.f / (4.f+2.f*i*t+2.f*k*t+i*k*t*t);
-            a0 = (2.f*t+j*t*t)*g;
-            a1 = (2.f*j*t*t)*g;
-            a2 = (-2.f*t+j*t*t)*g;
-            b1 = (-8.f+2.f*i*k*t*t)*g;
-            b2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
-        } else {  //Production
-            g = 1.f / (2.f*t+j*t*t);
-            a0 = (4.f+2.f*i*t+2.f*k*t+i*k*t*t)*g;
-            a1 = (-8.f+2.f*i*k*t*t)*g;
-            a2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
-            b1 = (2.f*j*t*t)*g;
-            b2 = (-2.f*t+j*t*t)*g;
-        }
-
         //swap a1 b1, a2 b2
         biquad_coeffs coeffs;
-        coeffs.set_bilinear_direct(a0, a1, a2, b1, b2);
+        if (type == 7 || type == 8)
+        {
+            float tau = (type == 7 ? 0.000050 : 0.000075);
+            float f = 1.0 / (2 * M_PI * tau);
+            float nyq = sr * 0.5f;
+            float gain = sqrt(1.0 + nyq * nyq / (f * f)); // gain at Nyquist
+            float cfreq = sqrt((gain - 1.0) * f * f); // frequency 
+            float q = 1.0;
+            if (type == 8)
+                q = pow((sr / 3269.0) + 19.5, -0.25); // somewhat poor curve-fit
+            if (type == 7)
+                q = pow((sr / 4750.0) + 19.5, -0.25);
+            if (mode == 0)
+                r1.set_highshelf_rbj(cfreq, q, 1.f / gain, sr);
+            else
+                r1.set_highshelf_rbj(cfreq, q, gain, sr);
+        }
+        else
+        {
+            if (mode == 0) { //Reproduction
+                g = 1.f / (4.f+2.f*i*t+2.f*k*t+i*k*t*t);
+                a0 = (2.f*t+j*t*t)*g;
+                a1 = (2.f*j*t*t)*g;
+                a2 = (-2.f*t+j*t*t)*g;
+                b1 = (-8.f+2.f*i*k*t*t)*g;
+                b2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
+            } else {  //Production
+                g = 1.f / (2.f*t+j*t*t);
+                a0 = (4.f+2.f*i*t+2.f*k*t+i*k*t*t)*g;
+                a1 = (-8.f+2.f*i*k*t*t)*g;
+                a2 = (4.f-2.f*i*t-2.f*k*t+i*k*t*t)*g;
+                b1 = (2.f*j*t*t)*g;
+                b2 = (-2.f*t+j*t*t)*g;
+            }
+            coeffs.set_bilinear_direct(a0, a1, a2, b1, b2);
 
-        // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
-        // find actual gain
-        // Note: for FM emphasis, use 100 Hz for normalization instead
-        float gain1kHz = coeffs.freq_gain((type == 5 || type == 6) ? 100.0 : 1000.0, sr);
-        // divide one filter's x[n-m] coefficients by that value
-        float gc = 1.0 / gain1kHz;
-        r1.a0 = coeffs.a0 * gc;
-        r1.a1 = coeffs.a1 * gc;
-        r1.a2 = coeffs.a2 * gc;
-        r1.b1 = coeffs.b1;
-        r1.b2 = coeffs.b2;
+            // the coeffs above give non-normalized value, so it should be normalized to produce 0dB at 1 kHz
+            // find actual gain
+            // Note: for FM emphasis, use 100 Hz for normalization instead
+            float gain1kHz = coeffs.freq_gain(1000.0, sr);
+            // divide one filter's x[n-m] coefficients by that value
+            float gc = 1.0 / gain1kHz;
+            r1.a0 = coeffs.a0 * gc;
+            r1.a1 = coeffs.a1 * gc;
+            r1.a2 = coeffs.a2 * gc;
+            r1.b1 = coeffs.b1;
+            r1.b2 = coeffs.b2;
+        }
+
         r1.sanitize();
 
         float cutfreq = std::min(0.45f * sr, 21000.f);
