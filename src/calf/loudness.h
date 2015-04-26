@@ -182,6 +182,7 @@ public:
     void sanitize()
     {
         r1.sanitize();
+        brickw.sanitize();
     }
     
     /// Reset state to zero
