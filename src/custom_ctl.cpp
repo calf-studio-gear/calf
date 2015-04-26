@@ -1852,14 +1852,14 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         // right hand side
         cairo_set_font_size(c, fsize / 4);
         cairo_select_font_face(c, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        char * mnotet = "MIDI Note: ";
-        char mnotev[4];
+        const char * mnotet = "MIDI Note: ";
+        char mnotev[32];
         sprintf(mnotev, "%d", tuner->note);
-        char * centst = "Cents: ";
-        char centsv[16];
+        const char * centst = "Cents: ";
+        char centsv[32];
         sprintf(centsv, "%.4f", tuner->cents);
         
-        // calc text extends
+        // calc text extents
         cairo_text_extents (c, mnotet, &te);
         int mtw = te.width;
         cairo_text_extents (c, "999", &te);
