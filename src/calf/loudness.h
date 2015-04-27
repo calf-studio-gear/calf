@@ -89,11 +89,17 @@ class riaacurve {
 public:
     biquad_d2 r1;
     biquad_d2 brickw;
+    bool use_brickw;
+
+    riaacurve()
+    {
+        use_brickw = true;
+    }
     
     /// Produce one output sample from one input sample
     float process(float sample)
     {
-        return r1.process(brickw.process(sample));
+        return r1.process(use_brickw ? brickw.process(sample) : sample);
     }
     
     /// Set sample rate (updates filter coefficients)
@@ -161,6 +167,7 @@ public:
         biquad_coeffs coeffs;
         if (type == 7 || type == 8)
         {
+            use_brickw = false;
             float tau = (type == 7 ? 0.000050 : 0.000075);
             float f = 1.0 / (2 * M_PI * tau);
             float nyq = sr * 0.5f;
@@ -178,6 +185,7 @@ public:
         }
         else
         {
+            use_brickw = true;
             if (mode == 0) { //Reproduction
                 g = 1.f / (4.f+2.f*i*t+2.f*k*t+i*k*t*t);
                 a0 = (2.f*t+j*t*t)*g;
@@ -231,7 +239,7 @@ public:
     /// Gain and a given frequency
     float freq_gain(float freq, float sr) const
     {
-        return r1.freq_gain(freq, sr);
+        return r1.freq_gain(freq, sr) * (use_brickw ? brickw.freq_gain(freq, sr) : 1.f);
     }
     
 };
