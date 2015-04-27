@@ -58,6 +58,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     int from  = self->knob_type == 3 ? 270 : 135;
     int to    = self->knob_type == 3 ? -90 : 45;
     int phase = (adj->value - adj->lower) * 270 / (adj->upper - adj->lower) + 135;
+    float op  = (adj->value - adj->lower) / (adj->upper - adj->lower);
     int start;
     int neg_b = 0;
     int neg_l = 0;
@@ -79,11 +80,13 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 phase = (adj->value - adj->lower) * 270 / (adj->upper - adj->lower) -225;
             }
             start = -90;
+            op = fabs(op * 2 - 1);
             break;
         case 2:
             // reversed
             neg_l = 1;
             start = 45;
+            op = 1 - op;
             break;
         case 3:
             // 360°
@@ -91,6 +94,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             neg_b = 1;
             phase = (adj->value - adj->lower) * 360 / (adj->upper - adj->lower) + -90;
             start = phase;
+            op = 1;
             break;
     }
     
@@ -133,7 +137,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     //cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
     //cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
     //cairo_set_source(ctx, pat);
-    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, 1);
+    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, op);
     if (neg_l)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
     else
