@@ -121,12 +121,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_dash(ctx, dash, 2, 0);
     
     // draw unlit
-    if (neg_b)
-        cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
-    else
-        cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
-    cairo_set_source_rgba(ctx, 0, 0, 0, 0.22);//0, 0.1, 0.1);
-    cairo_stroke(ctx);
+    //if (neg_b)
+        //cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
+    //else
+        //cairo_arc (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], from * (M_PI / 180.), to * (M_PI / 180.));
+    //cairo_set_source_rgba(ctx, 0, 0, 0, 0.22);//0, 0.1, 0.1);
+    //cairo_stroke(ctx);
+    
+    
     //cairo_set_line_width(ctx, 1);//widths[self->knob_size] - 2);
     // draw lit
     float pos1 = (rad - margins[self->knob_size] + widths[self->knob_size] / 2.) / rad;
@@ -137,7 +139,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     //cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
     //cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
     //cairo_set_source(ctx, pat);
-    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, op);
+    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, op * 0.66 + 0.33);
     if (neg_l)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
     else
