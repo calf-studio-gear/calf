@@ -317,3 +317,4 @@ widget "*CalfLed*"                                style : highest "calf-led"
 
 widget "*Calf*Combo*"                             style : highest "calf-display"
 widget "*Calf*Graph"                              style : highest "calf-display"
+widget "*Calf*Tuner"                              style : highest "calf-display"
