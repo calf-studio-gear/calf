@@ -28,7 +28,7 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 #include <string>
-#include <calf/custom_ctl.h>
+#include <calf/drawingutils.h>
 
 
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
@@ -42,6 +42,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     GtkStyle    *style;
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    
+    float r, g, b;
     
     int width = widget->allocation.width; int height = widget->allocation.height;
     int border_x = 0; int border_y = 0; // outer border
@@ -125,8 +127,9 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                                                              border_y,
                                                              border_x,
                                                              height - border_y * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.96, 0.96, 0.96, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, 0.7, 0.7, 0.7, 1);
+        get_bg_color(widget, NULL, &r, &g, &b);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.111, g*1.111, b*1.111, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.82, g*0.82, b*0.82, 1);
         cairo_set_source (cache_cr, pat2);
         cairo_fill(cache_cr);
         cairo_pattern_destroy(pat2);
@@ -373,10 +376,13 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         // draw value as number
         cairo_text_extents(c, str, &extents);
         cairo_move_to(c, text_x + (text_w - extents.width) / 2.0, text_y);
+        GtkStateType state;
         if(vu->disp_value > 1.f and vu->mode != VU_MONOCHROME_REVERSE)
-            cairo_set_source_rgba (c, 0.7, 0, 0, 1);
+            state = GTK_STATE_ACTIVE;
         else
-            cairo_set_source_rgba (c, 0, 0.11, 0.11, 1);
+            state = GTK_STATE_NORMAL;
+        get_fg_color(widget, &state, &r, &g, &b);
+        cairo_set_source_rgba (c, r, g, b, 1);
         cairo_show_text(c, str);
         cairo_fill(c);
     }

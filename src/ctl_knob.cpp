@@ -20,6 +20,7 @@
  */
 #include "config.h"
 #include <calf/ctl_knob.h>
+#include <calf/drawingutils.h>
 #include <gdk/gdkkeysyms.h>
 #include <cairo/cairo.h>
 #if !defined(__APPLE__)
@@ -45,6 +46,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
     cairo_t *ctx = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    
+    float r, g, b;
+    get_fg_color(widget, NULL, &r, &g, &b);
     
     int ox = widget->allocation.x, oy = widget->allocation.y;
     ox += (widget->allocation.width - self->knob_size * 20) / 2;
@@ -139,7 +143,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     //cairo_pattern_add_color_stop_rgba(pat, pos2, 0,   1, 1, 1.);
     //cairo_pattern_add_color_stop_rgba(pat, pos3, 0, 0.9, 1, 0.75);
     //cairo_set_source(ctx, pat);
-    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, op * 0.66 + 0.33);
+    cairo_set_source_rgba(ctx, r, g, b, op * 0.66 + 0.33);
     if (neg_l)
         cairo_arc_negative (ctx, ox + rad, oy + rad, rad - margins[self->knob_size], start * (M_PI / 180.), phase * (M_PI / 180.));
     else

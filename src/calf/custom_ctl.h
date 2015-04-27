@@ -35,9 +35,7 @@
 #include <gtk/gtkscale.h>
 #include <gtk/gtkbutton.h>
 #include <calf/giface.h>
-
-void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness = 1, int shadow = 7, float lights = 0.9, float dull = 0.15) ;
-void create_rectangle (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad);
+#include <calf/drawingutils.h>
 
 G_BEGIN_DECLS
 

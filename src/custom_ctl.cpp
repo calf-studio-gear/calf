@@ -28,153 +28,20 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <iostream>
+#include <calf/drawingutils.h>
 
 using namespace calf_plugins;
 using namespace dsp;
 
-///////////////////////////////////////// utility functions ///////////////////////////////////////////////
-
-void create_rectangle (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad) {
-    if (rad == 0) {
-        cairo_rectangle(cr, x, y, width, height);
-        return;
-    }
-    cairo_move_to(cr,x+rad,y);                      // Move to A
-    cairo_line_to(cr,x+width-rad,y);                    // Straight line to B
-    cairo_curve_to(cr,x+width,y,x+width,y,x+width,y+rad);       // Curve to C, Control points are both at Q
-    cairo_line_to(cr,x+width,y+height-rad);                  // Move to D
-    cairo_curve_to(cr,x+width,y+height,x+width,y+height,x+width-rad,y+height); // Curve to E
-    cairo_line_to(cr,x+rad,y+height);                    // Line to F
-    cairo_curve_to(cr,x,y+height,x,y+height,x,y+height-rad);       // Curve to G
-    cairo_line_to(cr,x,y+rad);                      // Line to H
-    cairo_curve_to(cr,x,y,x,y,x+rad,y);             // Curve to A
-}
-
-
-void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness, int shadow, float lights, float dull) 
-{
-    float br = brightness * 0.5 + 0.5;
-
-    // outer frame (black)
-    int pad = 0;
-
-    //cairo_rectangle(
-        //c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-    //cairo_set_source_rgb(c, 0.0, 0.0, 0.0);
-    //cairo_fill(c);
-
-    // black light effect
-    pad = 0;
-    create_rectangle(
-        c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2, 0);
-    cairo_pattern_t *pat2 = cairo_pattern_create_linear (
-        x, y, x, y + sy + oy * 2 - pad * 2);
-    cairo_pattern_add_color_stop_rgba (pat2, 0, 0.96, 0.96, 0.96, 1);
-    cairo_pattern_add_color_stop_rgba (pat2, 0.99, 0.7, 0.7, 0.7, 1);
-    //cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.05, 0.05, 0.05, 1);
-    //cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
-    cairo_set_source (c, pat2);
-    cairo_fill(c);
-    cairo_pattern_destroy(pat2);
-
-    //cairo_rectangle(c, x + ox - 1, y + oy - 1, sx + 2, sy + 2);
-    //cairo_set_source_rgb (c, 0, 0, 0);
-    //cairo_fill(c);
-
-    // inner yellowish screen
-    cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * 0.71, br * 0.82, br * 0.33);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0, br * 0.89, br * 1.00, br * 0.54);
-    cairo_set_source (c, pt);
-    cairo_rectangle(c, x + ox, y + oy, sx, sy);
-    cairo_fill(c);
-    cairo_pattern_destroy(pt);
-
-    if (shadow) {
-        // top shadow
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + oy + shadow);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.6);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, sx, shadow);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // left shadow
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + (float)shadow * 0.7, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.3);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, (float)shadow * 0.7, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // right shadow
-        pt = cairo_pattern_create_linear(x + ox + sx - (float)shadow * 0.7, y + oy, x + ox + sx, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.3);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox + sx - (float)shadow * 0.7, y + oy, (float)shadow * 0.7, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-    }
-
-    if(dull) {
-        // left dull
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + sx / 2, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,dull);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, sx / 2, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // right dull
-        pt = cairo_pattern_create_linear(x + ox + sx / 2, y + oy, x + ox + sx, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,dull);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox + sx / 2, y + oy, sx / 2, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-    }
-
-    if(lights > 0) {
-        // light sources
-        int div = 1;
-        while(sx / div > 300)
-            div += 1;
-        float w = float(sx) / float(div);
-        cairo_rectangle(c, x + ox, y + oy, sx, sy);
-        for(int i = 0; i < div; i ++) {
-            cairo_pattern_t *pt = cairo_pattern_create_radial(
-               x + ox + w * i + w / 2.f, y + oy, 1,
-               x + ox + w * i + w / 2.f, std::min(w / 2.0 + y + oy, y + oy + sy * 0.25) - 1, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
-            cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
-            cairo_set_source (c, pt);
-            cairo_fill_preserve(c);
-            pt = cairo_pattern_create_radial(
-               x + ox + w * i + w / 2.f, y + oy + sy, 1,
-               x + ox + w * i + w / 2.f, std::max(sy - w / 2.0 + y + oy, y + oy + sy * 0.75) + 1, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
-            cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
-            cairo_set_source (c, pt);
-            cairo_fill_preserve(c);
-            cairo_pattern_destroy(pt);
-        }
-    }
-}
-
 ///////////////////////////////////////// phase graph ///////////////////////////////////////////////
 
 static void
-calf_phase_graph_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
+calf_phase_graph_draw_background(GtkWidget *widget, cairo_t *ctx, int sx, int sy, int ox, int oy )
 {
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
     
-    line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
+    display_background(widget, ctx, 0, 0, sx, sy, ox, oy);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
     cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx, 9);
@@ -275,7 +142,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // ...and draw some bling bling onto it...
         ctx_back = cairo_create(pg->background);
-        calf_phase_graph_draw_background(ctx_back, sx, sy, ox, oy);
+        calf_phase_graph_draw_background(widget, ctx_back, sx, sy, ox, oy);
         // ...and copy it to the cache
         ctx_cache = cairo_create(pg->cache); 
         calf_phase_graph_copy_surface(ctx_cache, pg->background, 1);
@@ -666,6 +533,8 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         double m    = 1;
         double size = 10;
         
+        float r, g, b;
+    
         cairo_rectangle(c, ox, oy, sx, sy);
         cairo_clip(c);
         
@@ -684,10 +553,11 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1.);
         
         cairo_move_to(c, ox + rad + txp + m, oy + size - 2 + m);
-        cairo_set_source_rgb(c, 0.99,0.99,0.99);
+        get_text_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         cairo_show_text(c, lab);
-        
-        cairo_set_source_rgb(c, 0.9,0.9,0.9);
+        get_fg_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         
         rad = 6;
         cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
@@ -805,6 +675,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         
         int padx = 4;
         int pady = 3;
+        float r, g, b;
         
         GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
         GtkTreeIter iter;
@@ -831,7 +702,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         if (mx >= 0 and mx < sx and my >= 0 and my < sy)
             hover = true;
             
-        line_graph_background(c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
+        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
         
         cairo_select_font_face(c, "Sans",
               CAIRO_FONT_SLANT_NORMAL,
@@ -839,7 +710,9 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_font_size(c, 12);
         
         cairo_move_to(c, x + padx + 3, y + sy / 2 + 5);
-        cairo_set_source_rgb(c, 0.,0.,0.);
+        
+        get_fg_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         cairo_show_text(c, lab);
         g_free(lab);
         

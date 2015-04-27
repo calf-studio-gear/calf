@@ -1,5 +1,5 @@
 noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h bypass.h custom_ctl.h ctl_linegraph.h \
-    ctl_curve.h ctl_keyboard.h ctl_knob.h ctl_led.h ctl_tube.h ctl_vumeter.h \
+    ctl_curve.h ctl_keyboard.h ctl_knob.h ctl_led.h ctl_tube.h ctl_vumeter.h drawingutils.h \
     connector.h delay.h envelope.h fft.h fixed_point.h giface.h gtk_session_env.h gtk_main_win.h \
     gui.h gui_config.h gui_controls.h inertia.h jackhost.h \
     host_session.h loudness.h analyzer.h \

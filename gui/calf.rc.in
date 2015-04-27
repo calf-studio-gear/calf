@@ -90,7 +90,7 @@ style "calf-plugin"
 
 style "calf-connector"
 {
-    #bg_pixmap[NORMAL] = "background_dark.png"
+    
 }
 style "calf-connector-children"
 {
@@ -143,6 +143,9 @@ style "calf-combobox"
     font_name = "Sans 10.5"
     xthickness = 0
     ythickness = 3
+    
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    fg[NORMAL] = "black"
 }
 
 ### TEXT ENTRY ###
@@ -235,6 +238,34 @@ style "calf-frame"
 {
     xthickness = 8
     ythickness = 8
+    
+    fg[NORMAL]   = "white"
+    text[NORMAL] = "white"
+}
+
+### KNOBS ###
+style "calf-knobs"
+{
+    fg[NORMAL] = "#001a1a"
+}
+
+### VUMETERS ###
+style "calf-vumeter"
+{
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    fg[ACTIVE] = "#cc0000"
+}
+
+### LED ###
+style "calf-led"
+{
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+}
+
+### DISPLAYS ###
+style "calf-display" {
+    base[NORMAL] = { 0.89, 1.00, 0.45 }
 }
 
 widget "*Calf*"                                   style : rc "calf-default"
@@ -275,3 +306,14 @@ widget_class "*Scrollbar*"                        style : highest "calf-scrollba
 
 widget_class "*Calf*GtkTreeView*"                 style : highest "calf-treeview"
 widget_class "*Calf*TreeView*Button*"             style : highest "calf-treehead"
+
+widget "*Calf*Knob"                               style : highest "calf-knobs"
+
+widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
+widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
+
+widget "*Calf*LED"                                style : highest "calf-led"
+widget "*CalfLed*"                                style : highest "calf-led"
+
+widget "*Calf*Combo*"                             style : highest "calf-display"
+widget "*Calf*Graph"                              style : highest "calf-display"

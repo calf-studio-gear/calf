@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include <calf/custom_ctl.h>
+#include <calf/drawingutils.h>
 #include <calf/ctl_linegraph.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
@@ -658,7 +658,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // draw the yellowish lighting on the background surface
         cairo_t *bg = cairo_create(lg->background_surface);
         if (lg->debug) printf("(draw background)\n");
-        line_graph_background(bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y);
+        display_background(widget, bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y);
         cairo_destroy(bg);
     }
     
