@@ -603,13 +603,14 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
+    CalfVUMeter *vu = CALF_VUMETER(widget);
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
-    calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
-    CALF_VUMETER(widget)->vumeter_hold = get_float("hold", 0);
-    CALF_VUMETER(widget)->vumeter_falloff = get_float("falloff", 0.f);
-    CALF_VUMETER(widget)->vumeter_width = get_int("width", 80);
-    CALF_VUMETER(widget)->vumeter_height = get_int("height", 18);
-    CALF_VUMETER(widget)->vumeter_position = get_int("position", 0);
+    calf_vumeter_set_mode (vu, (CalfVUMeterMode)get_int("mode", 0));
+    vu->vumeter_hold = get_float("hold", 0);
+    vu->vumeter_falloff = get_float("falloff", 0.f);
+    vu->vumeter_width = get_int("width", 80);
+    vu->vumeter_height = get_int("height", 18);
+    vu->vumeter_position = get_int("position", 0);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VUMeter");
     return widget;
 }
@@ -648,11 +649,12 @@ GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
-    widget = calf_tube_new ();
-    gtk_widget_set_name(GTK_WIDGET(widget), "calf-tube");
-    CALF_TUBE(widget)->size = get_int("size", 2);
-    CALF_TUBE(widget)->direction = get_int("direction", 2);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Tube");
+    GtkWidget *widget = calf_tube_new ();
+    CalfTube *tube = CALF_TUBE(widget);
+    gtk_widget_set_name(widget, "calf-tube");
+    tube->size = get_int("size", 2);
+    tube->direction = get_int("direction", 2);
+    gtk_widget_set_name(widget, "Calf-Tube");
     return widget;
 }
 
@@ -837,14 +839,11 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     widget = calf_knob_new();
     float increment = props.get_increment();
     gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
-    CALF_KNOB(widget)->default_value = props.to_01(props.def_value);
-    CALF_KNOB(widget)->knob_type = get_int("type");
-    CALF_KNOB(widget)->knob_size = get_int("size", 2);
-    if(CALF_KNOB(widget)->knob_size > 5) {
-        CALF_KNOB(widget)->knob_size = 5;
-    } else if (CALF_KNOB(widget)->knob_size < 1) {
-        CALF_KNOB(widget)->knob_size = 1;
-    }
+    CalfKnob * knob = CALF_KNOB(widget);
+    knob->default_value = props.to_01(props.def_value);
+    knob->type = get_int("type");
+    knob->size = min(5, max(1, get_int("size", 2)));
+    knob->ticks = min(36, max(0, get_int("ticks", 5)));
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;

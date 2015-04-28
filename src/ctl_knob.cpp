@@ -30,8 +30,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <gdk/gdk.h>
+#include <algorithm>
 
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
+
+static float
+calf_knob_get_color (int type, float deg, float phase)
+{
+    if (type == 0 and deg > phase) return 0.33;
+    if (type == 1 and deg < phase) return 0.33;
+    if (type == 2 and ((deg >= 270 and deg < phase) or (deg <= 270 and deg > phase))) return 0.33;
+    return 1;
+}
+
 
 static gboolean
 calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
@@ -39,15 +50,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
     CalfKnobClass *cls = CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget));
-    GdkPixbuf *pixbuf = cls->knob_image[self->knob_size - 1];
+    GdkPixbuf *pixbuf = cls->knob_image[self->size - 1];
     gint iw = gdk_pixbuf_get_width(pixbuf);
     gint ih = gdk_pixbuf_get_height(pixbuf);
     
-    float widths[6]  = {0, 2.0, 2.5, 2.0, 2.5, 3.5};
-    float margins[6] = {0, 3.0, 5.0, 4.5, 6.0, 6.0};
+    float widths[6]  = {0, 2.0, 3.5, 3.5, 4.2, 5.5};
+    float margins[6] = {0, 3.0, 3.5, 3.8, 4.2, 4.5};
     float pins_m[6]  = {0, 6,   10,   10,   11,  13};
     float pins_s[6]  = {0, 3,   4,   4,   4,   4};
-    int   addd[6]    = {0, 1, 2, 3, 4, 5};
     
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
     cairo_t *ctx = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -55,27 +65,90 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     float r, g, b;
     get_fg_color(widget, NULL, &r, &g, &b);
     
-    int ox = widget->allocation.x, oy = widget->allocation.y;
+    float ox = widget->allocation.x, oy = widget->allocation.y;
     ox += (widget->allocation.width - iw) / 2;
     oy += (widget->allocation.height - ih) / 2;
-    int size = iw;
-    float rad = size / 2;
-    int from  = self->knob_type == 3 ? 270 : 135;
-    int to    = self->knob_type == 3 ? -90 : 45;
-    int phase = (adj->value - adj->lower) * 270 / (adj->upper - adj->lower) + 135;
-    float op  = (adj->value - adj->lower) / (adj->upper - adj->lower);
-    int start;
+    float size  = iw;
+    //float from  = self->type == 3 ? 270 : 135;
+    //float to    = self->type == 3 ? -90 : 45;
+    float phase = (adj->value - adj->lower) * 270. / (adj->upper - adj->lower) + 135.;
     int neg_b = 0;
     int neg_l = 0;
+    
+    float rad = size / 2;
+    float xc  = ox + rad;
+    float yc  = oy + rad;
+    
+    int   tick;
+    float tickd;
+    float deg;
+    float end;
+    float last;
+    float start;
+    
+    float lwidth = widths[self->size];
+    float lmarg  = margins[self->size];
+    float perim  = (rad - lmarg) * 2 * M_PI;
+    float tickw  = 3. / perim * 360.;
+    float tickw2 = tickw / 2.;
     
     cairo_rectangle(ctx, ox, oy, size + size / 2, size + size / 2);
     cairo_clip(ctx);
     
-    switch (self->knob_type) {
+    // draw background
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], pixbuf,
+                    0, 0, ox, oy, iw, ih, GDK_RGB_DITHER_NORMAL, 0, 0);
+    
+    cairo_set_line_width(ctx, lwidth);
+    
+    switch (self->type) {
         case 0:
         default:
             // normal knob
-            start = 135;
+            start = 135.;
+            deg   = 135.;
+            last  = 135.;
+            end   = 405.;
+            tick  = 0;
+            tickd = 270.;
+            if (self->ticks > 1) {
+                tickd = 270. / (self->ticks - 1);
+            }
+            while (deg <= end) {
+                float o = calf_knob_get_color(self->type, deg, phase);
+                cairo_set_source_rgba(ctx, r, g, b, o);
+                if (self->ticks and deg == start + tick * tickd) {
+                    // draw from last known angle to tickw2 + tickw before actual deg
+                    if (last < deg - tickw - tickw2) {
+                        cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), (deg - tickw - tickw2) * (M_PI / 180.));
+                        cairo_stroke(ctx);
+                        printf("tickrad from %.2f to %.2f\n", last, (deg - tickw - tickw2));
+                    }
+                    // draw the tick itself
+                    cairo_arc(ctx, xc, yc, rad - lmarg, (deg - tickw2) * (M_PI / 180.), (deg + tickw2) * (M_PI / 180.));
+                    cairo_stroke(ctx);
+                    printf("tick from %.2f to %.2f\n", (deg - tickw2), (deg + tickw2));
+                    // set last known angle to deg plus tickw + tickw2
+                    last = deg + tickw + tickw2;
+                    // and count up tick
+                    tick ++;
+                } else {
+                    if (last < deg) {
+                        cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), deg * (M_PI / 180.));
+                        cairo_stroke(ctx);
+                    }
+                    printf("norm %.2f to %.2f\n", last, deg);
+                    last = deg;
+                }
+                //printf("o %.2f start %.2f end %.2f last %.2f deg %.2f tick %d tickd %.2f ticks %d\n", o, start, end, last, deg, tick, tickd, self->ticks);
+                if (deg >= end)
+                    break;
+                // set deg to phase or end or next tick
+                deg = (deg >= phase) ? end : phase;
+                if (tick < self->ticks)
+                    deg = std::min(deg, start + tick * tickd);
+            }
+            printf("\n");
             break;
         case 1:
             // centered @ 270°
@@ -85,13 +158,11 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 phase = (adj->value - adj->lower) * 270 / (adj->upper - adj->lower) -225;
             }
             start = -90;
-            op = fabs(op * 2 - 1);
             break;
         case 2:
             // reversed
             neg_l = 1;
             start = 45;
-            op = 1 - op;
             break;
         case 3:
             // 360°
@@ -99,81 +170,71 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             neg_b = 1;
             phase = (adj->value - adj->lower) * 360 / (adj->upper - adj->lower) + -90;
             start = phase;
-            op = 1;
             break;
     }
     
-    if (self->knob_type == 1 && phase == 270) {
-        double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;
-        if (pt < 0)
-            phase = 269;
-        if (pt > 0)
-            phase = 273;
-    }
+    //if (self->type == 1 && phase == 270) {
+        //double pt = (adj->value - adj->lower) * 2.0 / (adj->upper - adj->lower) - 1.0;
+        //if (pt < 0)
+            //phase = 269;
+        //if (pt > 0)
+            //phase = 273;
+    //}
     
-    // draw background
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], pixbuf,
-                    0, 0, ox, oy, iw, ih, GDK_RGB_DITHER_NORMAL, 0, 0);
     
-    float lwidth = widths[self->knob_size];
-    float lmarg  = margins[self->knob_size];
-    int   numadd = addd[self->knob_size];
     
-    cairo_set_line_width(ctx, lwidth);
-    
-    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_SQUARE);
     
     // draw unlit
-    if (neg_b)
-        cairo_arc_negative (ctx, ox + rad, oy + rad, rad - lmarg, from * (M_PI / 180.), to * (M_PI / 180.));
-    else
-        cairo_arc (ctx, ox + rad, oy + rad, rad - lmarg, from * (M_PI / 180.), to * (M_PI / 180.));
-    cairo_set_source_rgba(ctx, r, g, b, 0.33);
-    cairo_stroke(ctx);
+    //if (neg_b)
+        //cairo_arc_negative (ctx, xc, yc, rad - lmarg, from * (M_PI / 180.), to * (M_PI / 180.));
+    //else
+        //cairo_arc (ctx, ox + rad, oy + rad, rad - lmarg, from * (M_PI / 180.), to * (M_PI / 180.));
+    //cairo_set_source_rgba(ctx, r, g, b, 0.33);
+    //cairo_stroke(ctx);
     
-    // draw lit
-    if (neg_l)
-        cairo_arc_negative (ctx, ox + rad, oy + rad, rad - lmarg, start * (M_PI / 180.), phase * (M_PI / 180.));
-    else
-        cairo_arc (ctx, ox + rad, oy + rad, rad - lmarg, start * (M_PI / 180.), phase * (M_PI / 180.));
-    cairo_set_source_rgba(ctx, r, g, b, 1);
-    cairo_stroke(ctx);
+    //// draw lit
+    //if (neg_l)
+        //cairo_arc_negative (ctx, ox + rad, oy + rad, rad - lmarg, start * (M_PI / 180.), phase * (M_PI / 180.));
+    //else
+        //cairo_arc (ctx, ox + rad, oy + rad, rad - lmarg, start * (M_PI / 180.), phase * (M_PI / 180.));
+    //cairo_set_source_rgba(ctx, r, g, b, 1);
+    //cairo_stroke(ctx);
     
-    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
+    //cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
     
-    cairo_save(ctx);
-    // draw dots
-    cairo_set_line_width(ctx, lwidth);
-    if (!self->knob_type) {
-        cairo_translate(ctx, ox + rad, oy + rad);
-        cairo_rotate(ctx, 225. * (M_PI / 180.));
-        for (int i = 0; i < (5 + 4 * numadd); i++) {
-            float ang = 135. + i * 67.5 / (numadd + 1);
-            if (!(i % (numadd + 1))) {
-                // fat tick
-                cairo_move_to(ctx, 0, -rad + lmarg - lwidth * 1.5);
-                cairo_set_line_width(ctx, lwidth);
-            } else {
-                // thin tick 
-                cairo_move_to(ctx, 0, -rad + lmarg - lwidth * 1.25);
-                cairo_set_line_width(ctx, lwidth / 2);
-            }
-            cairo_line_to(ctx, 0, -rad + lmarg - lwidth / 2);
-            if ((self->knob_type == 0 and (ang <= phase and phase > 135))) 
-                cairo_set_source_rgba(ctx, r, g, b, 1);
-            else
-                cairo_set_source_rgba(ctx, r, g, b, 0.33);
-            cairo_stroke(ctx);
-            cairo_rotate(ctx, 67.5 / (numadd + 1) * (M_PI / 180.));
-        }
-    }
-    cairo_restore(ctx);
+    //cairo_save(ctx);
+    //// draw dots
+    //cairo_set_line_width(ctx, lwidth);
+    //if (!self->type) {
+        //cairo_translate(ctx, ox + rad, oy + rad);
+        //cairo_rotate(ctx, 225. * (M_PI / 180.));
+        //for (int i = 0; i < (5 + 4 * numadd); i++) {
+            //float ang = 135. + i * 67.5 / (numadd + 1);
+            //if (!(i % (numadd + 1))) {
+                //// fat tick
+                //cairo_move_to(ctx, 0, -rad + lmarg - lwidth * 1.5);
+                //cairo_set_line_width(ctx, lwidth);
+            //} else {
+                //// thin tick 
+                //cairo_move_to(ctx, 0, -rad + lmarg - lwidth * 1.25);
+                //cairo_set_line_width(ctx, lwidth / 2);
+            //}
+            //cairo_line_to(ctx, 0, -rad + lmarg - lwidth / 2);
+            //if ((self->type == 0 and (ang <= phase and phase > 135))) 
+                //cairo_set_source_rgba(ctx, r, g, b, 1);
+            //else
+                //cairo_set_source_rgba(ctx, r, g, b, 0.33);
+            //cairo_stroke(ctx);
+            //cairo_rotate(ctx, 67.5 / (numadd + 1) * (M_PI / 180.));
+        //}
+    //}
+    //cairo_restore(ctx);
     
     // draw pin
-    float x1 = ox + rad + (rad - pins_m[self->knob_size]) * cos(phase * (M_PI / 180.));
-    float y1 = oy + rad + (rad - pins_m[self->knob_size]) * sin(phase * (M_PI / 180.));
-    float x2 = ox + rad + (rad - pins_s[self->knob_size] - pins_m[self->knob_size]) * cos(phase * (M_PI / 180.));
-    float y2 = oy + rad + (rad - pins_s[self->knob_size] - pins_m[self->knob_size]) * sin(phase * (M_PI / 180.));
+    float x1 = ox + rad + (rad - pins_m[self->size]) * cos(phase * (M_PI / 180.));
+    float y1 = oy + rad + (rad - pins_m[self->size]) * sin(phase * (M_PI / 180.));
+    float x2 = ox + rad + (rad - pins_s[self->size] - pins_m[self->size]) * cos(phase * (M_PI / 180.));
+    float y2 = oy + rad + (rad - pins_s[self->size] - pins_m[self->size]) * sin(phase * (M_PI / 180.));
     cairo_move_to(ctx, x1, y1);
     cairo_line_to(ctx, x2, y2);
     cairo_set_source_rgba(ctx, 0, 0.11, 0.11, 0.99);
@@ -193,8 +254,8 @@ calf_knob_size_request (GtkWidget *widget,
     CalfKnob *self = CALF_KNOB(widget);
 
     CalfKnobClass * cls = CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget));
-    requisition->width  = gdk_pixbuf_get_width(cls->knob_image[self->knob_size - 1]);
-    requisition->height = gdk_pixbuf_get_height(cls->knob_image[self->knob_size - 1]);
+    requisition->width  = gdk_pixbuf_get_width(cls->knob_image[self->size - 1]);
+    requisition->height = gdk_pixbuf_get_height(cls->knob_image[self->size - 1]);
 }
 
 static void
@@ -211,9 +272,9 @@ calf_knob_incr (GtkWidget *widget, int dir_down)
         step = oldstep - 1;
     else
         step = oldstep + 1;
-    if (self->knob_type == 3 && step >= nsteps)
+    if (self->type == 3 && step >= nsteps)
         step %= nsteps;
-    if (self->knob_type == 3 && step < 0)
+    if (self->type == 3 && step < 0)
         step = nsteps - (nsteps - step) % nsteps;
 
     // trying to reduce error cumulation here, by counting from lowest or from highest
@@ -340,12 +401,12 @@ calf_knob_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
     
     if (GTK_WIDGET_HAS_GRAB(widget)) 
     {
-        if (self->knob_type == 3)
+        if (self->type == 3)
         {
             gtk_range_set_value(GTK_RANGE(widget), endless(self->start_value - (event->y - self->start_y) / scale));
         }
         else
-        if (self->knob_type == 1)
+        if (self->type == 1)
         {
             gtk_range_set_value(GTK_RANGE(widget), deadzone(GTK_WIDGET(widget), self->start_value, -(event->y - self->start_y) / scale));
         }

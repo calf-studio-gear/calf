@@ -36,8 +36,10 @@ G_BEGIN_DECLS
 struct CalfKnob
 {
     GtkRange parent;
-    int knob_type;
-    int knob_size;
+    int type;
+    int size;
+    int ticks;
+    float markers[128];
     double start_x, start_y, last_y, start_value, default_value;
 };
 
