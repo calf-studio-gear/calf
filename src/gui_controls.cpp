@@ -843,7 +843,29 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     knob->default_value = props.to_01(props.def_value);
     knob->type = get_int("type");
     knob->size = min(5, max(1, get_int("size", 2)));
-    knob->ticks = min(36, max(0, get_int("ticks", 5)));
+    
+    string &ticks = attribs["ticks"];
+    if (ticks == "") {
+        switch (knob->type) {
+            default:
+            case 0: ticks = "0.0 1.0"; break;
+            case 1: ticks = "0.0 0.5 1.0"; break;
+            case 2: ticks = "0.0 1.0"; break;
+            case 3: ticks = "0.0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1.0"; break;
+        }
+    }
+    vector<double> t;
+    string::size_type lpos = ticks.find_first_not_of(" ", 0);
+    string::size_type pos  = ticks.find_first_of(" ", lpos);
+    while (string::npos != pos || string::npos != lpos) {
+        double val;
+        stringstream stream(ticks.substr(lpos, pos - lpos).c_str());
+        stream >> val;
+        t.push_back(val);
+        lpos = ticks.find_first_not_of(" ", pos);
+        pos  = ticks.find_first_of(" ", lpos);
+    }
+    knob->ticks = t;
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
