@@ -246,7 +246,9 @@ style "calf-frame"
 ### KNOBS ###
 style "calf-knobs"
 {
-    fg[NORMAL] = "#001a1a"
+    fg[NORMAL]   = "#001a1a"
+    fg[PRELIGHT] = "#001a1a"
+    fg[ACTIVE]   = "#000"
 }
 
 ### VUMETERS ###

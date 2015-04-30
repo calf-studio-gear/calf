@@ -218,7 +218,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     float y2 = oy + rad + (rad - pins_s[self->size] - pins_m[self->size]) * sin(phase * (M_PI / 180.));
     cairo_move_to(ctx, x1, y1);
     cairo_line_to(ctx, x2, y2);
-    cairo_set_source_rgba(ctx, 0, 0.11, 0.11, 0.99);
+    cairo_set_source_rgba(ctx, r, g, b, 0.99);
     cairo_set_line_width(ctx, lwidth / 2.);
     cairo_stroke(ctx);
     cairo_destroy(ctx);
@@ -237,6 +237,24 @@ calf_knob_size_request (GtkWidget *widget,
     CalfKnobClass * cls = CALF_KNOB_CLASS(GTK_OBJECT_GET_CLASS(widget));
     requisition->width  = gdk_pixbuf_get_width(cls->knob_image[self->size - 1]);
     requisition->height = gdk_pixbuf_get_height(cls->knob_image[self->size - 1]);
+}
+
+static gboolean calf_knob_enter (GtkWidget *widget, GdkEventCrossing* ev)
+{
+    if (gtk_widget_get_state(widget) == GTK_STATE_NORMAL) {
+        gtk_widget_set_state(widget, GTK_STATE_PRELIGHT);
+        gtk_widget_queue_draw(widget);
+    }
+    return TRUE;
+}
+
+static gboolean calf_knob_leave (GtkWidget *widget, GdkEventCrossing *ev)
+{
+    if (gtk_widget_get_state(widget) == GTK_STATE_PRELIGHT) {
+        gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+        gtk_widget_queue_draw(widget);
+    }
+    return TRUE;
 }
 
 static void
@@ -270,7 +288,8 @@ calf_knob_key_press (GtkWidget *widget, GdkEventKey *event)
     g_assert(CALF_IS_KNOB(widget));
     CalfKnob *self = CALF_KNOB(widget);
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
-
+    gtk_widget_set_state(widget, GTK_STATE_ACTIVE);
+    gtk_widget_queue_draw(widget);
     switch(event->keyval)
     {
         case GDK_Home:
@@ -311,7 +330,8 @@ calf_knob_key_release (GtkWidget *widget, GdkEventKey *event)
         self->start_y = self->last_y;
         return TRUE;
     }
-    
+    gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+    gtk_widget_queue_draw(widget);
     return FALSE;
 }
 
@@ -331,7 +351,8 @@ calf_knob_button_press (GtkWidget *widget, GdkEventButton *event)
     self->start_x = event->x;
     self->last_y = self->start_y = event->y;
     self->start_value = gtk_range_get_value(GTK_RANGE(widget));
-    
+    gtk_widget_set_state(widget, GTK_STATE_ACTIVE);
+    gtk_widget_queue_draw(widget);
     return TRUE;
 }
 
@@ -342,6 +363,8 @@ calf_knob_button_release (GtkWidget *widget, GdkEventButton *event)
 
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
+    gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+    gtk_widget_queue_draw(widget);
     return FALSE;
 }
 
@@ -415,6 +438,8 @@ calf_knob_class_init (CalfKnobClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->expose_event = calf_knob_expose;
     widget_class->size_request = calf_knob_size_request;
+    widget_class->enter_notify_event = calf_knob_enter;
+    widget_class->leave_notify_event = calf_knob_leave;
     widget_class->button_press_event = calf_knob_button_press;
     widget_class->button_release_event = calf_knob_button_release;
     widget_class->motion_notify_event = calf_knob_pointer_motion;
