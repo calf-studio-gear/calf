@@ -118,7 +118,7 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         
         const unsigned int s = ms->marker.size();
-        get_text_color(widget, NULL, &r, &g, &b);
+        get_fg_color(widget, NULL, &r, &g, &b);
         cairo_set_source_rgb(cr, r, g, b);
         for (unsigned int i = 0; i < s; i++) {
             double val = log10(1 + ms->marker[i] * 9);
