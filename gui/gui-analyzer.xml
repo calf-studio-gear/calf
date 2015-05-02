@@ -2,7 +2,7 @@
     
     <hbox spacing="12" attach-x="0" attach-y="0" expand-x="1" fill-x="1" expand-y="0" fill-y="0">
         <label text="Accuracy" />
-        <knob param="analyzer_accuracy" size="1" />
+        <knob param="analyzer_accuracy" size="1" ticks="0 0.16 0.33 0.5 0.66 0.83 1" />
         <label text="   " />
         <label text="Speed" />
         <knob param="analyzer_speed" size="1" />
@@ -47,7 +47,7 @@
     </vbox>
     <hbox attach-x="1" attach-y="0" expand-x="1" fill-x="1" expand-y="0" fill-y="0">
         <label text="Density" expand="1" fill="1"/>
-        <knob param="gonio_accuracy" size="1" expand="0" fill="0"/>
+        <knob param="gonio_accuracy" ticks="0 0.25 0.5 0.75 1" size="1" expand="0" fill="0"/>
         
         <label text="   "/>
         
