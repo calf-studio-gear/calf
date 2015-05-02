@@ -4,6 +4,7 @@
             <table rows="1" cols="2">
                 <vumeter param="meter_in" position="2" hold="1.5" falloff="2.5"  attach-x="0" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_in" attach-x="1" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+                <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="0" attach-y="1" expand-x="1" expand-y="0" />
             </table>
             <hbox spacing="8">
                 <vbox>
@@ -68,9 +69,12 @@
                 <vumeter param="meter_outL" position="2" hold="1.5" falloff="2.5"  attach-x="1" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_outL" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
                 
-                <label param="meter_outR" attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
-                <vumeter param="meter_outR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
-                <led param="clip_outR" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+                <label param="meter_outR" attach-x="0" attach-y="2" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
+                <vumeter param="meter_outR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
+                <led param="clip_outR" attach-x="2" attach-y="2" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+                
+                <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="3" position="2" mode="0" attach-x="1" attach-y="1" expand-x="1" expand-y="0" />
+        
             </table>
             <hbox spacing="8">
                 <vbox spacing="12">

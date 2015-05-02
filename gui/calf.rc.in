@@ -257,6 +257,16 @@ style "calf-vumeter"
     bg[NORMAL] = { 0.85, 0.85, 0.85 }
     fg[NORMAL] = { 0, 0.11, 0.11 }
     fg[ACTIVE] = "#cc0000"
+    
+    xthickness = 5
+    ythickness = 4
+}
+
+### METERSCALE ###
+style "calf-meterscale"
+{
+    fg[NORMAL] = { 1.00, 1.00, 1.00 }
+    xthickness = 5
 }
 
 ### LED ###
@@ -313,6 +323,8 @@ widget "*Calf*Knob"                               style : highest "calf-knobs"
 
 widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
 widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
+widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
+widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
 
 widget "*Calf*LED"                                style : highest "calf-led"
 widget "*CalfLed*"                                style : highest "calf-led"

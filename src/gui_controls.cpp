@@ -83,6 +83,26 @@ float control_base::get_float(const char *name, float def_value)
     return value;
 }
 
+std::vector<double> control_base::get_vector(const char *name, std::string &value)
+{
+    std::vector<double> t;
+    if (attribs.count(name)) {
+        value = attribs[name];
+    }
+        
+    string::size_type lpos = value.find_first_not_of(" ", 0);
+    string::size_type pos  = value.find_first_of(" ", lpos);
+    while (string::npos != pos || string::npos != lpos) {
+        double val;
+        stringstream stream(value.substr(lpos, pos - lpos).c_str());
+        stream >> val;
+        t.push_back(val);
+        lpos = value.find_first_not_of(" ", pos);
+        pos  = value.find_first_of(" ", lpos);
+    }
+    return t;
+}
+
 void control_base::set_visibilty(bool state)
 {
     if (state) {
@@ -844,28 +864,15 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     knob->type = get_int("type");
     knob->size = min(5, max(1, get_int("size", 2)));
     
-    string &ticks = attribs["ticks"];
-    if (ticks == "") {
-        switch (knob->type) {
-            default:
-            case 0: ticks = "0.0 1.0"; break;
-            case 1: ticks = "0.0 0.5 1.0"; break;
-            case 2: ticks = "0.0 1.0"; break;
-            case 3: ticks = "0.0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1.0"; break;
-        }
+    string ticks;
+    switch (knob->type) {
+        default:
+        case 0: ticks = "0.0 1.0"; break;
+        case 1: ticks = "0.0 0.5 1.0"; break;
+        case 2: ticks = "0.0 1.0"; break;
+        case 3: ticks = "0.0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1.0"; break;
     }
-    vector<double> t;
-    string::size_type lpos = ticks.find_first_not_of(" ", 0);
-    string::size_type pos  = ticks.find_first_of(" ", lpos);
-    while (string::npos != pos || string::npos != lpos) {
-        double val;
-        stringstream stream(ticks.substr(lpos, pos - lpos).c_str());
-        stream >> val;
-        t.push_back(val);
-        lpos = ticks.find_first_not_of(" ", pos);
-        pos  = ticks.find_first_of(" ", lpos);
-    }
-    knob->ticks = t;
+    knob->ticks = get_vector("ticks", ticks);
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
@@ -1081,6 +1088,23 @@ void curve_param_control::send_configure(const char *key, const char *value)
             calf_curve_set_points(widget, pts);
         }
     }
+}
+
+/******************************** Meter Scale ********************************/
+
+GtkWidget *meter_scale_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    widget  = calf_meter_scale_new ();
+    CalfMeterScale *ms = CALF_METER_SCALE(widget);
+    gtk_widget_set_name(widget, "Calf-MeterScale");
+    string str   = "0 0.5 1";
+    ms->marker   = get_vector("marker", str);
+    ms->mode     = (CalfVUMeterMode)get_int("mode", 0);
+    ms->position = get_int("position", 0);
+    ms->dots     = get_int("dots", 0);
+    return widget;
 }
 
 /******************************** Entry ********************************/

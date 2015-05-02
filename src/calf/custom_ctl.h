@@ -36,8 +36,35 @@
 #include <gtk/gtkbutton.h>
 #include <calf/giface.h>
 #include <calf/drawingutils.h>
+#include <calf/ctl_vumeter.h>
 
 G_BEGIN_DECLS
+
+/// METER SCALE //////////////////////////////////////////////////////////////
+
+
+#define CALF_TYPE_METER_SCALE          (calf_meter_scale_get_type())
+#define CALF_METER_SCALE(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_METER_SCALE, CalfMeterScale))
+#define CALF_IS_METER_SCALE(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_METER_SCALE))
+#define CALF_METER_SCALE_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_METER_SCALE, CalfMeterScaleClass))
+#define CALF_IS_METER_SCALE_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_METER_SCALE))
+
+struct CalfMeterScale
+{
+    GtkDrawingArea parent;
+    std::vector<double> marker;
+    CalfVUMeterMode mode;
+    int position;
+    int dots;
+};
+
+struct CalfMeterScaleClass
+{
+    GtkDrawingAreaClass parent_class;
+};
+
+extern GtkWidget *calf_meter_scale_new();
+extern GType calf_meter_scale_get_type();
 
 
 /// PHASE GRAPH ////////////////////////////////////////////////////////

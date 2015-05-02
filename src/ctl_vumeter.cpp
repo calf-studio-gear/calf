@@ -51,7 +51,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     int led = 2; // single LED size
     int led_m = 1; // margin between LED
     int led_s = led + led_m; // size of LED with margin
-    int led_x = 5; int led_y = 4; // position of first LED
+    int led_x = widget->style->xthickness;
+    int led_y = widget->style->ythickness; // position of first LED
     int led_w = width - 2 * led_x + led_m; // width of LED bar w/o text calc (additional led margin, is removed later; used for filling the led bar completely w/o margin gap)
     int led_h = height - 2 * led_y; // height of LED bar w/o text calc
     int text_x = 0; int text_y = 0;

@@ -264,6 +264,7 @@ struct keyboard_param_control: public param_control
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get() {}
     virtual void set() {}
+    virtual void send_configure(const char *key, const char *value) {}
 };
 
 /// Curve editor
@@ -275,6 +276,15 @@ struct curve_param_control: public param_control, public send_configure_iface
     virtual void get() {}
     virtual void set() {}
     virtual void send_configure(const char *key, const char *value);
+};
+
+/// Meter scale
+struct meter_scale_param_control: public param_control, public send_configure_iface
+{
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set() {}
+    virtual void send_configure(const char *key, const char *value) {};
 };
 
 /// Text entry
