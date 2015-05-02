@@ -129,11 +129,11 @@ void pitch_audio_module::recompute()
         rf2 -= note * 100;
         if (note == 12)
             note -= 12;
-        static const char notenames[] = "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0";
         int mnote = round(12 * log2(f2)) + 57;
         //printf("pos %d mag %f freq %f posx %f freqx %f midi %d note %s%+fct\n", maxpos, maxpt, srate * 1.0 / maxpos, pos2, srate / pos2, mnote, notenames + 3 * note, rf2);
         *params[par_note] = mnote;
         *params[par_cents] = rf2;
+        *params[par_clarity] = maxpt;
     }
 }
 

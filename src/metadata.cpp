@@ -1952,6 +1952,7 @@ CALF_PORT_PROPS(pitch) = {
     { 440,    427, 453,  0.1, PF_FLOAT | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "tune", "Tune" },
     { 0,      0,   127,  1, PF_INT | PF_PROP_OUTPUT, NULL, "note", "MIDI Note" },
     { 0,     -100, 100,  1, PF_FLOAT | PF_PROP_OUTPUT, NULL, "cents", "Cents" },
+    { 0,     -1, 1,      0, PF_FLOAT | PF_SCALE_PERC | PF_PROP_OUTPUT, NULL, "clarity", "Clarity" },
     {}
 };
 

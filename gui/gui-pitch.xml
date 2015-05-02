@@ -15,11 +15,13 @@
             <knob param="tune" expand="0" fill="0" type="1"/>
             <value param="tune" expand="0" fill="0"/>
         </vbox>
-        <table rows="2" cols="2">
+        <table rows="3" cols="2">
             <label text="MIDI Note:" attach-x="0" attach-y="0"/>
             <value param="note" attach-x="1" attach-y="0"/>
             <label text="Cents:" attach-x="0" attach-y="1"/>
             <value param="cents" attach-x="1" attach-y="1"/>
+            <label text="Clarity:" attach-x="0" attach-y="2"/>
+            <value param="clarity" attach-x="1" attach-y="2"/>
         </table>
     </hbox>
     <if cond="directlink">
