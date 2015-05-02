@@ -32,7 +32,7 @@
         <hbox spacing="25">
             <vbox>
                 <label param="drive" />
-                <knob param="drive" size="5" />
+                <knob param="drive" size="5" ticks="0.1 1 2 3 4 5 6 7 8 9 10" />
                 <value param="drive" />
             </vbox>
             
@@ -49,13 +49,13 @@
             
             <vbox>
                 <label param="freq" />
-                <knob param="freq" size="5" />
+                <knob param="freq" size="5" ticks="10 25 50 100 250" />
                 <value param="freq" />
             </vbox>
             <vbox>
                 <label param="floor" />
                 <toggle param="floor_active" size="1" />
-                <knob param="floor" size="3" />
+                <knob param="floor" size="3" ticks="10 20 30 60 120"/>
                 <value param="floor" width="5" />
             </vbox>
         </hbox>
