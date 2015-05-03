@@ -114,7 +114,7 @@ void pitch_audio_module::recompute()
             break;
         }
     }
-    if (maxpt > 0 && maxpt < BufferSize / 2 - 1)
+    if (maxpt > 0 && maxpos < BufferSize / 2 - 1)
     {
         float y1 = magarr[maxpos - 1];
         float y2 = magarr[maxpos];
@@ -133,8 +133,8 @@ void pitch_audio_module::recompute()
         //printf("pos %d mag %f freq %f posx %f freqx %f midi %d note %s%+fct\n", maxpos, maxpt, srate * 1.0 / maxpos, pos2, srate / pos2, mnote, notenames + 3 * note, rf2);
         *params[par_note] = mnote;
         *params[par_cents] = rf2;
-        *params[par_clarity] = maxpt;
     }
+    *params[par_clarity] = maxpt;
 }
 
 bool pitch_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
