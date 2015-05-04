@@ -382,7 +382,7 @@ char *jack_host::configure(const char *key, const char *value)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char *short_options = "c:i:l:o:m:M:s:S:ehv";
+static const char *short_options = "c:i:l:o:m:M:s:S:ehvL";
 
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
@@ -392,9 +392,11 @@ static struct option long_options[] = {
     {"load", 1, 0, 'l'},
     {"input", 1, 0, 'i'},
     {"output", 1, 0, 'o'},
+    {"midi", 1, 0, 'm'},
     {"state", 1, 0, 's'},
     {"connect-midi", 1, 0, 'M'},
     {"session-id", 1, 0, 'S'},
+    {"list", 0, 0, 'L'},
     {0,0,0,0},
 };
 
@@ -402,7 +404,7 @@ void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
         "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>] [--load|state <session>]\n"
-        "       [--connect-midi <name|capture-index>] [--help] [--version] [!] pluginname[:<preset>] [!] ...\n", 
+        "       [--connect-midi <name|capture-index>] [--help] [--version] [--list] [!] pluginname[:<preset>] [!] ...\n", 
         argv[0]);
 }
 
@@ -497,6 +499,15 @@ int main(int argc, char *argv[])
                 else
                     sess.autoconnect_midi = string(optarg);
                 break;
+            case 'L':
+                string s = 
+                #define PER_MODULE_ITEM(name, isSynth, jackname) jackname " "
+                #include <calf/modulelist.h>
+                ;
+                if (!s.empty())
+                    s = s.substr(0, s.length() - 1);
+                printf("%s\n", s.c_str());
+                return 0;
         }
     }
     while(optind < argc) {
