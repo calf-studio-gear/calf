@@ -18,7 +18,7 @@
         <label param="clip_out" attach-x="3" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="amount" attach-x="4" attach-y="0" expand-x="0" fill-x="0" />
-        <knob param="amount" attach-x="4" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        <knob param="amount" ticks="0 1 64" attach-x="4" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
         <value param="amount" attach-x="4" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="level_out" attach-x="5" attach-y="0" expand-x="0" fill-x="0" />
@@ -49,14 +49,14 @@
             
             <vbox>
                 <label param="freq" />
-                <knob param="freq" size="5" />
+                <knob param="freq" size="5" ticks="2000 3500 5000 7500 12000" />
                 <value param="freq" />
             </vbox>
             
             <vbox>
                 <label param="ceil" />
                 <toggle param="ceil_active" size="1" />
-                <knob param="ceil" size="3" />
+                <knob param="ceil" size="3" ticks="10000 12000 14000 16000 20000"/>
                 <value param="ceil" width="5" />
             </vbox>
         </hbox>

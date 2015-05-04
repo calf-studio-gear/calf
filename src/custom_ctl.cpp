@@ -61,7 +61,6 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         double width  = widget->allocation.width;
         double height = widget->allocation.height;
         double xthick = widget->style->xthickness;
-        double ythick = widget->style->ythickness;
         double text_w = 0, bar_x = 0, bar_width = 0, bar_y = 0;
         float r, g, b;
         double text_m = 3;
@@ -1801,7 +1800,7 @@ static void calf_tuner_create_dot(cairo_t *ctx, int dots, int dot, float rad)
 }
 
 static void
-calf_tuner_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
+calf_tuner_draw_background( GtkWidget *widget, cairo_t *ctx, int sx, int sy, int ox, int oy )
 {
     int dw    = 2;
     int dm    = 1;
@@ -1814,7 +1813,7 @@ calf_tuner_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
     int cy    = ox + sy / 2;
     int ccy   = cy - sy / 3 + rad;
     
-    line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
+    display_background(widget, ctx, 0, 0, sx, sy, ox, oy);
     cairo_stroke(ctx);
     cairo_save(ctx);
     
@@ -1873,9 +1872,6 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
     // dimensions
     int ox = 5, oy = 5;
     int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
-    int rad = sx / 2;
-    int cx = ox + sx / 2;
-    int cy = oy + sy / 2;
     int marg = 10;
     int fpt  = 9;
     float fsize = fpt * sy / 25; // 9pt @ 25px height
@@ -1895,7 +1891,7 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // ...and draw some bling bling onto it...
         ctx_back = cairo_create(tuner->background);
-        calf_tuner_draw_background(ctx_back, sx, sy, ox, oy);
+        calf_tuner_draw_background(widget, ctx_back, sx, sy, ox, oy);
     } else {
         ctx_back = cairo_create(tuner->background);
     }
@@ -1942,7 +1938,6 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         int ctw = te.width;
         cairo_text_extents (c, "-9.9999", &te);
         int cvw = te.width;
-        int th  = te.height;
         float xb = te.x_bearing;
         
         float tw = std::max(ctw, mtw);
@@ -1979,8 +1974,6 @@ calf_tuner_size_allocate (GtkWidget *widget,
 {
     g_assert(CALF_IS_TUNER(widget));
     CalfTuner *lg = CALF_TUNER(widget);
-
-    GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_TUNER_GET_CLASS( lg ) );
 
     if(lg->background)
         cairo_surface_destroy(lg->background);

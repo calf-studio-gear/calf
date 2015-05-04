@@ -29,7 +29,7 @@
         <led param="clip_outR" mode="1" attach-x="7" attach-y="2" expand-x="0" />
         
         <label param="mix" attach-x="8" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="8" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <knob param="mix" ticks="0 0.5 1" attach-x="8" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
         <value param="mix" attach-x="8" attach-y="3" expand-x="0" />
         
         <label param="level_out" attach-x="9" attach-y="0" expand-x="0" />
@@ -51,12 +51,12 @@
                 </vbox>
                 <vbox>
                     <label param="attack" />
-                    <knob param="attack" size="2" />
+                    <knob param="attack" ticks="1 10 100 500" size="2" />
                     <value param="attack" />
                 </vbox>
                 <vbox>
                     <label param="release" />
-                    <knob param="release" size="2" />
+                    <knob param="release" ticks="10 100 1000 5000" size="2" />
                     <value param="release" />
                 </vbox>
             </hbox>

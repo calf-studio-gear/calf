@@ -36,6 +36,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <calf/ctl_linegraph.h>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 using namespace calf_plugins;
 using namespace calf_utils;
@@ -863,18 +865,22 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     knob->type = get_int("type");
     knob->size = min(5, max(1, get_int("size", 2)));
     
-    char ticks[128];
+    //char ticks[128];
+    std::ostringstream ticks_;
+    //std::string str = ticks.str();
     double min = double(props.min);
     double max = double(props.max);
     switch (knob->type) {
         default:
-        case 0: sprintf(ticks, "%f %f", min, max); break;
-        case 1: sprintf(ticks, "%f %f %f", min, props.from_01(0.5), max); break;
-        case 2: sprintf(ticks, "%f %f", min, max); break;
-        case 3: sprintf(ticks, "%f %f", min, max); break;
+        case 0: ticks_ << min << " " << max; break;
+        case 1: ticks_ << min << " " << props.from_01(0.5) << " " << max; break;
+        case 2: ticks_ << min << " " << max; break;
+        case 3: ticks_ << min << " " << max; break;
     }
-    string t_ = string(ticks);
-    knob->ticks = get_vector("ticks", t_, props);
+    std::string ticks = ticks_.str();
+    vector<double> t = get_vector("ticks", ticks, props);
+    std::sort(t.begin(), t.end());
+    knob->ticks = t;
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;

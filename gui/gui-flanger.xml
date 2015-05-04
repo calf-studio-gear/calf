@@ -7,7 +7,7 @@
         </vbox>
         <vbox expand="0" attach-x="1" attach-y="0">
             <label param="mod_depth" />
-            <knob param="mod_depth" />
+            <knob param="mod_depth" ticks="0.1 1 10" />
             <value param="mod_depth" />
         </vbox>
         <vbox expand="0" attach-x="2" attach-y="0">
@@ -15,15 +15,15 @@
             <knob param="feedback" type="1" />
             <value param="feedback" />
         </vbox>
-        <vbox expand="0" attach-x="3" attach-y="0">
-            <label param="dry" />
-            <knob param="dry" />
-            <value param="dry" />
-        </vbox>
         <vbox expand="0" attach-x="4" attach-y="0">
             <label param="amount" />
-            <knob param="amount" />
+            <knob param="amount" ticks="0 1 4"/>
             <value param="amount" />
+        </vbox>
+        <vbox expand="0" attach-x="3" attach-y="0">
+            <label param="dry" />
+            <knob param="dry" ticks="0 1 4" />
+            <value param="dry" />
         </vbox>
     </table>
     

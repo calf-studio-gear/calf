@@ -21,7 +21,7 @@
             <hbox spacing="15">
                 <align><vbox fill="0">
                     <label param="laxity" fill="0" expand="0" />
-                    <knob param="laxity" fill="0" expand="0" />
+                    <knob param="laxity" ticks="1 25 50 75 100" fill="0" expand="0" />
                     <value param="laxity" fill="0" expand="0" />
                 </vbox></align>
                 <vbox>
@@ -31,7 +31,7 @@
                 </vbox>
                 <vbox>
                     <label param="ratio" />
-                    <knob param="ratio" size="5" />
+                    <knob param="ratio" size="5" ticks="1 2 5 2000" />
                     <value param="ratio" />
                 </vbox>
                 <align><vbox fill="0">
@@ -55,7 +55,7 @@
     <hbox homogeneous="1" attach-x="1" attach-y="0" expand-x="1" fill-x="1" expand-y="0" fill-y="0">
         <vbox fill="0" expand="0" spacing="5">
             <label param="f1_freq" />
-            <knob param="f1_freq" />
+            <knob param="f1_freq" ticks="10 100 1000 18000" />
             <value param="f1_freq" />
         </vbox>
         <vbox fill="0" expand="0" spacing="5">
@@ -65,7 +65,7 @@
         </vbox>
         <vbox fill="0" expand="0" spacing="5">
             <label param="f2_freq" />
-            <knob param="f2_freq" />
+            <knob param="f2_freq" ticks="10 100 1000 18000" />
             <value param="f2_freq" />
         </vbox>
         <vbox fill="0" expand="0" spacing="5">
@@ -75,7 +75,7 @@
         </vbox>
         <vbox fill="0" expand="0" spacing="5">
             <label param="f2_q" />
-            <knob param="f2_q" />
+            <knob param="f2_q" ticks="0.1 1 10 100" />
             <value param="f2_q" />
         </vbox>
     </hbox>

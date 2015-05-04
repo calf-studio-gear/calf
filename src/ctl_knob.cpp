@@ -206,10 +206,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         if (deg >= end)
             break;
         // set deg to zero, phase, end or next tick
-        double p[3] = { zero, phase, end };
-        std::sort(p, p + 3);
-        for (int i = 0; i < 3; i++) {
-            if (debug > 1) printf("checking %.2f (zero %.2f phase %.2f end %.2f)\n", p[i], zero, phase, end);
+        double p[4] = { start, zero, phase, end };
+        std::sort(p, p + 4);
+        for (int i = 0; i < 4; i++) {
+            if (debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", p[i], start, zero, phase, end);
             if (p[i] > deg) {
                 deg = p[i];
                 if (debug > 1) printf("taken.\n");
