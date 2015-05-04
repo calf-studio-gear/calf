@@ -37,7 +37,7 @@
         </if>
         <vbox spacing="10">
             <label param="bits" />
-            <knob param="bits" size="5" type="2" />
+            <knob param="bits" size="5" type="2" ticks="1 2 4 6 8 12 16"/>
             <value param="bits" />
         </vbox>
         <vbox>
@@ -55,7 +55,7 @@
                     </vbox>
                     <vbox>
                         <label text="Mix" />
-                        <knob param="morph" size="2" />
+                        <knob param="morph" ticks="0 0.5 1" size="2" />
                         <value param="morph" />
                     </vbox>
                     <vbox>
@@ -69,17 +69,17 @@
                 <hbox spacing="20" homogeneous="1">
                     <vbox>
                         <label text="Reduction" />
-                        <knob param="samples" size="2" />
+                        <knob param="samples" size="2" ticks="1 2 4 8 16 32 64 128 250" />
                         <value param="samples" />
                     </vbox>
                     <vbox>
                         <label param="lforange" />
-                        <knob param="lforange" size="2" />
+                        <knob param="lforange" ticks="1 10 100 250" size="2" />
                         <value param="lforange" />
                     </vbox>
                     <vbox>
                         <label param="lforate" />
-                        <knob param="lforate" size="2" />
+                        <knob param="lforate" ticks="0.01 0.1 1 10 100 250" size="2" />
                         <value param="lforate" />
                     </vbox>
                     <vbox>

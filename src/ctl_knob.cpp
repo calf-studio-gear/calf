@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <stdlib.h>
 
+#define range01(tick) std::min(1., std::max(0., tick))
+
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
 
 static float
@@ -66,7 +68,6 @@ calf_knob_get_color (int type, float deg, float phase, float start)
     }
     return 1;
 }
-
 
 static gboolean
 calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
@@ -113,6 +114,8 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     double tickw  = 2. / perim * 360.;
     double tickw2 = tickw / 2.;
     
+    const unsigned int debug = 0;
+    
     cairo_rectangle(ctx, ox, oy, size + size / 2, size + size / 2);
     cairo_clip(ctx);
     
@@ -155,8 +158,15 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     nend  = 0.;
     deg = last = start;
     phase = (adj->value - adj->lower) * base / (adj->upper - adj->lower) + start;
+    if (debug) {
+        printf("start %.2f end %.2f last %.2f deg %.2f tick %d ticks %d phase %.2f base %.2f nend %.2f\n", start, end, last, deg, tick, int(self->ticks.size()), phase, base, nend);
+        for (unsigned int i = 0; i < self->ticks.size(); i++) {
+            printf("tick %d %.2f\n", i, self->ticks[i]);
+        }
+    }
     while (deg <= end) {
-        if (self->ticks.size() and deg == start + self->ticks[tick] * base) {
+        if (debug) printf("tick %d deg %.2f last %.2f end %.2f\n", tick, deg, last, end);
+        if (self->ticks.size() and deg == start + range01(self->ticks[tick]) * base) {
             // seems we want to draw a tick on this angle.
             // so we have to fill the void between the last set angle
             // and the point directly before the tick first.
@@ -166,20 +176,20 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_set_source_rgba(ctx, r, g, b, opac);
                 cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), std::max(last, std::min(nend, (deg - tickw - tickw2))) * (M_PI / 180.));
                 cairo_stroke(ctx);
-                //printf("fill from %.2f to %.2f @ %.2f\n", last, (deg - tickw - tickw2), opac);
+                if (debug) printf("fill from %.2f to %.2f @ %.2f\n", last, (deg - tickw - tickw2), opac);
             }
             // draw the tick itself
             opac = calf_knob_get_color(self->type, deg, phase, start);
             cairo_set_source_rgba(ctx, r, g, b, opac);
             cairo_arc(ctx, xc, yc, rad - lmarg, (deg - tickw2) * (M_PI / 180.), (deg + tickw2) * (M_PI / 180.));
             cairo_stroke(ctx);
-            //printf("tick from %.2f to %.2f @ %.2f\n", (deg - tickw2), (deg + tickw2), opac);
+            if (debug) printf("tick from %.2f to %.2f @ %.2f\n", (deg - tickw2), (deg + tickw2), opac);
             // set last known angle to deg plus tickw + tickw2
             last = deg + tickw + tickw2;
             // and count up tick
             tick ++;
             // remember the next ticks void end
-            nend = self->ticks[tick] * base + start - tickw - tickw2;
+            nend = range01(self->ticks[tick]) * base + start - tickw - tickw2;
         } else {
             // seems we want to fill a gap between the last event and
             // the actual one, while the actual one isn't a tick (but a
@@ -189,27 +199,31 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_set_source_rgba(ctx, r, g, b, opac);
                 cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), std::min(nend, deg) * (M_PI / 180.));
                 cairo_stroke(ctx);
-                //printf("void from %.2f to %.2f @ %.2f\n", last, deg, opac);
+                if (debug) printf("void from %.2f to %.2f @ %.2f\n", last, deg, opac);
             }
             last = deg;
         }
-        //printf("o %.2f start %.2f end %.2f last %.2f deg %.2f tick %d phase %.2f base %.2f nend %.2f\n", o, start, end, last, deg, tick, phase, nend);
         if (deg >= end)
             break;
         // set deg to zero, phase, end or next tick
         double p[3] = { zero, phase, end };
         std::sort(p, p + 3);
         for (int i = 0; i < 3; i++) {
+            if (debug > 1) printf("checking %.2f (zero %.2f phase %.2f end %.2f)\n", p[i], zero, phase, end);
             if (p[i] > deg) {
                 deg = p[i];
+                if (debug > 1) printf("taken.\n");
                 break;
             }
         }
-        if (tick < self->ticks.size())
-            deg = std::min(deg, start + self->ticks[tick] * base);
+        if (tick < self->ticks.size()) {
+            deg = std::min(deg, start + range01(self->ticks[tick]) * base);
+            if (debug > 1) printf("checking tick %d %.2f\n", tick, start + range01(self->ticks[tick]) * base);
+        }
         deg = std::max(last, deg);
+        if (debug > 1) printf("finally! deg %.2f\n", deg);
     }
-    //printf("\n");
+    if (debug) printf("\n");
     
     // draw pin
     float x1 = ox + rad + (rad - pins_m[self->size]) * cos(phase * (M_PI / 180.));
