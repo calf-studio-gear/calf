@@ -307,8 +307,8 @@ static const void *cb_ext_data(const char *URI)
         return NULL;
     }
     static LV2_State_Status cb_state_save(
-	    LV2_Handle Instance, LV2_State_Store_Function store, LV2_State_Handle handle,
-	    uint32_t flags, const LV2_Feature *const * features)
+        LV2_Handle Instance, LV2_State_Store_Function store, LV2_State_Handle handle,
+        uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
         struct store_state: public send_configure_iface
@@ -341,8 +341,8 @@ static const void *cb_ext_data(const char *URI)
         return LV2_STATE_SUCCESS;
     }
     static LV2_State_Status cb_state_restore(
-	    LV2_Handle Instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle callback_data,
-	    uint32_t flags, const LV2_Feature *const * features)
+        LV2_Handle Instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle callback_data,
+        uint32_t flags, const LV2_Feature *const * features)
     {
         instance *const inst = (instance *)Instance;
         if (inst->set_srate)

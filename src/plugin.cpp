@@ -28,6 +28,7 @@
 #include <calf/modules_dist.h>
 #include <calf/modules_filter.h>
 #include <calf/modules_mod.h>
+#include <calf/modules_pitch.h>
 #include <calf/modules_synths.h>
 #include <calf/organ.h>
 

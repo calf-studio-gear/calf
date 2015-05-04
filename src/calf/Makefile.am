@@ -7,7 +7,7 @@ noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h bypass.h custom_ctl.h 
     lv2_state.h  lv2_progress.h lv2_options.h lv2_ui.h lv2_urid.h lv2helpers.h lv2wrap.h \
     metadata.h modmatrix.h \
     modules_tools.h modules_comp.h modules_dev.h modules_dist.h modules_filter.h \
-    modules_delay.h modules_limit.h modules_mod.h modules_synths.h \
+    modules_delay.h modules_limit.h modules_mod.h modules_pitch.h modules_synths.h \
     modulelist.h \
     multichorus.h onepole.h organ.h orfanidis_eq.h osc.h osctl.h plugin_tools.h preset.h \
     preset_gui.h primitives.h session_mgr.h synth.h utils.h vumeter.h wave.h waveshaping.h wavetable.h

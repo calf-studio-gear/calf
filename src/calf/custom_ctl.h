@@ -342,4 +342,33 @@ extern GType calf_tap_button_get_type();
 
 G_END_DECLS
 
+
+/// TUNER ////////////////////////////////////////////////////////
+
+
+#define CALF_TYPE_TUNER           (calf_tuner_get_type())
+#define CALF_TUNER(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_TUNER, CalfTuner))
+#define CALF_IS_TUNER(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_TUNER))
+#define CALF_TUNER_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_TUNER, CalfTunerClass))
+#define CALF_IS_TUNER_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_TUNER))
+#define CALF_TUNER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_TUNER, CalfTunerClass))
+
+struct CalfTuner
+{
+    GtkDrawingArea parent;
+    int note;
+    float cents;
+    cairo_surface_t *background;
+};
+
+struct CalfTunerClass
+{
+    GtkDrawingAreaClass parent_class;
+};
+
+extern GtkWidget *calf_tuner_new();
+
+extern GType calf_tuner_get_type();
+
+
 #endif

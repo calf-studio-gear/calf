@@ -247,6 +247,17 @@ struct phase_graph_param_control: public param_control
     virtual ~phase_graph_param_control();
 };
 
+/// Tuner
+struct tuner_param_control: public param_control
+{
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get() {}
+    virtual void set();
+    virtual void on_idle();
+    int cents_no;
+    virtual ~tuner_param_control();
+};
+
 /// Knob
 struct knob_param_control: public param_control
 {

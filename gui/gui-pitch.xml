@@ -1,0 +1,35 @@
+<vbox>
+    <hbox expand="0" fill="0" shrink="1">
+        <vbox border="10" expand="0" fill="0" shrink="1">
+            <label param="pd_threshold" expand="0" fill="0"/>
+            <knob param="pd_threshold" expand="0" fill="0"/>
+            <value param="pd_threshold" expand="0" fill="0"/>
+        </vbox>
+        <vbox border="10" expand="0" fill="0" shrink="1">
+            <label param="pd_subdivide" expand="0" fill="0"/>
+            <knob param="pd_subdivide" expand="0" fill="0"/>
+            <value param="pd_subdivide" expand="0" fill="0"/>
+        </vbox>
+        <vbox border="10" expand="0" fill="0" shrink="1">
+            <label param="tune" expand="0" fill="0"/>
+            <knob param="tune" expand="0" fill="0" type="1"/>
+            <value param="tune" expand="0" fill="0"/>
+        </vbox>
+        <table rows="3" cols="2">
+            <label text="MIDI Note:" attach-x="0" attach-y="0"/>
+            <value param="note" attach-x="1" attach-y="0"/>
+            <label text="Cents:" attach-x="0" attach-y="1"/>
+            <value param="cents" attach-x="1" attach-y="1"/>
+            <label text="Clarity:" attach-x="0" attach-y="2"/>
+            <value param="clarity" attach-x="1" attach-y="2"/>
+        </table>
+    </hbox>
+    <if cond="directlink">
+        <frame label="Autocorrelation/Spectrum" expand="1" fill="1">
+            <line-graph refresh="1" width="400" height="160" param="pd_threshold" />
+        </frame>
+        <frame label="Tuner" expand="1" fill="1">
+            <tuner refresh="1" width="400" height="160" param="note" param_cents="cents" />
+        </frame>
+    </if>
+</vbox>

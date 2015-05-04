@@ -777,13 +777,13 @@ CALF_PLUGIN_INFO(sidechainlimiter) = { 0x8522, "SidechainLimiter", "Calf Sidecha
 CALF_PORT_NAMES(emphasis) = {"In L", "In R", "Out L", "Out R"};
 
 const char *emphasis_filter_modes[] = { "Reproduction", "Production"};
-const char *emphasis_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA", "Compact Disc (CD)"};
+const char *emphasis_filter_types[] = { "Columbia", "EMI", "BSI(78rpm)", "RIAA", "Compact Disc (CD)", "50µs (FM)", "75µs (FM)", "50µs (FM-KF)", "75µs (FM-KF)",  };
 
 CALF_PORT_PROPS(emphasis) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_modes, "mode", "Filter Mode" },
-    { 4,      0,  4,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
+    { 4,      0,  8,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
     {}
 };
 CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Calf Studio Gear / Damien Zammit", calf_plugins::calf_copyright_info, "FilterPlugin" };
@@ -1603,7 +1603,7 @@ void monosynth_metadata::get_configure_vars(vector<string> &names) const
 
 CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
-plugin_command_info *organ_metadata::get_commands()
+plugin_command_info *organ_metadata::get_commands() const
 {
     static plugin_command_info cmds[] = {
         { "cmd_panic", "Panic!", "Stop all sounds and reset all controllers" },
@@ -1942,6 +1942,21 @@ void wavetable_metadata::get_configure_vars(std::vector<std::string> &names) con
 {
     mm_metadata.get_configure_vars(names);
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(pitch) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(pitch) = {
+    { 0.9,  0.1,   1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB, NULL, "pd_threshold", "Pitch Det:Peak Threshold" },
+    { 1,      1,   8,    3, PF_INT | PF_CTL_KNOB, NULL, "pd_subdivide", "Pitch Det:Subdiv" },
+    { 440,    427, 453,  0.1, PF_FLOAT | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "tune", "Tune" },
+    { 0,      0,   127,  1, PF_INT | PF_PROP_OUTPUT, NULL, "note", "MIDI Note" },
+    { 0,     -100, 100,  1, PF_FLOAT | PF_PROP_OUTPUT, NULL, "cents", "Cents" },
+    { 0,     -1, 1,      0, PF_FLOAT | PF_SCALE_PERC | PF_PROP_OUTPUT, NULL, "clarity", "Clarity" },
+    {}
+};
+
+CALF_PLUGIN_INFO(pitch) = { 0x85AA, "Pitch", "Calf Pitch Tols", "Calf Studio Gear", calf_plugins::calf_copyright_info, "PitchPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

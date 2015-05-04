@@ -51,7 +51,7 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, require_midi = false, support_midi = false };
     PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
     /// do not export mode and inertia as CVs, as those are settings and not parameters
-    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
+    bool is_cv(int param_no) const { return param_no != par_mode && param_no != par_inertia; }
 };
 
 /// Filterclavier - metadata
@@ -61,7 +61,7 @@ struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, require_midi = true, support_midi = true };
     PLUGIN_NAME_ID_LABEL("filterclavier", "filterclavier", "Filterclavier")
     /// do not export mode and inertia as CVs, as those are settings and not parameters
-    bool is_cv(int param_no) { return param_no != par_mode && param_no != par_inertia; }
+    bool is_cv(int param_no) const { return param_no != par_mode && param_no != par_inertia; }
 };
 
 /// Envelope Filter - metadata
@@ -828,7 +828,7 @@ struct organ_metadata: public organ_enums, public plugin_metadata<organ_metadata
     PLUGIN_NAME_ID_LABEL("organ", "organ", "Organ")
 
 public:
-    plugin_command_info *get_commands();
+    plugin_command_info *get_commands() const;
     void get_configure_vars(std::vector<std::string> &names) const;
 };
 
@@ -925,6 +925,18 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
     /// Lookup of table edit interface
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { if (!strcmp(key, "mod_matrix")) return &mm_metadata; else return NULL; }
     void get_configure_vars(std::vector<std::string> &names) const;
+};
+
+struct pitch_metadata: public plugin_metadata<pitch_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true };
+    enum { 
+        par_pd_threshold,
+        par_pd_subdivide,
+        par_tune, par_note, par_cents, par_clarity,
+        param_count
+    };
+    PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")
 };
 
 };

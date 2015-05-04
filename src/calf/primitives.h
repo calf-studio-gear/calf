@@ -381,6 +381,7 @@ public:
         if (time < next_task)
             return true;
         do_tasks();
+        return false;
     }
     inline void next_tick() {
         time++;

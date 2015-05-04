@@ -13,6 +13,11 @@ EXTRA_DIST = COPYING.GPL TODO autogen.sh presets.xml calf.7 calfjackhost.1 calf-
 
 dist_man_MANS = calf.7 calfjackhost.1
 
+if ENABLE_BASH_COMPLETION
+	bashcompletiondir = $(BASH_COMPLETION_DIR)
+	dist_bashcompletion_DATA = calfjackhost
+endif
+
 clean-local:
 	rm -f *~ *.old *.bak
 	rm -rf autom4te.cache
