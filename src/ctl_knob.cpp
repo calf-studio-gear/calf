@@ -158,6 +158,8 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     nend  = 0.;
     deg = last = start;
     phase = (adj->value - adj->lower) * base / (adj->upper - adj->lower) + start;
+    double events[4] = { start, zero, phase, end };
+    std::sort(events, events + 4);
     if (debug) {
         printf("start %.2f end %.2f last %.2f deg %.2f tick %d ticks %d phase %.2f base %.2f nend %.2f\n", start, end, last, deg, tick, int(self->ticks.size()), phase, base, nend);
         for (unsigned int i = 0; i < self->ticks.size(); i++) {
@@ -205,13 +207,11 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         if (deg >= end)
             break;
-        // set deg to zero, phase, end or next tick
-        double p[4] = { start, zero, phase, end };
-        std::sort(p, p + 4);
+        // set deg to next event
         for (int i = 0; i < 4; i++) {
-            if (debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", p[i], start, zero, phase, end);
-            if (p[i] > deg) {
-                deg = p[i];
+            if (debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", events[i], start, zero, phase, end);
+            if (events[i] > deg) {
+                deg = events[i];
                 if (debug > 1) printf("taken.\n");
                 break;
             }
