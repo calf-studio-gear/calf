@@ -85,7 +85,7 @@ float control_base::get_float(const char *name, float def_value)
     return value;
 }
 
-std::vector<double> control_base::get_vector(const char *name, std::string &value, const parameter_properties &props)
+std::vector<double> control_base::get_vector(const char *name, std::string &value)
 {
     std::vector<double> t;
     
@@ -99,7 +99,7 @@ std::vector<double> control_base::get_vector(const char *name, std::string &valu
         double val;
         stringstream stream(value.substr(lpos, pos - lpos).c_str());
         stream >> val;
-        t.push_back(props.to_01(val));
+        t.push_back(val);
         lpos = value.find_first_not_of(" ", pos);
         pos  = value.find_first_of(" ", lpos);
     }
@@ -878,8 +878,10 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
         case 3: ticks_ << min << " " << max; break;
     }
     std::string ticks = ticks_.str();
-    vector<double> t = get_vector("ticks", ticks, props);
+    vector<double> t = get_vector("ticks", ticks);
     std::sort(t.begin(), t.end());
+    for (unsigned int i = 0; i < t.size(); i++)
+        t[i] = props.to_01(t[i]);
     knob->ticks = t;
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
@@ -1105,11 +1107,10 @@ GtkWidget *meter_scale_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     widget  = calf_meter_scale_new ();
-    const parameter_properties &props = get_props();
     CalfMeterScale *ms = CALF_METER_SCALE(widget);
     gtk_widget_set_name(widget, "Calf-MeterScale");
     string str   = "0 0.5 1";
-    ms->marker   = get_vector("marker", str, props);
+    ms->marker   = get_vector("marker", str);
     ms->mode     = (CalfVUMeterMode)get_int("mode", 0);
     ms->position = get_int("position", 0);
     ms->dots     = get_int("dots", 0);

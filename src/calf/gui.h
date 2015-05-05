@@ -57,7 +57,7 @@ public:
     void require_int_attribute(const char *name);
     int get_int(const char *name, int def_value = 0);
     float get_float(const char *name, float def_value = 0.f);
-    std::vector<double> get_vector(const char *name, std::string &value, const parameter_properties &props);
+    std::vector<double> get_vector(const char *name, std::string &value);
 
 public:
     virtual GtkWidget *create(plugin_gui *_gui) { return NULL; }
