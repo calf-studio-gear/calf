@@ -38,18 +38,18 @@
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
 
 static float
-calf_knob_get_color (int type, float deg, float phase, float start)
+calf_knob_get_color (CalfKnob *self, float deg, float phase, float start, float last, float tickw)
 {
     double on  = 1.0;
     double off = 0.22;
     //printf ("get color: phase %.2f deg %.2f\n", phase, deg);
-    if (type == 0) {
+    if (self->type == 0) {
         // normal
         if (deg > phase or phase == start)
             return off;
         else return on;
     }
-    if (type == 1) {
+    if (self->type == 1) {
         // centered
         if (deg > 270 and deg <= phase and phase > 270)
             return on;
@@ -60,13 +60,27 @@ calf_knob_get_color (int type, float deg, float phase, float start)
             return on;
         return off;
     }
-    if (type == 2) {
+    if (self->type == 2) {
         // reverse
         if (deg > phase or phase == start)
             return on;
         else return off;
     }
-    return 1;
+    if (self->type == 3) {
+        for (unsigned j = 0; j < self->ticks.size(); j++) {
+            float tp = fmod((start + range01(self->ticks[j]) * 360.) - phase + 360, 360);
+            if (tp > 360 - tickw or tp < tickw) {
+                return on;
+            }
+        }
+        if (deg > phase and deg > last + tickw and last < phase)
+            return on;
+        
+    }
+    return off;
+        
+        
+        
 }
 
 static gboolean
@@ -104,7 +118,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     double end;
     double last;
     double start;
-    double nend;
+    double nend; 
     double zero;
     double opac;
     
@@ -122,8 +136,6 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     // draw background
     gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0], pixbuf,
                     0, 0, ox, oy, iw, ih, GDK_RGB_DITHER_NORMAL, 0, 0);
-    
-    cairo_set_line_width(ctx, lwidth);
     
     switch (self->type) {
         default:
@@ -149,17 +161,35 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
         case 3:
             // 360°
             start = -90.;
-            end   = 360.;
+            end   = 270.;
             base  = 360.;
-            zero  = 360.;
+            zero  = -90.;
             break;
     }
     tick  = 0;
     nend  = 0.;
     deg = last = start;
     phase = (adj->value - adj->lower) * base / (adj->upper - adj->lower) + start;
-    double events[4] = { start, zero, phase, end };
-    std::sort(events, events + 4);
+    
+    // draw pin
+    float x1 = ox + rad + (rad - pins_m[self->size]) * cos(phase * (M_PI / 180.));
+    float y1 = oy + rad + (rad - pins_m[self->size]) * sin(phase * (M_PI / 180.));
+    float x2 = ox + rad + (rad - pins_s[self->size] - pins_m[self->size]) * cos(phase * (M_PI / 180.));
+    float y2 = oy + rad + (rad - pins_s[self->size] - pins_m[self->size]) * sin(phase * (M_PI / 180.));
+    cairo_move_to(ctx, x1, y1);
+    cairo_line_to(ctx, x2, y2);
+    cairo_set_source_rgba(ctx, r, g, b, 0.99);
+    cairo_set_line_width(ctx, lwidth / 2.);
+    cairo_stroke(ctx);
+    
+    cairo_set_line_width(ctx, lwidth);
+    
+    // draw ticks and rings
+    unsigned int evsize = 4;
+    double events[evsize] = { start, zero, end, phase };
+    if (self->type == 3)
+        evsize = 3;
+    std::sort(events, events + evsize);
     if (debug) {
         printf("start %.2f end %.2f last %.2f deg %.2f tick %d ticks %d phase %.2f base %.2f nend %.2f\n", start, end, last, deg, tick, int(self->ticks.size()), phase, base, nend);
         for (unsigned int i = 0; i < self->ticks.size(); i++) {
@@ -174,14 +204,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             // and the point directly before the tick first.
             // (draw from last known angle to tickw2 + tickw before actual deg)
             if (last < deg - tickw - tickw2) {
-                opac = calf_knob_get_color(self->type, (deg - tickw - tickw2), phase, start);
+                opac = calf_knob_get_color(self, (deg - tickw - tickw2), phase, start, last, tickw + tickw2);
                 cairo_set_source_rgba(ctx, r, g, b, opac);
                 cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), std::max(last, std::min(nend, (deg - tickw - tickw2))) * (M_PI / 180.));
                 cairo_stroke(ctx);
                 if (debug) printf("fill from %.2f to %.2f @ %.2f\n", last, (deg - tickw - tickw2), opac);
             }
             // draw the tick itself
-            opac = calf_knob_get_color(self->type, deg, phase, start);
+            opac = calf_knob_get_color(self, deg, phase, start, end, tickw + tickw2);
             cairo_set_source_rgba(ctx, r, g, b, opac);
             cairo_arc(ctx, xc, yc, rad - lmarg, (deg - tickw2) * (M_PI / 180.), (deg + tickw2) * (M_PI / 180.));
             cairo_stroke(ctx);
@@ -191,24 +221,27 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             // and count up tick
             tick ++;
             // remember the next ticks void end
-            nend = range01(self->ticks[tick]) * base + start - tickw - tickw2;
+            if (tick < self->ticks.size())
+                nend = range01(self->ticks[tick]) * base + start - tickw - tickw2;
+            else
+                nend = end;
         } else {
             // seems we want to fill a gap between the last event and
             // the actual one, while the actual one isn't a tick (but a
             // knobs position or a center)
             if ((last < deg)) {
-                opac = calf_knob_get_color(self->type, deg, phase, start);
+                opac = calf_knob_get_color(self, deg, phase, start, last, tickw + tickw2);
                 cairo_set_source_rgba(ctx, r, g, b, opac);
-                cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), std::min(nend, deg) * (M_PI / 180.));
+                cairo_arc(ctx, xc, yc, rad - lmarg, last * (M_PI / 180.), std::min(nend, std::max(last, deg)) * (M_PI / 180.));
                 cairo_stroke(ctx);
-                if (debug) printf("void from %.2f to %.2f @ %.2f\n", last, deg, opac);
+                if (debug) printf("void from %.2f to %.2f @ %.2f\n", last, std::min(nend, std::max(last, deg)), opac);
             }
             last = deg;
         }
         if (deg >= end)
             break;
         // set deg to next event
-        for (int i = 0; i < 4; i++) {
+        for (unsigned int i = 0; i < evsize; i++) {
             if (debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", events[i], start, zero, phase, end);
             if (events[i] > deg) {
                 deg = events[i];
@@ -220,23 +253,11 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             deg = std::min(deg, start + range01(self->ticks[tick]) * base);
             if (debug > 1) printf("checking tick %d %.2f\n", tick, start + range01(self->ticks[tick]) * base);
         }
-        deg = std::max(last, deg);
+        //deg = std::max(last, deg);
         if (debug > 1) printf("finally! deg %.2f\n", deg);
     }
     if (debug) printf("\n");
-    
-    // draw pin
-    float x1 = ox + rad + (rad - pins_m[self->size]) * cos(phase * (M_PI / 180.));
-    float y1 = oy + rad + (rad - pins_m[self->size]) * sin(phase * (M_PI / 180.));
-    float x2 = ox + rad + (rad - pins_s[self->size] - pins_m[self->size]) * cos(phase * (M_PI / 180.));
-    float y2 = oy + rad + (rad - pins_s[self->size] - pins_m[self->size]) * sin(phase * (M_PI / 180.));
-    cairo_move_to(ctx, x1, y1);
-    cairo_line_to(ctx, x2, y2);
-    cairo_set_source_rgba(ctx, r, g, b, 0.99);
-    cairo_set_line_width(ctx, lwidth / 2.);
-    cairo_stroke(ctx);
     cairo_destroy(ctx);
-    
     return TRUE;
 }
 

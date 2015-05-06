@@ -875,7 +875,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
         case 0: ticks_ << min << " " << max; break;
         case 1: ticks_ << min << " " << props.from_01(0.5) << " " << max; break;
         case 2: ticks_ << min << " " << max; break;
-        case 3: ticks_ << min << " " << max; break;
+        case 3: ticks_ << min << " " << props.from_01(0.25) << " " << props.from_01(0.5) << " " << props.from_01(0.75) << " " << max; break;
     }
     std::string ticks = ticks_.str();
     vector<double> t = get_vector("ticks", ticks);
