@@ -9,34 +9,37 @@ Calf JACK host application provides a way to use Calf plugins directly, without 
 
 .SH OPTIONS
 .TP
-\fB--client\fR \fIname\fR
+\fB-c --client\fR \fIname\fR
 sets JACK client name (the name calfjackhost uses when registering in JACK)
 .TP
-\fB--input\fR \fIname\fR
+\fB-i --input\fR \fIname\fR
 name prefix for audio inputs
 .TP
-\fB--output\fR \fIname\fR
+\fB-o --output\fR \fIname\fR
 name prefix for audio outputs
 .TP
-\fB--midi\fR \fIname\fR
+\fB-m --midi\fR \fIname\fR
 name prefix for MIDI inputs
 .TP
-\fB--connect-midi\fR \fIclient:port\fR
+\fB-c --connect-midi\fR \fIclient:port\fR
 automatically connect all MIDI ports to \fIclient:port\fR
 .TP
-\fB--connect-midi\fR \fB!\fIn\fR
+\fB-M --connect-midi\fR \fB!\fIn\fR
 automatically connect all MIDI ports to \fBsystem:midi_capture_\fIn\fR
 .TP
-\fB--version\fR
+\fB-v --version\fR
 prints a version string (calf some.version.number)
 .TP
-\fB--load\fR \fIsession\fR
+\fB-l --load\fR \fIsession\fR
 Loads the session state from a file
 .TP
-\fB--state\fR \fIsession\fR
+\fB-s --state\fR \fIsession\fR
 Loads the session state from a file, if such a file exists
 .TP
-\fB--help\fR
+\fB-L --list\fR
+List all available plug-ins
+.TP
+\fB-h -? --help\fR
 prints a help text
 .PP
 An exclamation mark (!) in place of plugin name means automatic connection. If "!" is placed before the first plugin name, the first plugin has its inputs connected to \fBsystem:capture_1\fR
