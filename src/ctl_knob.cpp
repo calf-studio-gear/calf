@@ -186,7 +186,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // draw ticks and rings
     unsigned int evsize = 4;
-    double events[evsize] = { start, zero, end, phase };
+    double events[4] = { start, zero, end, phase };
     if (self->type == 3)
         evsize = 3;
     std::sort(events, events + evsize);
