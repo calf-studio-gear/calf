@@ -43,23 +43,23 @@
         <hbox spacing="2">
             <vbox>
                  <label param="oversampling"/>
-                 <knob param="oversampling" size="3"/>
+                 <knob param="oversampling" size="3" ticks="1 2 3 4"/>
                  <value param="oversampling"/>
             </vbox>
             <vbox>
                 <label param="attack" />
-                <knob param="attack" size="3"/>
+                <knob param="attack" size="3" ticks="0.1 1 2 5 10"/>
                 <value param="attack" />
             </vbox>
             <vbox>
                 <label param="release" />
-                <knob param="release" size="3" />
+                <knob param="release" size="3" ticks="1 10 100 1000" />
                 <value param="release" />
             </vbox>
             
             <vbox>
                 <label text="Limit"/>
-                <knob param="limit" size="5" type="2" />
+                <knob param="limit" size="5" type="2" ticks="0 0.0625 0.125 0.25 0.5 1"  />
                 <value param="limit" />
             </vbox>
             

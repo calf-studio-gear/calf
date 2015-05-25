@@ -129,8 +129,8 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
                                                              border_x,
                                                              height - border_y * 2);
         get_bg_color(widget, NULL, &r, &g, &b);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.111, g*1.111, b*1.111, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.82, g*0.82, b*0.82, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
         cairo_set_source (cache_cr, pat2);
         cairo_fill(cache_cr);
         cairo_pattern_destroy(pat2);

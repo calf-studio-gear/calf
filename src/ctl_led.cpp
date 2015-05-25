@@ -80,8 +80,8 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
         float r, g, b;
         get_bg_color(widget, NULL, &r, &g, &b);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.111, g*1.111, b*1.111, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.82, g*0.82, b*0.82, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
         cairo_set_source (cache_cr, pat2);
         cairo_fill(cache_cr);
         

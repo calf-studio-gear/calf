@@ -283,8 +283,8 @@ style "calf-display" {
 
 ### TOGGLE ###
 style "calf-toggle0" {
-    xthickness = 22
-    ythickness = 22
+    xthickness = 24
+    ythickness = 24
     fg[NORMAL] = "red"
 }
 style "calf-toggle1" {

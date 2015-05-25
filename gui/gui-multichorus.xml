@@ -3,27 +3,27 @@
         <table rows="1" cols="5" homogeneous="1" spacing="10" attach-x="0" attach-y="1">
             <vbox attach-x="0" attach-y="0">
                 <label param="min_delay" />
-                <knob param="min_delay" />
+                <knob param="min_delay" ticks="0.1 1 10" />
                 <value param="min_delay" />
             </vbox>
             <vbox attach-x="1" attach-y="0">
                 <label param="mod_depth" />
-                <knob param="mod_depth" />
+                <knob param="mod_depth" ticks="0.1 1 10" />
                 <value param="mod_depth" />
             </vbox>
             <vbox attach-x="2" attach-y="0">
                 <label param="overlap" />
-                <knob param="overlap" />
+                <knob param="overlap" ticks="0 0.5 1" />
                 <value param="overlap" />
             </vbox>
             <vbox attach-x="3" attach-y="0">
                 <label param="dry" />
-                <knob param="dry" />
+                <knob param="dry" ticks="0 0.0625 0.25 1 4"  />
                 <value param="dry" />
             </vbox>
             <vbox attach-x="4" attach-y="0">
                 <label param="amount" />
-                <knob param="amount" />
+                <knob param="amount" ticks="0 0.0625 0.25 1 4" />
                 <value param="amount" />
             </vbox>
         </table>
@@ -32,12 +32,12 @@
         <table rows="2" cols="2" homogeneous="1" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="mod_rate" />
-                <knob param="mod_rate" />
+                <knob param="mod_rate" ticks="0.01 0.1 1 20"/>
                 <value param="mod_rate" />
             </vbox>
             <vbox attach-x="1" attach-y="0">
                 <label param="voices" />
-                <knob param="voices" />
+                <knob param="voices" ticks="1 2 3 4 5 6 7 8"/>
                 <value param="voices" />
             </vbox>
             <vbox attach-x="0" attach-y="1">
@@ -56,17 +56,17 @@
         <table rows="1" cols="3" spacing="10">
             <vbox attach-x="0" attach-y="0">
                 <label param="freq" />
-                <knob param="freq" size="2" />
+                <knob param="freq" size="2" ticks="10 100 1000 20000" />
                 <value param="freq" />
             </vbox>
             <vbox attach-x="1" attach-y="0">
                 <label param="q" />
-                <knob param="q" />
+                <knob param="q" ticks="0.125 1 8" />
                 <value param="q" />
             </vbox>
             <vbox attach-x="2" attach-y="0">
                 <label param="freq2" />
-                <knob param="freq2" size="2" />
+                <knob param="freq2" size="2" ticks="10 100 1000 20000" />
                 <value param="freq2" />
             </vbox>
         </table>

@@ -40,7 +40,7 @@
         </vbox>
         <frame label="Settings">
             <vbox spacing="8">
-                <hbox spacing="10">
+                <hbox homogeneous="1">
                     <vbox>
                         <label text="Noise"/>
                         <knob param="noise" size="3"/>
@@ -57,7 +57,7 @@
                         <value param="lowpass"/>
                     </vbox>
                 </hbox>
-                <hbox>
+                <hbox homogeneous="1">
                     <vbox>
                         <toggle param="post" icon="muffle"/>
                         <label text="Muffle"/>
@@ -75,12 +75,12 @@
         </frame>
         <frame label="Frequency Response">
             <if cond="directlink">
-                <line-graph refresh="1" width="250" height="160" param="lowpass"/>
+                <line-graph refresh="1" width="300" height="200" param="lowpass"/>
             </if>
         </frame>
         <frame label="Saturation">
             <if cond="directlink">
-                <line-graph refresh="1" width="160" height="160" param="level_in" square="1"/>
+                <line-graph refresh="1" width="200" height="200" param="level_in" square="1"/>
             </if>
         </frame>
     </hbox>

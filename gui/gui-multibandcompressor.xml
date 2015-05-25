@@ -58,7 +58,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio0" />
-                <knob param="ratio0" />
+                <knob param="ratio0" ticks="1 2 5 21" />
                 <value param="ratio0" />
             </vbox>
             <vbox spacing="4">
@@ -68,17 +68,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack0" />
-                <knob param="attack0" />
+                <knob param="attack0" ticks="0 1 10 100 2000" />
                 <value param="attack0" />
             </vbox>
             <vbox spacing="4">
                 <label param="release0" />
-                <knob param="release0" />
+                <knob param="release0" ticks="0 1 10 100 2000" />
                 <value param="release0" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee0" />
-                <knob param="knee0" />
+                <knob param="knee0" ticks="1 2 4 8" />
                 <value param="knee0" />
             </vbox>
             <vbox spacing="4">
@@ -106,7 +106,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio1" />
-                <knob param="ratio1" />
+                <knob param="ratio1" ticks="1 2 5 21" />
                 <value param="ratio1" />
             </vbox>
             <vbox spacing="4">
@@ -116,17 +116,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack1" />
-                <knob param="attack1" />
+                <knob param="attack1" ticks="0 1 10 100 2000" />
                 <value param="attack1" />
             </vbox>
             <vbox spacing="4">
                 <label param="release1" />
-                <knob param="release1" />
+                <knob param="release1" ticks="0 1 10 100 2000" />
                 <value param="release1" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee1" />
-                <knob param="knee1" />
+                <knob param="knee1" ticks="1 2 4 8" />
                 <value param="knee1" />
             </vbox>
             <vbox spacing="4">
@@ -154,7 +154,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio2" />
-                <knob param="ratio2" />
+                <knob param="ratio2" ticks="1 2 5 21" />
                 <value param="ratio2" />
             </vbox>
             <vbox spacing="4">
@@ -164,17 +164,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack2" />
-                <knob param="attack2" />
+                <knob param="attack2" ticks="0 1 10 100 2000" />
                 <value param="attack2" />
             </vbox>
             <vbox spacing="4">
                 <label param="release2" />
-                <knob param="release2" />
+                <knob param="release2" ticks="0 1 10 100 2000" />
                 <value param="release2" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee2" />
-                <knob param="knee2" />
+                <knob param="knee2" ticks="1 2 4 8" />
                 <value param="knee2" />
             </vbox>
             <vbox spacing="4">
@@ -202,7 +202,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio3" />
-                <knob param="ratio3" />
+                <knob param="ratio3" ticks="1 2 5 21" />
                 <value param="ratio3" />
             </vbox>
             <vbox spacing="4">
@@ -212,17 +212,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack3" />
-                <knob param="attack3" />
+                <knob param="attack3" ticks="0 1 10 100 2000" />
                 <value param="attack3" />
             </vbox>
             <vbox spacing="4">
                 <label param="release3" />
-                <knob param="release3" />
+                <knob param="release3" ticks="0 1 10 100 2000" />
                 <value param="release3" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee3" />
-                <knob param="knee3" />
+                <knob param="knee3" ticks="1 2 4 8" />
                 <value param="knee3" />
             </vbox>
             <vbox spacing="4">
