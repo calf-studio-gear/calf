@@ -12,7 +12,7 @@
                         <label text="Tap"/>
                         <tap param="bpm"/>
                         <label/>
-                        <toggle param="sync"/>
+                        <toggle param="sync" icon="sync"/>
                         <label param="sync"/>
                     </vbox>
                 </hbox>

@@ -121,7 +121,8 @@ struct CalfToggle
     int size;
     int width;
     int height;
-    GdkPixbuf *toggle_image[3];
+    const char *icon;
+    GdkPixbuf *toggle_image;
 };
 
 struct CalfToggleClass
@@ -131,7 +132,8 @@ struct CalfToggleClass
 
 extern GtkWidget *calf_toggle_new();
 extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
-
+extern void calf_toggle_set_size(CalfToggle *self, int size);
+extern void calf_toggle_set_icon(CalfToggle *self, const gchar *icon);
 extern GType calf_toggle_get_type();
 
 

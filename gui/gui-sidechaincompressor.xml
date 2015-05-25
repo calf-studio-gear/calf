@@ -3,7 +3,7 @@
     <vbox spacing="20" expand="0" fill="0">
         <vbox expand="0" fill="0" spacing="7" >
             <label param="bypass" expand="0" fill="0" />
-            <align><toggle param="bypass" shrink="1" size="2"/></align>
+            <align><toggle param="bypass" icon="bypass" shrink="1" size="2"/></align>
         </vbox>
         <vbox expand="0" fill="0">
             <label param="level_in" expand="0" fill="0" expand-y="0" fill-y="0" />
@@ -68,7 +68,7 @@
             <hbox>
                 <vbox>
                     <label text="Active" expand="0" fill="0" />
-                    <toggle param="sc_route" fill="0" expand="0"/>
+                    <toggle param="sc_route" icon="sc_comp" fill="0" expand="0"/>
                     <label/>
                 </vbox>
                 <vbox>
@@ -78,7 +78,7 @@
                 </vbox>
                 <vbox>
                     <label text="Listen" expand="0" fill="0" />
-                    <toggle param="sc_listen" fill="0" expand="0"/>
+                    <toggle param="sc_listen" icon="listen" fill="0" expand="0"/>
                     <label/>
                 </vbox>
             </hbox>

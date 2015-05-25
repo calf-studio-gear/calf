@@ -14,7 +14,7 @@
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
         
         <label param="mode" attach-x="4" attach-y="0" expand-x="0"/>
         <combo param="mode" attach-x="4" attach-y="1" expand-x="0" attach-h="2"/>
@@ -43,12 +43,12 @@
         <hbox page="Sub Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass0"/>
-                <toggle param="bypass0"/>
+                <toggle param="bypass0" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo0"/>
-                <toggle param="solo0"/>
+                <toggle param="solo0" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -96,12 +96,12 @@
         <hbox page="Low Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass1"/>
-                <toggle param="bypass1"/>
+                <toggle param="bypass1" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo1"/>
-                <toggle param="solo1"/>
+                <toggle param="solo1" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -149,12 +149,12 @@
         <hbox page="Mid Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass2"/>
-                <toggle param="bypass2"/>
+                <toggle param="bypass2" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo2"/>
-                <toggle param="solo2"/>
+                <toggle param="solo2" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -202,12 +202,12 @@
         <hbox page="High Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass3"/>
-                <toggle param="bypass3"/>
+                <toggle param="bypass3" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo3"/>
-                <toggle param="solo3"/>
+                <toggle param="solo3" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">

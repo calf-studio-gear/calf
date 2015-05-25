@@ -25,8 +25,8 @@
                 </vbox>
                 <vbox expand="0" spacing="5">
                     <label param="bypass" />
-                    <align><toggle param="bypass" /></align>
-                    <align><toggle param="softclip"/></align>
+                    <align><toggle param="bypass" icon="bypass" /></align>
+                    <align><toggle param="softclip" icon="softclip"/></align>
                     <label param="softclip" />
                 </vbox>
             </hbox>
@@ -64,13 +64,13 @@
                 <hbox>
                     <vbox>
                         
-                        <align><toggle param="mutel"/></align>
+                        <align><toggle param="mutel" icon="mute"/></align>
                         <label param="mutel"/>
                         
                     </vbox>
                     <vbox>
                         
-                        <align><toggle param="phasel"/></align>
+                        <align><toggle param="phasel" icon="phase"/></align>
                         <label param="phasel"/>
                         
                     </vbox>
@@ -80,13 +80,13 @@
                 <hbox>
                     <vbox>
                         
-                        <align><toggle param="muter"/></align>
+                        <align><toggle param="muter" icon="mute"/></align>
                         <label param="muter"/>
                         
                     </vbox>
                     <vbox>
                         
-                        <align><toggle param="phaser"/></align>
+                        <align><toggle param="phaser" icon="phase"/></align>
                         <label param="phaser"/>
                         
                     </vbox>

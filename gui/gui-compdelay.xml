@@ -41,7 +41,7 @@
             </vbox>
             <vbox>
                 <label param="bypass" />
-                <toggle param="bypass" />
+                <toggle param="bypass" icon="bypass" />
                 <label />
             </vbox>
         </hbox>

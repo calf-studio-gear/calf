@@ -22,6 +22,7 @@
 #include <calf/giface.h>
 #include <calf/custom_ctl.h>
 #include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
 #include <math.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
@@ -520,30 +521,44 @@ calf_phase_graph_get_type (void)
 
 ///////////////////////////////////////// toggle ///////////////////////////////////////////////
 
+static void
+calf_toggle_create_pixbuf (CalfToggle *self)
+{
+    GError *error = NULL;
+    char fname[2048];
+    if (self->icon) {
+        sprintf(fname, "%s/toggle_%d_%s.png", PKGLIBDIR, self->size, self->icon);
+        struct stat sb;
+        if (stat(fname, &sb) == 0) {
+            self->toggle_image = gdk_pixbuf_new_from_file(fname, &error);
+        }
+    }
+    if (!self->toggle_image) {
+        sprintf(fname, "%s/toggle_%d.png", PKGLIBDIR, self->size);
+        self->toggle_image = gdk_pixbuf_new_from_file(fname, &error);
+    }
+    g_assert(self->toggle_image != NULL);
+}
+
 static gboolean
 calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_TOGGLE(widget));
-    
     CalfToggle *self = CALF_TOGGLE(widget);
-    
-    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
-    float sy = self->size ? self->size : 1;
-    int x = widget->allocation.x + widget->allocation.width / 2 - sx * 15 - sx * 2;
-    int y = widget->allocation.y + widget->allocation.height / 2 - sy * 10 - sy * 3;
-    int width  = sx * 34;
-    int height = sy * 26;
-    
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
-                    widget->style->fg_gc[0],
-                    self->toggle_image[self->size],
-                    20 - sx * 2,
-                    20 - sy * 3 + (sy * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
-                    x,
-                    y,
-                    width,
-                    height,
-                    GDK_RGB_DITHER_NORMAL, 0, 0);
+    if (!self->toggle_image)
+        calf_toggle_create_pixbuf(self);
+    float off = floor(.5 + gtk_range_get_value(GTK_RANGE(widget)));
+    float pw  = gdk_pixbuf_get_width(self->toggle_image);
+    float ph  = gdk_pixbuf_get_height(self->toggle_image);
+    float wcx = widget->allocation.x + widget->allocation.width / 2;
+    float wcy = widget->allocation.y + widget->allocation.height / 2;
+    float pcx = pw / 2;
+    float pcy = ph / 4;
+    float sy = off * ph / 2;
+    float x = wcx - pcx;
+    float y = wcy - pcy;
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0],
+                    self->toggle_image, 0, sy, x, y, pw, ph / 2, GDK_RGB_DITHER_NORMAL, 0, 0);
     return TRUE;
 }
 
@@ -552,14 +567,8 @@ calf_toggle_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_TOGGLE(widget));
-
-    CalfToggle *self = CALF_TOGGLE(widget);
-    
-    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
-    float sy = self->size ? self->size : 1;
-    
-    requisition->width  = 30 * sx;
-    requisition->height = 20 * sy;
+    requisition->width  = widget->style->xthickness;
+    requisition->height = widget->style->ythickness;
 }
 
 static gboolean
@@ -608,11 +617,26 @@ calf_toggle_init (CalfToggle *self)
     widget->requisition.width = 30;
     widget->requisition.height = 20;
     self->size = 1;
-    GError *error = NULL;
-    self->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle0_silver.png", &error);
-    self->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
-    self->toggle_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
-    g_assert(self->toggle_image != NULL);
+}
+
+void
+calf_toggle_set_size (CalfToggle *self, int size)
+{
+    char name[128];
+    GtkWidget *widget = GTK_WIDGET(self);
+    self->size = size;
+    sprintf(name, "%s_%d\n", gtk_widget_get_name(widget), size);
+    gtk_widget_set_name(widget, name);
+    calf_toggle_create_pixbuf(self);
+    gtk_widget_queue_draw(widget);
+}
+void
+calf_toggle_set_icon (CalfToggle *self, const char *icon)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    self->icon = icon;
+    calf_toggle_create_pixbuf(self);
+    gtk_widget_queue_draw(widget);
 }
 
 GtkWidget *

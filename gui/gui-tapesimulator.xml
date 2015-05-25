@@ -2,7 +2,7 @@
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
         
         <label param="bypass" attach-x="0" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="24"/>
+        <toggle param="bypass" icon="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="24"/>
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
@@ -59,15 +59,15 @@
                 </hbox>
                 <hbox>
                     <vbox>
-                        <toggle param="post"/>
+                        <toggle param="post" icon="muffle"/>
                         <label text="Muffle"/>
                     </vbox>
                     <vbox>
-                        <toggle param="magnetical"/>
+                        <toggle param="magnetical" icon="magnetical"/>
                         <label text="Magnetical"/>
                     </vbox>
                     <vbox>
-                        <toggle param="speed"/>
+                        <toggle param="speed" icon="fast"/>
                         <label text="Fast"/>
                     </vbox>
                 </hbox>

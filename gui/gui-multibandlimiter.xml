@@ -14,7 +14,7 @@
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
         
         <label param="mode" attach-x="4" attach-y="0" expand-x="0"/>
         <combo param="mode" attach-x="4" attach-y="1" expand-x="0" attach-h="2"/>

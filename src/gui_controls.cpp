@@ -915,11 +915,12 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     widget  = calf_toggle_new ();
-    
-    CALF_TOGGLE(widget)->size = get_int("size", 2);
-    
+    CalfToggle * toggle = CALF_TOGGLE(widget);
+    calf_toggle_set_size(toggle, get_int("size", 2));
+    if (attribs.count("icon") != 0)
+        calf_toggle_set_icon(toggle, attribs["icon"].c_str());
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
+    //gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
     return widget;
 }
 

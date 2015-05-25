@@ -280,6 +280,24 @@ style "calf-display" {
     base[NORMAL] = { 0.89, 1.00, 0.45 }
 }
 
+
+### TOGGLE ###
+style "calf-toggle0" {
+    xthickness = 22
+    ythickness = 22
+    fg[NORMAL] = "red"
+}
+style "calf-toggle1" {
+    xthickness = 32
+    ythickness = 30
+    fg[NORMAL] = "red"
+}
+style "calf-toggle2" {
+    xthickness = 60
+    ythickness = 50
+    fg[NORMAL] = "red"
+}
+
 widget "*Calf*"                                   style : rc "calf-default"
 
 widget "*Calf-Rack"                               style : highest "calf-rack"
@@ -301,6 +319,7 @@ widget "*Calf-Menu*"                              style : highest "calf-menu"
 widget "*Calf*Notebook*"                          style : highest "calf-notebook"
 
 widget "*Calf*Frame"                              style : highest "calf-frame"
+
 
 widget "*Calf*Button*"                            style : highest "calf-button"
 widget "*Calf*Toggle*"                            style : highest "calf-toggle"
@@ -332,3 +351,7 @@ widget "*CalfLed*"                                style : highest "calf-led"
 widget "*Calf*Combo*"                             style : highest "calf-display"
 widget "*Calf*Graph"                              style : highest "calf-display"
 widget "*Calf*Tuner"                              style : highest "calf-display"
+
+widget "*CalfToggle*_0*"                           style : highest "calf-toggle0"
+widget "*CalfToggle*_1*"                           style : highest "calf-toggle1"
+widget "*CalfToggle*_2*"                           style : highest "calf-toggle2"
