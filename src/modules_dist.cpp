@@ -837,6 +837,7 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, f
         for (int i = 0; i < points; i++) {
             if (!subindex) {
                 float input = dB_grid_inv(-1.0 + (float)i * 2.0 / ((float)points - 1.f));
+                printf("%d %.4f\n", i,input);
                 data[i] = dB_grid(input);
             } else {
                 float output = 1 - exp(-3 * (pow(2, -10 + 14 * (float)i / (float) points)));

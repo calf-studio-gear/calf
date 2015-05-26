@@ -436,10 +436,17 @@ bool frequency_response_line_graph::get_layers(int index, int generation, unsign
 }
 std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const
 { 
+    return frequency_crosshair_label(x, y, sx, sy, context);
+}
+std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context, double res, double ofs)
+{ 
     std::stringstream ss;
+    char str[256];
     float freq = exp((float(x) / float(sx)) * log(1000)) * 20.0;
-    ss << int(freq) << " Hz";
-    return ss.str();
+    float db = dsp::amp2dB(dB_grid_inv(-1 + (2 - float(y) / float(sy) * 2), res, ofs));
+    dsp::note_desc desc = dsp::hz_to_note(freq, 440);
+    sprintf(str, "%.2f Hz\n %.2f dB\nNote: %s%+d\nCents: %+.2f\nMIDI: %d", freq, db, desc.name, desc.octave, desc.cents, desc.note);
+    return string(str);
 }
 
 

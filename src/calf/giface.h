@@ -765,9 +765,9 @@ static bool get_graph(Fx &fx, int subindex, float *data, int points, float res =
 }
 
 /// convert normalized grid-ish value back to amplitude value
-static inline float dB_grid_inv(float pos)
+static inline float dB_grid_inv(float pos, float res = 256, float ofs = 0.4)
 {
-    return pow(256.0, pos - 0.4);
+    return pow(res, pos - ofs);
 }
 
 /// Line graph interface implementation for frequency response graphs
@@ -781,6 +781,8 @@ public:
     virtual float freq_gain(int index, double freq) const { return 0; };
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
 };
+std::string frequency_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context, double res = 256, double ofs = 0.4);
+
 
 /// set drawing color based on channel index (0 or 1)
 void set_channel_color(cairo_iface *context, int channel, float alpha = 0.6);

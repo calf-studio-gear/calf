@@ -583,5 +583,36 @@ inline void print_bits(size_t const size, void const * const ptr)
     puts("");
 }
 
+
+struct note_desc
+{
+    int note;
+    double cents;
+    double freq;
+    int octave;
+    const char *name;
+};
+
+inline note_desc hz_to_note (double hz, double tune)
+{
+    note_desc desc;
+    static const char notenames[] = "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0";
+    double f2 = hz / tune;
+    double lf2 = logf(f2);
+    double rf2 = 1200 * lf2 / logf(2.f) - 300;
+    rf2 -= 1200.f * floor(rf2 / 1200.f);
+    int note = round(rf2 / 100.f);
+    rf2 -= note * 100;
+    if (note == 12)
+        note -= 12;
+    int mnote = round(12 * log2(f2)) + 57;
+    desc.freq   = hz;
+    desc.note   = mnote;
+    desc.cents  = rf2;
+    desc.octave = int(mnote / 12) - 2;
+    desc.name   = notenames + (mnote % 12) * 3;
+    return desc;
+}
+
 };
 #endif
