@@ -93,10 +93,10 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     gint iw = gdk_pixbuf_get_width(pixbuf);
     gint ih = gdk_pixbuf_get_height(pixbuf);
     
-    float widths[6]  = {0, 2.5, 3.5, 3.5, 4.2, 5.5};
+    float widths[6]  = {0, 2.2, 3.5, 3.5, 4.2, 5.5};
     float margins[6] = {0, 2.2, 3.5, 3.8, 4.2, 4.5};
     float pins_m[6]  = {0, 6,   10,   10,   11,  13};
-    float pins_s[6]  = {0, 3,   4,   4,   4,   4};
+    float pins_s[6]  = {0, 4,   4,   4,   4,   4};
     
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
     cairo_t *ctx = gdk_cairo_create(GDK_DRAWABLE(widget->window));
