@@ -56,8 +56,8 @@ private:
     enum { graph_param_count = BaseClass::last_graph_param - BaseClass::first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     float hp_mode_old, hp_freq_old;
     float lp_mode_old, lp_freq_old;
-    float ls_level_old, ls_freq_old;
-    float hs_level_old, hs_freq_old;
+    float ls_level_old, ls_freq_old, ls_q_old;
+    float hs_level_old, hs_freq_old, hs_q_old;
     int indiv_old;
     bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
