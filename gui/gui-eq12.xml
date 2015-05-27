@@ -76,7 +76,7 @@
                 <combo param="hp_active"/>
                 <label/>
                 <label param="hp_freq" text="Frequency" />
-                <knob param="hp_freq" size="3" ticks="10 100 1000 20000"/>
+                <knob param="hp_freq" size="4" ticks="10 100 1000 20000"/>
                 <value param="hp_freq" />
                 <label/>
                 <label param="hp_mode" text="Rolloff"/>
@@ -263,7 +263,7 @@
                 <combo param="lp_active"/>
                 <label/>
                 <label param="lp_freq" text="Frequency"/>
-                <knob param="lp_freq" size="3" ticks="10 100 1000 20000" />
+                <knob param="lp_freq" size="4" ticks="10 100 1000 20000" />
                 <value param="lp_freq" />
                 <label/>
                 <label param="lp_mode" text="Rolloff"/>
