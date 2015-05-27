@@ -369,6 +369,8 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                 float pat_alpha;
                 bool grad;
                 char label[256];
+                float freq = exp((handle->value_x) * log(1000)) * 20.0;
+                
                 // choose colors between dragged and normal state
                 if (lg->handle_hovered == i) {
                     pat_alpha = 0.3;
@@ -438,20 +440,17 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     cairo_set_source(c, pat);
                     cairo_fill(c);
                     cairo_pattern_destroy(pat);
-                    float freq = exp((handle->value_x) * log(1000)) * 20.0;
-                    
                     if (handle->label && strlen(handle->label))
                         sprintf(label, "%.2f Hz\n%s", freq, handle->label);
                     else
                         sprintf(label, "%.2f Hz", freq);
                     calf_line_graph_draw_label(c, label, val_x, oy + 15);
                 } else {
-                    float freq = exp((handle->value_x) * log(1000)) * 20.0;
-                    
+                    float db = dsp::amp2dB(dB_grid_inv(-1 + (2. - handle->value_y * 2.), 128 * lg->zoom, 0));
                     if (handle->label && strlen(handle->label))
-                        sprintf(label, "%.2f Hz\n%.2f dB\n%s", freq, dsp::amp2dB(handle->value_y), handle->label);
+                        sprintf(label, "%.2f Hz\n%.2f dB\n%s", freq, db, handle->label);
                     else
-                        sprintf(label, "%.2f Hz\n%.2f dB", freq, dsp::amp2dB(handle->value_y));
+                        sprintf(label, "%.2f Hz\n%.2f dB", freq, db);
                     int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
                     calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, std::string(label));
                 }
