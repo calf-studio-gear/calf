@@ -85,7 +85,7 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int index, double freq) const;
-    string get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const;
+    string get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const;
 
     void set_sample_rate(uint32_t sr)
     {

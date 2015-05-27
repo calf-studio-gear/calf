@@ -341,7 +341,7 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
         cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_stroke(cache_cr);
     }
-    calf_line_graph_draw_label(cache_cr, label, x, y);
+    calf_line_graph_draw_label(cache_cr, label, x - mask, y);
 }
 
 void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
@@ -368,7 +368,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                 int val_y = (handle->dimensions >= 2) ? round(handle->value_y * sy) : 0;
                 float pat_alpha;
                 bool grad;
-                char label[256];
+                char label[1024];
                 float freq = exp((handle->value_x) * log(1000)) * 20.0;
                 
                 // choose colors between dragged and normal state
@@ -446,13 +446,17 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                         sprintf(label, "%.2f Hz", freq);
                     calf_line_graph_draw_label(c, label, val_x, oy + 15);
                 } else {
-                    float db = dsp::amp2dB(dB_grid_inv(-1 + (2. - handle->value_y * 2.), 128 * lg->zoom, 0));
-                    if (handle->label && strlen(handle->label))
-                        sprintf(label, "%.2f Hz\n%.2f dB\n%s", freq, db, handle->label);
-                    else
-                        sprintf(label, "%.2f Hz\n%.2f dB", freq, db);
+                    std::string tmp;
                     int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
-                    calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, std::string(label));
+                    if (lg->handle_hovered == i)
+                        tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 1, 1, 1, 1, lg->zoom * 128, 0);
+                    else
+                        tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 1, 0, 0, 0, lg->zoom * 128, 0);
+                    if (handle->label && strlen(handle->label))
+                        sprintf(label, "%s\n%s", handle->label, tmp.c_str());
+                    else
+                        strcpy(label, tmp.c_str());
+                    calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, label);
                 }
             }
         }
@@ -1042,7 +1046,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         std::string s;
-        s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, &cimpl);
+        s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, 1, 1, 1, 1);
         cairo_set_line_width(c, 1),
         calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s);
     }

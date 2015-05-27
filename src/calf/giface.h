@@ -241,7 +241,7 @@ struct line_graph_iface
     /// @param y Position of the mouse pointer in y direction
     /// @param sx Horizontal size of the widget in pixels
     /// @param sy Vertical size of the widget in pixels
-    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const { std::string s = ""; return s; }
+    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, int dB, int name, int note, int cents) const { std::string s = ""; return s; }
     
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
@@ -779,9 +779,9 @@ public:
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_layers(int index, int generation, unsigned int &layers) const;
     virtual float freq_gain(int index, double freq) const { return 0; };
-    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, cairo_iface *context ) const;
+    virtual std::string get_crosshair_label( int x, int y, int sx, int sy, int dB, int name, int note, int cents) const;
 };
-std::string frequency_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context, double res = 256, double ofs = 0.4);
+std::string frequency_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents, double res = 256, double ofs = 0.4);
 
 
 /// set drawing color based on channel index (0 or 1)

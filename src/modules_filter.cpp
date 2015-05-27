@@ -493,9 +493,9 @@ float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, dou
 }
 
 template<class BaseClass, bool has_lphp>
-inline string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const
+inline string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const
 { 
-    return frequency_crosshair_label(x, y, sx, sy, context, 128 * *params[AM::param_zoom], 0);
+    return frequency_crosshair_label(x, y, sx, sy, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
 template class equalizerNband_audio_module<equalizer5band_metadata, false>;
