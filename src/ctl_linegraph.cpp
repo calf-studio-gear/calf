@@ -37,10 +37,11 @@
 #define INTtoB(color) (float)((color & 0x0000ff00) >>  8) / 255.f
 #define INTtoA(color) (float)((color & 0x000000ff) >>  0) / 255.f
 
+using namespace std;
 using namespace calf_plugins;
 
 static void
-calf_line_graph_draw_grid( CalfLineGraph* lg, cairo_t *ctx, std::string &legend, bool vertical, float pos )
+calf_line_graph_draw_grid( CalfLineGraph* lg, cairo_t *ctx, string &legend, bool vertical, float pos )
 {
     int sx = lg->size_x;
     int sy = lg->size_y;
@@ -225,7 +226,7 @@ calf_line_graph_draw_moving(CalfLineGraph* lg, cairo_t *ctx, float *data, int di
     
 }
 
-void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::string label, int x, int y, double bgopac)
+void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, string label, int x, int y, double bgopac)
 {
     int hmarg = 8;
     int linepad = 4;
@@ -238,10 +239,10 @@ void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::stri
     double h = 0;
     double w = 0;
     double z = 0;
-    std::string::size_type lpos = label.find_first_not_of("\n", 0);
-    std::string::size_type pos  = label.find_first_of("\n", lpos);
-    while (std::string::npos != pos || std::string::npos != lpos) {
-        std::string str = label.substr(lpos, pos - lpos);
+    string::size_type lpos = label.find_first_not_of("\n", 0);
+    string::size_type pos  = label.find_first_of("\n", lpos);
+    while (string::npos != pos || string::npos != lpos) {
+        string str = label.substr(lpos, pos - lpos);
         cairo_text_extents(cache_cr, str.c_str(), &tx);
         h += tx.height + linepad;
         w = std::max(w, tx.width);
@@ -268,8 +269,8 @@ void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::stri
     int p = 0;
     lpos = label.find_first_not_of("\n", 0);
     pos  = label.find_first_of("\n", lpos);
-    while (std::string::npos != pos || std::string::npos != lpos) {
-        std::string str = label.substr(lpos, pos - lpos);
+    while (string::npos != pos || string::npos != lpos) {
+        string str = label.substr(lpos, pos - lpos);
         cairo_text_extents(cache_cr, str.c_str(), &tx);
         if (!p)
             p = y - 3 - (n / 2) * (tx.height + linepad);
@@ -281,7 +282,7 @@ void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::stri
     }
 }
 
-void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, std::string label, double label_bg)
+void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, string label, double label_bg)
 {
     if (lg->debug) printf("(draw crosshairs)\n");
     // crosshairs
@@ -478,7 +479,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                     sprintf(label, "%.2f Hz", freq);
                 calf_line_graph_draw_label(lg, c, label, val_x, oy + 15, 0.5);
             } else {
-                std::string tmp;
+                string tmp;
                 int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
                 if (lg->handle_hovered == i)
                     tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 1, 1, 1, 1, lg->zoom * 128, 0);
@@ -741,7 +742,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     float *data        = new float[2 * std::max(lg->size_x, lg->size_y)];
     float pos          = 0;
     bool vertical      = false;
-    std::string legend = "";
+    string legend = "";
     int size           = 0;
     int direction      = 0;
     float x, y;
@@ -829,7 +830,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 grid_drawn = true;
             }
             for (int a = 0;
-                legend = std::string(),
+                legend = string(),
                 cairo_set_source_rgba(ctx, 0.15, 0.2, 0.0, 0.66),
                 cairo_set_line_width(ctx, grid_width),
                 lg->source->get_gridline(lg->source_id, a, phase, pos, vertical, legend, &cimpl);
@@ -1076,7 +1077,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // and draw the crosshairs on top if neccessary
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
-        std::string s;
+        string s;
         s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, 1, 1, 1, 1);
         cairo_set_line_width(c, 1),
         calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s, 1.5);
