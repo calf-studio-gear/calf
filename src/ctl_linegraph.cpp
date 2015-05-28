@@ -241,8 +241,8 @@ void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::stri
     std::string::size_type lpos = label.find_first_not_of("\n", 0);
     std::string::size_type pos  = label.find_first_of("\n", lpos);
     while (std::string::npos != pos || std::string::npos != lpos) {
-        const char *str = label.substr(lpos, pos - lpos).c_str();
-        cairo_text_extents(cache_cr, str, &tx);
+        std::string str = label.substr(lpos, pos - lpos);
+        cairo_text_extents(cache_cr, str.c_str(), &tx);
         h += tx.height + linepad;
         w = std::max(w, tx.width);
         z = tx.height + linepad;
@@ -269,15 +269,13 @@ void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, std::stri
     lpos = label.find_first_not_of("\n", 0);
     pos  = label.find_first_of("\n", lpos);
     while (std::string::npos != pos || std::string::npos != lpos) {
-        const char *str = label.substr(lpos, pos - lpos).c_str();
-        printf("%s\n", str);
-        cairo_text_extents(cache_cr, str, &tx);
+        std::string str = label.substr(lpos, pos - lpos);
+        cairo_text_extents(cache_cr, str.c_str(), &tx);
         if (!p)
             p = y - 3 - (n / 2) * (tx.height + linepad);
         p += tx.height + linepad;
         cairo_move_to(cache_cr, x - hmarg - tx.width - bgpad, p);
-        printf("%s\n", str);
-        cairo_show_text(cache_cr, str);
+        cairo_show_text(cache_cr, str.c_str());
         lpos = label.find_first_not_of("\n", pos);
         pos  = label.find_first_of("\n", lpos);
     }
