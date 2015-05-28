@@ -1,49 +1,34 @@
-Calf is a pack of audio plugins - effects and instruments, currently in
-development. The goal is to create a set of plugins using decent algorithms
-and parameter settings, available in a form which is compatible with as many
-open source applications as possible.
+Calf Studio gear
+================
 
-How to use Calf plugins:
+Calf Studio Gear is an audio plug-in pack for LV2 and JACK environments
+under LINUX operating systems. The suite contains lots of effects
+(delay, modulation, signal processing, filters, equalizers, dynamics,
+distortion and mastering effects), instruments (SF2 player, organ
+simulator and a monophonic synthesizer) and tools (analyzer, mono/stereo
+tools, crossovers). Calf Studio Gear aims for a professional audience.
 
-* LADSPA plugins
+Please visit the website below for further information,
+screenshots and installation instructions.
 
-Calf is installed as calf.so library in your LADSPA directory (typically
-/usr/lib/ladspa). It means that typical LADSPA host should be able to find
-Calf's plugins.
+http://calf-studio-gear.org
 
-* DSSI plugins
+Features
+--------
 
-Calf .so module is also installed in your DSSI plugin directory, which means
-your DSSI host (like jack-dssi-host or rosegarden) should find it and
-include its plugins in the plugin list. 
+- Instruments and tone generators (Organ, Monosynth, Wavetable, Fluidsynth)
+- Modulation effects (Multi Chorus, Phaser, Flanger, Rotary, Pulsator, Ring Modulator)
+- Delay effects (Reverb, Vintage Delay,Compensation Delay Line, Reverse Delay)
+- Dynamic processors (Compressor, Sidechain Compressor, Multiband Compressor, Mono Compressor, Deesser, Gate, Sidechain Gate, Multiband Gate, Limiter, Multiband Limiter, Sidechain Limiter, Transient Designer)
+- Filters and equalizers (Filter, Filterclavier, Envelope Filter, Equalizer 5 Band, Equalizer 8 Band, Equalizer 12 Band, Equalizer 30 Band, Vocoder, Emphasis)
+- Distortion and enhancement (Saturator, Exciter, Bass Enhancer, Tape Simulator, Crusher)
+- Tools (Mono Input, Stereo Tools, Haas Stereo Enhancer, Analyzer, X-Over 2 Band, X-Over 3 Band, X-Over 4 Band)
 
-* JACK client application
+Usage
+-----
 
-You can also use Calf plugins as separate applications, connecting to other
-applications using JACK Audio Connection Kit (version 0.103 or newer is
-required). To run the client, type:
+Once installed there are a couple of manuals available.
 
-        calfjackhost monosynth !
-
-(! means "connect", last "!" means "connect to output")
-
-Other examples:
-
-        calfjackhost monosynth ! vintagedelay ! flanger !
-
-(runs monosynth into vintagedelay and vintagedelay into flanger, then to
-output)
-
-        calfjackhost ! reverb !
-
-(takes signal from system:capture_1 and _2, puts it through reverb, and then
-sends to system:playback_1 and _2)
-
-You can also change client name or input/output port names with command-line
-options (type calfjackhost --help). Use qjackctl, patchage or jack_connect
-to connect the Calf JACK client to your sound card or other applications, if
-"!" is inadequate for any reason (if I didn't explain it properly, or if it
-doesn't provide the connectivity options needed).
-
-Keep in mind this project is in the early development phase. It is usable
-for certain purposes, but drop me a note if you need something.
+- "man calf" displays some general instructions
+- "man calfjackhost" gives some hints on how to use the calf rack application
+- /usr/local/share/doc/calf contains a HTML manual for the plug-ins

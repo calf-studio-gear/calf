@@ -23,3 +23,12 @@ Features
 - Filters and equalizers (Filter, Filterclavier, Envelope Filter, Equalizer 5 Band, Equalizer 8 Band, Equalizer 12 Band, Equalizer 30 Band, Vocoder, Emphasis)
 - Distortion and enhancement (Saturator, Exciter, Bass Enhancer, Tape Simulator, Crusher)
 - Tools (Mono Input, Stereo Tools, Haas Stereo Enhancer, Analyzer, X-Over 2 Band, X-Over 3 Band, X-Over 4 Band)
+
+Usage
+-----
+
+Once installed there are a couple of manuals available.
+
+- "man calf" displays some general instructions
+- "man calfjackhost" gives some hints on how to use the calf rack application
+- /usr/local/share/doc/calf contains a HTML manual for the plug-ins
