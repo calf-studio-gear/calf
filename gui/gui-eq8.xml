@@ -95,7 +95,7 @@
                     <value param="ls_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="3">
-                    <knob param="ls_q" ticks="0.1 1 10" />
+                    <knob param="ls_q" ticks="0.1 0.707 10" />
                     <value param="ls_q" />
                 </vbox>
             </table>
@@ -187,7 +187,7 @@
                     <value param="hs_level" />
                 </vbox>
                 <vbox attach-x="0" attach-y="3">
-                    <knob param="hs_q" ticks="0.1 1 10" />
+                    <knob param="hs_q" ticks="0.1 0.707 10" />
                     <value param="hs_q" />
                 </vbox>
             </table>
