@@ -36,6 +36,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <calf/ctl_linegraph.h>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 using namespace calf_plugins;
 using namespace calf_utils;
@@ -81,6 +83,27 @@ float control_base::get_float(const char *name, float def_value)
     float value;
     ss >> value;
     return value;
+}
+
+std::vector<double> control_base::get_vector(const char *name, std::string &value)
+{
+    std::vector<double> t;
+    
+    if (attribs.count(name)) {
+        value = attribs[name];
+    }
+        
+    string::size_type lpos = value.find_first_not_of(" ", 0);
+    string::size_type pos  = value.find_first_of(" ", lpos);
+    while (string::npos != pos || string::npos != lpos) {
+        double val;
+        stringstream stream(value.substr(lpos, pos - lpos).c_str());
+        stream >> val;
+        t.push_back(val);
+        lpos = value.find_first_not_of(" ", pos);
+        pos  = value.find_first_of(" ", lpos);
+    }
+    return t;
 }
 
 void control_base::set_visibilty(bool state)
@@ -603,13 +626,14 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
     widget = calf_vumeter_new ();
+    CalfVUMeter *vu = CALF_VUMETER(widget);
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
-    calf_vumeter_set_mode (CALF_VUMETER (widget), (CalfVUMeterMode)get_int("mode", 0));
-    CALF_VUMETER(widget)->vumeter_hold = get_float("hold", 0);
-    CALF_VUMETER(widget)->vumeter_falloff = get_float("falloff", 0.f);
-    CALF_VUMETER(widget)->vumeter_width = get_int("width", 80);
-    CALF_VUMETER(widget)->vumeter_height = get_int("height", 18);
-    CALF_VUMETER(widget)->vumeter_position = get_int("position", 0);
+    calf_vumeter_set_mode (vu, (CalfVUMeterMode)get_int("mode", 0));
+    vu->vumeter_hold = get_float("hold", 0);
+    vu->vumeter_falloff = get_float("falloff", 0.f);
+    vu->vumeter_width = get_int("width", 80);
+    vu->vumeter_height = get_int("height", 18);
+    vu->vumeter_position = get_int("position", 0);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VUMeter");
     return widget;
 }
@@ -648,11 +672,12 @@ GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
-    widget = calf_tube_new ();
-    gtk_widget_set_name(GTK_WIDGET(widget), "calf-tube");
-    CALF_TUBE(widget)->size = get_int("size", 2);
-    CALF_TUBE(widget)->direction = get_int("direction", 2);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Tube");
+    GtkWidget *widget = calf_tube_new ();
+    CalfTube *tube = CALF_TUBE(widget);
+    gtk_widget_set_name(widget, "calf-tube");
+    tube->size = get_int("size", 2);
+    tube->direction = get_int("direction", 2);
+    gtk_widget_set_name(widget, "Calf-Tube");
     return widget;
 }
 
@@ -832,19 +857,32 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     const parameter_properties &props = get_props();
-    
-    //widget = calf_knob_new_with_range (props.to_01 (gui->plugin->get_param_value(param_no)), 0, 1, 0.01);
     widget = calf_knob_new();
     float increment = props.get_increment();
     gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
-    CALF_KNOB(widget)->default_value = props.to_01(props.def_value);
-    CALF_KNOB(widget)->knob_type = get_int("type");
-    CALF_KNOB(widget)->knob_size = get_int("size", 2);
-    if(CALF_KNOB(widget)->knob_size > 5) {
-        CALF_KNOB(widget)->knob_size = 5;
-    } else if (CALF_KNOB(widget)->knob_size < 1) {
-        CALF_KNOB(widget)->knob_size = 1;
+    CalfKnob * knob = CALF_KNOB(widget);
+    knob->default_value = props.to_01(props.def_value);
+    knob->type = get_int("type");
+    knob->size = min(5, max(1, get_int("size", 2)));
+    
+    //char ticks[128];
+    std::ostringstream ticks_;
+    //std::string str = ticks.str();
+    double min = double(props.min);
+    double max = double(props.max);
+    switch (knob->type) {
+        default:
+        case 0: ticks_ << min << " " << max; break;
+        case 1: ticks_ << min << " " << props.from_01(0.5) << " " << max; break;
+        case 2: ticks_ << min << " " << max; break;
+        case 3: ticks_ << min << " " << props.from_01(0.25) << " " << props.from_01(0.5) << " " << props.from_01(0.75) << " " << max; break;
     }
+    std::string ticks = ticks_.str();
+    vector<double> t = get_vector("ticks", ticks);
+    std::sort(t.begin(), t.end());
+    for (unsigned int i = 0; i < t.size(); i++)
+        t[i] = props.to_01(t[i]);
+    knob->ticks = t;
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
@@ -877,11 +915,12 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     widget  = calf_toggle_new ();
-    
-    CALF_TOGGLE(widget)->size = get_int("size", 2);
-    
+    CalfToggle * toggle = CALF_TOGGLE(widget);
+    calf_toggle_set_size(toggle, get_int("size", 2));
+    if (attribs.count("icon") != 0)
+        calf_toggle_set_icon(toggle, attribs["icon"].c_str());
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
+    //gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
     return widget;
 }
 
@@ -1060,6 +1099,23 @@ void curve_param_control::send_configure(const char *key, const char *value)
             calf_curve_set_points(widget, pts);
         }
     }
+}
+
+/******************************** Meter Scale ********************************/
+
+GtkWidget *meter_scale_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    widget  = calf_meter_scale_new ();
+    CalfMeterScale *ms = CALF_METER_SCALE(widget);
+    gtk_widget_set_name(widget, "Calf-MeterScale");
+    string str   = "0 0.5 1";
+    ms->marker   = get_vector("marker", str);
+    ms->mode     = (CalfVUMeterMode)get_int("mode", 0);
+    ms->position = get_int("position", 0);
+    ms->dots     = get_int("dots", 0);
+    return widget;
 }
 
 /******************************** Entry ********************************/

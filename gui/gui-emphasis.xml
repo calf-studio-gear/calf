@@ -20,7 +20,7 @@
         </vbox>
         <vbox expand="0" attach-x="3" attach-y="0" expand-x="0" fill-x="0" fill="0" pad-x="5">
              <label param="bypass"/>
-             <toggle param="bypass" shrink="1"/>
+             <toggle param="bypass" icon="bypass" shrink="1"/>
         </vbox>
         <vbox shrink-x="1" expand-x="1" fill-x="1" expand="0" fill="0" attach-x="4" attach-y="0">
             <label text="Out L" />

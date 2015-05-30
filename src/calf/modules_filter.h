@@ -56,8 +56,8 @@ private:
     enum { graph_param_count = BaseClass::last_graph_param - BaseClass::first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     float hp_mode_old, hp_freq_old;
     float lp_mode_old, lp_freq_old;
-    float ls_level_old, ls_freq_old;
-    float hs_level_old, hs_freq_old;
+    float ls_level_old, ls_freq_old, ls_q_old;
+    float hs_level_old, hs_freq_old, hs_q_old;
     int indiv_old;
     bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
@@ -85,6 +85,8 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int index, double freq) const;
+    string get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const;
+
     void set_sample_rate(uint32_t sr)
     {
         srate = sr;

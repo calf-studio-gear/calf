@@ -71,15 +71,15 @@ style "calf-rack"
 
 style "calf-rack-title"
 {
-    fg[NORMAL] = "#918864"
-    font_name  = "Sans 12"
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    font_name  = "Open Sans Condensed 11"
     xthickness = 7
     ythickness = 3
 }
 
 style "calf-rack-widgets"
 {
-    fg[NORMAL]        = "#918864"
+    fg[NORMAL]        = { 0, 0.11, 0.11 }
     font_name         = "Sans 5"
 }
 
@@ -90,7 +90,7 @@ style "calf-plugin"
 
 style "calf-connector"
 {
-    #bg_pixmap[NORMAL] = "background_dark.png"
+    
 }
 style "calf-connector-children"
 {
@@ -143,6 +143,9 @@ style "calf-combobox"
     font_name = "Sans 10.5"
     xthickness = 0
     ythickness = 3
+    
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    fg[NORMAL] = "black"
 }
 
 ### TEXT ENTRY ###
@@ -235,6 +238,64 @@ style "calf-frame"
 {
     xthickness = 8
     ythickness = 8
+    
+    fg[NORMAL]   = "white"
+    text[NORMAL] = "white"
+}
+
+### KNOBS ###
+style "calf-knobs"
+{
+    fg[NORMAL]   = "#001a1a"
+    fg[PRELIGHT] = "#001a1a"
+    fg[ACTIVE]   = "#000"
+}
+
+### VUMETERS ###
+style "calf-vumeter"
+{
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    fg[ACTIVE] = "#cc0000"
+    
+    xthickness = 5
+    ythickness = 4
+}
+
+### METERSCALE ###
+style "calf-meterscale"
+{
+    fg[NORMAL] = { 1.00, 1.00, 1.00 }
+    xthickness = 5
+}
+
+### LED ###
+style "calf-led"
+{
+    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+}
+
+### DISPLAYS ###
+style "calf-display" {
+    base[NORMAL] = { 0.89, 1.00, 0.45 }
+}
+
+
+### TOGGLE ###
+style "calf-toggle0" {
+    xthickness = 24
+    ythickness = 24
+    fg[NORMAL] = "red"
+}
+style "calf-toggle1" {
+    xthickness = 32
+    ythickness = 30
+    fg[NORMAL] = "red"
+}
+style "calf-toggle2" {
+    xthickness = 60
+    ythickness = 50
+    fg[NORMAL] = "red"
 }
 
 widget "*Calf*"                                   style : rc "calf-default"
@@ -259,6 +320,7 @@ widget "*Calf*Notebook*"                          style : highest "calf-notebook
 
 widget "*Calf*Frame"                              style : highest "calf-frame"
 
+
 widget "*Calf*Button*"                            style : highest "calf-button"
 widget "*Calf*Toggle*"                            style : highest "calf-toggle"
 widget "*Calf*CheckButton"                        style : highest "calf-toggle"
@@ -275,3 +337,21 @@ widget_class "*Scrollbar*"                        style : highest "calf-scrollba
 
 widget_class "*Calf*GtkTreeView*"                 style : highest "calf-treeview"
 widget_class "*Calf*TreeView*Button*"             style : highest "calf-treehead"
+
+widget "*Calf*Knob"                               style : highest "calf-knobs"
+
+widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
+widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
+widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
+widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
+
+widget "*Calf*LED"                                style : highest "calf-led"
+widget "*CalfLed*"                                style : highest "calf-led"
+
+widget "*Calf*Combo*"                             style : highest "calf-display"
+widget "*Calf*Graph"                              style : highest "calf-display"
+widget "*Calf*Tuner"                              style : highest "calf-display"
+
+widget "*CalfToggle*_0*"                           style : highest "calf-toggle0"
+widget "*CalfToggle*_1*"                           style : highest "calf-toggle1"
+widget "*CalfToggle*_2*"                           style : highest "calf-toggle2"

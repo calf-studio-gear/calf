@@ -1,7 +1,7 @@
 <table rows="2" cols="3">
     <vbox attach-x="0" attach-y="0" pad-x="10" expand-y="1" fill-y="0" spacing="5">
         <label param="master"  />
-        <knob param="master" size="5" />
+        <knob param="master" size="5" ticks="0 0.0625 0.25 0.5 1"/>
         <value param="master" />
     </vbox>
     <vbox attach-x="1" attach-y="0" pad-x="10" expand-y="1" fill-y="1" spacing="5">
@@ -61,4 +61,3 @@
       </table>
     </frame>
 </table>
-

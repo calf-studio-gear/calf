@@ -2,23 +2,25 @@
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
         
         <label param="bypass" attach-x="0" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="24"/>
+        <toggle param="bypass" icon="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" pad-x="24"/>
         
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="mix" attach-x="4" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" ticks="0 0.5 1" />
         <value param="mix" attach-x="4" attach-y="3" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
         <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
@@ -38,7 +40,7 @@
         </vbox>
         <frame label="Settings">
             <vbox spacing="8">
-                <hbox spacing="10">
+                <hbox homogeneous="1">
                     <vbox>
                         <label text="Noise"/>
                         <knob param="noise" size="3"/>
@@ -55,17 +57,17 @@
                         <value param="lowpass"/>
                     </vbox>
                 </hbox>
-                <hbox>
+                <hbox homogeneous="1">
                     <vbox>
-                        <toggle param="post"/>
+                        <toggle param="post" icon="muffle"/>
                         <label text="Muffle"/>
                     </vbox>
                     <vbox>
-                        <toggle param="magnetical"/>
+                        <toggle param="magnetical" icon="magnetical"/>
                         <label text="Magnetical"/>
                     </vbox>
                     <vbox>
-                        <toggle param="speed"/>
+                        <toggle param="speed" icon="fast"/>
                         <label text="Fast"/>
                     </vbox>
                 </hbox>
@@ -73,12 +75,12 @@
         </frame>
         <frame label="Frequency Response">
             <if cond="directlink">
-                <line-graph refresh="1" width="250" height="160" param="lowpass"/>
+                <line-graph refresh="1" width="300" height="200" param="lowpass"/>
             </if>
         </frame>
         <frame label="Saturation">
             <if cond="directlink">
-                <line-graph refresh="1" width="160" height="160" param="level_in" square="1"/>
+                <line-graph refresh="1" width="200" height="200" param="level_in" square="1"/>
             </if>
         </frame>
     </hbox>

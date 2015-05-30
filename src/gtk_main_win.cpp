@@ -331,8 +331,10 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_widget_set_name(GTK_WIDGET(title), "Calf-Rack-Title");
     gtk_label_set_markup(GTK_LABEL(title), metadata->get_label());
     gtk_label_set_justify(GTK_LABEL(title), GTK_JUSTIFY_RIGHT);
-    gtk_table_attach(GTK_TABLE(strip->strip_table), title, 1, 2, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0 , 10, 0);
-    gtk_widget_show(title);
+    GtkWidget * align = gtk_alignment_new(0.0, 0.5, 0.0, 0.0);
+    gtk_container_add(GTK_CONTAINER(align), title);
+    gtk_table_attach(GTK_TABLE(strip->strip_table), align, 1, 2, row, row + 1, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(GTK_FILL) , 10, 0);
+    gtk_widget_show_all(align);
     
     // open button
     GtkWidget *label = calf_toggle_button_new("Edit");
@@ -370,7 +372,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     if (metadata->get_midi()) {
         label = calf_led_new();
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
-        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("Midi")), FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), FALSE, FALSE, 0);
         gtk_table_attach(GTK_TABLE(strip->strip_table), midiBox, 2, 3, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0, 5, 3);
         gtk_widget_set_size_request(GTK_WIDGET(label), 25, 25);
@@ -394,7 +396,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
         
         GtkWidget *inBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("AUDIO IN"),FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(inBox), gtk_label_new("Audio In"),FALSE, FALSE, 0);
         
         for (int i = 0; i < metadata->get_input_count(); i++)
         {
@@ -423,7 +425,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
         
         GtkWidget *outBox  = gtk_vbox_new(FALSE, 1);
         
-        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("AUDIO OUT"),TRUE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(outBox), gtk_label_new("Audio Out"),TRUE, TRUE, 0);
         
         for (int i = 0; i < metadata->get_output_count(); i++)
         {
@@ -452,7 +454,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     GtkWidget *paramBox = gtk_hbox_new(FALSE, 0);
     
     GtkWidget *logoImg     = gtk_image_new_from_file(PKGLIBDIR "/logo_button.png");
-    gtk_box_pack_start(GTK_BOX(paramBox), GTK_WIDGET(logoImg), TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(logoImg), TRUE, TRUE, 0);
     
     gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
     gtk_widget_show_all(GTK_WIDGET(paramBox));

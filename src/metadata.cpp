@@ -65,9 +65,11 @@ const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference" };
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "ls_active", "LS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "ls_level", "Level L" }, \
     { 100,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "ls_freq", "Freq L" }, \
+    { 0.707,       0.1,         10,    1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ls_q", "LS Q" }, \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "hs_active", "HS Active" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "hs_level", "Level H" }, \
-    { 5000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hs_freq", "Freq H" },
+    { 5000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hs_freq", "Freq H" }, \
+    { 0.707,       0.1,         10,    1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "hs_q", "HS Q" },
 
 #define EQ_BAND_PARAMS(band, frequency) \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "p" #band "_active", "F" #band " Active" }, \
@@ -1953,6 +1955,7 @@ CALF_PORT_PROPS(pitch) = {
     { 0,      0,   127,  1, PF_INT | PF_PROP_OUTPUT, NULL, "note", "MIDI Note" },
     { 0,     -100, 100,  1, PF_FLOAT | PF_PROP_OUTPUT, NULL, "cents", "Cents" },
     { 0,     -1, 1,      0, PF_FLOAT | PF_SCALE_PERC | PF_PROP_OUTPUT, NULL, "clarity", "Clarity" },
+    { 1,     1, 20000,   1, PF_FLOAT | PF_PROP_OUTPUT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
     {}
 };
 

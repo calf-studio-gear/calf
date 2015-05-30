@@ -7,20 +7,22 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
         
         <label param="mono" attach-x="4" attach-y="0" expand-x="0" />
-        <toggle param="mono" attach-x="4" attach-y="1" attach-h="2" expand-x="0" />
+        <toggle param="mono" icon="mono" attach-x="4" attach-y="1" attach-h="2" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
         <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
@@ -33,7 +35,7 @@
     <hbox spacing="20">
         <vbox spacing="3">
             <label param="freq" align-y="1.0" />
-            <knob size="5" param="freq" expand="0" fill="0" />
+            <knob size="5" param="freq" expand="0" fill="0" ticks="0.01 0.1 1 10 100" />
             <value param="freq" align-y="0.0" />
         </vbox>
         <vbox>

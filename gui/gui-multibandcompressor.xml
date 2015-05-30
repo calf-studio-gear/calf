@@ -7,51 +7,48 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
         
-        <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
+        <label param="mode" attach-x="4" attach-y="0" expand-x="0"/>
+        <combo param="mode" attach-x="4" attach-y="1" expand-x="0" attach-h="2"/>
+            
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
-        <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
-        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     
     <frame label="X-Over">
-        <vbox>
-            <align align-x="1.0" scale-x="0.1" scale-y="1.0">
-                <hbox spacing="8">
-                    <label param="mode"/>
-                    <combo param="mode"/>
-                </hbox>
-            </align>
-            <if cond="directlink">
-                <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
-            </if>
-        </vbox>
+        <if cond="directlink">
+            <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+        </if>
     </frame>
     
     <notebook param="notebook">
         <hbox page="Sub Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass0"/>
-                <toggle param="bypass0"/>
+                <toggle param="bypass0" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo0"/>
-                <toggle param="solo0"/>
+                <toggle param="solo0" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -61,7 +58,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio0" />
-                <knob param="ratio0" />
+                <knob param="ratio0" ticks="1 2 5 21" />
                 <value param="ratio0" />
             </vbox>
             <vbox spacing="4">
@@ -71,17 +68,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack0" />
-                <knob param="attack0" />
+                <knob param="attack0" ticks="0 1 10 100 2000" />
                 <value param="attack0" />
             </vbox>
             <vbox spacing="4">
                 <label param="release0" />
-                <knob param="release0" />
+                <knob param="release0" ticks="0 1 10 100 2000" />
                 <value param="release0" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee0" />
-                <knob param="knee0" />
+                <knob param="knee0" ticks="1 2 4 8" />
                 <value param="knee0" />
             </vbox>
             <vbox spacing="4">
@@ -94,12 +91,12 @@
         <hbox page="Low Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass1"/>
-                <toggle param="bypass1"/>
+                <toggle param="bypass1" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo1"/>
-                <toggle param="solo1"/>
+                <toggle param="solo1" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -109,7 +106,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio1" />
-                <knob param="ratio1" />
+                <knob param="ratio1" ticks="1 2 5 21" />
                 <value param="ratio1" />
             </vbox>
             <vbox spacing="4">
@@ -119,17 +116,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack1" />
-                <knob param="attack1" />
+                <knob param="attack1" ticks="0 1 10 100 2000" />
                 <value param="attack1" />
             </vbox>
             <vbox spacing="4">
                 <label param="release1" />
-                <knob param="release1" />
+                <knob param="release1" ticks="0 1 10 100 2000" />
                 <value param="release1" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee1" />
-                <knob param="knee1" />
+                <knob param="knee1" ticks="1 2 4 8" />
                 <value param="knee1" />
             </vbox>
             <vbox spacing="4">
@@ -142,12 +139,12 @@
         <hbox page="Mid Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass2"/>
-                <toggle param="bypass2"/>
+                <toggle param="bypass2" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo2"/>
-                <toggle param="solo2"/>
+                <toggle param="solo2" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -157,7 +154,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio2" />
-                <knob param="ratio2" />
+                <knob param="ratio2" ticks="1 2 5 21" />
                 <value param="ratio2" />
             </vbox>
             <vbox spacing="4">
@@ -167,17 +164,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack2" />
-                <knob param="attack2" />
+                <knob param="attack2" ticks="0 1 10 100 2000" />
                 <value param="attack2" />
             </vbox>
             <vbox spacing="4">
                 <label param="release2" />
-                <knob param="release2" />
+                <knob param="release2" ticks="0 1 10 100 2000" />
                 <value param="release2" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee2" />
-                <knob param="knee2" />
+                <knob param="knee2" ticks="1 2 4 8" />
                 <value param="knee2" />
             </vbox>
             <vbox spacing="4">
@@ -190,12 +187,12 @@
         <hbox page="High Band" homogeneous="1">
             <vbox spacing="4">
                 <label param="bypass3"/>
-                <toggle param="bypass3"/>
+                <toggle param="bypass3" icon="bypass"/>
                 <label />
             </vbox>
             <vbox spacing="4">
                 <label param="solo3"/>
-                <toggle param="solo3"/>
+                <toggle param="solo3" icon="solo"/>
                 <label/>
             </vbox>
             <vbox spacing="4">
@@ -205,7 +202,7 @@
             </vbox>
             <vbox spacing="4">
                 <label param="ratio3" />
-                <knob param="ratio3" />
+                <knob param="ratio3" ticks="1 2 5 21" />
                 <value param="ratio3" />
             </vbox>
             <vbox spacing="4">
@@ -215,17 +212,17 @@
             </vbox>
             <vbox spacing="4">
                 <label param="attack3" />
-                <knob param="attack3" />
+                <knob param="attack3" ticks="0 1 10 100 2000" />
                 <value param="attack3" />
             </vbox>
             <vbox spacing="4">
                 <label param="release3" />
-                <knob param="release3" />
+                <knob param="release3" ticks="0 1 10 100 2000" />
                 <value param="release3" />
             </vbox>
             <vbox spacing="4">
                 <label param="knee3" />
-                <knob param="knee3" />
+                <knob param="knee3" ticks="1 2 4 8" />
                 <value param="knee3" />
             </vbox>
             <vbox spacing="4">

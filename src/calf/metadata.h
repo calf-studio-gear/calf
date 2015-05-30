@@ -380,8 +380,8 @@ struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_ls_active, param_ls_level, param_ls_freq,
-           param_hs_active, param_hs_level, param_hs_freq,
+           param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
+           param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
@@ -402,8 +402,8 @@ struct equalizer8band_metadata: public plugin_metadata<equalizer8band_metadata>
            STEREO_VU_METER_PARAMS,
            param_hp_active, param_hp_freq, param_hp_mode,
            param_lp_active, param_lp_freq, param_lp_mode,
-           param_ls_active, param_ls_level, param_ls_freq,
-           param_hs_active, param_hs_level, param_hs_freq,
+           param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
+           param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
@@ -421,8 +421,8 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
            STEREO_VU_METER_PARAMS,
            param_hp_active, param_hp_freq, param_hp_mode,
            param_lp_active, param_lp_freq, param_lp_mode,
-           param_ls_active, param_ls_level, param_ls_freq,
-           param_hs_active, param_hs_level, param_hs_freq,
+           param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
+           param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
@@ -933,7 +933,7 @@ struct pitch_metadata: public plugin_metadata<pitch_metadata>
     enum { 
         par_pd_threshold,
         par_pd_subdivide,
-        par_tune, par_note, par_cents, par_clarity,
+        par_tune, par_note, par_cents, par_clarity, par_freq,
         param_count
     };
     PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")

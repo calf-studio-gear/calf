@@ -7,7 +7,7 @@
     <vbox attach-x="0" attach-y="0">
         <vbox border="10">
             <label param="transpose" />
-            <knob param="transpose" type="1" size="5"/>
+            <knob param="transpose" ticks="-48 -36 -24 -12 0 12 24 36 48" type="1" size="5"/>
             <value param="transpose" />
         </vbox>
         <vbox border="10">
@@ -24,7 +24,7 @@
         </vbox>
         <vbox border="10">
             <label param="inertia" />
-            <knob param="inertia"/>
+            <knob param="inertia" ticks="1 10 100 1000 2000"/>
             <value param="inertia" />
         </vbox>
     </vbox>

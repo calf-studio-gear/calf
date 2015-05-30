@@ -4,6 +4,7 @@
             <table rows="1" cols="2">
                 <vumeter param="meter_in" position="2" hold="1.5" falloff="2.5"  attach-x="0" attach-y="0" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_in" attach-x="1" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+                <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="0" attach-y="1" expand-x="1" expand-y="0" />
             </table>
             <hbox spacing="8">
                 <vbox>
@@ -15,17 +16,17 @@
                     <label />
                     <vbox expand="0" spacing="5">
                         <label param="bypass" />
-                        <toggle param="bypass" />
+                        <toggle param="bypass" icon="bypass" />
                     </vbox>
                     <vbox expand="0" spacing="5">
-                        <toggle param="softclip"/>
+                        <toggle param="softclip" icon="softclip"/>
                         <label param="softclip" />
                     </vbox>
                 </vbox>
                 <vbox fill="0" spacing="10" expand="0">
                     <label />
                     <label param="sc_level" />
-                    <knob param="sc_level" size="3" />
+                    <knob param="sc_level" size="3" ticks="1 10 100"/>
                     <value param="sc_level" />
                 </vbox>
             </hbox>
@@ -38,10 +39,10 @@
                 <label /><label />
                 <vbox>
                     <label param="mutel"/>
-                    <toggle param="mutel"/>
+                    <toggle param="mutel" icon="mute"/>
                 </vbox>
                 <vbox>
-                    <toggle param="phasel"/>
+                    <toggle param="phasel" icon="phase"/>
                     <label param="phasel"/>
                 </vbox>
             </vbox>
@@ -51,10 +52,10 @@
                 <label /><label />
                 <vbox>
                     <label param="muter"/>
-                    <toggle param="muter"/>
+                    <toggle param="muter" icon="mute"/>
                 </vbox>
                 <vbox>
-                    <toggle param="phaser"/>
+                    <toggle param="phaser" icon="phase"/>
                     <label param="phaser"/>
                 </vbox>
             </vbox>
@@ -71,6 +72,9 @@
                 <label param="meter_outR" attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R"/>
                 <vumeter param="meter_outR" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" expand-x="1" fill-y="0" expand-y="0"/>
                 <led param="clip_outR" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0"/>
+                
+                <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="2" expand-x="1" expand-y="0" />
+        
             </table>
             <hbox spacing="8">
                 <vbox spacing="12">

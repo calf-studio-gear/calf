@@ -5,14 +5,14 @@
                 <hbox attach-x="0" attach-y="0" attach-h="3" spacing="12" pad-x="10" pad-y="15">
                     <vbox>
                         <label param="bpm" />
-                        <knob param="bpm" size="5" />
+                        <knob param="bpm" size="5" ticks="30 60 120 180 240 300"/>
                         <value param="bpm"/>
                     </vbox>
                     <vbox>
                         <label text="Tap"/>
                         <tap param="bpm"/>
                         <label/>
-                        <toggle param="sync"/>
+                        <toggle param="sync" icon="sync"/>
                         <label param="sync"/>
                     </vbox>
                 </hbox>
@@ -31,17 +31,17 @@
             <table expand="0" rows="2" cols="2">
                         <vbox fill="0" attach-x="0" attach-y="0" pad-x="10">
                             <label param="feedback" fill="0" expand="0"  />
-                            <knob param="feedback" fill="0" expand="0" />
+                            <knob param="feedback" fill="0" expand="0" ticks="0 0.5 1"/>
                             <value param="feedback" fill="0" expand="0" />
                         </vbox>
                 <vbox fill="0" attach-x="1" attach-y="0" pad-x="10">
                     <label param="dry"  />
-                    <knob param="dry"/>
+                    <knob param="dry" ticks="0 0.0625 0.25 1 4" />
                     <value param="dry"/>
                 </vbox>
                 <vbox fill="0" attach-x="2" attach-y="0" pad-x="10">
                     <label param="amount"  />
-                    <knob param="amount"/>
+                    <knob param="amount" ticks="0 0.0625 0.25 1 4"/>
                     <value param="amount"/>
                 </vbox>
                         

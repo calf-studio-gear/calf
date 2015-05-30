@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <calf/drawingutils.h>
 
 GtkWidget *
 calf_led_new()
@@ -69,14 +70,18 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
         pad = 0;
         cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
         cairo_set_source_rgb(cache_cr, 0, 0, 0);
+        cairo_set_operator(cache_cr,CAIRO_OPERATOR_CLEAR);
         cairo_fill(cache_cr);
+        cairo_set_operator(cache_cr,CAIRO_OPERATOR_OVER);
         
         // inner (bevel)
-        pad = 1;
-        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
+        pad = 0;
+        create_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2, 0);
         cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
+        float r, g, b;
+        get_bg_color(widget, NULL, &r, &g, &b);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
         cairo_set_source (cache_cr, pat2);
         cairo_fill(cache_cr);
         

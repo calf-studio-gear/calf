@@ -1,7 +1,7 @@
 <vbox spacing="10">
     <table rows="4" cols="7">
         <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
-        <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        <toggle param="bypass" icon="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
         
         <label param="level_in" attach-x="1" attach-y="0" expand-x="0" fill-x="0" />
         <knob param="level_in" attach-x="1" attach-y="1" attach-h="2" expand-x="0" fill-x="0" type="1" />
@@ -26,13 +26,13 @@
         <value param="level_out" attach-x="5" attach-y="3" expand-x="0" fill-x="0" />
         
         <label param="listen" attach-x="6" attach-y="0" expand-x="0" fill-x="0" />
-        <toggle param="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        <toggle param="listen" icon="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
     </table>
     <frame label="Bass Enhancer">
         <hbox spacing="25">
             <vbox>
                 <label param="drive" />
-                <knob param="drive" size="5" />
+                <knob param="drive" size="5" ticks="0.1 1 2 3 4 5 6 7 8 9 10" />
                 <value param="drive" />
             </vbox>
             
@@ -49,13 +49,13 @@
             
             <vbox>
                 <label param="freq" />
-                <knob param="freq" size="5" />
+                <knob param="freq" size="5" ticks="10 25 50 100 250" />
                 <value param="freq" />
             </vbox>
             <vbox>
                 <label param="floor" />
                 <toggle param="floor_active" size="1" />
-                <knob param="floor" size="3" />
+                <knob param="floor" size="3" ticks="10 20 30 60 120"/>
                 <value param="floor" width="5" />
             </vbox>
         </hbox>

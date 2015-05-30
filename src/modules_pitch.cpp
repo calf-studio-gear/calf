@@ -119,20 +119,12 @@ void pitch_audio_module::recompute()
         float y1 = magarr[maxpos - 1];
         float y2 = magarr[maxpos];
         float y3 = magarr[maxpos + 1];
-        
         float pos2 = maxpos + 0.5 * (y1 - y3) / (y1 - 2 * y2 + y3);
-        float f2 = (srate / pos2) / *params[par_tune];
-        float lf2 = logf(f2);
-        float rf2 = 1200 * lf2 / logf(2.f) - 300;
-        rf2 -= 1200.f * floor(rf2 / 1200.f);
-        int note = round(rf2 / 100.f);
-        rf2 -= note * 100;
-        if (note == 12)
-            note -= 12;
-        int mnote = round(12 * log2(f2)) + 57;
-        //printf("pos %d mag %f freq %f posx %f freqx %f midi %d note %s%+fct\n", maxpos, maxpt, srate * 1.0 / maxpos, pos2, srate / pos2, mnote, notenames + 3 * note, rf2);
-        *params[par_note] = mnote;
-        *params[par_cents] = rf2;
+        dsp::note_desc desc = dsp::hz_to_note(srate / pos2, *params[par_tune]);
+        *params[par_note]  = desc.note;
+        *params[par_cents] = desc.cents;
+        *params[par_freq]  = desc.freq;
+        *params[par_clarity] = maxpt;
     }
     *params[par_clarity] = maxpt;
 }

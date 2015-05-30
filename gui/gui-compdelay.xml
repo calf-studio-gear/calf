@@ -3,17 +3,17 @@
         <hbox spacing="8">
             <vbox>
                 <label param="distance_m" />
-                <knob param="distance_m" size="3" />
+                <knob param="distance_m" size="3" ticks="0 10 20 30 40 50 60 70 80 90 100" />
                 <value param="distance_m" />
             </vbox>
             <vbox>
                 <label param="distance_cm" />
-                <knob param="distance_cm" size="3" />
+                <knob param="distance_cm" size="3" ticks="0 10 20 30 40 50 60 70 80 90 100" />
                 <value param="distance_cm" />
             </vbox>
             <vbox>
                 <label param="distance_mm" />
-                <knob param="distance_mm" size="3" />
+                <knob param="distance_mm" size="3" ticks="0 1 2 3 4 5 6 7 8 9 10" />
                 <value param="distance_mm" />
             </vbox>
         </hbox>
@@ -22,7 +22,7 @@
         <hbox spacing="8">
             <vbox>
                 <label param="temp" />
-                <knob param="temp" size="3"  type="1" />
+                <knob param="temp" size="3"  type="1" ticks="-50 -20 0 20 50" />
                 <value param="temp" />
             </vbox>
         </hbox>
@@ -31,17 +31,17 @@
         <hbox spacing="8">
             <vbox>
                 <label param="dry" />
-                <knob param="dry" />
+                <knob param="dry" ticks="0 0.015625 0.0625 0.25 1" />
                 <value param="dry" />
             </vbox>
             <vbox>
                 <label param="wet" />
-                <knob param="wet" />
+                <knob param="wet" ticks="0 0.015625 0.0625 0.25 1" />
                 <value param="wet" />
             </vbox>
             <vbox>
                 <label param="bypass" />
-                <toggle param="bypass" />
+                <toggle param="bypass" icon="bypass" />
                 <label />
             </vbox>
         </hbox>

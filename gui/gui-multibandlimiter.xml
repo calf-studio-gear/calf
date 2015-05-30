@@ -7,62 +7,59 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0"/>
         
-        <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
+        <label param="mode" attach-x="4" attach-y="0" expand-x="0"/>
+        <combo param="mode" attach-x="4" attach-y="1" expand-x="0" attach-h="2"/>
+            
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
-        <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
         
-        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
 
     <frame label="X-Over" attach-x="1" attach-y="0">
-        <vbox>
-            <align align-x="1.0" scale-x="0.1" scale-y="1.0">
-                <hbox spacing="8">
-                    <label param="mode"/>
-                    <combo param="mode"/>
-                </hbox>
-            </align>
-            <if cond="directlink">
-                <line-graph refresh="1" width="320" height="130" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
-            </if>
-        </vbox>
+        <if cond="directlink">
+            <line-graph refresh="1" width="320" height="130" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+        </if>
     </frame>
         
     <frame label="Limit" expand="0" fill="1" attach-x="0" attach-y="0">
         <hbox spacing="2">
             <vbox>
                  <label param="oversampling"/>
-                 <knob param="oversampling" size="3"/>
+                 <knob param="oversampling" size="3" ticks="1 2 3 4"/>
                  <value param="oversampling"/>
             </vbox>
             <vbox>
                 <label param="attack" />
-                <knob param="attack" size="3"/>
+                <knob param="attack" size="3" ticks="0.1 1 2 5 10"/>
                 <value param="attack" />
             </vbox>
             <vbox>
                 <label param="release" />
-                <knob param="release" size="3" />
+                <knob param="release" size="3" ticks="1 10 100 1000" />
                 <value param="release" />
             </vbox>
             
             <vbox>
                 <label text="Limit"/>
-                <knob param="limit" size="5" type="2" />
+                <knob param="limit" size="5" type="2" ticks="0 0.0625 0.125 0.25 0.5 1"  />
                 <value param="limit" />
             </vbox>
             

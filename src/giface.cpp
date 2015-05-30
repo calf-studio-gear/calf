@@ -434,12 +434,36 @@ bool frequency_response_line_graph::get_layers(int index, int generation, unsign
     redraw_graph = false;
     return r;
 }
-std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, cairo_iface *context) const
+std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, dB, name, note, cents);
+}
+std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents, double res, double ofs)
 { 
     std::stringstream ss;
-    float freq = exp((float(x) / float(sx)) * log(1000)) * 20.0;
-    ss << int(freq) << " Hz";
-    return ss.str();
+    char str[1024];
+    char tmp[1024];
+    float f = exp((float(x) / float(sx)) * log(1000)) * 20.0;
+    float db = dsp::amp2dB(dB_grid_inv(-1 + (2 - float(y) / float(sy) * 2), res, ofs));
+    dsp::note_desc desc = dsp::hz_to_note(f, 440);
+    sprintf(str, "%.2f Hz", f);
+    if (dB) {
+        sprintf(tmp, "%s\n%.2f dB", str, db);
+        strcpy(str, tmp);
+    }
+    if (name) {
+        sprintf(tmp, "%s\nNote: %s%+d", str, desc.name, desc.octave);
+        strcpy(str, tmp);
+    }
+    if (cents) {
+        sprintf(tmp, "%s\nCents: %+.2f", str, desc.cents);
+        strcpy(str, tmp);
+    }
+    if (note) {
+        sprintf(tmp, "%s\nMIDI: %d", str, desc.note);
+        strcpy(str, tmp);
+    }
+    return string(str);
 }
 
 

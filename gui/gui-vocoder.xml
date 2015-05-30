@@ -8,11 +8,13 @@
                 <label attach-x="1" attach-y="0" expand-x="1" text="Carrier" />
                 <vumeter param="carrier_inL" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
                 <vumeter param="carrier_inR" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+                <meterscale param="carrier_inR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
+        
                 <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
                 <led param="carrier_clip_inL" attach-x="2" attach-y="1" expand-x="0" />
                 <led param="carrier_clip_inR" attach-x="2" attach-y="2" expand-x="0" />
                 <label text="To Mix" attach-x="3" attach-y="0" expand-x="0" />
-                <knob param="carrier" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+                <knob param="carrier" attach-x="3" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 1 4 16" />
                 <value param="carrier" attach-x="3" attach-y="3" expand-x="0" />
             </table>
         </frame>
@@ -24,18 +26,20 @@
                 <label attach-x="1" attach-y="0" expand-x="1" text="Modulator" />
                 <vumeter param="mod_inL" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
                 <vumeter param="mod_inR" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+                <meterscale param="mod_inR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
+        
                 <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
                 <led param="mod_clip_inL" attach-x="2" attach-y="1" expand-x="0" />
                 <led param="mod_clip_inR" attach-x="2" attach-y="2" expand-x="0" />
-                <label text="To Mix" attach-x="3" attach-y="0" expand-x="0" />
-                <knob param="modulator" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+                <label text="To Mix" attach-x="3" attach-y="0" expand-x="0"/>
+                <knob param="modulator" attach-x="3" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 1 4 16"  />
                 <value param="modulator" attach-x="3" attach-y="3" expand-x="0" />
             </table>
         </frame>
         <frame label="Processed">
             <vbox>
                 <label text="To Mix" expand="0" fill="0"/>
-                <knob param="processed" expand="0" fill="0"/>
+                <knob param="processed" expand="0" fill="0" ticks="0 0.0625 1 4 16"/>
                 <value param="processed" expand="0" fill="0"/>
             </vbox>
         </frame>
@@ -44,6 +48,8 @@
                 <label attach-x="1" attach-y="0" expand-x="1" text="Output" />
                 <vumeter param="outL" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
                 <vumeter param="outR" width="100" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+                <meterscale param="outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
+        
                 <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
                 <led param="clip_outL" attach-x="2" attach-y="1" expand-x="0" />
                 <led param="clip_outR" attach-x="2" attach-y="2" expand-x="0" />
@@ -58,17 +64,17 @@
             <hbox spacing="5">
                 <vbox spacing="2">
                     <label param="attack"/>
-                    <knob param="attack" size="3"/>
+                    <knob param="attack" size="3" ticks="0.1 0.5 5 50 500"/>
                     <value param="attack"/>
                 </vbox>
                 <vbox spacing="2">
                     <label param="order"/>
-                    <knob param="order" size="5"/>
+                    <knob param="order" size="5" ticks="2 3 4 5 6 7 8 9"/>
                     <value param="order"/>
                 </vbox>
                 <vbox spacing="2">
                     <label param="release"/>
-                    <knob param="release" size="3"/>
+                    <knob param="release" size="3" ticks="0.1 0.5 5 50 500 5000"/>
                     <value param="release"/>
                 </vbox>
             </hbox>
@@ -102,7 +108,7 @@
     <notebook param="bands">
         <hbox page="8 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -178,7 +184,7 @@
         </hbox>
         <hbox page="12 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -282,7 +288,7 @@
         </hbox>
         <hbox page="16 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -414,7 +420,7 @@
         </hbox>
         <hbox page="24 Bands">
             <label/>
-            <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="24 Bands">
+            <table rows="8" cols="34" spacing-x="0" spacing-y="3" page="24 Bands">
                  <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
                 <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
                 <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>
@@ -600,7 +606,7 @@
             </table>
             <label/>
         </hbox>
-        <table rows="8" cols="34" spacing-x="0" spacing-y="0" page="32 Bands">
+        <table rows="8" cols="34" spacing-x="0" spacing-y="3" page="32 Bands">
              <label text="Detect" attach-x="0" attach-y="1" attach-h="1" expand-x="0"/>
             <label text="Level" attach-x="0" attach-y="2" attach-h="1" expand-x="0"/>
             <label text="Dry" attach-x="0" attach-y="3" attach-h="1" expand-x="0"/>

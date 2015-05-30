@@ -24,6 +24,7 @@
 #define CALF_CTL_KNOB_H
 
 #include <gtk/gtk.h>
+#include <vector>
 
 G_BEGIN_DECLS
 
@@ -36,9 +37,10 @@ G_BEGIN_DECLS
 struct CalfKnob
 {
     GtkRange parent;
-    int knob_type;
-    int knob_size;
+    int type;
+    int size;
     double start_x, start_y, last_y, start_value, default_value;
+    std::vector<double> ticks;
 };
 
 struct CalfKnobClass

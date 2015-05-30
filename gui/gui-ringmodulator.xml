@@ -7,17 +7,19 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
         <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
@@ -38,11 +40,11 @@
                 <toggle param="lfo1_mod_freq_active" size="1" attach-x="0" attach-y="2"/>
                 
                 <label text="Min" attach-x="1" attach-y="1"/>
-                <knob param="lfo1_mod_freq_lo" size="2" attach-x="1" attach-y="2"/>
+                <knob param="lfo1_mod_freq_lo" size="2" ticks="1 10 100 1000 10000 20000" attach-x="1" attach-y="2"/>
                 <value param="lfo1_mod_freq_lo" attach-x="1" attach-y="3"/>
                 
                 <label text="Max" attach-x="2" attach-y="1"/>
-                <knob param="lfo1_mod_freq_hi" size="2" attach-x="2" attach-y="2"/>
+                <knob param="lfo1_mod_freq_hi" size="2" ticks="1 10 100 1000 10000 20000s" attach-x="2" attach-y="2"/>
                 <value param="lfo1_mod_freq_hi" attach-x="2" attach-y="3"/>
                 
                 <label text="Modulator Detune" attach-x="0" attach-y="4" attach-w="3"/>
@@ -51,11 +53,11 @@
                 <toggle param="lfo1_mod_detune_active" size="1" attach-x="0" attach-y="6"/>
                 
                 <label text="Min" attach-x="1" attach-y="5"/>
-                <knob param="lfo1_mod_detune_lo" size="2" attach-x="1" attach-y="6"/>
+                <knob param="lfo1_mod_detune_lo" type="1" size="2" ticks="-200 -100 0 100 200" attach-x="1" attach-y="6"/>
                 <value param="lfo1_mod_detune_lo" attach-x="1" attach-y="7"/>
                 
                 <label text="Max" attach-x="2" attach-y="5"/>
-                <knob param="lfo1_mod_detune_hi" size="2" attach-x="2" attach-y="6"/>
+                <knob param="lfo1_mod_detune_hi" type="1" size="2" ticks="-200 -100 0 100 200" attach-x="2" attach-y="6"/>
                 <value param="lfo1_mod_detune_hi" attach-x="2" attach-y="7"/>
                 
                 <hbox spacing="5" attach-x="3" attach-y="1" expand-x="0" fill-x="0">
@@ -64,7 +66,7 @@
                     </align>
                     <label text="Frequency"/>
                 </hbox>
-                <knob param="lfo1_freq" size="4" attach-x="3" attach-y="2" attach-h="5"/>
+                <knob param="lfo1_freq" size="4" ticks="0.01 0.1 1 10" attach-x="3" attach-y="2" attach-h="5"/>
                 <value param="lfo1_freq" attach-x="3" attach-y="6"/>
                 
                 <led param="lfo1_activity" mode="4" attach-x="0" attach-y="8" expand-y="0"/>
@@ -87,11 +89,11 @@
                     </align>
                     <label text="Detune"/>
                 </hbox>
-                <knob param="mod_detune" size="2" type="1" attach-x="0" attach-y="2"/>
+                <knob param="mod_detune" size="2" type="1" ticks="-200 -100 0 100 200" attach-x="0" attach-y="2"/>
                 <value param="mod_detune" attach-x="0" attach-y="3"/>
                 
                 <label text="Phase" attach-x="0" attach-y="4"/>
-                <knob param="mod_phase" size="2" attach-x="0" attach-y="5"/>
+                <knob param="mod_phase" size="2" ticks="0 0.25 0.5 0.75 1" attach-x="0" attach-y="5"/>
                 <value param="mod_phase" attach-x="0" attach-y="6"/>
                 
                 <hbox spacing="5" attach-x="2" attach-y="1" expand-x="0" fill-x="0">
@@ -100,10 +102,10 @@
                     </align>
                     <label text="Amount"/>
                 </hbox>
-                <knob param="mod_amount" size="2" attach-x="2" attach-y="2"/>
+                <knob param="mod_amount" ticks="0 0.5 1" size="2" attach-x="2" attach-y="2"/>
                 <value param="mod_amount" attach-x="2" attach-y="3"/>
                 
-                <toggle param="mod_listen" attach-x="2" attach-y="5"/>
+                <toggle param="mod_listen" icon="listen" attach-x="2" attach-y="5"/>
                 <label text="Listen" attach-x="2" attach-y="6"/>
                 
                 <hbox spacing="5" attach-x="1" attach-y="1" expand-x="0" fill-x="0">
@@ -112,7 +114,7 @@
                     </align>
                     <label text="Frequency"/>
                 </hbox>
-                <knob param="mod_freq" size="5" attach-x="1" attach-y="2" attach-h="4"/>
+                <knob param="mod_freq" size="5" ticks="1 10 100 1000 10000 20000" attach-x="1" attach-y="2" attach-h="4"/>
                 <value param="mod_freq" attach-x="1" attach-y="6"/>
                 
                 <label text="Waveform" attach-x="0" attach-y="7" attach-w="3"/>
@@ -130,15 +132,15 @@
                 <label text="LFO 1 Frequency" attach-x="1" attach-y="0" attach-w="3"/>
                 
                 <label text="Frequency" attach-x="0" attach-y="1"/>
-                <knob param="lfo2_freq" size="4" attach-x="0" attach-y="2" attach-h="5"/>
+                <knob param="lfo2_freq" size="4" ticks="0.01 0.1 1 10" attach-x="0" attach-y="2" attach-h="5"/>
                 <value param="lfo2_freq" attach-x="0" attach-y="6"/>
                 
                 <label text="Min" attach-x="1" attach-y="1"/>
-                <knob param="lfo2_lfo1_freq_lo" size="2" attach-x="1" attach-y="2"/>
+                <knob param="lfo2_lfo1_freq_lo" ticks="0.01 0.1 1 10" size="2" attach-x="1" attach-y="2"/>
                 <value param="lfo2_lfo1_freq_lo" attach-x="1" attach-y="3"/>
                 
                 <label text="Max" attach-x="2" attach-y="1"/>
-                <knob param="lfo2_lfo1_freq_hi" size="2" attach-x="2" attach-y="2"/>
+                <knob param="lfo2_lfo1_freq_hi" ticks="0.01 0.1 1 10" size="2" attach-x="2" attach-y="2"/>
                 <value param="lfo2_lfo1_freq_hi" attach-x="2" attach-y="3"/>
                 
                 <label text="Active" attach-x="3" attach-y="1"/>
@@ -147,11 +149,11 @@
                 <label text="Modulator Amount" attach-x="1" attach-y="4" attach-w="3"/>
                 
                 <label text="Min" attach-x="1" attach-y="5"/>
-                <knob param="lfo2_mod_amount_lo" size="2" attach-x="1" attach-y="6"/>
+                <knob param="lfo2_mod_amount_lo" ticks="0 0.5 1" size="2" attach-x="1" attach-y="6"/>
                 <value param="lfo2_mod_amount_lo" attach-x="1" attach-y="7"/>
                 
                 <label text="Max" attach-x="2" attach-y="5"/>
-                <knob param="lfo2_mod_amount_hi" size="2" attach-x="2" attach-y="6"/>
+                <knob param="lfo2_mod_amount_hi" ticks="0 0.5 1" size="2" attach-x="2" attach-y="6"/>
                 <value param="lfo2_mod_amount_hi" attach-x="2" attach-y="7"/>
                 
                 <label text="Active" attach-x="3" attach-y="5"/>

@@ -1,93 +1,87 @@
-<hbox spacing="8">
-    <vbox>
-        <table cols="4" rows="4" fill="0" expand="0">
-            <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
-            <toggle param="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
-            
-            <label param="detected" attach-x="1" attach-y="0" />
-            <vumeter param="detected" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" />
-            <vumeter param="compression" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" />
-            <label param="compression" attach-x="1" attach-y="3" />
-            
-            <label param="clip_out" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />
-            <led param="clip_out" mode="6" attach-x="2" attach-y="1" expand-x="0" fill-x="0" />
-            <led param="detected_led" attach-x="2" attach-y="2" expand-x="0" fill-x="0" />
-            <label param="detected_led" attach-x="2" attach-y="3" expand-x="0" fill-x="0" />
-            
-            <label param="sc_listen" attach-x="3" attach-y="0" expand-x="0" fill-x="0" />
-            <toggle param="sc_listen" attach-x="3" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
-        </table>
-        <frame label="Deesser">
-            <vbox spacing="10">
-                <hbox spacing="15">
-                    <align><vbox fill="0">
-                        <label param="laxity" fill="0" expand="0" />
-                        <knob param="laxity" fill="0" expand="0" />
-                        <value param="laxity" fill="0" expand="0" />
-                    </vbox></align>
-                    <vbox>
-                        <label param="threshold" />
-                        <knob param="threshold" size="5" />
-                        <value param="threshold" />
-                    </vbox>
-                    <vbox>
-                        <label param="ratio" />
-                        <knob param="ratio" size="5" />
-                        <value param="ratio" />
-                    </vbox>
-                    <align><vbox fill="0">
-                        <label param="makeup" fill="0" expand="0" />
-                        <knob param="makeup" fill="0" expand="0" />
-                        <value param="makeup" fill="0" expand="0" />
-                    </vbox></align>
-                </hbox>
-                <hbox spacing="20">
-                    <vbox>
-                        <label param="detection" />
-                        <combo param="detection" />
-                    </vbox>
-                    <vbox>
-                        <label param="mode" />
-                        <combo param="mode" />
-                    </vbox>
-                </hbox>
-            </vbox>
-        </frame>
-    </vbox>
-    <frame label="Sidechain">
-        <vbox>
-            <label/>
-            <hbox homogeneous="1" fill="0" expand="0">
-                <vbox fill="0" expand="0">
-                    <label param="f1_freq" />
-                    <knob param="f1_freq" />
-                    <value param="f1_freq" />
+<table rows="2" cols="2">
+    <table cols="4" rows="4" attach-x="0" attach-y="0" expand-x="0" fill-x="1" expand-y="0" fill-y="0">
+        <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
+        <toggle param="bypass" icon="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+        
+        <label param="detected" attach-x="1" attach-y="0" />
+        <vumeter param="detected" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" />
+        <vumeter param="compression" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" />
+        <label param="compression" attach-x="1" attach-y="3" />
+        
+        <label param="clip_out" attach-x="2" attach-y="0" expand-x="0" fill-x="0" />
+        <led param="clip_out" mode="6" attach-x="2" attach-y="1" expand-x="0" fill-x="0" />
+        <led param="detected_led" attach-x="2" attach-y="2" expand-x="0" fill-x="0" />
+        <label param="detected_led" attach-x="2" attach-y="3" expand-x="0" fill-x="0" />
+        
+        <label param="sc_listen" attach-x="3" attach-y="0" expand-x="0" fill-x="0" />
+        <toggle param="sc_listen" icon="listen" attach-x="3" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />
+    </table>
+    <frame label="Deesser" attach-x="0" attach-y="1" expand-x="0" fill-x="1" expand-y="1" fill-y="1">
+        <vbox spacing="10">
+            <hbox spacing="15">
+                <align><vbox fill="0">
+                    <label param="laxity" fill="0" expand="0" />
+                    <knob param="laxity" ticks="1 25 50 75 100" fill="0" expand="0" />
+                    <value param="laxity" fill="0" expand="0" />
+                </vbox></align>
+                <vbox>
+                    <label param="threshold" />
+                    <knob param="threshold" size="5" />
+                    <value param="threshold" />
                 </vbox>
-                <vbox fill="0" expand="0">
-                    <label param="f1_level" />
-                    <knob param="f1_level" type="1" />
-                    <value param="f1_level" />
+                <vbox>
+                    <label param="ratio" />
+                    <knob param="ratio" size="5" ticks="1 2 5 2000" />
+                    <value param="ratio" />
                 </vbox>
-                <vbox fill="0" expand="0">
-                    <label param="f2_freq" />
-                    <knob param="f2_freq" />
-                    <value param="f2_freq" />
+                <align><vbox fill="0">
+                    <label param="makeup" fill="0" expand="0" />
+                    <knob param="makeup" fill="0" expand="0" />
+                    <value param="makeup" fill="0" expand="0" />
+                </vbox></align>
+            </hbox>
+            <hbox spacing="20">
+                <vbox>
+                    <label param="detection" />
+                    <combo param="detection" />
                 </vbox>
-                <vbox fill="0" expand="0">
-                    <label param="f2_level" />
-                    <knob param="f2_level" type="1" />
-                    <value param="f2_level" />
-                </vbox>
-                <vbox fill="0" expand="0">
-                    <label param="f2_q" />
-                    <knob param="f2_q" />
-                    <value param="f2_q" />
+                <vbox>
+                    <label param="mode" />
+                    <combo param="mode" />
                 </vbox>
             </hbox>
-            <label/>
-            <if cond="directlink">
-                <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="180"  crosshairs="1" freqhandles="4" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
-            </if>
         </vbox>
     </frame>
-</hbox>
+    <hbox homogeneous="1" attach-x="1" attach-y="0" expand-x="1" fill-x="1" expand-y="0" fill-y="0">
+        <vbox fill="0" expand="0" spacing="5">
+            <label param="f1_freq" />
+            <knob param="f1_freq" ticks="10 100 1000 18000" />
+            <value param="f1_freq" />
+        </vbox>
+        <vbox fill="0" expand="0" spacing="5">
+            <label param="f1_level" />
+            <knob param="f1_level" type="1" />
+            <value param="f1_level" />
+        </vbox>
+        <vbox fill="0" expand="0" spacing="5">
+            <label param="f2_freq" />
+            <knob param="f2_freq" ticks="10 100 1000 18000" />
+            <value param="f2_freq" />
+        </vbox>
+        <vbox fill="0" expand="0" spacing="5">
+            <label param="f2_level" />
+            <knob param="f2_level" type="1" />
+            <value param="f2_level" />
+        </vbox>
+        <vbox fill="0" expand="0" spacing="5">
+            <label param="f2_q" />
+            <knob param="f2_q" ticks="0.1 1 10 100" />
+            <value param="f2_q" />
+        </vbox>
+    </hbox>
+    <frame label="Filter" attach-x="1" attach-y="1" expand-x="1" fill-x="1" expand-y="1" fill-y="1">
+        <if cond="directlink">
+            <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="180"  crosshairs="1" freqhandles="4" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
+        </if>
+    </frame>
+</table>

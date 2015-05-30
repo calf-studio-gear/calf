@@ -22,142 +22,217 @@
 #include <calf/giface.h>
 #include <calf/custom_ctl.h>
 #include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
 #include <math.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <sys/time.h>
 #include <algorithm>
 #include <iostream>
+#include <calf/drawingutils.h>
 
 using namespace calf_plugins;
 using namespace dsp;
 
-///////////////////////////////////////// utility functions ///////////////////////////////////////////////
 
-void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness, int shadow, float lights, float dull) 
+///////////////////////////////////////// meter scale ///////////////////////////////////////////////
+
+GtkWidget *
+calf_meter_scale_new()
 {
-    float br = brightness * 0.5 + 0.5;
-
-    // outer frame (black)
-    int pad = 0;
-
-    cairo_rectangle(
-        c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-    cairo_set_source_rgb(c, 0, 0, 0);
-    cairo_fill(c);
-
-    // black light effect
-    pad = 1;
-    cairo_rectangle(
-        c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-    cairo_pattern_t *pat2 = cairo_pattern_create_linear (
-        x, y, x, y + sy + oy * 2 - pad * 2);
-    cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
-    cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.13, 0.13, 0.13, 1);
-    cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.05, 0.05, 0.05, 1);
-    cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
-    cairo_set_source (c, pat2);
-    cairo_fill(c);
-    cairo_pattern_destroy(pat2);
-
-    cairo_rectangle(c, x + ox - 1, y + oy - 1, sx + 2, sy + 2);
-    cairo_set_source_rgb (c, 0, 0, 0);
-    cairo_fill(c);
-
-    // inner yellowish screen
-    cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * 0.71, br * 0.82, br * 0.33);
-    cairo_pattern_add_color_stop_rgb(pt, 1.0, br * 0.89, br * 1.00, br * 0.54);
-    cairo_set_source (c, pt);
-    cairo_rectangle(c, x + ox, y + oy, sx, sy);
-    cairo_fill(c);
-    cairo_pattern_destroy(pt);
-
-    if (shadow) {
-        // top shadow
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + oy + shadow);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.6);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, sx, shadow);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // left shadow
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + (float)shadow * 0.7, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0.3);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, (float)shadow * 0.7, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // right shadow
-        pt = cairo_pattern_create_linear(x + ox + sx - (float)shadow * 0.7, y + oy, x + ox + sx, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.3);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox + sx - (float)shadow * 0.7, y + oy, 5, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_METER_SCALE, NULL ));
+    //CalfMeterScale *self = CALF_METER_SCALE(widget);
+    return widget;
+}
+static gboolean
+calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
+{
+    g_assert(CALF_IS_METER_SCALE(widget));
+    CalfMeterScale *ms = CALF_METER_SCALE(widget);
+    if (gtk_widget_is_drawable (widget)) {
+        
+        GdkWindow *window = widget->window;
+        cairo_t *cr = gdk_cairo_create(GDK_DRAWABLE(window));
+        cairo_text_extents_t extents;
+        
+        double ox = widget->allocation.x;
+        double oy = widget->allocation.y;
+        double sx = widget->allocation.width;
+        double sy = widget->allocation.height;
+        double width  = widget->allocation.width;
+        double height = widget->allocation.height;
+        double xthick = widget->style->xthickness;
+        double text_w = 0, bar_x = 0, bar_width = 0, bar_y = 0;
+        float r, g, b;
+        double text_m = 3;
+        double dot_s  = 2;
+        double dot_m  = 2;
+        double dot_y  = 0;
+        double dot_y2 = 0;
+        cairo_rectangle(cr, ox, oy, sx, sy);
+        cairo_clip(cr);
+        
+        if (ms->position) {
+            cairo_select_font_face(cr, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+            cairo_set_font_size(cr, 8);
+            cairo_text_extents(cr, "-88.88", &extents);
+            text_w = extents.width;
+        }
+        switch(ms->position) {
+            case 1:
+                // label on top
+                bar_x = ox + xthick;
+                bar_width = width - 2 * xthick;
+                break;
+            case 2:
+                // label right
+                bar_x = ox + xthick;
+                bar_width = width - text_w - 2 * xthick - 2 * text_m;
+                break;
+            case 3:
+                // label bottom
+                bar_x = ox + xthick;
+                bar_width = width - 2 * xthick;
+                break;
+            case 4:
+                // label left
+                bar_x = ox + xthick + text_w + 2 * text_m;
+                bar_width = width - text_w - 2 * xthick - 2 * text_m;
+                break;
+        }
+        
+        switch (ms->dots) {
+            case 0:
+            default:
+                // no ticks
+                bar_y = height / 2;
+                break;
+            case 1:
+                // tick top
+                bar_y = oy + dot_s + dot_m + extents.height;
+                dot_y = oy + dot_s / 2;
+                break;
+            case 2:
+                // ticks bottom
+                bar_y = oy + height - dot_s - dot_m - extents.height + extents.y_bearing;
+                dot_y = oy + height - dot_s / 2;
+                break;
+            case 3:
+                // ticks center
+                bar_y = oy + height / 2 - extents.y_bearing / 2;
+                dot_y = oy + height - dot_s / 2;
+                dot_y2 = oy + dot_s / 2;
+                break;
+        }
+        
+        const unsigned int s = ms->marker.size();
+        get_fg_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(cr, r, g, b);
+        for (unsigned int i = 0; i < s; i++) {
+            double val = log10(1 + ms->marker[i] * 9);
+            if (ms->dots) {
+                cairo_arc(cr, bar_x + bar_width * val, dot_y, dot_s / 2, 0, 2*M_PI);
+                cairo_fill(cr);
+            }
+            if (ms->dots == 3) {
+                cairo_arc(cr, bar_x + bar_width * val, dot_y2, dot_s / 2, 0, 2*M_PI);
+                cairo_fill(cr);
+            }
+            char str[32];
+            if (val < 1.0 / 32768.0)
+                snprintf(str, sizeof(str), "-inf");
+            else
+                snprintf(str, sizeof(str), "%.f", amp2dB(ms->marker[i]));
+            cairo_text_extents(cr, str, &extents);
+            cairo_move_to(cr,
+                std::min(ox + width, std::max(ox, bar_x + bar_width * val - extents.width / 2)), bar_y);
+            cairo_show_text(cr, str);
+        }
+        cairo_destroy(cr);
     }
+    return FALSE;
+}
 
-    if(dull) {
-        // left dull
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + sx / 2, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,dull);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, sx / 2, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
+static void
+calf_meter_scale_size_request (GtkWidget *widget,
+                           GtkRequisition *requisition)
+{
+    g_assert(CALF_IS_METER_SCALE(widget));
+    CalfMeterScale *self = CALF_METER_SCALE(widget);
+    
+    double ythick = widget->style->ythickness;
+    double text_h = 8; // FIXME: Pango layout should be used here
+    double dot_s  = 2;
+    double dot_m  = 2;
+    
+    requisition->height = ythick*2 + text_h + (dot_m + dot_s) * (self->dots == 3 ? 2 : 1);
+}
 
-        // right dull
-        pt = cairo_pattern_create_linear(x + ox + sx / 2, y + oy, x + ox + sx, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,dull);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox + sx / 2, y + oy, sx / 2, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-    }
+static void
+calf_meter_scale_class_init (CalfMeterScaleClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->expose_event = calf_meter_scale_expose;
+    widget_class->size_request = calf_meter_scale_size_request;
+}
 
-    if(lights > 0) {
-        // light sources
-        int div = 1;
-        while(sx / div > 300)
-            div += 1;
-        float w = float(sx) / float(div);
-        cairo_rectangle(c, x + ox, y + oy, sx, sy);
-        for(int i = 0; i < div; i ++) {
-            cairo_pattern_t *pt = cairo_pattern_create_radial(
-               x + ox + w * i + w / 2.f, y + oy, 1,
-               x + ox + w * i + w / 2.f, std::min(w / 2.0 + y + oy, y + oy + sy * 0.25) - 1, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
-            cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
-            cairo_set_source (c, pt);
-            cairo_fill_preserve(c);
-            pt = cairo_pattern_create_radial(
-               x + ox + w * i + w / 2.f, y + oy + sy, 1,
-               x + ox + w * i + w / 2.f, std::max(sy - w / 2.0 + y + oy, y + oy + sy * 0.75) + 1, w / 2.f);
-            cairo_pattern_add_color_stop_rgba (pt, 0, 1, 1, 0.8, lights);
-            cairo_pattern_add_color_stop_rgba (pt, 1, 0.89, 1.00, 0.45, 0);
-            cairo_set_source (c, pt);
-            cairo_fill_preserve(c);
-            cairo_pattern_destroy(pt);
+static void
+calf_meter_scale_init (CalfMeterScale *self)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    gtk_widget_set_has_window(widget, FALSE);
+    widget->requisition.width = 40;
+    widget->requisition.height = 12;
+    self->mode     = VU_STANDARD;
+    self->position = 0;
+    self->dots     = 0;
+}
+
+GType
+calf_meter_scale_get_type (void)
+{
+    static GType type = 0;
+    if (!type) {
+        static const GTypeInfo type_info = {
+            sizeof(CalfMeterScaleClass),
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            (GClassInitFunc)calf_meter_scale_class_init,
+            NULL, /* class_finalize */
+            NULL, /* class_data */
+            sizeof(CalfMeterScale),
+            0,    /* n_preallocs */
+            (GInstanceInitFunc)calf_meter_scale_init
+        };
+
+        for (int i = 0; ; i++) {
+            char *name = g_strdup_printf("CalfMeterScale%u%d", 
+                ((unsigned int)(intptr_t)calf_meter_scale_class_init) >> 16, i);
+            if (g_type_from_name(name)) {
+                free(name);
+                continue;
+            }
+            type = g_type_register_static(GTK_TYPE_DRAWING_AREA,
+                                          name,
+                                          &type_info,
+                                          (GTypeFlags)0);
+            free(name);
+            break;
         }
     }
+    return type;
 }
+
 
 ///////////////////////////////////////// phase graph ///////////////////////////////////////////////
 
 static void
-calf_phase_graph_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
+calf_phase_graph_draw_background(GtkWidget *widget, cairo_t *ctx, int sx, int sy, int ox, int oy )
 {
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
     
-    line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
+    display_background(widget, ctx, 0, 0, sx, sy, ox, oy);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
     cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(ctx, 9);
@@ -221,7 +296,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         return FALSE;
     
     // dimensions
-    int ox = 5, oy = 5;
+    int ox = 0, oy = 0;
     int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
     sx += sx % 2 - 1;
     sy += sy % 2 - 1;
@@ -258,7 +333,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // ...and draw some bling bling onto it...
         ctx_back = cairo_create(pg->background);
-        calf_phase_graph_draw_background(ctx_back, sx, sy, ox, oy);
+        calf_phase_graph_draw_background(widget, ctx_back, sx, sy, ox, oy);
         // ...and copy it to the cache
         ctx_cache = cairo_create(pg->cache); 
         calf_phase_graph_copy_surface(ctx_cache, pg->background, 1);
@@ -454,30 +529,44 @@ calf_phase_graph_get_type (void)
 
 ///////////////////////////////////////// toggle ///////////////////////////////////////////////
 
+static void
+calf_toggle_create_pixbuf (CalfToggle *self)
+{
+    GError *error = NULL;
+    char fname[2048];
+    if (self->icon) {
+        sprintf(fname, "%s/toggle_%d_%s.png", PKGLIBDIR, self->size, self->icon);
+        struct stat sb;
+        if (stat(fname, &sb) == 0) {
+            self->toggle_image = gdk_pixbuf_new_from_file(fname, &error);
+        }
+    }
+    if (!self->toggle_image) {
+        sprintf(fname, "%s/toggle_%d.png", PKGLIBDIR, self->size);
+        self->toggle_image = gdk_pixbuf_new_from_file(fname, &error);
+    }
+    g_assert(self->toggle_image != NULL);
+}
+
 static gboolean
 calf_toggle_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_TOGGLE(widget));
-    
     CalfToggle *self = CALF_TOGGLE(widget);
-    
-    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
-    float sy = self->size ? self->size : 1;
-    int x = widget->allocation.x + widget->allocation.width / 2 - sx * 15 - sx * 2;
-    int y = widget->allocation.y + widget->allocation.height / 2 - sy * 10 - sy * 3;
-    int width  = sx * 34;
-    int height = sy * 26;
-    
-    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window),
-                    widget->style->fg_gc[0],
-                    self->toggle_image[self->size],
-                    20 - sx * 2,
-                    20 - sy * 3 + (sy * 20 + 40) * floor(.5 + gtk_range_get_value(GTK_RANGE(widget))),
-                    x,
-                    y,
-                    width,
-                    height,
-                    GDK_RGB_DITHER_NORMAL, 0, 0);
+    if (!self->toggle_image)
+        calf_toggle_create_pixbuf(self);
+    float off = floor(.5 + gtk_range_get_value(GTK_RANGE(widget)));
+    float pw  = gdk_pixbuf_get_width(self->toggle_image);
+    float ph  = gdk_pixbuf_get_height(self->toggle_image);
+    float wcx = widget->allocation.x + widget->allocation.width / 2;
+    float wcy = widget->allocation.y + widget->allocation.height / 2;
+    float pcx = pw / 2;
+    float pcy = ph / 4;
+    float sy = off * ph / 2;
+    float x = wcx - pcx;
+    float y = wcy - pcy;
+    gdk_draw_pixbuf(GDK_DRAWABLE(widget->window), widget->style->fg_gc[0],
+                    self->toggle_image, 0, sy, x, y, pw, ph / 2, GDK_RGB_DITHER_NORMAL, 0, 0);
     return TRUE;
 }
 
@@ -486,14 +575,8 @@ calf_toggle_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_TOGGLE(widget));
-
-    CalfToggle *self = CALF_TOGGLE(widget);
-    
-    float sx = self->size ? self->size : 1.f / 3.f * 2.f;
-    float sy = self->size ? self->size : 1;
-    
-    requisition->width  = 30 * sx;
-    requisition->height = 20 * sy;
+    requisition->width  = widget->style->xthickness;
+    requisition->height = widget->style->ythickness;
 }
 
 static gboolean
@@ -542,11 +625,26 @@ calf_toggle_init (CalfToggle *self)
     widget->requisition.width = 30;
     widget->requisition.height = 20;
     self->size = 1;
-    GError *error = NULL;
-    self->toggle_image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle0_silver.png", &error);
-    self->toggle_image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle1_silver.png", &error);
-    self->toggle_image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/toggle2_silver.png", &error);
-    g_assert(self->toggle_image != NULL);
+}
+
+void
+calf_toggle_set_size (CalfToggle *self, int size)
+{
+    char name[128];
+    GtkWidget *widget = GTK_WIDGET(self);
+    self->size = size;
+    sprintf(name, "%s_%d\n", gtk_widget_get_name(widget), size);
+    gtk_widget_set_name(widget, name);
+    calf_toggle_create_pixbuf(self);
+    gtk_widget_queue_draw(widget);
+}
+void
+calf_toggle_set_icon (CalfToggle *self, const char *icon)
+{
+    GtkWidget *widget = GTK_WIDGET(self);
+    self->icon = icon;
+    calf_toggle_create_pixbuf(self);
+    gtk_widget_queue_draw(widget);
 }
 
 GtkWidget *
@@ -649,6 +747,8 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         double m    = 1;
         double size = 10;
         
+        float r, g, b;
+    
         cairo_rectangle(c, ox, oy, sx, sy);
         cairo_clip(c);
         
@@ -667,43 +767,44 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_set_line_width(c, 1.);
         
         cairo_move_to(c, ox + rad + txp + m, oy + size - 2 + m);
-        cairo_set_source_rgb(c, 0.99,0.99,0.99);
+        get_text_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         cairo_show_text(c, lab);
+        get_fg_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         
-        cairo_set_source_rgb(c, 0.9,0.9,0.9);
-        
-        rad = 8;
+        rad = 6;
         cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
         cairo_arc (c, ox + rad + a + m, oy + rad + a + pad + m, rad, 1 * M_PI, 1.5 * M_PI);
         cairo_move_to(c, ox + rad + a + lw + m, oy + a + pad + m);
         cairo_line_to(c, ox + sx + a - rad - m - 1, oy + a + pad + m);
         cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + rad + a + pad + m, rad, 1.5 * M_PI, 2 * M_PI);
         cairo_line_to(c, ox + sx + a - 2*m - 1, oy + a + sy - rad - 2*m - 1);
-        rad = 9;
+        rad = 6;
         cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + sy - rad + a - 2*m - 1, rad, 0 * M_PI, 0.5 * M_PI);
-        rad = 8;
+        rad = 6;
         cairo_line_to(c, ox + a + rad + m, oy + sy + a - 2*m - 1);
         cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
         cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
         cairo_stroke(c);
         
-        a = 0.5;
+        //a = 0.5;
         
-        cairo_set_source_rgb(c, 0.66,0.66,0.66);
+        //cairo_set_source_rgb(c, 0.66,0.66,0.66);
         
-        rad = 9;
-        cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
-        cairo_arc (c, ox + rad + a + m, oy + rad + a + pad + m, rad, 1 * M_PI, 1.5 * M_PI);
-        cairo_move_to(c, ox + rad + a + lw + m, oy + a + pad + m);
-        rad = 8;
-        cairo_line_to(c, ox + sx + a - rad - m, oy + a + pad + m);
-        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + rad + a + pad + m, rad, 1.5 * M_PI, 2 * M_PI);
-        cairo_line_to(c, ox + sx + a - 2*m - 1, oy + a + sy - rad - 2*m);
-        cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + sy - rad + a - 2*m - 1, rad, 0 * M_PI, 0.5 * M_PI);
-        cairo_line_to(c, ox + a + rad + m, oy + sy + a - 2*m - 1);
-        cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
-        cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
-        cairo_stroke(c);
+        //rad = 9;
+        //cairo_move_to(c, ox + a + m, oy + pad + rad + a + m);
+        //cairo_arc (c, ox + rad + a + m, oy + rad + a + pad + m, rad, 1 * M_PI, 1.5 * M_PI);
+        //cairo_move_to(c, ox + rad + a + lw + m, oy + a + pad + m);
+        //rad = 8;
+        //cairo_line_to(c, ox + sx + a - rad - m, oy + a + pad + m);
+        //cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + rad + a + pad + m, rad, 1.5 * M_PI, 2 * M_PI);
+        //cairo_line_to(c, ox + sx + a - 2*m - 1, oy + a + sy - rad - 2*m);
+        //cairo_arc (c, ox + sx - rad + a - 2*m - 1, oy + sy - rad + a - 2*m - 1, rad, 0 * M_PI, 0.5 * M_PI);
+        //cairo_line_to(c, ox + a + rad + m, oy + sy + a - 2*m - 1);
+        //cairo_arc (c, ox + rad + a + m, oy + sy - rad + a - 2*m - 1, rad, 0.5 * M_PI, 1 * M_PI);
+        //cairo_line_to(c, ox + a + m, oy + a + rad + pad + m);
+        //cairo_stroke(c);
         
         cairo_destroy(c);
     }
@@ -786,7 +887,9 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if (gtk_widget_is_drawable (widget)) {
         
-        int pad = 4;
+        int padx = 4;
+        int pady = 3;
+        float r, g, b;
         
         GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX (widget));
         GtkTreeIter iter;
@@ -806,22 +909,24 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         gint mx, my;
         bool hover = false;
         
-        cairo_rectangle(c, x, y, sx, sy);
+        create_rectangle(c, x, y, sx, sy, 8);
         cairo_clip(c);
         
         gtk_widget_get_pointer(GTK_WIDGET(widget), &mx, &my);
         if (mx >= 0 and mx < sx and my >= 0 and my < sy)
             hover = true;
             
-        line_graph_background(c, x, y, sx - pad * 2, sy - pad * 2, pad, pad, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
+        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
         
         cairo_select_font_face(c, "Sans",
               CAIRO_FONT_SLANT_NORMAL,
               CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(c, 12);
         
-        cairo_move_to(c, x + pad + 3, y + sy / 2 + 5);
-        cairo_set_source_rgb(c, 0.,0.,0.);
+        cairo_move_to(c, x + padx + 3, y + sy / 2 + 5);
+        
+        get_fg_color(widget, NULL, &r, &g, &b);
+        cairo_set_source_rgb(c, r, g, b);
         cairo_show_text(c, lab);
         g_free(lab);
         
@@ -1727,7 +1832,7 @@ static void calf_tuner_create_dot(cairo_t *ctx, int dots, int dot, float rad)
 }
 
 static void
-calf_tuner_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
+calf_tuner_draw_background( GtkWidget *widget, cairo_t *ctx, int sx, int sy, int ox, int oy )
 {
     int dw    = 2;
     int dm    = 1;
@@ -1740,7 +1845,7 @@ calf_tuner_draw_background( cairo_t *ctx, int sx, int sy, int ox, int oy )
     int cy    = ox + sy / 2;
     int ccy   = cy - sy / 3 + rad;
     
-    line_graph_background(ctx, 0, 0, sx, sy, ox, oy);
+    display_background(widget, ctx, 0, 0, sx, sy, ox, oy);
     cairo_stroke(ctx);
     cairo_save(ctx);
     
@@ -1799,9 +1904,6 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
     // dimensions
     int ox = 5, oy = 5;
     int sx = widget->allocation.width - ox * 2, sy = widget->allocation.height - oy * 2;
-    int rad = sx / 2;
-    int cx = ox + sx / 2;
-    int cy = oy + sy / 2;
     int marg = 10;
     int fpt  = 9;
     float fsize = fpt * sy / 25; // 9pt @ 25px height
@@ -1821,7 +1923,7 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // ...and draw some bling bling onto it...
         ctx_back = cairo_create(tuner->background);
-        calf_tuner_draw_background(ctx_back, sx, sy, ox, oy);
+        calf_tuner_draw_background(widget, ctx_back, sx, sy, ox, oy);
     } else {
         ctx_back = cairo_create(tuner->background);
     }
@@ -1868,7 +1970,6 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         int ctw = te.width;
         cairo_text_extents (c, "-9.9999", &te);
         int cvw = te.width;
-        int th  = te.height;
         float xb = te.x_bearing;
         
         float tw = std::max(ctw, mtw);
@@ -1905,8 +2006,6 @@ calf_tuner_size_allocate (GtkWidget *widget,
 {
     g_assert(CALF_IS_TUNER(widget));
     CalfTuner *lg = CALF_TUNER(widget);
-
-    GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_TUNER_GET_CLASS( lg ) );
 
     if(lg->background)
         cairo_surface_destroy(lg->background);

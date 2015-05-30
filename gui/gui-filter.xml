@@ -12,12 +12,12 @@
         </vbox>
         <vbox border="10">
             <label param="freq" />
-            <knob param="freq" size="5" />
+            <knob param="freq" ticks="10 100 1000 10000 20000" size="5" />
             <value param="freq" />
         </vbox>
         <vbox border="10">
             <label param="inertia" />
-            <knob param="inertia"/>
+            <knob param="inertia" ticks="5 10 25 50 100"/>
             <value param="inertia" />
         </vbox>
     </hbox>

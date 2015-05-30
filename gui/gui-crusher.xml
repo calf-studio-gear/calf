@@ -7,17 +7,19 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_inR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="4" attach-y="3" expand-x="1" />
         
         <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
@@ -35,7 +37,7 @@
         </if>
         <vbox spacing="10">
             <label param="bits" />
-            <knob param="bits" size="5" type="2" />
+            <knob param="bits" size="5" type="2" ticks="1 2 4 6 8 12 16"/>
             <value param="bits" />
         </vbox>
         <vbox>
@@ -53,12 +55,12 @@
                     </vbox>
                     <vbox>
                         <label text="Mix" />
-                        <knob param="morph" size="2" />
+                        <knob param="morph" ticks="0 0.5 1" size="2" />
                         <value param="morph" />
                     </vbox>
                     <vbox>
                         <label text="Logarithmic"/>
-                        <toggle param="mode"/>
+                        <toggle param="mode" icon="logarithmic"/>
                         <label/>
                     </vbox>
                 </hbox>
@@ -67,17 +69,17 @@
                 <hbox spacing="20" homogeneous="1">
                     <vbox>
                         <label text="Reduction" />
-                        <knob param="samples" size="2" />
+                        <knob param="samples" size="2" ticks="1 2 4 8 16 32 64 128 250" />
                         <value param="samples" />
                     </vbox>
                     <vbox>
                         <label param="lforange" />
-                        <knob param="lforange" size="2" />
+                        <knob param="lforange" ticks="1 10 100 250" size="2" />
                         <value param="lforange" />
                     </vbox>
                     <vbox>
                         <label param="lforate" />
-                        <knob param="lforate" size="2" />
+                        <knob param="lforate" ticks="0.01 0.1 1 10 100 250" size="2" />
                         <value param="lforate" />
                     </vbox>
                     <vbox>

@@ -7,13 +7,14 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="level_in_vuL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="level_in_vuR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="level_in_vuR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="level_in_clipL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="level_in_clipR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" icon="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label param="filters" attach-x="4" attach-y="0" expand-x="0" />
         <combo param="filters" attach-x="4" attach-y="1" expand-x="0" attach-h="2" />
@@ -21,6 +22,7 @@
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="level_out_vuL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
         <vumeter param="level_out_vuR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="level_out_vuR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
         
         <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
         <led param="level_out_clipL" mode="1" attach-x="6" attach-y="1" expand-x="0" />

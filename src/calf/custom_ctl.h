@@ -35,10 +35,36 @@
 #include <gtk/gtkscale.h>
 #include <gtk/gtkbutton.h>
 #include <calf/giface.h>
-
-void line_graph_background(cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness = 1, int shadow = 7, float lights = 0.9, float dull = 0.15) ;
+#include <calf/drawingutils.h>
+#include <calf/ctl_vumeter.h>
 
 G_BEGIN_DECLS
+
+/// METER SCALE //////////////////////////////////////////////////////////////
+
+
+#define CALF_TYPE_METER_SCALE          (calf_meter_scale_get_type())
+#define CALF_METER_SCALE(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), CALF_TYPE_METER_SCALE, CalfMeterScale))
+#define CALF_IS_METER_SCALE(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CALF_TYPE_METER_SCALE))
+#define CALF_METER_SCALE_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_METER_SCALE, CalfMeterScaleClass))
+#define CALF_IS_METER_SCALE_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_METER_SCALE))
+
+struct CalfMeterScale
+{
+    GtkDrawingArea parent;
+    std::vector<double> marker;
+    CalfVUMeterMode mode;
+    int position;
+    int dots;
+};
+
+struct CalfMeterScaleClass
+{
+    GtkDrawingAreaClass parent_class;
+};
+
+extern GtkWidget *calf_meter_scale_new();
+extern GType calf_meter_scale_get_type();
 
 
 /// PHASE GRAPH ////////////////////////////////////////////////////////
@@ -95,7 +121,8 @@ struct CalfToggle
     int size;
     int width;
     int height;
-    GdkPixbuf *toggle_image[3];
+    const char *icon;
+    GdkPixbuf *toggle_image;
 };
 
 struct CalfToggleClass
@@ -105,7 +132,8 @@ struct CalfToggleClass
 
 extern GtkWidget *calf_toggle_new();
 extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
-
+extern void calf_toggle_set_size(CalfToggle *self, int size);
+extern void calf_toggle_set_icon(CalfToggle *self, const gchar *icon);
 extern GType calf_toggle_get_type();
 
 

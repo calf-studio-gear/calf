@@ -7,31 +7,33 @@
         <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
         <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
         <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
         
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
-        <toggle param="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="bypass" icon="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label param="lookahead" attach-y="0" attach-x="5" expand-x="0"/>
         <knob param="lookahead" size="2" attach-y="1" attach-h="2" attach-x="5" expand-x="0"/>
         <value param="lookahead" attach-y="3" attach-x="5" expand-x="0"/>
                 
         <label text="Env Listen" attach-x="6" attach-y="0" expand-x="0" />
-        <toggle param="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        <toggle param="listen" icon="listen" attach-x="6" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
         <label attach-x="7" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="7" attach-y="3" expand-x="1" />
         
         <label attach-x="8" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="8" attach-y="1" expand-x="0" />
         <led param="clip_outR" mode="1" attach-x="8" attach-y="2" expand-x="0" />
         
         <label param="mix" attach-x="9" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="9" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <knob param="mix" attach-x="9" attach-y="1" attach-h="2" expand-x="0" pad-x="10" ticks="0 0.5 1"/>
         <value param="mix" attach-x="9" attach-y="3" expand-x="0" />
         
         <label param="level_out" attach-x="10" attach-y="0" expand-x="0" />
@@ -42,9 +44,9 @@
         
         <if cond="directlink">
             <frame label="Envelope Filter">
-                <vbox>
+                <vbox spacing="8">
                     <line-graph refresh="1" width="240" height="140" param="hipass"  crosshairs="1" freqhandles="4" handle1-x="hipass" label1="High Pass" handle2-x="lopass" label2="Low Pass" active1="hp_mode" active2="lp_mode" enforce-handle-order="1"/>
-                    <hbox>
+                    <hbox spacing="8">
                         <combo param="hp_mode"/>
                         <combo param="lp_mode"/>
                     </hbox>
@@ -69,12 +71,12 @@
             <hbox>
                 <vbox>
                     <label text="Attack"/>
-                    <knob param="attack_time" size="2"/>
+                    <knob param="attack_time" size="2" ticks="1 5 50 500"/>
                     <value param="attack_time"/>
                 </vbox>
                 <vbox>
                     <label text="Release"/>
-                    <knob param="release_time" size="2"/>
+                    <knob param="release_time" size="2" ticks="1 5 50 500 5000"/>
                     <value param="release_time"/>
                 </vbox>
                 <vbox>
@@ -88,7 +90,7 @@
         <if cond="directlink">
             <frame label="Waveform">
                 <hbox>
-                    <vbox>
+                    <vbox spacing="8">
                         <line-graph refresh="1" width="240" height="140" param="sustain_threshold"/>
                         <combo param="view"/>
                     </vbox>

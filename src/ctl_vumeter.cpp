@@ -28,6 +28,7 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 #include <string>
+#include <calf/drawingutils.h>
 
 
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
@@ -42,13 +43,16 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
+    float r, g, b;
+    
     int width = widget->allocation.width; int height = widget->allocation.height;
-    int border_x = 1; int border_y = 1; // outer border
+    int border_x = 0; int border_y = 0; // outer border
     int space_x = 1; int space_y = 1; // inner border around led bar
     int led = 2; // single LED size
     int led_m = 1; // margin between LED
     int led_s = led + led_m; // size of LED with margin
-    int led_x = 5; int led_y = 4; // position of first LED
+    int led_x = widget->style->xthickness;
+    int led_y = widget->style->ythickness; // position of first LED
     int led_w = width - 2 * led_x + led_m; // width of LED bar w/o text calc (additional led margin, is removed later; used for filling the led bar completely w/o margin gap)
     int led_h = height - 2 * led_y; // height of LED bar w/o text calc
     int text_x = 0; int text_y = 0;
@@ -110,21 +114,23 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // outer (black)
         cairo_rectangle(cache_cr, 0, 0, width, height);
-        cairo_set_source_rgb(cache_cr, 0, 0, 0);
+        cairo_set_source_rgb(cache_cr, 0.3, 0.3, 0.3);
+        cairo_set_operator(cache_cr,CAIRO_OPERATOR_CLEAR);
         cairo_fill(cache_cr);
-        
+        cairo_set_operator(cache_cr,CAIRO_OPERATOR_OVER);
         // inner (bevel)
-        cairo_rectangle(cache_cr,
+        create_rectangle(cache_cr,
                         border_x,
                         border_y,
                         width - border_x * 2,
-                        height - border_y * 2);
+                        height - border_y * 2, 0);
         cairo_pattern_t *pat2 = cairo_pattern_create_linear (border_x,
                                                              border_y,
                                                              border_x,
                                                              height - border_y * 2);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, 0.23, 0.23, 0.23, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
+        get_bg_color(widget, NULL, &r, &g, &b);
+        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
+        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
         cairo_set_source (cache_cr, pat2);
         cairo_fill(cache_cr);
         cairo_pattern_destroy(pat2);
@@ -371,10 +377,13 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         // draw value as number
         cairo_text_extents(c, str, &extents);
         cairo_move_to(c, text_x + (text_w - extents.width) / 2.0, text_y);
+        GtkStateType state;
         if(vu->disp_value > 1.f and vu->mode != VU_MONOCHROME_REVERSE)
-            cairo_set_source_rgba (c, 1, 0, 0, 0.8);
+            state = GTK_STATE_ACTIVE;
         else
-            cairo_set_source_rgba (c, 0, 0.9, 1, 0.8);
+            state = GTK_STATE_NORMAL;
+        get_fg_color(widget, &state, &r, &g, &b);
+        cairo_set_source_rgba (c, r, g, b, 1);
         cairo_show_text(c, str);
         cairo_fill(c);
     }

@@ -129,22 +129,24 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
     }
     
     // then shelves
-    float hsfreq = *params[AM::param_hs_freq], hslevel = *params[AM::param_hs_level];
-    float lsfreq = *params[AM::param_ls_freq], lslevel = *params[AM::param_ls_level];
+    float hsfreq = *params[AM::param_hs_freq], hslevel = *params[AM::param_hs_level], hsq =*params[AM::param_hs_q];
+    float lsfreq = *params[AM::param_ls_freq], lslevel = *params[AM::param_ls_level], lsq =*params[AM::param_ls_q];
     
-    if(lsfreq != ls_freq_old or lslevel != ls_level_old) {
+    if(lsfreq != ls_freq_old or lslevel != ls_level_old or lsq != ls_q_old) {
         lsfreq = glide(ls_freq_old, lsfreq, keep_gliding);
-        lsL.set_lowshelf_rbj(lsfreq, 0.707, lslevel, (float)srate);
+        lsL.set_lowshelf_rbj(lsfreq, lsq, lslevel, (float)srate);
         lsR.copy_coeffs(lsL);
         ls_level_old = lslevel;
         ls_freq_old = lsfreq;
+        ls_q_old = lsq;
     }
-    if(hsfreq != hs_freq_old or hslevel != hs_level_old) {
+    if(hsfreq != hs_freq_old or hslevel != hs_level_old or hsq != hs_q_old) {
         hsfreq = glide(hs_freq_old, hsfreq, keep_gliding);
-        hsL.set_highshelf_rbj(hsfreq, 0.707, hslevel, (float)srate);
+        hsL.set_highshelf_rbj(hsfreq, hsq, hslevel, (float)srate);
         hsR.copy_coeffs(hsL);
         hs_level_old = hslevel;
         hs_freq_old = hsfreq;
+        hs_q_old = hsq;
     }
     for (int i = 0; i < AM::PeakBands; i++)
     {
@@ -490,6 +492,12 @@ float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, dou
     for (int i = 0; i < PeakBands; i++)
         ret *= (*params[AM::param_p1_active + i * params_per_band] > 0.f) ? pL[i].freq_gain(freq, (float)srate) : 1;
     return ret;
+}
+
+template<class BaseClass, bool has_lphp>
+inline string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
 template class equalizerNband_audio_module<equalizer5band_metadata, false>;

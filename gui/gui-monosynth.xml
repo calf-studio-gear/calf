@@ -5,19 +5,19 @@
             <label />
             <vbox expand="0" fill="0">
                 <label param="master"/>
-                <knob param="master" size="5"/>
+                <knob param="master" size="5" ticks="0 0.0625 0.25 0.5 1" />
                 <value param="master"/>
             </vbox>
             <label />
             <hbox spacing="4" expand="0" fill="0">
                 <vbox>
                     <label param="pbend_range"/>
-                    <knob param="pbend_range"/>
+                    <knob param="pbend_range" ticks="0 1200 2400" />
                     <value param="pbend_range"/>
                 </vbox>
                 <vbox>
                     <label param="portamento"/>
-                    <knob param="portamento"/>
+                    <knob param="portamento" ticks="1 20 200 2000" />
                     <value param="portamento"/>
                 </vbox>
             </hbox>
@@ -36,22 +36,22 @@
                         <hbox homogeneous="1" spacing="8">
                             <vbox>
                                 <label param="o1_pw" text="Pulse Width"/>
-                                <knob param="o1_pw"/>
+                                <knob param="o1_pw" ticks="-1 0 1"/>
                                 <value param="o1_pw"/>
                             </vbox>
                             <vbox>
                                 <label param="o1_xpose" text="Transpose"/>
-                                <knob type="1" param="o1_xpose"/>
+                                <knob type="1" param="o1_xpose" ticks="-24 -12 0 12 24" />
                                 <value param="o1_xpose"/>
                             </vbox>
                             <vbox>
                                 <label param="o1_stretch" text="Stretch"/>
-                                <knob param="o1_stretch"/>
+                                <knob param="o1_stretch" ticks="1 4 16" />
                                 <value param="o1_stretch"/>
                             </vbox>
                             <vbox>
                                 <label param="o1_window" text="Window"/>
-                                <knob param="o1_window"/>
+                                <knob param="o1_window" ticks="0 0.5 1" />
                                 <value param="o1_window"/>
                             </vbox>
                         </hbox>
@@ -72,12 +72,12 @@
                         <hbox homogeneous="1" spacing="20">
                             <vbox>
                                 <label param="o12_detune"/>
-                                <knob param="o12_detune" size="3"/>
+                                <knob param="o12_detune" size="3" ticks="0 10 20 30 40 50 60 70 80 90 100" />
                                 <value param="o12_detune"/>
                             </vbox>
                             <vbox>
                                 <label param="scale_detune"/>
-                                <knob param="scale_detune" size="3"/>
+                                <knob param="scale_detune" size="3" ticks="0 0.5 1" />
                                 <value param="scale_detune"/>
                             </vbox>
                         </hbox>
@@ -93,22 +93,22 @@
                         <hbox homogeneous="1">
                             <vbox>
                                 <label attach-x="1" attach-y="0" param="o2_pw" text="Pulse Width"/>
-                                <knob attach-x="1" attach-y="1" param="o2_pw"/>
+                                <knob attach-x="1" attach-y="1" param="o2_pw" ticks="-1 0 1"/>
                                 <value attach-x="1" attach-y="2" param="o2_pw"/>
                             </vbox>
                             <vbox>
                                 <label param="o2_xpose" text="Transpose"/>
-                                <knob type="1" param="o2_xpose"/>
+                                <knob type="1" param="o2_xpose" ticks="-24 -12 0 12 24"/>
                                 <value param="o2_xpose"/>
                             </vbox>
                             <vbox>
                                 <label text="Unison Amt"/>
-                                <knob type="0" param="o2_unison"/>
+                                <knob type="0" param="o2_unison" ticks="0 0.5 1"/>
                                 <value param="o2_unison"/>
                             </vbox>
                             <vbox>
                                 <label text="Unison Rate"/>
-                                <knob type="0" param="o2_unisonfrq"/>
+                                <knob type="0" param="o2_unisonfrq" ticks="0.01 0.05 0.2 2 20" />
                                 <value param="o2_unisonfrq"/>
                             </vbox>
                         </hbox>
@@ -126,12 +126,12 @@
                     <hbox spacing="2">
                         <vbox>
                             <label param="cutoff"/>
-                            <knob param="cutoff" size="3"/>
+                            <knob param="cutoff" size="3" ticks="10 30 100 300 1000 4000 16000" />
                             <value param="cutoff"/>
                         </vbox>
                         <vbox>
                             <label param="res"/>
-                            <knob param="res" size="3"/>
+                            <knob param="res" size="3" ticks="0 1 2 4 8" />
                             <value param="res"/>
                         </vbox>
                         
@@ -144,12 +144,12 @@
                         
                         <vbox>
                             <label param="filter_sep"/>
-                            <knob type="1" param="filter_sep" size="3"/>
+                            <knob type="1" param="filter_sep" size="3" ticks="-2400 -1200 0 1200 2400" />
                             <value param="filter_sep"/>
                         </vbox>
                         <vbox>
                             <label param="key_follow"/>
-                            <knob param="key_follow" size="3"/>
+                            <knob param="key_follow" size="3" ticks="0 0.5 1 1.5 2" />
                             <value param="key_follow"/>
                         </vbox>
                     </hbox>
@@ -164,12 +164,12 @@
                         <hbox spacing="10">
                             <vbox>
                                 <label text="To Cutoff"/>
-                                <knob param="vel2filter" size="2"/>
+                                <knob param="vel2filter" size="2" ticks="0 0.5 1"/>
                                 <value param="vel2filter"/>
                             </vbox>
                             <vbox>
                                 <label text="To Amp"/>
-                                <knob param="vel2amp" size="2"/>
+                                <knob param="vel2amp" size="2" ticks="0 0.5 1"/>
                                 <value param="vel2amp"/>
                             </vbox>                
                         </hbox>
@@ -183,34 +183,34 @@
                             <hbox>
                                 <vbox>
                                     <label text="Rate"/>
-                                    <knob param="lfo_rate"/>
+                                    <knob param="lfo_rate" ticks="0.01 0.05 0.2 2 20" />
                                     <value param="lfo_rate"/>
                                 </vbox>
                                 <vbox>
                                     <label text="Delay"/>
-                                    <knob param="lfo_delay"/>
+                                    <knob param="lfo_delay" ticks="0 0.5 1 2 5"/>
                                     <value param="lfo_delay"/>
                                 </vbox>
                                 <vbox>
                                     <label text="ModWheel"/>
-                                    <knob param="mwhl2lfo"/>
+                                    <knob param="mwhl2lfo" ticks="0 0.5 1"/>
                                     <value param="mwhl2lfo"/>
                                 </vbox>
                             </hbox>
                             <hbox>
                                 <vbox>
                                     <label text="To Cutoff"/>
-                                    <knob param="lfo2filter" type="1"/>
+                                    <knob param="lfo2filter" type="1" ticks="-4800 -2400 0 2400 4800"/>
                                     <value param="lfo2filter"/>
                                 </vbox>
                                 <vbox>
                                     <label text="To Pitch"/>
-                                    <knob param="lfo2pitch"/>
+                                    <knob param="lfo2pitch" ticks="0 100 250 600 1200" />
                                     <value param="lfo2pitch"/>
                                 </vbox>
                                 <vbox>
                                     <label text="To Osc PW"/>
-                                    <knob param="lfo2pw"/>
+                                    <knob param="lfo2pw" ticks="0 0.5 1"/>
                                     <value param="lfo2pw"/>
                                 </vbox>
                             </hbox>
@@ -225,12 +225,12 @@
                             <hbox>
                                 <vbox>
                                     <label text="Rate"/>
-                                    <knob param="lfo2_rate"/>
+                                    <knob param="lfo2_rate" ticks="0.01 0.05 0.2 2 20" />
                                     <value param="lfo2_rate"/>
                                 </vbox>
                                 <vbox>
                                     <label text="Delay"/>
-                                    <knob param="lfo_delay"/>
+                                    <knob param="lfo_delay" ticks="0 0.5 1 2 5"/>
                                     <value param="lfo_delay"/>
                                 </vbox>
                             </hbox>
@@ -275,7 +275,7 @@
                                 </vbox>
                                 <vbox>
                                     <label text="To Res"/>
-                                    <knob param="env2res"/>
+                                    <knob param="env2res" ticks="0 0.5 1"/>
                                     <value param="env2res"/>
                                 </vbox>
                                 <vbox>
@@ -322,7 +322,7 @@
                                 </vbox>
                                 <vbox>
                                     <label text="To Res"/>
-                                    <knob param="adsr2_res"/>
+                                    <knob param="adsr2_res" ticks="0 0.5 1"/>
                                     <value param="adsr2_res"/>
                                 </vbox>
                                 <vbox>
