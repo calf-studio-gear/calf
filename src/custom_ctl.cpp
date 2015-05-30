@@ -80,18 +80,22 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         switch(ms->position) {
             case 1:
+                // label on top
                 bar_x = ox + xthick;
                 bar_width = width - 2 * xthick;
                 break;
             case 2:
+                // label right
                 bar_x = ox + xthick;
                 bar_width = width - text_w - 2 * xthick - 2 * text_m;
                 break;
             case 3:
+                // label bottom
                 bar_x = ox + xthick;
                 bar_width = width - 2 * xthick;
                 break;
             case 4:
+                // label left
                 bar_x = ox + xthick + text_w + 2 * text_m;
                 bar_width = width - text_w - 2 * xthick - 2 * text_m;
                 break;
@@ -100,17 +104,21 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         switch (ms->dots) {
             case 0:
             default:
+                // no ticks
                 bar_y = height / 2;
                 break;
             case 1:
+                // tick top
                 bar_y = oy + dot_s + dot_m + extents.height;
                 dot_y = oy + dot_s / 2;
                 break;
             case 2:
+                // ticks bottom
                 bar_y = oy + height - dot_s - dot_m - extents.height + extents.y_bearing;
                 dot_y = oy + height - dot_s / 2;
                 break;
             case 3:
+                // ticks center
                 bar_y = oy + height / 2 - extents.y_bearing / 2;
                 dot_y = oy + height - dot_s / 2;
                 dot_y2 = oy + dot_s / 2;

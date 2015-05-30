@@ -14,7 +14,7 @@
                 <led param="carrier_clip_inL" attach-x="2" attach-y="1" expand-x="0" />
                 <led param="carrier_clip_inR" attach-x="2" attach-y="2" expand-x="0" />
                 <label text="To Mix" attach-x="3" attach-y="0" expand-x="0" />
-                <knob param="carrier" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+                <knob param="carrier" attach-x="3" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 1 4 16" />
                 <value param="carrier" attach-x="3" attach-y="3" expand-x="0" />
             </table>
         </frame>
@@ -31,15 +31,15 @@
                 <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
                 <led param="mod_clip_inL" attach-x="2" attach-y="1" expand-x="0" />
                 <led param="mod_clip_inR" attach-x="2" attach-y="2" expand-x="0" />
-                <label text="To Mix" attach-x="3" attach-y="0" expand-x="0" />
-                <knob param="modulator" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
+                <label text="To Mix" attach-x="3" attach-y="0" expand-x="0"/>
+                <knob param="modulator" attach-x="3" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 1 4 16"  />
                 <value param="modulator" attach-x="3" attach-y="3" expand-x="0" />
             </table>
         </frame>
         <frame label="Processed">
             <vbox>
                 <label text="To Mix" expand="0" fill="0"/>
-                <knob param="processed" expand="0" fill="0"/>
+                <knob param="processed" expand="0" fill="0" ticks="0 0.0625 1 4 16"/>
                 <value param="processed" expand="0" fill="0"/>
             </vbox>
         </frame>
@@ -64,17 +64,17 @@
             <hbox spacing="5">
                 <vbox spacing="2">
                     <label param="attack"/>
-                    <knob param="attack" size="3"/>
+                    <knob param="attack" size="3" ticks="0.1 0.5 5 50 500"/>
                     <value param="attack"/>
                 </vbox>
                 <vbox spacing="2">
                     <label param="order"/>
-                    <knob param="order" size="5"/>
+                    <knob param="order" size="5" ticks="2 3 4 5 6 7 8 9"/>
                     <value param="order"/>
                 </vbox>
                 <vbox spacing="2">
                     <label param="release"/>
-                    <knob param="release" size="3"/>
+                    <knob param="release" size="3" ticks="0.1 0.5 5 50 500 5000"/>
                     <value param="release"/>
                 </vbox>
             </hbox>

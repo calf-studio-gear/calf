@@ -35,7 +35,7 @@
     <hbox spacing="20">
         <vbox spacing="3">
             <label param="freq" align-y="1.0" />
-            <knob size="5" param="freq" expand="0" fill="0" />
+            <knob size="5" param="freq" expand="0" fill="0" ticks="0.01 0.1 1 10 100" />
             <value param="freq" align-y="0.0" />
         </vbox>
         <vbox>

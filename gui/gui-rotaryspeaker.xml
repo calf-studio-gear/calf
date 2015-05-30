@@ -32,22 +32,22 @@
                 <hbox homogeneous="1">
                         <vbox spacing="3" fill="0">
                             <label param="shift" />
-                            <knob param="shift" size="2" />
+                            <knob param="shift" size="2" ticks="0 0.5 1"/>
                             <value param="shift" />
                         </vbox>
                         <vbox spacing="3" fill="0">
                             <label param="spacing" />
-                            <knob param="spacing" size="2" />
+                            <knob param="spacing" size="2" ticks="0 0.5 1" />
                             <value param="spacing" />
                         </vbox>
                         <vbox spacing="3" fill="0">
                             <label param="mic_distance"/>
-                            <knob param="mic_distance" size="2" />
+                            <knob param="mic_distance" size="2" ticks="0 0.5 1" />
                             <value param="mic_distance" />
                         </vbox>
                         <vbox spacing="3" fill="0">
                             <label param="reflection" />
-                            <knob param="reflection" size="2" />
+                            <knob param="reflection" size="2" ticks="0 0.5 1" />
                             <value param="reflection" />
                         </vbox>
                         <vbox spacing="3" fill="0">

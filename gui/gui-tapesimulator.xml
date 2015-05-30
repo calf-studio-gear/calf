@@ -14,7 +14,7 @@
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="mix" attach-x="4" attach-y="0" expand-x="0" />
-        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" />
+        <knob param="mix" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10" ticks="0 0.5 1" />
         <value param="mix" attach-x="4" attach-y="3" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>

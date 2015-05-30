@@ -37,12 +37,12 @@
         </hbox>
         <vbox>
             <label param="drive" />
-            <knob param="drive" size="5" />
+            <knob param="drive" size="5" ticks="0.1 1 2 3 4 5 6 7 8 9 10" />
             <value param="drive" />
         </vbox>    
         <vbox>
             <label param="mix" />
-            <knob param="mix" size="3" />
+            <knob param="mix" size="3" ticks="0 0.5 1" />
             <value param="mix" />
         </vbox>
     </hbox>
@@ -51,12 +51,12 @@
             <hbox homogeneous="1" spacing="10">
                 <vbox>
                     <label param="hp_pre_freq" />
-                    <knob param="hp_pre_freq" />
+                    <knob param="hp_pre_freq" ticks="10 100 1000 20000" />
                     <value param="hp_pre_freq" />
                 </vbox>
                 <vbox>
                     <label param="lp_pre_freq" />
-                    <knob param="lp_pre_freq" type="2"/>
+                    <knob param="lp_pre_freq" type="2" ticks="10 100 1000 20000"/>
                     <value param="lp_pre_freq" />
                 </vbox>
             </hbox>
@@ -66,7 +66,7 @@
             <hbox homogeneous="1" spacing="10">
                 <vbox>
                     <label param="p_freq" attach-x="0" attach-y="0" />
-                    <knob param="p_freq" attach-x="1" attach-y="0" />
+                    <knob param="p_freq" attach-x="1" attach-y="0" ticks="80 800 8000" />
                     <value param="p_freq" attach-x="2" attach-y="0" />
                 </vbox>
                 <vbox>
@@ -76,7 +76,7 @@
                 </vbox>
                 <vbox>
                     <label param="p_q" attach-x="0" attach-y="2" />
-                    <knob param="p_q" attach-x="1" attach-y="2" />
+                    <knob param="p_q" attach-x="1" attach-y="2" ticks="0.1 1 10" />
                     <value param="p_q" attach-x="2" attach-y="2" />
                 </vbox>
             </hbox>
@@ -86,12 +86,12 @@
             <hbox homogeneous="1" spacing="10">
                 <vbox>
                     <label param="hp_post_freq" />
-                    <knob param="hp_post_freq" />
+                    <knob param="hp_post_freq" ticks="10 100 1000 20000" />
                     <value param="hp_post_freq" />
                 </vbox>
                 <vbox>
                     <label param="lp_post_freq" />
-                    <knob param="lp_post_freq" type="2" />
+                    <knob param="lp_post_freq" type="2" ticks="10 100 1000 20000" />
                     <value param="lp_post_freq" />
                 </vbox>
             </hbox>

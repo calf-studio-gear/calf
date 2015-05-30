@@ -12,7 +12,7 @@
         </vbox>
         <vbox expand="0" fill="0" spacing="7" >
             <label param="mix" expand="0" fill="0" />
-            <knob param="mix" size="3" expand="1" fill="1" />
+            <knob param="mix" size="3" expand="1" fill="1" ticks="0 0.5 1" />
             <value param="mix" />
         </vbox>
     </vbox>
@@ -33,22 +33,22 @@
                 <table expand="1" rows="2" cols="3" homogeneous="1">
                     <vbox attach-x="0" attach-y="0">
                         <label param="attack" />
-                        <knob param="attack" />
+                        <knob param="attack" ticks="0 1 10 100 2000" />
                         <value param="attack" />
                     </vbox>
                     <vbox attach-x="1" attach-y="0">
                         <label param="release" />
-                        <knob param="release" />
+                        <knob param="release" ticks="0 1 10 100 2000" />
                         <value param="release" />
                     </vbox>
                     <vbox attach-x="2" attach-y="0">
                         <label param="knee" />
-                        <knob param="knee" />
+                        <knob param="knee" ticks="1 2 4 8" />
                         <value param="knee" />
                     </vbox>
                     <vbox attach-x="0" attach-y="1">
                         <label param="ratio" />
-                        <knob param="ratio" />
+                        <knob param="ratio" ticks="1 2 5 21" />
                         <value param="ratio" />
                     </vbox>
                     <vbox attach-x="1" attach-y="1">
@@ -131,7 +131,7 @@
                     </vbox>
                     <vbox>
                         <label text="Freq" />
-                        <knob param="f1_freq" size="2" />
+                        <knob param="f1_freq" size="2" ticks="10 100 1000 18000" />
                         <value param="f1_freq" />
                     </vbox>
                     <vbox>
@@ -151,7 +151,7 @@
                     </vbox>
                     <vbox>
                         <label text="Freq" />
-                        <knob param="f2_freq" size="2" />
+                        <knob param="f2_freq" size="2" ticks="10 100 1000 18000" />
                         <value param="f2_freq" />
                     </vbox>
                     <vbox>
