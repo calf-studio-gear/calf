@@ -1774,13 +1774,13 @@ static void
 calf_tap_button_init (CalfTapButton *self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
-    widget->requisition.width = 70;
-    widget->requisition.height = 70;
     self->state = 0;
     GError *error = NULL;
     self->image[0] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_inactive.png", &error);
     self->image[1] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_prelight.png", &error);
     self->image[2] = gdk_pixbuf_new_from_file(PKGLIBDIR "/tap_active.png", &error);
+    widget->requisition.width = gdk_pixbuf_get_width(self->image[0]);
+    widget->requisition.height = gdk_pixbuf_get_height(self->image[0]);
 }
 
 GType
