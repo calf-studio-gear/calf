@@ -951,9 +951,9 @@ GtkWidget *tap_button_param_control::create(plugin_gui *_gui, int _param_no)
     gui       = _gui;
     param_no  = _param_no;
     last_time = 0;
-    init_time = 0;
     avg_value = 0;
     value     = 0;
+    timer     = 0;
     widget    = calf_tap_button_new ();
     //CALF_TAP(widget)->size = get_int("size", 2);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (tap_button_pressed), (gpointer)this);
@@ -971,19 +971,6 @@ void tap_button_param_control::get()
 void tap_button_param_control::set()
 {
     _GUARD_CHANGE_
-    if(last_time) {
-        timeval tv;
-        gettimeofday(&tv, 0);
-        unsigned long _now = tv.tv_sec * 1000;
-        if(_now > init_time + 2000) {
-            // user stopped tapping
-            avg_value = 0;
-            last_time = 0;
-            init_time = 0;
-            CALF_TAP_BUTTON(widget)->state = 0;
-            gtk_widget_queue_draw(widget);
-        }
-    }
 }
 
 gboolean tap_button_param_control::tap_button_pressed(GtkWidget *widget, GdkEventButton *event, gpointer value)
@@ -992,14 +979,9 @@ gboolean tap_button_param_control::tap_button_pressed(GtkWidget *widget, GdkEven
     CalfTapButton *tap = CALF_TAP_BUTTON(widget);
     
     guint time = 0;
-    if (event->type == GDK_BUTTON_PRESS and event->button == 1)
-    {
-        timeval tv;
-        gettimeofday(&tv, 0);
-        ctl->init_time = tv.tv_sec * 1000;
+    if (event->type == GDK_BUTTON_PRESS and event->button == 1) {
         time = event->time;
         tap->state = 2;
-        
         if(ctl->last_time) {
             if(ctl->avg_value)
                 ctl->avg_value = (ctl->avg_value * 3 + (time - ctl->last_time)) / 4.f;
@@ -1011,9 +993,25 @@ gboolean tap_button_param_control::tap_button_pressed(GtkWidget *widget, GdkEven
                 ctl->get();
         }
         ctl->last_time = time;
+        if (ctl->timer)
+            gtk_timeout_remove(ctl->timer);
+        ctl->timer = gtk_timeout_add(2000, (GtkFunction)tap_button_stop_waiting, (gpointer)ctl);
         gtk_widget_queue_draw(widget);
     }
     return FALSE;
+}
+void tap_button_param_control::tap_button_stop_waiting(gpointer data)
+{
+    tap_button_param_control *ctl = (tap_button_param_control *)data;
+    if (ctl->timer) {
+        ctl->avg_value = 0;
+        ctl->last_time = 0;
+        CALF_TAP_BUTTON(ctl->widget)->state = 0;
+        gtk_widget_queue_draw(ctl->widget);
+        gtk_timeout_remove(ctl->timer);
+        ctl->timer = 0;
+        gtk_widget_queue_draw(ctl->widget);
+    }
 }
 gboolean tap_button_param_control::tap_button_released(GtkWidget *widget, gpointer value)
 {

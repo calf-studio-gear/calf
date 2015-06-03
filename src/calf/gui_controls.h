@@ -178,11 +178,12 @@ struct toggle_param_control: public param_control
 struct tap_button_param_control: public param_control
 {
     guint last_time;
-    unsigned long init_time;
+    gint timer;
     float avg_value, value;
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
     virtual void get();
     virtual void set();
+    static void tap_button_stop_waiting(gpointer value);
     static gboolean tap_button_released(GtkWidget *widget, gpointer value);
     static gboolean tap_button_pressed(GtkWidget *widget, GdkEventButton *event, gpointer value);
 };
