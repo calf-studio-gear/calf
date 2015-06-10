@@ -1,0 +1,131 @@
+<hbox spacing="7">
+    <frame label="Input" expand="1" fill="1">
+        <vbox spacing="6">
+			<label param="in_gain" />
+            <knob param="in_gain" size="5" />
+            <value param="in_gain" />
+            <label />
+			<label param="bypass" />
+			<toggle param="bypass" />
+		</vbox>
+    </frame>
+    
+    <vbox expand-x="2">
+    	<frame label="Trigger">
+    		<vbox spacing="2">
+	   			<hbox>
+	    			<table rows="2" cols="5" >
+		    			<label attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L" />
+			            <vumeter param="mtr_input_l" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0" fill-x="1" />
+			            <led param="flash_l" attach-x="2" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+			            
+			  			<label attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="R" />
+						<vumeter param="mtr_input_r" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" fill-x="1" />
+						<led param="flash_r" attach-x="2" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" />
+					</table>
+				</hbox>
+				
+				<table rows="2" cols="4">	
+					<vbox attach-x="0" attach-y="0">
+						<label param="lookup" />
+						<knob param="lookup" size="2" />
+						<value param="lookup" />
+					</vbox>
+					
+					<vbox attach-x="1" attach-y="0">
+						<label param="open_threshold" />
+						<knob param="open_threshold" size="2" />
+						<value param="open_threshold" />
+					</vbox>
+					
+					<vbox attach-x="2" attach-y="0">
+						<label param="close_threshold" />
+						<knob param="close_threshold" size="2" />
+						<value param="close_threshold" />
+					</vbox>
+					
+					<vbox attach-x="3" attach-y="0">
+						<label param="release" />
+						<knob param="release" size="2" />
+						<value param="release" />
+					</vbox>
+					
+					<vbox attach-x="0" attach-y="1">
+						<label param="dyn_mode" />
+						<combo param="dyn_function" />
+						<combo param="dyn_mode" />
+					</vbox>
+					
+					<vbox attach-x="1" attach-y="1">
+						<label param="dyn_amount" />
+						<knob param="dyn_amount" size="2" />
+						<value param="dyn_amount" />
+					</vbox>
+					
+					<vbox attach-x="2" attach-y="1">
+						<label param="dry" />
+						<knob param="dry" size="2" />
+						<value param="dry" />
+					</vbox>
+					
+					<vbox attach-x="3" attach-y="1">
+						<label param="wet" />
+						<knob param="wet" size="2" />
+						<value param="wet" />
+					</vbox>
+	    		</table>
+	    	</vbox>
+    	</frame>
+    	<frame label="Sample" >
+    		<vbox spacing="2">
+	    		<hbox>
+	    			<label text="File" />
+		        	<filechooser key="file" title="Sample file" width_chars="30"/>
+	    		</hbox>
+	    		<table rows="2" cols="3">
+	    			<label attach-x="0" attach-y="0" text="Tracks (L/R)" />
+	    			<hbox attach-x="1" attach-y="0">
+						<combo param="sample_track_l" />
+					</hbox>
+					<hbox attach-x="2" attach-y="0">
+						<combo param="sample_track_r" />
+					</hbox>
+					
+					<vbox attach-x="0" attach-y="1">
+						<label text="Head cutoff" />
+						<knob param="head_cutoff" size="2" />
+						<value param="head_cutoff" />
+					</vbox>
+					
+					<vbox attach-x="1" attach-y="1">
+						<label text="Tail cutoff" />
+						<knob param="tail_cutoff" size="2" />
+						<value param="tail_cutoff" />
+					</vbox>
+					
+					<vbox attach-x="2" attach-y="1">
+						<label text="Playbacks" />
+						<knob param="playbacks" size="2" />
+						<value param="playbacks" />
+					</vbox>
+	    		</table>
+	    	</vbox>
+    	</frame>
+    </vbox>
+    
+    <frame label="Output" expand="1" fill="1">
+        <vbox spacing="6">
+			<label param="out_gain" />
+            <knob param="out_gain" size="5" />
+            <value param="out_gain" />
+            
+            <table rows="2" cols="1"> 
+	            <label attach-x="0" attach-y="0" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="L" />
+	            <vumeter param="mtr_output_l" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="0" attach-y="0" fill-x="1" />
+	  			<label attach-x="0" attach-y="1" fill-x="0" expand-x="0" fill-y="0" expand-y="0" text="r" />
+				<vumeter param="mtr_output_r" mode="0" position="2" hold="1.5" falloff="2.5" attach-x="0" attach-y="1" fill-x="1" />
+			</table>
+		</vbox>
+    </frame>
+</hbox>
+

@@ -939,6 +939,62 @@ struct pitch_metadata: public plugin_metadata<pitch_metadata>
     PLUGIN_NAME_ID_LABEL("pitch", "pitch", "Pitch Tools")
 };
 
+// Trigger metadata
+struct trigger_metadata: public plugin_metadata<trigger_metadata>
+{
+    // Parameters
+    enum
+    {
+        mtr_input_l,
+        mtr_input_r,
+        mtr_output_l,
+        mtr_output_r,
+        flash_l,
+        flash_r,
+
+        par_bypass,
+        par_in_gain,
+        par_lookup,
+        par_open_threshold,
+        par_close_threshold,
+        par_release,
+        par_sample_track_l,
+        par_sample_track_r,
+        par_sample_head,
+        par_sample_tail,
+        par_sample_playbacks,
+        par_dyn_mode,
+        par_dyn_function,
+        par_dyn_amount,
+        par_dry,
+        par_wet,
+        par_out_gain,
+
+        param_count
+    };
+
+    // Modes of dynamic
+    enum
+    {
+        dyn_mode1,
+        dyn_mode2
+    };
+
+    // Inputs, outputs, etc...
+    enum
+    {
+        in_count = 2,
+        out_count = 2,
+        ins_optional = 0,
+        outs_optional = 0,
+        rt_capable = true,
+        support_midi = false,
+        require_midi = false
+    };
+
+    PLUGIN_NAME_ID_LABEL("trigger", "trigger", "Trigger")
+};
+
 };
 
 #endif

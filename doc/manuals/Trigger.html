@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="scripts/thickbox.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/thickbox.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Trigger</h1>
+            <a href="images/Calf - Trigger.png" title="Calf - Impulses" class="thickbox"><img class="thumbnail" src="images/Calf - Trigger.png" /></a>
+            <h2>Functionality</h2>
+            <p>
+			This plugin implements simple triggering module.
+			If your kick/toms/snare or other stuff was badly recorded (our regrets...) you can fix it by using this plugin.
+			Just load good sample, configure this plugin and enjoy.
+			Output signal may have some delay.
+            </p>
+            <h2>Controls</h2>
+            <ul>
+		<li><strong>Input</strong>: Input signal level</li>
+		<li><strong>Bypass</strong>: Bypass signal</li>
+		<li><strong>Look-ahead</strong>: Signal level detection time</li>
+		<li><strong>Open threshold</strong>: The threshold of input signal that makes trigger to begin to turn on</li>
+		<li><strong>Close threshold</strong>: The threshold of input signal that makes trigger to begn to turn off</li>
+		<li><strong>Release</strong>: The time trigger keeps turned on after input signal reached close threhold</li>
+		<li><strong>Dynamics mode</strong>: The algorithms of level and attack detection</li>
+		<li><strong>Dynamics</strong>: The dynamics of triggered signal</li>
+		<li><strong>Dry</strong>: Amount of dry (unprocessed) signal</li>
+		<li><strong>Wet</strong>: Amount of wet (processed) signal</li>
+		<li><strong>File</strong>: Sample file to play when trigger turns on</li>
+		<li><strong>Tracks (L/R)</strong>: Number of track of sample file to play in left and right channels</li>
+		<li><strong>Head cutoff</strong>: Number of milliseconds to cut from heading of sample (for example, when there is silence at the head)</li>
+		<li><strong>Tail</strong>: The overall length of sample to use</li>
+		<li><strong>Playbacks</strong>: Maximum number of sample playbacks at the same time.</li>
+		<li><strong>Volume</strong>: Output volume</li>
+            </ul>
+        </div>
+    </body>
+</html>

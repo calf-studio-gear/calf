@@ -107,8 +107,143 @@ public:
     ~fluidsynth_audio_module();
 };
 
+#define TRIGGER_MAX_PLAYBACK            16
+#define TRIGGER_MIN_LOOKUP_MS           0.1
+#define TRIGGER_MAX_LOOKUP_MS           20
 
-    
+typedef struct trigger_sample_t
+{
+    uint32_t    srate;          // Sample rate
+    size_t      channels;       // Channels per file
+    size_t      samples;        // Number of samples per track
+    float      *frames;         // Frame data
+    std::string filename;       // File name
+
+    inline trigger_sample_t()
+    {
+        srate       = 0;
+        channels    = 0;
+        samples     = 0;
+        frames      = NULL;
+        filename    = "";
+    }
+
+    ~trigger_sample_t()
+    {
+        free();
+    }
+
+    void free();
+    bool load(const char *file);
+} trigger_sample_t;
+
+typedef struct trigger_playback_t
+{
+    size_t      offset;         // Playback pointer
+    size_t      limit;          // Maximum playback pointer
+    float       gain;           // Loudness
+
+    inline trigger_playback_t()
+    {
+        offset = 0;
+        limit  = 0;
+        gain   = 0;
+    }
+
+    inline void start(size_t off, size_t lim, float amp)
+    {
+        offset = off;
+        limit  = lim;
+        gain   = amp;
+    }
+} trigger_playback_t;
+
+struct mono_trigger_t;
+
+typedef void (* level_detector_t)(const mono_trigger_t *t, float &level, float &attack);
+
+#define TRG_STATE_CLOSED        0
+#define TRG_STATE_MEASURE       1
+#define TRG_STATE_OPEN          2
+
+
+typedef struct mono_trigger_t
+{
+    // Internal state
+    size_t              playbacks;  // Number of currently active playbacks
+    size_t              state;      // State of trigger
+    trigger_playback_t  playback[TRIGGER_MAX_PLAYBACK]; // Playback tasks
+    float              *lkp_buffer; // Lookup buffer
+    size_t              lkp_ptr;    // Lookup buffer pointer
+    size_t              lkp_size;   // Lookup buffer size, guaranteed to be power of 2
+    size_t              lkp_samples;// Lookup samples
+    ssize_t             release;    // Number of samples before trigger releases
+
+    // Configurable parameters
+    size_t              rel_samples;    // Initial value of release in samples
+    size_t              max_playbacks;  // Maximum value of playbacks
+    ssize_t             track;          // ID of track to use
+    size_t              min_offset;     // Min offset samples
+    size_t              max_offset;     // Max offset samples
+    size_t              mode;           // Mode
+    float               open_thresh;    // Open threshold
+    float               close_thresh;   // Close threshold
+    float               dynamics;       // Dynamics
+    float               dry;            // Dry amount
+    float               wet;            // Wet amount
+    float               in_gain;        // Input gain
+    float               out_gain;       // Output gain
+
+    // Meter outputs
+    float               mtr_in;         // Input meter
+    float               mtr_out;        // Output meter
+    bool                fired;          // Flag that trigger has fired
+
+    level_detector_t    detector;       // Level detector
+
+    mono_trigger_t();
+    ~mono_trigger_t();
+
+    inline void mute() { track = -1; max_offset = 0; }
+    void        free();
+    void        process(const float *in, float *out, const trigger_sample_t *t_sample, size_t count);
+    void        change_sample_rate(uint32_t srate);
+} mono_trigger_t;
+
+/// Trigger implementation
+class trigger_audio_module: public audio_module<trigger_metadata>
+{
+protected:
+    // Serial number of status data
+    int status_serial;
+
+    // Current sample rate
+    uint32_t srate;
+
+    // Trigger data
+    mono_trigger_t      channels[2];
+    trigger_sample_t    sample;
+    uint32_t            flash[2];
+
+public:
+    /// Constructor to initialize handles to NULL
+    trigger_audio_module();
+    virtual ~trigger_audio_module();
+
+    void set_sample_rate(uint32_t sr);
+
+    /// Update variables from control ports.
+    void params_changed();
+
+    /// Main processing function
+    uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+
+    /// DSSI-style configure function for handling string port data
+    char *configure(const char *key, const char *value);
+    void send_configures(send_configure_iface *sci);
+    int send_status_updates(send_updates_iface *sui, int last_serial);
+};
+
 #endif
     
 };

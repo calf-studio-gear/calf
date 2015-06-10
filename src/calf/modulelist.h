@@ -82,6 +82,7 @@
 #ifdef ENABLE_EXPERIMENTAL
     // Pitch tools
     PER_MODULE_ITEM(pitch,               false, "pitch")
+    PER_MODULE_ITEM(trigger,             false, "trigger")
 #endif
 
 #undef PER_MODULE_ITEM
