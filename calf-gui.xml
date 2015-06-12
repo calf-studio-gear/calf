@@ -108,9 +108,11 @@
             <property name="n_rows">4</property>
             <property name="n_columns">2</property>
             <property name="row_spacing">10</property>
+            <property name="column_spacing">25</property>
             <child>
               <object class="GtkLabel" id="prefs_label_rack_ears">
                 <property name="visible">True</property>
+                <property name="xalign">1.0</property>
                 <property name="label" translatable="yes">Show rack ears</property>
               </object>
             </child>
@@ -129,6 +131,7 @@
             <child>
               <object class="GtkLabel" id="prefs_label_rack_float">
                 <property name="visible">True</property>
+                <property name="xalign">1.0</property>
                 <property name="label" translatable="yes">Float (0=horiz / 1=vert)</property>
               </object>
               <packing>
@@ -139,6 +142,7 @@
             <child>
               <object class="GtkLabel" id="prefs_label_float_size">
                 <property name="visible">True</property>
+                <property name="xalign">1.0</property>
                 <property name="label" translatable="yes">Float Size</property>
               </object>
               <packing>
@@ -175,6 +179,7 @@
             <child>
               <object class="GtkLabel" id="prefs_label_vu_meters">
                 <property name="visible">True</property>
+                <property name="xalign">1.0</property>
                 <property name="label" translatable="yes">Show volume meters</property>
               </object>
               <packing>
@@ -196,6 +201,32 @@
                 <property name="bottom_attach">4</property>
               </packing>
             </child>
+            
+            <child>
+              <object class="GtkLabel" id="prefs_label_style">
+                <property name="visible">True</property>
+                <property name="xalign">1.0</property>
+                <property name="label" translatable="yes">Style</property>
+              </object>
+              <packing>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="rcstyles">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
+              </packing>
+            </child>
+            
           </object>
           <packing>
             <property name="position">1</property>

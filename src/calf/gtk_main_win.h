@@ -108,6 +108,8 @@ namespace calf_plugins {
         virtual void add_condition(const std::string &name);
         /// Display an error dialog
         virtual void show_error(const std::string &text);
+        
+        GtkListStore *get_styles();
     private:
         static const GtkActionEntry actions[];
         static void on_open_action(GtkWidget *widget, gtk_main_window *main);

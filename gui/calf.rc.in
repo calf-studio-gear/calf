@@ -1,3 +1,5 @@
+#Calf Default
+
 pixmap_path "@guidatadir@"
 
 style "calf-default"

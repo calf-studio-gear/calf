@@ -152,4 +152,26 @@ file_exception::file_exception(const std::string &f, const std::string &t)
     text = container.c_str();
 }
 
+
+/* Returns a list of files in a directory (except the ones that begin with a dot) */
+vector <direntry> list_directory(const string &path)
+{
+    std::vector <direntry> out;
+    DIR *dir;
+    class dirent *ent;
+    dir = opendir(path.empty() ? "." : path.c_str());
+    while ((ent = readdir(dir)) != NULL) {
+        direntry f;
+        const string file_name = ent->d_name;
+        const string full_file_name = path + "/" + file_name;
+        if (file_name[0] == '.') continue;
+        f.name = file_name;
+        f.directory = path;
+        f.full_path = full_file_name;
+        out.push_back(f);
+    }
+    closedir(dir);
+    return out;
+}
+
 }

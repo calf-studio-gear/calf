@@ -25,6 +25,8 @@
 #include <pthread.h>
 #include <map>
 #include <string>
+#include <dirent.h>
+#include <sys/types.h>
 
 namespace calf_utils
 {
@@ -185,6 +187,14 @@ std::string load_file(const std::string &src);
 
 /// Indent a string by another string (prefix each line)
 std::string indent(const std::string &src, const std::string &indent);
+
+/// List contents of a directory
+struct direntry {
+    std::string name;
+    std::string full_path;
+    std::string directory;
+};
+std::vector <direntry> list_directory(const std::string &path);
 
 };
 

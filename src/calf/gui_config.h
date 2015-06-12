@@ -81,6 +81,7 @@ struct gui_config
     int rack_float, float_size;
     bool rack_ears;
     bool vu_meters;
+    std::string style;
     
     gui_config();
     ~gui_config();

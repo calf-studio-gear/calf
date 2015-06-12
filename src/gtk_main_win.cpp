@@ -26,6 +26,8 @@
 #include <calf/preset.h>
 #include <calf/gtk_main_win.h>
 #include <calf/jackhost.h>
+#include <iostream>
+#include <fstream>
 
 using namespace calf_plugins;
 using namespace std;
@@ -102,6 +104,30 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         g_object_unref(G_OBJECT(prefs_builder));
         return;
     }
+    
+    // styles selector
+    GtkCellRenderer *cell;
+    GtkListStore *store = main->get_styles();
+    GtkComboBox *cb = GTK_COMBO_BOX(gtk_builder_get_object(prefs_builder, "rcstyles"));
+    gtk_combo_box_set_model(cb, GTK_TREE_MODEL(store));
+    cell = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cb), cell, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cb), cell, "text", 0, NULL);
+    //gtk_tree_model_(cb);
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
+    GValue title = {0,};
+    while (valid) {
+        gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 0, &title);
+        if (main->get_config()->style.compare(g_value_get_string(&title)) == 0) {
+            gtk_combo_box_set_active_iter(cb, &iter);
+            break;
+        }
+        valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter);
+        g_value_unset(&title);
+    }
+    
+    
     GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")), main->get_config()->rack_ears);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 0, 1);
@@ -891,4 +917,25 @@ void gtk_main_window::show_error(const std::string &text)
     GtkWidget *widget = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", text.c_str());
     gtk_dialog_run (GTK_DIALOG (widget));
     gtk_widget_destroy (widget);
+}
+
+GtkListStore *gtk_main_window::get_styles()
+{
+    std::vector <calf_utils::direntry> list = calf_utils::list_directory(PKGLIBDIR);
+    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    for (std::vector<calf_utils::direntry>::iterator i = list.begin(); i != list.end(); i++) {
+        if (i->name.substr(i->name.length() - 3).compare(".rc") == 0) {
+            ifstream infile(i->full_path.c_str());
+            if (infile.good()) {
+                string line;
+                getline(infile, line);
+                i->name = line.substr(1);
+            }
+            gtk_list_store_insert_with_values(store, NULL, -1,
+                                      0, i->name.c_str(),
+                                      1, i->full_path.c_str(),
+                                      -1);
+        }
+    }
+    return store;
 }
