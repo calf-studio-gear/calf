@@ -27,6 +27,7 @@
 #include <string>
 #include <dirent.h>
 #include <sys/types.h>
+#include <vector>
 
 namespace calf_utils
 {
