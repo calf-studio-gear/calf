@@ -109,7 +109,11 @@ namespace calf_plugins {
         /// Display an error dialog
         virtual void show_error(const std::string &text);
         
+        GtkListStore *styles;
         GtkListStore *get_styles();
+        void load_style(const gchar *fname);
+        std::string get_style_path(GtkListStore *store, std::string title);
+
     private:
         static const GtkActionEntry actions[];
         static void on_open_action(GtkWidget *widget, gtk_main_window *main);

@@ -26,7 +26,7 @@ using namespace calf_plugins;
 
 void gtk_session_environment::init_gui(int &argc, char **&argv)
 {
-    gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
+    //gtk_rc_add_default_file(PKGLIBDIR "calf.rc");
     gtk_init(&argc, &argv);
 }
 
