@@ -45,8 +45,12 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     
     float r, g, b;
     
-    int width = widget->allocation.width; int height = widget->allocation.height;
-    int border_x = 0; int border_y = 0; // outer border
+    int x = widget->allocation.x;
+    int y = widget->allocation.y;
+    int width = widget->allocation.width;
+    int height = widget->allocation.height;
+    int border_x = widget->style->xthickness;
+    int border_y = widget->style->ythickness;
     int space_x = 1; int space_y = 1; // inner border around led bar
     int led = 2; // single LED size
     int led_m = 1; // margin between LED
@@ -57,7 +61,6 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     int led_h = height - 2 * led_y; // height of LED bar w/o text calc
     int text_x = 0; int text_y = 0;
     int text_w = 0; int text_h = 0;
-    int text_m = 3; // text margin
 
     // only valid if vumeter is enabled
     cairo_text_extents_t extents;
@@ -72,25 +75,25 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         switch(vu->vumeter_position) {
             case 1:
                 text_x = width / 2 - text_w / 2;
-                text_y = border_y + text_m - extents.y_bearing;
-                led_y += text_h + text_m;
-                led_h -= text_h + text_m;
+                text_y = border_y + led_y - extents.y_bearing;
+                led_y += text_h + led_y;
+                led_h -= text_h + led_y;
                 break;
             case 2:
-                text_x = width - border_x - text_m * 2 - text_w;
+                text_x = width - border_x - led_x - text_w;
                 text_y = height / 2 - text_h / 2 - extents.y_bearing;
-                led_w -= text_m * 2 + text_w;
+                led_w -= led_x + text_w;
                 break;
             case 3:
                 text_x = width / 2 - text_w / 2;
-                text_y = height - border_y - text_m - text_h - extents.y_bearing;
-                led_h -= text_m * 2 + text_h;
+                text_y = height - border_y - led_y - text_h - extents.y_bearing;
+                led_h -= led_y + text_h;
                 break;
             case 4:
-                text_x = border_x + text_m;
+                text_x = border_x + led_x;
                 text_y = height / 2 - text_h / 2 - extents.y_bearing;
-                led_x += text_m * 2 + text_w;
-                led_w -= text_m * 2 + text_w;
+                led_x += led_x + text_w;
+                led_w -= led_x + text_w;
                 break;
         }
     }
@@ -100,49 +103,26 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     if( vu->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
         // create the cache_surface.
-        cairo_surface_t *window_surface = cairo_get_target( c );
-        vu->cache_surface = cairo_surface_create_similar( window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height );
-
-        // And render the meterstuff
-
+        vu->cache_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height );
         cairo_t *cache_cr = cairo_create( vu->cache_surface );
-        gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
-        cairo_paint(cache_cr);
         
-        // outer (black)
-        cairo_rectangle(cache_cr, 0, 0, width, height);
-        cairo_set_source_rgb(cache_cr, 0.3, 0.3, 0.3);
-        cairo_set_operator(cache_cr,CAIRO_OPERATOR_CLEAR);
-        cairo_fill(cache_cr);
-        cairo_set_operator(cache_cr,CAIRO_OPERATOR_OVER);
-        // inner (bevel)
-        create_rectangle(cache_cr,
-                        border_x,
-                        border_y,
-                        width - border_x * 2,
-                        height - border_y * 2, 0);
-        cairo_pattern_t *pat2 = cairo_pattern_create_linear (border_x,
-                                                             border_y,
-                                                             border_x,
-                                                             height - border_y * 2);
+        float radius, bevel;
         get_bg_color(widget, NULL, &r, &g, &b);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
-        cairo_set_source (cache_cr, pat2);
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        create_rectangle(cache_cr, 0, 0, width, height, radius);
+        cairo_set_source_rgb(cache_cr, r, g, b);
         cairo_fill(cache_cr);
-        cairo_pattern_destroy(pat2);
+        draw_bevel(cache_cr, 0, 0, width, height, radius, bevel);
         
         // border around LED
-        cairo_rectangle(cache_cr,
-                        led_x - space_x,
-                        led_y - space_y,
-                        led_w + space_x * 2,
-                        led_h + space_y * 2);
+        cairo_rectangle(cache_cr, led_x, led_y, led_w, led_h);
         cairo_set_source_rgb (cache_cr, 0, 0, 0);
         cairo_fill(cache_cr);
+        
+        led_x += space_x;
+        led_y += space_y;
+        led_w -= 2 * space_x;
+        led_h -= 2 * space_y;
         
         // LED bases
         cairo_set_line_width(cache_cr, 1);
@@ -222,10 +202,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_fill(cache_cr);
         
         // create overlay
-        vu->cache_overlay = cairo_surface_create_similar(window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height);
+        vu->cache_overlay = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         cairo_t *over_cr = cairo_create(vu->cache_overlay);
         
         // copy surface to overlay
@@ -248,12 +225,20 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         // clean up
         cairo_destroy(cache_cr);
         cairo_destroy(over_cr);
+    } else {
+        led_x += space_x;
+        led_y += space_y;
+        led_w -= 2 * space_x;
+        led_h -= 2 * space_y;
     }
-    
+    led_x += x;
+    led_y += y;
+    text_x += x;
+    text_y += y;
     // draw LED blinder
-    cairo_set_source_surface( c, vu->cache_surface, 0,0 );
+    cairo_set_source_surface( c, vu->cache_surface, x, y );
     cairo_paint( c );
-    cairo_set_source_surface( c, vu->cache_overlay, 0, 0 );
+    cairo_set_source_surface( c, vu->cache_overlay, x, y );
     
     // get microseconds
     timeval tv;
@@ -436,6 +421,12 @@ calf_vumeter_class_init (CalfVUMeterClass *klass)
     widget_class->expose_event = calf_vumeter_expose;
     widget_class->size_request = calf_vumeter_size_request;
     widget_class->size_allocate = calf_vumeter_size_allocate;
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("border-radius", "Border Radius", "Generate round edges",
+        0, 24, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
+        -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
 }
 
 static void
@@ -451,6 +442,7 @@ calf_vumeter_init (CalfVUMeter *self)
     self->meter_width = 0;
     self->disp_value = 0.f;
     self->value = 0.f;
+    gtk_widget_set_has_window(widget, FALSE);
     g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_vumeter_unrealize), (gpointer)self);
 }
 
@@ -480,16 +472,17 @@ calf_vumeter_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)(intptr_t)calf_vumeter_class_init) >> 16, i);
+            const char *name = "CalfVUMeter";
+            //char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)(intptr_t)calf_vumeter_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                free(name);
+                //free(name);
                 continue;
             }
             type = g_type_register_static( GTK_TYPE_DRAWING_AREA,
                                            name,
                                            type_info_copy,
                                            (GTypeFlags)0);
-            free(name);
+            //free(name);
             break;
         }
     }

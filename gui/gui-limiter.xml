@@ -1,4 +1,4 @@
-<table rows="3" cols="1">
+<table rows="3" cols="1" spacing-x="0" spacing-y="0">
     <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
         <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />

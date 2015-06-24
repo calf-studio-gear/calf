@@ -1,4 +1,4 @@
-<hbox spacing="5">
+<hbox spacing="8">
     <frame label="Input" expand="1" fill="1">
         <vbox spacing="8">
             <table rows="1" cols="2">
@@ -33,7 +33,7 @@
         </vbox>
     </frame>
     
-    <hbox>
+    <hbox spacing="8">
         <frame label="Left" expand="1" fill="1">
             <vbox>
                 <label /><label />

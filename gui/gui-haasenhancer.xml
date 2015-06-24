@@ -16,7 +16,7 @@
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="bypass" icon="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" />
         
-        <label param="m_phase" attach-x="3" attach-y="0" expand-x="0" />
+        <label text="MidPhase" attach-x="3" attach-y="0" expand-x="0" />
         <toggle param="m_phase" icon="phase" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
         
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>

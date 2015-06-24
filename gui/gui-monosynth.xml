@@ -29,7 +29,7 @@
     </frame>
     <notebook>
         <vbox page="Audio Path" spacing="3">
-            <hbox spacing="3">
+            <hbox spacing="8">
                     
                 <frame label="Oscillator 1">
                     <vbox spacing="3">

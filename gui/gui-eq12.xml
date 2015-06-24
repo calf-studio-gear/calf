@@ -70,7 +70,7 @@
         </table>
     </frame>
     
-    <hbox>
+    <hbox spacing="8">
         <frame label="Highpass">
             <vbox spacing="3">
                 <combo param="hp_active"/>

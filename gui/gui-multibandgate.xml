@@ -253,7 +253,7 @@
         </hbox>
     </notebook>
     
-    <hbox>
+    <hbox spacing="8">
         <frame label="Sub band">
             <vbox>
                 <if cond="directlink">

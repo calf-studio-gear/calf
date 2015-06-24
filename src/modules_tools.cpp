@@ -575,3 +575,43 @@ bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &
 {
     return _analyzer.get_layers(generation, layers);
 }
+
+
+
+/**********************************************************************
+ * WIDGETS TEST 
+**********************************************************************/
+
+widgets_audio_module::widgets_audio_module() {
+}
+widgets_audio_module::~widgets_audio_module() {
+}
+
+void widgets_audio_module::params_changed() {
+    
+}
+
+uint32_t widgets_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    float meter_1, meter_2, meter_3, meter_4;
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        meter_1 = 0.f;
+        meter_2 = 0.f;
+        meter_3 = 0.f;
+        meter_4 = 0.f;
+        
+        float L = ins[0][i];
+        float R = ins[1][i];
+        float values[] = {meter_1, meter_2, meter_3, meter_4};
+        meters.process(values);
+    }
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+void widgets_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter1, param_meter2,  param_meter3, param_meter4};
+    int clip[] = {0, 0, 0, 0};
+    meters.init(params, meter, clip, 4, sr);
+}

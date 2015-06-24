@@ -1,6 +1,6 @@
-<table rows="2" cols="3">
+<table rows="2" cols="3"  spacing-x="0"  spacing-y="0">
     <frame label="Timbre" attach-x="0" attach-y="1" shrink-y="1">
-        <table rows="1" cols="5" homogeneous="1" spacing="10" attach-x="0" attach-y="1">
+        <table rows="1" cols="5" homogeneous="1" attach-x="0" attach-y="1">
             <vbox attach-x="0" attach-y="0">
                 <label param="min_delay" />
                 <knob param="min_delay" ticks="0.1 1 10" />

@@ -62,7 +62,7 @@
         </table>
     </frame>
     
-    <hbox>
+    <hbox spacing="8">
         <frame label="Lowshelf">
             <table rows="4" cols="1">
                 <vbox attach-x="0" attach-y="0">

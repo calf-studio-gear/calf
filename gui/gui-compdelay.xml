@@ -1,4 +1,4 @@
-<hbox spacing="5">
+<hbox spacing="8">
     <frame label="Distance" expand="1" fill="1">
         <hbox spacing="8">
             <vbox>

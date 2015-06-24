@@ -1,4 +1,4 @@
-<hbox spacing="6">
+<hbox spacing="8">
 
     <vbox spacing="20" expand="0" fill="0">
         <vbox expand="0" fill="0" spacing="7" >
@@ -17,7 +17,7 @@
         </vbox>
     </vbox>
 
-    <vbox spacing="5">
+    <vbox>
         <frame label="Compressor">
             <vbox>
                 <table expand="0" fill="0" rows="2" cols="3">
@@ -97,7 +97,7 @@
         </vbox>
       </frame>
     
-    <vbox spacing="5">
+    <vbox spacing="8">
         
         <frame label="Options">
             <hbox homogeneous="1">

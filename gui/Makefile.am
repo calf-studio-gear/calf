@@ -1,20 +1,22 @@
 SRCDIRS = icons/LV2
-
 SUBDIRS = $(SRCDIRS)
-
 EXTRA_DIST = $(wildcard gui-*.xml) $(wildcard *.png) calf.rc.in
+STYLES = $(wildcard $(srcdir)/styles/*)
 
 install-data-hook:
-	install -c -m 644 $(srcdir)/*.png $(DESTDIR)$(pkgdatadir)
 	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
 	install -c -m 644 $(srcdir)/gui-*.xml $(DESTDIR)$(pkgdatadir)
-	sed 's#@guidatadir@#$(pkgdatadir)#g' $(srcdir)/calf.rc.in >$(top_builddir)/calf.rc
-	sed 's#@guidatadir@#$(pkgdatadir)#g' $(srcdir)/calf_old.rc.in >$(top_builddir)/calf_old.rc
-	install -c -m 644 $(top_builddir)/*.rc $(DESTDIR)$(pkgdatadir)
-	rm -f $(top_builddir)/*.rc
+	for f in ${STYLES}; do \
+		sn=`basename $${f}` ; \
+		sed 's#@guidatadir@#$(pkgdatadir)/styles/'$${sn}'#g' "$${f}"/gtk.rc.in >"$${f}"/gtk.rc ; \
+	done
+	cp -r $(srcdir)/styles $(DESTDIR)$(pkgdatadir)
+	rm -f $(srcdir)/styles/*/*.rc
+	rm -f $(DESTDIR)$(pkgdatadir)/styles/*/*.rc.in
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(pkgdatadir)/*.rc
-	rm -f $(DESTDIR)$(pkgdatadir)/*.png
 	rm -f $(DESTDIR)$(pkgdatadir)/gui-*.xml
+	rm -rf $(DESTDIR)$(pkgdatadir)/icons
+	rm -rf $(DESTDIR)$(pkgdatadir)/styles
 	rm -r $(DESTDIR)$(pkgdatadir) || true

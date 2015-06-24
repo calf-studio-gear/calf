@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hbox spacing="10">
+<hbox spacing="8">
     <frame label="Global">
         <vbox spacing="8">
             <vbox>
@@ -40,7 +40,7 @@
         </vbox>
     </frame>
     <vbox spacing="8">
-        <hbox>
+        <hbox spacing="8">
             <if cond="directlink">
                 <frame label="Osc Waveform">
                     <line-graph param="master" refresh="1" width="200" height="40" expand="0" fill="0" />
@@ -314,7 +314,7 @@
                         </hbox>
                     </vbox>
                 </frame>
-                <hbox>
+                <hbox spacing="8">
                     <vbox>
                         <frame label="Filter 1">
                             <vbox>

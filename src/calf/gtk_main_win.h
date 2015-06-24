@@ -29,6 +29,7 @@
 namespace calf_plugins {
     
     class gtk_main_window;
+    struct image_factory;
     
     struct plugin_strip
     {
@@ -66,7 +67,7 @@ namespace calf_plugins {
         int source_id;
         main_window_owner_iface *owner;
         calf_utils::config_notifier_iface *notifier;
-
+        
     protected:
         GtkWidget *progress_window;
         window_update_controller refresh_controller;
@@ -109,10 +110,9 @@ namespace calf_plugins {
         /// Display an error dialog
         virtual void show_error(const std::string &text);
         
-        GtkListStore *styles;
+        image_factory images;
         GtkListStore *get_styles();
-        void load_style(const gchar *fname);
-        std::string get_style_path(GtkListStore *store, std::string title);
+        void load_style(std::string path);
 
     private:
         static const GtkActionEntry actions[];
