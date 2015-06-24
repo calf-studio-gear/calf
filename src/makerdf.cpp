@@ -287,11 +287,12 @@ void make_ttl(string path_prefix, const string *data_dir)
                 "    rdfs:label \"Output\" .\n\n";
         }
         
-        ttl += uri + " a lv2:Plugin ;\n";
+        ttl += uri;
         
         if (classes.count(lpi.plugin_type))
-            ttl += "    a " + classes[lpi.plugin_type]+" ;\n";
-        
+            ttl += " a " + classes[lpi.plugin_type]+" ;\n";
+        else
+            ttl += " a lv2:Plugin ;\n";
             
         ttl += "    doap:name \""+string(lpi.name)+"\" ;\n";
         ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
