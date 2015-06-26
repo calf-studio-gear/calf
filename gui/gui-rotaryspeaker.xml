@@ -1,4 +1,4 @@
-<table rows="1" cols="3">
+<table rows="1" cols="3" spacing-x="0" spacing-y="0">
     <frame attach-x="2" attach-y="0" label="Manual">
         <table rows="2" cols="2">
             <vbox  attach-x="1" attach-y="0" fill-x="1" fill-y="1" border="10">

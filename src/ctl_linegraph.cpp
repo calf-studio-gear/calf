@@ -597,11 +597,11 @@ static cairo_t
 }
 
 static void
-calf_line_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, float fade = 1.f)
+calf_line_graph_copy_surface(cairo_t *ctx, cairo_surface_t *source, int x = 0, int y = 0, float fade = 1.f)
 {
     // copy a surface to a cairo context
     cairo_save(ctx);
-    cairo_set_source_surface(ctx, source, 0, 0);
+    cairo_set_source_surface(ctx, source, x, y);
     if (fade < 1.0) {
         cairo_paint_with_alpha(ctx, fade * 0.35 + 0.05);
     } else {
@@ -671,9 +671,17 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // cairo context of the window
     cairo_t *c            = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
+    
     // recreate surfaces if someone needs it (init of the widget,
     // resizing the window..)
     if (lg->recreate_surfaces) {
+        lg->pad_x = widget->style->xthickness;
+        lg->pad_y = widget->style->ythickness;
+        lg->x = widget->allocation.x;
+        lg->y = widget->allocation.y;
+        float radius, bevel;
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+    
         if (lg->debug) printf("recreation...\n");
         calf_line_graph_create_surfaces(widget);
         
@@ -681,7 +689,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // draw the yellowish lighting on the background surface
         cairo_t *bg = cairo_create(lg->background_surface);
         if (lg->debug) printf("(draw background)\n");
-        display_background(widget, bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y);
+        display_background(widget, bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y, radius, bevel);
         cairo_destroy(bg);
     }
     
@@ -876,7 +884,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid was drawn)
                 // so "clear" the realtime surface with the cache
                 if (lg->debug) printf("copy cache->realtime\n");
-                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, 0, 0, lg->force_cache ? 1 : lg->fade);
                 realtime_drawn = true;
             }
             
@@ -936,31 +944,31 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             }
             move ++;
             // set moving distances according to direction
-            int x = 0;
-            int y = 0;
+            int xd = 0;
+            int yd = 0;
             switch (direction) {
                 case LG_MOVING_LEFT:
                 default:
-                    x = -move;
-                    y = 0;
+                    xd = -move;
+                    yd = 0;
                     break;
                 case LG_MOVING_RIGHT:
-                    x = move;
-                    y = 0;
+                    xd = move;
+                    yd = 0;
                     break;
                 case LG_MOVING_UP:
-                    x = 0;
-                    y = -move;
+                    xd = 0;
+                    yd = -move;
                     break;
                 case LG_MOVING_DOWN:
-                    x = 0;
-                    y = move;
+                    xd = 0;
+                    yd = move;
                     break;
             }
             // copy the old moving surface to the right position on the
             // new surface
             if (lg->debug) printf("copy cached moving->moving\n");
-            cairo_set_source_surface(ctx, lg->moving_surface[(int)!lg->movesurf], x, y);
+            cairo_set_source_surface(ctx, lg->moving_surface[(int)!lg->movesurf], xd, yd);
             cairo_paint(ctx);
             
             // switch back to the actual context
@@ -968,7 +976,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             ctx = calf_line_graph_switch_context(lg, _ctx, &cimpl);
             
             if (lg->debug) printf("copy moving->realtime/cache\n");
-            calf_line_graph_copy_surface(ctx, lg->moving_surface[lg->movesurf], 1);
+            calf_line_graph_copy_surface(ctx, lg->moving_surface[lg->movesurf]);
             
             // toggle the moving cache
             lg->movesurf = (int)!lg->movesurf;
@@ -998,7 +1006,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
                 // phase and no realtime grid or graph was drawn)
                 // so "clear" the realtime surface with the cache
                 if (lg->debug) printf("copy cache->realtime\n");
-                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, 0, 0, lg->force_cache ? 1 : lg->fade);
                 realtime_drawn = true;
             }
             for (int a = 0;
@@ -1025,12 +1033,12 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             if (cache_drawn) {
                 // copy the cache to the realtime if it was changed
                 if (lg->debug) printf("copy cache->realtime\n");
-                calf_line_graph_copy_surface(ctx, lg->cache_surface, lg->force_cache ? 1 : lg->fade);
+                calf_line_graph_copy_surface(ctx, lg->cache_surface, 0, 0, lg->force_cache ? 1 : lg->fade);
                 realtime_drawn = true;
             } else if (grid_drawn) {
                 // copy the grid to the realtime if it was changed
                 if (lg->debug) printf("copy grid->realtime\n");
-                calf_line_graph_copy_surface(ctx, lg->grid_surface, lg->force_cache ? 1 : lg->fade);
+                calf_line_graph_copy_surface(ctx, lg->grid_surface, 0, 0, lg->force_cache ? 1 : lg->fade);
                 realtime_drawn = true;
             }
             
@@ -1056,7 +1064,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     //if (lg->debug) printf("switch to window\n");
     //ctx = calf_line_graph_switch_context(lg, c, &cimpl);
     if (lg->debug) printf("copy realtime->window\n");
-    calf_line_graph_copy_surface(c, lg->realtime_surface);
+    calf_line_graph_copy_surface(c, lg->realtime_surface, lg->x, lg->y);
     
     // if someone changed the handles via drag'n'drop or externally we
     // need a redraw of the handles surface
@@ -1071,7 +1079,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // window
     if (lg->freqhandles) {
         if (lg->debug) printf("copy handles->window\n");
-        calf_line_graph_copy_surface(c, lg->handles_surface);
+        calf_line_graph_copy_surface(c, lg->handles_surface, lg->x, lg->y);
     }
     
     // and draw the crosshairs on top if neccessary
@@ -1153,12 +1161,12 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
    
     lg->mouse_x = event->x;
     lg->mouse_y = event->y;
-
+    
     if (lg->handle_grabbed >= 0) {
         FreqHandle *handle = &lg->freq_handles[lg->handle_grabbed];
 
-        float new_x_value = float(event->x - ox) / float(sx);
-        float new_y_value = float(event->y - oy) / float(sy);
+        float new_x_value = float(lg->mouse_x - ox) / float(sx);
+        float new_y_value = float(lg->mouse_y - oy) / float(sy);
 
         if (new_x_value < handle->left_bound) {
             new_x_value = handle->left_bound;
@@ -1187,7 +1195,7 @@ calf_line_graph_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         gdk_event_request_motions(event);
     }
 
-    int handle_hovered = calf_line_graph_get_handle_at(lg, event->x, event->y);
+    int handle_hovered = calf_line_graph_get_handle_at(lg, lg->mouse_x, lg->mouse_y);
     if (handle_hovered != lg->handle_hovered) {
         if (lg->handle_grabbed >= 0 || 
             handle_hovered != -1) {
@@ -1406,7 +1414,13 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
     widget_class->scroll_event = calf_line_graph_scroll;
     widget_class->enter_notify_event = calf_line_graph_enter;
     widget_class->leave_notify_event = calf_line_graph_leave;
-
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("border-radius", "Border Radius", "Generate round edges",
+        0, 24, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
+        -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+        
     g_signal_new("freqhandle-changed",
          G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST,
          0, NULL, NULL,
@@ -1433,6 +1447,8 @@ calf_line_graph_init (CalfLineGraph *lg)
     
     widget->requisition.width  = 40;
     widget->requisition.height = 40;
+    lg->pad_x                = widget->style->xthickness;
+    lg->pad_y                = widget->style->ythickness;
     lg->force_cache          = true;
     lg->force_redraw         = false;
     lg->zoom                 = 1;
@@ -1478,6 +1494,9 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->moving_surface[1]  = NULL;
     lg->handles_surface    = NULL;
     lg->realtime_surface   = NULL;
+    
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(widget), FALSE);
+    //gtk_widget_set_has_window(widget, FALSE);
 }
 
 GtkWidget *
@@ -1506,16 +1525,17 @@ calf_line_graph_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)(intptr_t)calf_line_graph_class_init) >> 16, i);
+            const char *name = "CalfLineGraph";
+            //char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)(intptr_t)calf_line_graph_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                free(name);
+                //free(name);
                 continue;
             }
-            type = g_type_register_static( GTK_TYPE_DRAWING_AREA,
+            type = g_type_register_static( GTK_TYPE_EVENT_BOX,
                                            name,
                                            type_info_copy,
                                            (GTypeFlags)0);
-            free(name);
+            //free(name);
             break;
         }
     }

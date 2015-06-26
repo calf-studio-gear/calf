@@ -39,6 +39,7 @@ gtk_main_window::gtk_main_window()
     notifier = NULL;
     is_closed = true;
     progress_window = NULL;
+    images = image_factory();
 }
 
 static const char *ui_xml = 
@@ -107,22 +108,23 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     
     // styles selector
     GtkCellRenderer *cell;
+    GtkListStore *styles = main->get_styles();
     GtkComboBox *cb = GTK_COMBO_BOX(gtk_builder_get_object(prefs_builder, "rcstyles"));
-    gtk_combo_box_set_model(cb, GTK_TREE_MODEL(main->styles));
+    gtk_combo_box_set_model(cb, GTK_TREE_MODEL(styles));
     cell = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cb), cell, TRUE);
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cb), cell, "text", 0, NULL);
     GtkTreeIter iter;
-    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(main->styles), &iter);
-    GValue title = {0,};
+    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(styles), &iter);
     while (valid) {
-        gtk_tree_model_get_value(GTK_TREE_MODEL(main->styles), &iter, 0, &title);
-        if (main->get_config()->style.compare(g_value_get_string(&title)) == 0) {
+        GValue path = {0,};
+        gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path);
+        if (main->get_config()->style.compare(g_value_get_string(&path)) == 0) {
             gtk_combo_box_set_active_iter(cb, &iter);
             break;
         }
-        valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(main->styles), &iter);
-        g_value_unset(&title);
+        valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(styles), &iter);
+        g_value_unset(&path);
     }
     
     GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
@@ -137,17 +139,15 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     int response = gtk_dialog_run(GTK_DIALOG(preferences_dlg));
     if (response == GTK_RESPONSE_OK)
     {
-        GValue title_ = {0,};
-        //GValue path_ = {0,};
+        GValue path_ = {0,};
         GtkTreeIter iter;
         gtk_combo_box_get_active_iter(cb, &iter);
-        gtk_tree_model_get_value(GTK_TREE_MODEL(main->styles), &iter, 0, &title_);
-        //gtk_tree_model_get_value(GTK_TREE_MODEL(main->styles), &iter, 1, &path_);
+        gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path_);
         main->get_config()->rack_ears = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")));
         main->get_config()->rack_float = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")));
         main->get_config()->float_size = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")));
         main->get_config()->vu_meters = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-vu-meters")));
-        main->get_config()->style = g_value_get_string(&title_);
+        main->get_config()->style = g_value_get_string(&path_);
         main->get_config()->save(main->get_config_db());
         //main->load_style(g_value_get_string(&path_));
     }
@@ -313,15 +313,15 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
 //    gtk_table_resize(GTK_TABLE(strips_table), row + 4, cols);
 //    printf("%03d %03d", row, cols);
     // images for left side
-    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_nw.png");
-    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_sw.png");
-    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_w.png");
+    GtkWidget *nwImg     = gtk_image_new_from_pixbuf(images.get("side_d_nw"));
+    GtkWidget *swImg     = gtk_image_new_from_pixbuf(images.get("side_d_sw"));
+    GtkWidget *wImg      = gtk_image_new_from_pixbuf(images.get("side_d_w"));
     gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
     
     // images for right side
-    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_ne.png");
-    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_d_se.png");
-    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_d_e.png");
+    GtkWidget *neImg     = gtk_image_new_from_pixbuf(images.get("side_d_ne"));
+    GtkWidget *seImg     = gtk_image_new_from_pixbuf(images.get("side_d_se"));
+    GtkWidget *eImg      = gtk_image_new_from_pixbuf(images.get("side_d_e"));
     gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
     
     // pack left box
@@ -349,7 +349,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     
     
     // top light
-    GtkWidget *topImg     = gtk_image_new_from_file(PKGLIBDIR "/light_top.png");
+    GtkWidget *topImg     = gtk_image_new_from_pixbuf(images.get("light_top"));
     gtk_widget_set_size_request(GTK_WIDGET(topImg), 1, 1);
     gtk_table_attach(GTK_TABLE(strip->strip_table), topImg, 1, 5, row, row + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
     gtk_widget_show(topImg);
@@ -484,7 +484,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     // other stuff bottom right
     GtkWidget *paramBox = gtk_hbox_new(FALSE, 0);
     
-    GtkWidget *logoImg     = gtk_image_new_from_file(PKGLIBDIR "/logo_button.png");
+    GtkWidget *logoImg     = gtk_image_new_from_pixbuf(images.get("logo_button"));
     gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(logoImg), TRUE, TRUE, 0);
     
     gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
@@ -667,6 +667,9 @@ void gtk_main_window::create()
     gtk_window_set_icon_name(toplevel, "calf");
     gtk_window_set_role(toplevel, "calf_rack");
     
+    
+    load_style((PKGLIBDIR "styles/" + get_config()->style).c_str());
+    
     is_closed = false;
     gtk_window_set_resizable(toplevel, false);
     
@@ -720,9 +723,6 @@ void gtk_main_window::create()
     notifier = get_config_db()->add_listener(this);
     on_config_change();
     g_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
-    
-    styles = get_styles();
-    load_style(get_style_path(styles, get_config()->style).c_str());
 }
 
 void gtk_main_window::on_config_change()
@@ -929,41 +929,26 @@ void gtk_main_window::show_error(const std::string &text)
 
 GtkListStore *gtk_main_window::get_styles()
 {
-    std::vector <calf_utils::direntry> list = calf_utils::list_directory(PKGLIBDIR);
+    std::vector <calf_utils::direntry> list = calf_utils::list_directory(PKGLIBDIR"styles");
     GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
     for (std::vector<calf_utils::direntry>::iterator i = list.begin(); i != list.end(); i++) {
-        if (i->name.substr(i->name.length() - 3).compare(".rc") == 0) {
-            ifstream infile(i->full_path.c_str());
-            if (infile.good()) {
-                string line;
-                getline(infile, line);
-                i->name = line.substr(1);
-            }
-            gtk_list_store_insert_with_values(store, NULL, -1,
-                                      0, i->name.c_str(),
-                                      1, i->full_path.c_str(),
-                                      -1);
+        string title = i->name;
+        std::string rcf = i->full_path + "/gtk.rc";
+        ifstream infile(rcf.c_str());
+        if (infile.good()) {
+            string line;
+            getline(infile, line);
+            title = line.substr(1);
         }
+        gtk_list_store_insert_with_values(store, NULL, -1,
+                                  0, title.c_str(),
+                                  1, i->name.c_str(),
+                                  -1);
     }
     return store;
 }
-std::string gtk_main_window::get_style_path(GtkListStore *store, std::string title) {
-    GtkTreeIter iter;
-    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
-    GValue path_ = {0,};
-    GValue title_ = {0,};
-    while (valid) {
-        gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 1, &path_);
-        gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 0, &title_);
-        if (title.compare(g_value_get_string(&title_)) == 0)
-            return g_value_get_string(&path_);
-        valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter);
-        g_value_unset(&path_);
-        g_value_unset(&title_);
-    }
-    return NULL;
-}
-void gtk_main_window::load_style(const gchar *fname) {
-    gtk_rc_parse(fname);
+void gtk_main_window::load_style(std::string path) {
+    gtk_rc_parse((path + "/gtk.rc").c_str());
     gtk_rc_reset_styles(gtk_settings_get_for_screen(gdk_screen_get_default()));
+    images.set_path(path);
 }

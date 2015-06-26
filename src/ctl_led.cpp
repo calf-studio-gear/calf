@@ -41,50 +41,32 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
     GtkStyle *style = gtk_widget_get_style(widget);
     
-    int ox = 4;
-    int oy = 3;
-    int sx = widget->allocation.width - ox * 2;
-    int sy = widget->allocation.height - oy * 2;
-    int xc = widget->allocation.width / 2;
-    int yc = widget->allocation.height / 2;
+    int width = widget->allocation.width;
+    int height = widget->allocation.height;
+    int x  = widget->allocation.x;
+    int y  = widget->allocation.y;
+    int ox = widget->style->xthickness;
+    int oy = widget->style->ythickness;
+    int sx = width - ox * 2;
+    int sy = height - oy * 2;
+    int xc = x + width / 2;
+    int yc = y + height / 2;
     int pad;
+    float r, g, b;
     
     if( self->cache_surface == NULL ) {
         // looks like its either first call or the widget has been resized.
         // create the cache_surface.
-        cairo_surface_t *window_surface = cairo_get_target( c );
-        self->cache_surface = cairo_surface_create_similar( window_surface, 
-                                  CAIRO_CONTENT_COLOR,
-                                  widget->allocation.width,
-                                  widget->allocation.height );
+        self->cache_surface = cairo_image_surface_create( CAIRO_FORMAT_ARGB32, width, height );
         cairo_t *cache_cr = cairo_create( self->cache_surface );
         
-//        if(widget->style->bg_pixmap[0] == NULL) {
-            gdk_cairo_set_source_color(cache_cr,&style->bg[GTK_STATE_NORMAL]);
-//        } else {
-//            gdk_cairo_set_source_pixbuf(cache_cr, GDK_PIXBUF(&style->bg_pixmap[0]), widget->allocation.x, widget->allocation.y + 20);
-//        }
-        cairo_paint(cache_cr);
-        
-        // outer (black)
-        pad = 0;
-        cairo_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-        cairo_set_source_rgb(cache_cr, 0, 0, 0);
-        cairo_set_operator(cache_cr,CAIRO_OPERATOR_CLEAR);
-        cairo_fill(cache_cr);
-        cairo_set_operator(cache_cr,CAIRO_OPERATOR_OVER);
-        
-        // inner (bevel)
-        pad = 0;
-        create_rectangle(cache_cr, pad, pad, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2, 0);
-        cairo_pattern_t *pat2 = cairo_pattern_create_linear (0, 0, 0, sy + oy * 2 - pad * 2);
-        float r, g, b;
+        float radius, bevel;
         get_bg_color(widget, NULL, &r, &g, &b);
-        cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
-        cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
-        cairo_set_source (cache_cr, pat2);
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        create_rectangle(cache_cr, 0, 0, width, height, radius);
+        cairo_set_source_rgb(cache_cr, r, g, b);
         cairo_fill(cache_cr);
-        
+        draw_bevel(cache_cr, 0, 0, width, height, radius, bevel);
         cairo_rectangle(cache_cr, ox, oy, sx, sy);
         cairo_set_source_rgb (cache_cr, 0, 0, 0);
         cairo_fill(cache_cr);
@@ -92,11 +74,13 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_destroy( cache_cr );
     }
     
-    cairo_set_source_surface( c, self->cache_surface, 0,0 );
+    cairo_set_source_surface( c, self->cache_surface, x, y );
     cairo_paint( c );
     
+    ox += x;
+    oy += y;
     
-    cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, xc > yc ? xc : yc);
+    cairo_pattern_t *pt = cairo_pattern_create_radial(xc, yc, 0, xc, yc, sx > sy ? sx/2 : sy/2);
     
     float value = self->led_value;
     
@@ -167,7 +151,8 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(c, ox + 1, oy + 1, sx - 2, sy - 2);
     cairo_set_source (c, pt);
     cairo_fill_preserve(c);
-    pt = cairo_pattern_create_linear (ox, oy, ox, ox + sy);
+    
+    pt = cairo_pattern_create_linear (ox, oy, ox, oy + sy);
     cairo_pattern_add_color_stop_rgba (pt, 0,     1, 1, 1, 0.4);
     cairo_pattern_add_color_stop_rgba (pt, 0.4,   1, 1, 1, 0.1);
     cairo_pattern_add_color_stop_rgba (pt, 0.401, 0, 0, 0, 0.0);
@@ -179,26 +164,6 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_destroy(c);
 
     return TRUE;
-}
-
-static void
-calf_led_realize(GtkWidget *widget)
-{
-    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
-
-    GdkWindowAttr attributes;
-    attributes.event_mask = GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
-    attributes.x = widget->allocation.x;
-    attributes.y = widget->allocation.y;
-    attributes.width = widget->allocation.width;
-    attributes.height = widget->allocation.height;
-    attributes.wclass = GDK_INPUT_OUTPUT;
-    attributes.window_type = GDK_WINDOW_CHILD;
-
-    widget->window = gdk_window_new(gtk_widget_get_parent_window (widget), &attributes, GDK_WA_X | GDK_WA_Y);
-
-    gdk_window_set_user_data(widget->window, widget);
-    widget->style = gtk_style_attach(widget->style, widget->window);
 }
 
 static void
@@ -238,11 +203,16 @@ static void
 calf_led_class_init (CalfLedClass *klass)
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-    widget_class->realize = calf_led_realize;
     widget_class->expose_event = calf_led_expose;
     widget_class->size_request = calf_led_size_request;
     widget_class->size_allocate = calf_led_size_allocate;
     widget_class->button_press_event = calf_led_button_press;
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("border-radius", "Border Radius", "Generate round edges",
+        0, 24, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
+        -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
 }
 
 static void
@@ -255,6 +225,7 @@ calf_led_init (CalfLed *self)
     self->cache_surface = NULL;
     widget->requisition.width = self->size ? 24 : 19;
     widget->requisition.height = self->size ? 18 : 14;
+    gtk_widget_set_has_window(widget, FALSE);
 }
 
 void calf_led_set_value(CalfLed *led, float value)
@@ -295,17 +266,18 @@ calf_led_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfLed%u%d", 
-                ((unsigned int)(intptr_t)calf_led_class_init) >> 16, i);
+            const char *name = "CalfLed";
+            //char *name = g_strdup_printf("CalfLed%u%d", 
+                //((unsigned int)(intptr_t)calf_led_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                free(name);
+                //free(name);
                 continue;
             }
-            type = g_type_register_static(GTK_TYPE_WIDGET,
+            type = g_type_register_static(GTK_TYPE_DRAWING_AREA,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            free(name);
+            //free(name);
             break;
         }
     }

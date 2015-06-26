@@ -77,7 +77,7 @@ struct CalfLineGraph
 {
     static const int debug = 0; // 0 - 3
     
-    GtkDrawingArea parent;
+    GtkEventBox parent;
     const calf_plugins::line_graph_iface *source;
     int source_id;
     bool force_cache;
@@ -88,8 +88,9 @@ struct CalfLineGraph
     int mode, movesurf;
     int generation;
     unsigned int layers;
-    static const int pad_x = 0, pad_y = 0;
+    int pad_x, pad_y;
     int size_x, size_y;
+    int x, y;
     float zoom, offset;
     int param_zoom, param_offset;
     
@@ -121,7 +122,7 @@ struct CalfLineGraph
 
 struct CalfLineGraphClass
 {
-    GtkDrawingAreaClass parent_class;
+    GtkEventBoxClass parent_class;
 };
 
 extern GtkWidget *calf_line_graph_new();

@@ -30,7 +30,7 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     
-    <hbox>
+    <hbox spacing="8">
         <frame label="LFO 1">
             <table rows="9" cols="4" spacing-x="0" spacing-y="0">
                 

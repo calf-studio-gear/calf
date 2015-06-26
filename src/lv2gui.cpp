@@ -305,8 +305,6 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     if (!proxy)
         return NULL;
     
-    gtk_rc_parse(PKGLIBDIR "calf.rc");
-    
     plugin_gui_window *window = new plugin_gui_window(proxy, NULL);
     plugin_gui *gui = new plugin_gui(window);
     const char *xml = proxy->plugin_metadata->get_gui_xml();
@@ -319,6 +317,8 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
         proxy->widget_destroyed_signal = g_signal_connect(G_OBJECT(gui->optwidget), "destroy", G_CALLBACK(on_gui_widget_destroy), (gpointer)gui);
     }
+    std::string rcf = PKGLIBDIR "/styles/" + proxy->get_config()->style + "/gtk.rc";
+    gtk_rc_parse(rcf.c_str());
     gui->show_rack_ears(proxy->get_config()->rack_ears);
     
     *(GtkWidget **)(widget) = gui->optwidget;

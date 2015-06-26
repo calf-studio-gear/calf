@@ -236,7 +236,6 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
     notifier = NULL;
     main = _main;
     assert(environment);
-
 }
 
 void plugin_gui_window::on_window_destroyed(GtkWidget *window, gpointer data)

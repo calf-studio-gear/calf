@@ -313,9 +313,14 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
         for (int j = (int)props.min; j <= (int)props.max; j++)
             gtk_list_store_insert_with_values (lstore, NULL, j - (int)props.min, 0, props.choices[j - (int)props.min], 1, calf_utils::i2s(j).c_str(), -1);
     }
+    
+    // set pixbuf
+    calf_combobox_set_arrow(CALF_COMBOBOX(widget),
+        gui->window->environment->get_image_factory()->get("combo_arrow"));
+    
     gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
     g_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Combobox");
+    gtk_widget_set_name(widget, "Calf-Combobox");
     return widget;
 }
 
@@ -457,6 +462,13 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
     int size = get_int("size", 2);
+    
+    // set pixbuf
+    image_factory *images = gui->window->environment->get_image_factory();
+    char iname[64];
+    sprintf(iname, "slider_%d_horiz", size);
+    calf_fader_set_pixbuf(CALF_FADER(widget), images->get(iname));
+    
     char *name = g_strdup_printf("Calf-HScale%i", size);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
     gtk_widget_set_size_request (widget, size * 100, -1);
@@ -464,11 +476,12 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
 
     if (attribs.count("width"))
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);
-    if (attribs.count("position"))
-    {
+    if (attribs.count("position")) {
         string v = attribs["position"];
         if (v == "top") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_TOP);
         if (v == "bottom") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_BOTTOM);
+        if (v == "left") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_LEFT);
+        if (v == "right") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_RIGHT);
     }
     return widget;
 }
@@ -521,6 +534,13 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
         gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
     }
     int size = get_int("size", 2);
+    
+    // set pixbuf
+    image_factory *images = gui->window->environment->get_image_factory();
+    char iname[64];
+    sprintf(iname, "slider_%d_vert", size);
+    calf_fader_set_pixbuf(CALF_FADER(widget), images->get(iname));
+    
     char *name = g_strdup_printf("Calf-VScale%i", size);
     gtk_widget_set_size_request (widget, -1, size * 100);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
@@ -858,12 +878,20 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     const parameter_properties &props = get_props();
     widget = calf_knob_new();
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
+    CalfKnob * knob = CALF_KNOB(widget);
+    
     float increment = props.get_increment();
     gtk_range_get_adjustment(GTK_RANGE(widget))->step_increment = increment;
-    CalfKnob * knob = CALF_KNOB(widget);
+    
     knob->default_value = props.to_01(props.def_value);
     knob->type = get_int("type");
-    knob->size = min(5, max(1, get_int("size", 2)));
+    calf_knob_set_size(knob, get_int("size", 2));
+    
+    // set pixbuf
+    char imgname[16];
+    sprintf(imgname, "knob_%d", get_int("size", 2));
+    calf_knob_set_pixbuf(knob, gui->window->environment->get_image_factory()->get(imgname));
     
     //char ticks[128];
     std::ostringstream ticks_;
@@ -884,7 +912,6 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
         t[i] = props.to_01(t[i]);
     knob->ticks = t;
     g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(knob_value_changed), (gpointer)this);
-    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     return widget;
 }
 
@@ -917,8 +944,18 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     widget  = calf_toggle_new ();
     CalfToggle * toggle = CALF_TOGGLE(widget);
     calf_toggle_set_size(toggle, get_int("size", 2));
-    if (attribs.count("icon") != 0)
-        calf_toggle_set_icon(toggle, attribs["icon"].c_str());
+    
+    // set pixbuf
+    image_factory *images = gui->window->environment->get_image_factory();
+    char imgname[64];
+    if (attribs.count("icon") != 0) {
+        sprintf(imgname, "toggle_%d_%s", get_int("size", 2), attribs["icon"].c_str());
+        if (!images->available(imgname))
+            sprintf(imgname, "toggle_%d", get_int("size", 2));
+    } else
+        sprintf(imgname, "toggle_%d", get_int("size", 2));
+    calf_toggle_set_pixbuf(toggle, images->get(imgname));
+    
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
     //gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
     return widget;
@@ -955,6 +992,11 @@ GtkWidget *tap_button_param_control::create(plugin_gui *_gui, int _param_no)
     value     = 0;
     timer     = 0;
     widget    = calf_tap_button_new ();
+    // set pixbuf
+    calf_tap_button_set_pixbufs(CALF_TAP_BUTTON(widget),
+        gui->window->environment->get_image_factory()->get("tap_inactive"),
+        gui->window->environment->get_image_factory()->get("tap_prelight"),
+        gui->window->environment->get_image_factory()->get("tap_active"));
     //CALF_TAP(widget)->size = get_int("size", 2);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (tap_button_pressed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "released", G_CALLBACK (tap_button_released), (gpointer)this);
@@ -1683,7 +1725,9 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
         page = gui->plugin->get_param_value(param_no);
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
-    gtk_widget_set_name(GTK_WIDGET(nb), "Calf-Notebook");
+    calf_notebook_set_pixbuf(CALF_NOTEBOOK(nb),
+        gui->window->environment->get_image_factory()->get("notebook_screw"));
+    gtk_widget_set_name(widget, "Calf-Notebook");
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     return nb;
 }

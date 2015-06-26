@@ -21,6 +21,7 @@
 
 #include <calf/gtk_session_env.h>
 #include <calf/gtk_main_win.h>
+#include <map>
 
 using namespace calf_plugins;
 

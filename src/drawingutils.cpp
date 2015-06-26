@@ -22,9 +22,10 @@
 #include "calf/drawingutils.h"
 #include <cstring> 
 #include <algorithm> 
+#include <math.h> 
 
 
-void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float brightness, int shadow, float lights, float dull) 
+void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float radius, float bevel, float brightness, int shadow, float lights, float dull) 
 {
     float br = brightness * 0.5 + 0.5;
     
@@ -33,36 +34,15 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
         c = gdk_cairo_create(GDK_DRAWABLE(window));
     }
     
-    // outer frame (black)
-    int pad = 0;
-
-    //cairo_rectangle(
-        //c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2);
-    //cairo_set_source_rgb(c, 0, 0, 0);
-    //cairo_fill(c);
-
-    // black light effect
     float r, g, b;
     get_bg_color(widget, NULL, &r, &g, &b);
     
-    pad = 0;
-    create_rectangle(
-        c, pad + x, pad + y, sx + ox * 2 - pad * 2, sy + oy * 2 - pad * 2, 0);
-    cairo_pattern_t *pat2 = cairo_pattern_create_linear (
-        x, y, x, y + sy + oy * 2 - pad * 2);
-    cairo_pattern_add_color_stop_rgba (pat2, 0, r*1.11, g*1.11, b*1.11, 1);
-    cairo_pattern_add_color_stop_rgba (pat2, 1, r*0.92, g*0.92, b*0.92, 1);
-    //cairo_pattern_add_color_stop_rgba (pat2, 0.33, 0.05, 0.05, 0.05, 1);
-    //cairo_pattern_add_color_stop_rgba (pat2, 0.5, 0, 0, 0, 1);
-    cairo_set_source (c, pat2);
+    create_rectangle(c, x, y, sx + ox * 2, sy + oy * 2, radius);
+    cairo_set_source_rgb (c, r, g, b);
     cairo_fill(c);
-    cairo_pattern_destroy(pat2);
+    draw_bevel(c, x, y, sx + ox * 2, sy + oy * 2, radius, bevel);
 
-    //cairo_rectangle(c, x + ox - 1, y + oy - 1, sx + 2, sy + 2);
-    //cairo_set_source_rgb (c, 0, 0, 0);
-    //cairo_fill(c);
-
-    // inner yellowish screen
+    // inner screen
     get_base_color(widget, NULL, &r, &g, &b);
     cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
     cairo_pattern_add_color_stop_rgb(pt, 0.0, br * r * 0.75, br * g * 0.75, br * b * 0.75);
@@ -92,7 +72,7 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
         cairo_pattern_destroy(pt);
 
         // right shadow
-        pt = cairo_pattern_create_linear(x + ox + sx - (float)shadow * 0.7, y + oy, x + ox + sx, y + oy);
+        pt = cairo_pattern_create_linear(float(x + ox + sx) - (float)shadow * 0.7, y + oy, x + ox + sx, y + oy);
         cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
         cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0.3);
         cairo_set_source (c, pt);
@@ -102,25 +82,16 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
     }
 
     if(dull) {
-        // left dull
-        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + sx / 2, y + oy);
+        pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox + sx, y + oy);
         cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,dull);
-        cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,0);
-        cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox, y + oy, sx / 2, sy);
-        cairo_fill(c);
-        cairo_pattern_destroy(pt);
-
-        // right dull
-        pt = cairo_pattern_create_linear(x + ox + sx / 2, y + oy, x + ox + sx, y + oy);
-        cairo_pattern_add_color_stop_rgba(pt, 0.0, 0,0,0,0);
+        cairo_pattern_add_color_stop_rgba(pt, 0.5, 0,0,0,0);
         cairo_pattern_add_color_stop_rgba(pt, 1.0, 0,0,0,dull);
         cairo_set_source (c, pt);
-        cairo_rectangle(c, x + ox + sx / 2, y + oy, sx / 2, sy);
+        cairo_rectangle(c, x + ox, y + oy, sx, sy);
         cairo_fill(c);
         cairo_pattern_destroy(pt);
     }
-
+    
     if(lights > 0) {
         // light sources
         int div = 1;
@@ -146,9 +117,10 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
             cairo_pattern_destroy(pt);
         }
     }
+    cairo_new_path(c);
 }
 
-void draw_rect (GtkWidget * widget, const gchar * type, GtkStateType * state, gint x, gint y, gint width, gint height, gint rad, float bevel) {
+void draw_rect (GtkWidget * widget, const gchar * type, GtkStateType * state, gint x, gint y, gint width, gint height, float rad, float bevel) {
     cairo_t * cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     float r, g, b;
     get_color(widget, type, state, &r, &g, &b);
@@ -161,7 +133,7 @@ void draw_rect (GtkWidget * widget, const gchar * type, GtkStateType * state, gi
         
     cairo_destroy(cr);
 }
-void _draw_inset (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad, gint depth) {
+void _draw_inset (cairo_t * cr, gint x, gint y, gint width, gint height, float rad, gint depth) {
     cairo_pattern_t *pat = cairo_pattern_create_linear (x, y, x, y + height);
     cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.0, 0.0, 0.0, 0.33);
     cairo_pattern_add_color_stop_rgba(pat, 1.0, 1.0, 1.0, 1.0, 0.1);
@@ -169,12 +141,12 @@ void _draw_inset (cairo_t * cr, gint x, gint y, gint width, gint height, gint ra
     create_rectangle(cr, x-depth*0.5, y-depth, width+depth, height+2*depth, rad);
     cairo_fill(cr);
 }
-void draw_inset (GtkWidget * widget, gint x, gint y, gint width, gint height, gint rad, gint depth) {
+void draw_inset (GtkWidget * widget, gint x, gint y, gint width, gint height, float rad, gint depth) {
     cairo_t * cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     _draw_inset(cr, x, y, width, height, rad, depth);
     cairo_destroy(cr);
 }
-void _draw_glass (cairo_t *cr, gint x, gint y, gint width, gint height, gint rad) {
+void _draw_glass (cairo_t *cr, gint x, gint y, gint width, gint height, float rad) {
     cairo_pattern_t *pat = cairo_pattern_create_linear (x, y, x, y + 3);
     cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.0, 0.0, 0.0, 0.5);
     cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.0, 0.0, 0.0, 0.0);
@@ -182,7 +154,7 @@ void _draw_glass (cairo_t *cr, gint x, gint y, gint width, gint height, gint rad
     create_rectangle(cr, x, y, width, height, rad);
     cairo_fill(cr);
 }
-void draw_glass (GtkWidget * widget, gint x, gint y, gint width, gint height, gint rad) {
+void draw_glass (GtkWidget * widget, gint x, gint y, gint width, gint height, float rad) {
     cairo_t * cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     _draw_glass(cr, x, y, width, height, rad);
     cairo_destroy(cr);
@@ -232,23 +204,41 @@ void clip_context (GtkWidget * widget, cairo_t * cr, GdkRegion *region) {
     cairo_clip (cr);
 }
 
-void create_rectangle (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad) {
+void create_rectangle (cairo_t * cr, gint x, gint y, gint width, gint height, float rad) {
     if (rad == 0) {
         cairo_rectangle(cr, x, y, width, height);
         return;
     }
-    cairo_move_to(cr,x+rad,y);                      // Move to A
-    cairo_line_to(cr,x+width-rad,y);                    // Straight line to B
-    cairo_curve_to(cr,x+width,y,x+width,y,x+width,y+rad);       // Curve to C, Control points are both at Q
-    cairo_line_to(cr,x+width,y+height-rad);                  // Move to D
-    cairo_curve_to(cr,x+width,y+height,x+width,y+height,x+width-rad,y+height); // Curve to E
-    cairo_line_to(cr,x+rad,y+height);                    // Line to F
-    cairo_curve_to(cr,x,y+height,x,y+height,x,y+height-rad);       // Curve to G
-    cairo_line_to(cr,x,y+rad);                      // Line to H
-    cairo_curve_to(cr,x,y,x,y,x+rad,y);             // Curve to A
+    //cairo_move_to(cr,x+rad,y);                      // Move to A
+    //cairo_line_to(cr,x+width-rad,y);                    // Straight line to B
+    //cairo_curve_to(cr,x+width,y,x+width,y,x+width,y+rad);       // Curve to C, Control points are both at Q
+    //cairo_line_to(cr,x+width,y+height-rad);                  // Move to D
+    //cairo_curve_to(cr,x+width,y+height,x+width,y+height,x+width-rad,y+height); // Curve to E
+    //cairo_line_to(cr,x+rad,y+height);                    // Line to F
+    //cairo_curve_to(cr,x,y+height,x,y+height,x,y+height-rad);       // Curve to G
+    //cairo_line_to(cr,x,y+rad);                      // Line to H
+    //cairo_curve_to(cr,x,y,x,y,x+rad,y);             // Curve to A
+    // top left
+    cairo_move_to(cr, x, y + rad);
+    cairo_arc (cr, x + rad, y + rad, rad, 1 * M_PI, 1.5 * M_PI);
+    // top
+    cairo_line_to(cr, x + width - rad, y);
+    // top right
+    cairo_arc (cr, x + width - rad, y + rad, rad, 1.5 * M_PI, 2 * M_PI);
+    // right
+    cairo_line_to(cr, x + width, y + height - rad);
+    // bottom right
+    cairo_arc (cr, x + width - rad, y + height - rad, rad, 0 * M_PI, 0.5 * M_PI);
+    // bottom
+    cairo_line_to(cr, x + rad, y + height);
+    // bottom left
+    cairo_arc (cr, x + rad, y + height - rad, rad, 0.5 * M_PI, 1 * M_PI);
+    // left
+    cairo_line_to(cr, x, y + rad);
+        
 }
 
-void draw_bevel (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad, float bevel) {
+void draw_bevel (cairo_t * cr, gint x, gint y, gint width, gint height, float rad, float bevel) {
     if (bevel == 0)
         return;
     cairo_save(cr);
@@ -258,6 +248,7 @@ void draw_bevel (cairo_t * cr, gint x, gint y, gint width, gint height, gint rad
         pat = cairo_pattern_create_linear (x, y, x, y + height);
     else
         pat = cairo_pattern_create_linear (x, y + height, x, y);
+    if (bevel < 0) bevel *= -1;
     cairo_pattern_add_color_stop_rgba(pat, 0.0, 1.0, 1.0, 1.0, bevel / 2);
     cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.0, 0.0, 0.0, bevel);
     cairo_set_source(cr, pat);

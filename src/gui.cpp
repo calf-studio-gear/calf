@@ -223,22 +223,17 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     GtkWidget *eventbox  = gtk_event_box_new();
     GtkWidget *decoTable = gtk_table_new(3, 1, FALSE);
     
-    // decorations
-    // overall background
-    //GtkWidget *bgImg     = gtk_image_new_from_file(PKGLIBDIR "/background.png");
-    //gtk_widget_set_size_request(GTK_WIDGET(bgImg), 1, 1);
-
     // images for left side
-    GtkWidget *nwImg     = gtk_image_new_from_file(PKGLIBDIR "/side_nw.png");
-    GtkWidget *swImg     = gtk_image_new_from_file(PKGLIBDIR "/side_sw.png");
-    GtkWidget *wImg      = gtk_image_new_from_file(PKGLIBDIR "/side_w.png");
+    GtkWidget *nwImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_nw"));
+    GtkWidget *swImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_sw"));
+    GtkWidget *wImg      = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_w"));
     gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
     
     // images for right side
-    GtkWidget *neImg     = gtk_image_new_from_file(PKGLIBDIR "/side_ne.png");
-    GtkWidget *seImg     = gtk_image_new_from_file(PKGLIBDIR "/side_se.png");
-    GtkWidget *eImg      = gtk_image_new_from_file(PKGLIBDIR "/side_e.png");
-    GtkWidget *logoImg   = gtk_image_new_from_file(PKGLIBDIR "/side_e_logo.png");
+    GtkWidget *neImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_ne"));
+    GtkWidget *seImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_se"));
+    GtkWidget *eImg      = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_e"));
+    GtkWidget *logoImg   = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_e_logo"));
     gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
     
     // pack left box
@@ -261,12 +256,6 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     gtk_table_attach(GTK_TABLE(decoTable), top_container->widget, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
     gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
-    
-    // create window with viewport
-//    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-//    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-//    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-//    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
     
     return GTK_WIDGET(eventbox);
 }
@@ -567,6 +556,8 @@ gui_environment::gui_environment()
     
     config_db = new calf_utils::gkeyfile_config_db(keyfile, filename.c_str(), "gui");
     gui_config.load(config_db);
+    images = image_factory();
+    images.set_path(PKGLIBDIR "styles/" + get_config()->style);
 }
 
 gui_environment::~gui_environment()
@@ -574,4 +565,100 @@ gui_environment::~gui_environment()
     delete config_db;
     if (keyfile)
         g_key_file_free(keyfile);
+}
+
+
+/***************************** Image Factory **************************************/
+GdkPixbuf *image_factory::create_image (string image) {
+    string file = path + "/" + image + ".png";
+    if (access(file.c_str(), F_OK))
+        return NULL;
+    return gdk_pixbuf_new_from_file(file.c_str(), NULL);
+}
+void image_factory::recreate_images () {
+    for (map<string, GdkPixbuf*>::iterator i_ = i.begin(); i_ != i.end(); i_++) {
+        if (i[i_->first])
+            i[i_->first] = create_image(i_->first);
+    }
+}
+void image_factory::set_path (string p) {
+    path = p;
+    recreate_images();
+}
+GdkPixbuf *image_factory::get (string image) {
+    if (!i.count(image))
+        return NULL;
+    if (!i.at(image))
+        i[image] = create_image(image);
+    return i[image];
+}
+gboolean image_factory::available (string image) {
+    string file = path + "/" + image + ".png";
+    if (access(file.c_str(), F_OK))
+        return false;
+    return true;
+}
+image_factory::image_factory (string p) {
+    set_path(p);
+    
+    i["combo_arrow"]              = NULL;
+    i["light_top"]                = NULL;
+    i["light_bottom"]             = NULL;
+    i["notebook_screw"]           = NULL;
+    i["logo_button"]              = NULL;
+    
+    i["knob_1"]                    = NULL;
+    i["knob_2"]                    = NULL;
+    i["knob_3"]                    = NULL;
+    i["knob_4"]                    = NULL;
+    i["knob_5"]                    = NULL;
+    
+    i["side_d_ne"]                = NULL;
+    i["side_d_nw"]                = NULL;
+    i["side_d_se"]                = NULL;
+    i["side_d_sw"]                = NULL;
+    i["side_d_e"]                 = NULL;
+    i["side_d_w"]                 = NULL;
+    
+    i["side_ne"]                  = NULL;
+    i["side_nw"]                  = NULL;
+    i["side_se"]                  = NULL;
+    i["side_sw"]                  = NULL;
+    i["side_e"]                   = NULL;
+    i["side_w"]                   = NULL;
+    i["side_e_logo"]              = NULL;
+    
+    i["slider_1_horiz"]            = NULL;
+    i["slider_1_vert"]             = NULL;
+    i["slider_2_horiz"]            = NULL;
+    i["slider_2_vert"]             = NULL;
+    
+    i["tap_active"]               = NULL;
+    i["tap_inactive"]             = NULL;
+    i["tap_prelight"]             = NULL;
+    
+    i["toggle_0"]                 = NULL;
+    i["toggle_1"]                 = NULL;
+    i["toggle_2"]                 = NULL;
+    
+    i["toggle_2_block"]           = NULL;
+    i["toggle_2_bypass"]          = NULL;
+    i["toggle_2_bypass2"]         = NULL;
+    i["toggle_2_fast"]            = NULL;
+    i["toggle_2_listen"]          = NULL;
+    i["toggle_2_logarithmic"]     = NULL;
+    i["toggle_2_magnetical"]      = NULL;
+    i["toggle_2_mono"]            = NULL;
+    i["toggle_2_muffle"]          = NULL;
+    i["toggle_2_mute"]            = NULL;
+    i["toggle_2_phase"]           = NULL;
+    i["toggle_2_sc_comp"]         = NULL;
+    i["toggle_2_sc_filter"]       = NULL;
+    i["toggle_2_softclip"]        = NULL;
+    i["toggle_2_solo"]            = NULL;
+    i["toggle_2_sync"]            = NULL;
+    i["toggle_2_void"]            = NULL;
+}
+image_factory::~image_factory() {
+    
 }

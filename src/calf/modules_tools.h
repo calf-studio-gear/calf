@@ -143,5 +143,23 @@ protected:
     int plength;
 };
 
+/**********************************************************************
+ * WIDGET TEST
+**********************************************************************/
+
+class widgets_audio_module:
+    public audio_module<widgets_metadata>
+{
+    uint32_t srate;
+    vumeters meters;
+    dsp::simple_lfo lfo_sin, lfo_sqr, lfo_tri;
+public:
+    widgets_audio_module();
+    ~widgets_audio_module();
+    void params_changed();
+    void set_sample_rate(uint32_t sr);
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
 };
 #endif

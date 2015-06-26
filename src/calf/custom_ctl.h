@@ -37,6 +37,7 @@
 #include <calf/giface.h>
 #include <calf/drawingutils.h>
 #include <calf/ctl_vumeter.h>
+#include <calf/gui.h>
 
 G_BEGIN_DECLS
 
@@ -121,7 +122,6 @@ struct CalfToggle
     int size;
     int width;
     int height;
-    const char *icon;
     GdkPixbuf *toggle_image;
 };
 
@@ -133,7 +133,7 @@ struct CalfToggleClass
 extern GtkWidget *calf_toggle_new();
 extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
 extern void calf_toggle_set_size(CalfToggle *self, int size);
-extern void calf_toggle_set_icon(CalfToggle *self, const gchar *icon);
+extern void calf_toggle_set_pixbuf(CalfToggle *self, GdkPixbuf *pixbuf);
 extern GType calf_toggle_get_type();
 
 
@@ -172,6 +172,7 @@ extern GType calf_frame_get_type();
 struct CalfCombobox
 {
     GtkComboBox parent;
+    GdkPixbuf *arrow;
 };
 
 struct CalfComboboxClass
@@ -179,6 +180,7 @@ struct CalfComboboxClass
     GtkComboBoxClass parent_class;
 };
 
+extern void calf_combobox_set_arrow(CalfCombobox *self, GdkPixbuf *arrow);
 extern GtkWidget *calf_combobox_new();
 extern GType calf_combobox_get_type();
 
@@ -195,16 +197,17 @@ extern GType calf_combobox_get_type();
 struct CalfNotebook
 {
     GtkNotebook parent;
+    GdkPixbuf *screw;
 };
 
 struct CalfNotebookClass
 {
     GtkNotebookClass parent_class;
-    GdkPixbuf *screw;
 };
 
 extern GtkWidget *calf_notebook_new();
 extern GType calf_notebook_get_type();
+extern void calf_notebook_set_pixbuf(CalfNotebook *self, GdkPixbuf *image);
 
 
 /// FADER //////////////////////////////////////////////////////////////
@@ -218,20 +221,19 @@ extern GType calf_notebook_get_type();
 
 struct CalfFaderLayout
 {
-    int x, y, w, h;
-    int tx, ty, tw, th, tc;
-    int scw, sch, scx1, scy1, scx2, scy2;
-    int sx, sy, sw, sh;
-    int slx, sly, slw, slh;
+    int x, y, w, h, iw, ih;
+    int t1w, t1h, t1x1, t1y1, t1x2, t1y2;
+    int t2w, t2h, t2x1, t2y1, t2x2, t2y2;
+    int s1w, s1h, s1x1, s1y1, s1x2, s1y2;
+    int s2w, s2h, s2x1, s2y1, s2x2, s2y2;;
+    int sw, sh, sx1, sy1, sx2, sy2, sw2, sh2;
 };
 
 struct CalfFader
 {
     GtkScale parent;
     int horizontal, size;
-    GdkPixbuf *screw;
-    GdkPixbuf *slider;
-    GdkPixbuf *sliderpre;
+    GdkPixbuf *image;
     CalfFaderLayout layout;
     bool hover;
 };
@@ -241,11 +243,10 @@ struct CalfFaderClass
     GtkScaleClass parent_class;
 };
 
-
-
 extern GtkWidget *calf_fader_new(const int horiz, const int size, const double min, const double max, const double step);
 extern GType calf_fader_get_type();
-
+extern void calf_fader_set_pixbuf(CalfFader *self, GdkPixbuf *image);
+extern void calf_fader_set_layout(GtkWidget *widget);
 
 /// BUTTON /////////////////////////////////////////////////////////////
 
@@ -339,7 +340,7 @@ struct CalfTapButtonClass
 
 extern GtkWidget *calf_tap_button_new();
 extern GType calf_tap_button_get_type();
-
+extern void calf_tap_button_set_pixbufs (CalfTapButton *self, GdkPixbuf *image1, GdkPixbuf *image2, GdkPixbuf *image3);
 
 
 G_END_DECLS

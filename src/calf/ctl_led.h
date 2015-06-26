@@ -35,7 +35,7 @@ G_BEGIN_DECLS
 /// Instance object for CalfLed
 struct CalfLed
 {
-    GtkWidget parent;
+    GtkDrawingArea parent;
     cairo_surface_t *cache_surface;
     int led_mode;
     int size;
@@ -45,7 +45,7 @@ struct CalfLed
 /// Class object for CalfLed
 struct CalfLedClass
 {
-    GtkWidgetClass parent_class;
+    GtkDrawingAreaClass parent_class;
 };
 
 /// Create new CalfLed

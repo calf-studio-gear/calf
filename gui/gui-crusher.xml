@@ -1,4 +1,4 @@
-<vbox spacing="10">
+<vbox spacing="8">
     <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
         <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />

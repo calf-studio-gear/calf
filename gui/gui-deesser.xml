@@ -1,4 +1,4 @@
-<table rows="2" cols="2">
+<table rows="2" cols="2" spacing-x="0" spacing-y="0">
     <table cols="4" rows="4" attach-x="0" attach-y="0" expand-x="0" fill-x="1" expand-y="0" fill-y="0">
         <label param="bypass" attach-x="0" attach-y="0" expand-x="0" fill-x="0" />
         <toggle param="bypass" icon="bypass" attach-x="0" attach-y="1" attach-h="2" expand-x="0" fill-x="0" />

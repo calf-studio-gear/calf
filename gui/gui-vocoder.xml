@@ -1,5 +1,5 @@
 <vbox spacing="12">
-    <hbox spacing="5">
+    <hbox spacing="8">
         <frame label="Carrier">
             <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
                 <label text="In Level" attach-x="0" attach-y="0" expand-x="0" />

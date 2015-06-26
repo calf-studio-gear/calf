@@ -11,7 +11,7 @@ gui_config::gui_config()
     float_size = 1;
     rack_ears  = true;
     vu_meters  = true;
-    style      = "Calf Default";
+    style      = "Calf_Default";
 }
 
 gui_config::~gui_config()

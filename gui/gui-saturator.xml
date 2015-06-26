@@ -46,7 +46,7 @@
             <value param="mix" />
         </vbox>
     </hbox>
-    <hbox>
+    <hbox spacing="8">
         <frame label="Pre Filter">
             <hbox homogeneous="1" spacing="10">
                 <vbox>

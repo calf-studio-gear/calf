@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <vector>
+#include <calf/gui.h>
 
 G_BEGIN_DECLS
 
@@ -41,16 +42,18 @@ struct CalfKnob
     int size;
     double start_x, start_y, last_y, start_value, default_value;
     std::vector<double> ticks;
+    GdkPixbuf *knob_image;
 };
 
 struct CalfKnobClass
 {
     GtkRangeClass parent_class;
-    GdkPixbuf *knob_image[5];
 };
 
 extern GtkWidget *calf_knob_new();
 extern GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment);
+extern void calf_knob_set_size (CalfKnob*self, int size);
+extern void calf_knob_set_pixbuf (CalfKnob*self, GdkPixbuf *pixbuf);
 
 extern GType calf_knob_get_type();
 

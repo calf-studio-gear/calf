@@ -1963,6 +1963,23 @@ CALF_PLUGIN_INFO(pitch) = { 0x85AA, "Pitch", "Calf Pitch Tols", "Calf Studio Gea
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(widgets) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(widgets) = {
+    { 0,    0,   1,    0,   PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_1", "Meter-1" },
+    { 0,    0,   1,    0,   PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_2", "Meter-2" },
+    { 0,    0,   1,    0,   PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_3", "Meter-3" },
+    { 0,    0,   1,    0,   PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_4", "Meter-4" },
+   
+    { 0,    100, 100,  0.1, PF_FLOAT | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "value_lin", "Value Linear" },
+    { 0,    100, 100,  0.1, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "value_log", "Value Logarithmic" },
+    {}
+};
+
+CALF_PLUGIN_INFO(widgets) = { 0x85AB, "Widgets", "Calf Widget Test", "Calf Studio Gear", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+
+
+////////////////////////////////////////////////////////////////////////////
+
 calf_plugins::plugin_registry::plugin_registry()
 {
     #define PER_MODULE_ITEM(name, isSynth, jackname) plugins.push_back((new name##_metadata));

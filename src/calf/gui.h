@@ -40,6 +40,20 @@ public:
     bool check_redraw(GtkWidget *toplevel);
 };
 
+
+struct image_factory
+{
+    std::string path;
+    std::map<std::string, GdkPixbuf*> i;
+    GdkPixbuf *create_image (std::string image);
+    void recreate_images ();
+    void set_path (std::string p);
+    GdkPixbuf *get (std::string image);
+    gboolean available (std::string image);
+    image_factory (std::string p = "");
+    ~image_factory();
+};
+
 class plugin_gui;
 class jack_host;
 
@@ -160,7 +174,7 @@ public:
     preset_access_iface *preset_access;
     std::vector<param_control *> params;
     std::vector<int> read_serials;
-
+    
     /* For optional lv2ui:show interface. */
     bool optclosed;
     GtkWidget* optwidget;
@@ -210,6 +224,7 @@ struct gui_environment_iface
     virtual bool check_condition(const char *name) = 0;
     virtual calf_utils::config_db_iface *get_config_db() = 0;
     virtual calf_utils::gui_config *get_config() = 0;
+    virtual calf_plugins::image_factory *get_image_factory() = 0;
     virtual ~gui_environment_iface() {}
 };
 
@@ -234,15 +249,14 @@ private:
     GKeyFile *keyfile;
     calf_utils::config_db_iface *config_db;
     calf_utils::gui_config gui_config;
-
 public:
     std::set<std::string> conditions;
-
-public:
+    image_factory images;
     gui_environment();
     virtual bool check_condition(const char *name) { return conditions.count(name) != 0; }
     virtual calf_utils::config_db_iface *get_config_db() { return config_db; }
     virtual calf_utils::gui_config *get_config() { return &gui_config; }
+    virtual calf_plugins::image_factory *get_image_factory() { return &images; }
     ~gui_environment();
 };
 
@@ -312,7 +326,7 @@ public:
     main_window_iface *main;
     int source_id;
     calf_utils::config_notifier_iface *notifier;
-
+    
     plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch);
     std::string make_gui_command_list(GtkActionGroup *grp, const plugin_metadata_iface *metadata);
@@ -379,6 +393,8 @@ public:
         cairo_show_text(context, label);
     }
 };
+
+
 
 };
 
