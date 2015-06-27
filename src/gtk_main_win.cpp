@@ -261,13 +261,13 @@ void gtk_main_window::show_rack_ears(bool show)
     {
         if (show)
         {
-            gtk_widget_show(i->second->leftBox);
-            gtk_widget_show(i->second->rightBox);
+            gtk_widget_show(i->second->leftBG);
+            gtk_widget_show(i->second->rightBG);
         }
         else
         {
-            gtk_widget_hide(i->second->leftBox);
-            gtk_widget_hide(i->second->rightBox);
+            gtk_widget_hide(i->second->leftBG);
+            gtk_widget_hide(i->second->rightBG);
         }
     }
 }
@@ -325,27 +325,31 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
     
     // pack left box
+    GtkWidget *leftBG  = gtk_event_box_new();
     GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(leftBG), leftBox);
+    gtk_widget_set_name(leftBG, "CalfMainLeft");
     gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
-    gtk_widget_show_all(GTK_WIDGET(leftBox));
+    gtk_widget_show_all(GTK_WIDGET(leftBG));
     if (!get_config()->rack_ears)
-        gtk_widget_hide(GTK_WIDGET(leftBox));
-    gtk_table_attach(GTK_TABLE(strip->strip_table), leftBox, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+        gtk_widget_hide(GTK_WIDGET(leftBG));
+    gtk_table_attach(GTK_TABLE(strip->strip_table), leftBG, 0, 1, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
     
      // pack right box
+    GtkWidget *rightBG = gtk_event_box_new();
     GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(rightBG), rightBox);
+    gtk_widget_set_name(rightBG, "CalfMainRight");
     gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
-    gtk_widget_show_all(GTK_WIDGET(rightBox));
+    gtk_widget_show_all(GTK_WIDGET(rightBG));
     if (!get_config()->rack_ears)
-        gtk_widget_hide(GTK_WIDGET(rightBox));
-    gtk_table_attach(GTK_TABLE(strip->strip_table), rightBox, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+        gtk_widget_hide(GTK_WIDGET(rightBG));
+    gtk_table_attach(GTK_TABLE(strip->strip_table), rightBG, 5, 6, row, row + 4, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
     
-    strip->leftBox = leftBox;
-    strip->rightBox = rightBox;
+    strip->leftBG = leftBG;
+    strip->rightBG = rightBG;
     
     
     // top light
@@ -663,7 +667,6 @@ void gtk_main_window::create()
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     std::string title = "Calf JACK Host";
     gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
-    gtk_widget_set_name(GTK_WIDGET(toplevel), "Calf-Rack");
     gtk_window_set_icon_name(toplevel, "calf");
     gtk_window_set_role(toplevel, "calf_rack");
     
@@ -711,7 +714,10 @@ void gtk_main_window::create()
     }
     sort_strips();
     
-    gtk_container_add(GTK_CONTAINER(all_vbox), strips_table);
+    GtkWidget *evbox = gtk_event_box_new();
+    gtk_widget_set_name(evbox, "Calf-Rack");
+    gtk_container_add(GTK_CONTAINER(evbox), strips_table);
+    gtk_container_add(GTK_CONTAINER(all_vbox), evbox);
     gtk_container_add(GTK_CONTAINER(toplevel), all_vbox);
     
     gtk_widget_set_name(GTK_WIDGET(strips_table), "Calf-Container");

@@ -148,7 +148,7 @@ protected:
     int ignore_stack;
     int last_status_serial_no;
     std::map<int, GSList *> param_radio_groups;
-    GtkWidget *leftBox, *rightBox;
+    GtkWidget *leftBG, *rightBG;
     int context_menu_param_no;
     uint32_t context_menu_last_designator;
     std::vector<control_base *> stack;

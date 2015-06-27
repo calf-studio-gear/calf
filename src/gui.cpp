@@ -226,32 +226,30 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     // images for left side
     GtkWidget *nwImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_nw"));
     GtkWidget *swImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_sw"));
-    GtkWidget *wImg      = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_w"));
-    gtk_widget_set_size_request(GTK_WIDGET(wImg), 56, 1);
     
     // images for right side
     GtkWidget *neImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_ne"));
     GtkWidget *seImg     = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_se"));
-    GtkWidget *eImg      = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_e"));
-    GtkWidget *logoImg   = gtk_image_new_from_pixbuf(window->environment->get_image_factory()->get("side_e_logo"));
-    gtk_widget_set_size_request(GTK_WIDGET(eImg), 56, 1);
     
     // pack left box
-    leftBox = gtk_vbox_new(FALSE, 0);
+    leftBG = gtk_event_box_new();
+    GtkWidget *leftBox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(leftBG), leftBox);
     gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(nwImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(leftBox), GTK_WIDGET(wImg), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
+    gtk_widget_set_name(leftBG, "CalfPluginLeft");
     
-     // pack right box
-    rightBox = gtk_vbox_new(FALSE, 0);
+    // pack right box
+    rightBG  = gtk_event_box_new();
+    GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(rightBG), rightBox);
     gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(eImg), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(logoImg), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
+    gtk_widget_set_name(rightBG, "CalfPluginRight");
     
     //gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bgImg),     0, 2, 0, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
-    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBox),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
-    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBox),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBG),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
+    gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBG),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
         
     gtk_table_attach(GTK_TABLE(decoTable), top_container->widget, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
@@ -384,17 +382,17 @@ void plugin_gui::show_rack_ears(bool show)
 {
     // if hidden, add a no-show-all attribute so that LV2 host doesn't accidentally override
     // the setting by doing a show_all on the outermost container
-    gtk_widget_set_no_show_all(leftBox, !show);
-    gtk_widget_set_no_show_all(rightBox, !show);
+    gtk_widget_set_no_show_all(leftBG, !show);
+    gtk_widget_set_no_show_all(rightBG, !show);
     if (show)
     {
-        gtk_widget_show(leftBox);
-        gtk_widget_show(rightBox);
+        gtk_widget_show(leftBG);
+        gtk_widget_show(rightBG);
     }
     else
     {
-        gtk_widget_hide(leftBox);
-        gtk_widget_hide(rightBox);
+        gtk_widget_hide(leftBG);
+        gtk_widget_hide(rightBG);
     }
 }
 
@@ -617,15 +615,11 @@ image_factory::image_factory (string p) {
     i["side_d_nw"]                = NULL;
     i["side_d_se"]                = NULL;
     i["side_d_sw"]                = NULL;
-    i["side_d_e"]                 = NULL;
-    i["side_d_w"]                 = NULL;
     
     i["side_ne"]                  = NULL;
     i["side_nw"]                  = NULL;
     i["side_se"]                  = NULL;
     i["side_sw"]                  = NULL;
-    i["side_e"]                   = NULL;
-    i["side_w"]                   = NULL;
     i["side_e_logo"]              = NULL;
     
     i["slider_1_horiz"]            = NULL;

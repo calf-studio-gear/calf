@@ -77,9 +77,27 @@ style "calf-rack-widgets"
     font_name         = "Sans 5"
 }
 
+style "calf-main-left"
+{
+    bg_pixmap[NORMAL] = "side_d_w.png"
+}
+style "calf-main-right"
+{
+    bg_pixmap[NORMAL] = "side_d_e.png"
+}
+
+
 style "calf-plugin"
 {
     bg_pixmap[NORMAL] = "background_plugin.png"
+}
+style "calf-plugin-left"
+{
+    bg_pixmap[NORMAL] = "side_w.png"
+}
+style "calf-plugin-right"
+{
+    bg_pixmap[NORMAL] = "side_e.png"
 }
 
 style "calf-connector"
@@ -161,7 +179,6 @@ style "calf-combobox"
     ythickness = 3
     font_name  = "Sans 8"
     bg[NORMAL] = { 0.85, 0.85, 0.85 }
-    fg[NORMAL] = "red"
     base[NORMAL] = { 0.89, 1.00, 0.45 }
     CalfCombobox::border-radius  = 3
     CalfCombobox::bevel          = 0.2
@@ -382,8 +399,12 @@ widget "*Calf*"                                   style : rc "calf-default"
 widget "*Calf-Rack"                               style : highest "calf-rack"
 widget "*Calf-Rack*"                              style : highest "calf-rack-widgets"
 widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-title"
+widget "*CalfMainLeft"                            style : highest "calf-main-left"
+widget "*CalfMainRight"                           style : highest "calf-main-right"
 
 widget "*Calf-Plugin"                             style : highest "calf-plugin"
+widget "*CalfPluginLeft"                          style : highest "calf-plugin-left"
+widget "*CalfPluginRight"                         style : highest "calf-plugin-right"
 
 widget "*Connector"                               style : highest "calf-connector"
 widget "*Connector*View*"                         style : highest "calf-connector-children"

@@ -39,7 +39,6 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfLed *self = CALF_LED(widget);
     GdkWindow *window = widget->window;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
-    GtkStyle *style = gtk_widget_get_style(widget);
     
     int width = widget->allocation.width;
     int height = widget->allocation.height;
@@ -51,7 +50,6 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     int sy = height - oy * 2;
     int xc = x + width / 2;
     int yc = y + height / 2;
-    int pad;
     float r, g, b;
     
     if( self->cache_surface == NULL ) {

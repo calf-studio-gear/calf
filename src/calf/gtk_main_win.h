@@ -38,7 +38,7 @@ namespace calf_plugins {
         jack_host *plugin;
         plugin_gui_window *gui_win;
         calf_connector *connector;
-        GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBox, *rightBox, *inBox, *outBox;
+        GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBG, *rightBG, *inBox, *outBox;
         std::vector<GtkWidget *> audio_in, audio_out;
     };
     

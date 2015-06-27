@@ -40,7 +40,6 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 
     CalfVUMeter *vu = CALF_VUMETER(widget);
     GtkStyle    *style;
-    style = gtk_widget_get_style(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
     float r, g, b;
