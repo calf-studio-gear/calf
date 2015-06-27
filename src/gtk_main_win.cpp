@@ -489,6 +489,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     GtkWidget *paramBox = gtk_hbox_new(FALSE, 0);
     
     GtkWidget *logoImg     = gtk_image_new_from_pixbuf(images.get("logo_button"));
+    gtk_misc_set_alignment(GTK_MISC(logoImg), 1, 1);
     gtk_box_pack_end(GTK_BOX(paramBox), GTK_WIDGET(logoImg), TRUE, TRUE, 0);
     
     gtk_table_attach(GTK_TABLE(strip->strip_table), paramBox, 3, 5, row + 1, row + 2, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 10, 0);
