@@ -181,14 +181,12 @@ calf_led_size_allocate (GtkWidget *widget,
     g_assert(CALF_IS_LED(widget));
     CalfLed *led = CALF_LED(widget);
     
-    widget->allocation = *allocation;
+    GtkWidgetClass *parent_class = (GtkWidgetClass *) g_type_class_peek_parent( CALF_LED_GET_CLASS( led ) );
+    parent_class->size_allocate( widget, allocation );
     
     if( led->cache_surface )
         cairo_surface_destroy( led->cache_surface );
     led->cache_surface = NULL;
-    
-    if (GTK_WIDGET_REALIZED(widget))
-        gdk_window_move_resize(widget->window, allocation->x, allocation->y, allocation->width, allocation->height );
 }
 
 static gboolean
@@ -219,6 +217,8 @@ calf_led_init (CalfLed *self)
     GtkWidget *widget = GTK_WIDGET(self);
     // GtkWidget *widget = GTK_WIDGET(self);
     // GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
+    self->led_mode = 0;
+    self->size = 0;
     self->led_value = 0.f;
     self->cache_surface = NULL;
     widget->requisition.width = self->size ? 24 : 19;
