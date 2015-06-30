@@ -405,22 +405,21 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     
     // midi box
     if (metadata->get_midi()) {
-        label = calf_led_new();
+        GtkWidget *led = calf_led_new();
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("Midi")), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(label), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(led), FALSE, FALSE, 0);
         gtk_table_attach(GTK_TABLE(strip->strip_table), midiBox, 2, 3, row, row + 1, (GtkAttachOptions)0, (GtkAttachOptions)0, 5, 3);
-        gtk_widget_set_size_request(GTK_WIDGET(label), 25, 25);
-        strip->midi_in = label;
+        gtk_widget_set_size_request(GTK_WIDGET(led), 25, 25);
+        strip->midi_in = led;
         gtk_widget_show_all(midiBox);
     } else {
-        label = gtk_label_new("");
-        gtk_table_attach(GTK_TABLE(strip->strip_table), label, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 5, 3);
-        gtk_widget_set_size_request(GTK_WIDGET(label), 25, 25);
-        strip->midi_in = label;
+        GtkWidget *led = gtk_label_new("");
+        gtk_table_attach(GTK_TABLE(strip->strip_table), led, 2, 3, row, row + 1, GTK_FILL, GTK_EXPAND, 5, 3);
+        gtk_widget_set_size_request(GTK_WIDGET(led), 25, 25);
+        strip->midi_in = led;
         gtk_widget_show(strip->midi_in);
     }
-    strip->midi_in = label;
     
     strip->inBox = NULL;
     strip->outBox = NULL;
