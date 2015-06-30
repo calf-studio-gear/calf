@@ -158,9 +158,20 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
         ss << ind << "lv2:portProperty epp:logarithmic ;\n";
     ss << showpoint;
     if (!(pp.flags & PF_PROP_OUTPUT))
-        ss << ind << "lv2:default " << pp.def_value << " ;\n";
-    ss << ind << "lv2:minimum " << pp.min << " ;\n";
-    ss << ind << "lv2:maximum " << pp.max << " ;\n";
+    {
+        if (pp.def_value == (int)pp.def_value)
+            ss << ind << "lv2:default " << (int)pp.def_value << " ;\n";
+        else
+            ss << ind << "lv2:default " << pp.def_value << " ;\n";
+    }
+    if (pp.min == (int)pp.min)
+        ss << ind << "lv2:minimum " << (int)pp.min << " ;\n";
+    else
+        ss << ind << "lv2:minimum " << pp.min << " ;\n";
+    if (pp.max == (int)pp.max)
+        ss << ind << "lv2:maximum " << (int)pp.max << " ;\n";
+    else
+        ss << ind << "lv2:maximum " << pp.max << " ;\n";
     // XXX This value does not seem to match the definition of the property
     //if (pp.step > 1)
     //    ss << ind << "epp:rangeSteps " << pp.step << " ;\n";
