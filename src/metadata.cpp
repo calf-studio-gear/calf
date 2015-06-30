@@ -213,7 +213,7 @@ CALF_PORT_PROPS(envelopefilter) = {
     { 3000,   10,20000,   0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "upper", "Upper" },
     { 80,     10,20000,   0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "lower", "Lower" },
     { 1,0.015625,   64,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "gain", "Activation" },
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "sidechain", "Sidechain" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "sidechain_enable", "Sidechain" },
     { 0.,         -1,           1,     0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "response", "Response" },
     {}
 };
