@@ -46,7 +46,6 @@ class stereo_audio_module:
     public audio_module<stereo_metadata>
 {
     typedef stereo_audio_module AM;
-    float LL, LR, RL, RR;
     uint32_t srate;
     bool active;
     dsp::bypass bypass;

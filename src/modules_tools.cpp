@@ -54,46 +54,6 @@ void stereo_audio_module::deactivate() {
 }
 
 void stereo_audio_module::params_changed() {
-    float slev = 2 * *params[param_slev]; // stereo level ( -2 -> 2 )
-    float sbal = 1 + *params[param_sbal]; // stereo balance ( 0 -> 2 )
-    float mlev = 2 * *params[param_mlev]; // mono level ( -2 -> 2 )
-    float mpan = 1 + *params[param_mpan]; // mono pan ( 0 -> 2 )
-
-    switch((int)*params[param_mode])
-    {
-        case 0:
-        default:
-            //LR->LR
-            LL = (mlev * (2.f - mpan) + slev * (2.f - sbal));
-            LR = (mlev * mpan - slev * sbal);
-            RL = (mlev * (2.f - mpan) - slev * (2.f - sbal));
-            RR = (mlev * mpan + slev * sbal);
-            break;
-        case 1:
-            //LR->MS
-            LL = (2.f - mpan) * (2.f - sbal);
-            LR = mpan * (2.f - sbal) * -1;
-            RL = (2.f - mpan) * sbal;
-            RR = mpan * sbal;
-            break;
-        case 2:
-            //MS->LR
-            LL = mlev * (2.f - sbal);
-            LR = mlev * mpan;
-            RL = slev * (2.f - sbal);
-            RR = slev * sbal * -1;
-            break;
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-            //LR->LL
-            LL = 0.f;
-            LR = 0.f;
-            RL = 0.f;
-            RR = 0.f;
-            break;
-    }
     if(*params[param_stereo_phase] != _phase) {
         _phase = *params[param_stereo_phase];
         _phase_cos_coef = cos(_phase / 180 * M_PI);
