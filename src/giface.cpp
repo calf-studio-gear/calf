@@ -224,6 +224,7 @@ std::string parameter_properties::to_string(float value) const
         //printf("%.2f %s\n", value, buf);
         break;
     case PF_FLOAT:
+        value = round(value * 1000) / 1000;
         switch (flags & PF_DIGITMASK) {
             case PF_DIGIT_0:
                 snprintf(buf, sizeof(buf), "%.0f", value);
