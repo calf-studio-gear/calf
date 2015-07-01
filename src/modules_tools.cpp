@@ -190,14 +190,11 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
             R *= (2 * (1 - floor(*params[param_phase_r] + 0.5))) - 1;
             
-            // LR/MS
-            //L += LL*L + RL*R;
-            //R += RR*R + LR*L;
             
-            float slev = *params[param_slev];     // slev - stereo level ( -2 -> 2 )
-            float sbal = 1 + *params[param_sbal]; // sbal - stereo balance ( 0 -> 2 )
-            float mlev = *params[param_mlev];     // mlev - mono level ( 0 -> 2 )
-            float mpan = (1 + *params[param_mpan]) / 2; // mpan - mono pan ( 0 -> 1 )
+            float slev = *params[param_slev];       // slev - stereo level ( -2 -> 2 )
+            float sbal = 1 + *params[param_sbal];   // sbal - stereo balance ( 0 -> 2 )
+            float mlev = *params[param_mlev];       // mlev - mono level ( 0 -> 2 )
+            float mpan = (1 + *params[param_mpan]); // mpan - mono pan ( 0 -> 1 )
             float bl, br;
             switch((int)*params[param_mode])
             {
@@ -214,12 +211,10 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                     break;
                 case 2:
                     // MS > LR
-                    
-                    L = L * mlev * (1 - mpan) + R * slev * std::min(1.f, 2.f - sbal);
-                    R = L * mlev * mpan       - R * slev * std::min(1.f, sbal);
-                    
-                    //L = (mlev + 2) / 2 * (2 - mpan) * L + (slev + 2) / 2 * (R + (0.5 - sbal / 2));
-                    //R = (mlev + 2) / 2 * mpan * L - (slev + 2) / 2 * (R + (0.5 - sbal / 2));
+                    bl = L * mlev * std::min(1.f, 2.f - mpan) + R * slev * std::min(1.f, 2.f - sbal);
+                    br = L * mlev * std::min(1.f, mpan)       - R * slev * std::min(1.f, sbal);
+                    L = bl;
+                    R = br;
                     break;
                 case 3:
                     // LR > LL
