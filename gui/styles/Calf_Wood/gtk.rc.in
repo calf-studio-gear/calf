@@ -179,6 +179,7 @@ style "calf-combobox"
     font_name  = "Sans 8"
     bg[NORMAL] = "#000"
     base[NORMAL] = { 0.89, 1.00, 0.45 }
+    text[NORMAL] = "black"
     CalfCombobox::border-radius  = 5
     CalfCombobox::bevel          = 0.4
 }
