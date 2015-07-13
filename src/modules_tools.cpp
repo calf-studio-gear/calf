@@ -109,26 +109,32 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             float mlev = *params[param_mlev];       // mlev - mono level ( 0 -> 2 )
             float mpan = (1 + *params[param_mpan]); // mpan - mono pan ( 0 -> 1 )
             
-            float bl, br;
+            float l, r, m, s;
             
             switch((int)*params[param_mode])
             {
                 case 0:
                     // LR > LR
+                    m = (L + R) * 0.5;
+                    s = (L - R) * 0.5;
+                    l = m * mlev * std::min(1.f, 2.f - mpan) + s * slev * std::min(1.f, 2.f - sbal);
+                    r = m * mlev * std::min(1.f, mpan)       - s * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
                 case 1:
                     // LR > MS
-                    bl = L * std::min(1.f, 2.f - sbal);
-                    br = R * std::min(1.f, sbal);
-                    L = 0.5 * (bl + br) * mlev;
-                    R = 0.5 * (bl - br) * slev;
+                    l = L * std::min(1.f, 2.f - sbal);
+                    r = R * std::min(1.f, sbal);
+                    L = 0.5 * (l + r) * mlev;
+                    R = 0.5 * (l - r) * slev;
                     break;
                 case 2:
                     // MS > LR
-                    bl = L * mlev * std::min(1.f, 2.f - mpan) + R * slev * std::min(1.f, 2.f - sbal);
-                    br = L * mlev * std::min(1.f, mpan)       - R * slev * std::min(1.f, sbal);
-                    L = bl;
-                    R = br;
+                    l = L * mlev * std::min(1.f, 2.f - mpan) + R * slev * std::min(1.f, 2.f - sbal);
+                    r = L * mlev * std::min(1.f, mpan)       - R * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
                 case 3:
                     // LR > LL
@@ -145,9 +151,9 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                     break;
                 case 6:
                     // LR > RL
-                    float tmp = L;
+                    l = L;
                     L = R;
-                    R = tmp;
+                    R = l;
                     break;
             }
             
