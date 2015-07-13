@@ -154,6 +154,12 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                     l = L;
                     L = R;
                     R = l;
+                    m = (L + R) * 0.5;
+                    s = (L - R) * 0.5;
+                    l = m * mlev * std::min(1.f, 2.f - mpan) + s * slev * std::min(1.f, 2.f - sbal);
+                    r = m * mlev * std::min(1.f, mpan)       - s * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
             }
             
