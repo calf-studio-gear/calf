@@ -49,8 +49,8 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     is_active = false;
     srate = 0;
     last_generation = 0;
-    hp_freq_old = lp_freq_old = 0;
-    hs_freq_old = ls_freq_old = 0;
+    hp_freq_old = lp_freq_old = hp_q_old = 0;
+    hs_freq_old = ls_freq_old = lp_q_old = 0;
     hs_level_old = ls_level_old = 0;
     keep_gliding = 0;
     last_peak = 0;
@@ -113,16 +113,17 @@ void equalizerNband_audio_module<BaseClass, has_lphp>::params_changed()
         lp_mode = (CalfEqMode)(int)*params[AM::param_lp_mode];
 
         float hpfreq = *params[AM::param_hp_freq], lpfreq = *params[AM::param_lp_freq];
+        float hpq = *params[AM::param_hp_q], lpq = *params[AM::param_lp_q];
         
-        if(hpfreq != hp_freq_old) {
+        if(hpfreq != hp_freq_old or hpq != hp_q_old) {
             hpfreq = glide(hp_freq_old, hpfreq, keep_gliding);
-            hp[0][0].set_hp_rbj(hpfreq, 0.707, (float)srate, 1.0);
+            hp[0][0].set_hp_rbj(hpfreq, hpq, (float)srate, 1.0);
             copy_lphp(hp);
             hp_freq_old = hpfreq;
         }
-        if(lpfreq != lp_freq_old) {
+        if(lpfreq != lp_freq_old or lpq != lp_q_old) {
             lpfreq = glide(lp_freq_old, lpfreq, keep_gliding);
-            lp[0][0].set_lp_rbj(lpfreq, 0.707, (float)srate, 1.0);
+            lp[0][0].set_lp_rbj(lpfreq, lpq, (float)srate, 1.0);
             copy_lphp(lp);
             lp_freq_old = lpfreq;
         }

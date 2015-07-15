@@ -57,9 +57,11 @@ const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference" };
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "hp_active", "HP Active" }, \
     { 30,          10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hp_freq", "HP Freq" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, rolloff_mode_names, "hp_mode", "HP Mode" }, \
+    { 0.707,       0.1,         10,    1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "hp_q", "HP Q" }, \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "lp_active", "LP Active" }, \
     { 18000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lp_freq", "LP Freq" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, rolloff_mode_names, "lp_mode", "LP Mode" }, \
+    { 0.707,       0.1,         10,    1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "lp_q", "LP Q" }, \
 
 #define SHELF_PARAMS \
     { 0,           0,           5,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names, "ls_active", "LS Active" }, \
