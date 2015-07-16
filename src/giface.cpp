@@ -435,11 +435,11 @@ bool frequency_response_line_graph::get_layers(int index, int generation, unsign
     redraw_graph = false;
     return r;
 }
-std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents) const
+std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
 { 
-    return frequency_crosshair_label(x, y, sx, sy, dB, name, note, cents);
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents);
 }
-std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy, int dB, int name, int note, int cents, double res, double ofs)
+std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents, double res, double ofs)
 { 
     std::stringstream ss;
     char str[1024];
@@ -450,6 +450,10 @@ std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy
     sprintf(str, "%.2f Hz", f);
     if (dB) {
         sprintf(tmp, "%s\n%.2f dB", str, db);
+        strcpy(str, tmp);
+    }
+    if (q) {
+        sprintf(tmp, "%s\nQ: %.3f", str, q);
         strcpy(str, tmp);
     }
     if (name) {
