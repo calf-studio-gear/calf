@@ -66,11 +66,11 @@ public:
  * VINTAGE DELAY by Krzysztof Foltman
 **********************************************************************/
 
-class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>
+class vintage_delay_audio_module: public audio_module<vintage_delay_metadata>, public frequency_response_line_graph
 {
 public:    
     // 1MB of delay memory per channel... uh, RAM is cheap
-    enum { MAX_DELAY = 262144, ADDR_MASK = MAX_DELAY - 1 };
+    enum { MAX_DELAY = 524288, ADDR_MASK = MAX_DELAY - 1 };
     enum { MIXMODE_STEREO, MIXMODE_PINGPONG, MIXMODE_LR, MIXMODE_RL }; 
     float buffers[2][MAX_DELAY];
     int bufptr, deltime_l, deltime_r, mixmode, medium, old_medium;

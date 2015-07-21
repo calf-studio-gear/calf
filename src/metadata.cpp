@@ -239,7 +239,20 @@ const char *vintage_delay_fbmodes[] = {
     "Old Tape",
 };
 
+const char *vintage_delay_timing[] = {
+    "BPM",
+    "Time",
+    "Sync",
+};
+
+const char *vintage_delay_fragmentation[] = {
+    "Repeating",
+    "Pattern",
+};
+
 CALF_PORT_PROPS(vintage_delay) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
     { 120,      30,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM, NULL, "bpm", "Tempo" },
     { 120,       1,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM | PF_SYNC_BPM, NULL, "bpm_host", "Host BPM" },
     {  4,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "subdiv", "Subdivide"},
@@ -252,6 +265,15 @@ CALF_PORT_PROPS(vintage_delay) = {
     { 1.0,       0,    4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry Amount" },
     { 1.0,      -1,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "width", "Stereo Width" },
     { 0,         0,    1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "sync", "Sync BPM" },
+    
+    { 0,         0,    2,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_timing, "timing", "Timing" },
+    { 0,         0,    1,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fragmentation, "fragmentation", "Fragmentation" },
+    
+    { 500,      200,   2000,  1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "ms", "ms" },
+    
+    { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "psubdiv", "Pattern Subdivide" },
+    { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pbeats", "Pattern Beats" },
+    
     {}
 };
 

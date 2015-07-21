@@ -87,7 +87,14 @@ struct reverb_metadata: public plugin_metadata<reverb_metadata>
 
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
-    enum { par_bpm, par_bpm_host, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, par_width, par_sync, param_count };
+    enum {  param_bypass, param_level_in, param_level_out,
+            STEREO_VU_METER_PARAMS,
+            par_bpm, par_bpm_host, par_divide,
+            par_time_l, par_time_r, par_feedback,
+            par_amount, par_mixmode, par_medium, par_dryamount,
+            par_width, par_sync, par_timing, par_frag, par_ms,
+            par_psubdiv, par_pbeats,
+            param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("vintagedelay", "vintagedelay", "Vintage Delay")
 };
