@@ -62,7 +62,7 @@ struct FreqHandle
     double pos_x;
     double pos_y;
     double pos_z;
-    
+    calf_plugins::parameter_properties props_z;
     float left_bound;
     float right_bound;
     gpointer data;

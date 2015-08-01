@@ -87,7 +87,14 @@ struct reverb_metadata: public plugin_metadata<reverb_metadata>
 
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
-    enum { par_bpm, par_bpm_host, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_mixmode, par_medium, par_dryamount, par_width, par_sync, param_count };
+    enum {  param_bypass, param_level_in, param_level_out,
+            STEREO_VU_METER_PARAMS,
+            par_bpm, par_bpm_host, par_divide,
+            par_time_l, par_time_r, par_feedback,
+            par_amount, par_mixmode, par_medium, par_dryamount,
+            par_width, par_sync, par_timing, par_frag, par_ms,
+            par_psubdiv, par_pbeats,
+            param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("vintagedelay", "vintagedelay", "Vintage Delay")
 };
@@ -389,7 +396,7 @@ struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
            param_count };
     // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
     // and potentially making inlining and optimization harder for the compiler
-    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq };
+    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq, param_hp_q, param_lp_q };
     enum { PeakBands = 3, first_graph_param = param_ls_active, last_graph_param = param_p3_q };
     PLUGIN_NAME_ID_LABEL("equalizer5band", "eq5", "Equalizer 5 Band")
 };
@@ -400,8 +407,8 @@ struct equalizer8band_metadata: public plugin_metadata<equalizer8band_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_hp_active, param_hp_freq, param_hp_mode,
-           param_lp_active, param_lp_freq, param_lp_mode,
+           param_hp_active, param_hp_freq, param_hp_mode, param_hp_q,
+           param_lp_active, param_lp_freq, param_lp_mode, param_lp_q,
            param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
            param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
@@ -419,8 +426,8 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_hp_active, param_hp_freq, param_hp_mode,
-           param_lp_active, param_lp_freq, param_lp_mode,
+           param_hp_active, param_hp_freq, param_hp_mode, param_hp_q,
+           param_lp_active, param_lp_freq, param_lp_mode, param_lp_q,
            param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
            param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,

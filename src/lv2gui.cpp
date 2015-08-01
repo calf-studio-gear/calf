@@ -475,5 +475,14 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
     if (!index--)
         return &gtkgui;
     
+    static LV2UI_Descriptor gtkguireq;
+    gtkguireq.URI = "http://calf.sourceforge.net/plugins/gui/gtk2-gui-req";
+    gtkguireq.instantiate = gui_instantiate;
+    gtkguireq.cleanup = gui_cleanup;
+    gtkguireq.port_event = gui_port_event;
+    gtkguireq.extension_data = gui_extension;
+    if (!index--)
+        return &gtkguireq;
+    
     return NULL;
 }

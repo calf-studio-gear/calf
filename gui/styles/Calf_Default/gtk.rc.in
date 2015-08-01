@@ -180,6 +180,7 @@ style "calf-combobox"
     font_name  = "Sans 8"
     bg[NORMAL] = { 0.85, 0.85, 0.85 }
     base[NORMAL] = { 0.89, 1.00, 0.45 }
+    text[NORMAL] = "black"
     CalfCombobox::border-radius  = 3
     CalfCombobox::bevel          = 0.2
 }
@@ -244,7 +245,7 @@ style "calf-notebook"
 {
     CalfNotebook::background-alpha = 0.5
     
-    xthickness   = 24
+    xthickness   = 18
     ythickness   = 8
     
     fg[NORMAL]   = "#fff"
@@ -426,7 +427,7 @@ widget "*Calf*ToggleButton*"                      style : highest "calf-toggle"
 widget "*Calf*CheckButton"                        style : highest "calf-toggle"
 widget "*Calf*RadioButton"                        style : highest "calf-toggle"
 
-widget "*Calf*Combobox*"                          style : highest "calf-combobox"
+widget "*Calf*Combobox*"                           style : highest "calf-combobox"
 
 widget "*Calf*Entry*"                             style : highest "calf-entry"
 

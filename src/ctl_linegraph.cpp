@@ -226,76 +226,63 @@ calf_line_graph_draw_moving(CalfLineGraph* lg, cairo_t *ctx, float *data, int di
     
 }
 
-void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, string label, int x, int y, double bgopac)
+void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, string label, int x, int y, double bgopac, int absx, int absy, int center)
 {
+    x += absx;
+    y += absy;
     int hmarg = 8;
-    int linepad = 4;
-    int bgpad = 4;
+    int pad = 2;
     if (label.empty())
         return;
-    cairo_text_extents_t tx;
-    int n = int(std::count(label.begin(), label.end(), '\n')) + 1;
-    cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
-    double h = 0;
-    double w = 0;
-    double z = 0;
+    cairo_text_extents_t tx1, tx2;
+    cairo_text_extents(cache_cr, "⎪a", &tx1);
+    float nh = tx1.height;
+    int n  = int(std::count(label.begin(), label.end(), '\n')) + 1;
+    int p = center ? y - n * (nh + pad * 2) / 2. : y;
+    
+    if (bgopac > 1) {
+        // set bgopac to > 1 if the background should be drawn without
+        // clipping to the labels dimensions
+        bgopac -= 1;
+        cairo_set_source_surface(cache_cr, lg->background_surface, absx, absy);
+        cairo_paint_with_alpha(cache_cr, bgopac);
+    }
+    
     string::size_type lpos = label.find_first_not_of("\n", 0);
     string::size_type pos  = label.find_first_of("\n", lpos);
     while (string::npos != pos || string::npos != lpos) {
+        // geometry
         string str = label.substr(lpos, pos - lpos);
-        cairo_text_extents(cache_cr, str.c_str(), &tx);
-        h += tx.height + linepad;
-        w = std::max(w, tx.width);
-        z = tx.height + linepad;
-        lpos = label.find_first_not_of("\n", pos);
-        pos  = label.find_first_of("\n", lpos);
-    }
-    cairo_save(cache_cr);
-    
-    // set bgopac to > 1 if the background should be drawn without
-    // clipping to the labels dimensions
-    if (bgopac < 1) {
-        cairo_rectangle(cache_cr, x - hmarg - w - 2 * bgpad,
-                                  y - 3 - int(n / 2) * z - bgpad,
-                                  w + 2 * bgpad,
-                                  h + 2 * bgpad);
+        cairo_text_extents(cache_cr, str.c_str(), &tx2);
+        cairo_save(cache_cr);
+        // background
+        cairo_rectangle(cache_cr, x - hmarg - tx2.width - 2 * pad, p, tx2.width + 2 * pad, nh + pad);
         cairo_clip(cache_cr);
-    } else {
-        bgopac -= 1;
-    }
-    cairo_set_source_surface(cache_cr, lg->background_surface, 0, 0);
-    cairo_paint_with_alpha(cache_cr, bgopac);
-    cairo_restore(cache_cr);
-    int p = 0;
-    lpos = label.find_first_not_of("\n", 0);
-    pos  = label.find_first_of("\n", lpos);
-    while (string::npos != pos || string::npos != lpos) {
-        string str = label.substr(lpos, pos - lpos);
-        cairo_text_extents(cache_cr, str.c_str(), &tx);
-        if (!p)
-            p = y - 3 - (n / 2) * (tx.height + linepad);
-        p += tx.height + linepad;
-        cairo_move_to(cache_cr, x - hmarg - tx.width - bgpad, p);
+        cairo_set_source_surface(cache_cr, lg->background_surface, absx, absy);
+        cairo_paint_with_alpha(cache_cr, bgopac);
+        cairo_restore(cache_cr);
+        // line of text
+        cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.5);
+        cairo_move_to(cache_cr, x - hmarg - tx2.width - pad, p + pad/2 - tx1.y_bearing);
         cairo_show_text(cache_cr, str.c_str());
+        p += nh + pad;
         lpos = label.find_first_not_of("\n", pos);
         pos  = label.find_first_of("\n", lpos);
     }
 }
 
-void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, string label, double label_bg)
+void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool gradient, int gradient_rad, float alpha, int mask, bool circle, int x, int y, string label, double label_bg, int absx, int absy)
 {
     if (lg->debug) printf("(draw crosshairs)\n");
     // crosshairs
     
     int sx = lg->size_x;
     int sy = lg->size_y;
-    int ox = lg->pad_x;
-    int oy = lg->pad_y;
+    int ox = absx + lg->pad_x;
+    int oy = absy + lg->pad_y;
     
     int _x = ox + x;
-    int _y = ox + y;
-    
-    calf_line_graph_draw_label(lg, cache_cr, label, x - mask, y, label_bg);
+    int _y = oy + y;
     
     cairo_pattern_t *pat;
     
@@ -375,6 +362,7 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
         cairo_set_source_rgba(cache_cr, 0, 0, 0, alpha);
         cairo_stroke(cache_cr);
     }
+    calf_line_graph_draw_label(lg, cache_cr, label, x - mask, y, label_bg, absx, absy, 1);
 }
 
 void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
@@ -390,15 +378,15 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
     if (lg->freqhandles > 0) {
         cairo_set_source_rgba(c, 0.0, 0.0, 0.0, 1.0);
         cairo_set_line_width(c, 1.0);
-
+        string tmp;
         for (int i = 0; i < lg->freqhandles; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
-            
             if(!handle->is_active() or handle->value_x < 0.0 or handle->value_x > 1.0)
                 continue;
-            
+            int dB = 1;
             int val_x = round(handle->value_x * sx);
             int val_y = (handle->dimensions >= 2) ? round(handle->value_y * sy) : 0;
+            float val_z = (handle->param_z_no > -1) ? handle->props_z.from_01(handle->value_z) : 0;
             float pat_alpha;
             bool grad;
             char label[1024];
@@ -473,23 +461,23 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
                 cairo_set_source(c, pat);
                 cairo_fill(c);
                 cairo_pattern_destroy(pat);
-                if (handle->label && strlen(handle->label))
-                    sprintf(label, "%.2f Hz\n%s", freq, handle->label);
-                else
-                    sprintf(label, "%.2f Hz", freq);
-                calf_line_graph_draw_label(lg, c, label, val_x, oy + 15, 0.5);
+                dB = 0;
+            }
+            // label
+            if (lg->handle_hovered == i)
+                tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, val_z, dB, 1, 1, 1, lg->zoom * 128, 0);
+            else
+                tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 0, dB, 0, 0, 0, lg->zoom * 128, 0);
+            if (handle->label && strlen(handle->label))
+                sprintf(label, "%s\n%s", handle->label, tmp.c_str());
+            else
+                strcpy(label, tmp.c_str());
+            
+            if (handle->dimensions == 1) {
+                calf_line_graph_draw_label(lg, c, label, val_x, oy + 2, lg->handle_hovered == i ? 0.8 : 0.5, 0, 0, 0);
             } else {
-                string tmp;
                 int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
-                if (lg->handle_hovered == i)
-                    tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 1, 1, 1, 1, lg->zoom * 128, 0);
-                else
-                    tmp = calf_plugins::frequency_crosshair_label(val_x, val_y, sx, sy, 1, 0, 0, 0, lg->zoom * 128, 0);
-                if (handle->label && strlen(handle->label))
-                    sprintf(label, "%s\n%s", handle->label, tmp.c_str());
-                else
-                    strcpy(label, tmp.c_str());
-                calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, label, lg->handle_hovered == i ? 0.8 : 0.5);
+                calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, label, lg->handle_hovered == i ? 0.8 : 0.5, 0, 0);
             }
         }
     }
@@ -1086,9 +1074,9 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         string s;
-        s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, 1, 1, 1, 1);
+        s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, 0, 1, 1, 1, 1);
         cairo_set_line_width(c, 1),
-        calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s, 1.5);
+        calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s, 1.5, lg->x, lg->y);
     }
     
     lg->force_cache       = false;
@@ -1299,7 +1287,7 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
     if (i != -1)
     {
         FreqHandle *handle = &lg->freq_handles[i];
-        if (handle->dimensions == 3) {
+        if (handle->param_z_no > -1) {
             if (event->direction == GDK_SCROLL_UP) {
                 handle->value_z += 0.05;
                 if(handle->value_z > 1.0) {
@@ -1314,6 +1302,7 @@ calf_line_graph_scroll (GtkWidget *widget, GdkEventScroll *event)
                 g_signal_emit_by_name(widget, "freqhandle-changed", handle);
             }
             lg->handle_redraw = 1;
+            gtk_widget_queue_draw(widget);
         }
     }
     return TRUE;
@@ -1474,9 +1463,9 @@ calf_line_graph_init (CalfLineGraph *lg)
         handle->param_active_no = -1;
         handle->param_x_no      = -1;
         handle->param_y_no      = -1;
+        handle->param_z_no      = -1;
         handle->value_x         = -1.0;
         handle->value_y         = -1.0;
-        handle->param_x_no      = -1;
         handle->label           = NULL;
         handle->left_bound      = 0.0 + lg->min_handle_distance;
         handle->right_bound     = 1.0 - lg->min_handle_distance;
@@ -1525,17 +1514,17 @@ calf_line_graph_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfLineGraph";
-            //char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)(intptr_t)calf_line_graph_class_init) >> 16, i);
+            //const char *name = "CalfLineGraph";
+            char *name = g_strdup_printf("CalfLineGraph%u%d", ((unsigned int)(intptr_t)calf_line_graph_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static( GTK_TYPE_EVENT_BOX,
                                            name,
                                            type_info_copy,
                                            (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }

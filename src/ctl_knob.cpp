@@ -583,18 +583,18 @@ calf_knob_get_type (void)
         };
         
         for (int i = 0; ; i++) {
-            //char *name = g_strdup_printf("CalfKnob%u%d", 
-                //((unsigned int)(intptr_t)calf_knob_class_init) >> 16, i);
-            const char *name = "CalfKnob";
+            char *name = g_strdup_printf("CalfKnob%u%d", 
+                ((unsigned int)(intptr_t)calf_knob_class_init) >> 16, i);
+            //const char *name = "CalfKnob";
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_RANGE,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }

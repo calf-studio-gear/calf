@@ -178,8 +178,8 @@ style "calf-combobox"
     ythickness = 3
     font_name  = "Sans 8"
     bg[NORMAL] = "black"
-    fg[NORMAL] = "black"
     base[NORMAL] = { 0.89, 1.00, 0.45 }
+    text[NORMAL] = "black"
     CalfCombobox::border-radius  = 0
     CalfCombobox::bevel          = 0.4
 }
@@ -244,7 +244,7 @@ style "calf-notebook"
 {
     CalfNotebook::background-alpha = 0.5
     
-    xthickness   = 24
+    xthickness   = 18
     ythickness   = 8
     
     fg[NORMAL]   = "#fff"

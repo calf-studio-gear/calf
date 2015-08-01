@@ -54,46 +54,6 @@ void stereo_audio_module::deactivate() {
 }
 
 void stereo_audio_module::params_changed() {
-    float slev = 2 * *params[param_slev]; // stereo level ( -2 -> 2 )
-    float sbal = 1 + *params[param_sbal]; // stereo balance ( 0 -> 2 )
-    float mlev = 2 * *params[param_mlev]; // mono level ( -2 -> 2 )
-    float mpan = 1 + *params[param_mpan]; // mono pan ( 0 -> 2 )
-
-    switch((int)*params[param_mode])
-    {
-        case 0:
-        default:
-            //LR->LR
-            LL = (mlev * (2.f - mpan) + slev * (2.f - sbal));
-            LR = (mlev * mpan - slev * sbal);
-            RL = (mlev * (2.f - mpan) - slev * (2.f - sbal));
-            RR = (mlev * mpan + slev * sbal);
-            break;
-        case 1:
-            //LR->MS
-            LL = (2.f - mpan) * (2.f - sbal);
-            LR = mpan * (2.f - sbal) * -1;
-            RL = (2.f - mpan) * sbal;
-            RR = mpan * sbal;
-            break;
-        case 2:
-            //MS->LR
-            LL = mlev * (2.f - sbal);
-            LR = mlev * mpan;
-            RL = slev * (2.f - sbal);
-            RR = slev * sbal * -1;
-            break;
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-            //LR->LL
-            LL = 0.f;
-            LR = 0.f;
-            RL = 0.f;
-            RR = 0.f;
-            break;
-    }
     if(*params[param_stereo_phase] != _phase) {
         _phase = *params[param_stereo_phase];
         _phase_cos_coef = cos(_phase / 180 * M_PI);
@@ -133,18 +93,48 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             L *= (1.f - std::max(0.f, *params[param_balance_in]));
             R *= (1.f + std::min(0.f, *params[param_balance_in]));
             
-            // copy / flip / mono ...
+            // softclip
+            if(*params[param_softclip]) {
+                R = _inv_atan_shape * atan(R * _sc_level);
+                L = _inv_atan_shape * atan(L * _sc_level);
+            }
+            
+            // GUI stuff
+            meter_inL = L;
+            meter_inR = R;
+            
+            // modes
+            float slev = *params[param_slev];       // slev - stereo level ( -2 -> 2 )
+            float sbal = 1 + *params[param_sbal];   // sbal - stereo balance ( 0 -> 2 )
+            float mlev = *params[param_mlev];       // mlev - mono level ( 0 -> 2 )
+            float mpan = (1 + *params[param_mpan]); // mpan - mono pan ( 0 -> 1 )
+            
+            float l, r, m, s;
+            
             switch((int)*params[param_mode])
             {
                 case 0:
-                default:
                     // LR > LR
+                    m = (L + R) * 0.5;
+                    s = (L - R) * 0.5;
+                    l = m * mlev * std::min(1.f, 2.f - mpan) + s * slev * std::min(1.f, 2.f - sbal);
+                    r = m * mlev * std::min(1.f, mpan)       - s * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
                 case 1:
                     // LR > MS
+                    l = L * std::min(1.f, 2.f - sbal);
+                    r = R * std::min(1.f, sbal);
+                    L = 0.5 * (l + r) * mlev;
+                    R = 0.5 * (l - r) * slev;
                     break;
                 case 2:
                     // MS > LR
+                    l = L * mlev * std::min(1.f, 2.f - mpan) + R * slev * std::min(1.f, 2.f - sbal);
+                    r = L * mlev * std::min(1.f, mpan)       - R * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
                 case 3:
                     // LR > LL
@@ -161,26 +151,17 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
                     break;
                 case 6:
                     // LR > RL
-                    float tmp = L;
+                    l = L;
                     L = R;
-                    R = tmp;
+                    R = l;
+                    m = (L + R) * 0.5;
+                    s = (L - R) * 0.5;
+                    l = m * mlev * std::min(1.f, 2.f - mpan) + s * slev * std::min(1.f, 2.f - sbal);
+                    r = m * mlev * std::min(1.f, mpan)       - s * slev * std::min(1.f, sbal);
+                    L = l;
+                    R = r;
                     break;
             }
-            
-            // softclip
-            if(*params[param_softclip]) {
-//                int ph;
-//                ph = L / fabs(L);
-//                L = L > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + L * ph)))) : L;
-//                ph = R / fabs(R);
-//                R = R > 0.63 ? ph * (0.63 + 0.36 * (1 - pow(MATH_E, (1.f / 3) * (0.63 + R * ph)))) : R;
-                R = _inv_atan_shape * atan(R * _sc_level);
-                L = _inv_atan_shape * atan(L * _sc_level);
-            }
-            
-            // GUI stuff
-            meter_inL = L;
-            meter_inR = R;
             
             // mute
             L *= (1 - floor(*params[param_mute_l] + 0.5));
@@ -189,10 +170,6 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             // phase
             L *= (2 * (1 - floor(*params[param_phase_l] + 0.5))) - 1;
             R *= (2 * (1 - floor(*params[param_phase_r] + 0.5))) - 1;
-            
-            // LR/MS
-            L += LL*L + RL*R;
-            R += RR*R + LR*L;
             
             // delay
             buffer[pos]     = L;
@@ -599,8 +576,8 @@ uint32_t widgets_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         meter_3 = 0.f;
         meter_4 = 0.f;
         
-        float L = ins[0][i];
-        float R = ins[1][i];
+        //float L = ins[0][i];
+        //float R = ins[1][i];
         float values[] = {meter_1, meter_2, meter_3, meter_4};
         meters.process(values);
     }

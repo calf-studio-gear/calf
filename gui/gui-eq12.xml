@@ -59,8 +59,8 @@
                     handle8-x="p7_freq" handle8-y="p7_level" handle8-z="p7_q" label8="P VII" active8="p7_active"
                     handle9-x="p8_freq" handle9-y="p8_level" handle9-z="p8_q" label9="P VIII" active9="p8_active"
                     handle10-x="hs_freq" handle10-y="hs_level" handle10-z="hs_q" label10="HS" active10="hs_active"
-                    handle11-x="lp_freq" label11="LP" active11="lp_active"
-                    handle12-x="hp_freq" label12="HP" active12="hp_active"/>
+                    handle11-x="lp_freq" handle11-z="lp_q" label11="LP" active11="lp_active"
+                    handle12-x="hp_freq" handle12-z="hp_q" label12="HP" active12="hp_active"/>
             </if>
             <vbox spacing="3" attach-x="1" attach-y="0" expand-x="0" fill-x="0" >
                 <label text="Zoom"  expand="0" fill="0"/>
@@ -74,12 +74,12 @@
         <frame label="Highpass">
             <vbox spacing="3">
                 <combo param="hp_active"/>
-                <label/>
                 <label param="hp_freq" text="Frequency" />
-                <knob param="hp_freq" size="4" ticks="10 100 1000 20000"/>
+                <knob param="hp_freq" ticks="10 100 1000 20000"/>
                 <value param="hp_freq" />
-                <label/>
-                <label param="hp_mode" text="Rolloff"/>
+                <label param="hp_q" text="Q"/>
+                <knob param="hp_q"/>
+                <value param="hp_q" />
                 <combo param="hp_mode" />
             </vbox>
         </frame>
@@ -261,12 +261,12 @@
         <frame label="Lowpass">
             <vbox spacing="3">
                 <combo param="lp_active"/>
-                <label/>
                 <label param="lp_freq" text="Frequency"/>
-                <knob param="lp_freq" size="4" ticks="10 100 1000 20000" />
+                <knob param="lp_freq" ticks="10 100 1000 20000" />
                 <value param="lp_freq" />
-                <label/>
-                <label param="lp_mode" text="Rolloff"/>
+                <label param="lp_q" text="Q"/>
+                <knob param="lp_q"/>
+                <value param="lp_q" />
                 <combo param="lp_mode" />
             </vbox>
         </frame>

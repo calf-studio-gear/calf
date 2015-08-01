@@ -524,17 +524,17 @@ calf_phase_graph_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfPhaseGraph";
-            //char *name = g_strdup_printf("CalfPhaseGraph%u%d", ((unsigned int)(intptr_t)calf_phase_graph_class_init) >> 16, i);
+            //const char *name = "CalfPhaseGraph";
+            char *name = g_strdup_printf("CalfPhaseGraph%u%d", ((unsigned int)(intptr_t)calf_phase_graph_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static( GTK_TYPE_DRAWING_AREA,
                                            name,
                                            type_info_copy,
                                            (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -834,18 +834,18 @@ calf_frame_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfFrame";
-            //char *name = g_strdup_printf("CalfFrame%u%d", 
-                //((unsigned int)(intptr_t)calf_frame_class_init) >> 16, i);
+            //const char *name = "CalfFrame";
+            char *name = g_strdup_printf("CalfFrame%u%d", 
+                ((unsigned int)(intptr_t)calf_frame_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_FRAME,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -974,18 +974,18 @@ calf_combobox_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfCombobox";
-            //char *name = g_strdup_printf("CalfCombobox%u%d", 
-                //((unsigned int)(intptr_t)calf_combobox_class_init) >> 16, i);
+            //const char *name = "CalfCombobox";
+            char *name = g_strdup_printf("CalfCombobox%u%d", 
+                ((unsigned int)(intptr_t)calf_combobox_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_COMBO_BOX,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -1197,18 +1197,18 @@ calf_notebook_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfNotebook";
-            //char *name = g_strdup_printf("CalfNotebook%u%d", 
-                //((unsigned int)(intptr_t)calf_notebook_class_init) >> 16, i);
+            //const char *name = "CalfNotebook";
+            char *name = g_strdup_printf("CalfNotebook%u%d", 
+                ((unsigned int)(intptr_t)calf_notebook_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_NOTEBOOK,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -1652,18 +1652,18 @@ calf_button_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfButton";
-            //char *name = g_strdup_printf("CalfButton%u%d", 
-                //((unsigned int)(intptr_t)calf_button_class_init) >> 16, i);
+            //const char *name = "CalfButton";
+            char *name = g_strdup_printf("CalfButton%u%d", 
+                ((unsigned int)(intptr_t)calf_button_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_BUTTON,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -1735,18 +1735,18 @@ calf_toggle_button_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfToggleButton";
-            //char *name = g_strdup_printf("CalfToggleButton%u%d", 
-                //((unsigned int)(intptr_t)calf_toggle_button_class_init) >> 16, i);
+            //const char *name = "CalfToggleButton";
+            char *name = g_strdup_printf("CalfToggleButton%u%d", 
+                ((unsigned int)(intptr_t)calf_toggle_button_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }
@@ -1817,18 +1817,18 @@ calf_radio_button_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfRadioButton";
-            //char *name = g_strdup_printf("CalfRadioButton%u%d", 
-                //((unsigned int)(intptr_t)calf_radio_button_class_init) >> 16, i);
+            //const char *name = "CalfRadioButton";
+            char *name = g_strdup_printf("CalfRadioButton%u%d", 
+                ((unsigned int)(intptr_t)calf_radio_button_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_RADIO_BUTTON,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }

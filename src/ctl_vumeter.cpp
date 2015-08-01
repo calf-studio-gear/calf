@@ -39,7 +39,6 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     g_assert(CALF_IS_VUMETER(widget));
 
     CalfVUMeter *vu = CALF_VUMETER(widget);
-    GtkStyle    *style;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
     float r, g, b;
@@ -471,17 +470,17 @@ calf_vumeter_get_type (void)
         GTypeInfo *type_info_copy = new GTypeInfo(type_info);
 
         for (int i = 0; ; i++) {
-            const char *name = "CalfVUMeter";
-            //char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)(intptr_t)calf_vumeter_class_init) >> 16, i);
+            //const char *name = "CalfVUMeter";
+            char *name = g_strdup_printf("CalfVUMeter%u%d", ((unsigned int)(intptr_t)calf_vumeter_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                //free(name);
+                free(name);
                 continue;
             }
             type = g_type_register_static( GTK_TYPE_DRAWING_AREA,
                                            name,
                                            type_info_copy,
                                            (GTypeFlags)0);
-            //free(name);
+            free(name);
             break;
         }
     }

@@ -251,8 +251,23 @@ void make_ttl(string path_prefix, const string *data_dir)
     string gtkgui_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>";
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
-        "    lv2:extensionData uiext:showInterface ;\n"
+        "    lv2:extensionData uiext:idleInterface ,\n"
+        "        uiext:showInterface ;\n"
         "    lv2:requiredFeature uiext:makeResident ;\n"
+        "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
+        "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
+        "    uiext:binary <calflv2gui.so> .\n"
+        "\n"
+    ;
+
+    string gtkgui_req_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui-req>";
+    gui_header += gtkgui_req_uri + "\n"
+        "    a uiext:GtkUI ;\n"
+        "    lv2:extensionData uiext:idleInterface ,\n"
+        "        uiext:showInterface ;\n"
+        "    lv2:requiredFeature uiext:makeResident ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
         "    uiext:binary <calflv2gui.so> .\n"
         "\n"
     ;
@@ -270,6 +285,9 @@ void make_ttl(string path_prefix, const string *data_dir)
         id_to_info[pi->get_id()] = make_pair(lpi.label, uri);
         string ttl;
         ttl = "@prefix : <" + unquoted_uri + "#> .\n" + header + gui_header;
+
+        bool uireq = !strcmp(lpi.label, "Analyzer");
+
         
 #if USE_LV2_GUI
         for (int j = 0; j < pi->get_param_count(); j++)
@@ -278,7 +296,7 @@ void make_ttl(string path_prefix, const string *data_dir)
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
-                ttl += gtkgui_uri + portnot;
+                ttl += (uireq ? gtkgui_req_uri : gtkgui_uri) + portnot;
             }
         }
 #endif
@@ -309,9 +327,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
 
 #if USE_LV2_GUI
-        ttl += "    uiext:ui <http://calf.sourceforge.net/plugins/gui/gtk2-gui> ;\n";
-        ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n";
-        ttl += "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n";
+        ttl += "    uiext:ui " + (uireq ? gtkgui_req_uri : gtkgui_uri) + " ;\n";
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";

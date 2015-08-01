@@ -1331,10 +1331,10 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
             if(param_z_name != "") {
                 int param_z_no = gui->get_param_no_by_name(param_z_name);
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(param_z_no);
-                handle->dimensions = 3;
                 handle->param_z_no = param_z_no;
                 handle->value_z = handle_z_props.to_01(gui->plugin->get_param_value(param_z_no));
                 handle->default_value_z = handle_z_props.to_01(handle_z_props.def_value);
+                handle->props_z = handle_z_props;
             } else {
                 handle->param_z_no = -1;
             }
@@ -1394,7 +1394,7 @@ void line_graph_param_control::get()
         } else if(clg->handle_hovered >= 0) {
             FreqHandle *handle = &clg->freq_handles[clg->handle_hovered];
 
-            if(handle->dimensions == 3) {
+            if(handle->param_z_no > -1) {
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(handle->param_z_no);
                 float value_z = handle_z_props.from_01(handle->value_z);
                 gui->set_param_value(handle->param_z_no, value_z, this);
@@ -1454,7 +1454,7 @@ void line_graph_param_control::set()
                 }
             }
 
-            if(handle->dimensions == 3 && handle->param_z_no >= 0) {
+            if(handle->param_z_no >= 0) {
                 const parameter_properties &handle_z_props = *gui->plugin->get_metadata_iface()->get_param_props(handle->param_z_no);
                 float value_z = gui->plugin->get_param_value(handle->param_z_no);
                 handle->value_z = handle_z_props.to_01(value_z);
