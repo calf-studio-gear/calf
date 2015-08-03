@@ -1,4 +1,6 @@
-noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h bypass.h custom_ctl.h ctl_linegraph.h \
+noinst_HEADERS = audio_fx.h benchmark.h biquad.h buffer.h bypass.h \
+    ctl_notebook.h ctl_combobox.h ctl_fader.h ctl_frame.h ctl_meterscale.h ctl_buttons.h \
+    ctl_phasegraph.h ctl_tuner.h ctl_linegraph.h \
     ctl_curve.h ctl_keyboard.h ctl_knob.h ctl_led.h ctl_tube.h ctl_vumeter.h drawingutils.h \
     connector.h delay.h envelope.h fft.h fixed_point.h giface.h gtk_session_env.h gtk_main_win.h \
     gui.h gui_config.h gui_controls.h inertia.h jackhost.h \

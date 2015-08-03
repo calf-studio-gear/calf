@@ -1,5 +1,5 @@
 <vbox>
-    <table expand-y="0" expand-x="1" spacing="5" rows="4" cols="9">
+    <table expand-y="0" expand-x="1" spacing="5" rows="4" cols="10">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
         <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
@@ -25,17 +25,25 @@
         <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
         <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
         
-        <label param="width" attach-x="6" attach-y="0" expand-x="0"  />
-        <knob param="width" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="width" attach-x="6" attach-y="3" expand-x="0" />
-                
-        <label param="amount" attach-x="7" attach-y="0" expand-x="0" />
-        <knob param="amount" attach-x="7" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 0.25 1 4"/>
-        <value param="amount" attach-x="7" attach-y="3" expand-x="0" />
-                        
-        <label param="level_out" attach-x="8" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
+        <hbox homogeneous="1" attach-x="6" attach-y="0" attach-h="4">
+            <vbox>
+            <label text="Width" attach-x="6" attach-y="0" expand-x="0"  />
+            <knob param="width" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
+            <value param="width" attach-x="6" attach-y="3" expand-x="0" />
+            </vbox><vbox>
+            <label param="amount" attach-x="7" attach-y="0" expand-x="0" />
+            <knob param="amount" attach-x="7" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 0.25 1 4"/>
+            <value param="amount" attach-x="7" attach-y="3" expand-x="0" />
+            </vbox><vbox>
+            <label param="dry" attach-x="8" attach-y="0" expand-x="0" />
+            <knob param="dry" attach-x="8" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 0.25 1 4"/>
+            <value param="dry" attach-x="8" attach-y="3" expand-x="0" />
+            </vbox><vbox>
+            <label text="Output" attach-x="9" attach-y="0" expand-x="0" />
+            <knob param="level_out" attach-x="9" attach-y="1" attach-h="2" expand-x="0" type="1" />
+            <value param="level_out" attach-x="9" attach-y="3" expand-x="0" />
+            </vbox>
+        </hbox>
     </table>
 
 

@@ -288,17 +288,18 @@ calf_keyboard_get_type (void)
         };
         
         for (int i = 0; ; i++) {
-            char *name = g_strdup_printf("CalfKeyboard%u%d", 
-                ((unsigned int)(intptr_t)calf_keyboard_class_init) >> 16, i);
+            const char *name = "CalfKeyboard";
+            //char *name = g_strdup_printf("CalfKeyboard%u%d", 
+                //((unsigned int)(intptr_t)calf_keyboard_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                free(name);
+                //free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_WIDGET,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            free(name);
+            //free(name);
             break;
         }
     }

@@ -148,18 +148,18 @@ calf_combobox_get_type (void)
         };
 
         for (int i = 0; ; i++) {
-            //const char *name = "CalfCombobox";
-            char *name = g_strdup_printf("CalfCombobox%u%d", 
-                ((unsigned int)(intptr_t)calf_combobox_class_init) >> 16, i);
+            const char *name = "CalfCombobox";
+            //char *name = g_strdup_printf("CalfCombobox%u%d", 
+                //((unsigned int)(intptr_t)calf_combobox_class_init) >> 16, i);
             if (g_type_from_name(name)) {
-                free(name);
+                //free(name);
                 continue;
             }
             type = g_type_register_static(GTK_TYPE_COMBO_BOX,
                                           name,
                                           &type_info,
                                           (GTypeFlags)0);
-            free(name);
+            //free(name);
             break;
         }
     }
