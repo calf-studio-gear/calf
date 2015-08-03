@@ -31,5 +31,5 @@ Once installed there are a couple of manuals available.
 
 - "man calf" displays some general instructions
 - "man calfjackhost" gives some hints on how to use the calf rack application
-- /usr/local/share/doc/calf contains a HTML manual on how to use the plug-ins user interface
+- /usr/[local]/share/doc/calf (depending on your installation path) contains a HTML manual on how to use the plug-ins user interface
 - The plug-in manuals can also be accessed via the GUI menus.
