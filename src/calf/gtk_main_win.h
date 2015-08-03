@@ -26,6 +26,18 @@
 #include <calf/connector.h>
 #include <calf/jackhost.h>
 
+#include <calf/ctl_led.h>
+#include <calf/ctl_vumeter.h>
+#include <calf/ctl_buttons.h>
+
+//#include <calf/giface.h>
+//#include <calf/gui.h>
+//#include <calf/preset.h>
+//#include <calf/gtk_main_win.h>
+//#include <calf/jackhost.h>
+#include <iostream>
+#include <fstream>
+
 namespace calf_plugins {
     
     class gtk_main_window;

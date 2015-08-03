@@ -22,8 +22,17 @@
 #ifndef CALF_VUMETER_H
 #define CALF_VUMETER_H
 
-#include <gtk/gtk.h>
-#include <calf/giface.h>
+//#include "config.h"
+//#include <gtk/gtk.h>
+//#include <calf/giface.h>
+#include <calf/primitives.h>
+//#include <gdk/gdkkeysyms.h>
+//#include <cairo/cairo.h>
+#include <math.h>
+//#include <gdk/gdk.h>
+#include <sys/time.h>
+//#include <string>
+#include <calf/drawingutils.h>
 
 G_BEGIN_DECLS
 

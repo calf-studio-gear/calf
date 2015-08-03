@@ -18,26 +18,7 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <config.h>
-#include <assert.h>
-#include <sys/time.h>
-#include <calf/ctl_curve.h>
-#include <calf/ctl_keyboard.h>
-#include <calf/ctl_knob.h>
-#include <calf/ctl_led.h>
-#include <calf/ctl_tube.h>
-#include <calf/ctl_vumeter.h>
-#include <calf/custom_ctl.h>
-#include <calf/giface.h>
-#include <calf/gui.h>
 #include <calf/gui_controls.h>
-#include <calf/utils.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <calf/ctl_linegraph.h>
-#include <iostream>
-#include <vector>
-#include <algorithm>
 
 using namespace calf_plugins;
 using namespace calf_utils;

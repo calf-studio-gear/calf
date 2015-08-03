@@ -19,19 +19,11 @@
  * Boston, MA  02110-1301  USA
  */
 
-#include "config.h"
-#include <calf/primitives.h>
 #include <calf/ctl_vumeter.h>
-#include <gdk/gdkkeysyms.h>
-#include <cairo/cairo.h>
-#include <math.h>
-#include <gdk/gdk.h>
-#include <sys/time.h>
-#include <string>
-#include <calf/drawingutils.h>
 
 
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
+
 
 static gboolean
 calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)

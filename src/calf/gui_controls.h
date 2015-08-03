@@ -20,7 +20,32 @@
 #ifndef __CALF_GUI_CONTROLS_H
 #define __CALF_GUI_CONTROLS_H
 
-#include "gui.h"
+#include <config.h>
+#include <assert.h>
+#include <sys/time.h>
+#include <calf/ctl_curve.h>
+#include <calf/ctl_keyboard.h>
+#include <calf/ctl_knob.h>
+#include <calf/ctl_led.h>
+#include <calf/ctl_tube.h>
+#include <calf/ctl_vumeter.h>
+#include <calf/ctl_frame.h>
+#include <calf/ctl_fader.h>
+#include <calf/ctl_notebook.h>
+#include <calf/ctl_meterscale.h>
+#include <calf/ctl_phasegraph.h>
+#include <calf/ctl_linegraph.h>
+#include <calf/ctl_buttons.h>
+#include <calf/ctl_tuner.h>
+#include <calf/ctl_combobox.h>
+#include <calf/giface.h>
+#include <calf/gui.h>
+#include <calf/utils.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
 struct CalfCurve;
 struct CalfKeyboard;

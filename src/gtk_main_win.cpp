@@ -18,16 +18,7 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <calf/ctl_led.h>
-#include <calf/ctl_vumeter.h>
-#include <calf/giface.h>
-#include <calf/gui.h>
-#include <calf/custom_ctl.h>
-#include <calf/preset.h>
 #include <calf/gtk_main_win.h>
-#include <calf/jackhost.h>
-#include <iostream>
-#include <fstream>
 
 using namespace calf_plugins;
 using namespace std;

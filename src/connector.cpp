@@ -24,7 +24,7 @@
 
 #include <calf/giface.h>
 #include <calf/connector.h>
-#include <calf/custom_ctl.h>
+//#include <calf/custom_ctl.h>
 #include <calf/jackhost.h>
 
 #include <jack/jack.h>
