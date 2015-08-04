@@ -449,13 +449,13 @@ void simple_lfo::deactivate()
 
 float simple_lfo::get_value()
 {
-    return get_value_from_phase(phase, offset) * amount;
+    return get_value_from_phase(phase);
 }
 
-float simple_lfo::get_value_from_phase(float ph, float off) const
+float simple_lfo::get_value_from_phase(float ph) const
 {
     float val = 0.f;
-    float phs = ph + off;
+    float phs = ph / std::min(1.99f, std::max(0.01f, (pwidth + 1))) + offset;
     if (phs >= 1.0)
         phs = fmod(phs, 1.f);
     switch (mode) {
@@ -488,15 +488,13 @@ float simple_lfo::get_value_from_phase(float ph, float off) const
             val = 1 - phs * 2.f;
             break;
     }
-    return val;
+    return val * amount;
 }
 
 void simple_lfo::advance(uint32_t count)
 {
     //this function walks from 0.f to 1.f and starts all over again
-    phase += count * freq * (1.0 / srate);
-    if (phase >= 1.0)
-        phase = fmod(phase, 1.f);
+    set_phase(phase + count * freq * (1.0 / srate));
 }
 
 void simple_lfo::set_phase(float ph)
@@ -507,16 +505,17 @@ void simple_lfo::set_phase(float ph)
         phase = fmod(phase, 1.f);
 }
 
-void simple_lfo::set_params(float f, int m, float o, uint32_t sr, float a)
+void simple_lfo::set_params(float f, int m, float o, uint32_t sr, float a, float p)
 {
     // freq: a value in Hz
     // mode: sine=0, triangle=1, square=2, saw_up=3, saw_down=4
     // offset: value between 0.f and 1.f to offset the lfo in time
-    freq = f;
-    mode = m;
+    freq   = f;
+    mode   = m;
     offset = o;
-    srate = sr;
+    srate  = sr;
     amount = a;
+    pwidth = p;
 }
 void simple_lfo::set_freq(float f)
 {
@@ -534,13 +533,17 @@ void simple_lfo::set_amount(float a)
 {
     amount = a;
 }
+void simple_lfo::set_pwidth(float p)
+{
+    pwidth = p;
+}
 bool simple_lfo::get_graph(float *data, int points, cairo_iface *context, int *mode) const
 {
     if (!is_active)
         return false;
     for (int i = 0; i < points; i++) {
         float ph = (float)i / (float)points;
-        data[i] = get_value_from_phase(ph, offset) * amount;
+        data[i] = get_value_from_phase(ph);
     }
     return true;
 }
@@ -553,7 +556,7 @@ bool simple_lfo::get_dot(float &x, float &y, int &size, cairo_iface *context) co
     if (phs >= 1.0)
         phs = fmod(phs, 1.f);
     x = phase;
-    y = get_value_from_phase(phase, offset) * amount;
+    y = get_value_from_phase(phase);
     return true;
 }
 

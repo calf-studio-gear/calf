@@ -1152,6 +1152,7 @@ CALF_PORT_PROPS(pulsator) = {
     { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "offset", "Offset L/R" },
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono-in" },
     { 0,           0,           1,     2,  PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
+    { 0,           -0.99,       0.99,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pulsewidth", "Pulse Width" },
     {}
 };
 

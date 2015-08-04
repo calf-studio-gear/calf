@@ -518,23 +518,24 @@ public:
 /// get_value() returns a value between -1 and 1
 class simple_lfo {
 private:
-    float phase, freq, offset, amount;
+    float phase, freq, offset, amount, pwidth;
     int mode;
     uint32_t srate;
     bool is_active;
 public:
     simple_lfo();
-    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f);
+    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f, float pwidth = 0.f);
     void set_freq(float f);
     void set_mode(int m);
     void set_amount(float a);
     void set_offset(float o);
+    void set_pwidth(float p);
     float get_value();
     void advance(uint32_t count);
     void set_phase(float ph);
     void activate();
     void deactivate();
-    float get_value_from_phase(float ph, float off) const;
+    float get_value_from_phase(float ph) const;
     bool get_graph(float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
     bool get_dot(float &x, float &y, int &size, calf_plugins::cairo_iface *context) const;
 };

@@ -597,6 +597,9 @@ pulsator_audio_module::pulsator_audio_module()
     mode_old    = -1;
     amount_old  = -1;
     offset_old  = -1;
+    reset_old   = -1;
+    pwidth_old  = 0;
+    reset_old   = false;
 }
 
 void pulsator_audio_module::activate()
@@ -615,21 +618,27 @@ void pulsator_audio_module::deactivate()
 
 void pulsator_audio_module::params_changed()
 {
-    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate, *params[param_amount]);
-    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate, *params[param_amount]);
+    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate, *params[param_amount], *params[param_pwidth]);
+    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate, *params[param_amount], *params[param_pwidth]);
     clear_reset = false;
-    if (*params[param_reset] >= 0.5) {
+    if (*params[param_reset] >= 0.5 and reset_old != true) {
         clear_reset = true;
         lfoL.set_phase(0.f);
         lfoR.set_phase(0.f);
+        reset_old = true;
     }
+    if (*params[param_reset] < 0.5)
+        reset_old = false;
+        
     if (*params[param_mode]   != mode_old
      or *params[param_amount] != amount_old
      or *params[param_offset] != offset_old
+     or *params[param_pwidth] != pwidth_old
      or clear_reset) {
         mode_old     = *params[param_mode];
         amount_old   = *params[param_amount];
         offset_old   = *params[param_offset];
+        pwidth_old   = *params[param_pwidth];
         redraw_graph = true;
     }
 }

@@ -184,7 +184,7 @@ class pulsator_audio_module: public audio_module<pulsator_metadata>, public freq
 private:
     typedef pulsator_audio_module AM;
     float offset_old;
-    int mode_old, amount_old;
+    int mode_old, amount_old, pwidth_old, reset_old;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
     dsp::bypass bypass;

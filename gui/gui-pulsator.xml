@@ -65,8 +65,11 @@
         </vbox>
         <vbox spacing="3">
             <label param="amount" fill="0" align-y="1.0" />
-            <knob size="5" param="amount" expand="0" fill="0" />
+            <knob size="2" param="amount" expand="0" fill="0" />
             <value param="amount" fill="0" align-y="0.0" />
+            <label param="pulsewidth" fill="0" align-y="1.0" />
+            <knob size="2" param="pulsewidth" type="1" expand="0" fill="0" />
+            <value param="pulsewidth" fill="0" align-y="0.0" />
         </vbox>
     </hbox>
 </vbox>

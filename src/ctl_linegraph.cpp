@@ -390,7 +390,7 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
             float pat_alpha;
             bool grad;
             char label[1024];
-            float freq = exp((handle->value_x) * log(1000)) * 20.0;
+            //float freq = exp((handle->value_x) * log(1000)) * 20.0;
             
             // choose colors between dragged and normal state
             if (lg->handle_hovered == i) {
