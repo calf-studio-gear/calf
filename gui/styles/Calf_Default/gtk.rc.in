@@ -360,7 +360,7 @@ style "calf-knob2" = "calf-knob" {
     CalfKnob::tick-length = 8.0
 }
 style "calf-knob3" = "calf-knob" {
-    CalfKnob::ring-margin = 3.5
+    CalfKnob::ring-margin = 4
     CalfKnob::ring-width  = 3.8
     CalfKnob::tick-margin = 9.2
     CalfKnob::tick-width  = 1.0
@@ -374,9 +374,9 @@ style "calf-knob4" = "calf-knob" {
     CalfKnob::tick-length = 14.0
 }
 style "calf-knob5" = "calf-knob" {
-    CalfKnob::ring-margin = 5.5
+    CalfKnob::ring-margin = 8.5
     CalfKnob::ring-width  = 4.5
-    CalfKnob::tick-margin = 13.0
+    CalfKnob::tick-margin = 16.5
     CalfKnob::tick-width  = 1.0
     CalfKnob::tick-length = 17.0
 }
