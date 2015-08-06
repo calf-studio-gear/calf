@@ -219,8 +219,9 @@ std::string parameter_properties::to_string(float value) const
     case PF_ENUM:
     case PF_ENUM_MULTI:
         value = (int)value;
-        s_ = human_readable(value, 1000, (char*)"%g%s");
-        snprintf(buf, sizeof(buf), "%s", s_.c_str());
+        //s_ = human_readable(value, 1000, (char*)"%g%s");
+        //snprintf(buf, sizeof(buf), "%s", s_.c_str());
+        snprintf(buf, sizeof(buf), "%g", value);
         //printf("%.2f %s\n", value, buf);
         break;
     case PF_FLOAT:

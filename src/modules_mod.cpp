@@ -594,12 +594,13 @@ pulsator_audio_module::pulsator_audio_module()
 {
     is_active = false;
     srate = 0;
-    mode_old    = -1;
-    amount_old  = -1;
-    offset_old  = -1;
-    reset_old   = -1;
-    pwidth_old  = 0;
-    reset_old   = false;
+    mode_old     = -1;
+    amount_old   = -1;
+    offset_l_old = -1;
+    offset_r_old = -1;
+    reset_old    = -1;
+    pwidth_old   = 0;
+    freq_old     = 0;
 }
 
 void pulsator_audio_module::activate()
@@ -618,8 +619,6 @@ void pulsator_audio_module::deactivate()
 
 void pulsator_audio_module::params_changed()
 {
-    lfoL.set_params(*params[param_freq], *params[param_mode], 0.f, srate, *params[param_amount], *params[param_pwidth]);
-    lfoR.set_params(*params[param_freq], *params[param_mode], *params[param_offset], srate, *params[param_amount], *params[param_pwidth]);
     clear_reset = false;
     if (*params[param_reset] >= 0.5 and reset_old != true) {
         clear_reset = true;
@@ -629,15 +628,27 @@ void pulsator_audio_module::params_changed()
     }
     if (*params[param_reset] < 0.5)
         reset_old = false;
-        
+    
+    double freq = 2;
+    freq = convert_periodic(*params[param_bpm + (int)((periodic_unit)*params[param_timing])],
+                                   (periodic_unit)*params[param_timing], UNIT_HZ);
+    if (freq != freq_old) {
+        freq_old = freq;
+        clear_reset = true;
+    }
+    
     if (*params[param_mode]   != mode_old
      or *params[param_amount] != amount_old
-     or *params[param_offset] != offset_old
+     or *params[param_offset_l] != offset_l_old
+     or *params[param_offset_r] != offset_r_old
      or *params[param_pwidth] != pwidth_old
      or clear_reset) {
+        lfoL.set_params(freq, *params[param_mode], *params[param_offset_l], srate, *params[param_amount], *params[param_pwidth]);
+        lfoR.set_params(freq, *params[param_mode], *params[param_offset_r], srate, *params[param_amount], *params[param_pwidth]);
         mode_old     = *params[param_mode];
         amount_old   = *params[param_amount];
-        offset_old   = *params[param_offset];
+        offset_l_old = *params[param_offset_l];
+        offset_r_old = *params[param_offset_r];
         pwidth_old   = *params[param_pwidth];
         redraw_graph = true;
     }

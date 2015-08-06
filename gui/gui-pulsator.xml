@@ -18,7 +18,7 @@
         
         <label param="mono" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="mono" icon="mono" attach-x="4" attach-y="1" attach-h="2" expand-x="0" />
-        
+                    
         <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
         <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
         <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
@@ -33,43 +33,69 @@
         <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
     <hbox spacing="20">
-        <vbox spacing="3">
-            <label param="freq" align-y="1.0" />
-            <knob size="5" param="freq" expand="0" fill="0" ticks="0.01 0.1 1 10 100" />
-            <value param="freq" align-y="0.0" />
-        </vbox>
+        <!-- TIMING -->
+        <frame label="Timing">
+            <vbox>
+                <notebook param="timing">
+                    <table page="BPM" rows="3" cols="2">
+                        <label param="bpm"  attach-x="0" attach-y="0"/>
+                        <knob param="bpm" attach-x="0" attach-y="1" size="5" ticks="30 60 120 180 240 300"/>
+                        <value param="bpm" attach-x="0" attach-y="2"/>
+                        <vbox attach-x="1" attach-y="1" expand-y="0" fill-y="0">
+                            <label text="Tap"/>
+                            <tap param="bpm"/>
+                            <label/>
+                        </vbox>
+                    </table>
+                    <hbox page="ms">
+                        <vbox>
+                            <label param="ms" />
+                            <knob param="ms" size="5" ticks="10 200 400 600 800 1000 1200 1400 1600 1800 2000"/>
+                            <value param="ms"/>
+                        </vbox>
+                    </hbox>
+                    <hbox page="Hz">
+                        <vbox>
+                            <label param="hz" />
+                            <knob param="hz" size="5" ticks="0.01 0.1 1 10 100"/>
+                            <value param="hz"/>
+                        </vbox>
+                    </hbox>
+                    <hbox page="Sync">
+                        <value param="bpm_host"/>
+                    </hbox>
+                </notebook>
+                <button param="reset" />
+            </vbox>
+        </frame>
+        <!-- TIMING -->
+            <vbox spacing="3">
+                <vbox>
+                    <label param="amount" fill="0" align-y="1.0" />
+                    <knob size="4" param="amount" expand="0" fill="0" />
+                    <value param="amount" fill="0" align-y="0.0" />
+                </vbox>
+                <combo param="mode" />
+                <vbox>
+                    <label param="pulsewidth" fill="0" align-y="1.0" />
+                    <knob size="4" param="pulsewidth" type="1" ticks="0 0.5 1 1.5 2" expand="0" fill="0" />
+                    <value param="pulsewidth" fill="0" align-y="0.0" />
+                </vbox>
+            </vbox>
         <vbox>
             <frame label="Pulse">
-                <if cond="directlink">
-                    <line-graph refresh="1" width="400" height="100" param="freq"/>
-                </if>
+                <vbox spacing="5">
+                    <if cond="directlink">
+                        <line-graph refresh="1" width="400" height="120" param="hz" expand="1" fill="1"/>
+                    </if>
+                    <table rows="2" cols="2">
+                        <label param="offset_l" attach-x="0" attach-y="0" />
+                        <hscale param="offset_l" size="2" width="300" attach-x="1" attach-y="0" />
+                        <label param="offset_r" attach-x="0" attach-y="1"/>
+                        <hscale param="offset_r" size="2" width="300" attach-x="1" attach-y="1" />
+                    </table>
+                </vbox>
             </frame>
-            <hbox spacing="10">
-                <vbox>
-                    <label />
-                    <combo param="mode" expand="0" fill="0" />
-                    <label param="mode" />
-                </vbox>
-                
-                <vbox>
-                    <hscale param="offset" />
-                    <label param="offset" />
-                </vbox>
-                
-                <vbox>
-                    <label />
-                    <button param="reset" />
-                    <label />
-                </vbox>
-            </hbox>
-        </vbox>
-        <vbox spacing="3">
-            <label param="amount" fill="0" align-y="1.0" />
-            <knob size="2" param="amount" expand="0" fill="0" />
-            <value param="amount" fill="0" align-y="0.0" />
-            <label param="pulsewidth" fill="0" align-y="1.0" />
-            <knob size="2" param="pulsewidth" type="1" expand="0" fill="0" />
-            <value param="pulsewidth" fill="0" align-y="0.0" />
         </vbox>
     </hbox>
 </vbox>

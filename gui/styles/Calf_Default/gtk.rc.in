@@ -245,7 +245,7 @@ style "calf-notebook"
 {
     CalfNotebook::background-alpha = 0.5
     
-    xthickness   = 18
+    xthickness   = 12
     ythickness   = 8
     
     fg[NORMAL]   = "#fff"

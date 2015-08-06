@@ -434,6 +434,7 @@ simple_lfo::simple_lfo()
 {
     is_active       = false;
     phase = 0.f;
+    pwidth = 1.f;
 }
 
 void simple_lfo::activate()
@@ -455,9 +456,8 @@ float simple_lfo::get_value()
 float simple_lfo::get_value_from_phase(float ph) const
 {
     float val = 0.f;
-    float phs = ph / std::min(1.99f, std::max(0.01f, (pwidth + 1))) + offset;
-    if (phs >= 1.0)
-        phs = fmod(phs, 1.f);
+    float phs = std::min(100.f, ph / std::min(1.99f, std::max(0.01f, pwidth)) + offset);
+    
     switch (mode) {
         default:
         case 0:

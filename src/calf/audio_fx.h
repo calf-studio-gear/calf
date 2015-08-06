@@ -524,7 +524,7 @@ private:
     bool is_active;
 public:
     simple_lfo();
-    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f, float pwidth = 0.f);
+    void set_params(float f, int m, float o, uint32_t sr, float amount = 1.f, float pwidth = 1.f);
     void set_freq(float f);
     void set_mode(int m);
     void set_amount(float a);

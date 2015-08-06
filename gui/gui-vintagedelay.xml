@@ -48,6 +48,7 @@
 
 
     <hbox spacing="8">
+        <!-- TIMING -->
         <frame label="Timing">
             <notebook param="timing">
                 <table page="BPM" rows="3" cols="2">
@@ -60,11 +61,18 @@
                         <label/>
                     </vbox>
                 </table>
-                <hbox page="Time">
+                <hbox page="ms">
                     <vbox>
                         <label param="ms" />
-                        <knob param="ms" size="5" ticks="200 400 600 800 1000 1200 1400 1600 1800 2000"/>
+                        <knob param="ms" size="5" ticks="10 200 400 600 800 1000 1200 1400 1600 1800 2000"/>
                         <value param="ms"/>
+                    </vbox>
+                </hbox>
+                <hbox page="Hz">
+                    <vbox>
+                        <label param="hz" />
+                        <knob param="hz" size="5" ticks="0.01 0.1 1 10 100"/>
+                        <value param="hz"/>
                     </vbox>
                 </hbox>
                 <hbox page="Sync">
@@ -72,6 +80,7 @@
                 </hbox>
             </notebook>
         </frame>
+        <!-- TIMING -->
         <frame label="Fragmentation">
             <notebook param="fragmentation">
                 <hbox page="Repeating">

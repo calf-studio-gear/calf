@@ -614,5 +614,33 @@ inline note_desc hz_to_note (double hz, double tune)
     return desc;
 }
 
+
+enum periodic_unit { UNIT_BPM, UNIT_MS, UNIT_HZ, UNIT_SYNC };
+
+inline double convert_periodic (double val, periodic_unit unit_in, periodic_unit unit_out)
+{
+    // calculates different periodical units into each other.
+    // it is used for e.g. pulsator or vintage delay to unify
+    // the selected timing method
+    if (unit_in == unit_out)
+        return val;
+    double freq = 0.;
+    switch (unit_in) {
+        case UNIT_BPM:  freq = val / 60.;          break;
+        case UNIT_MS:   freq = 1. / (val / 1000.); break;
+        case UNIT_HZ:   freq = val;                break;
+        case UNIT_SYNC: freq = val / 60.;          break;
+    }
+    switch (unit_out) {
+        default:
+        case UNIT_BPM:  return freq * 60.;
+        case UNIT_MS:   return (1. / freq) / 1000.;
+        case UNIT_HZ:   return freq;
+        case UNIT_SYNC: return freq * 60.;
+    }
+};
+
+
+
 };
 #endif

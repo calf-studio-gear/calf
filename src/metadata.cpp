@@ -36,7 +36,12 @@ const char *mb_crossover_filter_choices[] = { "LR4", "LR8" };
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
 const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference" };
-
+const char *periodical_mode_names[] = {
+    "BPM",
+    "ms",
+    "Hz",
+    "Sync",
+};
 
 #define BYPASS_AND_LEVEL_PARAMS \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" }, \
@@ -85,6 +90,13 @@ const char *eq_analyzer_mode_names[] = { "Input", "Output", "Difference" };
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer Active" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, eq_analyzer_mode_names, "analyzer_mode", "Analyzer Mode" }, \
 
+#define PERIODICAL_DEFINITIONS(init) \
+    { init,      0,    3,     0, PF_ENUM | PF_CTL_COMBO, periodical_mode_names, "timing", "Timing" }, \
+    { 120,       30,   300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM, NULL, "bpm", "BPM" }, \
+    { 500,       10,   2000,  1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "ms", "ms" }, \
+    { 2,         0.01, 100,   0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hz", "Frequency" }, \
+    { 120,       1,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM | PF_SYNC_BPM, NULL, "bpm_host", "Host BPM" }, \
+ 
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -239,12 +251,6 @@ const char *vintage_delay_fbmodes[] = {
     "Old Tape",
 };
 
-const char *vintage_delay_timing[] = {
-    "BPM",
-    "Time",
-    "Sync",
-};
-
 const char *vintage_delay_fragmentation[] = {
     "Repeating",
     "Pattern",
@@ -253,8 +259,6 @@ const char *vintage_delay_fragmentation[] = {
 CALF_PORT_PROPS(vintage_delay) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
-    { 120,      30,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM, NULL, "bpm", "Tempo" },
-    { 120,       1,    300,   1, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_BPM | PF_SYNC_BPM, NULL, "bpm_host", "Host BPM" },
     {  4,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "subdiv", "Subdivide"},
     {  3,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_l", "Time L"},
     {  5,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_r", "Time R"},
@@ -264,16 +268,10 @@ CALF_PORT_PROPS(vintage_delay) = {
     { 1,         0,    2,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fbmodes, "medium", "Medium" },
     { 1.0,       0,    4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry" },
     { 1.0,      -1,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "width", "Stereo Width" },
-    { 0,         0,    1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "sync", "Sync BPM" },
-    
-    { 0,         0,    2,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_timing, "timing", "Timing" },
     { 0,         0,    1,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fragmentation, "fragmentation", "Fragmentation" },
-    
-    { 500,      200,   2000,  1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "ms", "ms" },
-    
     { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "psubdiv", "Pattern Subdivide" },
     { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pbeats", "Pattern Beats" },
-    
+    PERIODICAL_DEFINITIONS(0)
     {}
 };
 
@@ -1146,13 +1144,14 @@ const char *pulsator_mode_names[] = { "Sine", "Triangle", "Square", "Saw up", "S
 CALF_PORT_PROPS(pulsator) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
-    { 0,           0,           4,     0,  PF_ENUM | PF_CTL_COMBO, pulsator_mode_names, "mode", "Mode" },
-    { 1,           0.01,        100,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Frequency" },
-    { 1,           0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "amount", "Modulation" },
-    { 0.5,         0,           1,     0,  PF_FLOAT | PF_SCALE_PERC, NULL, "offset", "Offset L/R" },
-    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono-in" },
-    { 0,           0,           1,     2,  PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
-    { 0,           -0.99,       0.99,  0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pulsewidth", "Pulse Width" },
+    { 0,           0,           4,     0, PF_ENUM | PF_CTL_COMBO, pulsator_mode_names, "mode", "Mode" },
+    { 1,           0,           1,     0, PF_FLOAT | PF_SCALE_PERC, NULL, "amount", "Modulation" },
+    { 0.0,         0,           1,     0, PF_FLOAT | PF_SCALE_PERC, NULL, "offset_l", "Offset L" },
+    { 0.5,         0,           1,     0, PF_FLOAT | PF_SCALE_PERC, NULL, "offset_r", "Offset R" },
+    { 0,           0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono-in" },
+    { 0,           0,           1,     2, PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
+    { 1,           0,           2,     0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pulsewidth", "Pulse Width" },
+    PERIODICAL_DEFINITIONS(2)
     {}
 };
 

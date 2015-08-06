@@ -27,6 +27,7 @@
 
 #define MONO_VU_METER_PARAMS param_meter_in, param_meter_out, param_clip_in, param_clip_out
 #define STEREO_VU_METER_PARAMS param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR, param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR
+#define PERIODICAL_PARAMS param_timing, param_bpm, param_ms, param_hz, param_bpm_host
 
 namespace calf_plugins {
 
@@ -89,11 +90,10 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
     enum {  param_bypass, param_level_in, param_level_out,
             STEREO_VU_METER_PARAMS,
-            par_bpm, par_bpm_host, par_divide,
-            par_time_l, par_time_r, par_feedback,
+            par_divide, par_time_l, par_time_r, par_feedback,
             par_amount, par_mixmode, par_medium, par_dryamount,
-            par_width, par_sync, par_timing, par_frag, par_ms,
-            par_psubdiv, par_pbeats,
+            par_width, par_frag, par_psubdiv, par_pbeats,
+            PERIODICAL_PARAMS,
             param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("vintagedelay", "vintagedelay", "Vintage Delay")
@@ -615,7 +615,10 @@ struct pulsator_metadata: public plugin_metadata<pulsator_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out, STEREO_VU_METER_PARAMS,
-           param_mode, param_freq, param_amount, param_offset, param_mono, param_reset, param_pwidth, param_count };
+           param_mode, param_amount, param_offset_l, param_offset_r,
+           param_mono, param_reset, param_pwidth,
+           PERIODICAL_PARAMS,
+           param_count };
     PLUGIN_NAME_ID_LABEL("pulsator", "pulsator", "Pulsator")
 };
 

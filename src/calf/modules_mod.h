@@ -183,7 +183,7 @@ public:
 class pulsator_audio_module: public audio_module<pulsator_metadata>, public frequency_response_line_graph  {
 private:
     typedef pulsator_audio_module AM;
-    float offset_old;
+    float offset_l_old, offset_r_old, freq_old;
     int mode_old, amount_old, pwidth_old, reset_old;
     bool clear_reset;
     dsp::simple_lfo lfoL, lfoR;
