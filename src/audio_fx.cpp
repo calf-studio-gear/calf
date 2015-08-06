@@ -457,7 +457,8 @@ float simple_lfo::get_value_from_phase(float ph) const
 {
     float val = 0.f;
     float phs = std::min(100.f, ph / std::min(1.99f, std::max(0.01f, pwidth)) + offset);
-    
+    if (phs > 1)
+        phs = fmod(phs, 1.f);
     switch (mode) {
         default:
         case 0:
