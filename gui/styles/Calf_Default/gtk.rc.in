@@ -328,6 +328,8 @@ style "calf-led"
 style "calf-display" {
     bg[NORMAL]   = { 0.85, 0.85, 0.85 }
     base[NORMAL] = { 0.89, 1.00, 0.45 }
+    fg[NORMAL]   = { 0.35, 0.4, 0.2 }
+    text[NORMAL] = { 0.35, 0.4, 0.2 }
     xthickness = 0
     ythickness = 0
     CalfLineGraph::border-radius  = 0
@@ -449,6 +451,7 @@ widget "*Calf*LED*"                                style : highest "calf-led"
 
 widget "*Calf*Graph"                              style : highest "calf-display"
 widget "*Calf*Tuner"                              style : highest "calf-display"
+widget "*Calf*Pattern"                            style : highest "calf-display"
 
 widget "*Calf*Knob*1*"                            style : highest "calf-knob1"
 widget "*Calf*Knob*2*"                            style : highest "calf-knob2"

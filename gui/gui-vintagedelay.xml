@@ -96,22 +96,20 @@
                 
                 <hbox page="Pattern">
                     <table rows="2" cols="2">
-                        <vbox attach-x="0" attach-y="0">
-                            <label text="Subdivide" expand="0"  />
-                            <knob param="psubdiv" expand="0" ticks="1 2 3 4 5 6 7 8"/>
-                            <value param="psubdiv" expand="0" />
+                        <label text="L" attach-x="0" attach-y="0"/>
+                        <label text="R" attach-x="0" attach-y="1"/>
+                        <pattern param="time_l" beats="pbeats" bars="pbars" width="280" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="0" />
+                        <pattern param="time_r" beats="pbeats" bars="pbars" width="280" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="1" />
+                        <vbox attach-x="2" attach-y="0">
+                            <label text="Bars" expand="0"  />
+                            <knob param="pbars" expand="0" ticks="1 2 3 4 5 6 7 8"/>
+                            <value param="pbars" expand="0" />
                         </vbox>
-                        <vbox attach-x="0" attach-y="1">
+                        <vbox attach-x="2" attach-y="1">
                             <label text="Beats" expand="0"  />
                             <knob param="pbeats" expand="0" ticks="1 2 3 4 5 6 7 8"/>
                             <value param="pbeats" expand="0" />
                         </vbox>
-                        <label text="L" attach-x="1" attach-y="0"/>
-                        <label text="R" attach-x="1" attach-y="1"/>
-                        <if cond="directlink">
-                            <line-graph refresh="1" width="280" height="50" param="time_l" expand-x="1" fill-x="1" expand-y="0" fill-y="0" attach-x="2" attach-y="0" />
-                            <line-graph refresh="1" width="280" height="50" param="time_r" expand-x="1" fill-x="1" expand-y="0" fill-y="0" attach-x="2" attach-y="1" />
-                        </if>
                     </table>
                 </hbox>
                 

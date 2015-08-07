@@ -92,7 +92,7 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
             STEREO_VU_METER_PARAMS,
             par_divide, par_time_l, par_time_r, par_feedback,
             par_amount, par_mixmode, par_medium, par_dryamount,
-            par_width, par_frag, par_psubdiv, par_pbeats,
+            par_width, par_frag, par_pbeats, par_pbars,
             PERIODICAL_PARAMS,
             param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };

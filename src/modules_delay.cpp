@@ -122,6 +122,16 @@ void vintage_delay_audio_module::params_changed()
     double bpm = 120;
     bpm = convert_periodic(*params[param_bpm + (int)((periodic_unit)*params[param_timing])],
                                   (periodic_unit)*params[param_timing], UNIT_BPM);
+    
+    switch ((int)*params[par_frag]) {
+        case FRAG_PERIODIC:
+            
+            break;
+        case FRAG_PATTERN:
+            int amnt = *params[par_pbeats] * *params[par_pbars];
+            break;
+    }
+    
     float unit = 60.0 * srate / (bpm * *params[par_divide]);
     deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
     deltime_r = dsp::fastf2i_drm(unit * *params[par_time_r]);

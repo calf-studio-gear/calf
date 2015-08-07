@@ -38,6 +38,7 @@
 #include <calf/ctl_buttons.h>
 #include <calf/ctl_tuner.h>
 #include <calf/ctl_combobox.h>
+#include <calf/ctl_pattern.h>
 #include <calf/giface.h>
 #include <calf/gui.h>
 #include <calf/utils.h>
@@ -282,6 +283,15 @@ struct tuner_param_control: public param_control
     virtual void on_idle();
     int cents_no;
     virtual ~tuner_param_control();
+};
+
+/// Pattern
+struct pattern_param_control: public param_control
+{
+    virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
+    virtual void get();
+    virtual void set();
+    int param_bars, param_beats;
 };
 
 /// Knob

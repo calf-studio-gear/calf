@@ -1551,6 +1551,62 @@ tuner_param_control::~tuner_param_control()
 {
 }
 
+/******************************** Pattern ********************************/
+
+GtkWidget *pattern_param_control::create(plugin_gui *_gui, int _param_no)
+{
+    gui = _gui;
+    param_no = _param_no;
+    widget = calf_pattern_new ();
+    widget->requisition.width = get_int("width", 300);
+    widget->requisition.height = get_int("height", 60);
+    const string &beats_name = attribs["beats"];
+    if (beats_name != "") {
+        param_beats = gui->get_param_no_by_name(beats_name);
+        gui->add_param_ctl(param_beats, this);
+    } else param_beats = -1;
+    const string &bars_name = attribs["bars"];
+    if (bars_name != "") {
+        param_bars = gui->get_param_no_by_name(bars_name);
+        gui->add_param_ctl(param_bars, this);
+    } else param_bars = -1;
+    gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Pattern");
+    return widget;
+}
+
+void pattern_param_control::set()
+{
+    _GUARD_CHANGE_
+    CalfPattern *p = CALF_PATTERN(widget);
+    int b;
+    if (param_beats >= 0) {
+        b = gui->plugin->get_param_value(param_beats);
+        if (b != p->beats) {
+            p->beats = b;
+            p->force_redraw = true;
+            gtk_widget_queue_draw(widget);
+        }
+    }
+    if (param_bars >= 0) {
+        b = gui->plugin->get_param_value(param_bars);
+        if (b != p->bars) {
+            p->bars = b;
+            p->force_redraw = true;
+            gtk_widget_queue_draw(widget);
+        }
+    }
+}
+
+void pattern_param_control::get()
+{
+    _GUARD_CHANGE_
+    CalfPattern *p = CALF_PATTERN(widget);
+    int num = p->beats * p->bars;
+    for (int i = 0; i < num; i++) {
+        printf("%d: %.2f\n", i, p->values[i]);
+    }
+}
+
 /******************************** List View ********************************/
 
 GtkWidget *listview_param_control::create(plugin_gui *_gui, int _param_no)

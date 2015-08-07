@@ -269,8 +269,8 @@ CALF_PORT_PROPS(vintage_delay) = {
     { 1.0,       0,    4,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "dry", "Dry" },
     { 1.0,      -1,    1,     0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB , NULL, "width", "Stereo Width" },
     { 0,         0,    1,     0, PF_ENUM | PF_CTL_COMBO, vintage_delay_fragmentation, "fragmentation", "Fragmentation" },
-    { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "psubdiv", "Pattern Subdivide" },
     { 4,         1,    8,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pbeats", "Pattern Beats" },
+    { 4,         1,    4,     1, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pbars", "Pattern Bars" },
     PERIODICAL_DEFINITIONS(0)
     {}
 };
