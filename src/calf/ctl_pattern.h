@@ -38,6 +38,10 @@ G_BEGIN_DECLS
 #define CALF_IS_PATTERN_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_PATTERN))
 #define CALF_PATTERN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj),  CALF_TYPE_PATTERN, CalfPatternClass))
 
+typedef struct calf_pattern_handle {
+    int bar;
+    int beat;
+} calf_pattern_handle;
 struct CalfPattern
 {
     GtkEventBox parent;
@@ -50,15 +54,12 @@ struct CalfPattern
     float mouse_x, mouse_y;
     float x, y, width, height, border_h, border_v, bar_width, beat_width, beat_height;
     int beats, bars;
-    int handle_grabbed;
-    int handle_hovered;
-    int handle_redraw;
-    double values[64];
+    calf_pattern_handle handle_grabbed;
+    calf_pattern_handle handle_hovered;
+    double values[4][8];
     cairo_surface_t *background_surface;
     /// Cached hand (drag) cursor
     GdkCursor *hand_cursor;
-    /// Cached arrow (drag) cursor
-    GdkCursor *arrow_cursor;
 };
 
 struct CalfPatternClass

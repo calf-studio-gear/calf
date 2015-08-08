@@ -1601,10 +1601,10 @@ void pattern_param_control::get()
 {
     _GUARD_CHANGE_
     CalfPattern *p = CALF_PATTERN(widget);
-    int num = p->beats * p->bars;
-    for (int i = 0; i < num; i++) {
-        printf("%d: %.2f\n", i, p->values[i]);
-    }
+    //int num = p->beats * p->bars;
+    //for (int i = 0; i < num; i++) {
+        //printf("%d: %.2f\n", i, p->values[i]);
+    //}
 }
 
 /******************************** List View ********************************/

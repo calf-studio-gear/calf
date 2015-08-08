@@ -83,7 +83,7 @@
         <!-- TIMING -->
         <frame label="Fragmentation">
             <notebook param="fragmentation">
-                <hbox page="Repeating">
+                <hbox page="Periodic">
                     <table rows="3" cols="2">
                         <label attach-x="0" attach-y="0" param="subdiv" />
                         <hscale attach-x="1" attach-y="0" param="subdiv" />
