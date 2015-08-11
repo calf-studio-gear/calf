@@ -1578,6 +1578,10 @@ void pattern_param_control::set()
 {
     _GUARD_CHANGE_
     CalfPattern *p = CALF_PATTERN(widget);
+    
+    // TODO: read values from an LV2 port
+    // (which doesn't exist by now)
+            
     int b;
     if (param_beats >= 0) {
         b = gui->plugin->get_param_value(param_beats);
@@ -1601,10 +1605,15 @@ void pattern_param_control::get()
 {
     _GUARD_CHANGE_
     CalfPattern *p = CALF_PATTERN(widget);
-    //int num = p->beats * p->bars;
-    //for (int i = 0; i < num; i++) {
-        //printf("%d: %.2f\n", i, p->values[i]);
-    //}
+    for (int i = 0; i < p->bars; i++) {
+        for (int j = 0; j < p->beats; j++) {
+            
+            // TODO: stuff values into an LV2 port
+            // (which doesn't exist by now)
+            
+            printf("%d-%d: %.2f\n", i, j, p->values[i][j]);
+        }
+    }
 }
 
 /******************************** List View ********************************/

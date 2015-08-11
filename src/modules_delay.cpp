@@ -128,7 +128,7 @@ void vintage_delay_audio_module::params_changed()
             
             break;
         case FRAG_PATTERN:
-            int amnt = *params[par_pbeats] * *params[par_pbars];
+            int amnt = *params[par_pbeats] * *params[par_pfrag];
             break;
     }
     

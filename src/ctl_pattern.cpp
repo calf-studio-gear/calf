@@ -41,7 +41,7 @@ static GdkRectangle calf_pattern_handle_rect (CalfPattern *p, int bar, int beat,
     
     float top    = round(p->pad_y + p->border_v + p->mbars);
     float bottom = round(top + p->beat_height);
-    float height = round(p->beat_height / value);
+    float height = round(p->beat_height * value);
     float max    = bottom - height;
     
     // move to bars left edge
@@ -58,36 +58,13 @@ static GdkRectangle calf_pattern_handle_rect (CalfPattern *p, int bar, int beat,
     return rect;
 }
 
-static void calf_pattern_draw_handle (GtkWidget *wi, cairo_t *cr, int bar, int beat, int x, int y, double value, float alpha, bool outline = false)
-{
-    g_assert(CALF_IS_PATTERN(wi));
-    CalfPattern *p = CALF_PATTERN(wi);
-    
-    GdkRectangle rect = calf_pattern_handle_rect(p, bar, beat, value);
-    // move to lower edge
-    int bottom = y + rect.y + rect.height;
-    int _y = bottom;
-    
-    int c = 0;
-    float r, g, b;
-    get_fg_color(wi, NULL, &r, &g, &b);
-    cairo_set_source_rgba(cr, r, g, b, alpha);
-    while (c++, _y > rect.y + y) {
-        // loop over segments, begin at the bottom
-        int next = std::max(rect.y, (int)round(bottom - rect.height / 10.f * c));
-        cairo_rectangle(cr, x + rect.x, _y, rect.width, next - _y + 1);
-        cairo_fill(cr);
-        _y = next;
-    }
-}
-
 static void calf_pattern_draw_background (GtkWidget *wi, cairo_t *cr)
 {
     g_assert(CALF_IS_PATTERN(wi));
     CalfPattern *p = CALF_PATTERN(wi);
     
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 9);
+    cairo_set_font_size(cr, 8);
     
     cairo_text_extents_t tx, tx2;
     cairo_text_extents(cr, "Beats", &tx);
@@ -142,6 +119,29 @@ static void calf_pattern_draw_background (GtkWidget *wi, cairo_t *cr)
     }
 }
 
+void calf_pattern_draw_handle (GtkWidget *wi, cairo_t *cr, int bar, int beat, int x, int y, double value, float alpha, bool outline)
+{
+    g_assert(CALF_IS_PATTERN(wi));
+    CalfPattern *p = CALF_PATTERN(wi);
+    
+    GdkRectangle rect = calf_pattern_handle_rect(p, bar, beat, value);
+    // move to lower edge
+    int bottom = y + rect.y + rect.height;
+    int _y = bottom;
+    
+    int c = 0;
+    float r, g, b;
+    get_fg_color(wi, NULL, &r, &g, &b);
+    cairo_set_source_rgba(cr, r, g, b, alpha);
+    while (c++, _y > rect.y + y) {
+        // loop over segments, begin at the bottom
+        int next = std::max(y + rect.y, (int)round(bottom - p->beat_height / 10.f * c));
+        cairo_rectangle(cr, x + rect.x, _y, rect.width, next - _y + 1);
+        cairo_fill(cr);
+        _y = next;
+    }
+}
+
 static gboolean
 calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -170,9 +170,19 @@ calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
     
     for (int i = 0; i < p->bars; i ++) {
         for (int j = 0; j < p->beats; j++) {
-            if (p->handle_hovered.bar == i and p->handle_hovered.beat == j) {
+            if  ((p->handle_grabbed.bar == i  and p->handle_grabbed.beat == j)
+            or  ((p->handle_hovered.bar == i  and p->handle_hovered.beat == j)
+            and  (p->handle_grabbed.bar == -1 and p->handle_grabbed.beat == -1))) {
                 calf_pattern_draw_handle(widget, c, i, j, p->x, p->y, 1.0, 0.1);
             }
+        }
+    }
+    
+    for (int i = 0; i < p->beats; i++) {
+        for (int j = 0; j < p->beats; j++) {
+            double val = p->values[i][j];
+            if (val > 0)
+                calf_pattern_draw_handle(widget, c, i, j, p->x, p->y, val, 0.8);
         }
     }
     
@@ -202,36 +212,55 @@ calf_pattern_get_handle_at(CalfPattern *p, double x, double y)
     return ret;
 }
 
+static double
+calf_pattern_get_drag_value(CalfPattern *p, double y, double value)
+{
+    g_assert(CALF_IS_PATTERN(p));
+    return std::max(0., std::min(1., value + (p->mouse_y - y) / p->beat_height));
+}
+static double
+calf_pattern_get_value_from_y(CalfPattern *p, double y)
+{
+    g_assert(CALF_IS_PATTERN(p));
+    double _y = (y - p->border_v - p->mbars - p->pad_y) / p->beat_height;
+    return 1 - std::max(0., std::min(1., _y));
+}
+
 static gboolean
 calf_pattern_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
 {
     g_assert(CALF_IS_PATTERN(widget));
     CalfPattern *p = CALF_PATTERN(widget);
    
-    p->mouse_x = event->x;
-    p->mouse_y = event->y;
-    
     if (p->handle_grabbed.bar >= 0 and p->handle_grabbed.beat >= 0) {
-        float new_value = float(p->mouse_y - p->pad_y) / float(p->size_y);
+        // handle grabbed
+        double val = p->values[p->handle_grabbed.bar][p->handle_grabbed.beat];
+        double new_value = calf_pattern_get_drag_value(p, event->y, val);
+        p->values[p->handle_grabbed.bar][p->handle_grabbed.beat] = new_value;
+        p->mouse_x = event->x;
+        p->mouse_y = event->y;
         g_signal_emit_by_name(widget, "handle-changed", p->handle_grabbed);
         gtk_widget_queue_draw(widget);
+    } else {
+        // no handle grabbed
+        calf_pattern_handle hh = calf_pattern_get_handle_at(p, event->x, event->y);
+        if (hh.bar != p->handle_hovered.bar or hh.beat != p->handle_hovered.beat) {
+            if (hh.bar >= 0 and hh.beat >= 0) {
+                //gdk_window_set_cursor(widget->window, p->hand_cursor);
+                p->handle_hovered.bar  = hh.bar;
+                p->handle_hovered.beat = hh.beat;
+            } else {
+                //gdk_window_set_cursor(widget->window, NULL);
+                p->handle_hovered.bar  = -1;
+                p->handle_hovered.beat = -1;
+            }
+            gtk_widget_queue_draw(widget);
+        }
     }
     if (event->is_hint) {
         gdk_event_request_motions(event);
     }
-
-    calf_pattern_handle handle_hovered = calf_pattern_get_handle_at(p, p->mouse_x, p->mouse_y);
-    if (handle_hovered.bar != p->handle_hovered.bar or handle_hovered.beat != p->handle_hovered.beat) {
-        if ((p->handle_grabbed.bar >= 0 and p->handle_grabbed.beat >= 0)
-        || (handle_hovered.bar >= 0 and handle_hovered.beat >= 0)) {
-            gdk_window_set_cursor(widget->window, p->hand_cursor);
-            p->handle_hovered = handle_hovered;
-        } else {
-            gdk_window_set_cursor(widget->window, NULL);
-            p->handle_hovered = { -1, -1 };
-        }
-        gtk_widget_queue_draw(widget);
-    }
+    
     return TRUE;
 }
 
@@ -240,19 +269,29 @@ calf_pattern_button_press (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_PATTERN(widget));
     CalfPattern *p = CALF_PATTERN(widget);
-    
     bool inside_handle = false;
+    
+    p->mouse_x = event->x;
+    p->mouse_y = event->y;
 
-    calf_pattern_handle h = calf_pattern_get_handle_at(p, p->mouse_x, p->mouse_y);
+    calf_pattern_handle h = calf_pattern_get_handle_at(p, event->x, event->y);
     if (h.bar >= 0 and h.beat >= 0) {
-        p->handle_grabbed = h;
+        p->handle_grabbed.bar  = h.bar;
+        p->handle_grabbed.beat = h.beat;
         inside_handle = true;
     }
-
+    double val = p->values[p->handle_grabbed.bar][p->handle_grabbed.beat];
+    p->startval = val;
+    
     if (inside_handle && event->type == GDK_2BUTTON_PRESS) {
         // double click
-        //p->values[p->handle_grabbed] = p->values[p->handle_grabbed] < 0.5 ? 1 : 0;
+        p->values[p->handle_grabbed.bar][p->handle_grabbed.beat] = val < 0.5 ? 1 : 0;
         g_signal_emit_by_name(widget, "handle-changed", &p->handle_grabbed);
+        p->mouse_x = -1;
+        p->mouse_y = -1;
+        p->handle_grabbed.bar  = -1;
+        p->handle_grabbed.beat = -1;
+        p->dblclick = true;
     }
     
     gtk_widget_grab_focus(widget);
@@ -266,9 +305,29 @@ calf_pattern_button_release (GtkWidget *widget, GdkEventButton *event)
 {
     g_assert(CALF_IS_PATTERN(widget));
     CalfPattern *p = CALF_PATTERN(widget);
-
-    p->handle_grabbed = { -1, -1 };
-
+    calf_pattern_handle h = p->handle_grabbed;
+    if (h.bar < 0 or h.beat < 0)
+        return FALSE;
+        
+    double val = p->values[h.bar][h.beat];
+    if (!p->dblclick and abs(p->startval - val) < 0.05) {
+        // single click
+        val = calf_pattern_get_value_from_y(p, event->y);
+        p->values[h.bar][h.beat] = val;
+        g_signal_emit_by_name(widget, "handle-changed", &p->handle_grabbed);
+    }
+    p->dblclick            = false;
+    p->mouse_x             = -1;
+    p->mouse_y             = -1;
+    p->handle_grabbed.bar  = -1;
+    p->handle_grabbed.beat = -1;
+    
+    calf_pattern_handle hh = calf_pattern_get_handle_at(p, event->x, event->y);
+    if (hh.bar >= 0 and hh.beat >= 0) {
+        p->handle_hovered.bar  = hh.bar;
+        p->handle_hovered.beat = hh.beat;
+    }
+        
     if (GTK_WIDGET_HAS_GRAB(widget))
         gtk_grab_remove(widget);
         
@@ -302,12 +361,9 @@ calf_pattern_leave (GtkWidget *widget, GdkEventCrossing *event)
 {
     g_assert(CALF_IS_PATTERN(widget));
     CalfPattern *p = CALF_PATTERN(widget);
-    p->mouse_x = -1;
-    p->mouse_y = -1;
-    if (p->handle_grabbed.bar < 0 and p->handle_grabbed.beat < 0) {
-        p->handle_hovered = { -1, -1 };
-    }
-    gdk_window_set_cursor(widget->window, NULL);
+    p->handle_hovered.bar  = -1;
+    p->handle_hovered.beat = -1;
+    //gdk_window_set_cursor(widget->window, NULL);
     gtk_widget_queue_draw(widget);
     return TRUE;
 }
@@ -393,8 +449,10 @@ calf_pattern_init (CalfPattern *p)
     
     g_signal_connect(GTK_OBJECT(widget), "unrealize", G_CALLBACK(calf_pattern_unrealize), (gpointer)p);
     
-    p->handle_grabbed      = { -1, -1 };
-    p->handle_hovered      = { -1, -1 };
+    p->handle_hovered.bar  = -1;
+    p->handle_hovered.beat = -1;
+    p->handle_grabbed.bar  = -1;
+    p->handle_grabbed.beat = -1;
     
     p->background_surface = NULL;
     

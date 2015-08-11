@@ -98,17 +98,17 @@
                     <table rows="2" cols="2">
                         <label text="L" attach-x="0" attach-y="0"/>
                         <label text="R" attach-x="0" attach-y="1"/>
-                        <pattern param="time_l" beats="pbeats" bars="pbars" width="280" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="0" />
-                        <pattern param="time_r" beats="pbeats" bars="pbars" width="280" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="1" />
+                        <pattern param="time_l" beats="pfrag" bars="pbeats" width="320" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="0" />
+                        <pattern param="time_r" beats="pfrag" bars="pbeats" width="320" height="50" expand-x="1" fill-x="1" expand-y="1" fill-y="1" attach-x="1" attach-y="1" />
                         <vbox attach-x="2" attach-y="0">
-                            <label text="Bars" expand="0"  />
-                            <knob param="pbars" expand="0" ticks="1 2 3 4 5 6 7 8"/>
-                            <value param="pbars" expand="0" />
-                        </vbox>
-                        <vbox attach-x="2" attach-y="1">
                             <label text="Beats" expand="0"  />
                             <knob param="pbeats" expand="0" ticks="1 2 3 4 5 6 7 8"/>
                             <value param="pbeats" expand="0" />
+                        </vbox>
+                        <vbox attach-x="2" attach-y="1">
+                            <label text="Fragments" expand="0"  />
+                            <knob param="pfrag" expand="0" ticks="1 2 3 4 5 6 7 8"/>
+                            <value param="pfrag" expand="0" />
                         </vbox>
                     </table>
                 </hbox>
