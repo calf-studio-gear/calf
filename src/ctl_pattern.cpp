@@ -341,14 +341,16 @@ calf_pattern_scroll (GtkWidget *widget, GdkEventScroll *event)
     g_assert(CALF_IS_PATTERN(widget));
     CalfPattern *p = CALF_PATTERN(widget);
 
-    calf_pattern_handle h = calf_pattern_get_handle_at(p, p->mouse_x, p->mouse_y);
-    if (h.bar and h.beat) {
+    calf_pattern_handle h = calf_pattern_get_handle_at(p, event->x, event->y);
+    printf("%d %d\n", h.bar, h.beat);
+    if (h.bar >= 0 and h.beat >= 0) {
         if (event->direction == GDK_SCROLL_UP) {
             // raise handle value
+            p->values[h.bar][h.beat] = std::min(1., p->values[h.bar][h.beat] + 0.1);
             g_signal_emit_by_name(widget, "handle-changed", h);
         } else if (event->direction == GDK_SCROLL_DOWN) {
             //lower handle value
-            
+            p->values[h.bar][h.beat] = std::max(0., p->values[h.bar][h.beat] - 0.1);
             g_signal_emit_by_name(widget, "handle-changed", h);
         }
         gtk_widget_queue_draw(widget);
