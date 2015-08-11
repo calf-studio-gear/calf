@@ -101,6 +101,7 @@ static void calf_pattern_draw_background (GtkWidget *wi, cairo_t *cr)
         _x = p->pad_x + p->border_h + p->mbars + i * p->bar_width;
         char num[4];
         sprintf(num, "%d", i + 1);
+        cairo_set_font_size(cr, 8);
         cairo_text_extents(cr, num, &tx2);
         get_text_color(wi, NULL, &r, &g, &b);
         cairo_set_source_rgb(cr, r, g, b);
@@ -111,6 +112,7 @@ static void calf_pattern_draw_background (GtkWidget *wi, cairo_t *cr)
             get_text_color(wi, NULL, &r, &g, &b);
             cairo_set_source_rgb(cr, r, g, b);
             sprintf(num, "%d", j + 1);
+            cairo_set_font_size(cr, p->bars * p->beats * 7 > p->width ? 7 : 8);
             cairo_text_extents(cr, num, &tx2);
             cairo_move_to(cr, _x + (p->beat_width + p->minner) * j + p->beat_width / 2 - tx2.width / 2 - 1,
                               p->height - p->pad_y - p->border + tx2.height + tx2.y_bearing);
@@ -164,6 +166,9 @@ calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
         calf_pattern_draw_background(widget, bg);
         cairo_destroy(bg);
     }
+    cairo_rectangle(c, p->x, p->y, p->width, p->height);
+    cairo_clip(c);
+    
     cairo_rectangle(c, p->x, p->y, p->width, p->height);
     cairo_set_source_surface(c, p->background_surface, p->x, p->y);
     cairo_fill(c);
