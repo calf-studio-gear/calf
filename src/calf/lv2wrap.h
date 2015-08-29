@@ -31,6 +31,7 @@
 #include <calf/lv2_atom_util.h>
 #include <calf/lv2_midi.h>
 #include <calf/lv2_state.h>
+#include <calf/lv2_options.h>
 #include <calf/lv2_progress.h>
 #include <calf/lv2_urid.h>
 #include <string.h>
@@ -47,9 +48,17 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     LV2_URID_Map *urid_map;
     uint32_t midi_event_type;
     LV2_Progress *progress_report_feature;
+    LV2_Options_Interface *options_feature;
     float **ins, **outs, **params;
     int out_count;
     int real_param_count;
+    struct lv2_var
+    {
+        std::string name;
+        uint32_t mapped_uri;
+    };
+    std::vector<lv2_var> vars;
+
     lv2_instance(audio_module_iface *_module)
     {
         module = _module;
@@ -61,6 +70,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         urid_map = NULL;
         event_data = NULL;
         progress_report_feature = NULL;
+        options_feature = NULL;
         midi_event_type = 0xFFFFFFFF;
 
         srate_to_set = 44100;
@@ -71,6 +81,24 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     {
         if (progress_report_feature)
             module->set_progress_report_iface(this);
+        if (urid_map)
+        {
+            std::vector<std::string> varnames;
+            module->get_metadata_iface()->get_configure_vars(varnames);
+            for (size_t i = 0; i < varnames.size(); ++i)
+            {
+                std::string pred = std::string("urn:calf:") + varnames[i];
+                lv2_var tmp;
+                tmp.name = varnames[i];
+                tmp.mapped_uri = urid_map->map(urid_map->handle, pred.c_str());
+                if (!tmp.mapped_uri)
+                {
+                    vars.clear();
+                    break;
+                }
+                vars.push_back(tmp);
+            }
+        }
         module->post_instantiate(srate_to_set);
     }
     virtual bool activate_preset(int bank, int program) { 
@@ -89,8 +117,6 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     }
     void impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data)
     {
-        std::vector<std::string> vars;
-        module->get_metadata_iface()->get_configure_vars(vars);
         if (vars.empty())
             return;
         assert(urid_map);
@@ -98,21 +124,19 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         assert(string_type);
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            std::string    pred  = std::string("urn:calf:") + vars[i];
-            const uint32_t key   = urid_map->map(urid_map->handle, pred.c_str());
             size_t         len   = 0;
             uint32_t       type  = 0;
             uint32_t       flags = 0;
-            const void *ptr = (*retrieve)(callback_data, key, &len, &type, &flags);
+            const void *ptr = (*retrieve)(callback_data, vars[i].mapped_uri, &len, &type, &flags);
             if (ptr)
             {
                 if (type != string_type)
                     fprintf(stderr, "Warning: type is %d, expected %d\n", (int)type, (int)string_type);
-                printf("Calling configure on %s\n", vars[i].c_str());
-                configure(vars[i].c_str(), std::string((const char *)ptr, len).c_str());
+                printf("Calling configure on %s\n", vars[i].name.c_str());
+                configure(vars[i].name.c_str(), std::string((const char *)ptr, len).c_str());
             }
             else
-                configure(vars[i].c_str(), NULL);
+                configure(vars[i].name.c_str(), NULL);
         }
     }
     char *configure(const char *key, const char *value) { 
@@ -259,6 +283,10 @@ struct lv2_wrapper
             else if (!strcmp((*features)->URI, LV2_PROGRESS_URI))
             {
                 mod->progress_report_feature = (LV2_Progress *)((*features)->data);
+            }
+            else if (!strcmp((*features)->URI, LV2_OPTIONS_URI))
+            {
+                mod->options_feature = (LV2_Options_Interface *)((*features)->data);
             }
             features++;
         }
