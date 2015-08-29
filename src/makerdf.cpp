@@ -23,6 +23,7 @@
 #include <calf/utils.h>
 #if USE_LV2
 #include <lv2.h>
+#include <calf/lv2_options.h>
 #include <calf/lv2_state.h>
 #include <calf/lv2_urid.h>
 #endif
@@ -256,6 +257,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         "    lv2:requiredFeature uiext:makeResident ;\n"
         "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
         "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
+        "    lv2:optionalFeature <" LV2_OPTIONS_URI "> ;\n"
         "    uiext:binary <calflv2gui.so> .\n"
         "\n"
     ;
@@ -268,6 +270,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         "    lv2:requiredFeature uiext:makeResident ;\n"
         "    lv2:requiredFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
         "    lv2:requiredFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
+        "    lv2:optionalFeature <" LV2_OPTIONS_URI "> ;\n"
         "    uiext:binary <calflv2gui.so> .\n"
         "\n"
     ;
