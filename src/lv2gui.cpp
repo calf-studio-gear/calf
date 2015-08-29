@@ -21,6 +21,7 @@
 #include "config.h"
 #include <calf/gui.h>
 #include <calf/giface.h>
+#include <calf/lv2_atom.h>
 #include <calf/lv2_data_access.h>
 #include <calf/lv2_options.h>
 #include <calf/lv2_ui.h>
@@ -55,9 +56,11 @@ struct plugin_proxy_base
     /// Data access feature instance
     LV2_Extension_Data_Feature *data_access;
     /// URID map feature
-    LV2_URID_Map *urid_map;
+    const LV2_URID_Map *urid_map;
     /// External UI host feature (must be set when instantiating external UI plugins)
     lv2_external_ui_host *ext_ui_host;
+    bool atom_present;
+    uint32_t property_type, string_type, event_transfer;
     
     /// Instance pointer - usually NULL unless the host supports instance-access extension
     plugin_ctl_iface *instance;
@@ -110,6 +113,7 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
     instance_handle = NULL;
     data_access = NULL;
     ext_ui_host = NULL;
+    atom_present = true; // XXXKF
     
     param_count = metadata->get_param_count();
     param_offset = metadata->get_param_port_offset();
@@ -186,7 +190,25 @@ const phase_graph_iface *plugin_proxy_base::get_phase_graph_iface() const
 
 char *plugin_proxy_base::configure(const char *key, const char *value)
 {
-    if (instance)
+    if (atom_present && event_transfer && string_type && property_type)
+    {
+        std::string pred = std::string("urn:calf:") + key;
+        uint32_t ss = strlen(value);
+        uint32_t ts = ss + 1 + sizeof(LV2_Atom_Property);
+        char *temp = new char[ts];
+        LV2_Atom_Property *prop = (LV2_Atom_Property *)temp;
+        prop->atom.type = property_type;
+        prop->atom.size = ts - sizeof(LV2_Atom);
+        prop->body.key = map_urid(pred.c_str());
+        prop->body.context = 0;
+        prop->body.value.size = ss + 1;
+        prop->body.value.type = string_type;
+        memcpy(temp + sizeof(LV2_Atom_Property), value, ss + 1);
+        write_function(controller, param_count + param_offset, ts, event_transfer, temp);
+        delete []temp;
+        return NULL;
+    }
+    else if (instance)
         return instance->configure(key, value);
     else
         return strdup("Configuration not available because of lack of instance-access/data-access");
@@ -339,6 +361,10 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
         return (LV2UI_Handle)gui;
 
     const uint32_t uridWindowTitle = uridMap->map(uridMap->handle, LV2_UI__windowTitle);
+    proxy->string_type = uridMap->map(uridMap->handle, LV2_ATOM__String);
+    proxy->property_type = uridMap->map(uridMap->handle, LV2_ATOM__Property);
+    proxy->event_transfer = uridMap->map(uridMap->handle, LV2_ATOM__eventTransfer);
+    proxy->urid_map = uridMap;
 
     if (!uridWindowTitle)
         return (LV2UI_Handle)gui;

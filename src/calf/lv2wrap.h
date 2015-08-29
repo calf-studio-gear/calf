@@ -46,7 +46,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     int srate_to_set;
     LV2_Atom_Sequence *event_data;
     LV2_URID_Map *urid_map;
-    uint32_t midi_event_type;
+    uint32_t midi_event_type, property_type, string_type;
     LV2_Progress *progress_report_feature;
     LV2_Options_Interface *options_feature;
     float **ins, **outs, **params;
@@ -58,6 +58,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         uint32_t mapped_uri;
     };
     std::vector<lv2_var> vars;
+    std::map<uint32_t, int> uri_to_var;
 
     lv2_instance(audio_module_iface *_module)
     {
@@ -94,10 +95,16 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
                 if (!tmp.mapped_uri)
                 {
                     vars.clear();
+                    uri_to_var.clear();
                     break;
                 }
                 vars.push_back(tmp);
+                uri_to_var[tmp.mapped_uri] = i;
             }
+            string_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
+            assert(string_type);
+            property_type = urid_map->map(urid_map->handle, LV2_ATOM__Property);
+            assert(property_type);
         }
         module->post_instantiate(srate_to_set);
     }
@@ -120,8 +127,6 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         if (vars.empty())
             return;
         assert(urid_map);
-        uint32_t string_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
-        assert(string_type);
         for (size_t i = 0; i < vars.size(); ++i)
         {
             size_t         len   = 0;
@@ -148,11 +153,28 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         LV2_ATOM_SEQUENCE_FOREACH(event_data, ev) {
             const uint8_t* const data = (const uint8_t*)(ev + 1);
             uint32_t ts = ev->time.frames;
-            // printf("Event: timestamp %d type %d vs %d\n", ts, ev->body.type, midi_event_type);
+            // printf("Event: timestamp %d type %x vs %x vs %x\n", ts, ev->body.type, midi_event_type, property_type);
             if (ts > offset)
             {
                 module->process_slice(offset, ts);
                 offset = ts;
+            }
+            if (ev->body.type == property_type)
+            {
+                LV2_Atom_Property *prop = (LV2_Atom_Property *)(&ev->body);
+                if (prop->body.value.type == string_type)
+                {
+                    std::map<uint32_t, int>::iterator i = uri_to_var.find(prop->body.key);
+                    if (i == uri_to_var.end())
+                        printf("Set property %d -> %s\n", prop->body.key, (const char *)((&prop->body)+1));
+                    else
+                    {
+                        printf("Set property %s -> %s\n", vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
+                        configure(vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
+                    }
+                }
+                else
+                    printf("Set property %d -> unknown type %d\n", prop->body.key, prop->body.value.type);
             }
             if (ev->body.type == midi_event_type)
             {
