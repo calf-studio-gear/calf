@@ -183,7 +183,7 @@ calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
         }
     }
     
-    for (int i = 0; i < p->beats; i++) {
+    for (int i = 0; i < p->bars; i++) {
         for (int j = 0; j < p->beats; j++) {
             double val = p->values[i][j];
             if (val > 0)
@@ -204,7 +204,7 @@ calf_pattern_get_handle_at(CalfPattern *p, double x, double y)
     calf_pattern_handle ret;
     ret.bar = -1;
     ret.beat = -1;
-    for (int i = 0; i < p->beats; i++) {
+    for (int i = 0; i < p->bars; i++) {
         for (int j = 0; j < p->beats; j++) {
             rect = calf_pattern_handle_rect(p, i, j, 1.0);
             if (x > rect.x and x < rect.x + rect.width) {
