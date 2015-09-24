@@ -536,9 +536,9 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
             // scale to -1..1
             data[i] = orig / 65536.0;
         }
+        redraw_sine = false;
         return true;
     }
-    redraw_sine = false;
     return false;
 }
 
