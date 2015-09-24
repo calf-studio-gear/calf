@@ -252,7 +252,7 @@ style "calf-notebook"
     fg[PRELIGHT] = "#fff"
     fg[ACTIVE]   = "#eee"
     
-    bg[NORMAL]   = "#fff"
+    bg[NORMAL]   = "#1ab5fa"
     
     base[NORMAL]   = "#000"
 }
