@@ -138,7 +138,7 @@
                     <knob param="gainscale1" size="2"/>
                     <value param="gainscale1"/>
                 </vbox>
-                <led mode="7" param="l_active" expand="0"/>
+                <led mode="7" param="l_active"/>
                 <vbox>
                     <label text="Gain"/>
                     <knob param="gain10" type="1"/>
@@ -249,7 +249,7 @@
                     <knob param="gainscale2" size="2"/>
                     <value param="gainscale2"/>
                 </vbox>
-                <led mode="7" param="r_active" expand="0"/>
+                <led mode="7" param="r_active"/>
                 <vbox>
                     <label text="Gain"/>
                     <knob param="gain20" type="1"/>
