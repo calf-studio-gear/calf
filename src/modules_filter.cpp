@@ -590,17 +590,44 @@ void equalizer30band_audio_module::params_changed()
 {
     using namespace orfanidis_eq;
 
-    int ps = *params[param_linked] > 0.5 ? param_gain_scale11 : param_gain_scale21;
-    int pg = *params[param_linked] > 0.5 ? param_gain11 : param_gain21;
-    int pq = *params[param_linked] > 0.5 ? param_gainscale1 : param_gainscale2;
+    int psl=0, psr=0, pgl=0, pgr=0, pql=0, pqr=0;
     
-    // Change channel indicators
-    *params[param_l_active] = *params[param_linked] > 0.5 ? 1 : 0.5;
-    *params[param_r_active] = *params[param_linked] > 0.5 ? 0 : 0.5;
+    switch (int(*params[param_linked])) {
+        case 0:
+            psl = param_gain_scale11;
+            pgl = param_gain10;
+            pql = param_gainscale1;
+            psr = param_gain_scale21;
+            pgr = param_gain20;
+            pqr = param_gainscale2;
+            *params[param_l_active] = 0.5;
+            *params[param_r_active] = 0.5;
+            break;
+        case 1:
+            psl = param_gain_scale11;
+            pgl = param_gain10;
+            pql = param_gainscale1;
+            psr = param_gain_scale11;
+            pgr = param_gain10;
+            pqr = param_gainscale1;
+            *params[param_l_active] = 1;
+            *params[param_r_active] = 0;
+            break;
+        case 2:
+            psl = param_gain_scale21;
+            pgl = param_gain20;
+            pql = param_gainscale2;
+            psr = param_gain_scale21;
+            pgr = param_gain20;
+            pqr = param_gainscale2;
+            *params[param_l_active] = 0;
+            *params[param_r_active] = 1;
+            break;
+    }
     
     //Change gain indicators
-    *params[param_gain_scale10] = *params[param_gain10] * *params[param_gainscale1];
-    *params[param_gain_scale20] = *params[pg] * *params[pq];
+    *params[param_gain_scale10] = *params[pgl] * *params[pql];
+    *params[param_gain_scale20] = *params[pgr] * *params[pqr];
     
     for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
         *params[param_gain_scale11 + band_params*i] = (*params[param_gain11 + band_params*i])*
@@ -612,10 +639,10 @@ void equalizer30band_audio_module::params_changed()
 
     //Pass gains to eq's
     for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
-        eq_arrL[*params[param_filters]]->change_band_gain_db(i,*params[param_gain_scale11 + band_params*i]);
+        eq_arrL[*params[param_filters]]->change_band_gain_db(i,*params[psl + band_params*i]);
 
     for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
-        eq_arrR[*params[param_filters]]->change_band_gain_db(i,*params[ps + band_params*i]);
+        eq_arrR[*params[param_filters]]->change_band_gain_db(i,*params[psr + band_params*i]);
 
     //Upadte filter type
     flt_type = (filter_type)(*params[param_filters] + 1);
