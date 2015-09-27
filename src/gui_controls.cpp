@@ -1571,6 +1571,7 @@ GtkWidget *pattern_param_control::create(plugin_gui *_gui, int _param_no)
         gui->add_param_ctl(param_bars, this);
     } else param_bars = -1;
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Pattern");
+    g_signal_connect(GTK_OBJECT(widget), "handle-changed", (GCallback)on_handle_changed, this);
     return widget;
 }
 
@@ -1578,10 +1579,7 @@ void pattern_param_control::set()
 {
     _GUARD_CHANGE_
     CalfPattern *p = CALF_PATTERN(widget);
-    
-    // TODO: read values from an LV2 port
-    // (which doesn't exist by now)
-            
+
     int b;
     if (param_beats >= 0) {
         b = gui->plugin->get_param_value(param_beats);
@@ -1601,19 +1599,38 @@ void pattern_param_control::set()
     }
 }
 
-void pattern_param_control::get()
+void pattern_param_control::send_configure(const char *key, const char *value)
 {
-    _GUARD_CHANGE_
+    string orig_key = attribs["key"];
+    if (orig_key != key)
+        return;
+
     CalfPattern *p = CALF_PATTERN(widget);
+    stringstream ss(value);
+    _GUARD_CHANGE_
     for (int i = 0; i < p->bars; i++) {
         for (int j = 0; j < p->beats; j++) {
-            
-            // TODO: stuff values into an LV2 port
-            // (which doesn't exist by now)
-            
-            printf("%d-%d: %.2f\n", i, j, p->values[i][j]);
+            ss >> p->values[i][j];
         }
     }
+    p->force_redraw = true;
+    gtk_widget_queue_draw(widget);
+}
+
+void pattern_param_control::on_handle_changed(CalfPattern *widget, calf_pattern_handle *handle, pattern_param_control *pThis)
+{
+    CalfPattern *p = CALF_PATTERN(widget);
+    stringstream ss;
+    for (int i = 0; i < p->bars; i++) {
+        for (int j = 0; j < p->beats; j++) {
+            ss << p->values[i][j] << " ";
+        }
+    }
+    assert(pThis);
+    string key = pThis->attribs["key"];
+    const char *error_or_null = pThis->gui->plugin->configure(key.c_str(), ss.str().c_str());
+    if (error_or_null)
+        g_warning("Unexpected error: %s", error_or_null);
 }
 
 /******************************** List View ********************************/

@@ -92,6 +92,7 @@ public:
     void set_sample_rate(uint32_t sr);
     void calc_filters();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    virtual char *configure(const char *key, const char *value);
     
     long _tap_avg;
     long _tap_last;

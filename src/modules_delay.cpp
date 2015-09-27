@@ -117,6 +117,21 @@ vintage_delay_audio_module::vintage_delay_audio_module()
     _tap_last = 0;
 }
 
+char *vintage_delay_audio_module::configure(const char *key, const char *value)
+{
+    if (!strcmp(key, "pattern_l"))
+    {
+        return NULL;
+    }
+    else
+    if (!strcmp(key, "pattern_r"))
+    {
+        return NULL;
+    }
+    else
+    return "Unsupported key";
+}
+
 void vintage_delay_audio_module::params_changed()
 {
     double bpm = 120;
