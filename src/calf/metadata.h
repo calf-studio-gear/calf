@@ -518,6 +518,8 @@ struct equalizer30band_metadata: public plugin_metadata<equalizer30band_metadata
             param_gain228, param_freq228, param_gain_scale228,
             param_gain229, param_freq229, param_gain_scale229,
             param_gain230, param_freq230, param_gain_scale230,
+            
+            param_l_active, param_r_active, param_linked,
 
            param_count };
     enum { band_params = 3 };
