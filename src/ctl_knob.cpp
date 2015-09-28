@@ -96,6 +96,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     gint iw = gdk_pixbuf_get_width(pixbuf);
     gint ih = gdk_pixbuf_get_height(pixbuf);
     
+    if (self->debug > 1)
+        printf("pixbuf: %d x %d\n", iw, ih);
+        
     GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(widget));
     cairo_t *ctx = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     
@@ -109,13 +112,19 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                                  "tick-width",  &twidth,
                                  "tick-length", &tlength,
                                  "focus-line-width", &flw, NULL);
-                                 
+    
+    if (self->debug > 1)
+        printf("gtkrc: rm %.2f | rw %.2f | tm %.2f | tw %.2f | tl %.2f\n", rmargin, rwidth, tmargin, twidth, tlength);
+    
     double ox   = widget->allocation.x + (widget->allocation.width - iw) / 2;
     double oy   = widget->allocation.y + (widget->allocation.height - ih) / 2;
     double size = iw;
     float  rad  = size / 2;
     double xc   = ox + rad;
     double yc   = oy + rad;
+    
+    if (self->debug > 1)
+        printf("position: %.2f x %.2f\n", ox, oy);
     
     unsigned int tick;
     double phase;
@@ -131,8 +140,6 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     double perim  = (rad - rmargin) * 2 * M_PI;
     double tickw  = 2. / perim * 360.;
     double tickw2 = tickw / 2.;
-    
-    const unsigned int debug = 0;
     
     cairo_rectangle(ctx, ox, oy, size + size / 2, size + size / 2);
     cairo_clip(ctx);
@@ -188,6 +195,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_line_width(ctx, twidth);
     cairo_stroke(ctx);
     
+    if (self->debug > 1)
+        printf("pin color: %.2f | %.2f | %.2f\n", r, g, b);
+    
     cairo_set_line_width(ctx, rwidth);
     
     // draw ticks and rings
@@ -198,14 +208,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     if (self->type == 3)
         evsize = 3;
     std::sort(events, events + evsize);
-    if (debug) {
+    if (self->debug) {
         printf("start %.2f end %.2f last %.2f deg %.2f tick %d ticks %d phase %.2f base %.2f nend %.2f\n", start, end, last, deg, tick, int(self->ticks.size()), phase, base, nend);
         for (unsigned int i = 0; i < self->ticks.size(); i++) {
             printf("tick %d %.2f\n", i, self->ticks[i]);
         }
     }
     while (deg <= end) {
-        if (debug) printf("tick %d deg %.2f last %.2f end %.2f\n", tick, deg, last, end);
+        if (self->debug) printf("tick %d deg %.2f last %.2f end %.2f\n", tick, deg, last, end);
         if (self->ticks.size() and deg == start + range01(self->ticks[tick]) * base) {
             // seems we want to draw a tick on this angle.
             // so we have to fill the void between the last set angle
@@ -216,14 +226,18 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_set_source_rgba(ctx, r, g, b, opac);
                 cairo_arc(ctx, xc, yc, rad - rmargin, last * (M_PI / 180.), std::max(last, std::min(nend, (deg - tickw - tickw2))) * (M_PI / 180.));
                 cairo_stroke(ctx);
-                if (debug) printf("fill from %.2f to %.2f @ %.2f\n", last, (deg - tickw - tickw2), opac);
+                if (self->debug) printf("fill from %.2f to %.2f @ %.2f\n", last, (deg - tickw - tickw2), opac);
+                if (self->debug > 1)
+                    printf("color: %.2f | %.2f | %.2f\n", r, g, b);
             }
             // draw the tick itself
             calf_knob_get_color(self, deg, phase, start, end, tickw + tickw2, &r, &g, &b, &opac);
             cairo_set_source_rgba(ctx, r, g, b, opac);
             cairo_arc(ctx, xc, yc, rad - rmargin, (deg - tickw2) * (M_PI / 180.), (deg + tickw2) * (M_PI / 180.));
             cairo_stroke(ctx);
-            if (debug) printf("tick from %.2f to %.2f @ %.2f\n", (deg - tickw2), (deg + tickw2), opac);
+            if (self->debug) printf("tick from %.2f to %.2f @ %.2f\n", (deg - tickw2), (deg + tickw2), opac);
+            if (self->debug > 1)
+                printf("color: %.2f | %.2f | %.2f\n", r, g, b);
             // set last known angle to deg plus tickw + tickw2
             last = deg + tickw + tickw2;
             // and count up tick
@@ -242,7 +256,9 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
                 cairo_set_source_rgba(ctx, r, g, b, opac);
                 cairo_arc(ctx, xc, yc, rad - rmargin, last * (M_PI / 180.), std::min(nend, std::max(last, deg)) * (M_PI / 180.));
                 cairo_stroke(ctx);
-                if (debug) printf("void from %.2f to %.2f @ %.2f\n", last, std::min(nend, std::max(last, deg)), opac);
+                if (self->debug) printf("void from %.2f to %.2f @ %.2f\n", last, std::min(nend, std::max(last, deg)), opac);
+                if (self->debug > 1)
+                    printf("color: %.2f | %.2f | %.2f\n", r, g, b);
             }
             last = deg;
         }
@@ -250,21 +266,21 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
             break;
         // set deg to next event
         for (unsigned int i = 0; i < evsize; i++) {
-            if (debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", events[i], start, zero, phase, end);
+            if (self->debug > 1) printf("checking %.2f (start %.2f zero %.2f phase %.2f end %.2f)\n", events[i], start, zero, phase, end);
             if (events[i] > deg) {
                 deg = events[i];
-                if (debug > 1) printf("taken.\n");
+                if (self->debug > 1) printf("taken.\n");
                 break;
             }
         }
         if (tick < self->ticks.size()) {
             deg = std::min(deg, start + range01(self->ticks[tick]) * base);
-            if (debug > 1) printf("checking tick %d %.2f\n", tick, start + range01(self->ticks[tick]) * base);
+            if (self->debug > 1) printf("checking tick %d %.2f\n", tick, start + range01(self->ticks[tick]) * base);
         }
         //deg = std::max(last, deg);
-        if (debug > 1) printf("finally! deg %.2f\n", deg);
+        if (self->debug > 1) printf("finally! deg %.2f\n", deg);
     }
-    if (debug) printf("\n");
+    if (self->debug) printf("\n");
     cairo_destroy(ctx);
     return TRUE;
 }

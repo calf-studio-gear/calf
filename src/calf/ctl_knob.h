@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 
 struct CalfKnob
 {
+    static const unsigned int debug = 0;
     GtkRange parent;
     int type;
     int size;
