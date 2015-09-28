@@ -289,8 +289,10 @@ struct tuner_param_control: public param_control
 struct pattern_param_control: public param_control
 {
     virtual GtkWidget *create(plugin_gui *_gui, int _param_no);
-    virtual void get();
+    virtual void get() {}
     virtual void set();
+    virtual void send_configure(const char *key, const char *value);
+    static void on_handle_changed(CalfPattern *widget, calf_pattern_handle *handle, pattern_param_control *pThis);
     int param_bars, param_beats;
 };
 

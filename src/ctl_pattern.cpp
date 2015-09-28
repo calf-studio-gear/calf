@@ -244,7 +244,7 @@ calf_pattern_pointer_motion (GtkWidget *widget, GdkEventMotion *event)
         p->values[p->handle_grabbed.bar][p->handle_grabbed.beat] = new_value;
         p->mouse_x = event->x;
         p->mouse_y = event->y;
-        g_signal_emit_by_name(widget, "handle-changed", p->handle_grabbed);
+        g_signal_emit_by_name(widget, "handle-changed", &p->handle_grabbed);
         gtk_widget_queue_draw(widget);
     } else {
         // no handle grabbed
@@ -352,11 +352,11 @@ calf_pattern_scroll (GtkWidget *widget, GdkEventScroll *event)
         if (event->direction == GDK_SCROLL_UP) {
             // raise handle value
             p->values[h.bar][h.beat] = std::min(1., p->values[h.bar][h.beat] + 0.1);
-            g_signal_emit_by_name(widget, "handle-changed", h);
+            g_signal_emit_by_name(widget, "handle-changed", &h);
         } else if (event->direction == GDK_SCROLL_DOWN) {
             //lower handle value
             p->values[h.bar][h.beat] = std::max(0., p->values[h.bar][h.beat] - 0.1);
-            g_signal_emit_by_name(widget, "handle-changed", h);
+            g_signal_emit_by_name(widget, "handle-changed", &h);
         }
         gtk_widget_queue_draw(widget);
     }
