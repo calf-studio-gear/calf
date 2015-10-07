@@ -108,7 +108,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     GtkTreeIter iter;
     gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(styles), &iter);
     while (valid) {
-        GValue path = {0,};
+        GValue path = G_VALUE_INIT;
         gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path);
         if (main->get_config()->style.compare(g_value_get_string(&path)) == 0) {
             gtk_combo_box_set_active_iter(cb, &iter);
@@ -130,7 +130,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     int response = gtk_dialog_run(GTK_DIALOG(preferences_dlg));
     if (response == GTK_RESPONSE_OK)
     {
-        GValue path_ = {0,};
+        GValue path_ = G_VALUE_INIT;
         GtkTreeIter iter;
         gtk_combo_box_get_active_iter(cb, &iter);
         gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path_);
@@ -141,6 +141,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         main->get_config()->style = g_value_get_string(&path_);
         main->get_config()->save(main->get_config_db());
         //main->load_style(g_value_get_string(&path_));
+        g_value_unset(&path_);
     }
     gtk_widget_destroy(preferences_dlg);
     g_object_unref(G_OBJECT(prefs_builder));
