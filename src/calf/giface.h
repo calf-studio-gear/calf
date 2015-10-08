@@ -331,7 +331,7 @@ struct ladspa_plugin_info
 /// An interface returning metadata about a plugin
 struct plugin_metadata_iface
 {
-    enum { simulate_stereo_input = true };
+    enum { simulate_stereo_input = true, has_live_updates = true };
     /// @return plugin long name
     virtual const char *get_name() const = 0;
     /// @return plugin LV2 label
@@ -370,14 +370,14 @@ struct plugin_metadata_iface
     virtual bool is_cv(int param_no) const = 0;
     /// is the given parameter non-interpolated?
     virtual bool is_noisy(int param_no) const = 0;
-    /// does the plugin require string port extension? (or DSSI configure) may be slow
-    virtual bool requires_configure() const = 0;
     /// obtain array of names of configure variables (or NULL is none needed)
     virtual void get_configure_vars(std::vector<std::string> &names) const { names.clear(); }
     /// @return table_metadata_iface if any
     virtual const table_metadata_iface *get_table_metadata_iface(const char *key) const { return NULL; }
     /// @return whether to auto-connect right input with left input if unconnected
     virtual bool get_simulate_stereo_input() const = 0;
+    /// @return whether live UI events are generated
+    virtual bool sends_live_updates() const = 0;
 
     /// Do-nothing destructor to silence compiler warning
     virtual ~plugin_metadata_iface() {}
@@ -730,8 +730,8 @@ public:
     bool is_cv(int param_no) const { return true; }
     bool is_noisy(int param_no) const { return false; }
     const ladspa_plugin_info &get_plugin_info() const { return plugin_info; }
-    bool requires_configure() const { return false; }
     bool get_simulate_stereo_input() const { return Metadata::simulate_stereo_input; }
+    bool sends_live_updates() const { return Metadata::has_live_updates; }
 };
 
 #define CALF_PORT_NAMES(name) template<> const char *::plugin_metadata<name##_metadata>::port_names[]

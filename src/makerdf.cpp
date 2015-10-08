@@ -369,8 +369,15 @@ void make_ttl(string path_prefix, const string *data_dir)
         for (int i = 0; i < pi->get_param_count(); i++)
             if (add_ctl_port(ports, *pi->get_param_props(i), pn, pi, i))
                 pn++;
-        if (pi->get_midi()) {
-            add_port(ports, "midi_in", "MIDI", "Input", pn++, "atom:AtomPort", true);
+        bool needs_event_io = pi->sends_live_updates();
+        if (pi->get_midi() || needs_event_io) {
+            if (pi->get_midi())
+                add_port(ports, "midi_in", "MIDI In", "Input", pn++, "atom:AtomPort", true);
+            else
+                add_port(ports, "events_in", "Events", "Input", pn++, "atom:AtomPort", true);
+        }
+        if (needs_event_io) {
+            add_port(ports, "events_out", "Events", "Output", pn++, "atom:AtomPort", true);
         }
         if (!ports.empty())
             ttl += "    lv2:port " + ports + "\n";

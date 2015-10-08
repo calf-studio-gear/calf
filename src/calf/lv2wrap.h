@@ -44,9 +44,10 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     audio_module_iface *module;
     bool set_srate;
     int srate_to_set;
-    LV2_Atom_Sequence *event_data;
+    LV2_Atom_Sequence *event_in_data, *event_out_data;
+    uint32_t event_out_capacity;
     LV2_URID_Map *urid_map;
-    uint32_t midi_event_type, property_type, string_type;
+    uint32_t midi_event_type, property_type, string_type, sequence_type;
     LV2_Progress *progress_report_feature;
     LV2_Options_Interface *options_feature;
     float **ins, **outs, **params;
@@ -69,7 +70,8 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         real_param_count = metadata->get_param_count();
         
         urid_map = NULL;
-        event_data = NULL;
+        event_in_data = NULL;
+        event_out_data = NULL;
         progress_report_feature = NULL;
         options_feature = NULL;
         midi_event_type = 0xFFFFFFFF;
@@ -103,6 +105,8 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
             }
             string_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
             assert(string_type);
+            sequence_type = urid_map->map(urid_map->handle, LV2_ATOM__Sequence);
+            assert(sequence_type);
             property_type = urid_map->map(urid_map->handle, LV2_ATOM__Property);
             assert(property_type);
         }
@@ -148,9 +152,79 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         // disambiguation - the plugin_ctl_iface version is just a stub, so don't use it
         return module->configure(key, value);
     }
-    
+    /* Loosely based on David Robillard's lv2_atom_sequence_append_event */
+    inline void* add_event_to_seq(uint64_t time_frames, uint32_t type, uint32_t data_size)
+    {
+        uint32_t remaining = event_out_capacity - event_out_data->atom.size;
+        uint32_t hdr_size = sizeof(LV2_Atom_Event);
+        if (remaining < sizeof(LV2_Atom_Event) + data_size)
+            return NULL;
+        LV2_Atom_Event *event = lv2_atom_sequence_end(&event_out_data->body, event_out_data->atom.size);
+        event->time.frames = time_frames;
+        event->body.type = type;
+        event->body.size = data_size;
+        event_out_data->atom.size += lv2_atom_pad_size(hdr_size + data_size);
+        return ((uint8_t *)event) + hdr_size;
+    }
+    void output_event_string(const char *str, int len = -1)
+    {
+        if (len == -1)
+            len = strlen(str);
+        memcpy(add_event_to_seq(0, string_type, len + 1), str, len + 1);
+    }
+    void output_event_property(const char *key, const char *value)
+    {
+        // XXXKF super slow
+        uint32_t keyv = 0;
+        for (size_t i = 0; i < vars.size(); ++i)
+        {
+            if (vars[i].name == key)
+            {
+                keyv = vars[i].mapped_uri;
+            }
+        }
+        uint32_t len = strlen(value);
+        LV2_Atom_Property_Body *p = (LV2_Atom_Property_Body *)add_event_to_seq(0, property_type, sizeof(LV2_Atom_Property_Body) + len + 1);
+        p->key = keyv;
+        p->context = 0;
+        p->value.type = string_type;
+        p->value.size = len + 1;
+        memcpy(p + 1, value, len + 1);
+    }
+    void process_event_string(const char *str)
+    {
+        if (str[0] == '?' && str[1] == '\0')
+        {
+            struct sci: public send_configure_iface
+            {
+                lv2_instance *inst;
+                void send_configure(const char *key, const char *value)
+                {
+                    inst->output_event_property(key, value);
+                }
+            } tmp;
+            tmp.inst = this;
+            send_configures(&tmp);
+        }
+    }
+    void process_event_property(const LV2_Atom_Property *prop)
+    {
+        if (prop->body.value.type == string_type)
+        {
+            std::map<uint32_t, int>::iterator i = uri_to_var.find(prop->body.key);
+            if (i == uri_to_var.end())
+                printf("Set property %d -> %s\n", prop->body.key, (const char *)((&prop->body)+1));
+            else
+                printf("Set property %s -> %s\n", vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
+
+            if (i != uri_to_var.end())
+                configure(vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
+        }
+        else
+            printf("Set property %d -> unknown type %d\n", prop->body.key, prop->body.value.type);
+    }
     void process_events(uint32_t &offset) {
-        LV2_ATOM_SEQUENCE_FOREACH(event_data, ev) {
+        LV2_ATOM_SEQUENCE_FOREACH(event_in_data, ev) {
             const uint8_t* const data = (const uint8_t*)(ev + 1);
             uint32_t ts = ev->time.frames;
             // printf("Event: timestamp %d type %x vs %x vs %x\n", ts, ev->body.type, midi_event_type, property_type);
@@ -159,22 +233,13 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
                 module->process_slice(offset, ts);
                 offset = ts;
             }
+            if (ev->body.type == string_type)
+            {
+                process_event_string((const char *)LV2_ATOM_CONTENTS(LV2_Atom_String, &ev->body));
+            }
             if (ev->body.type == property_type)
             {
-                LV2_Atom_Property *prop = (LV2_Atom_Property *)(&ev->body);
-                if (prop->body.value.type == string_type)
-                {
-                    std::map<uint32_t, int>::iterator i = uri_to_var.find(prop->body.key);
-                    if (i == uri_to_var.end())
-                        printf("Set property %d -> %s\n", prop->body.key, (const char *)((&prop->body)+1));
-                    else
-                    {
-                        printf("Set property %s -> %s\n", vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
-                        configure(vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
-                    }
-                }
-                else
-                    printf("Set property %d -> unknown type %d\n", prop->body.key, prop->body.value.type);
+                process_event_property((LV2_Atom_Property *)(&ev->body));
             }
             if (ev->body.type == midi_event_type)
             {
@@ -263,6 +328,9 @@ struct lv2_wrapper
         unsigned long ins = md->get_input_count();
         unsigned long outs = md->get_output_count();
         unsigned long params = md->get_param_count();
+        bool has_event_in = md->get_midi() || md->sends_live_updates();
+        bool has_event_out = md->sends_live_updates();
+
         if (port < ins)
             mod->ins[port] = (float *)DataLocation;
         else if (port < ins + outs)
@@ -271,8 +339,11 @@ struct lv2_wrapper
             int i = port - ins - outs;
             mod->params[i] = (float *)DataLocation;
         }
-        else if (md->get_midi() && port == ins + outs + params) {
-            mod->event_data = (LV2_Atom_Sequence *)DataLocation;
+        else if (has_event_in && port == ins + outs + params) {
+            mod->event_in_data = (LV2_Atom_Sequence *)DataLocation;
+        }
+        else if (has_event_out && port == ins + outs + params + (has_event_in ? 1 : 0)) {
+            mod->event_out_data = (LV2_Atom_Sequence *)DataLocation;
         }
     }
 
@@ -331,7 +402,15 @@ struct lv2_wrapper
         }
         mod->params_changed();
         uint32_t offset = 0;
-        if (inst->event_data)
+        if (inst->event_out_data)
+        {
+            LV2_Atom *atom = &inst->event_out_data->atom;
+            inst->event_out_capacity = atom->size;
+            atom->type = inst->sequence_type;
+            inst->event_out_data->body.unit = 0;
+            lv2_atom_sequence_clear(inst->event_out_data);
+        }
+        if (inst->event_in_data)
         {
             inst->process_events(offset);
         }

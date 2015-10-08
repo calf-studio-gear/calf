@@ -84,7 +84,10 @@ struct plugin_proxy_base
     
     /// Send a string value to a string port in the host, by name (configure-like mechanism)
     char *configure(const char *key, const char *value);
-    
+
+    /// Obtain the list of variables from the plugin
+    void send_configures(send_configure_iface *sci);
+
     /// Enable sending to host for all ports
     void enable_all_sends();
     
@@ -99,6 +102,7 @@ struct plugin_proxy_base
     
     /// Map an URI to an integer value using a given URID map
     uint32_t map_urid(const char *uri);
+
 
 };
 
@@ -214,6 +218,29 @@ char *plugin_proxy_base::configure(const char *key, const char *value)
         return strdup("Configuration not available because of lack of instance-access/data-access");
 }
 
+void plugin_proxy_base::send_configures(send_configure_iface *sci)
+{
+    if (atom_present && event_transfer && string_type && property_type)
+    {
+        struct event_content
+        {
+            LV2_Atom_String str;
+            char buf[8];
+        } ec;
+        ec.str.atom.type = string_type;
+        ec.str.atom.size = 2;
+        strcpy(ec.buf, "?");
+        write_function(controller, param_count + param_offset, sizeof(LV2_Atom_String) + 2, event_transfer, &ec);
+    }
+    else if (instance)
+    {
+        fprintf(stderr, "Send configures...\n");
+        instance->send_configures(sci);
+    }
+    else
+        fprintf(stderr, "Configuration not available because of lack of instance-access/data-access\n");
+}
+
 void plugin_proxy_base::enable_all_sends()
 {
     sends.clear();
@@ -266,14 +293,8 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     virtual float get_level(unsigned int port) { return 0.f; }
     virtual void execute(int command_no) { assert(0); }
     virtual void send_configures(send_configure_iface *sci)
-    {    
-        if (instance)
-        {
-            fprintf(stderr, "Send configures...\n");
-            instance->send_configures(sci);
-        }
-        else
-            fprintf(stderr, "Configuration not available because of lack of instance-access/data-access\n");
+    {
+        plugin_proxy_base::send_configures(sci);
     }
     virtual int send_status_updates(send_updates_iface *sui, int last_serial)
     { 
@@ -333,7 +354,6 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     assert(xml);
     gui->optwidget = gui->create_from_xml(proxy, xml);
     proxy->enable_all_sends();
-    proxy->send_configures(gui);
     if (gui->optwidget)
     {
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
@@ -365,6 +385,8 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     proxy->property_type = uridMap->map(uridMap->handle, LV2_ATOM__Property);
     proxy->event_transfer = uridMap->map(uridMap->handle, LV2_ATOM__eventTransfer);
     proxy->urid_map = uridMap;
+
+    proxy->send_configures(gui);
 
     if (!uridWindowTitle)
         return (LV2UI_Handle)gui;
@@ -413,7 +435,22 @@ void gui_port_event(LV2UI_Handle handle, uint32_t port, uint32_t buffer_size, ui
     float v = *(float *)buffer;
     int param = port - proxy->plugin_metadata->get_param_port_offset();
     if (param < 0 || param >= proxy->plugin_metadata->get_param_count())
+    {
+        if (format == proxy->event_transfer)
+        {
+            LV2_Atom *atom = (LV2_Atom *)buffer;
+            if (atom->type == proxy->string_type)
+                printf("Param %d string %s\n", param, (char *)LV2_ATOM_CONTENTS(LV2_Atom_String, atom));
+            else if (atom->type == proxy->property_type)
+            {
+                LV2_Atom_Property_Body *prop = (LV2_Atom_Property_Body *)LV2_ATOM_BODY(atom);
+                printf("Param %d key %d string %s\n", param, prop->key, (const char *)LV2_ATOM_CONTENTS(LV2_Atom_Property, atom));
+            }
+            else
+                printf("Param %d type %d\n", param, atom->type);
+        }
         return;
+    }
     if (!proxy->sends[param])
         return;
     if (fabs(gui->plugin->get_param_value(param) - v) < 0.00001)
