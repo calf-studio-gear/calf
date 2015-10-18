@@ -1209,6 +1209,8 @@ calf_line_graph_button_press (GtkWidget *widget, GdkEventButton *event)
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
     bool inside_handle = false;
 
+    lg->mouse_x = event->x;
+    lg->mouse_y = event->y;
     int i = calf_line_graph_get_handle_at(lg, lg->mouse_x, lg->mouse_y);
     if (i != -1)
     {
