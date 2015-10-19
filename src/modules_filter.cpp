@@ -512,14 +512,9 @@ template class equalizerNband_audio_module<equalizer12band_metadata, true>;
 void equalizer30band_audio_module::set_freq_grid()
 {
     //Initialize freq indicators
-    unsigned int param_ptr = 0;
-    for(unsigned j = 0; j < fg.get_number_of_bands(); j++)
-    {
-        *params[param_freq11 + param_ptr] = fg.get_rounded_freq(j);
-        *params[param_freq21 + param_ptr] = fg.get_rounded_freq(j);
-        param_ptr += 3;
+    for(unsigned j = 0; j < fg.get_number_of_bands(); j++) {
+        *params[param_freq11 + j * band_params] = *params[param_freq21 + j * band_params] = fg.get_rounded_freq(j);
     }
-
     is_freq_grid_init = true;
 }
 
@@ -575,10 +570,6 @@ equalizer30band_audio_module::~equalizer30band_audio_module()
 void equalizer30band_audio_module::activate()
 {
     is_active = true;
-
-    //Update freq grid
-    if(is_freq_grid_init == false)
-        set_freq_grid();
 }
 
 void equalizer30band_audio_module::deactivate()
@@ -629,23 +620,24 @@ void equalizer30band_audio_module::params_changed()
     *params[param_gain_scale10] = *params[pgl] * *params[pql];
     *params[param_gain_scale20] = *params[pgr] * *params[pqr];
     
-    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++) {
         *params[param_gain_scale11 + band_params*i] = (*params[param_gain11 + band_params*i])*
                 *params[param_gainscale1];
-    
-    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++)
         *params[param_gain_scale21 + band_params*i] = (*params[param_gain21 + band_params*i])*
                 *params[param_gainscale2];
+    }
 
     //Pass gains to eq's
-    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
+    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++) {
         eq_arrL[*params[param_filters]]->change_band_gain_db(i,*params[psl + band_params*i]);
-
-    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++)
         eq_arrR[*params[param_filters]]->change_band_gain_db(i,*params[psr + band_params*i]);
+    }
 
     //Upadte filter type
     flt_type = (filter_type)(*params[param_filters] + 1);
+    
+    if (!is_freq_grid_init)
+        set_freq_grid();
 }
 
 void equalizer30band_audio_module::set_sample_rate(uint32_t sr)

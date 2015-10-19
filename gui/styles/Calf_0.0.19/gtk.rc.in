@@ -180,6 +180,8 @@ style "calf-combobox"
     bg[NORMAL] = "black"
     base[NORMAL] = { 0.89, 1.00, 0.45 }
     text[NORMAL] = "black"
+    text[PRELIGHT] = "black"
+    text[ACTIVE] = "black"
     CalfCombobox::border-radius  = 0
     CalfCombobox::bevel          = 0.4
 }
