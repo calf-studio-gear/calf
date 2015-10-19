@@ -489,7 +489,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     row += 2;
     
     // bottom light
-    GtkWidget *botImg     = gtk_image_new_from_file(PKGLIBDIR "/light_bottom.png");
+    GtkWidget *botImg     = gtk_image_new_from_pixbuf(images.get("light_bottom"));
     gtk_widget_set_size_request(GTK_WIDGET(botImg), 1, 1);
     gtk_table_attach(GTK_TABLE(strip->strip_table), botImg, 1, 5, row, row + 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
     gtk_widget_show(botImg);
