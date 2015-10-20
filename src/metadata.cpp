@@ -878,7 +878,6 @@ CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer
 
 #define GRAPHICEQ_BAND_PARAMS(band) \
     {           0, -1, 1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_OPTIONAL, NULL, "gain" #band, "Gain " #band },\
-    {           33, 10, 25000, 0,   PF_FLOAT | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL,  NULL, "freq" #band, "Freq " #band },\
     {           0, -32, 32, 0, PF_FLOAT | PF_DIGIT_1 | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain_scale" #band, "Gain Scale " #band },
 
 #define GRAPHICEQ_GAIN_PARAMS(band) \
@@ -902,8 +901,8 @@ CALF_PORT_PROPS(equalizer30band) = {
     { 0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
     { 0,           0,  2, 0, PF_ENUM | PF_CTL_COMBO, equalizer30band_filters_modes, "filters", "Filters Type" },
 
-    { 18,           6,  30, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gainscale1", "Gain scale 1" },
-    { 18,           6,  30, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gainscale2", "Gain scale 2" },
+    { 18,          6,  30, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gainscale1", "Gain scale 1" },
+    { 18,          6,  30, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gainscale2", "Gain scale 2" },
 
     { 1, 0.015625,    64, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level_out", "Out Level" },
     { 0,           0,  1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level_out_vuL", "Level Out L" },

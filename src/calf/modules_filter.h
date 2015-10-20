@@ -118,9 +118,6 @@ class equalizer30band_audio_module: public audio_module<equalizer30band_metadata
     dsp::switcher<orfanidis_eq::filter_type> swL;
     dsp::switcher<orfanidis_eq::filter_type> swR;
 
-    bool is_freq_grid_init;
-    void set_freq_grid();
-
 public:
     uint32_t srate;
     bool is_active;

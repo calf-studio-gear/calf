@@ -509,23 +509,12 @@ template class equalizerNband_audio_module<equalizer12band_metadata, true>;
  * EQUALIZER 30 BAND
 **********************************************************************/
 
-void equalizer30band_audio_module::set_freq_grid()
-{
-    //Initialize freq indicators
-    for(unsigned j = 0; j < fg.get_number_of_bands(); j++) {
-        *params[param_freq11 + j * band_params] = *params[param_freq21 + j * band_params] = fg.get_rounded_freq(j);
-    }
-    is_freq_grid_init = true;
-}
-
 equalizer30band_audio_module::equalizer30band_audio_module() :
     conv(orfanidis_eq::eq_min_max_gain_db),
     swL(10000), swR(10000)
 {
     is_active = false;
     srate     = 0;
-
-    is_freq_grid_init = false;
 
     //Construct equalizers
     using namespace orfanidis_eq;
@@ -635,9 +624,6 @@ void equalizer30band_audio_module::params_changed()
 
     //Upadte filter type
     flt_type = (filter_type)(*params[param_filters] + 1);
-    
-    if (!is_freq_grid_init)
-        set_freq_grid();
 }
 
 void equalizer30band_audio_module::set_sample_rate(uint32_t sr)
