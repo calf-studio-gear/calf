@@ -96,6 +96,7 @@ void gain_reduction_audio_module::process(float &left, float &right, const float
     if(!det_right) {
         det_right = &right;
     }
+    float gain = 1.f;
     if(bypass < 0.5f) {
         // this routine is mainly copied from thor's compressor module
         // greatest sounding compressor I've heard!
@@ -110,11 +111,10 @@ void gain_reduction_audio_module::process(float &left, float &right, const float
         dsp::sanitize(linSlope);
 
         linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
-        float gain = 1.f;
+        
         if(linSlope > 0.f) {
             gain = output_gain(linSlope, rms);
         }
-
         left *= gain * makeup;
         right *= gain * makeup;
         meter_out = std::max(fabs(left), fabs(right));;
@@ -1662,8 +1662,10 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
 {
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     numsamples += offset;
+    detected_led -= std::min(detected_led,  numsamples);
+    float gain = 1.f;
     if(bypassed) {
-        // everything bypassed81e8da266
+        // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             outs[1][offset] = ins[1][offset];
@@ -1675,7 +1677,6 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // process
         uint32_t orig_numsamples = numsamples-offset;
         uint32_t orig_offset = offset;
-        detected_led -= std::min(detected_led,  numsamples);
         compressor.update_curve();
 
         while(offset < numsamples) {
@@ -1730,14 +1731,12 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outs[0][offset] = outL;
             outs[1][offset] = outR;
 
-            if(std::max(fabs(leftSC), fabs(rightSC)) > *params[param_threshold]) {
-                detected_led   = srate >> 3;
-            }
             detected = std::max(fabs(leftMC), fabs(rightMC));
             
-            float values[] = {detected, compressor.get_comp_level()};
+            float comp = compressor.get_comp_level();
+            float values[] = {detected, comp};
             meters.process(values);
-            
+            gain = std::min(comp, gain);
             // next sample
             ++offset;
         } // cycle trough samples
@@ -1749,10 +1748,9 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         pL.sanitize();
         pR.sanitize();
     }
-    // draw meters
-    if(params[param_detected_led] != NULL) {
-        *params[param_detected_led] = detected_led;
-    }
+    if(params[param_detected_led] != NULL and gain < 0.89)
+        detected_led = srate >> 3;
+    *params[param_detected_led] = detected_led;
     meters.fall(numsamples);
     return outputs_mask;
 }
