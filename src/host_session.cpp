@@ -51,13 +51,27 @@ host_session::host_session(session_environment_iface *se)
     main_win->set_owner(this);
 }
 
-std::string host_session::get_next_instance_name(const std::string &effect_name)
+extern "C" plugin_metadata_iface *create_calf_metadata_by_name(const char *effect_name);
+
+std::string host_session::get_full_plugin_name(const std::string &effect_name)
 {
-    if (!instances.count(effect_name))
+    plugin_metadata_iface *metadata = create_calf_metadata_by_name(effect_name.c_str());
+    if (!metadata)
         return effect_name;
+
+    string full_name = metadata->get_label();
+    delete metadata;
+    return full_name;
+}
+
+std::string host_session::get_next_instance_name(const std::string &instance_name)
+{
+    if (!instances.count(instance_name))
+        return instance_name;
+
     for (int i = 2; ; i++)
     {
-        string tmp = string(effect_name) + " (" + i2s(i) + ")";
+        string tmp = instance_name + " (" + i2s(i) + ")";
         if (!instances.count(tmp))
             return tmp;
     }
@@ -68,7 +82,7 @@ std::string host_session::get_next_instance_name(const std::string &effect_name)
 void host_session::add_plugin(string name, string preset, string instance_name)
 {
     if (instance_name.empty())
-        instance_name = get_next_instance_name(name);
+        instance_name = get_next_instance_name(get_full_plugin_name(name));
     jack_host *jh = create_jack_host(&client, name.c_str(), instance_name, main_win);
     if (!jh) {
         string s = 

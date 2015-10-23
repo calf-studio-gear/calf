@@ -66,6 +66,13 @@ audio_module_iface *create_calf_plugin_by_name(const char *effect_name)
     return NULL;
 }
 
+plugin_metadata_iface *create_calf_metadata_by_name(const char *effect_name)
+{
+    #define PER_MODULE_ITEM(name, isSynth, jackname) if (!strcasecmp(effect_name, jackname)) return new name##_metadata;
+    #include <calf/modulelist.h>
+    return NULL;
+}
+
 }
 
 #endif

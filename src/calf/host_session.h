@@ -91,6 +91,7 @@ public:
     bool activate_preset(int plugin, const std::string &preset, bool builtin);
     void remove_all_plugins();
     std::string get_next_instance_name(const std::string &effect_name);
+    std::string get_full_plugin_name(const std::string &effect_name);
     
     /// Set handlers for SIGUSR1 (that LADISH uses to invoke Save function), SIGTERM and SIGHUP
     void set_signal_handlers();
