@@ -31,7 +31,7 @@ using namespace std;
 
 /******************************** GUI proper ********************************/
 
-plugin_gui::plugin_gui(plugin_gui_window *_window)
+plugin_gui::plugin_gui(plugin_gui_widget *_window)
 : last_status_serial_no(0)
 , window(_window)
 {

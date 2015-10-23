@@ -135,6 +135,7 @@ public:
 };
 
 
+class plugin_gui_widget;
 class plugin_gui_window;
 
 class plugin_gui: public send_configure_iface, public send_updates_iface
@@ -167,7 +168,7 @@ protected:
     static void on_automation_set_upper(GtkWidget *widget, void *user_data);
     void on_automation_set_lower_or_upper(automation_menu_entry *ame, bool is_upper);
 public:
-    plugin_gui_window *window;
+    plugin_gui_widget *window;
     GtkWidget *container;
     const char *effect_name;
     plugin_ctl_iface *plugin;
@@ -181,7 +182,7 @@ public:
     GtkWidget* optwindow;
     const char* opttitle;
 
-    plugin_gui(plugin_gui_window *_window);
+    plugin_gui(plugin_gui_widget *_window);
     GtkWidget *create_from_xml(plugin_ctl_iface *_plugin, const char *xml);
     control_base *create_widget_from_xml(const char *element, const char *attributes[]);
 
@@ -315,21 +316,33 @@ struct main_window_owner_iface
     virtual ~main_window_owner_iface() {}
 };
 
-class plugin_gui_window: public calf_utils::config_listener_iface
+class plugin_gui_widget: public calf_utils::config_listener_iface
 {
 private:
-    void cleanup();
     window_update_controller refresh_controller;
 public:
+    void cleanup();
     plugin_gui *gui;
     GtkWindow *toplevel;
-    GtkUIManager *ui_mgr;
-    GtkActionGroup *std_actions, *builtin_preset_actions, *user_preset_actions, *command_actions;
+    GtkWidget *container;
     gui_environment_iface *environment;
     main_window_iface *main;
     int source_id;
+    plugin_gui_widget(gui_environment_iface *_env, main_window_iface *_main);
+    GtkWidget *create(plugin_ctl_iface *_plugin);
+    static gboolean on_idle(void *data);
+    static void on_window_destroyed(GtkWidget *window, gpointer data);
+    ~plugin_gui_widget();
+};
+
+class plugin_gui_window: public plugin_gui_widget
+{
+private:
+    void cleanup();
+public:
+    GtkUIManager *ui_mgr;
+    GtkActionGroup *std_actions, *builtin_preset_actions, *user_preset_actions, *command_actions;
     calf_utils::config_notifier_iface *notifier;
-    
     plugin_gui_window(gui_environment_iface *_env, main_window_iface *_main);
     std::string make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch);
     std::string make_gui_command_list(GtkActionGroup *grp, const plugin_metadata_iface *metadata);
@@ -337,7 +350,6 @@ public:
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
     void close();
     virtual void on_config_change();
-    static gboolean on_idle(void *data);
     static void on_window_destroyed(GtkWidget *window, gpointer data);
     ~plugin_gui_window();
 };
