@@ -93,7 +93,7 @@ void jack_host::create()
 }
 
 void jack_host::create_ports() {
-    char buf[32];
+    char buf[64];
     char buf2[64];
     string prefix = client->name + ":";
     static const char *suffixes[] = { "#1", "#2", "#3", "#4", "#5", "#6", "#7", "#8" };
@@ -133,6 +133,34 @@ void jack_host::create_ports() {
             throw text_exception("Could not create JACK output port");
         jack_port_set_alias(outputs[i].handle, (prefix + buf2).c_str());
     }
+}
+
+void jack_host::rename_ports() {
+    char buf[64];
+    static const char *suffixes[] = { "#1", "#2", "#3", "#4", "#5", "#6", "#7", "#8" };
+    port *inputs = get_inputs();
+    port *outputs = get_outputs();
+    int in_count = metadata->get_input_count(), out_count = metadata->get_output_count();
+    for (int i=0; i<in_count; i++) {
+        snprintf(buf, sizeof(buf), "%s In %s", instance_name.c_str(), suffixes[i]);
+        inputs[i].nice_name = buf;
+        jack_port_set_name(inputs[i].handle, buf);
+    }
+    if (metadata->get_midi()) {
+        snprintf(buf, sizeof(buf), "%s MIDI In", instance_name.c_str());
+        midi_port.nice_name = buf;
+        jack_port_set_name(midi_port.handle, buf);
+    }
+    for (int i=0; i<out_count; i++) {
+        snprintf(buf, sizeof(buf), "%s Out %s", instance_name.c_str(), suffixes[i]);
+        outputs[i].nice_name = buf;
+        jack_port_set_name(outputs[i].handle, buf);
+    }
+}
+
+void jack_host::rename(std::string name) {
+    instance_name = name;
+    rename_ports();
 }
 
 void jack_host::handle_automation_cc(uint32_t designator, int value)

@@ -50,7 +50,7 @@ namespace calf_plugins {
         jack_host *plugin;
         plugin_gui_window *gui_win;
         calf_connector *connector;
-        GtkWidget *strip_table, *name, *button, *con, *midi_in, *extra, *leftBG, *rightBG, *inBox, *outBox;
+        GtkWidget *strip_table, *name, *entry, *button, *con, *midi_in, *extra, *leftBG, *rightBG, *inBox, *outBox;
         std::vector<GtkWidget *> audio_in, audio_out;
     };
     
@@ -102,6 +102,7 @@ namespace calf_plugins {
         void new_plugin(const char *name) { owner->new_plugin(name); }
         void add_plugin(jack_host *plugin);
         void del_plugin(plugin_ctl_iface *plugin);
+        void rename_plugin(plugin_ctl_iface *plugin, std::string name);
         void set_window(plugin_ctl_iface *iface, plugin_gui_window *window);
         void refresh_all_presets(bool builtin_too);
         void refresh_plugin(plugin_ctl_iface *plugin);
@@ -134,6 +135,10 @@ namespace calf_plugins {
         static void on_preferences_action(GtkWidget *widget, gtk_main_window *main);
         static void on_reorder_action(GtkWidget *widget, gtk_main_window *main);
         static void on_exit_action(GtkWidget *widget, gtk_main_window *main);
+        static void on_edit_title(GtkWidget *label, GdkEventButton *event, plugin_strip *strip);
+        static void on_activate_entry(GtkWidget *entry, plugin_strip *strip);
+        static gboolean on_blur_entry(GtkWidget *entry, GdkEvent *event, plugin_strip *strip);
+        static void on_table_clicked(GtkWidget *table, GdkEvent *event);
     };
 };
 

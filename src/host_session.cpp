@@ -192,6 +192,19 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
     }
 }
 
+void host_session::rename_plugin(plugin_ctl_iface *plugin, const char *name) {
+    std::string name_ = get_next_instance_name(name);
+    for (unsigned int i = 0; i < plugins.size(); i++) {
+        if (plugins[i] == plugin) {
+            instances.erase(plugins[i]->instance_name);
+            instances.insert(name_);
+            plugins[i]->rename(name_);
+            main_win->rename_plugin(plugin, name_);
+            return;
+        }
+    }
+}
+
 void host_session::remove_all_plugins()
 {
     while(!plugins.empty())

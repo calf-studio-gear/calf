@@ -70,6 +70,12 @@ style "calf-rack-title"
     xthickness = 7
     ythickness = 3
 }
+style "calf-rack-entry"
+{
+    font_name  = "Open Sans Condensed 11"
+    xthickness = 7
+    ythickness = 3
+}
 
 style "calf-rack-widgets"
 {
@@ -402,6 +408,7 @@ widget "*Calf*"                                   style : rc "calf-default"
 widget "*Calf-Rack"                               style : highest "calf-rack"
 widget "*Calf-Rack*"                              style : highest "calf-rack-widgets"
 widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-title"
+widget "*Calf-Rack*Calf-Rack-Entry"               style : highest "calf-rack-entry"
 widget "*CalfMainLeft"                            style : highest "calf-main-left"
 widget "*CalfMainRight"                           style : highest "calf-main-right"
 

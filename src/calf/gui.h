@@ -273,6 +273,8 @@ struct main_window_iface: public progress_report_iface
     virtual void add_plugin(jack_host *plugin) = 0;
     /// Remove the plugin from the window
     virtual void del_plugin(plugin_ctl_iface *plugin) = 0;
+    // Rename the plugin
+    virtual void rename_plugin(plugin_ctl_iface *plugin, std::string name) = 0;
     /// Refresh the plugin UI
     virtual void refresh_plugin(plugin_ctl_iface *plugin) = 0;
     /// Bind the plugin window to the plugin
@@ -299,6 +301,7 @@ struct main_window_owner_iface
     virtual char *open_file(const char *name) = 0;
     virtual char *save_file(const char *name) = 0;
     virtual void reorder_plugins() = 0;
+    virtual void rename_plugin(plugin_ctl_iface *plugin, const char *name) = 0;
     /// Return JACK client name (or its counterpart) to put in window title bars
     virtual std::string get_client_name() const = 0;
     /// Called on 'destroy' event of the main window

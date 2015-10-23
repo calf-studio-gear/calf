@@ -122,10 +122,12 @@ public:
     jack_host(jack_client *_client, audio_module_iface *_module, const std::string &_name, const std::string &_instance_name, calf_plugins::progress_report_iface *_priface);
     void create();
     void create_ports();
+    void rename_ports();
     void init_module();
     void destroy();
     ~jack_host();
     
+    void rename(std::string name);
     /// Handle JACK MIDI port data
     void handle_event(uint8_t *buffer, uint32_t size);
     /// Process audio and update meters
@@ -160,6 +162,7 @@ public:
         param_values[param_no] = value;
         changed = true;
     }
+    virtual std::string get_instance_name() { return instance_name; }
     virtual void execute(int cmd_no) { module->execute(cmd_no); }
     virtual char *configure(const char *key, const char *value);
     virtual void send_configures(send_configure_iface *sci) { module->send_configures(sci); }

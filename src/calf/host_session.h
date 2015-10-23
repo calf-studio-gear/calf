@@ -114,6 +114,7 @@ public:
     
     virtual void new_plugin(const char *name);    
     virtual void remove_plugin(plugin_ctl_iface *plugin);
+    virtual void rename_plugin(plugin_ctl_iface *plugin, const char *name);
     virtual void on_main_window_destroy();
     virtual void on_idle();
     virtual void reorder_plugins();
