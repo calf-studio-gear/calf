@@ -193,7 +193,7 @@ void gtk_main_window::rename_plugin(plugin_ctl_iface *plugin, std::string name)
     if (!plugins.count(plugin))
         return;
     plugin_strip *strip = plugins[plugin];
-    gtk_label_set_markup(GTK_LABEL(strip->name), name.c_str());
+    gtk_label_set_text(GTK_LABEL(strip->name), name.c_str());
     if (strip->gui_win) {
         gtk_window_set_title(GTK_WINDOW(strip->gui_win->toplevel), ("Calf - " + name).c_str());
     }
