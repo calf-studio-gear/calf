@@ -306,9 +306,7 @@ void gtk_main_window::on_edit_title(GtkWidget *ebox, GdkEventButton *event, plug
 void gtk_main_window::on_activate_entry(GtkWidget *entry, plugin_strip *strip) {
     const char *txt = gtk_entry_get_text(GTK_ENTRY(entry));
     const char *old = gtk_label_get_text(GTK_LABEL(strip->name));
-    if (!strlen(txt))
-        return;
-    if (strcmp(old, txt))
+    if (strcmp(old, txt) and strlen(txt))
         strip->main_win->owner->rename_plugin(strip->plugin, txt);
     gtk_widget_hide(strip->entry);
     gtk_widget_show(strip->name);
