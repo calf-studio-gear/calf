@@ -179,7 +179,7 @@ void host_session::handle_jack_session_event(jack_session_event_t *event)
 
 void host_session::new_plugin(const char *name)
 {
-    jack_host *jh = create_jack_host(&client, name, get_next_instance_name(name), main_win);
+    jack_host *jh = create_jack_host(&client, name, get_next_instance_name(get_full_plugin_name(name)), main_win);
     if (!jh)
         return;
     instances.insert(jh->instance_name);
