@@ -10,6 +10,7 @@ lv2_instance::lv2_instance(audio_module_iface *_module)
     module = _module;
     module->get_port_arrays(ins, outs, params);
     metadata = module->get_metadata_iface();
+    in_count = metadata->get_input_count();
     out_count = metadata->get_output_count();
     real_param_count = metadata->get_param_count();
     
@@ -22,6 +23,32 @@ lv2_instance::lv2_instance(audio_module_iface *_module)
 
     srate_to_set = 44100;
     set_srate = true;
+}
+
+void lv2_instance::lv2_instantiate(const LV2_Descriptor * Descriptor, double sample_rate, const char *bundle_path, const LV2_Feature *const *features)
+{
+    // XXXKF some people use fractional sample rates; we respect them ;-)
+    srate_to_set = (uint32_t)sample_rate;
+    set_srate = true;
+    while(*features)
+    {
+        if (!strcmp((*features)->URI, LV2_URID_MAP_URI))
+        {
+            urid_map = (LV2_URID_Map *)((*features)->data);
+            midi_event_type = urid_map->map(
+                urid_map->handle, LV2_MIDI__MidiEvent);
+        }           
+        else if (!strcmp((*features)->URI, LV2_PROGRESS_URI))
+        {
+            progress_report_feature = (LV2_Progress *)((*features)->data);
+        }
+        else if (!strcmp((*features)->URI, LV2_OPTIONS_URI))
+        {
+            options_feature = (LV2_Options_Interface *)((*features)->data);
+        }
+        features++;
+    }
+    post_instantiate();
 }
 
 void lv2_instance::post_instantiate()
@@ -59,6 +86,9 @@ void lv2_instance::post_instantiate()
 
 void lv2_instance::impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data)
 {
+    if (set_srate)
+        module->set_sample_rate(srate_to_set);
+    
     if (vars.empty())
         return;
     assert(urid_map);
@@ -107,7 +137,34 @@ void lv2_instance::output_event_property(const char *key, const char *value)
     memcpy(p + 1, value, len + 1);
 }
 
-
+void lv2_instance::run(uint32_t SampleCount, bool has_simulate_stereo_input_flag)
+{
+    if (set_srate) {
+        module->set_sample_rate(srate_to_set);
+        module->activate();
+        set_srate = false;
+    }
+    module->params_changed();
+    uint32_t offset = 0;
+    if (event_out_data)
+    {
+        LV2_Atom *atom = &event_out_data->atom;
+        event_out_capacity = atom->size;
+        atom->type = sequence_type;
+        event_out_data->body.unit = 0;
+        lv2_atom_sequence_clear(event_out_data);
+    }
+    if (event_in_data)
+    {
+        process_events(offset);
+    }
+    bool simulate_stereo_input = (in_count > 1) && has_simulate_stereo_input_flag && !ins[1];
+    if (simulate_stereo_input)
+        ins[1] = ins[0];
+    module->process_slice(offset, SampleCount);
+    if (simulate_stereo_input)
+        ins[1] = NULL;
+}
 
 void lv2_instance::process_event_string(const char *str)
 {
@@ -190,6 +247,33 @@ void lv2_instance::process_events(uint32_t &offset)
             }
         }            
     }
+}
+
+LV2_State_Status lv2_instance::state_save(
+    LV2_State_Store_Function store, LV2_State_Handle handle,
+    uint32_t flags, const LV2_Feature *const * features)
+{
+    // A host that supports State MUST support URID-Map as well.
+    assert(urid_map);
+    store_lv2_state s;
+    s.store = store;
+    s.callback_data = handle;
+    s.inst = this;
+    s.string_data_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
+
+    send_configures(&s);
+    return LV2_STATE_SUCCESS;
+}
+
+void store_lv2_state::send_configure(const char *key, const char *value)
+{
+    std::string pred = std::string("urn:calf:") + key;
+    (*store)(callback_data,
+             inst->urid_map->map(inst->urid_map->handle, pred.c_str()),
+             value,
+             strlen(value) + 1,
+             string_data_type,
+             LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
 }
 
 #endif
