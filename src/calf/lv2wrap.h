@@ -1,7 +1,7 @@
 /* Calf DSP Library
  * LV2 wrapper templates
  *
- * Copyright (C) 2001-2008 Krzysztof Foltman
+ * Copyright (C) 2001-2015 Krzysztof Foltman
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -61,57 +61,11 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     std::vector<lv2_var> vars;
     std::map<uint32_t, int> uri_to_var;
 
-    lv2_instance(audio_module_iface *_module)
-    {
-        module = _module;
-        module->get_port_arrays(ins, outs, params);
-        metadata = module->get_metadata_iface();
-        out_count = metadata->get_output_count();
-        real_param_count = metadata->get_param_count();
-        
-        urid_map = NULL;
-        event_in_data = NULL;
-        event_out_data = NULL;
-        progress_report_feature = NULL;
-        options_feature = NULL;
-        midi_event_type = 0xFFFFFFFF;
+    lv2_instance(audio_module_iface *_module);
 
-        srate_to_set = 44100;
-        set_srate = true;
-    }
     /// This, and not Module::post_instantiate, is actually called by lv2_wrapper class
-    void post_instantiate()
-    {
-        if (progress_report_feature)
-            module->set_progress_report_iface(this);
-        if (urid_map)
-        {
-            std::vector<std::string> varnames;
-            module->get_metadata_iface()->get_configure_vars(varnames);
-            for (size_t i = 0; i < varnames.size(); ++i)
-            {
-                std::string pred = std::string("urn:calf:") + varnames[i];
-                lv2_var tmp;
-                tmp.name = varnames[i];
-                tmp.mapped_uri = urid_map->map(urid_map->handle, pred.c_str());
-                if (!tmp.mapped_uri)
-                {
-                    vars.clear();
-                    uri_to_var.clear();
-                    break;
-                }
-                vars.push_back(tmp);
-                uri_to_var[tmp.mapped_uri] = i;
-            }
-            string_type = urid_map->map(urid_map->handle, LV2_ATOM__String);
-            assert(string_type);
-            sequence_type = urid_map->map(urid_map->handle, LV2_ATOM__Sequence);
-            assert(sequence_type);
-            property_type = urid_map->map(urid_map->handle, LV2_ATOM__Property);
-            assert(property_type);
-        }
-        module->post_instantiate(srate_to_set);
-    }
+    void post_instantiate();
+    
     virtual bool activate_preset(int bank, int program) { 
         return false;
     }
@@ -126,28 +80,7 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
     void send_configures(send_configure_iface *sci) { 
         module->send_configures(sci);
     }
-    void impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data)
-    {
-        if (vars.empty())
-            return;
-        assert(urid_map);
-        for (size_t i = 0; i < vars.size(); ++i)
-        {
-            size_t         len   = 0;
-            uint32_t       type  = 0;
-            uint32_t       flags = 0;
-            const void *ptr = (*retrieve)(callback_data, vars[i].mapped_uri, &len, &type, &flags);
-            if (ptr)
-            {
-                if (type != string_type)
-                    fprintf(stderr, "Warning: type is %d, expected %d\n", (int)type, (int)string_type);
-                printf("Calling configure on %s\n", vars[i].name.c_str());
-                configure(vars[i].name.c_str(), std::string((const char *)ptr, len).c_str());
-            }
-            else
-                configure(vars[i].name.c_str(), NULL);
-        }
-    }
+    void impl_restore(LV2_State_Retrieve_Function retrieve, void *callback_data);
     char *configure(const char *key, const char *value) { 
         // disambiguation - the plugin_ctl_iface version is just a stub, so don't use it
         return module->configure(key, value);
@@ -166,111 +99,11 @@ struct lv2_instance: public plugin_ctl_iface, public progress_report_iface
         event_out_data->atom.size += lv2_atom_pad_size(hdr_size + data_size);
         return ((uint8_t *)event) + hdr_size;
     }
-    void output_event_string(const char *str, int len = -1)
-    {
-        if (len == -1)
-            len = strlen(str);
-        memcpy(add_event_to_seq(0, string_type, len + 1), str, len + 1);
-    }
-    void output_event_property(const char *key, const char *value)
-    {
-        // XXXKF super slow
-        uint32_t keyv = 0;
-        for (size_t i = 0; i < vars.size(); ++i)
-        {
-            if (vars[i].name == key)
-            {
-                keyv = vars[i].mapped_uri;
-            }
-        }
-        uint32_t len = strlen(value);
-        LV2_Atom_Property_Body *p = (LV2_Atom_Property_Body *)add_event_to_seq(0, property_type, sizeof(LV2_Atom_Property_Body) + len + 1);
-        p->key = keyv;
-        p->context = 0;
-        p->value.type = string_type;
-        p->value.size = len + 1;
-        memcpy(p + 1, value, len + 1);
-    }
-    void process_event_string(const char *str)
-    {
-        if (str[0] == '?' && str[1] == '\0')
-        {
-            struct sci: public send_configure_iface
-            {
-                lv2_instance *inst;
-                void send_configure(const char *key, const char *value)
-                {
-                    inst->output_event_property(key, value);
-                }
-            } tmp;
-            tmp.inst = this;
-            send_configures(&tmp);
-        }
-    }
-    void process_event_property(const LV2_Atom_Property *prop)
-    {
-        if (prop->body.value.type == string_type)
-        {
-            std::map<uint32_t, int>::iterator i = uri_to_var.find(prop->body.key);
-            if (i == uri_to_var.end())
-                printf("Set property %d -> %s\n", prop->body.key, (const char *)((&prop->body)+1));
-            else
-                printf("Set property %s -> %s\n", vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
-
-            if (i != uri_to_var.end())
-                configure(vars[i->second].name.c_str(), (const char *)((&prop->body)+1));
-        }
-        else
-            printf("Set property %d -> unknown type %d\n", prop->body.key, prop->body.value.type);
-    }
-    void process_events(uint32_t &offset) {
-        LV2_ATOM_SEQUENCE_FOREACH(event_in_data, ev) {
-            const uint8_t* const data = (const uint8_t*)(ev + 1);
-            uint32_t ts = ev->time.frames;
-            // printf("Event: timestamp %d type %x vs %x vs %x\n", ts, ev->body.type, midi_event_type, property_type);
-            if (ts > offset)
-            {
-                module->process_slice(offset, ts);
-                offset = ts;
-            }
-            if (ev->body.type == string_type)
-            {
-                process_event_string((const char *)LV2_ATOM_CONTENTS(LV2_Atom_String, &ev->body));
-            }
-            if (ev->body.type == property_type)
-            {
-                process_event_property((LV2_Atom_Property *)(&ev->body));
-            }
-            if (ev->body.type == midi_event_type)
-            {
-                // printf("Midi message %x %x %x %d\n", data[0], data[1], data[2], ev->body.size);
-                int channel = data[0] & 0x0f;
-                switch (lv2_midi_message_type(data))
-                {
-                case LV2_MIDI_MSG_INVALID: break;
-                case LV2_MIDI_MSG_NOTE_OFF : module->note_off(channel, data[1], data[2]); break;
-                case LV2_MIDI_MSG_NOTE_ON: module->note_on(channel, data[1], data[2]); break;
-                case LV2_MIDI_MSG_CONTROLLER: module->control_change(channel, data[1], data[2]); break;
-                case LV2_MIDI_MSG_PGM_CHANGE: module->program_change(channel, data[1]); break;
-                case LV2_MIDI_MSG_CHANNEL_PRESSURE: module->channel_pressure(channel, data[1]); break;
-                case LV2_MIDI_MSG_BENDER: module->pitch_bend(channel, data[1] + 128 * data[2] - 8192); break;
-                case LV2_MIDI_MSG_NOTE_PRESSURE: break;
-                case LV2_MIDI_MSG_SYSTEM_EXCLUSIVE: break;
-                case LV2_MIDI_MSG_MTC_QUARTER: break;
-                case LV2_MIDI_MSG_SONG_POS: break;
-                case LV2_MIDI_MSG_SONG_SELECT: break;
-                case LV2_MIDI_MSG_TUNE_REQUEST: break;
-                case LV2_MIDI_MSG_CLOCK: break;
-                case LV2_MIDI_MSG_START: break;
-                case LV2_MIDI_MSG_CONTINUE: break;
-                case LV2_MIDI_MSG_STOP: break;
-                case LV2_MIDI_MSG_ACTIVE_SENSE: break;
-                case LV2_MIDI_MSG_RESET: break;
-                }
-            }            
-        }
-    }
-
+    void output_event_string(const char *str, int len = -1);
+    void output_event_property(const char *key, const char *value);
+    void process_event_string(const char *str);
+    void process_event_property(const LV2_Atom_Property *prop);
+    void process_events(uint32_t &offset);
     virtual float get_param_value(int param_no)
     {
         // XXXKF hack
@@ -427,7 +260,7 @@ struct lv2_wrapper
         delete mod;
     }
 
-static const void *cb_ext_data(const char *URI)
+    static const void *cb_ext_data(const char *URI)
     {
         if (!strcmp(URI, "http://foltman.com/ns/calf-plugin-instance"))
             return &calf_descriptor;
