@@ -723,7 +723,7 @@ public:
     bool requires_midi() const { return Metadata::require_midi; }
     bool is_rt_capable() const { return Metadata::rt_capable; }
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
-    const char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s-%s", prefix, get_id()); static const char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }
+    const char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s/%s", prefix, get_id()); static const char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }
     plugin_command_info *get_commands() const { return NULL; }
     const parameter_properties *get_param_props(int param_no) const { return &param_props[param_no]; }
     const char **get_port_names() const { return port_names; }

@@ -361,7 +361,7 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     }
     std::string rcf = PKGLIBDIR "/styles/" + proxy->get_config()->style + "/gtk.rc";
     gtk_rc_parse(rcf.c_str());
-    gui->show_rack_ears(proxy->get_config()->rack_ears);
+    window->show_rack_ears(proxy->get_config()->rack_ears);
     
     *(GtkWidget **)(widget) = gui->optwidget;
 

@@ -354,7 +354,7 @@ void calf_connector::on_destroy_window(GtkWidget *window, gpointer data)
 {
     calf_connector *self = (calf_connector *)data;
     if (self->strip->con)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->strip->con), FALSE);
+        gtk_range_set_value(GTK_RANGE(self->strip->con), 0);
     self->strip->connector = NULL;
     delete self;
 }
