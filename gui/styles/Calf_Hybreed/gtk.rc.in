@@ -83,6 +83,12 @@ style "calf-rack-widgets"
     font_name         = "Sans 5"
 }
 
+style "calf-rack-label"
+{
+    fg[NORMAL]        = { 0, 0, 0 }
+    font_name         = "Sans 5"
+}
+
 style "calf-main-left"
 {
     bg_pixmap[NORMAL] = "side_d_w.png"
@@ -423,6 +429,8 @@ widget "*Connector*Title*"                        style : highest "calf-connecto
 
 widget "*Calf-Label"                              style : highest "calf-label"
 widget "*Calf-Value"                              style : highest "calf-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Label"        style : highest "calf-rack-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Value"        style : highest "calf-rack-label"
 
 widget "*Calf-Menu*"                              style : highest "calf-menu"
 
