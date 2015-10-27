@@ -411,6 +411,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_label_set_justify(GTK_LABEL(strip->name), GTK_JUSTIFY_RIGHT);
     
     GtkWidget * align = gtk_alignment_new(0.0, 0.5, 0.0, 0.0);
+    gtk_widget_set_size_request(align, 200, -1);
     
     GtkWidget *ebox = gtk_event_box_new ();
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(ebox), FALSE);
@@ -425,6 +426,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     strip->entry = gtk_entry_new();
     gtk_entry_set_text(GTK_ENTRY(strip->entry), "Calf-Rack-Entry");
     gtk_widget_set_name(strip->entry, "Calf-Rack-Entry");
+    gtk_widget_set_size_request(strip->entry, 200, -1);
     gtk_table_attach(GTK_TABLE(strip->strip_table), strip->entry, 2, 3, 1, 2, ao, ao, 10, 0);
     gtk_widget_show_all(strip->entry);
     gtk_signal_connect(GTK_OBJECT(strip->entry), "activate", GTK_SIGNAL_FUNC(on_activate_entry), strip);
