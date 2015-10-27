@@ -1,10 +1,5 @@
 <hbox spacing="5" homogeneous="1">
     <vbox>
-        <label/>
-        <combo param="mode" fill="0" expand="0"/>
-        <label/>
-    </vbox>
-    <vbox>
         <label text="Freq 1"/>
         <knob param="freq0"/>
         <value param="freq0"/>
@@ -13,5 +8,10 @@
         <label text="Freq 2"/>
         <knob param="freq1"/>
         <value param="freq1"/>
+    </vbox>
+    <vbox>
+        <label/>
+        <combo param="mode" fill="0" expand="0"/>
+        <label/>
     </vbox>
 </hbox>
