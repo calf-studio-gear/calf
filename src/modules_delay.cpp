@@ -82,7 +82,8 @@ uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         float rl = s2.left, rr = s2.right;
         rl = left_lo.process(left_hi.process(rl));
         rr = right_lo.process(right_hi.process(rr));
-        reverb.process(rl, rr);
+        if (*params[par_on] > 0.5)
+            reverb.process(rl, rr);
         outs[0][i] = dry*s.left + wet*rl;
         outs[1][i] = dry*s.right + wet*rr;
         meter_wet = std::max(fabs(wet*rl), fabs(wet*rr));

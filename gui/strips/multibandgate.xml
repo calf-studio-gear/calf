@@ -1,0 +1,22 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label text="Solo 1"/>
+        <toggle param="solo0" icon="solo"/>
+    </vbox>
+    <vbox>
+        <label text="Solo 2"/>
+        <toggle param="solo1" icon="solo"/>
+    </vbox>
+    <vbox>
+        <label text="Solo 3"/>
+        <toggle param="solo2" icon="solo"/>
+    </vbox>
+    <vbox>
+        <label text="Solo 4"/>
+        <toggle param="solo3" icon="solo"/>
+    </vbox>
+    <vbox>
+        <label/>
+        <toggle param="bypass" icon="bypass"/>
+    </vbox>
+</hbox>

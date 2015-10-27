@@ -59,15 +59,16 @@ GtkWidget *plugin_gui_widget::create(plugin_ctl_iface *_jh)
 {
     gui = new plugin_gui(this);
     const char *xml = _jh->get_metadata_iface()->get_gui_xml(prefix.c_str());
-    assert(xml);
-    
-    container = gui->create_from_xml(_jh, xml);
+    if (xml) {
+        assert(xml);
+        container = gui->create_from_xml(_jh, xml);
+        source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
+        gui->plugin->send_configures(gui);
+    } else {
+        container = gtk_hbox_new(FALSE, 0);
+    }
     gtk_widget_set_name(container, "Calf-Plugin-Strip");
     gtk_widget_show_all(container);
-    
-    source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
-    gui->plugin->send_configures(gui);
-    
     // TODO:
     // don't really know if it's necessary to cleanup if the main window is closed
     //toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
@@ -495,6 +496,7 @@ GtkWidget *plugin_gui_window::decorate(GtkWidget *eventbox) {
         
     gtk_table_attach(GTK_TABLE(decoTable), eventbox, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     
+    gtk_widget_show_all(decoTable);
     return GTK_WIDGET(decoTable);
 }
 

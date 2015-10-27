@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox spacing="10">
+        <label text="Bits" />
+        <knob param="bits" type="2" ticks="1 2 4 8 16"/>
+        <value param="bits" />
+    </vbox>
+    <vbox>
+        <label param="dc" />
+        <knob param="dc" type="1" />
+        <value param="dc" />
+    </vbox>
+    <vbox>
+        <label text="AA" />
+        <knob param="anti_aliasing" />
+        <value param="anti_aliasing" />
+    </vbox>
+    <vbox>
+        <label text="Mix" />
+        <knob param="morph" ticks="0 0.5 1" />
+        <value param="morph" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

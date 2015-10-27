@@ -1,0 +1,20 @@
+<hbox>
+    <vbox>
+        <label text="Mode"/>
+        <combo param="mode" />
+        <label/>
+    </vbox>
+    <hbox spacing="5" homogeneous="1">
+        <vbox>
+            <label text="Max Res" />
+            <knob param="maxres" />
+            <value param="maxres" />
+        </vbox>
+        <vbox>
+            <label text="Transpose" />
+            <knob param="transpose" ticks="-48 -36 -24 -12 0 12 24 36 48" type="1" />
+            <value param="transpose" />
+        </vbox>
+        <toggle param="bypass" icon="bypass"/>
+    </hbox>
+</hbox>

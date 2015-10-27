@@ -1,0 +1,13 @@
+<hbox spacing="12">
+    <vbox>
+        <label text="Mode" />
+        <combo param="mode"/>
+        <label/>
+    </vbox>
+    <vbox>
+        <label text="Type" />
+        <combo param="type"/>
+        <label/>
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

@@ -34,21 +34,30 @@ namespace calf_plugins {
 struct flanger_metadata: public plugin_metadata<flanger_metadata>
 {
 public:
-    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, par_dryamount, param_count };
+    enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, par_dryamount,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
 };
 
 struct phaser_metadata: public plugin_metadata<phaser_metadata>
 {
-    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, par_dryamount, param_count };
+    enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, par_dryamount,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
 };
 
 struct filter_metadata: public plugin_metadata<filter_metadata>
 {
-    enum { par_cutoff, par_resonance, par_mode, par_inertia, param_count };
+    enum { par_cutoff, par_resonance, par_mode, par_inertia,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, require_midi = false, support_midi = false };
     PLUGIN_NAME_ID_LABEL("filter", "filter", "Filter")
     /// do not export mode and inertia as CVs, as those are settings and not parameters
@@ -58,7 +67,10 @@ struct filter_metadata: public plugin_metadata<filter_metadata>
 /// Filterclavier - metadata
 struct filterclavier_metadata: public plugin_metadata<filterclavier_metadata>
 {
-    enum { par_transpose, par_detune, par_max_resonance, par_mode, par_inertia,  param_count };
+    enum { par_transpose, par_detune, par_max_resonance, par_mode, par_inertia,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, require_midi = true, support_midi = true };
     PLUGIN_NAME_ID_LABEL("filterclavier", "filterclavier", "Filterclavier")
     /// do not export mode and inertia as CVs, as those are settings and not parameters
@@ -81,7 +93,7 @@ struct envelopefilter_metadata: public plugin_metadata<envelopefilter_metadata>
 
 struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
-    enum { par_clip, par_meter_wet, par_meter_out, par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, param_count };
+    enum { par_clip, par_meter_wet, par_meter_out, par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, par_on, param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
 };
@@ -124,7 +136,10 @@ struct haas_enhancer_metadata: public plugin_metadata<haas_enhancer_metadata>
 
 struct reverse_delay_metadata: public plugin_metadata<reverse_delay_metadata>
 {
-    enum { par_bpm, par_bpm_host, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_width, par_sync, par_sync_led_l, par_sync_led_r, par_reset, par_window, param_count };
+    enum { par_bpm, par_bpm_host, par_divide, par_time_l, par_time_r, par_feedback, par_amount, par_width, par_sync, par_sync_led_l, par_sync_led_r, par_reset, par_window,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("reversedelay", "reversedelay", "Reverse Delay")
 };
@@ -132,7 +147,10 @@ struct reverse_delay_metadata: public plugin_metadata<reverse_delay_metadata>
 struct rotary_speaker_metadata: public plugin_metadata<rotary_speaker_metadata>
 {
 public:
-    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, par_reflection, par_am_depth, par_test, par_meter_l, par_meter_h, param_count };
+    enum { par_speed, par_spacing, par_shift, par_moddepth, par_treblespeed, par_bassspeed, par_micdistance, par_reflection, par_am_depth, par_test, par_meter_l, par_meter_h,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("rotary_speaker", "rotaryspeaker", "Rotary Speaker")
 };
@@ -141,7 +159,10 @@ public:
 struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 {
 public:
-    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, par_overlap, param_count };
+    enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, par_overlap,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS,
+        param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")
 };

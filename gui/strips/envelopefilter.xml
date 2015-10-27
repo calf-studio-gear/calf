@@ -1,0 +1,28 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="gain" />
+        <knob param="gain" type="1"/>
+        <value param="gain" />
+    </vbox>
+    <vbox>
+        <label param="response" />
+        <knob param="response" type="1" />
+        <value param="response" />
+    </vbox>
+    <vbox>
+        <label param="attack" />
+        <knob param="attack" ticks="1 10 100 500" />
+        <value param="attack" />
+    </vbox>
+    <vbox>
+        <label param="release" />
+        <knob param="release" ticks="10 100 1000 5000" />
+        <value param="release" />
+    </vbox>
+    <vbox>
+        <label param="res" />
+        <knob param="res" />
+        <value param="res" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>
