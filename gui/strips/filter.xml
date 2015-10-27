@@ -1,0 +1,20 @@
+<hbox>
+    <vbox>
+        <label text="Mode"/>
+        <combo param="mode" />
+        <label/>
+    </vbox>
+    <hbox spacing="5" homogeneous="1">
+        <vbox>
+            <label text="Res" />
+            <knob param="res" />
+            <value param="res" />
+        </vbox>
+        <vbox>
+            <label text="Freq" />
+            <knob param="freq" ticks="10 100 1000 10000 20000"/>
+            <value param="freq" />
+        </vbox>
+        <toggle param="bypass" icon="bypass"/>
+    </hbox>
+</hbox>

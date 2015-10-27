@@ -1,0 +1,18 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="limit" />
+        <knob param="limit" type="2" ticks="0 0.0625 0.125 0.25 0.5 1" />
+        <value param="limit" />
+    </vbox>
+    <vbox>
+        <label param="attack" />
+        <knob param="attack" ticks="0.1 1 2 5 10" />
+        <value param="attack" />
+    </vbox>
+    <vbox>
+        <label param="release" />
+        <knob param="release" ticks="1 10 100 1000" />
+        <value param="release" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

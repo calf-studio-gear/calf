@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="feedback" />
+        <knob param="feedback" />
+        <value param="feedback" />
+    </vbox>
+    <vbox>
+        <label param="amount"/>
+        <knob param="amount" type="1"/>
+        <value param="amount"/>
+    </vbox>
+    <vbox>
+        <label param="window"/>
+        <knob param="window"/>
+        <value param="window"/>
+    </vbox>
+    <vbox>
+        <label param="width" />
+        <knob param="width" />
+        <value param="width" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

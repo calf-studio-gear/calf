@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="threshold" />
+        <knob param="threshold" />
+        <value param="threshold" />
+    </vbox>
+    <vbox>
+        <label param="ratio" />
+        <knob param="ratio" ticks="1 2 5 2000" />
+        <value param="ratio" />
+    </vbox>
+    <vbox fill="0" expand="0" spacing="5">
+        <label param="f1_freq" />
+        <knob param="f1_freq" ticks="10 100 1000 18000" />
+        <value param="f1_freq" />
+    </vbox>
+    <vbox fill="0" expand="0" spacing="5">
+        <label param="f2_freq" />
+        <knob param="f2_freq" ticks="10 100 1000 18000" />
+        <value param="f2_freq" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

@@ -79,7 +79,13 @@ style "calf-rack-entry"
 
 style "calf-rack-widgets"
 {
-    fg[NORMAL]        = { 0.66, 0.66, 0.66 }
+    fg[NORMAL]        = { 0.33, 0.33, 0.33 }
+    font_name         = "Sans 5"
+}
+
+style "calf-rack-label"
+{
+    fg[NORMAL]        = { 0.33, 0.33, 0.33 }
     font_name         = "Sans 5"
 }
 
@@ -425,6 +431,8 @@ widget "*Connector*Title*"                        style : highest "calf-connecto
 
 widget "*Calf-Label"                              style : highest "calf-label"
 widget "*Calf-Value"                              style : highest "calf-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Label"        style : highest "calf-rack-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Value"        style : highest "calf-rack-label"
 
 widget "*Calf-Menu*"                              style : highest "calf-menu"
 

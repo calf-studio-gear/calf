@@ -1,0 +1,17 @@
+<hbox spacing="12">
+    <vbox>
+        <label text="Waveform OSC 1"/>
+        <combo param="o1_wave" fill="0" expand="0"/>
+        <label/>
+    </vbox>
+    <vbox>
+        <label text="Waveform OSC 2"/>
+        <combo param="o2_wave" fill="0" expand="0"/>
+        <label/>
+    </vbox>
+    <vbox>
+        <label param="master"/>
+        <knob param="master" ticks="0 0.0625 0.25 0.5 1" />
+        <value param="master"/>
+    </vbox>
+</hbox>

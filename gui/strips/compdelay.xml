@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label text="Dist m" />
+        <knob param="distance_m" />
+        <value param="distance_m" />
+    </vbox>
+    <vbox>
+        <label text="Dist cm" />
+        <knob param="distance_cm" />
+        <value param="distance_cm" />
+    </vbox>
+    <vbox>
+        <label text="Dist mm" />
+        <knob param="distance_mm" />
+        <value param="distance_mm" />
+    </vbox>
+    <vbox>
+        <label text="Temp" />
+        <knob param="temp" type="1" ticks="-50 -20 0 20 50" />
+        <value param="temp" />
+    </vbox>
+    <toggle param="bypass" icon="bypass" />
+</hbox>

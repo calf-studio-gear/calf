@@ -48,6 +48,11 @@
             <knob param="amount" size="2" ticks="0 0.0625 0.25 0 1 2" />
             <value param="amount" />
         </vbox>
+        <vbox>
+            <label param="on" />
+            <toggle param="on" />
+            <label />
+        </vbox>
         <frame label="Levels" attach-x="0" attach-y="1"  attach-w="5" fill-y="1" expand-y="1" fill-x="1" expand-x="1">
         <table cols="3" rows="3" attach-w="5">
             <label attach-x="0" attach-y="0" expand-x="0" fill-x="0" />

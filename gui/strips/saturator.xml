@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="blend" />
+        <knob param="blend" type="1" />
+        <value param="blend" />
+    </vbox>
+    <vbox>
+        <label param="drive" />
+        <knob param="drive"/>
+        <value param="drive" />
+    </vbox>    
+    <vbox>
+        <label param="mix" />
+        <knob param="mix" ticks="0 0.5 1" />
+        <value param="mix" />
+    </vbox>
+    <vbox>
+        <label param="p_freq" />
+        <knob param="p_freq" ticks="80 800 8000" />
+        <value param="p_freq" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

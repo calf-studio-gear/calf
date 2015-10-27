@@ -1,0 +1,22 @@
+<hbox spacing="5">
+    <vbox>
+        <label text="Level 1"/>
+        <knob param="o1level"/>
+        <value param="o1level"/>
+    </vbox>
+    <vbox>
+        <label text="Waveform 1"/>
+        <combo param="o1wave"/>
+        <label/>
+    </vbox>
+    <vbox>
+        <label text="Level 2"/>
+        <knob param="o2level"/>
+        <value param="o2level"/>
+    </vbox>
+    <vbox>
+        <label text="Waveform 2"/>
+        <combo param="o2wave"/>
+        <label/>
+    </vbox>
+</hbox>

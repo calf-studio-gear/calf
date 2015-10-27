@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="delay" />
+        <knob param="delay" type="1" />
+        <value param="delay" />
+    </vbox>
+    <vbox>
+        <label text="Base" />
+        <knob param="stereo_base" type="1" />
+        <value param="stereo_base" />
+    </vbox>
+    <vbox>
+        <label text="Phase" />
+        <knob param="stereo_phase" type="3" />
+        <value param="stereo_phase" />
+    </vbox>
+    <vbox>
+        <label param="balance_out" />
+        <knob param="balance_out" type="1" />
+        <value param="balance_out" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

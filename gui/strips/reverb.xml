@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox fill="0" expand="0" spacing="3">
+        <label text="Decay" fill="0" expand="0"/>
+        <knob param="decay_time" size="2" fill="0" expand="0" ticks="0.4 1.0 2 5 10 20" />
+        <value param="decay_time" fill="0" expand="0" />
+    </vbox>
+    <vbox fill="0" expand="0" spacing="3">
+        <label text="HF Damp" fill="0" expand="0" />
+        <knob param="hf_damp" size="2" fill="0" expand="0" ticks="2000 5000 1000 20000" />
+        <value param="hf_damp" fill="0" expand="0" />
+    </vbox>
+    <vbox attach-x="3" attach-y="0" fill="0" expand="0" spacing="3">
+        <label text="Dry" />
+        <knob param="dry" size="2" ticks="0 0.0625 0.25 0 1 2"/>
+        <value param="dry" />
+    </vbox>
+    <vbox attach-x="4" attach-y="0" fill="0" expand="0" spacing="3">
+        <label text="Wet" />
+        <knob param="amount" size="2" ticks="0 0.0625 0.25 0 1 2" />
+        <value param="amount" />
+    </vbox>
+    <toggle param="on" />
+</hbox>
