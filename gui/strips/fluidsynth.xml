@@ -1,0 +1,12 @@
+<hbox homogeneous="0" spacing="12">
+    <vbox>
+        <label/>
+        <filechooser key="soundfont" title="Select a soundfont" width_chars="24" />
+        <label/>
+    </vbox>
+    <vbox>
+        <label param="master"  />
+        <knob param="master" ticks="0 0.0625 0.25 0.5 1"/>
+        <value param="master" />
+    </vbox>
+</hbox>

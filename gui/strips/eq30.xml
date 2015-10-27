@@ -1,0 +1,20 @@
+<hbox>
+    <vbox>
+        <label text="Link Mode"/>
+        <combo param="linked" />
+        <label/>
+    </vbox>
+    <hbox spacing="5" homogeneous="1">
+        <vbox>
+            <label text="Gain 1"/>
+            <knob param="gainscale1"/>
+            <value param="gainscale1"/>
+        </vbox>
+        <vbox>
+            <label text="Gain 2"/>
+            <knob param="gainscale2"/>
+            <value param="gainscale2"/>
+        </vbox>
+        <toggle param="bypass" icon="bypass"/>
+    </hbox>
+</hbox>

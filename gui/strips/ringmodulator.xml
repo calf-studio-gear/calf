@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="mod_freq" />
+        <knob param="mod_freq" ticks="1 10 100 1000 10000 20000"/>
+        <value param="mod_freq"/>
+    </vbox>
+    <vbox>
+        <label text="Amount" />
+        <knob param="mod_amount" ticks="0 0.5 1"/>
+        <value param="mod_amount"/>
+    </vbox>
+    <vbox>
+        <label param="lfo1_freq"/>
+        <knob param="lfo1_freq" ticks="0.01 0.1 1 10"/>
+        <value param="lfo1_freq"/>
+    </vbox>
+    <vbox>
+        <label param="lfo2_freq"/>
+        <knob param="lfo2_freq" ticks="0.01 0.1 1 10"/>
+        <value param="lfo2_freq"/>
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

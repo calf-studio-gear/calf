@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="ratio" />
+        <knob param="ratio" ticks="1 2 5 21"/>
+        <value param="ratio" />
+    </vbox>
+    <vbox>
+        <label param="threshold" />
+        <knob param="threshold" type="2"/>
+        <value param="threshold" />
+    </vbox>
+    <vbox>
+        <label text="Makeup" />
+        <knob param="makeup" />
+        <value param="makeup" />
+    </vbox>
+    <vbox>
+        <label param="mix" expand="0" fill="0" />
+        <knob param="mix" ticks="0 0.5 1" />
+        <value param="mix" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

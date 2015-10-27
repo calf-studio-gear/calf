@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="feedback" />
+        <knob param="feedback" type="1" />
+        <value param="feedback" />
+    </vbox>
+    <vbox>
+        <label param="amount" />
+        <knob param="amount" ticks="0 1 4"/>
+        <value param="amount" />
+    </vbox>
+    <vbox>
+        <label param="mod_rate" />
+        <knob param="mod_rate" ticks="0.01 0.1 1 10 20" />
+        <value param="mod_rate" />
+    </vbox>
+    <vbox>
+        <label text="Phase" />
+        <knob param="stereo" type="3" />
+        <value param="stereo" />
+    </vbox>
+    <toggle param="bypass" icon="bypass" />
+</hbox>

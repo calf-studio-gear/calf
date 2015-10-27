@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label text="Treble" />
+        <knob param="treble_speed"/>
+        <value param="treble_speed" />
+    </vbox>
+    <vbox>
+        <label text="Bass" />
+        <knob param="bass_speed"/>
+        <value param="bass_speed" />
+    </vbox>
+    <vbox>
+        <label param="mod_depth"/>
+        <knob param="mod_depth"/>
+        <value param="mod_depth"/>
+    </vbox>
+    <vbox>
+        <label param="am_depth" />
+        <knob param="am_depth"/>
+        <value param="am_depth" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

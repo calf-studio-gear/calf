@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="amount" />
+        <knob param="amount" ticks="0 0.0625 0.25 1 4" />
+        <value param="amount" />
+    </vbox>
+    <vbox>
+        <label param="voices" />
+        <knob param="voices" ticks="1 2 3 4 5 6 7 8"/>
+        <value param="voices" />
+    </vbox>
+    <vbox>
+        <label text="Stereo Ph" />
+        <knob param="stereo" type="3" />
+        <value param="stereo" />
+    </vbox>
+    <vbox>
+        <label text="Inter Ph" />
+        <knob param="vphase" type="3" />
+        <value param="vphase" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

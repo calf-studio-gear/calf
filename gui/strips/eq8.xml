@@ -1,0 +1,13 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="hp_freq" text="HP"/>
+        <knob param="hp_freq" ticks="10 100 1000 20000"/>
+        <value param="hp_freq" />
+    </vbox>
+    <vbox>
+        <label param="lp_freq" text="LP"/>
+        <knob param="lp_freq" ticks="10 100 1000 20000" />
+        <value param="lp_freq" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

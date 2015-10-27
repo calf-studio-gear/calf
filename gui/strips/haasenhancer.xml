@@ -1,0 +1,18 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label text="Delay L"/>
+        <knob param="s_delay1" ticks="0 1 2 5 10"/>
+        <value param="s_delay1"/>
+    </vbox>
+    <vbox>
+        <label text="Gain"/>
+        <knob param="s_gain" type="1"/>
+        <value param="s_gain"/>
+    </vbox>
+    <vbox>
+        <label text="Delay R"/>
+        <knob param="s_delay2" ticks="0 1 2 5 10"/>
+        <value param="s_delay2"/>
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

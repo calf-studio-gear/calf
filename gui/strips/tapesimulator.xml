@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label text="Gain"/>
+        <knob param="level_in" type="1"/>
+        <value param="level_in"/>
+    </vbox>
+    <vbox>
+        <label text="Noise"/>
+        <knob param="noise"/>
+        <value param="noise"/>
+    </vbox>
+    <vbox>
+        <label text="Mechanical"/>
+        <knob param="mechanical"/>
+        <value param="mechanical"/>
+    </vbox>
+    <vbox>
+        <label text="Filter"/>
+        <knob param="lowpass"/>
+        <value param="lowpass"/>
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

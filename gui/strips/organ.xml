@@ -1,0 +1,22 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="master" />
+        <knob param="master"/>
+        <value param="master" />
+    </vbox>
+    <vbox>
+        <label param="transpose" />
+        <knob param="transpose" type="1"/>
+        <value param="transpose" />
+    </vbox>
+    <vbox>
+        <label param="bass_gain" />
+        <knob param="bass_gain" />
+        <value param="bass_gain" />
+    </vbox>
+    <vbox>
+        <label param="treble_gain" />
+        <knob param="treble_gain" />
+        <value param="treble_gain" />
+    </vbox>
+</hbox>

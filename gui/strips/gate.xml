@@ -1,0 +1,18 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label text="Range" />
+        <knob param="range" ticks="0 0.0625 0.25 0.5 1" />
+        <value param="range" />
+    </vbox>
+    <vbox expand="0" attach-x="0" attach-y="1">
+        <label param="ratio" />
+        <knob param="ratio" ticks="1 2 5 21" />
+        <value param="ratio" />
+    </vbox>
+    <vbox expand="0" attach-x="1" attach-y="1">
+        <label param="threshold" />
+        <knob param="threshold"/>
+        <value param="threshold" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>
