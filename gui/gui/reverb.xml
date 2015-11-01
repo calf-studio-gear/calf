@@ -48,7 +48,7 @@
             <knob param="amount" size="2" ticks="0 0.0625 0.25 0 1 2" />
             <value param="amount" />
         </vbox>
-        <vbox>
+        <vbox attach-x="5" attach-y="0">
             <label param="on" />
             <toggle param="on" />
             <label />

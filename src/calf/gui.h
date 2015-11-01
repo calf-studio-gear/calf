@@ -321,7 +321,7 @@ public:
     std::string prefix;
     void cleanup();
     plugin_gui *gui;
-    GtkWindow *toplevel;
+    GtkWidget *toplevel;
     GtkWidget *container;
     gui_environment_iface *environment;
     main_window_iface *main;
@@ -329,7 +329,7 @@ public:
     plugin_gui_widget(gui_environment_iface *_env, main_window_iface *_main);
     GtkWidget *create(plugin_ctl_iface *_plugin);
     static gboolean on_idle(void *data);
-    //static void on_window_destroyed(GtkWidget *window, gpointer data);
+    static void on_window_destroyed(GtkWidget *window, gpointer data);
     virtual void on_config_change() { }
     ~plugin_gui_widget();
 };
