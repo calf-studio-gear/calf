@@ -118,6 +118,10 @@ vintage_delay_audio_module::vintage_delay_audio_module()
     }
     _tap_avg = 0;
     _tap_last = 0;
+    
+    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 
 char *vintage_delay_audio_module::configure(const char *key, const char *value)
@@ -280,13 +284,17 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
             int v = mixmode == MIXMODE_PINGPONG ? 1 : 0;
             for(uint32_t i = offset; i < end; i++)
             {                
-                delayline_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
-                delayline_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
+                delayline_impl(age, deltime_l, ins[0][i] * *params[param_level_in], buffers[v][(bufptr - deltime_l) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
+                delayline_impl(age, deltime_r, ins[1][i] * *params[param_level_in], buffers[1 - v][(bufptr - deltime_r) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
                 delay_mix(ins[0][i], ins[1][i], out_left, out_right, dry.get(), chmix.get());
                 
                 age++;
-                outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+                outs[0][i] = out_left * *params[param_level_out];
+                outs[1][i] = out_right * *params[param_level_out];
+                buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
                 bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+                float values[] = {ins[0][i], ins[1][i], outs[0][i], outs[1][i]};
+                meters.process(values);
             }
         }
         break;
@@ -301,13 +309,17 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
             
             for(uint32_t i = offset; i < end; i++)
             {
-                delayline2_impl(age, deltime_l, ins[0][i], buffers[v][(bufptr - deltime_l_corr) & ADDR_MASK], buffers[v][(bufptr - deltime_fb) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
-                delayline2_impl(age, deltime_r, ins[1][i], buffers[1 - v][(bufptr - deltime_r_corr) & ADDR_MASK], buffers[1-v][(bufptr - deltime_fb) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
+                delayline2_impl(age, deltime_l, ins[0][i] * *params[param_level_in], buffers[v][(bufptr - deltime_l_corr) & ADDR_MASK], buffers[v][(bufptr - deltime_fb) & ADDR_MASK], out_left, del_left, amt_left, fb_left);
+                delayline2_impl(age, deltime_r, ins[1][i] * *params[param_level_in], buffers[1 - v][(bufptr - deltime_r_corr) & ADDR_MASK], buffers[1-v][(bufptr - deltime_fb) & ADDR_MASK], out_right, del_right, amt_right, fb_right);
                 delay_mix(ins[0][i], ins[1][i], out_left, out_right, dry.get(), chmix.get());
                 
                 age++;
-                outs[0][i] = out_left; outs[1][i] = out_right; buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
+                outs[0][i] = out_left * *params[param_level_out];
+                outs[1][i] = out_right * *params[param_level_out];
+                buffers[0][bufptr] = del_left; buffers[1][bufptr] = del_right;
                 bufptr = (bufptr + 1) & (MAX_DELAY - 1);
+                float values[] = {ins[0][i], ins[1][i], outs[0][i], outs[1][i]};
+                meters.process(values);
             }
         }
     }
@@ -335,7 +347,7 @@ uint32_t vintage_delay_audio_module::process(uint32_t offset, uint32_t numsample
         biquad_left[1].sanitize();biquad_right[1].sanitize();
         
     }
-    
+    meters.fall(numsamples);
     return ostate;
 }
 
