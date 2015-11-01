@@ -387,7 +387,6 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     
     GtkWidget *eventbox  = gtk_event_box_new();
     gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
-    //gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), FALSE);
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
     gtk_widget_show(eventbox);
     

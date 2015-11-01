@@ -52,8 +52,6 @@ public:
     uint32_t srate;
     dsp::gain_smoothing amount, dryamount;
     int predelay_amt;
-    float meter_wet, meter_out;
-    uint32_t clip;
     
     void params_changed();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);

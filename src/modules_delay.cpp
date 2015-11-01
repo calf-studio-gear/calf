@@ -50,9 +50,9 @@ void reverb_audio_module::set_sample_rate(uint32_t sr)
     srate = sr;
     reverb.setup(sr);
     amount.set_sample_rate(sr);
-    int meter[] = {par_meter_wet, par_meter_out};
-    int clip[] = {-1, par_clip};
-    meters.init(params, meter, clip, 2, srate);
+    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 
 void reverb_audio_module::params_changed()
@@ -72,11 +72,11 @@ void reverb_audio_module::params_changed()
 uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     numsamples += offset;
-    clip   -= std::min(clip, numsamples);
     for (uint32_t i = offset; i < numsamples; i++) {
         float dry = dryamount.get();
         float wet = amount.get();
-        stereo_sample<float> s(ins[0][i], ins[1][i]);
+        stereo_sample<float> s(ins[0][i] * *params[param_level_in],
+                               ins[1][i] * *params[param_level_in]);
         stereo_sample<float> s2 = pre_delay.process(s, predelay_amt);
         
         float rl = s2.left, rr = s2.right;
@@ -84,13 +84,17 @@ uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         rr = right_lo.process(right_hi.process(rr));
         if (*params[par_on] > 0.5)
             reverb.process(rl, rr);
-        outs[0][i] = dry*s.left + wet*rl;
-        outs[1][i] = dry*s.right + wet*rr;
-        meter_wet = std::max(fabs(wet*rl), fabs(wet*rr));
-        meter_out = std::max(fabs(outs[0][i]), fabs(outs[1][i]));
-        if(outs[0][i] > 1.f or outs[1][i] > 1.f) {
-            clip = srate >> 3;
+        outs[0][i] = dry*s.left;
+        outs[1][i] = dry*s.right;
+        if (*params[par_on] > 0.5) {
+            outs[0][i] += wet*rl;
+            outs[1][i] += wet*rr;
         }
+        outs[0][i] *= *params[param_level_out];
+        outs[1][i] *= *params[param_level_out];
+        
+        float values[] = {s.left, s.right, outs[0][i], outs[1][i]};
+        meters.process(values);
     }
     meters.fall(numsamples);
     reverb.extra_sanitize();
@@ -98,8 +102,6 @@ uint32_t reverb_audio_module::process(uint32_t offset, uint32_t numsamples, uint
     left_hi.sanitize();
     right_lo.sanitize();
     right_hi.sanitize();
-    float values[] = {meter_wet, meter_out};
-    meters.process(values);
     return outputs_mask;
 }
 
