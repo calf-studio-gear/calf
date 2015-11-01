@@ -1762,7 +1762,7 @@ void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, g
     }
     else
     {
-        GtkWidget *dialog = gtk_message_dialog_new(pThis->gui->window->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(pThis->gui->window->toplevel), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
             "%s", error.c_str());
         gtk_dialog_run(GTK_DIALOG(dialog));
         gtk_widget_destroy(dialog);

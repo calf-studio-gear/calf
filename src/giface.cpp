@@ -304,7 +304,7 @@ void calf_plugins::plugin_ctl_iface::clear_preset() {
         configure(vars[i].c_str(), NULL);
 }
 
-const char *calf_plugins::load_gui_xml(const std::string &plugin_id)
+char *calf_plugins::load_gui_xml(const std::string &plugin_id)
 {
     try {
         return strdup(calf_utils::load_file((std::string(PKGLIBDIR) + "/" + plugin_id + ".xml").c_str()).c_str());
