@@ -375,7 +375,6 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_window_set_role(GTK_WINDOW(win), "calf_plugin");
     
     GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(false, 0));
-    gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Plugin");
     
     GtkRequisition req, req2;
     gtk_window_set_title(GTK_WINDOW (win), title);
@@ -385,6 +384,12 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gui->effect_name = effect;
     gtk_widget_set_name(container, "Calf-Plugin");
     GtkWidget *decoTable = decorate(container);
+    
+    GtkWidget *eventbox  = gtk_event_box_new();
+    gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
+    //gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), FALSE);
+    gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
+    gtk_widget_show(eventbox);
     
     ui_mgr = gtk_ui_manager_new();
     std_actions = gtk_action_group_new("default");
@@ -414,7 +419,7 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_widget_show(GTK_WIDGET(sw));
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_NONE);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(decoTable));
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw), GTK_WIDGET(eventbox));
     gtk_widget_set_name(GTK_WIDGET(sw), "Calf-Container");
     gtk_box_pack_start(GTK_BOX(vbox), sw, true, true, 0);
     
@@ -462,7 +467,7 @@ void plugin_gui_window::close()
     gtk_widget_destroy(toplevel);
 }
 
-GtkWidget *plugin_gui_window::decorate(GtkWidget *eventbox) {
+GtkWidget *plugin_gui_window::decorate(GtkWidget *widget) {
     GtkWidget *decoTable = gtk_table_new(3, 1, FALSE);
     
     // images for left side
@@ -493,7 +498,7 @@ GtkWidget *plugin_gui_window::decorate(GtkWidget *eventbox) {
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBG),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(rightBG),  2, 3, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
         
-    gtk_table_attach(GTK_TABLE(decoTable), eventbox, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
+    gtk_table_attach(GTK_TABLE(decoTable), widget, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 15, 5);
     
     gtk_widget_show_all(decoTable);
     return GTK_WIDGET(decoTable);

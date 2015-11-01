@@ -348,7 +348,7 @@ public:
     std::string make_gui_command_list(GtkActionGroup *grp, const plugin_metadata_iface *metadata);
     void fill_gui_presets(bool builtin, char &ch);
     void create(plugin_ctl_iface *_plugin, const char *title, const char *effect);
-    GtkWidget *decorate(GtkWidget *eventbox);
+    GtkWidget *decorate(GtkWidget *widget);
     void show_rack_ears(bool show);
     void close();
     virtual void on_config_change();
