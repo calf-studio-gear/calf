@@ -64,7 +64,7 @@ GtkWidget *plugin_gui_widget::create(plugin_ctl_iface *_jh)
         assert(xml);
         container = gui->create_from_xml(_jh, xml);
         source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
-        //g_signal_connect (GTK_OBJECT (container), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_widget *)this);
+        g_signal_connect (GTK_WIDGET(container), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_widget *)this);
         gui->plugin->send_configures(gui);
     } else {
         container = gtk_hbox_new(FALSE, 0);

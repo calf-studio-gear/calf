@@ -48,8 +48,6 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         
         double ox = widget->allocation.x;
         double oy = widget->allocation.y;
-        double sx = widget->allocation.width;
-        double sy = widget->allocation.height;
         double width  = widget->allocation.width;
         double height = widget->allocation.height;
         double xthick = widget->style->xthickness;
@@ -60,7 +58,7 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         double dot_m  = 2;
         double dot_y  = 0;
         double dot_y2 = 0;
-        cairo_rectangle(cr, ox, oy, sx, sy);
+        cairo_rectangle(cr, ox, oy, width, height);
         cairo_clip(cr);
         
         if (ms->position) {

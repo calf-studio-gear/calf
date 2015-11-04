@@ -103,7 +103,7 @@ struct reverb_metadata: public plugin_metadata<reverb_metadata>
 
 struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 {
-    enum {  param_bypass, param_level_in, param_level_out,
+    enum {  param_on, param_level_in, param_level_out,
             STEREO_VU_METER_PARAMS,
             par_divide, par_time_l, par_time_r, par_feedback,
             par_amount, par_mixmode, par_medium, par_dryamount,
