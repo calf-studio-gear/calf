@@ -297,7 +297,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     
     // set pixbuf
     calf_combobox_set_arrow(CALF_COMBOBOX(widget),
-        gui->window->environment->get_image_factory()->get("combo_arrow"));
+        gui->window->get_environment()->get_image_factory()->get("combo_arrow"));
     
     gtk_combo_box_set_model (GTK_COMBO_BOX(widget), GTK_TREE_MODEL(lstore));
     g_signal_connect (GTK_OBJECT (widget), "changed", G_CALLBACK (combo_value_changed), (gpointer)this);
@@ -445,7 +445,7 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     int size = get_int("size", 2);
     
     // set pixbuf
-    image_factory *images = gui->window->environment->get_image_factory();
+    image_factory *images = gui->window->get_environment()->get_image_factory();
     char iname[64];
     sprintf(iname, "slider_%d_horiz", size);
     calf_fader_set_pixbuf(CALF_FADER(widget), images->get(iname));
@@ -517,7 +517,7 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     int size = get_int("size", 2);
     
     // set pixbuf
-    image_factory *images = gui->window->environment->get_image_factory();
+    image_factory *images = gui->window->get_environment()->get_image_factory();
     char iname[64];
     sprintf(iname, "slider_%d_vert", size);
     calf_fader_set_pixbuf(CALF_FADER(widget), images->get(iname));
@@ -872,7 +872,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     // set pixbuf
     char imgname[16];
     sprintf(imgname, "knob_%d", get_int("size", 2));
-    calf_knob_set_pixbuf(knob, gui->window->environment->get_image_factory()->get(imgname));
+    calf_knob_set_pixbuf(knob, gui->window->get_environment()->get_image_factory()->get(imgname));
     
     //char ticks[128];
     std::ostringstream ticks_;
@@ -927,7 +927,7 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     calf_toggle_set_size(toggle, get_int("size", 2));
     
     // set pixbuf
-    image_factory *images = gui->window->environment->get_image_factory();
+    image_factory *images = gui->window->get_environment()->get_image_factory();
     char imgname[64];
     if (attribs.count("icon") != 0) {
         sprintf(imgname, "toggle_%d_%s", get_int("size", 2), attribs["icon"].c_str());
@@ -975,9 +975,9 @@ GtkWidget *tap_button_param_control::create(plugin_gui *_gui, int _param_no)
     widget    = calf_tap_button_new ();
     // set pixbuf
     calf_tap_button_set_pixbufs(CALF_TAP_BUTTON(widget),
-        gui->window->environment->get_image_factory()->get("tap_inactive"),
-        gui->window->environment->get_image_factory()->get("tap_prelight"),
-        gui->window->environment->get_image_factory()->get("tap_active"));
+        gui->window->get_environment()->get_image_factory()->get("tap_inactive"),
+        gui->window->get_environment()->get_image_factory()->get("tap_prelight"),
+        gui->window->get_environment()->get_image_factory()->get("tap_active"));
     //CALF_TAP(widget)->size = get_int("size", 2);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (tap_button_pressed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "released", G_CALLBACK (tap_button_released), (gpointer)this);
@@ -1789,7 +1789,7 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
     GtkWidget *nb = calf_notebook_new();
     widget = GTK_WIDGET(nb);
     calf_notebook_set_pixbuf(CALF_NOTEBOOK(nb),
-        gui->window->environment->get_image_factory()->get("notebook_screw"));
+        gui->window->get_environment()->get_image_factory()->get("notebook_screw"));
     gtk_widget_set_name(widget, "Calf-Notebook");
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     return nb;

@@ -33,6 +33,7 @@ using namespace std;
 
 plugin_gui_widget::plugin_gui_widget(gui_environment_iface *_env, main_window_iface *_main)
 {
+    gui = NULL;
     toplevel = NULL;
     environment = _env;
     main = _main;
@@ -56,23 +57,33 @@ gboolean plugin_gui_widget::on_idle(void *data)
     return TRUE;
 }
 
-GtkWidget *plugin_gui_widget::create(plugin_ctl_iface *_jh)
+void plugin_gui_widget::create_gui(plugin_ctl_iface *_jh)
 {
     gui = new plugin_gui(this);
     const char *xml = _jh->get_metadata_iface()->get_gui_xml(prefix.c_str());
     if (xml) {
-        assert(xml);
         container = gui->create_from_xml(_jh, xml);
         source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
-        g_signal_connect (GTK_WIDGET(container), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_widget *)this);
         gui->plugin->send_configures(gui);
     } else {
         container = gtk_hbox_new(FALSE, 0);
     }
+}
+
+GtkWidget *plugin_gui_widget::create(plugin_ctl_iface *_jh)
+{
+    create_gui(_jh);
     gtk_widget_set_name(container, "Calf-Plugin-Strip");
     gtk_widget_show_all(container);
     toplevel = container;
+    g_signal_connect (GTK_WIDGET(toplevel), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_widget *)this);
     return container;
+}
+
+void plugin_gui_widget::refresh()
+{
+    if (gui)
+        gui->refresh();
 }
 
 void plugin_gui_widget::cleanup()
@@ -86,17 +97,18 @@ plugin_gui_widget::~plugin_gui_widget()
 {
     cleanup();
     delete gui;
+    gui = NULL;
 }
 
 /******************************* Actions **************************************************/
  
-namespace {
-    
-void store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
+void plugin_gui_window::store_preset_action(GtkAction *action, plugin_gui_window *gui_win)
 {
     if (gui_win->gui->preset_access)
         gui_win->gui->preset_access->store_preset();
 }
+
+namespace {
 
 struct activate_preset_params
 {
@@ -119,7 +131,9 @@ void activate_preset(GtkAction *action, activate_preset_params *params)
     params->preset_access->activate_preset(params->preset, params->builtin);
 }
 
-void help_action(GtkAction *action, plugin_gui_window *gui_win)
+}
+
+void plugin_gui_window::help_action(GtkAction *action, plugin_gui_window *gui_win)
 {
     string uri = "file://" PKGDOCDIR "/" + string(gui_win->gui->plugin->get_metadata_iface()->get_label()) + ".html";
     GError *error = NULL;
@@ -136,7 +150,7 @@ void help_action(GtkAction *action, plugin_gui_window *gui_win)
     }
 }
 
-void about_action(GtkAction *action, plugin_gui_window *gui_win)
+void plugin_gui_window::about_action(GtkAction *action, plugin_gui_window *gui_win)
 {
     GtkAboutDialog *dlg = GTK_ABOUT_DIALOG(gtk_about_dialog_new());
     if (!dlg)
@@ -207,8 +221,6 @@ void tips_tricks_action(GtkAction *action, plugin_gui_window *gui_win)
     gtk_widget_destroy(GTK_WIDGET(dlg));
 }
 
-};
-
 void calf_plugins::activate_command(GtkAction *action, activate_command_params *params)
 {
     plugin_gui *gui = params->gui;
@@ -223,9 +235,9 @@ static const GtkActionEntry actions[] = {
     { "UserPresetMenuAction", NULL, "_User", NULL, "User (your) presets", NULL },
     { "CommandMenuAction", NULL, "_Commands", NULL, "Plugin-related commands", NULL },
     { "HelpMenuAction", NULL, "_Help", NULL, "Help-related commands", NULL },
-    { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)store_preset_action },
-    { "about", "gtk-about", "_About...", NULL, "About this plugin", (GCallback)about_action },
-    { "HelpMenuItemAction", "gtk-help", "_Help", NULL, "Show manual page for this plugin", (GCallback)help_action },
+    { "store-preset", "gtk-save-as", "Store preset", NULL, "Store a current setting as preset", (GCallback)plugin_gui_window::store_preset_action },
+    { "about", "gtk-about", "_About...", NULL, "About this plugin", (GCallback)plugin_gui_window::about_action },
+    { "HelpMenuItemAction", "gtk-help", "_Help", NULL, "Show manual page for this plugin", (GCallback)plugin_gui_window::help_action },
     { "tips-tricks", NULL, "_Tips and tricks...", NULL, "Show a list of tips and tricks", (GCallback)tips_tricks_action },
 };
 
@@ -294,13 +306,6 @@ plugin_gui_window::plugin_gui_window(gui_environment_iface *_env, main_window_if
     notifier = NULL;
 }
 
-void plugin_gui_window::on_window_destroyed(GtkWidget *window, gpointer data)
-{
-    plugin_gui_window *self = (plugin_gui_window *)data;
-    self->gui->destroy_child_widgets(self->toplevel);
-    delete self;
-}
-
 string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin, char &ch)
 {
     preset_access_iface *pai = gui->preset_access;
@@ -322,7 +327,7 @@ string plugin_gui_window::make_gui_preset_list(GtkActionGroup *grp, bool builtin
         string sv = ss.str();
         string prefix = ch == ' ' ? string() : string("_")+ch+" ";
         string name = prefix + pvec[i].name;
-        GtkActionEntry ae = { sv.c_str(), NULL, name.c_str(), NULL, NULL, (GCallback)activate_preset };
+        GtkActionEntry ae = { sv.c_str(), NULL, name.c_str(), NULL, NULL, (GCallback)::activate_preset };
         gtk_action_group_add_actions_full(preset_actions, &ae, 1, (gpointer)new activate_preset_params(pai, i, builtin), activate_preset_params::action_destroy_notify);
     }
     preset_xml += preset_post_xml;
@@ -380,7 +385,8 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_window_set_title(GTK_WINDOW (win), title);
     gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(vbox));
     
-    plugin_gui_widget::create(_jh);
+    create_gui(_jh);
+
     gui->effect_name = effect;
     gtk_widget_set_name(container, "Calf-Plugin");
     GtkWidget *decoTable = decorate(container);
@@ -412,7 +418,6 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     // determine size without content
     gtk_widget_show_all(GTK_WIDGET(vbox));
     gtk_widget_size_request(GTK_WIDGET(vbox), &req2);
-    // printf("size request %dx%d\n", req2.width, req2.height);
     
     GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_widget_show(GTK_WIDGET(sw));
@@ -427,19 +432,13 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     gtk_widget_size_request(GTK_WIDGET(container), &req);
     int wx = max(req.width + 10, req2.width);
     int wy = req.height + req2.height + 10;
-    // printf("size request %dx%d\n", req.width, req.height);
-    // printf("resize to %dx%d\n", max(req.width + 10, req2.width), req.height + req2.height + 10);
     gtk_window_set_default_size(GTK_WINDOW(win), wx, wy);
     gtk_window_resize(GTK_WINDOW(win), wx, wy);
-    //gtk_widget_set_size_request(GTK_WIDGET(win), max(req.width + 10, req2.width), req.height + req2.height + 10);
-    // printf("size set %dx%d\n", wx, wy);
-    // gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw), GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, req.height, 20, 100, 100)));
-    g_signal_connect (GTK_OBJECT (win), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_window *)this);
+    g_signal_connect (GTK_WIDGET(win), "destroy", G_CALLBACK (on_window_destroyed), (plugin_gui_widget *)this);
     if (main)
         main->set_window(gui->plugin, this);
 
     gtk_ui_manager_ensure_update(ui_mgr);
-    //gui->plugin->send_configures(gui);
     toplevel = win;
     notifier = environment->get_config_db()->add_listener(this);
 }
@@ -462,7 +461,6 @@ void plugin_gui_window::cleanup()
 
 void plugin_gui_window::close()
 {
-    cleanup();
     gtk_widget_destroy(toplevel);
 }
 
@@ -525,5 +523,4 @@ plugin_gui_window::~plugin_gui_window()
 {
     if (main)
         main->set_window(gui->plugin, NULL);
-    cleanup();
 }

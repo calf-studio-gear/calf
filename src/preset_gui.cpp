@@ -115,8 +115,8 @@ void gui_preset_access::store_preset()
         tmp.add(sp);
         get_user_presets() = tmp;
         get_user_presets().save(tmp.get_preset_filename(false).c_str());
-        if (gui->window->main)
-            gui->window->main->refresh_all_presets(false);
+        if (gui->window->get_main_window())
+            gui->window->get_main_window()->refresh_all_presets(false);
     }
     g_object_unref(G_OBJECT(store_preset_builder));
 }

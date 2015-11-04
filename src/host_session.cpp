@@ -240,8 +240,8 @@ bool host_session::activate_preset(int plugin_no, const std::string &preset, boo
         if (pvec[i].name == preset && pvec[i].plugin == cur_plugin)
         {
             pvec[i].activate(plugins[plugin_no]);
-            if (gui_win && gui_win->gui)
-                gui_win->gui->refresh();
+            if (gui_win)
+                gui_win->refresh();
             return true;
         }
     }

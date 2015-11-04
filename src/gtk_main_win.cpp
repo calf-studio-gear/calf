@@ -828,7 +828,7 @@ void gtk_main_window::on_config_change()
 void gtk_main_window::refresh_plugin(plugin_ctl_iface *plugin)
 {
     if (plugins[plugin]->gui_win)
-        plugins[plugin]->gui_win->gui->refresh();
+        plugins[plugin]->gui_win->refresh();
 }
 
 void gtk_main_window::on_closed()

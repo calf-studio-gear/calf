@@ -159,7 +159,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
             state = false;
             cond.erase(0, 1);
         }
-        if (window->environment->check_condition(cond.c_str()) == state)
+        if (window->get_environment()->check_condition(cond.c_str()) == state)
             return;
         ignore_stack = 1;
         return;
@@ -272,6 +272,7 @@ void plugin_gui::remove_param_ctl(int param, param_control *ctl)
             if (i != last)
                 std::swap(params[i], params[last]);
             params.erase(params.begin() + last, params.end());
+            last--;
         }
     }
 }

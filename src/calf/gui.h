@@ -317,19 +317,27 @@ class plugin_gui_widget: public calf_utils::config_listener_iface
 {
 private:
     window_update_controller refresh_controller;
-public:
-    std::string prefix;
-    void cleanup();
+    int source_id;
+private:
+    static gboolean on_idle(void *data);
+protected:
+    void create_gui(plugin_ctl_iface *_jh);
+    static void on_window_destroyed(GtkWidget *window, gpointer data);
+    virtual void cleanup();
+protected:
     plugin_gui *gui;
-    GtkWidget *toplevel;
     GtkWidget *container;
     gui_environment_iface *environment;
     main_window_iface *main;
-    int source_id;
+public:
+    std::string prefix;
+    GtkWidget *toplevel;
+public:
     plugin_gui_widget(gui_environment_iface *_env, main_window_iface *_main);
     GtkWidget *create(plugin_ctl_iface *_plugin);
-    static gboolean on_idle(void *data);
-    static void on_window_destroyed(GtkWidget *window, gpointer data);
+    gui_environment_iface *get_environment() { return environment; }
+    main_window_iface *get_main_window() { return main; }
+    void refresh();
     virtual void on_config_change() { }
     ~plugin_gui_widget();
 };
@@ -352,8 +360,12 @@ public:
     void show_rack_ears(bool show);
     void close();
     virtual void on_config_change();
-    static void on_window_destroyed(GtkWidget *window, gpointer data);
     ~plugin_gui_window();
+
+    static void about_action(GtkAction *action, plugin_gui_window *gui_win);
+    static void help_action(GtkAction *action, plugin_gui_window *gui_win);
+    static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win);
+
 };
 
 
