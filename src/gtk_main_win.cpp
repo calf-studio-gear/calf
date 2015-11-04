@@ -315,6 +315,29 @@ gboolean gtk_main_window::on_blur_entry(GtkWidget *entry, GdkEvent *event, plugi
     return FALSE;
 }
 
+GtkWidget *gtk_main_window::create_vu_meter() {
+    GtkWidget *vu = calf_vumeter_new();
+    calf_vumeter_set_falloff(CALF_VUMETER(vu), 2.5);
+    calf_vumeter_set_hold(CALF_VUMETER(vu), 1.5);
+    calf_vumeter_set_width(CALF_VUMETER(vu), 100);
+    calf_vumeter_set_height(CALF_VUMETER(vu), 12);
+    calf_vumeter_set_position(CALF_VUMETER(vu), 2);
+    return vu;
+}
+
+GtkWidget *gtk_main_window::create_meter_scale() {
+    GtkWidget *vu = calf_meter_scale_new();
+    CalfMeterScale *ms = CALF_METER_SCALE(vu);
+    const unsigned long sz = 7;
+    const double cv[sz] = {0., 0.0625, 0.125, 0.25, 0.5, 0.71, 1.};
+    const vector<double> ck(cv, &cv[sz]);
+    ms->marker   = ck;
+    ms->dots     = 1;
+    ms->position = 2;
+    gtk_widget_set_name(vu, "Calf-MeterScale");
+    return vu;
+}
+
 void gtk_main_window::on_table_clicked(GtkWidget *table, GdkEvent *event) {
     gtk_widget_grab_focus(table);
 }
@@ -469,6 +492,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
         GtkWidget *midiBox = gtk_vbox_new(FALSE, 1);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(gtk_label_new("MIDI")), FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(midiBox), GTK_WIDGET(led), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(midiBox), gtk_label_new(""), TRUE, TRUE, 0);
         gtk_table_attach(GTK_TABLE(strip->strip_table), midiBox, 3, 4, 1, 2, (GtkAttachOptions)0, (GtkAttachOptions)0, 5, 3);
         gtk_widget_set_size_request(GTK_WIDGET(led), 25, 25);
         strip->midi_in = led;
@@ -495,26 +519,12 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
         
         for (int i = 0; i < metadata->get_input_count(); i++)
         {
-            vu = calf_vumeter_new();
-            calf_vumeter_set_falloff(CALF_VUMETER(vu), 2.5);
-            calf_vumeter_set_hold(CALF_VUMETER(vu), 1.5);
-            calf_vumeter_set_width(CALF_VUMETER(vu), 100);
-            calf_vumeter_set_height(CALF_VUMETER(vu), 12);
-            calf_vumeter_set_position(CALF_VUMETER(vu), 2);
+            vu = create_vu_meter();
             gtk_box_pack_start(GTK_BOX(inBox), vu, TRUE, TRUE, 0);
             strip->audio_in.push_back(vu);
         }
-        
-        vu = calf_meter_scale_new();
-        CalfMeterScale *ms = CALF_METER_SCALE(vu);
-        const unsigned long sz = 7;
-        const double cv[sz] = {0., 0.0625, 0.125, 0.25, 0.5, 0.71, 1.};
-        const vector<double> ck(cv, &cv[sz]);
-        ms->marker   = ck;
-        ms->dots     = 1;
-        ms->position = 2;
+        vu = create_meter_scale();
         gtk_box_pack_start(GTK_BOX(inBox), vu, TRUE, TRUE, 0);
-        gtk_widget_set_name(vu, "Calf-MeterScale");
         
         strip->inBox = gtk_alignment_new(0.f, 0.f, 1.f, 0.f);
         gtk_container_add(GTK_CONTAINER(strip->inBox), inBox);
@@ -540,26 +550,12 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
         
         for (int i = 0; i < metadata->get_output_count(); i++)
         {
-            vu = calf_vumeter_new();
-            calf_vumeter_set_falloff(CALF_VUMETER(vu), 2.5);
-            calf_vumeter_set_hold(CALF_VUMETER(vu), 1.5);
-            calf_vumeter_set_width(CALF_VUMETER(vu), 100);
-            calf_vumeter_set_height(CALF_VUMETER(vu), 12);
-            calf_vumeter_set_position(CALF_VUMETER(vu), 2);
-            gtk_box_pack_start(GTK_BOX(outBox), vu, FALSE, FALSE, 0);
+            vu = create_vu_meter();
+            gtk_box_pack_start(GTK_BOX(outBox), vu, TRUE, TRUE, 0);
             strip->audio_out.push_back(vu);
         }
-        
-        vu = calf_meter_scale_new();
-        CalfMeterScale *ms = CALF_METER_SCALE(vu);
-        const unsigned long sz = 7;
-        const double cv[sz] = {0., 0.0625, 0.125, 0.25, 0.5, 0.71, 1.};
-        const vector<double> ck(cv, &cv[sz]);
-        ms->marker   = ck;
-        ms->dots     = 1;
-        ms->position = 2;
+        vu = create_meter_scale();
         gtk_box_pack_start(GTK_BOX(outBox), vu, TRUE, TRUE, 0);
-        gtk_widget_set_name(vu, "Calf-MeterScale");
         
         strip->outBox = gtk_alignment_new(0.f, 0.f, 1.f, 0.f);
         gtk_container_add(GTK_CONTAINER(strip->outBox), outBox);

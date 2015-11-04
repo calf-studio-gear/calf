@@ -46,7 +46,7 @@
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meter_R1" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -71,7 +71,7 @@
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meter_R2" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -96,7 +96,7 @@
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meter_R3" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
         
@@ -121,7 +121,7 @@
                     </vbox>
                 </hbox>
                 <vumeter param="meter_L4" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
-                <vumeter param="meter_R4" height="10" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R4" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
             </vbox>
         </frame>
     </hbox>
