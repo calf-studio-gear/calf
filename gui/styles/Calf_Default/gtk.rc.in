@@ -327,6 +327,10 @@ style "calf-meterscale"
     fg[NORMAL] = { 1.00, 1.00, 1.00 }
     xthickness = 5
 }
+style "calf-meterscale-rack"
+{
+    fg[NORMAL] = { 0.33, 0.33, 0.33 }
+}
 
 ### LED ###
 style "calf-led"
@@ -462,6 +466,8 @@ widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
 widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
 widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
 widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
+widget "*Calf-Rack*MeterScale"                    style : highest "calf-meterscale-rack"
+
 
 widget "*Calf*Led*"                                style : highest "calf-led"
 widget "*Calf*LED*"                                style : highest "calf-led"

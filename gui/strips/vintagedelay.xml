@@ -19,5 +19,5 @@
         <knob param="dry" ticks="0 0.0625 0.25 1 4"/>
         <value param="dry" />
     </vbox>
-    <toggle param="bypass" icon="bypass"/>
+    <toggle param="on"/>
 </hbox>

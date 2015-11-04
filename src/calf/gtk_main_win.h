@@ -28,6 +28,7 @@
 
 #include <calf/ctl_led.h>
 #include <calf/ctl_vumeter.h>
+#include <calf/ctl_meterscale.h>
 #include <calf/ctl_buttons.h>
 
 //#include <calf/giface.h>
