@@ -75,6 +75,10 @@ style "calf-rack-entry"
     font_name  = "Open Sans Condensed 11"
     xthickness = 7
     ythickness = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 style "calf-rack-widgets"
@@ -209,6 +213,10 @@ style "calf-entry"
     text[NORMAL]   = "#D1EA73"
     xthickness     = 3
     ythickness     = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 ### MENU ###

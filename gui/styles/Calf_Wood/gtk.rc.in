@@ -75,6 +75,10 @@ style "calf-rack-entry"
     font_name  = "Open Sans Condensed 11"
     xthickness = 7
     ythickness = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 style "calf-rack-widgets"
@@ -208,6 +212,10 @@ style "calf-entry"
     text[NORMAL]   = "#d3eb7a"
     xthickness     = 5
     ythickness     = 5
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 ### MENU ###
@@ -402,16 +410,16 @@ style "calf-knob5" = "calf-knob" {
 
 ### TOGGLE ###
 style "calf-toggle0" {
-    xthickness = 30
-    ythickness = 32
+    xthickness = 24
+    ythickness = 24
 }
 style "calf-toggle1" {
-    xthickness = 38
+    xthickness = 40
     ythickness = 36
 }
 style "calf-toggle2" {
     xthickness = 70
-    ythickness = 56
+    ythickness = 60
 }
 
 widget "*Calf*"                                   style : rc "calf-default"
