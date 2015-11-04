@@ -91,7 +91,7 @@ void host_session::add_plugin(string name, string preset, string instance_name)
         ;
         if (!s.empty())
             s = s.substr(0, s.length() - 2);
-        throw text_exception("Unknown plugin name; allowed are: " + s);
+        throw text_exception("Unknown plugin name \"" + name + "\" - allowed are: " + s);
     }
     instances.insert(jh->instance_name);
     jh->create();

@@ -75,17 +75,21 @@ style "calf-rack-entry"
     font_name  = "Open Sans Condensed 11"
     xthickness = 7
     ythickness = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 style "calf-rack-widgets"
 {
-    fg[NORMAL]        = { 0, 0.11, 0.11 }
+    fg[NORMAL]        = "white"
     font_name         = "Sans 5"
 }
 
 style "calf-rack-label"
 {
-    fg[NORMAL]        = { 0, 0.11, 0.11 }
+    fg[NORMAL]        = "white"
     font_name         = "Sans 5"
 }
 
@@ -209,6 +213,10 @@ style "calf-entry"
     text[NORMAL]   = "#D1EA73"
     xthickness     = 3
     ythickness     = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
 }
 
 ### MENU ###
@@ -320,6 +328,10 @@ style "calf-vumeter"
     xthickness = 4
     ythickness = 3
 }
+style "calf-meterscale-rack"
+{
+    fg[NORMAL] = "white"
+}
 
 ### METERSCALE ###
 style "calf-meterscale"
@@ -404,12 +416,12 @@ style "calf-toggle0" {
     ythickness = 24
 }
 style "calf-toggle1" {
-    xthickness = 32
-    ythickness = 30
+    xthickness = 40
+    ythickness = 36
 }
 style "calf-toggle2" {
-    xthickness = 60
-    ythickness = 50
+    xthickness = 70
+    ythickness = 60
 }
 
 widget "*Calf*"                                   style : rc "calf-default"
@@ -463,6 +475,7 @@ widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
 widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
 widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
 widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
+widget "*Calf-Rack*MeterScale"                    style : highest "calf-meterscale-rack"
 
 widget "*Calf*Led*"                                style : highest "calf-led"
 widget "*Calf*LED*"                                style : highest "calf-led"

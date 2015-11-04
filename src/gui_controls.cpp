@@ -256,7 +256,7 @@ void param_control::create_value_entry(GtkWidget *widget, int x, int y)
     gtk_window_set_decorated (GTK_WINDOW(entrywin), FALSE);
     gtk_window_set_skip_taskbar_hint (GTK_WINDOW(entrywin), TRUE);
     gtk_window_set_skip_pager_hint (GTK_WINDOW(entrywin), TRUE);
-    gtk_window_set_transient_for (GTK_WINDOW(entrywin), GTK_WINDOW (gui->window->toplevel));
+    gtk_window_set_transient_for (GTK_WINDOW(entrywin), GTK_WINDOW (gtk_widget_get_toplevel(gui->window->toplevel)));
     gtk_window_set_gravity(GTK_WINDOW(entrywin), GDK_GRAVITY_CENTER);
     gtk_widget_set_events (GTK_WIDGET(entrywin), GDK_FOCUS_CHANGE_MASK);
     g_signal_connect (G_OBJECT(entrywin), "focus-out-event", G_CALLBACK (value_entry_unfocus), this);
@@ -1762,7 +1762,7 @@ void listview_param_control::on_edited(GtkCellRenderer *renderer, gchar *path, g
     }
     else
     {
-        GtkWidget *dialog = gtk_message_dialog_new(pThis->gui->window->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(pThis->gui->window->toplevel), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, 
             "%s", error.c_str());
         gtk_dialog_run(GTK_DIALOG(dialog));
         gtk_widget_destroy(dialog);

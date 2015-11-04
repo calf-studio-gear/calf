@@ -105,7 +105,7 @@ void gui_preset_access::store_preset()
         }
         if (found)
         {
-            GtkWidget *dialog = gtk_message_dialog_new(gui->window->toplevel, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, 
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(gui->window->toplevel), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, 
                 "Preset '%s' already exists. Overwrite?", sp.name.c_str());
             int response = gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);

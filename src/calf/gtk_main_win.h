@@ -28,6 +28,7 @@
 
 #include <calf/ctl_led.h>
 #include <calf/ctl_vumeter.h>
+#include <calf/ctl_meterscale.h>
 #include <calf/ctl_buttons.h>
 
 //#include <calf/giface.h>
@@ -93,6 +94,8 @@ namespace calf_plugins {
         static void add_plugin_action(GtkWidget *src, gpointer data);
         void display_error(const char *error, const char *filename);
         void on_config_change();
+        GtkWidget *create_vu_meter();
+        GtkWidget *create_meter_scale();
         /// Create a toplevel window with progress bar
         GtkWidget *create_progress_window();        
 

@@ -146,9 +146,6 @@ CALF_PORT_NAMES(reverb) = {"In L", "In R", "Out L", "Out R"};
 const char *reverb_room_sizes[] = { "Small", "Medium", "Large", "Tunnel-like", "Large/smooth", "Experimental" };
 
 CALF_PORT_PROPS(reverb) = {
-    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip", "0dB" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_wet", "Wet amount" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_out", "Output" },
     { 1.5,      0.4, 15.0,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_SEC, NULL, "decay_time", "Decay time" },
     { 5000,    2000,20000,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "hf_damp", "High Frq Damp" },
     { 2,          0,    5,    0, PF_ENUM | PF_CTL_COMBO , reverb_room_sizes, "room_size", "Room size", },
@@ -159,6 +156,9 @@ CALF_PORT_PROPS(reverb) = {
     { 300,       20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "bass_cut", "Bass Cut" },
     { 5000,      20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "treble_cut", "Treble Cut" },
     { 1,          0,     1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "on", "Active" },
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
+    METERING_PARAMS
     {}
 };
 
@@ -267,7 +267,9 @@ const char *vintage_delay_fragmentation[] = {
 };
 
 CALF_PORT_PROPS(vintage_delay) = {
-    BYPASS_AND_LEVEL_PARAMS
+    { 1,          0,     1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "on", "Active" },
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
     {  4,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "subdiv", "Subdivide"},
     {  3,        1,    16,    1, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER, NULL, "time_l", "Time L"},

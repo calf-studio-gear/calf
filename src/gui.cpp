@@ -222,11 +222,7 @@ GtkWidget *plugin_gui::create_from_xml(plugin_ctl_iface *_plugin, const char *xm
     
     XML_ParserFree(parser);
     last_status_serial_no = plugin->send_status_updates(this, 0);
-    GtkWidget *eventbox  = gtk_event_box_new();
-    gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), FALSE);
-    gtk_container_add( GTK_CONTAINER(eventbox), top_container->widget );
-    return GTK_WIDGET(eventbox);
+    return top_container->widget;
 }
 
 void plugin_gui::send_configure(const char *key, const char *value)

@@ -326,6 +326,10 @@ style "calf-meterscale"
     fg[NORMAL] = "black"
     xthickness = 5
 }
+style "calf-meterscale-rack"
+{
+    fg[NORMAL] = { 0, 0, 0 }
+}
 
 ### LED ###
 style "calf-led"
@@ -398,16 +402,16 @@ style "calf-knob5" = "calf-knob" {
 
 ### TOGGLE ###
 style "calf-toggle0" {
-    xthickness = 30
-    ythickness = 32
+    xthickness = 24
+    ythickness = 24
 }
 style "calf-toggle1" {
-    xthickness = 38
+    xthickness = 40
     ythickness = 36
 }
 style "calf-toggle2" {
     xthickness = 70
-    ythickness = 56
+    ythickness = 60
 }
 
 widget "*Calf*"                                   style : rc "calf-default"
@@ -461,6 +465,7 @@ widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
 widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
 widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
 widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
+widget "*Calf-Rack*MeterScale"                    style : highest "calf-meterscale-rack"
 
 widget "*Calf*Led*"                                style : highest "calf-led"
 widget "*Calf*LED*"                                style : highest "calf-led"

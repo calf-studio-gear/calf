@@ -341,7 +341,7 @@ struct plugin_metadata_iface
     /// @return total number of parameters
     virtual int get_param_count() const = 0;
     /// Return custom XML
-    virtual const char *get_gui_xml(const char *prefix) const = 0;
+    virtual char *get_gui_xml(const char *prefix) const = 0;
     /// @return number of audio inputs
     virtual int get_input_count() const =0;
     /// @return number of audio outputs
@@ -454,7 +454,7 @@ public:
 };
 
 /// Load and strdup a text file with GUI definition
-extern const char *load_gui_xml(const std::string &plugin_id);
+extern char *load_gui_xml(const std::string &plugin_id);
 
 /// Interface to audio processing plugins (the real things, not only metadata)
 struct audio_module_iface
@@ -723,7 +723,7 @@ public:
     bool requires_midi() const { return Metadata::require_midi; }
     bool is_rt_capable() const { return Metadata::rt_capable; }
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
-    const char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s/%s", prefix, get_id()); static const char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }
+    char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s/%s", prefix, get_id()); char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }
     plugin_command_info *get_commands() const { return NULL; }
     const parameter_properties *get_param_props(int param_no) const { return &param_props[param_no]; }
     const char **get_port_names() const { return port_names; }
