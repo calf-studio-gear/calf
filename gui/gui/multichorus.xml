@@ -43,7 +43,7 @@
                     <value param="mod_depth" />
                 </vbox>
                 <vbox attach-x="2" attach-y="0">
-                    <label text="mod_rate" />
+                    <label param="mod_rate" />
                     <knob param="mod_rate" ticks="0.01 0.1 1 20"/>
                     <value param="mod_rate" />
                 </vbox>
@@ -63,22 +63,22 @@
             <table rows="2" cols="2" homogeneous="1" spacing="10">
                 <vbox attach-x="0" attach-y="0">
                     <label param="overlap" />
-                    <knob param="overlap" size="3" ticks="0 0.5 1" />
+                    <knob param="overlap" size="2" ticks="0 0.5 1" />
                     <value param="overlap" />
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
                     <label param="voices" />
-                    <knob param="voices" size="3" ticks="1 2 3 4 5 6 7 8"/>
+                    <knob param="voices" size="2" ticks="1 2 3 4 5 6 7 8"/>
                     <value param="voices" />
                 </vbox>
                 <vbox attach-x="0" attach-y="1">
                     <label param="stereo" />
-                    <knob param="stereo" type="3" size="3" />
+                    <knob param="stereo" type="3" size="2" />
                     <value param="stereo" />
                 </vbox>
                 <vbox attach-x="1" attach-y="1">
                     <label param="vphase" />
-                    <knob param="vphase" type="3" size="3" />
+                    <knob param="vphase" type="3" size="2" />
                     <value param="vphase" />
                 </vbox>
             </table>
@@ -106,13 +106,13 @@
             <hbox attach-x="0" attach-y="0" fill-y="1" expand-y="1" spacing="8">
                 <frame label="Freq. response">
                     <vbox expand-x="1" fill-x="1" attach-x="3" attach-y="0" attach-h="7">
-                        <line-graph refresh="1" width="240" height="160" param="min_delay"/>
+                        <line-graph refresh="1" width="240" height="166" param="min_delay"/>
                     </vbox>
                 </frame>
                 <frame label="LFO positions">
                     <vbox spacing="6">
                         <line-graph refresh="1" width="240" height="20" param="mod_depth"/>
-                        <line-graph refresh="1" width="240" height="180" param="mod_rate"/>
+                        <line-graph refresh="1" width="240" height="140" param="mod_rate"/>
                     </vbox>
                 </frame>
             </hbox>
