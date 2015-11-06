@@ -120,7 +120,8 @@ public:
     uint32_t delay;
     uint32_t write_ptr;
     dsp::bypass bypass;
-    
+    vumeters meters;
+
     comp_delay_audio_module();
     virtual ~comp_delay_audio_module();
 
@@ -172,6 +173,9 @@ public:
     int counters[2];
     dsp::overlap_window ow[2];
     int deltime_l, deltime_r;
+    
+    dsp::bypass bypass;
+    vumeters meters;
 
     dsp::gain_smoothing fb_val, dry, width;
 

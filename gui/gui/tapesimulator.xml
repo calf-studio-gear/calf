@@ -32,28 +32,26 @@
     </table>
     <hbox spacing="10">
         <vbox spacing="10">
-            <label/>
             <label text="Gain"/>
             <knob param="level_in" size="5" type="1"/>
             <value param="level_in"/>
-            <label/>
         </vbox>
         <frame label="Settings">
-            <vbox spacing="8">
+            <vbox spacing="3">
                 <hbox homogeneous="1">
                     <vbox>
                         <label text="Noise"/>
-                        <knob param="noise" size="3"/>
+                        <knob param="noise" size="2"/>
                         <value param="noise"/>
                     </vbox>
                     <vbox>
                         <label text="Mechanical"/>
-                        <knob param="mechanical" size="3"/>
+                        <knob param="mechanical" size="2"/>
                         <value param="mechanical"/>
                     </vbox>
                     <vbox>
                         <label text="Filter"/>
-                        <knob param="lowpass" size="3"/>
+                        <knob param="lowpass" size="2"/>
                         <value param="lowpass"/>
                     </vbox>
                 </hbox>
@@ -75,12 +73,12 @@
         </frame>
         <frame label="Frequency Response">
             <if cond="directlink">
-                <line-graph refresh="1" width="300" height="200" param="lowpass"/>
+                <line-graph refresh="1" width="240" height="160" param="lowpass"/>
             </if>
         </frame>
         <frame label="Saturation">
             <if cond="directlink">
-                <line-graph refresh="1" width="200" height="200" param="level_in" square="1"/>
+                <line-graph refresh="1" width="160" height="160" param="level_in" square="1"/>
             </if>
         </frame>
     </hbox>

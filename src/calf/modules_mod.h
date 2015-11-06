@@ -46,6 +46,7 @@ public:
     bool clear_reset;
     float last_r_phase;
     bool is_active;
+    vumeters meters;
 public:
     flanger_audio_module() {
         is_active = false;
@@ -56,8 +57,13 @@ public:
     void activate();
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        left.process(outs[0] + offset, ins[0] + offset, nsamples);
-        right.process(outs[1] + offset, ins[1] + offset, nsamples);
+        left.process(outs[0] + offset, ins[0] + offset, nsamples, *params[param_on] > 0.5, *params[param_level_in], *params[param_level_out]);
+        right.process(outs[1] + offset, ins[1] + offset, nsamples, *params[param_on] > 0.5, *params[param_level_in], *params[param_level_out]);
+        for (uint32_t i = offset; i < offset + nsamples; i++) {
+            float values[] = {ins[0][i] * *params[param_level_in], ins[1][i] * *params[param_level_in], outs[0][i], outs[1][i]};
+            meters.process(values);
+        }
+        meters.fall(nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_layers(int index, int generation, unsigned int &layers) const;
@@ -80,6 +86,8 @@ public:
     dsp::simple_phaser left, right;
     float x1vals[2][MaxStages], y1vals[2][MaxStages];
     bool is_active;
+    dsp::bypass bypass;
+    vumeters meters;
 public:
     phaser_audio_module();
     void params_changed();
@@ -88,8 +96,13 @@ public:
     void set_sample_rate(uint32_t sr);
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
-        left.process(outs[0] + offset, ins[0] + offset, nsamples);
-        right.process(outs[1] + offset, ins[1] + offset, nsamples);
+        left.process(outs[0] + offset, ins[0] + offset, nsamples, *params[param_on] > 0.5, *params[param_level_in], *params[param_level_out]);
+        right.process(outs[1] + offset, ins[1] + offset, nsamples, *params[param_on] > 0.5, *params[param_level_in], *params[param_level_out]);
+        for (uint32_t i = offset; i < offset + nsamples; i++) {
+            float values[] = {ins[0][i] * *params[param_level_in], ins[1][i] * *params[param_level_in], outs[0][i], outs[1][i]};
+            meters.process(values);
+        }
+        meters.fall(nsamples);
         return outputs_mask; // XXXKF allow some delay after input going blank
     }
     bool get_layers(int index, int generation, unsigned int &layers) const;
@@ -111,6 +124,8 @@ public:
     dsp::biquad_d2 crossover1l, crossover1r, crossover2l, crossover2r, damper1l, damper1r;
     dsp::simple_delay<8, float> phaseshift;
     uint32_t srate;
+    dsp::bypass bypass;
+    vumeters meters;
     int vibrato_mode;
     /// Current CC1 (Modulation) value, normalized to [0, 1]
     float mwhl_value;
@@ -162,6 +177,8 @@ public:
     bool is_active;
     float freq_old, freq2_old, q_old;
     mutable bool redraw_sine;
+    dsp::bypass bypass;
+    vumeters meters;
 public:    
     multichorus_audio_module();
     void params_changed();

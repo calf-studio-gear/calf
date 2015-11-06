@@ -19,5 +19,5 @@
         <knob param="vphase" type="3" />
         <value param="vphase" />
     </vbox>
-    <toggle param="bypass" icon="bypass"/>
+    <toggle param="on"/>
 </hbox>

@@ -154,6 +154,9 @@ public:
     bool is_active;    
     mutable volatile int last_generation, last_calculated_generation;
     
+    dsp::bypass bypass;
+    vumeters meters;
+
     filter_module_with_inertia(float **ins, float **outs, float **params)
     : inertia_cutoff(dsp::exponential_ramp(128), 20)
     , inertia_resonance(dsp::exponential_ramp(128), 20)
@@ -210,6 +213,9 @@ public:
     void set_sample_rate(uint32_t sr)
     {
         FilterClass::srate = sr;
+        int meter[] = {Metadata::param_meter_inL,  Metadata::param_meter_inR, Metadata::param_meter_outL, Metadata::param_meter_outR};
+        int clip[]  = {Metadata::param_clip_inL, Metadata::param_clip_inR, Metadata::param_clip_outL, Metadata::param_clip_outR};
+        meters.init(params, meter, clip, 4, sr);
     }
 
     
@@ -221,25 +227,42 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
 //        printf("sr=%d cutoff=%f res=%f mode=%f\n", FilterClass::srate, *params[Metadata::par_cutoff], *params[Metadata::par_resonance], *params[Metadata::par_mode]);
         uint32_t ostate = 0;
-        numsamples += offset;
-        while(offset < numsamples) {
-            uint32_t numnow = numsamples - offset;
-            // if inertia's inactive, we can calculate the whole buffer at once
-            if (inertia_cutoff.active() || inertia_resonance.active() || inertia_gain.active())
-                numnow = timer.get(numnow);
-            
-            if (outputs_mask & 1) {
-                ostate |= FilterClass::process_channel(0, ins[0] + offset, outs[0] + offset, numnow, inputs_mask & 1);
+        uint32_t orig_offset = offset, orig_numsamples = numsamples;
+        bool bypassed = bypass.update(*params[Metadata::param_bypass] > 0.5f, numsamples);
+        if (bypassed) {
+            float values[] = {0,0,0,0};
+            for (uint32_t i = offset; i < offset + numsamples; i++) {
+                outs[0][i] = ins[0][i];
+                outs[1][i] = ins[1][i];
+                //float values[] = {ins[0][i],ins[1][i],outs[0][i],outs[1][i]};
+                meters.process(values);
+                ostate = -1;
             }
-            if (outputs_mask & 2) {
-                ostate |= FilterClass::process_channel(1, ins[1] + offset, outs[1] + offset, numnow, inputs_mask & 2);
+        } else {
+            numsamples += offset;
+            while(offset < numsamples) {
+                uint32_t numnow = numsamples - offset;
+                // if inertia's inactive, we can calculate the whole buffer at once
+                if (inertia_cutoff.active() || inertia_resonance.active() || inertia_gain.active())
+                    numnow = timer.get(numnow);
+                if (outputs_mask & 1) {
+                    ostate |= FilterClass::process_channel(0, ins[0] + offset, outs[0] + offset, numnow, inputs_mask & 1, *params[Metadata::param_level_in], *params[Metadata::param_level_out]);
+                }
+                if (outputs_mask & 2) {
+                    ostate |= FilterClass::process_channel(1, ins[1] + offset, outs[1] + offset, numnow, inputs_mask & 2, *params[Metadata::param_level_in], *params[Metadata::param_level_out]);
+                }
+                if (timer.elapsed()) {
+                    on_timer();
+                }
+                for (uint32_t i = offset; i < offset + numnow; i++) {
+                    float values[] = {ins[0][i] * *params[Metadata::param_level_in], ins[1][i] * *params[Metadata::param_level_in], outs[0][i], outs[1][i]};
+                    meters.process(values);
+                }
+                offset += numnow;
             }
-            
-            if (timer.elapsed()) {
-                on_timer();
-            }
-            offset += numnow;
+            bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
         }
+        meters.fall(orig_numsamples);
         return ostate;
     }
     float freq_gain(int index, double freq) const {
@@ -285,7 +308,7 @@ class filterclavier_audio_module:
 
     const float min_gain;
     const float max_gain;
-    
+
     int last_note;
     int last_velocity;
 public:    

@@ -140,7 +140,7 @@ public:
         set_mod_depth(get_mod_depth());
     }
     template<class OutIter, class InIter>
-    void process(OutIter buf_out, InIter buf_in, int nsamples) {
+    void process(OutIter buf_out, InIter buf_in, int nsamples, bool active, float level_in = 1., float level_out = 1.) {
         int mds = min_delay_samples + mod_depth_samples * 1024 + 2*65536;
         int mdepth = mod_depth_samples;
         // 1 sample peak-to-peak = mod_depth_samples of 32 (this scaling stuff is tricky and may - but shouldn't - be wrong)
@@ -153,7 +153,7 @@ public:
         for (int i=0; i<nsamples; i++) {
             phase += dphase;
             
-            float in = *buf_in++;
+            float in = *buf_in++ * level_in;
             
             delay.put(in);
             unsigned int nvoices = lfo.get_voices();
@@ -173,7 +173,7 @@ public:
             out = post.process(out);
             T sdry = in * gs_dry.get();
             T swet = out * gs_wet.get() * scale;
-            *buf_out++ = sdry + swet;
+            *buf_out++ = (sdry + (active ? swet : 0)) * level_out;
             lfo.step();
         }
         post.sanitize();

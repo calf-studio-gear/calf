@@ -415,6 +415,10 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
     // Delete old buffer
     if (old_buf != NULL)
         delete [] old_buf;
+        
+    int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 
 uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
@@ -427,6 +431,7 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
     uint32_t off    = offset;
     
     if (bypassed) {
+        float values[] = {0,0,0,0};
         while(offset < end) {
             outs[0][offset] = ins[0][offset];
             buffer[w_ptr]   = ins[0][offset];
@@ -434,6 +439,7 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
                 outs[1][offset]   = ins[1][offset];
                 buffer[w_ptr + 1] = ins[1][offset];
             w_ptr = (w_ptr + 2) & b_mask;
+            meters.process(values);
             ++offset;
         }
     } else {
@@ -444,21 +450,27 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
         
         for (uint32_t i=offset; i<end; i++)
         {
-            L = ins[0][i];
+            L = ins[0][i] * *params[param_level_in];
             buffer[w_ptr] = L;
             outs[0][i] = dry * L + wet * buffer[r_ptr];
-            if (stereo)
-                R = ins[1][i];
+            outs[0][i] *= *params[param_level_out];
+            if (stereo) {
+                R = ins[1][i] * *params[param_level_in];
                 buffer[w_ptr + 1] = R;
                 outs[1][i] = dry * R + wet * buffer[r_ptr + 1];
-            
+                outs[1][i] *= *params[param_level_out];
+            }
             w_ptr = (w_ptr + 2) & b_mask;
             r_ptr = (r_ptr + 2) & b_mask;
+            
+            float values[] = {L, R, outs[0][i], outs[1][i]};
+            meters.process(values);
         }
     }
     if (!bypassed)
         bypass.crossfade(ins, outs, stereo ? 2 : 1, off, numsamples);
     write_ptr = w_ptr;
+    meters.fall(numsamples);
     return outputs_mask;
 }
 
@@ -677,6 +689,9 @@ void reverse_delay_audio_module::set_sample_rate(uint32_t sr)
     fb_val.set_sample_rate(sr);
     dry.set_sample_rate(sr);
     width.set_sample_rate(sr);
+    int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 
 static float reverse_delay_line_impl(float in, float* buf, int* counter, int length)
@@ -701,7 +716,7 @@ static float reverse_delay_line_impl(float in, float* buf, int* counter, int len
 
 uint32_t reverse_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-
+    bool bypassed  = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t ostate = 3; // XXXKF optimize!
     uint32_t end = offset + numsamples;
 
@@ -718,34 +733,40 @@ uint32_t reverse_delay_audio_module::process(uint32_t offset, uint32_t numsample
             *params[par_sync_led_r] = true;
         else
             *params[par_sync_led_r] = false;
-
         //Process
-        float feedback_val = fb_val.get();
-        float st_width_val = width.get();
-
-        float inL = ins[0][i] + st_width_val*ins[1][i];
-        float inR = ins[1][i]*(1 - st_width_val);
-        float outL = 0;
-        float outR = 0;
-
-
-        inL = inL + feedback_buf[0]* feedback_val*(1 - st_width_val) + feedback_buf[1]* st_width_val*feedback_val;
-        inR = inR + feedback_buf[1]* feedback_val*(1 - st_width_val) + feedback_buf[0]* st_width_val*feedback_val;
-
-        outL = reverse_delay_line_impl(inL, &buffers[0][0], &counters[0], deltime_l);
-        outR = reverse_delay_line_impl(inR, &buffers[1][0], &counters[1], deltime_r);
-        feedback_buf[0] = outL;
-        feedback_buf[1] = outR;
-
-        outL*= ow[0].get();
-        outR*= ow[1].get();
-
-        outL = outL*(1 + dry.get()) + inL*(1 - dry.get());
-        outR = outR*(1 + dry.get()) + inR*(1 - dry.get());
-
-        outs[0][i] = outL;
-        outs[1][i] = outR;
-
+        float inL = 0., inR = 0., outL = 0., outR = 0.;
+        if (bypassed) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+        } else {
+            float feedback_val = fb_val.get();
+            float st_width_val = width.get();
+    
+            inL = ins[0][i] + st_width_val*ins[1][i];
+            inR = ins[1][i]*(1 - st_width_val);
+            inL *= *params[param_level_in];
+            inR *= *params[param_level_in];
+            
+            inL = inL + feedback_buf[0]* feedback_val*(1 - st_width_val) + feedback_buf[1]* st_width_val*feedback_val;
+            inR = inR + feedback_buf[1]* feedback_val*(1 - st_width_val) + feedback_buf[0]* st_width_val*feedback_val;
+    
+            outL = reverse_delay_line_impl(inL, &buffers[0][0], &counters[0], deltime_l);
+            outR = reverse_delay_line_impl(inR, &buffers[1][0], &counters[1], deltime_r);
+            feedback_buf[0] = outL;
+            feedback_buf[1] = outR;
+    
+            outL *= ow[0].get();
+            outR *= ow[1].get();
+    
+            outL = outL * (1 + dry.get()) + inL*(1 - dry.get());
+            outR = outR * (1 + dry.get()) + inR*(1 - dry.get());
+    
+            outs[0][i] = outL * *params[param_level_out];
+            outs[1][i] = outR * *params[param_level_out];
+            bypass.crossfade(ins, outs, 2, offset, numsamples);
+        }
+        float values[] = {inL, inR, outL, outR};
+        meters.process(values);
     }
 
     return ostate;
