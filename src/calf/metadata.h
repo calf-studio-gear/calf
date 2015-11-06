@@ -35,7 +35,7 @@ struct flanger_metadata: public plugin_metadata<flanger_metadata>
 {
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, par_dryamount,
-        param_bypass, param_level_in, param_level_out,
+        param_on, param_level_in, param_level_out,
         STEREO_VU_METER_PARAMS,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
@@ -45,7 +45,7 @@ public:
 struct phaser_metadata: public plugin_metadata<phaser_metadata>
 {
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, par_dryamount,
-        param_bypass, param_level_in, param_level_out,
+        param_on, param_level_in, param_level_out,
         STEREO_VU_METER_PARAMS,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
@@ -116,7 +116,9 @@ struct vintage_delay_metadata: public plugin_metadata<vintage_delay_metadata>
 
 struct comp_delay_metadata: public plugin_metadata<comp_delay_metadata>
 {
-    enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_temp, param_bypass, param_count };
+    enum { par_distance_mm, par_distance_cm, par_distance_m, par_dry, par_wet, param_temp,
+        param_bypass, param_level_in, param_level_out,
+        STEREO_VU_METER_PARAMS, param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("compdelay", "compdelay", "Compensation Delay Line")
 };
@@ -163,7 +165,7 @@ struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 {
 public:
     enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, par_overlap,
-        param_bypass, param_level_in, param_level_out,
+        param_on, param_level_in, param_level_out,
         STEREO_VU_METER_PARAMS,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };

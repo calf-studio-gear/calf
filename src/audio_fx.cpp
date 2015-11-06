@@ -91,13 +91,13 @@ void simple_phaser::control_step()
     dsp::sanitize(state);
 }
 
-void simple_phaser::process(float *buf_out, float *buf_in, int nsamples)
+void simple_phaser::process(float *buf_out, float *buf_in, int nsamples, bool active, float level_in, float level_out)
 {
     for (int i=0; i<nsamples; i++) {
         cnt++;
         if (cnt == 32)
             control_step();
-        float in = *buf_in++;
+        float in = *buf_in++ * level_in;
         float fd = in + state * fb;
         for (int j = 0; j < stages; j++)
             fd = stage1.process_ap(fd, x1[j], y1[j]);
@@ -105,7 +105,7 @@ void simple_phaser::process(float *buf_out, float *buf_in, int nsamples)
 
         float sdry = in * gs_dry.get();
         float swet = fd * gs_wet.get();
-        *buf_out++ = sdry + swet;
+        *buf_out++ = (sdry + (active ? swet : 0)) * level_out;
     }
 }
 
@@ -166,7 +166,7 @@ void biquad_filter_module::sanitize()
     }
 }
 
-int biquad_filter_module::process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask) {
+int biquad_filter_module::process_channel(uint16_t channel_no, const float *in, float *out, uint32_t numsamples, int inmask, float lvl_in, float lvl_out) {
     dsp::biquad_d1 *filter;
     switch (channel_no) {
     case 0:
@@ -185,16 +185,22 @@ int biquad_filter_module::process_channel(uint16_t channel_no, const float *in, 
     if (inmask) {
         switch(order) {
             case 1:
-                for (uint32_t i = 0; i < numsamples; i++)
-                    out[i] = filter[0].process(in[i]);
+                for (uint32_t i = 0; i < numsamples; i++) {
+                    out[i] = filter[0].process(in[i] * lvl_in);
+                    out[i] *= lvl_out;
+                }
                 break;
             case 2:
-                for (uint32_t i = 0; i < numsamples; i++)
-                    out[i] = filter[1].process(filter[0].process(in[i]));
+                for (uint32_t i = 0; i < numsamples; i++) {
+                    out[i] = filter[1].process(filter[0].process(in[i] * lvl_in));
+                    out[i] *= lvl_out;
+                }
                 break;
             case 3:
-                for (uint32_t i = 0; i < numsamples; i++)
-                    out[i] = filter[2].process(filter[1].process(filter[0].process(in[i])));
+                for (uint32_t i = 0; i < numsamples; i++) {
+                    out[i] = filter[2].process(filter[1].process(filter[0].process(in[i] * lvl_in)));
+                    out[i] *= lvl_out;
+                }
                 break;
         }
     } else {
@@ -202,24 +208,34 @@ int biquad_filter_module::process_channel(uint16_t channel_no, const float *in, 
             return 0;
         switch(order) {
             case 1:
-                for (uint32_t i = 0; i < numsamples; i++)
+                for (uint32_t i = 0; i < numsamples; i++) {
                     out[i] = filter[0].process_zeroin();
+                    out[i] *= lvl_out;
+                }
                 break;
             case 2:
                 if (filter[0].empty())
-                    for (uint32_t i = 0; i < numsamples; i++)
+                    for (uint32_t i = 0; i < numsamples; i++) {
                         out[i] = filter[1].process_zeroin();
+                        out[i] *= lvl_out;
+                    }
                 else
-                    for (uint32_t i = 0; i < numsamples; i++)
+                    for (uint32_t i = 0; i < numsamples; i++) {
                         out[i] = filter[1].process(filter[0].process_zeroin());
+                        out[i] *= lvl_out;
+                    }
                 break;
             case 3:
                 if (filter[1].empty())
-                    for (uint32_t i = 0; i < numsamples; i++)
+                    for (uint32_t i = 0; i < numsamples; i++) {
                         out[i] = filter[2].process_zeroin();
+                        out[i] *= lvl_out;
+                    }
                 else
-                    for (uint32_t i = 0; i < numsamples; i++)
+                    for (uint32_t i = 0; i < numsamples; i++) {
                         out[i] = filter[2].process(filter[1].process(filter[0].process_zeroin()));
+                        out[i] *= lvl_out;
+                    }
                 break;
         }
     }

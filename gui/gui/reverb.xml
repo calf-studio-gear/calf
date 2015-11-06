@@ -1,5 +1,5 @@
 <vbox spacing="8">
-    <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+    <table spacing="5" rows="1" cols="7">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
         <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
@@ -29,8 +29,8 @@
         <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
     </table>
-    <hbox spacing="20">
-        
+    
+    <hbox spacing="10">
         <vbox>
             <label/>
             <label param="predelay" />
@@ -38,52 +38,57 @@
             <value param="predelay" />
             <label/>
         </vbox>
+        
         <vbox>
             <label param="decay_time" />
             <knob param="decay_time" size="5" ticks="0.4 0.5 0.6 1.0 2 5 10 20" />
             <value param="decay_time" />
         </vbox>
-        <vbox homogeneous="1">
-            <hbox homogeneous="1" spacing="8">
-                <vbox>
-                    <label text="Hi Damp" />
-                    <knob param="hf_damp"  ticks="2000 5000 1000 20000" />
-                    <value param="hf_damp" />
-                </vbox>
-                <vbox>
-                    <label param="diffusion" />
-                    <knob param="diffusion" ticks="0 0.5 1"/>
-                    <value param="diffusion" />
-                </vbox>
-            </hbox>
-            <vbox>
-                <label />
-                <combo param="room_size" />
-                <label/>
-            </vbox>
-        </vbox>
+        
+        <table rows="2" cols="4" spacing-x="10">
             
-        <table homogeneous="1" rows="2" cols="2">
-            <vbox attach-x="0" attach-y="0">
-                <label text="Dry" />
-                <knob param="dry" size="2" ticks="0 0.0625 0.25 0 1 2"/>
-                <value param="dry" />
+            <vbox attach-x="0" attach-y="0" attach-w="2">
+                <label param="diffusion" />
+                <hscale param="diffusion" width="280"/>
             </vbox>
-            <vbox attach-x="1" attach-y="0">
-                <label text="Wet" />
-                <knob param="amount" size="2" ticks="0 0.0625 0.25 0 1 2" />
-                <value param="amount" />
-            </vbox>
-            <vbox attach-x="0" attach-y="1">
+            
+            <vbox attach-x="2" attach-y="1">
                 <label param="bass_cut" />
                 <knob param="bass_cut" size="2" ticks="20 200 2000 20000" />
                 <value param="bass_cut" />
             </vbox>
-            <vbox attach-x="1" attach-y="1">
+            
+            <vbox attach-x="3" attach-y="1">
                 <label param="treble_cut" />
                 <knob param="treble_cut" size="2" ticks="20 200 2000 20000"  />
                 <value param="treble_cut" />
             </vbox>
+            
+            
+            <vbox attach-x="0" attach-y="1">
+                <label text="Room Size" />
+                <combo param="room_size" />
+                <label/>
+            </vbox>
+            
+            <vbox attach-x="1" attach-y="1">
+                <label text="Hi Damp" />
+                <knob param="hf_damp"  ticks="2000 5000 1000 20000" />
+                <value param="hf_damp" />
+            </vbox>
+            
+            <vbox attach-x="2" attach-y="0">
+                <label text="Dry" />
+                <knob param="dry" size="2" ticks="0 0.0625 0.25 0 1 2"/>
+                <value param="dry" />
+            </vbox>
+            
+            <vbox attach-x="3" attach-y="0">
+                <label text="Wet" />
+                <knob param="amount" size="2" ticks="0 0.0625 0.25 0 1 2" />
+                <value param="amount" />
+            </vbox>
+            
         </table>
     </hbox>
 </vbox>
