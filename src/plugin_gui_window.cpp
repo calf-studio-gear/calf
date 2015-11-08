@@ -388,12 +388,13 @@ void plugin_gui_window::create(plugin_ctl_iface *_jh, const char *title, const c
     create_gui(_jh);
 
     gui->effect_name = effect;
-    gtk_widget_set_name(container, "Calf-Plugin");
+    gtk_widget_set_name(GTK_WIDGET(vbox), "Calf-Plugin");
     GtkWidget *decoTable = decorate(container);
     
     GtkWidget *eventbox  = gtk_event_box_new();
     gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
     gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
+    
     gtk_widget_show(eventbox);
     
     ui_mgr = gtk_ui_manager_new();
