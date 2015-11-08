@@ -350,12 +350,19 @@ LV2UI_Handle gui_instantiate(const struct _LV2UI_Descriptor* descriptor,
     
     plugin_gui_window *window = new plugin_gui_window(proxy, NULL);
     plugin_gui *gui = new plugin_gui(window);
+    
     const char *xml = proxy->plugin_metadata->get_gui_xml("gui");
     assert(xml);
     gui->optwidget = gui->create_from_xml(proxy, xml);
     proxy->enable_all_sends();
     if (gui->optwidget)
     {
+        GtkWidget *decoTable = window->decorate(gui->optwidget);
+        GtkWidget *eventbox  = gtk_event_box_new();
+        gtk_widget_set_name( GTK_WIDGET(eventbox), "Calf-Plugin" );
+        gtk_container_add( GTK_CONTAINER(eventbox), decoTable );
+        gtk_widget_show_all(eventbox);
+        gui->optwidget = eventbox;
         proxy->source_id = g_timeout_add_full(G_PRIORITY_LOW, 1000/30, plugin_on_idle, gui, NULL); // 30 fps should be enough for everybody    
         proxy->widget_destroyed_signal = g_signal_connect(G_OBJECT(gui->optwidget), "destroy", G_CALLBACK(on_gui_widget_destroy), (gpointer)gui);
     }
