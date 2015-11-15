@@ -1,6 +1,7 @@
 SRCDIRS = icons/LV2 
 SUBDIRS = $(SRCDIRS)
 STYLES = $(wildcard $(srcdir)/styles/*)
+EXTRA_DIST = $(wildcard $(srcdir)/styles) $(wildcard $(srcdir)/strips) $(wildcard $(srcdir)/gui)
 
 install-data-hook:
 	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
