@@ -50,9 +50,31 @@ namespace calf_plugins {
         gtk_main_window *main_win;
         jack_host *plugin;
         plugin_gui_window *gui_win;
+        plugin_gui_widget *gui_widget;
         calf_connector *connector;
         GtkWidget *strip_table, *name, *entry, *button, *con, *midi_in, *extra, *leftBG, *rightBG, *inBox, *outBox;
         std::vector<GtkWidget *> audio_in, audio_out;
+        
+        plugin_strip()
+        : id()
+        , main_win()
+        , plugin()
+        , gui_win()
+        , gui_widget()
+        , connector()
+        , strip_table()
+        , name()
+        , entry()
+        , button()
+        , con()
+        , midi_in()
+        , extra()
+        , leftBG()
+        , rightBG()
+        , inBox()
+        , outBox()
+        {}
+        
     };
     
     class gtk_main_window: public main_window_iface, public gui_environment, public calf_utils::config_listener_iface
@@ -109,6 +131,7 @@ namespace calf_plugins {
         void set_window(plugin_ctl_iface *iface, plugin_gui_window *window);
         void refresh_all_presets(bool builtin_too);
         void refresh_plugin(plugin_ctl_iface *plugin);
+        void refresh_plugin_param(plugin_ctl_iface *plugin, int param_no);
         void on_closed();
         void open_gui(plugin_ctl_iface *plugin);    
         void create();

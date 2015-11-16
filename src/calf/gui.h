@@ -275,6 +275,8 @@ struct main_window_iface: public progress_report_iface
     virtual void rename_plugin(plugin_ctl_iface *plugin, std::string name) = 0;
     /// Refresh the plugin UI
     virtual void refresh_plugin(plugin_ctl_iface *plugin) = 0;
+    /// Refresh the plugin UI
+    virtual void refresh_plugin_param(plugin_ctl_iface *plugin, int param_no) = 0;
     /// Bind the plugin window to the plugin
     virtual void set_window(plugin_ctl_iface *plugin, plugin_gui_window *window) = 0;
     /// Refresh preset lists on all windows (if, for example, a new preset has been created)
@@ -337,6 +339,7 @@ public:
     GtkWidget *create(plugin_ctl_iface *_plugin);
     gui_environment_iface *get_environment() { return environment; }
     main_window_iface *get_main_window() { return main; }
+    plugin_gui *get_gui() { return gui; }
     void refresh();
     virtual void on_config_change() { }
     ~plugin_gui_widget();

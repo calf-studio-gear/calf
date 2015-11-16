@@ -327,7 +327,12 @@ void plugin_gui::refresh(int param_no, param_control *originator)
 void plugin_gui::set_param_value(int param_no, float value, param_control *originator)
 {
     plugin->set_param_value(param_no, value);
-    refresh(param_no);
+
+    main_window_iface *main = window->get_main_window();
+    if (main)
+        main->refresh_plugin_param(plugin, param_no);
+    else
+        refresh(param_no);
 }
 
 /// Get a radio button group (if it exists) for a parameter
