@@ -481,6 +481,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     // param box
     GtkWidget *palign = gtk_alignment_new(1, 1, 0, 0);
     plugin_gui_widget *widget = new plugin_gui_widget(this, this);
+    strip->gui_widget = widget;
     GtkWidget *paramBox = widget->create(plugin);
     gtk_container_add(GTK_CONTAINER(palign), paramBox);
     gtk_table_attach(GTK_TABLE(strip->strip_table), palign, 3, 6, 2, 3, ao, (GtkAttachOptions)0, 5, 5);
@@ -827,8 +828,24 @@ void gtk_main_window::on_config_change()
 
 void gtk_main_window::refresh_plugin(plugin_ctl_iface *plugin)
 {
-    if (plugins[plugin]->gui_win)
-        plugins[plugin]->gui_win->refresh();
+    if (plugins.count(plugin))
+    {
+        if (plugins[plugin]->gui_win)
+            plugins[plugin]->gui_win->refresh();
+        if (plugins[plugin]->gui_widget)
+            plugins[plugin]->gui_widget->refresh();
+    }
+}
+
+void gtk_main_window::refresh_plugin_param(plugin_ctl_iface *plugin, int param_no)
+{
+    if (plugins.count(plugin))
+    {
+        if (plugins[plugin]->gui_win)
+            plugins[plugin]->gui_win->get_gui()->refresh(param_no);
+        if (plugins[plugin]->gui_widget)
+            plugins[plugin]->gui_widget->get_gui()->refresh(param_no);
+    }
 }
 
 void gtk_main_window::on_closed()
