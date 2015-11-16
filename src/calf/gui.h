@@ -325,7 +325,7 @@ private:
 protected:
     void create_gui(plugin_ctl_iface *_jh);
     static void on_window_destroyed(GtkWidget *window, gpointer data);
-    virtual void cleanup();
+    void cleanup();
 protected:
     plugin_gui *gui;
     GtkWidget *container;
@@ -347,8 +347,6 @@ public:
 
 class plugin_gui_window: public plugin_gui_widget
 {
-private:
-    void cleanup();
 public:
     GtkUIManager *ui_mgr;
     GtkActionGroup *std_actions, *builtin_preset_actions, *user_preset_actions, *command_actions;

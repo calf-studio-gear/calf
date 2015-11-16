@@ -449,16 +449,6 @@ void plugin_gui_window::on_config_change()
     show_rack_ears(environment->get_config()->rack_ears);
 }
 
-void plugin_gui_window::cleanup()
-{
-    if (notifier)
-    {
-        delete notifier;
-        notifier = NULL;
-    }
-    plugin_gui_widget::cleanup();
-}
-
 void plugin_gui_window::close()
 {
     gtk_widget_destroy(toplevel);
@@ -521,6 +511,11 @@ void plugin_gui_window::show_rack_ears(bool show)
 }
 plugin_gui_window::~plugin_gui_window()
 {
+    if (notifier)
+    {
+        delete notifier;
+        notifier = NULL;
+    }
     if (main)
         main->set_window(gui->plugin, NULL);
 }
