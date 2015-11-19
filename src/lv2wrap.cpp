@@ -1,9 +1,9 @@
 #include <config.h>
 #include "calf/lv2wrap.h"
 
-using namespace calf_plugins;
-
 #if USE_LV2
+
+using namespace calf_plugins;
 
 lv2_instance::lv2_instance(audio_module_iface *_module)
 {
