@@ -276,7 +276,7 @@ void calf_connector::set_toggles(calf_connector *self, int type)
                 gtk_list_store_set (list, &iter, 2, TRUE, -1);
                 f = 1;
             }
-        } while (cons[++c]);
+        } while (cons && cons[++c]);
         if (!f) {
             gtk_list_store_set (list, &iter, 2, FALSE, -1);
         }
