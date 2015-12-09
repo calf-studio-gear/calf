@@ -35,25 +35,28 @@ calf_phase_graph_draw_background(GtkWidget *widget, cairo_t *ctx, int sx, int sy
     
     display_background(widget, ctx, 0, 0, sx, sy, ox, oy, radius, bevel);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
-    cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(ctx, 9);
-    cairo_text_extents_t te;
     
-    cairo_text_extents (ctx, "M", &te);
-    cairo_move_to (ctx, cx + 5, oy + 12);
-    cairo_show_text (ctx, "M");
-    
-    cairo_text_extents (ctx, "S", &te);
-    cairo_move_to (ctx, ox + 5, cy - 5);
-    cairo_show_text (ctx, "S");
-    
-    cairo_text_extents (ctx, "L", &te);
-    cairo_move_to (ctx, ox + 18, oy + 12);
-    cairo_show_text (ctx, "L");
-    
-    cairo_text_extents (ctx, "R", &te);
-    cairo_move_to (ctx, ox + sx - 22, oy + 12);
-    cairo_show_text (ctx, "R");
+    if (sx > 128 and sy > 128) {
+        cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(ctx, 9);
+        cairo_text_extents_t te;
+        
+        cairo_text_extents (ctx, "M", &te);
+        cairo_move_to (ctx, cx + 5, oy + 12);
+        cairo_show_text (ctx, "M");
+        
+        cairo_text_extents (ctx, "S", &te);
+        cairo_move_to (ctx, ox + 5, cy - 5);
+        cairo_show_text (ctx, "S");
+        
+        cairo_text_extents (ctx, "L", &te);
+        cairo_move_to (ctx, ox + 18, oy + 12);
+        cairo_show_text (ctx, "L");
+        
+        cairo_text_extents (ctx, "R", &te);
+        cairo_move_to (ctx, ox + sx - 22, oy + 12);
+        cairo_show_text (ctx, "R");
+    }
     
     cairo_set_line_width(ctx, 1);
     
@@ -146,7 +149,8 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         ctx_cache = cairo_create(pg->cache); 
     }
     
-    pg->source->get_phase_graph(&phase_buffer, &length, &mode, &use_fade,
+    pg->source->get_phase_graph(pg->source_id, &phase_buffer,
+                                &length, &mode, &use_fade,
                                 &fade, &accuracy, &display);
     
     // process some values set by the plug-in

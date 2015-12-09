@@ -475,8 +475,6 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         //size. therefor an envelope with fast attack and slow
         //release is calculated with the max value of left and right.
         float lemax  = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
-        attack_coef  = exp(log(0.01)/(0.01 * srate * 0.001));
-        release_coef = exp(log(0.01)/(2000 * srate * 0.001));
         if( lemax > envelope)
            envelope  = lemax; //attack_coef * (envelope - lemax) + lemax;
         else
@@ -519,9 +517,11 @@ void analyzer_audio_module::set_sample_rate(uint32_t sr)
     phase_buffer_size -= phase_buffer_size % 2;
     phase_buffer_size = std::min(phase_buffer_size, (int)max_phase_buffer_size);
     _analyzer.set_sample_rate(sr);
+    attack_coef  = exp(log(0.01)/(0.01 * srate * 0.001));
+    release_coef = exp(log(0.01)/(2000 * srate * 0.001));
 }
 
-bool analyzer_audio_module::get_phase_graph(float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
+bool analyzer_audio_module::get_phase_graph(int index, float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
     *_buffer   = &phase_buffer[0];
     *_length   = plength;
     *_use_fade = *params[param_gonio_use_fade];
@@ -553,6 +553,220 @@ bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &
     return _analyzer.get_layers(generation, layers);
 }
 
+
+/**********************************************************************
+ * MULTIBAND ENHANCER by Markus Schmidt and Christian Holschuh 
+**********************************************************************/
+
+multibandenhancer_audio_module::multibandenhancer_audio_module()
+{
+    srate               = 0;
+    _mode               = -1;
+    channels            = 2;
+    is_active           = false;
+    ppos                = 0;
+    plength             = 0;
+    for (int i = 0; i < strips; i++) {
+        phase_buffer[i] = (float*) calloc(max_phase_buffer_size, sizeof(float));
+        envelope[i] = 0;
+    }
+    crossover.init(channels, strips, 44100);
+}
+multibandenhancer_audio_module::~multibandenhancer_audio_module()
+{
+    free(phase_buffer);
+}
+void multibandenhancer_audio_module::activate()
+{
+    is_active = true;
+    for (int i = 0; i < strips; i++) {
+        for (int j = 0; j < channels; j++) {
+            dist[i][j].activate();
+        }
+    }
+}
+
+void multibandenhancer_audio_module::deactivate()
+{
+    is_active = false;
+    for (int i = 0; i < strips; i++) {
+        for (int j = 0; j < channels; j++) {
+            dist[i][j].deactivate();
+        }
+    }
+}
+
+void multibandenhancer_audio_module::params_changed()
+{
+    // determine mute/solo states
+    solo[0] = *params[param_solo0] > 0.f ? true : false;
+    solo[1] = *params[param_solo1] > 0.f ? true : false;
+    solo[2] = *params[param_solo2] > 0.f ? true : false;
+    solo[3] = *params[param_solo3] > 0.f ? true : false;
+    no_solo = (*params[param_solo0] > 0.f ||
+            *params[param_solo1] > 0.f ||
+            *params[param_solo2] > 0.f ||
+            *params[param_solo3] > 0.f) ? false : true;
+
+    int m = *params[param_mode];
+    if (m != _mode) {
+        _mode = *params[param_mode];
+    }
+    
+    crossover.set_mode(_mode + 1);
+    crossover.set_filter(0, *params[param_freq0]);
+    crossover.set_filter(1, *params[param_freq1]);
+    crossover.set_filter(2, *params[param_freq2]);
+    
+    // set the params of all strips
+    for (int i = 0; i < strips; i++) {
+        for (int j = 0; j < channels; j++) {
+            dist[i][j].set_params(*params[param_blend0 + i], *params[param_drive0 + i]);
+        }
+    }
+}
+
+void multibandenhancer_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
+    crossover.set_sample_rate(srate);
+    for (int i = 0; i < strips; i++) {
+        for (int j = 0; j < channels; j++) {
+            dist[i][j].set_sample_rate(srate);
+        }
+    }
+    attack_coef  = exp(log(0.01)/(0.01 * srate * 0.001));
+    release_coef = exp(log(0.01)/(2000 * srate * 0.001));
+    phase_buffer_size = srate / 30 * 2;
+    phase_buffer_size -= phase_buffer_size % 2;
+    phase_buffer_size = std::min(phase_buffer_size, (int)max_phase_buffer_size);
+}
+
+uint32_t multibandenhancer_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_numsamples = numsamples;
+    uint32_t orig_offset = offset;
+    numsamples += offset;
+    if(bypassed) {
+        // everything bypassed
+        while(offset < numsamples) {
+            for (int i = 0; i < strips; i ++) {
+                phase_buffer[i][ppos]     = 0;
+                phase_buffer[i][ppos + 1] = 0;
+            }
+            // phase buffer handling
+            plength = std::min(phase_buffer_size, plength + 2);
+            ppos += 2;
+            ppos %= (phase_buffer_size - 2);
+            
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+        // process all strips
+        while(offset < numsamples) {
+            float inL  = ins[0][offset]; // input
+            float inR  = ins[1][offset];
+            float outL = 0.f; // final output
+            float outR = 0.f;
+            float tmpL = 0.f; // used for temporary purposes
+            float tmpR = 0.f;
+            
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            
+            // process crossover
+            float xin[] = {inL, inR};
+            crossover.process(xin);
+            
+            for (int i = 0; i < strips; i ++) {
+                // cycle trough strips
+                float L = crossover.get_value(0, i);
+                float R = crossover.get_value(1, i);
+                // stereo base
+                tmpL = L;
+                tmpR = R;
+                float _sb = *params[param_base0 + i];
+                if (_sb != 0) {
+                    if(_sb < 0) _sb *= 0.5;
+                    tmpL = L + _sb * L - _sb * R;
+                    tmpR = R + _sb * R - _sb * L;
+                }
+                L = tmpL;
+                R = tmpR;
+                if (solo[i] || no_solo) {
+                    // process harmonics
+                    if (*params[param_drive0 + i]) {
+                        L = dist[i][0].process(tmpL);
+                        R = dist[i][1].process(tmpR);
+                    }
+                    // compensate saturation
+                    L /= (1 + *params[param_drive0 + i] * 0.05);
+                    R /= (1 + *params[param_drive0 + i] * 0.05);
+                    // sum up output
+                    outL += L;
+                    outR += R;
+                }
+                // goniometer
+                float lemax  = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
+                if( lemax > envelope[i])
+                   envelope[i] = lemax; //attack_coef * (envelope[i] - lemax) + lemax;
+                else
+                   envelope[i] = release_coef * (envelope[i] - lemax) + lemax;
+                phase_buffer[i][ppos]     = L / std::max(0.25f , (envelope[i]));
+                phase_buffer[i][ppos + 1] = R / std::max(0.25f , (envelope[i]));
+            }
+            // phase buffer handling
+            plength = std::min(phase_buffer_size, plength + 2);
+            ppos += 2;
+            ppos %= (phase_buffer_size - 2);
+                
+            // out level
+            outL *= *params[param_level_out];
+            outR *= *params[param_level_out];
+
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+
+            // next sample
+            ++offset;
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+        } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+    } // process (no bypass)
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+bool multibandenhancer_audio_module::get_phase_graph(int index, float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
+    int i = index - param_base0;
+    *_buffer   = &phase_buffer[i][0];
+    *_length   = plength;
+    *_use_fade = 1;
+    *_fade     = 0.6;
+    *_mode     = 0;
+    *_accuracy = 3;
+    *_display  = solo[i] || no_solo;
+    return false;
+}
+bool multibandenhancer_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    return crossover.get_graph(subindex, phase, data, points, context, mode);
+}
+bool multibandenhancer_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    return crossover.get_layers(index, generation, layers);
+}
 
 
 /**********************************************************************

@@ -734,6 +734,21 @@ struct mono_metadata: public plugin_metadata<mono_metadata>
            param_count };
     PLUGIN_NAME_ID_LABEL("mono", "mono", "Mono Input")
 };
+/// Markus's  multibandenhancer - metadata
+struct multibandenhancer_metadata: public plugin_metadata<multibandenhancer_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_freq0, param_freq1, param_freq2,
+           param_mode,
+           param_base0, param_base1, param_base2, param_base3,
+           param_drive0, param_drive1, param_drive2, param_drive3,
+           param_blend0, param_blend1, param_blend2, param_blend3,
+           param_solo0, param_solo1, param_solo2, param_solo3,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("multibandenhancer", "multibandenhancer", "Multiband Enhancer")
+};
 /// Markus's and Chrischi's Analyzer
 struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
 {

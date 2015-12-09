@@ -250,7 +250,7 @@ struct line_graph_iface
 /// 'provides live line graph values' interface
 struct phase_graph_iface
 {
-    virtual bool get_phase_graph(float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const { return false; };
+    virtual bool get_phase_graph(int index, float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const { return false; };
     virtual ~phase_graph_iface() {}
 };
 

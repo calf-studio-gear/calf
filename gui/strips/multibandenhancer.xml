@@ -1,0 +1,23 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="base0" />
+        <knob param="base0" type="1" ticks="-1 0 1" />
+        <value param="base0" />
+    </vbox>
+    <vbox>
+        <label param="base1" />
+        <knob param="base1" type="1" ticks="-1 0 1" />
+        <value param="base1" />
+    </vbox>
+    <vbox>
+        <label param="base2" />
+        <knob param="base2" type="1" ticks="-1 0 1" />
+        <value param="base2" />
+    </vbox>
+    <vbox>
+        <label param="base3" />
+        <knob param="base3" type="1" ticks="-1 0 1" />
+        <value param="base3" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

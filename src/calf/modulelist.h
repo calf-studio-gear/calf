@@ -68,6 +68,7 @@
     
     // Spatial
     PER_MODULE_ITEM(stereo,              false, "stereo")
+    PER_MODULE_ITEM(multibandenhancer,   false, "multibandenhancer")
     PER_MODULE_ITEM(haas_enhancer,       false, "haasenhancer")
     
     // Utility

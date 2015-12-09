@@ -1299,8 +1299,8 @@ CALF_PORT_PROPS(bassenhancer) = {
     { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_out", "0dB" },
 
     { 8.5,         0.1,         10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive", "Harmonics" },
-    { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend", "Blend harmonics" },
-    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_drive", "Harmonics level" },
+    { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend", "Blend Harmonics" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_drive", "Harmonics Level" },
 
     { 100,        10,           250,   0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq", "Scope" },
     { 0,          0,            1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "listen", "Listen" },
@@ -1346,6 +1346,44 @@ CALF_PORT_PROPS(stereo) = {
 };
 
 CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(multibandenhancer) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(multibandenhancer) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 100,        10,        20000,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq0", "Split 1/2" },
+    { 750,        10,        20000,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/3" },
+    { 5000,       10,        20000,  0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/4" },
+
+    { 1,           0,           1,   0, PF_ENUM | PF_CTL_COMBO, mb_crossover_filter_choices, "mode", "Filter Mode" },
+
+    { 0.f,      -1.f,         1.f,   0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_DIGIT_2, NULL, "base0", "Base 1" },
+    { 0.f,      -1.f,         1.f,   0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_DIGIT_2, NULL, "base1", "Base 2" },
+    { 0.f,      -1.f,         1.f,   0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_DIGIT_2, NULL, "base2", "Base 3" },
+    { 0.f,      -1.f,         1.f,   0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_DIGIT_2, NULL, "base3", "Base 4" },
+    
+    { 0,         0.0,         10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive0", "Harmonics 1" },
+    { 0,         0.0,         10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive1", "Harmonics 2" },
+    { 0,         0.0,         10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive2", "Harmonics 3" },
+    { 0,         0.0,         10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive3", "Harmonics 4" },
+    
+    { 0,        -10,          10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend0", "Blend Harmonics 1" },
+    { 0,        -10,          10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend1", "Blend Harmonics 2" },
+    { 0,        -10,          10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend2", "Blend Harmonics 3" },
+    { 0,        -10,          10,    0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_COEF, NULL, "blend3", "Blend Harmonics 4" },
+    
+    { 0,         0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo0", "Solo 1" },
+    { 0,         0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo1", "Solo 2" },
+    { 0,         0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo2", "Solo 3" },
+    { 0,         0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo3", "Solo 4" },
+
+    {}
+};
+
+CALF_PLUGIN_INFO(multibandenhancer) = { 0x8564, "MultibandEnhancer", "Calf Multiband Enhancer", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

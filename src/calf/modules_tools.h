@@ -128,7 +128,7 @@ public:
     void set_sample_rate(uint32_t sr);
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
-    bool get_phase_graph(float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
+    bool get_phase_graph(int index, float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
@@ -138,6 +138,45 @@ protected:
     static const int max_phase_buffer_size = 8192;
     int phase_buffer_size;
     float *phase_buffer;
+    int ppos;
+    int plength;
+};
+
+/**********************************************************************
+ * MULTIBAND ENHANCER by Markus Schmidt
+**********************************************************************/
+
+class multibandenhancer_audio_module: public audio_module<multibandenhancer_metadata>,
+    public frequency_response_line_graph, public phase_graph_iface {
+private:
+    static const int strips = 4;
+    int _mode, mode_old, channels;
+    float envelope[strips];
+    float attack_coef;
+    float release_coef;
+    bool solo[strips];
+    bool no_solo;
+    dsp::crossover crossover;
+    dsp::bypass bypass;
+    vumeters meters;
+    dsp::tap_distortion dist[strips][2];
+public:
+    uint32_t srate;
+    bool is_active;
+    multibandenhancer_audio_module();
+    ~multibandenhancer_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    bool get_phase_graph(int index, float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+protected:
+    static const int max_phase_buffer_size = 8192;
+    int phase_buffer_size;
+    float *phase_buffer[strips];
     int ppos;
     int plength;
 };
