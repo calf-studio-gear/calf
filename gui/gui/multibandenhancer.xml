@@ -49,14 +49,14 @@
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
                     <if cond="directlink">
-                        <phase-graph refresh="1" size="100" param="base0" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="80" param="base0" expand="1" fill="1"/>
                     </if>
                 </vbox>
                 
                 <toggle param="solo0" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harmonics" />
+                        <label text="Harmon" />
                         <knob param="drive0" />
                         <value param="drive0" />
                     </vbox>
@@ -77,14 +77,14 @@
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
                     <if cond="directlink">
-                        <phase-graph refresh="1" size="100" param="base1" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="80" param="base1" expand="1" fill="1"/>
                     </if>
                 </vbox>
                 
                 <toggle param="solo1" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harmonics" />
+                        <label text="Harmon" />
                         <knob param="drive1" />
                         <value param="drive1" />
                     </vbox>
@@ -105,14 +105,14 @@
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
                     <if cond="directlink">
-                        <phase-graph refresh="1" size="100" param="base2" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="80" param="base2" expand="1" fill="1"/>
                     </if>
                 </vbox>
                 
                 <toggle param="solo2" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harmonics" />
+                        <label text="Harmon" />
                         <knob param="drive2" />
                         <value param="drive2" />
                     </vbox>
@@ -133,14 +133,14 @@
                 </vbox>
                 <vbox attach-x="1" attach-y="0">
                     <if cond="directlink">
-                        <phase-graph refresh="1" size="100" param="base3" expand="1" fill="1"/>
+                        <phase-graph refresh="1" size="80" param="base3" expand="1" fill="1"/>
                     </if>
                 </vbox>
                 
                 <toggle param="solo3" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harmonics" />
+                        <label text="Harmon" />
                         <knob param="drive3" />
                         <value param="drive3" />
                     </vbox>
