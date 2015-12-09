@@ -1331,7 +1331,10 @@ calf_line_graph_leave (GtkWidget *widget, GdkEventCrossing *event)
         calf_line_graph_expose_request(widget, true);
     lg->mouse_x = -1;
     lg->mouse_y = -1;
-
+    gdk_window_set_cursor(widget->window, lg->arrow_cursor);
+    lg->handle_hovered = -1;
+    lg->handle_redraw = 1;
+    calf_line_graph_expose_request(widget, true);
     return TRUE;
 }
 
