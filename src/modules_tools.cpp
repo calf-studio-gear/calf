@@ -699,6 +699,10 @@ uint32_t multibandenhancer_audio_module::process(uint32_t offset, uint32_t numsa
                     if(_sb < 0) _sb *= 0.5;
                     tmpL = L + _sb * L - _sb * R;
                     tmpR = R + _sb * R - _sb * L;
+                    // compensate loudness
+                    float f = (_sb + 1) / 2 + 0.5;
+                    tmpL /= f;
+                    tmpR /= f;
                 }
                 L = tmpL;
                 R = tmpR;
@@ -709,8 +713,8 @@ uint32_t multibandenhancer_audio_module::process(uint32_t offset, uint32_t numsa
                         R = dist[i][1].process(tmpR);
                     }
                     // compensate saturation
-                    L /= (1 + *params[param_drive0 + i] * 0.05);
-                    R /= (1 + *params[param_drive0 + i] * 0.05);
+                    L /= (1 + *params[param_drive0 + i] * 0.075);
+                    R /= (1 + *params[param_drive0 + i] * 0.075);
                     // sum up output
                     outL += L;
                     outR += R;
