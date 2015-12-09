@@ -56,12 +56,12 @@
                 <toggle param="solo0" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harm" />
+                        <label text="Harmonics" />
                         <knob param="drive0" />
                         <value param="drive0" />
                     </vbox>
                     <vbox>
-                        <label text="Blend" />
+                        <label text="3rd/2nd" />
                         <knob param="blend0" type="1" />
                         <value param="blend0" />
                     </vbox>
@@ -84,12 +84,12 @@
                 <toggle param="solo1" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harm" />
+                        <label text="Harmonics" />
                         <knob param="drive1" />
                         <value param="drive1" />
                     </vbox>
                     <vbox>
-                        <label text="Blend" />
+                        <label text="3rd/2nd" />
                         <knob param="blend1" type="1" />
                         <value param="blend1" />
                     </vbox>
@@ -112,12 +112,12 @@
                 <toggle param="solo2" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harm" />
+                        <label text="Harmonics" />
                         <knob param="drive2" />
                         <value param="drive2" />
                     </vbox>
                     <vbox>
-                        <label text="Blend" />
+                        <label text="3rd/2nd" />
                         <knob param="blend2" type="1" />
                         <value param="blend2" />
                     </vbox>
@@ -140,12 +140,12 @@
                 <toggle param="solo3" icon="solo" size="2" attach-x="0" attach-y="1"/>
                 <hbox attach-x="1" attach-y="1">
                     <vbox>
-                        <label text="Harm" />
+                        <label text="Harmonics" />
                         <knob param="drive3" />
                         <value param="drive3" />
                     </vbox>
                     <vbox>
-                        <label text="Blend" />
+                        <label text="3rd/2nd" />
                         <knob param="blend3" type="1" />
                         <value param="blend3" />
                     </vbox>
