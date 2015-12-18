@@ -421,7 +421,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_widget_show(topImg);
     
     // remove buton 1, 1
-    strip->extra = calf_button_new("❌");
+    strip->extra = calf_button_new("×");
     g_signal_connect(GTK_OBJECT(strip->extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
     gtk_widget_show(strip->extra);
