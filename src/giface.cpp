@@ -458,7 +458,7 @@ std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy
         strcpy(str, tmp);
     }
     if (name) {
-        sprintf(tmp, "%s\nNote: %s%+d", str, desc.name, desc.octave);
+        sprintf(tmp, "%s\nNote: %s%d", str, desc.name, desc.octave);
         strcpy(str, tmp);
     }
     if (cents) {
