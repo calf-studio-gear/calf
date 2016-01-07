@@ -69,33 +69,31 @@
             </vbox>
         </frame>
         <!-- TIMING -->
+        <frame label="Modulation">
             <vbox spacing="3">
-                <vbox>
-                    <label param="amount" fill="0" align-y="1.0" />
-                    <knob size="4" param="amount" expand="0" fill="0" />
-                    <value param="amount" fill="0" align-y="0.0" />
-                </vbox>
                 <combo param="mode" />
+                <label/>
                 <vbox>
-                    <label param="pulsewidth" fill="0" align-y="1.0" />
-                    <knob size="4" param="pulsewidth" type="1" ticks="0 0.5 1 1.5 2" expand="0" fill="0" />
-                    <value param="pulsewidth" fill="0" align-y="0.0" />
+                    <label param="amount"  />
+                    <knob size="5" param="amount" />
+                    <value param="amount" />
                 </vbox>
+                <label/>
+                <combo param="pulsewidth" />
             </vbox>
-        <vbox>
-            <frame label="Pulse">
-                <vbox spacing="5">
-                    <if cond="directlink">
-                        <line-graph refresh="1" width="400" height="120" param="hz" expand="1" fill="1"/>
-                    </if>
-                    <table rows="2" cols="2">
-                        <label param="offset_l" attach-x="0" attach-y="0" />
-                        <hscale param="offset_l" size="2" width="300" attach-x="1" attach-y="0" />
-                        <label param="offset_r" attach-x="0" attach-y="1"/>
-                        <hscale param="offset_r" size="2" width="300" attach-x="1" attach-y="1" />
-                    </table>
-                </vbox>
-            </frame>
-        </vbox>
+        </frame>
+        <frame label="Pulse">
+            <vbox spacing="5">
+                <if cond="directlink">
+                    <line-graph refresh="1" width="400" height="120" param="hz" expand="1" fill="1"/>
+                </if>
+                <table rows="2" cols="2">
+                    <label param="offset_l" attach-x="0" attach-y="0" />
+                    <hscale param="offset_l" size="2" width="300" attach-x="1" attach-y="0" />
+                    <label param="offset_r" attach-x="0" attach-y="1"/>
+                    <hscale param="offset_r" size="2" width="300" attach-x="1" attach-y="1" />
+                </table>
+            </vbox>
+        </frame>
     </hbox>
 </vbox>

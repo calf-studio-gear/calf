@@ -677,8 +677,16 @@ void pulsator_audio_module::params_changed()
      or *params[param_offset_r] != offset_r_old
      or *params[param_pwidth] != pwidth_old
      or clear_reset) {
-        lfoL.set_params(freq, *params[param_mode], *params[param_offset_l], srate, *params[param_amount], *params[param_pwidth]);
-        lfoR.set_params(freq, *params[param_mode], *params[param_offset_r], srate, *params[param_amount], *params[param_pwidth]);
+        float pw = 1;
+        switch (int(*params[param_pwidth])) {
+            case 0: pw = 0.125; break;
+            case 1: pw = 0.25;  break;
+            case 2: pw = 0.5;   break;
+            case 3: pw = 1;     break;
+            case 4: pw = 2;     break;
+        }
+        lfoL.set_params(freq, *params[param_mode], *params[param_offset_l], srate, *params[param_amount], pw);
+        lfoR.set_params(freq, *params[param_mode], *params[param_offset_r], srate, *params[param_amount], pw);
         mode_old     = *params[param_mode];
         amount_old   = *params[param_amount];
         offset_l_old = *params[param_offset_l];
