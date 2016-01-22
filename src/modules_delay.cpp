@@ -118,10 +118,6 @@ vintage_delay_audio_module::vintage_delay_audio_module()
     }
     _tap_avg = 0;
     _tap_last = 0;
-    
-    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR};
-    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
-    meters.init(params, meter, clip, 4, srate);
 }
 
 char *vintage_delay_audio_module::configure(const char *key, const char *value)
@@ -212,6 +208,10 @@ void vintage_delay_audio_module::set_sample_rate(uint32_t sr)
     old_medium = -1;
     amt_left.set_sample_rate(sr); amt_right.set_sample_rate(sr);
     fb_left.set_sample_rate(sr); fb_right.set_sample_rate(sr);
+
+    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
 }
 
 void vintage_delay_audio_module::calc_filters()
