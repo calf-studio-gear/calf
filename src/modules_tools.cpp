@@ -255,6 +255,7 @@ mono_audio_module::mono_audio_module() {
     meter_outL  = 0.f;
     meter_outR  = 0.f;
     _phase      = -1.f;
+    _sc_level   = 0.f;
 }
 mono_audio_module::~mono_audio_module() {
     free(buffer);
