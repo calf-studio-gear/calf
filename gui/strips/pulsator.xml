@@ -4,16 +4,16 @@
         <combo param="mode" />
         <label/>
     </vbox>
+    <vbox>
+        <label param="pulsewidth"/>
+        <combo param="pulsewidth"/>
+        <label />
+    </vbox>
     <hbox spacing="5" homogeneous="1">
         <vbox>
             <label param="amount" />
             <knob param="amount" />
             <value param="amount" />
-        </vbox>
-        <vbox>
-            <label param="pulsewidth"/>
-            <knob param="pulsewidth" type="1" ticks="0 0.5 1 1.5 2"/>
-            <value param="pulsewidth" />
         </vbox>
         <toggle param="bypass" icon="bypass"/>
     </hbox>

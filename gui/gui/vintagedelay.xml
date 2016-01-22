@@ -82,18 +82,24 @@
         </frame>
         <!-- TIMING -->
         <frame label="Fragmentation">
-            <notebook param="fragmentation">
+            <!--notebook param="fragmentation"-->
                 <hbox page="Periodic">
-                    <table rows="3" cols="2">
-                        <label attach-x="0" attach-y="0" param="subdiv" />
-                        <hscale attach-x="1" attach-y="0" param="subdiv" />
-                        <label attach-x="0" attach-y="1" param="time_l" />
-                        <hscale attach-x="1" attach-y="1" param="time_l" />
-                        <label attach-x="0" attach-y="2" param="time_r"  />
-                        <hscale attach-x="1" attach-y="2" param="time_r" />
+                    <table rows="3" cols="2" pad-x="20">
+                        <vbox attach-x="0" attach-y="0" fill-y="0" expand-y="0" attach-w="2">
+                            <label param="mix_mode" />
+                            <combo param="mix_mode" fill-y="0" />
+                        </vbox>
+                        <label attach-x="0" attach-y="1" param="subdiv" />
+                        <hscale width="260" attach-x="1" attach-y="1" param="subdiv" />
+                        <label attach-x="0" attach-y="2" param="time_l" />
+                        <hscale width="260" attach-x="1" attach-y="2" param="time_l" />
+                        <label attach-x="0" attach-y="3" param="time_r"  />
+                        <hscale width="260" attach-x="1" attach-y="3" param="time_r" />
+                        <!--label attach-x="0" attach-y="3" param="mix_mode" />
+                        <combo attach-x="1" attach-y="3" param="mix_mode" fill-y="0" expand-y="0" pad-x="8" /-->
                     </table>
                 </hbox>
-                
+                <!--
                 <hbox page="Pattern">
                     <table rows="2" cols="2">
                         <label text="L" attach-x="0" attach-y="0"/>
@@ -112,8 +118,8 @@
                         </vbox>
                     </table>
                 </hbox>
-                
-            </notebook>
+                -->
+            <!--/notebook-->
         </frame>
         <frame label="Mixing">
             <table expand="0" rows="2" cols="2">
@@ -126,12 +132,6 @@
                     <knob param="feedback" fill="0" expand="0" size="5" ticks="0 0.5 1"/>
                     <value param="feedback" fill="0" expand="0" />
                 </vbox>
-                <!--<vbox fill="0" attach-x="0" attach-y="1" fill-y="0">
-                    <label param="mix_mode" />
-                    <combo param="mix_mode" fill-y="0" />
-                </vbox>
-                -->
-                
             </table>
         </frame>
     

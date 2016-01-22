@@ -1179,6 +1179,7 @@ CALF_PLUGIN_INFO(vocoder) = { 0x8514, "Vocoder", "Calf Vocoder", "Calf Studio Ge
 CALF_PORT_NAMES(pulsator) = {"In L", "In R", "Out L", "Out R"};
 
 const char *pulsator_mode_names[] = { "Sine", "Triangle", "Square", "Saw up", "Saw down" };
+const char *pulsator_pulse_width[] = { "8 Periods", "4 Periods", "2 Periods", "1 Period", "Half Period" };
 
 CALF_PORT_PROPS(pulsator) = {
     BYPASS_AND_LEVEL_PARAMS
@@ -1189,7 +1190,7 @@ CALF_PORT_PROPS(pulsator) = {
     { 0.5,         0,           1,     0, PF_FLOAT | PF_SCALE_PERC, NULL, "offset_r", "Offset R" },
     { 0,           0,           1,     0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono-in" },
     { 0,           0,           1,     2, PF_BOOL | PF_CTL_BUTTON , NULL, "reset", "Reset" },
-    { 1,           0,           2,     0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pulsewidth", "Pulse Width" },
+    { 3,           0,           4,     0, PF_ENUM | PF_CTL_COMBO, pulsator_pulse_width, "pulsewidth", "Pulse Width" },
     PERIODICAL_DEFINITIONS(2)
     {}
 };
