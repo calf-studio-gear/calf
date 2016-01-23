@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label text="Sub" />
+        <knob type="1" param="amount0" />
+        <value param="amount0" />
+    </vbox>
+    <vbox>
+        <label text="Low" />
+        <knob type="1" param="amount1" />
+        <value param="amount1" />
+    </vbox>
+    <vbox>
+        <label text="Mid" />
+        <knob type="1" param="amount2" />
+        <value param="amount2" />
+    </vbox>
+    <vbox>
+        <label text="High" />
+        <knob type="1" param="amount3" />
+        <value param="amount3" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

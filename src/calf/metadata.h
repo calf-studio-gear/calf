@@ -750,6 +750,17 @@ struct multibandenhancer_metadata: public plugin_metadata<multibandenhancer_meta
            param_count };
     PLUGIN_NAME_ID_LABEL("multibandenhancer", "multibandenhancer", "Multiband Enhancer")
 };
+/// Markus's  multispread - metadata
+struct multispread_metadata: public plugin_metadata<multispread_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_mono, param_filters,
+           param_amount0, param_amount1, param_amount2, param_amount3,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("multispread", "multispread", "Multi Spread")
+};
 /// Markus's and Chrischi's Analyzer
 struct analyzer_metadata: public plugin_metadata<analyzer_metadata>
 {

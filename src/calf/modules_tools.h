@@ -182,6 +182,45 @@ protected:
 };
 
 /**********************************************************************
+ * MULTIBAND SPREAD by Markus Schmidt
+**********************************************************************/
+
+class multispread_audio_module: public audio_module<multispread_metadata>,
+    public frequency_response_line_graph, public phase_graph_iface {
+private:
+    dsp::bypass bypass;
+    vumeters meters;
+    dsp::biquad_d1 L[16], R[16];
+public:
+    uint32_t srate;
+    bool is_active;
+    mutable bool redraw_graph;
+    float amount0, amount1, amount2, amount3, filters;
+    float fcoeff;
+    multispread_audio_module();
+    ~multispread_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+    bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_phase_graph(int index, float ** _buffer, int * _length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const;
+    float freq_gain(int index, double freq) const;
+protected:
+    static const int max_phase_buffer_size = 8192;
+    int phase_buffer_size;
+    float *phase_buffer;
+    int ppos;
+    int plength;
+    float envelope;
+    float attack_coef;
+    float release_coef;
+};
+
+/**********************************************************************
  * WIDGET TEST
 **********************************************************************/
 

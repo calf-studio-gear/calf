@@ -484,8 +484,8 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         //use the envelope to bring biggest signal to 1. the biggest
         //enlargement of the signal is 4.
         
-        phase_buffer[ppos]     = L / std::max(0.25f , (envelope));
-        phase_buffer[ppos + 1] = R / std::max(0.25f , (envelope));
+        phase_buffer[ppos]     = L / std::max(0.25f, (envelope));
+        phase_buffer[ppos + 1] = R / std::max(0.25f, (envelope));
         
         
         plength = std::min(phase_buffer_size, plength + 2);
@@ -556,7 +556,7 @@ bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &
 
 
 /**********************************************************************
- * MULTIBAND ENHANCER by Markus Schmidt and Christian Holschuh 
+ * MULTIBAND ENHANCER by Markus Schmidt
 **********************************************************************/
 
 multibandenhancer_audio_module::multibandenhancer_audio_module()
@@ -726,8 +726,8 @@ uint32_t multibandenhancer_audio_module::process(uint32_t offset, uint32_t numsa
                    envelope[i] = lemax; //attack_coef * (envelope[i] - lemax) + lemax;
                 else
                    envelope[i] = release_coef * (envelope[i] - lemax) + lemax;
-                phase_buffer[i][ppos]     = L / std::max(0.25f , (envelope[i]));
-                phase_buffer[i][ppos + 1] = R / std::max(0.25f , (envelope[i]));
+                phase_buffer[i][ppos]     = L / std::max(0.25f, (envelope[i]));
+                phase_buffer[i][ppos + 1] = R / std::max(0.25f, (envelope[i]));
             }
             // phase buffer handling
             plength = std::min(phase_buffer_size, plength + 2);
@@ -774,6 +774,189 @@ bool multibandenhancer_audio_module::get_layers(int index, int generation, unsig
 }
 
 
+/**********************************************************************
+ * MULTIBAND SPREAD by Markus Schmidt
+**********************************************************************/
+
+multispread_audio_module::multispread_audio_module()
+{
+    srate               = 0;
+    is_active           = false;
+    redraw_graph        = true;
+    fcoeff              = log10(20.f);
+    ppos                = 0;
+    plength             = 0;
+    phase_buffer        = (float*) calloc(max_phase_buffer_size, sizeof(float));
+    envelope            = 0;
+}
+multispread_audio_module::~multispread_audio_module()
+{
+    free(phase_buffer);
+}
+void multispread_audio_module::activate()
+{
+    is_active = true;
+}
+
+void multispread_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void multispread_audio_module::params_changed()
+{
+    if (*params[param_amount0] != amount0
+    or  *params[param_amount1] != amount1
+    or  *params[param_amount2] != amount2
+    or  *params[param_amount3] != amount3
+    or  *params[param_filters] != filters) {
+        redraw_graph = true;
+        amount0 = *params[param_amount0];
+        amount1 = *params[param_amount1];
+        amount2 = *params[param_amount2];
+        amount3 = *params[param_amount3];
+        filters = *params[param_filters];
+        int amount = filters * 4;
+        float q = filters / 3.;
+        float gain1, gain2;
+        for (int i = 0; i < amount; i++) {
+            gain1 = *params[param_amount0 + int(i / filters)];
+            gain2 = 1. / *params[param_amount0 + int(i / filters)];
+            L[i].set_peakeq_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)amount), q, (i % 2) ? gain1 : gain2, (double)srate);
+            R[i].set_peakeq_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)amount), q, (i % 2) ? gain2 : gain1, (double)srate);
+        }
+    }
+}
+
+void multispread_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
+    attack_coef  = exp(log(0.01)/(0.01 * srate * 0.001));
+    release_coef = exp(log(0.01)/(2000 * srate * 0.001));
+    phase_buffer_size = srate / 30 * 2;
+    phase_buffer_size -= phase_buffer_size % 2;
+    phase_buffer_size = std::min(phase_buffer_size, (int)max_phase_buffer_size);
+}
+
+uint32_t multispread_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_numsamples = numsamples;
+    uint32_t orig_offset = offset;
+    numsamples += offset;
+    if(bypassed) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = *params[param_mono] > 0.5 ? ins[0][offset] : ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            // phase buffer handling
+            phase_buffer[ppos]     = 0;
+            phase_buffer[ppos + 1] = 0;
+            plength = std::min(phase_buffer_size, plength + 2);
+            ppos += 2;
+            ppos %= (phase_buffer_size - 2);
+            ++offset;
+        }
+    } else {
+        // process all strips
+        while(offset < numsamples) {
+            float inL  = ins[0][offset]; // input
+            float inR  = *params[param_mono] > 0.5 ? ins[0][offset] : ins[1][offset];
+            float outL = 0.f; // final output
+            float outR = 0.f;
+            
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            
+            outL = inL;
+            outR = inR;
+            
+            // filters
+            int amount = filters * 4;
+            for (int i = 0; i < amount; i++) {
+                outL = L[i].process(outL);
+                outR = R[i].process(outR);
+            }
+            // out level
+            outL *= *params[param_level_out];
+            outR *= *params[param_level_out];
+
+            // phase buffer
+            float lemax  = fabs(outL) > fabs(outR) ? fabs(outL) : fabs(outR);
+            if (lemax > envelope)
+               envelope = lemax; //attack_coef * (envelope[i] - lemax) + lemax;
+            else
+               envelope = release_coef * (envelope - lemax) + lemax;
+            phase_buffer[ppos]     = outL / std::max(0.25f, (envelope));
+            phase_buffer[ppos + 1] = outR / std::max(0.25f, (envelope));
+            
+            // phase buffer handling
+            plength = std::min(phase_buffer_size, plength + 2);
+            ppos += 2;
+            ppos %= (phase_buffer_size - 2);
+            
+            // send to output
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+            
+            // next sample
+            ++offset;
+            
+            float values[] = {inL, inR, outL, outR};
+            meters.process(values);
+        } // cycle trough samples
+        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+    } // process (no bypass)
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+bool multispread_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (subindex or phase)
+        return false;
+    return ::get_graph(*this, index, data, points, 64, 0);
+}
+bool multispread_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    redraw_graph = redraw_graph || !generation;
+    layers |= (redraw_graph ? LG_CACHE_GRAPH : LG_NONE) | (generation ? LG_NONE : LG_CACHE_GRID);
+    int red = redraw_graph;
+    if (index == param_amount1)
+        redraw_graph = false;
+    return red;
+}
+bool multispread_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    if (phase)
+        return false;
+    bool r = get_freq_gridline(subindex, pos, vertical, legend, context, true, 64, 0);
+    if (!vertical)
+        legend = "";
+    return r;
+}
+float multispread_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+    for (int i = 0; i < *params[param_filters] * 4; i++)
+        ret *= (index == param_amount0 ? L : R)[i].freq_gain(freq, (float)srate);
+    return ret;
+}
+bool multispread_audio_module::get_phase_graph(int index, float ** _buffer, int *_length, int * _mode, bool * _use_fade, float * _fade, int * _accuracy, bool * _display) const {
+    *_buffer   = &phase_buffer[0];
+    *_length   = plength;
+    *_use_fade = 1;
+    *_fade     = 0.6;
+    *_mode     = 0;
+    *_accuracy = 3;
+    *_display  = true;
+    return false;
+}
 /**********************************************************************
  * WIDGETS TEST 
 **********************************************************************/
