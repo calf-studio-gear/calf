@@ -312,6 +312,7 @@ void combo_box_param_control::set()
     {
         const parameter_properties &props = get_props();
         gtk_combo_box_set_active (GTK_COMBO_BOX (widget), (int)gui->plugin->get_param_value(param_no) - (int)props.min);
+        gtk_widget_queue_draw(widget);
     }
 }
 
