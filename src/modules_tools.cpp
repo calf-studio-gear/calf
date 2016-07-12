@@ -475,11 +475,13 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         //the goniometer tries to show the signal in maximum
         //size. therefor an envelope with fast attack and slow
         //release is calculated with the max value of left and right.
-        float lemax  = fabs(L) > fabs(R) ? fabs(L) : fabs(R);
+        //Multiplied envelope by sqrt(2) to push the boundary to the corners
+        //of the square (for example (L,R) = (1,1) is sqrt(2) distance to center).
+        float lemax  = fabs(L) > fabs(R) ? fabs(L)*sqrt(2) : fabs(R)*sqrt(2);
         if( lemax > envelope)
            envelope  = lemax; //attack_coef * (envelope - lemax) + lemax;
         else
-           envelope  = release_coef * (envelope - lemax) + lemax;
+           envelope  = (release_coef * (envelope - lemax) + lemax);
         
         //use the envelope to bring biggest signal to 1. the biggest
         //enlargement of the signal is 4.
