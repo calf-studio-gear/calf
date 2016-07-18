@@ -226,7 +226,7 @@ void jack_client::calculate_plugin_order(std::vector<int> &indices)
                 map<string, int>::const_iterator p = port_to_plugin.find((*k) + cnlen + 1);
                 if (p != port_to_plugin.end())
                 {
-                    run_before.insert(make_pair<int, int>(p->second, i));
+                    run_before.insert(make_pair<const int&, unsigned int&>(p->second, i));
                 }
             }
             jack_free(conns);
