@@ -2081,7 +2081,7 @@ CALF_PORT_PROPS(pitch) = {
     {}
 };
 
-CALF_PLUGIN_INFO(pitch) = { 0x85AA, "Pitch", "Calf Pitch Tols", "Calf Studio Gear", calf_plugins::calf_copyright_info, "PitchPlugin" };
+CALF_PLUGIN_INFO(pitch) = { 0x85AA, "Pitch", "Calf Pitch Tools", "Calf Studio Gear", calf_plugins::calf_copyright_info, "PitchPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
