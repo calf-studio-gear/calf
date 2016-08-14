@@ -794,8 +794,8 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             lfo2.advance(1);
             
             // dot
-            rms = std::max((double)rms, (fabs(Lo) + fabs(Ro)) / 2);
-            input = std::max((double)input, (fabs(Lc) + fabs(Rc)) / 2);
+            rms = std::max((double)rms, (double)((fabs(Lo) + fabs(Ro)) / 2));
+            input = std::max((double)input, (double)((fabs(Lc) + fabs(Rc)) / 2));
             
             float values[] = {inL, inR, outs[0][i], outs[1][i]};
             meters.process(values);
