@@ -118,7 +118,7 @@ CALF_PORT_PROPS(flanger) = {
     {}
 };
 
-CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(flanger) = { 0x847d, "Flanger", "Calf Flanger", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -141,7 +141,7 @@ CALF_PORT_PROPS(phaser) = {
     {}
 };
 
-CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(phaser) = { 0x8484, "Phaser", "Calf Phaser", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -175,7 +175,7 @@ CALF_PORT_PROPS(reverb) = {
     {}
 };
 
-CALF_PLUGIN_INFO(reverb) = { 0x847e, "Reverb", "Calf Reverb", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "ReverbPlugin" };
+CALF_PLUGIN_INFO(reverb) = { 0x847e, "Reverb", "Calf Reverb", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ReverbPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -208,7 +208,7 @@ CALF_PORT_PROPS(filter) = {
     METERING_PARAMS
 };
 
-CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(filter) = { 0x847f, "Filter", "Calf Filter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -228,7 +228,7 @@ CALF_PORT_PROPS(filterclavier) = {
     {}
 };
 
-CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Calf Studio Gear / Krzysztof Foltman / Hans Baier", calf_plugins::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(filterclavier) = { 0x849f, "Filterclavier", "Calf Filterclavier", "Calf Studio Gear", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -255,7 +255,7 @@ CALF_PORT_PROPS(envelopefilter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(envelopefilter) = { 0x8432, "EnvelopeFilter", "Calf Envelope Filter", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(envelopefilter) = { 0x8432, "EnvelopeFilter", "Calf Envelope Filter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -300,7 +300,7 @@ CALF_PORT_PROPS(vintage_delay) = {
     {}
 };
 
-CALF_PLUGIN_INFO(vintage_delay) = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DelayPlugin" };
+CALF_PLUGIN_INFO(vintage_delay) = { 0x8482, "VintageDelay", "Calf Vintage Delay", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 CALF_PORT_NAMES(comp_delay) = { "In L", "In R", "Out L", "Out R" };
@@ -316,7 +316,7 @@ CALF_PORT_PROPS(comp_delay) = {
     METERING_PARAMS
     {}
 };
-CALF_PLUGIN_INFO(comp_delay) = { 0x8485, "CompensationDelay", "Calf Compensation Delay Line", "Calf Studio Gear / Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "DelayPlugin" };
+CALF_PLUGIN_INFO(comp_delay) = { 0x8485, "CompensationDelay", "Calf Compensation Delay Line", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -341,7 +341,7 @@ CALF_PORT_PROPS(reverse_delay) = {
     {}
 };
 
-CALF_PLUGIN_INFO(reverse_delay) = { 0x8482, "ReverseDelay", "Calf Reverse Delay", "Calf Studio Gear / drgreenthumb", calf_plugins::calf_copyright_info, "DelayPlugin" };
+CALF_PLUGIN_INFO(reverse_delay) = { 0x8482, "ReverseDelay", "Calf Reverse Delay", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DelayPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -369,7 +369,7 @@ CALF_PORT_PROPS(rotary_speaker) = {
     {}
 };
 
-CALF_PLUGIN_INFO(rotary_speaker) = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
+CALF_PLUGIN_INFO(rotary_speaker) = { 0x8483, "RotarySpeaker", "Calf Rotary Speaker", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -394,7 +394,7 @@ CALF_PORT_PROPS(multichorus) = {
     METERING_PARAMS
 };
 
-CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -423,7 +423,7 @@ CALF_PORT_PROPS(monocompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf Mono Compressor", "Calf Studio Gear / Damien Zammit", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(monocompressor) = { 0x8577, "MonoCompressor", "Calf Mono Compressor", "Calf Studio Gear", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -452,7 +452,7 @@ CALF_PORT_PROPS(compressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Calf Studio Gear / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(compressor) = { 0x8502, "Compressor", "Calf Compressor", "Calf Studio Gear", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -503,7 +503,7 @@ CALF_PORT_PROPS(sidechaincompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "SidechainCompressor", "Calf Sidechain Compressor", "Calf Studio Gear / Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(sidechaincompressor) = { 0x8517, "SidechainCompressor", "Calf Sidechain Compressor", "Calf Studio Gear", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 #define MULTI_BAND_COMP_PARAMS(band1, band2) \
@@ -538,7 +538,7 @@ CALF_PORT_PROPS(multibandcompressor) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandcompressor) = { 0x8516, "MultibandCompressor", "Calf Multiband Compressor", "Calf Studio Gear / Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(multibandcompressor) = { 0x8516, "MultibandCompressor", "Calf Multiband Compressor", "Calf Studio Gear", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -570,7 +570,7 @@ CALF_PORT_PROPS(deesser) = {
     {}
 };
 
-CALF_PLUGIN_INFO(deesser) = { 0x8515, "Deesser", "Calf Deesser", "Calf Studio Gear / Markus Schmidt / Thor Harald Johansen", calf_plugins::calf_copyright_info, "CompressorPlugin" };
+CALF_PLUGIN_INFO(deesser) = { 0x8515, "Deesser", "Calf Deesser", "Calf Studio Gear", calf_plugins::calf_copyright_info, "CompressorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -599,7 +599,7 @@ CALF_PORT_PROPS(gate) = {
     {}
 };
 
-CALF_PLUGIN_INFO(gate) = { 0x8503, "Gate", "Calf Gate", "Calf Studio Gear / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(gate) = { 0x8503, "Gate", "Calf Gate", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -650,7 +650,7 @@ CALF_PORT_PROPS(sidechaingate) = {
     {}
 };
 
-CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "SidechainGate", "Calf Sidechain Gate", "Calf Studio Gear / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(sidechaingate) = { 0x8504, "SidechainGate", "Calf Sidechain Gate", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 #define MULTI_BAND_GATE_PARAMS(band1, band2) \
@@ -686,7 +686,7 @@ CALF_PORT_PROPS(multibandgate) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gate", "Calf Studio Gear / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gate", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -710,7 +710,7 @@ CALF_PORT_PROPS(limiter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Calf Studio Gear / Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(limiter) = { 0x8521, "Limiter", "Calf Limiter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -766,7 +766,7 @@ CALF_PORT_PROPS(multibandlimiter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiband Limiter", "Calf Studio Gear / Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(multibandlimiter) = { 0x8520, "MultibandLimiter", "Calf Multiband Limiter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -829,7 +829,7 @@ CALF_PORT_PROPS(sidechainlimiter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(sidechainlimiter) = { 0x8522, "SidechainLimiter", "Calf Sidechain Limiter", "Calf Studio Gear / Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "LimiterPlugin" };
+CALF_PLUGIN_INFO(sidechainlimiter) = { 0x8522, "SidechainLimiter", "Calf Sidechain Limiter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "LimiterPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -846,7 +846,7 @@ CALF_PORT_PROPS(emphasis) = {
     { 4,      0,  8,    0, PF_ENUM | PF_CTL_COMBO, emphasis_filter_types, "type", "Filter Type" },
     {}
 };
-CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Calf Studio Gear / Damien Zammit", calf_plugins::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Calf Studio Gear", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 const char *active_mode_names[] = { " ", "ON", "Left", "Right", "Mid", "Side" };
@@ -864,7 +864,7 @@ CALF_PORT_PROPS(equalizer5band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer5band) = { 0x8511, "Equalizer5Band", "Calf Equalizer 5 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+CALF_PLUGIN_INFO(equalizer5band) = { 0x8511, "Equalizer5Band", "Calf Equalizer 5 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -885,7 +885,7 @@ CALF_PORT_PROPS(equalizer8band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer8band) = { 0x8512, "Equalizer8Band", "Calf Equalizer 8 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+CALF_PLUGIN_INFO(equalizer8band) = { 0x8512, "Equalizer8Band", "Calf Equalizer 8 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -908,7 +908,7 @@ CALF_PORT_PROPS(equalizer12band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer 12 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer 12 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1019,7 +1019,7 @@ CALF_PORT_PROPS(equalizer30band) = {
     {}
 };
 
-CALF_PLUGIN_INFO(equalizer30band) = { 0x8514, "Equalizer30Band", "Calf Equalizer 30 Band", "Calf Studio Gear / drgreenthumb", calf_plugins::calf_copyright_info, "EQPlugin" };
+CALF_PLUGIN_INFO(equalizer30band) = { 0x8514, "Equalizer30Band", "Calf Equalizer 30 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1045,7 +1045,7 @@ CALF_PORT_PROPS(xover2) = {
     XOVER_BAND_PARAMS(2)
     {}
 };
-CALF_PLUGIN_INFO(xover2) = { 0x8515, "XOver2Band", "Calf X-Over 2 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+CALF_PLUGIN_INFO(xover2) = { 0x8515, "XOver2Band", "Calf X-Over 2 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1063,7 +1063,7 @@ CALF_PORT_PROPS(xover3) = {
     XOVER_BAND_PARAMS(3)
     {}
 };
-CALF_PLUGIN_INFO(xover3) = { 0x8515, "XOver3Band", "Calf X-Over 3 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+CALF_PLUGIN_INFO(xover3) = { 0x8515, "XOver3Band", "Calf X-Over 3 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1083,7 +1083,7 @@ CALF_PORT_PROPS(xover4) = {
     XOVER_BAND_PARAMS(4)
     {}
 };
-CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Calf Studio Gear", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1171,7 +1171,7 @@ CALF_PORT_PROPS(vocoder) = {
     {}
 };
 
-CALF_PLUGIN_INFO(vocoder) = { 0x8514, "Vocoder", "Calf Vocoder", "Calf Studio Gear / Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "FilterPlugin" };
+CALF_PLUGIN_INFO(vocoder) = { 0x8514, "Vocoder", "Calf Vocoder", "Calf Studio Gear", calf_plugins::calf_copyright_info, "FilterPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1195,7 +1195,7 @@ CALF_PORT_PROPS(pulsator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(pulsator) = { 0x8514, "Pulsator", "Calf Pulsator", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(pulsator) = { 0x8514, "Pulsator", "Calf Pulsator", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1238,7 +1238,7 @@ CALF_PORT_PROPS(ringmodulator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(ringmodulator) = { 0x8514, "RingModulator", "Calf Ring Modulator", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
+CALF_PLUGIN_INFO(ringmodulator) = { 0x8514, "RingModulator", "Calf Ring Modulator", "Calf Studio Gear", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1265,7 +1265,7 @@ CALF_PORT_PROPS(saturator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(saturator) = { 0x8530, "Saturator", "Calf Saturator", "Calf Studio Gear / Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(saturator) = { 0x8530, "Saturator", "Calf Saturator", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1292,7 +1292,7 @@ CALF_PORT_PROPS(exciter) = {
     {}
 };
 
-CALF_PLUGIN_INFO(exciter) = { 0x8531, "Exciter", "Calf Exciter", "Calf Studio Gear / Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SpectralPlugin" };
+CALF_PLUGIN_INFO(exciter) = { 0x8531, "Exciter", "Calf Exciter", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpectralPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1319,7 +1319,7 @@ CALF_PORT_PROPS(bassenhancer) = {
     {}
 };
 
-CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer", "Calf Studio Gear / Markus Schmidt / Krzysztof Foltman", calf_plugins::calf_copyright_info, "SpectralPlugin" };
+CALF_PLUGIN_INFO(bassenhancer) = { 0x8532, "BassEnhancer", "Calf Bass Enhancer", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpectralPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1355,7 +1355,7 @@ CALF_PORT_PROPS(stereo) = {
     {}
 };
 
-CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+CALF_PLUGIN_INFO(stereo) = { 0x8588, "StereoTools", "Calf Stereo Tools", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1393,7 +1393,7 @@ CALF_PORT_PROPS(multibandenhancer) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandenhancer) = { 0x8121, "MultibandEnhancer", "Calf Multiband Enhancer", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+CALF_PLUGIN_INFO(multibandenhancer) = { 0x8121, "MultibandEnhancer", "Calf Multiband Enhancer", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1413,7 +1413,7 @@ CALF_PORT_PROPS(multispread) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multispread) = { 0x8123, "MultiSpread", "Calf Multi Spread", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+CALF_PLUGIN_INFO(multispread) = { 0x8123, "MultiSpread", "Calf Multi Spread", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1449,7 +1449,7 @@ CALF_PORT_PROPS(haas_enhancer) = {
 
     {}
 };
-CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf Haas Stereo Enhancer", "Calf Studio Gear / Vladimir Sadovnikov", calf_plugins::calf_copyright_info, "SpatialPlugin" };
+CALF_PLUGIN_INFO(haas_enhancer) = { 0x8486, "HaasEnhancer", "Calf Haas Stereo Enhancer", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SpatialPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1480,7 +1480,7 @@ CALF_PORT_PROPS(mono) = {
     {}
 };
 
-CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+CALF_PLUGIN_INFO(mono) = { 0x8589, "MonoInput", "Calf Mono Input", "Calf Studio Gear", calf_plugins::calf_copyright_info, "UtilityPlugin" };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1521,7 +1521,7 @@ CALF_PORT_PROPS(analyzer) = {
     {}
 };
 
-CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Calf Studio Gear / Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "AnalyserPlugin" };
+CALF_PLUGIN_INFO(analyzer) = { 0x8588, "Analyzer", "Calf Analyzer", "Calf Studio Gear", calf_plugins::calf_copyright_info, "AnalyserPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 const char *transientdesigner_view_names[] = { "Output", "Envelope", "Attack", "Release" };
@@ -1548,7 +1548,7 @@ CALF_PORT_PROPS(transientdesigner) = {
     {}
 };
 
-CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Calf Studio Gear / Christian Holschuh / Markus Schmidt", calf_plugins::calf_copyright_info, "EnvelopePlugin" };
+CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Transient Designer", "Calf Studio Gear", calf_plugins::calf_copyright_info, "EnvelopePlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1569,7 +1569,7 @@ CALF_PORT_PROPS(tapesimulator) = {
     {}
 };
 
-CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Calf Studio Gear / Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
+CALF_PLUGIN_INFO(tapesimulator) = { 0x8588, "TapeSimulator", "Calf Tape Simulator", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1590,7 +1590,7 @@ CALF_PORT_PROPS(crusher) = {
     {}
 };
 
-CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Calf Studio Gear / Markus Schmidt / Christian Holschuh", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DistortionPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1615,7 +1615,7 @@ const char *monosynth_filter_choices[] = {
     "2x6dB/oct Bandpass",
 };
 
-CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
+CALF_PLUGIN_INFO(monosynth) = { 0x8480, "Monosynth", "Calf Monosynth", "Calf Studio Gear", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(monosynth) = {
     { monosynth_metadata::wave_saw,         0, monosynth_metadata::wave_count - 1, 1, PF_ENUM | PF_CTL_COMBO | PF_PROP_GRAPH, monosynth_waveform_names, "o1_wave", "Osc1 Wave" },
@@ -1725,7 +1725,7 @@ void monosynth_metadata::get_configure_vars(vector<string> &names) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
+CALF_PLUGIN_INFO(organ) = { 0x8481, "Organ", "Calf Organ", "Calf Studio Gear", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 plugin_command_info *organ_metadata::get_commands() const
 {
@@ -1931,7 +1931,7 @@ CALF_PORT_NAMES(fluidsynth) = {
     "Out L", "Out R",
 };
 
-CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "Calf Studio Gear / FluidSynth Team / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
+CALF_PLUGIN_INFO(fluidsynth) = { 0x8700, "Fluidsynth", "Calf Fluidsynth", "Calf Studio Gear", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(fluidsynth) = {
     { 0.5,         0,   1, 100, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_PROP_OUTPUT_GAIN, NULL, "master", "Volume" },
@@ -2014,7 +2014,7 @@ CALF_PORT_NAMES(wavetable) = {
     "Out L", "Out R",
 };
 
-CALF_PLUGIN_INFO(wavetable) = { 0x8701, "Wavetable", "Calf Wavetable", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
+CALF_PLUGIN_INFO(wavetable) = { 0x8701, "Wavetable", "Calf Wavetable", "Calf Studio Gear", calf_plugins::calf_copyright_info, "InstrumentPlugin" };
 
 CALF_PORT_PROPS(wavetable) = {
     { wavetable_metadata::wt_count - 1,       0,  wavetable_metadata::wt_count - 1, 0, PF_ENUM | PF_SCALE_LINEAR | PF_CTL_COMBO, wavetable_names, "o1wave", "Osc1 Wave" },
