@@ -935,10 +935,10 @@
             <vscale param="volume30" attach-x="30" attach-y="2" inverted="1" size="1" height="120"/>
             <knob   param="mod30"    attach-x="30" attach-y="3" size="1"/>
             <knob   param="noise30"  attach-x="30" attach-y="4" size="1"/>
-            <knob   param="pan30"    attach-x="30" attach-y="6" type="1" size="1"/>
-            <knob   param="q30"    attach-x="30" attach-y="7" type="1" size="1"/>
-            <toggle param="solo30"   attach-x="30" attach-y="8" size="0"/>
-            <label  text="30"        attach-x="30" attach-y="7"/>
+            <knob   param="pan30"    attach-x="30" attach-y="5" type="1" size="1"/>
+            <knob   param="q30"    attach-x="30" attach-y="6" type="1" size="1"/>
+            <toggle param="solo30"   attach-x="30" attach-y="7" size="0"/>
+            <label  text="30"        attach-x="30" attach-y="8"/>
             <led    param="level31"  attach-x="31" attach-y="1" mode="6"/>
             <vscale param="volume31" attach-x="31" attach-y="2" inverted="1" size="1" height="120"/>
             <knob   param="mod31"    attach-x="31" attach-y="3" size="1"/>
