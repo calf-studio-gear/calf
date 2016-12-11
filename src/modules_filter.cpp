@@ -1084,6 +1084,7 @@ vocoder_audio_module::vocoder_audio_module()
     bands_old = -1;
     order     = 0;
     order_old = -1;
+    lower_old = upper_old = tilt_old = 0;
     fcoeff    = log10(20.f);
     log2_     = log(2);
     memset(env_mods, 0, 32 * 2 * sizeof(double));
@@ -1107,22 +1108,45 @@ void vocoder_audio_module::params_changed()
     int b = *params[param_bands];
     bands = (b + 2) * 4 + (b > 1 ? (b - 2) * 4 : 0);
     order = std::min(8.f, *params[param_order]);
-    float q = pow(10, (fmodf(std::min(8.999f, *params[param_order]), 1.f) * (7.f / pow(1.3, order))) / 20);
-    q += *params[param_hiq];
-    if (bands != bands_old or *params[param_order] != order_old or *params[param_hiq] != hiq_old) {
+    bool draw = false;
+    for (int i = 0; i < 32; i++) {
+        if (q_old[i] != *params[param_q0 + i * band_params]) {
+            draw = true;
+            q_old[i] = *params[param_q0 + i * band_params];
+        }
+    }
+    if (draw or bands != bands_old or *params[param_order] != order_old
+    or *params[param_hiq] != hiq_old or *params[param_lower] != lower_old
+    or *params[param_upper] != upper_old or *params[param_tilt] != tilt_old) {
+        float q = pow(10, (fmodf(std::min(8.999f, *params[param_order]), 1.f) * (7.f / pow(1.3, order))) / 20);
+        q += *params[param_hiq];
         bands_old = bands;
         order_old = *params[param_order];
         hiq_old = *params[param_hiq];
+        lower_old = *params[param_lower];
+        upper_old = *params[param_upper];
+        tilt_old = *params[param_tilt];
+        float to = *params[param_tilt] < 0 ? *params[param_lower] : *params[param_upper];
+        float from = *params[param_tilt] < 0 ? *params[param_upper] : *params[param_lower];
+        float tilt = fabs(*params[param_tilt]); 
+        float freq = from;
         for (int i = 0; i < bands; i++) {
-            // set all actually used filters
-            detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), q, (double)srate);
+            int _i = *params[param_tilt] < 0 ? bands - i - 1 : i;
+            float _freq = log10(freq);
+            float _q = q * *params[param_q0 + _i * band_params];
+            //detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), _q, (double)srate);
+            float step = (log10(to) - _freq) / (bands - i) * (1 + tilt);
+            float f = pow(10, _freq + (0.5 * step));
+            bandfreq[_i] = f;
+            detector[0][0][_i].set_bp_rbj(f, _q, (double)srate);
             for (int j = 0; j < order; j++) {
                 if (j)
-                    detector[0][j][i].copy_coeffs(detector[0][0][i]);
-                detector[1][j][i].copy_coeffs(detector[0][0][i]);
-                modulator[0][j][i].copy_coeffs(detector[0][0][i]);
-                modulator[1][j][i].copy_coeffs(detector[0][0][i]);
+                    detector[0][j][_i].copy_coeffs(detector[0][0][_i]);
+                detector[1][j][_i].copy_coeffs(detector[0][0][_i]);
+                modulator[0][j][_i].copy_coeffs(detector[0][0][_i]);
+                modulator[1][j][_i].copy_coeffs(detector[0][0][_i]);
             }
+            freq = pow(10, _freq + step);
         }
         redraw_graph = true;
     }
@@ -1316,7 +1340,6 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
             context->set_source_rgba(0,0,0,0.15);
         context->set_line_width(0.99);
         int drawn = 0;
-        double fq = pow(10, fcoeff + (0.5f + (float)subindex) * 3.f / (float)bands);
         for (int i = 0; i < points; i++) {
             double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
             float level = 1;
@@ -1324,7 +1347,7 @@ bool vocoder_audio_module::get_graph(int index, int subindex, int phase, float *
                 level *= detector[0][0][subindex].freq_gain(freq, srate);
             level *= *params[param_volume0 + subindex * band_params];
             data[i] = dB_grid(level, 256, 0.4);
-            if (!drawn and freq > fq) {
+            if (!drawn and freq > bandfreq[subindex]) {
                 drawn = 1;
                 char str[32];
                 sprintf(str, "%d", subindex + 1);

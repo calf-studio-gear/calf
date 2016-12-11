@@ -1093,7 +1093,8 @@ CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Calf S
     { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "noise" #band, "Noise " #band }, \
     { 0.000015849, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "mod" #band, "Dry " #band }, \
     {           0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band, "Solo " #band }, \
-    {           0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level" #band, "Level " #band },
+    {           0,           0,  1, 0, PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "level" #band, "Level " #band }, \
+    {           1,         0.25, 4, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "q" #band, "Q " #band },
     
 const char *vocoder_analyzer_modes[] = {"Off", "Carrier", "Modulator", "Processed", "Output"};
 
@@ -1167,6 +1168,10 @@ CALF_PORT_PROPS(vocoder) = {
     VOCODER_BAND_PARAMS(30)
     VOCODER_BAND_PARAMS(31)
     VOCODER_BAND_PARAMS(32)
+    
+    { 20,    20, 20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lower", "Lower" },
+    { 20000, 20, 20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "upper", "Upper" },
+    { 0,     -1,     1, 0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "tilt", "Tilt" },
     
     {}
 };

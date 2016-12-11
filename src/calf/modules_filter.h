@@ -410,7 +410,9 @@ typedef xover_audio_module<xover4_metadata> xover4_audio_module;
 class vocoder_audio_module: public audio_module<vocoder_metadata>, public frequency_response_line_graph {
 public:
     int bands, bands_old, order, hiq_old;
-    float order_old;
+    float order_old, lower_old, upper_old, tilt_old;
+    float q_old[32];
+    float bandfreq[32];
     uint32_t srate;
     bool is_active;
     static const int maxorder = 8;
