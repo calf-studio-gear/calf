@@ -535,7 +535,6 @@ inline note_desc hz_to_note (double hz, double tune)
     static const char notenames[] = "C\0\0C#\0D\0\0D#\0E\0\0F\0\0F#\0G\0\0G#\0A\0\0A#\0B\0\0";
     double f2 = log2(hz / tune);
     double cn = fmod(f2 * 1200., 100.);
-    printf("%.5f\n", cn);
     desc.freq   = hz;
     desc.note   = std::max(0., round(12 * f2 + 69));
     desc.name   = notenames + (desc.note % 12) * 3;
