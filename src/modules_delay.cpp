@@ -141,14 +141,15 @@ void vintage_delay_audio_module::params_changed()
     bpm = convert_periodic(*params[param_bpm + (int)((periodic_unit)*params[param_timing])],
                                   (periodic_unit)*params[param_timing], UNIT_BPM);
     
-    switch ((int)*params[par_frag]) {
-        case FRAG_PERIODIC:
+    // not implemented by now
+    //switch ((int)*params[par_frag]) {
+        //case FRAG_PERIODIC:
             
-            break;
-        case FRAG_PATTERN:
-            int amnt = *params[par_pbeats] * *params[par_pfrag];
-            break;
-    }
+            //break;
+        //case FRAG_PATTERN:
+            //int amnt = *params[par_pbeats] * *params[par_pfrag];
+            //break;
+    //}
     
     float unit = 60.0 * srate / (bpm * *params[par_divide]);
     deltime_l = dsp::fastf2i_drm(unit * *params[par_time_l]);
@@ -435,9 +436,10 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
         while(offset < end) {
             outs[0][offset] = ins[0][offset];
             buffer[w_ptr]   = ins[0][offset];
-            if (stereo)
+            if (stereo) {
                 outs[1][offset]   = ins[1][offset];
                 buffer[w_ptr + 1] = ins[1][offset];
+            }
             w_ptr = (w_ptr + 2) & b_mask;
             meters.process(values);
             ++offset;

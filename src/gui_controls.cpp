@@ -1187,9 +1187,10 @@ GtkWidget *filechooser_param_control::create(plugin_gui *_gui, int _param_no)
     g_signal_connect(GTK_OBJECT(widget), "file-set", G_CALLBACK(filechooser_value_changed), (gpointer)this);
     if (attribs.count("width"))
         gtk_widget_set_size_request (widget, get_int("width", 200), -1);
-    if (attribs.count("width_chars"))
-         gtk_file_chooser_button_set_width_chars (filechooser, get_int("width_chars"));
-         gtk_widget_set_name(GTK_WIDGET(widget), "Calf-FileButton");
+    if (attribs.count("width_chars")) {
+        gtk_file_chooser_button_set_width_chars (filechooser, get_int("width_chars"));
+        gtk_widget_set_name(GTK_WIDGET(widget), "Calf-FileButton");
+    }
     return widget;
 }
 

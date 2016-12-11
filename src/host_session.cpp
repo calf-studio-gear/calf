@@ -157,10 +157,12 @@ void host_session::session_callback(jack_session_event_t *event, void *arg)
 void host_session::handle_jack_session_event(jack_session_event_t *event)
 {
     try {
-        asprintf(&event->command_line, "%s --load ${SESSION_DIR}" G_DIR_SEPARATOR_S "rack.xml --session-id %s" , calfjackhost_cmd.c_str(), event->client_uuid);
-        string fn = event->session_dir;
-        fn += "rack.xml";
-        save_file(fn.c_str());
+        int size = asprintf(&event->command_line, "%s --load ${SESSION_DIR}" G_DIR_SEPARATOR_S "rack.xml --session-id %s" , calfjackhost_cmd.c_str(), event->client_uuid);
+        if (size > -1) {
+            string fn = event->session_dir;
+            fn += "rack.xml";
+            save_file(fn.c_str());
+        }
     }
     catch(...)
     {

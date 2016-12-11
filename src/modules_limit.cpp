@@ -429,7 +429,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // write multiband coefficient to buffer
-                buffer[pos] = std::min(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR)), 1.0f);
+                buffer[pos] = std::min((float)(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR))), 1.0f);
                 
                 // step forward in multiband buffer
                 pos = (pos + channels) % buffer_size;
@@ -811,7 +811,7 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // write multiband coefficient to buffer
-                buffer[pos] = std::min(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR)), 1.0f);
+                buffer[pos] = std::min((float)(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR))), 1.0f);
                 
                 // step forward in multiband buffer
                 pos = (pos + channels) % buffer_size;
