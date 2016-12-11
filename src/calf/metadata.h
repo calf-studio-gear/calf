@@ -93,10 +93,10 @@ struct envelopefilter_metadata: public plugin_metadata<envelopefilter_metadata>
 
 struct reverb_metadata: public plugin_metadata<reverb_metadata>
 {
-    enum { param_meter_inL, param_meter_outL, param_clip_outL, 
+    enum { param_meter_inL, param_meter_inR, param_clip_outL, 
            par_decay, par_hfdamp, par_roomsize, par_diffusion, par_amount, par_dry, par_predelay, par_basscut, par_treblecut, par_on,
            param_level_in, param_level_out,
-           param_meter_inR, param_meter_outR, param_clip_inL, param_clip_inR, param_clip_outR,
+           param_meter_outL, param_meter_outR, param_clip_inL, param_clip_inR, param_clip_outR,
            param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("reverb", "reverb", "Reverb")
