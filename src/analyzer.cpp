@@ -18,7 +18,6 @@
  * Boston, MA  02110-1301  USA
  */
  
-#include <cairo/cairo.h>
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
