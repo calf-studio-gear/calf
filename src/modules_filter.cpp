@@ -1108,9 +1108,11 @@ void vocoder_audio_module::params_changed()
     bands = (b + 2) * 4 + (b > 1 ? (b - 2) * 4 : 0);
     order = std::min(8.f, *params[param_order]);
     float q = pow(10, (fmodf(std::min(8.999f, *params[param_order]), 1.f) * (7.f / pow(1.3, order))) / 20);
-    if (bands != bands_old or *params[param_order] != order_old) {
+    q += *params[param_hiq];
+    if (bands != bands_old or *params[param_order] != order_old or *params[param_hiq] != hiq_old) {
         bands_old = bands;
         order_old = *params[param_order];
+        hiq_old = *params[param_hiq];
         for (int i = 0; i < bands; i++) {
             // set all actually used filters
             detector[0][0][i].set_bp_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)bands), q, (double)srate);
