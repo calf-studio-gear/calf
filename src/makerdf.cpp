@@ -200,7 +200,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         exit(1);
     }
     
-    string plugin_uri_prefix = "http://calf-studio-gear.org/plugins/";
+    string plugin_uri_prefix = "http://calf.sourceforge.net/plugins/";
     
     string header;
     
@@ -221,7 +221,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
         "@prefix param: <http://lv2plug.in/ns/ext/parameters#> .\n"
         "\n"
-        "<http://calf-studio-gear.org/team>\n"
+        "<http://calf.sourceforge.net/team>\n"
         "    a foaf:Person ;\n"
         "    foaf:name \"Calf Studio Gear\" ;\n"
         "    foaf:mbox <mailto:info@calf-studio-gear.org> ;\n"
@@ -288,7 +288,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         ttl += header + gui_header;
         ttl += "project:project\n"
             "    a doap:Project ;\n"
-            "    doap:maintainer <http://calf-studio-gear.org/team> ;\n"
+            "    doap:maintainer <http://calf.sourceforge.net/team> ;\n"
             "    doap:name \"" + string(lpi.name) + "\" .\n"
             "\n";
 
@@ -441,7 +441,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         if (!preset_data.count(ilm->second.first))
             presets_ttl = presets_ttl_head;
         
-        string uri = "<http://calf-studio-gear.org/factory_presets#"
+        string uri = "<http://calf.sourceforge.net/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
         ttl += uri + " a lv2p:Preset ;\n"
