@@ -199,6 +199,9 @@ void make_ttl(string path_prefix, const string *data_dir)
         fprintf(stderr, "Path parameter is required for TTL mode\n");
         exit(1);
     }
+    
+    string plugin_uri_prefix = "http://calf-studio-gear.org/plugins/";
+    
     string header;
     
     header = 
@@ -217,7 +220,12 @@ void make_ttl(string path_prefix, const string *data_dir)
         "@prefix epp: <http://lv2plug.in/ns/ext/port-props#> .\n"
         "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
         "@prefix param: <http://lv2plug.in/ns/ext/parameters#> .\n"
-
+        "\n"
+        "<http://calf-studio-gear.org/team>\n"
+        "    a foaf:Person ;\n"
+        "    foaf:name \"Calf Studio Gear\" ;\n"
+        "    foaf:mbox <mailto:info@calf-studio-gear.org> ;\n"
+        "    foaf:homepage <http://calf-studio-gear.org/> .\n"
         "\n"
     ;
     
@@ -245,13 +253,11 @@ void make_ttl(string path_prefix, const string *data_dir)
         classes[name] = "lv2:" + name;
     }
     classes["SynthesizerPlugin"] = "lv2:InstrumentPlugin";
-        
-    string plugin_uri_prefix = "http://calf.sourceforge.net/plugins/";
 
     string gui_header;
     
 #if USE_LV2_GUI
-    string gtkgui_uri = "<http://calf.sourceforge.net/plugins/gui/gtk2-gui>";
+    string gtkgui_uri = "<" + plugin_uri_prefix + "gui/gtk2-gui>";
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    lv2:extensionData uiext:idleInterface ,\n"
@@ -277,7 +283,14 @@ void make_ttl(string path_prefix, const string *data_dir)
         string uri = string("<" + unquoted_uri + ">");
         id_to_info[pi->get_id()] = make_pair(lpi.label, uri);
         string ttl;
-        ttl = "@prefix : <" + unquoted_uri + "#> .\n" + header + gui_header;
+        ttl = "@prefix : <" + unquoted_uri + "#> .\n";
+        ttl += "@prefix project: <" + unquoted_uri + "/project#> .\n";
+        ttl += header + gui_header;
+        ttl += "project:project\n"
+            "    a doap:Project ;\n"
+            "    doap:maintainer <http://calf-studio-gear.org/team> ;\n"
+            "    doap:name \"" + string(lpi.name) + "\" .\n"
+            "\n";
 
 #if USE_LV2_GUI
         for (int j = 0; j < pi->get_param_count(); j++)
@@ -300,6 +313,11 @@ void make_ttl(string path_prefix, const string *data_dir)
                 "    lv2:symbol \"in\" ;\n"
                 "    rdfs:label \"Input\" .\n\n";
         }
+        if(pi->get_output_count() == 1) {
+            ttl += ":out a pg:MonoGroup , pg:OutputGroup ;\n"
+                "    lv2:symbol \"out\" ;\n"
+                "    rdfs:label \"Output\" .\n\n";
+        }
         if(pi->get_output_count() >= 2) {
             ttl += ":out a pg:StereoGroup , pg:OutputGroup ;\n"
                 "    lv2:symbol \"out\" ;\n"
@@ -309,12 +327,12 @@ void make_ttl(string path_prefix, const string *data_dir)
         ttl += uri;
         
         if (classes.count(lpi.plugin_type))
-            ttl += " a " + classes[lpi.plugin_type]+" ;\n";
+            ttl += " a lv2:Plugin, " + classes[lpi.plugin_type]+" ;\n";
         else
             ttl += " a lv2:Plugin ;\n";
             
-        ttl += "    doap:name \""+string(lpi.name)+"\" ;\n";
-        ttl += "    doap:maintainer [ foaf:name \""+string(lpi.maker)+"\" ; ] ;\n";
+        ttl += "    doap:name \"" + string(lpi.name) + "\" ;\n";
+        ttl += "    lv2:project project:project ;\n";
 
 #if USE_LV2_GUI
         ttl += "    uiext:ui " + gtkgui_uri + " ;\n";
@@ -423,10 +441,12 @@ void make_ttl(string path_prefix, const string *data_dir)
         if (!preset_data.count(ilm->second.first))
             presets_ttl = presets_ttl_head;
         
-        string uri = "<http://calf.sourceforge.net/factory_presets#"
+        string uri = "<http://calf-studio-gear.org/factory_presets#"
             + pr.plugin + "_" + pr.get_safe_name()
             + ">";
-        ttl += ilm->second.second + " lv2p:hasPreset\n    " + uri + " .\n";
+        ttl += uri + " a lv2p:Preset ;\n"
+            "    lv2:appliesTo " + ilm->second.second + " ;\n"
+            "    rdfs:seeAlso <presets-" + pr.plugin + ".ttl> .\n";
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
