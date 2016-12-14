@@ -681,7 +681,7 @@ struct saturator_metadata: public plugin_metadata<saturator_metadata>
            STEREO_VU_METER_PARAMS,
            param_mix, param_drive, param_blend,
            param_lp_pre_freq, param_hp_pre_freq, param_lp_post_freq, param_hp_post_freq,
-           param_p_freq, param_p_level, param_p_q, param_count };
+           param_p_freq, param_p_level, param_p_q, param_pre, param_post, param_count };
     PLUGIN_NAME_ID_LABEL("saturator", "saturator", "Saturator")
 };
 /// Markus's Exciter - metadata

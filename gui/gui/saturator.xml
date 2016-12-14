@@ -30,32 +30,46 @@
         <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
     </table>
     <hbox>
+        <label/>
         <hbox>
             <label text="Tape" />
-            <hscale param="blend" />
+            <vbox>
+                <label param="blend" />
+                <knob param="blend" type="1" size="4" ticks="-10 -5 0 5 10" />
+                <value param="blend" />
+            </vbox>
             <label text="Tube" />
         </hbox>
+        <label/>
         <vbox>
             <label param="drive" />
             <knob param="drive" size="5" ticks="0.1 1 2 3 4 5 6 7 8 9 10" />
             <value param="drive" />
-        </vbox>    
-        <vbox>
-            <label param="mix" />
-            <knob param="mix" size="3" ticks="0 0.5 1" />
-            <value param="mix" />
-        </vbox>
+        </vbox>  
+        <label/>
+        <hbox>  
+            <label text="Dry" />
+            <vbox>
+                <label param="mix" />
+                <knob param="mix" size="4" ticks="0 0.5 1" />
+                <value param="mix" />
+            </vbox>
+            <label text="Wet" />
+        </hbox>
+        <label/>
     </hbox>
     <hbox spacing="8">
         <frame label="Pre Filter">
-            <hbox homogeneous="1" spacing="10">
+            <hbox homogeneous="0" spacing="3">
+                <label/>
+                <toggle param="pre" size="2" />
                 <vbox>
-                    <label param="hp_pre_freq" />
+                    <label text="HP" />
                     <knob param="hp_pre_freq" ticks="10 100 1000 20000" />
                     <value param="hp_pre_freq" />
                 </vbox>
                 <vbox>
-                    <label param="lp_pre_freq" />
+                    <label text="LP" />
                     <knob param="lp_pre_freq" type="2" ticks="10 100 1000 20000"/>
                     <value param="lp_pre_freq" />
                 </vbox>
@@ -63,7 +77,7 @@
         </frame>
         
         <frame label="Tone Control">
-            <hbox homogeneous="1" spacing="10">
+            <hbox homogeneous="1" spacing="3">
                 <vbox>
                     <label param="p_freq" attach-x="0" attach-y="0" />
                     <knob param="p_freq" attach-x="1" attach-y="0" ticks="80 800 8000" />
@@ -83,17 +97,19 @@
         </frame>
         
         <frame label="Post Filter">
-            <hbox homogeneous="1" spacing="10">
+            <hbox homogeneous="0" spacing="3">
                 <vbox>
-                    <label param="hp_post_freq" />
+                    <label text="HP" />
                     <knob param="hp_post_freq" ticks="10 100 1000 20000" />
                     <value param="hp_post_freq" />
                 </vbox>
                 <vbox>
-                    <label param="lp_post_freq" />
+                    <label text="LP" />
                     <knob param="lp_post_freq" type="2" ticks="10 100 1000 20000" />
                     <value param="lp_post_freq" />
                 </vbox>
+                <toggle param="post" size="2" />
+                <label/>
             </hbox>
         </frame>
     </hbox>

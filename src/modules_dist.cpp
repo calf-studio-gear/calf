@@ -172,19 +172,21 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             
             for (int i = 0; i < c; ++i) {
                 // all pre filters in chain
-                proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
-                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
-
+                if (*params[param_pre] > 0.5) {
+                    proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
+                    proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+                }
                 // ...saturate...
                 proc[i] = dist[i].process(proc[i]);
                 
                 // tone control
                 proc[i] = p[i].process(proc[i]);
-
-                // all post filters in chain
-                proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
-                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
                 
+                // all post filters in chain
+                if (*params[param_post] > 0.5) {
+                    proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
+                    proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+                }
                 //subtract gain
                 proc[i] *= onedivlevelin;
                 
