@@ -75,6 +75,7 @@
             </frame>
         </if>
         
+        <align expand="0" attach-x="0" attach-y="1"><toggle param="lfo" icon="pauseplay" /></align>
         <align expand="0" attach-x="2" attach-y="1"><button param="reset" /></align>
     </table>
 </vbox>

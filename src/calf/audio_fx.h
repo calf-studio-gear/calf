@@ -51,7 +51,7 @@ public:
 class modulation_effect: public audio_effect
 {
 protected:
-    int sample_rate;
+    int sample_rate, lfo_active;
     float rate, wet, dry, odsr;
     gain_smoothing gs_wet, gs_dry;
 public:
@@ -90,7 +90,14 @@ public:
         this->sample_rate = sample_rate;
         this->odsr = 1.0 / sample_rate;
         phase = 0;
+        lfo_active = 1;
         set_rate(get_rate());
+    }
+    int get_lfo_active() const {
+        return lfo_active;
+    }
+    void set_lfo_active(int i) {
+        this->lfo_active = i;
     }
 };
 
@@ -133,7 +140,7 @@ public:
     void set_fb(float fb) {
         this->fb = fb;
     }
-
+    
     virtual void setup(int sample_rate) {
         modulation_effect::setup(sample_rate);
         reset();
@@ -205,7 +212,8 @@ public:
         int mds = min_delay_samples + mod_depth_samples * 1024 + 2*65536;
         int mdepth = mod_depth_samples;
         for (int i=0; i<nsamples; i++) {
-            phase += dphase;
+            if (lfo_active)
+                phase += dphase;
             unsigned int ipart = phase.ipart();
 
             float in = *buf_in++ * level_in;
@@ -233,7 +241,7 @@ protected:
     simple_delay<MaxDelay,T> delay;
     float fb;
     int last_delay_pos, last_actual_delay_pos;
-    int ramp_pos, ramp_delay_pos;
+    int ramp_pos, ramp_delay_pos, lfo;
 public:
     simple_flanger()
     : fb(0) {}
@@ -289,8 +297,9 @@ public:
                 T swet = fd * this->wet;
                 *buf_out++ = (sdry + (active ? swet : 0)) * level_out;
                 this->delay.put(in+fb*fd);
-
-                this->phase += this->dphase;
+                
+                if (this->lfo_active)
+                    this->phase += this->dphase;
                 ipart = this->phase.ipart();
                 lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
                 delay_pos = mds + (mdepth * lfo >> 6);
@@ -307,8 +316,9 @@ public:
                 T swet = fd * this->gs_wet.get();
                 *buf_out++ = (sdry + (active ? swet : 0)) * level_out;
                 this->delay.put(in+fb*fd);
-
-                this->phase += this->dphase;
+                
+                if (this->lfo_active)
+                    this->phase += this->dphase;
                 ipart = this->phase.ipart();
                 lfo = phase.lerp_by_fract_int<int, 14, int>(this->sine.data[ipart], this->sine.data[ipart+1]);
                 delay_pos = mds + (mdepth * lfo >> 6);

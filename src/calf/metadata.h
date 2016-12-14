@@ -36,7 +36,7 @@ struct flanger_metadata: public plugin_metadata<flanger_metadata>
 public:
     enum { par_delay, par_depth, par_rate, par_fb, par_stereo, par_reset, par_amount, par_dryamount,
         param_on, param_level_in, param_level_out,
-        STEREO_VU_METER_PARAMS,
+        STEREO_VU_METER_PARAMS, param_lfo,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("flanger", "flanger", "Flanger")
@@ -46,7 +46,7 @@ struct phaser_metadata: public plugin_metadata<phaser_metadata>
 {
     enum { par_freq, par_depth, par_rate, par_fb, par_stages, par_stereo, par_reset, par_amount, par_dryamount,
         param_on, param_level_in, param_level_out,
-        STEREO_VU_METER_PARAMS,
+        STEREO_VU_METER_PARAMS, param_lfo,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     PLUGIN_NAME_ID_LABEL("phaser", "phaser", "Phaser")
@@ -167,7 +167,7 @@ struct multichorus_metadata: public plugin_metadata<multichorus_metadata>
 public:
     enum { par_delay, par_depth, par_rate, par_stereo, par_voices, par_vphase, par_amount, par_dryamount, par_freq, par_freq2, par_q, par_overlap,
         param_on, param_level_in, param_level_out,
-        STEREO_VU_METER_PARAMS,
+        STEREO_VU_METER_PARAMS, param_lfo,
         param_count };
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, rt_capable = true, support_midi = false, require_midi = false };
     PLUGIN_NAME_ID_LABEL("multichorus", "multichorus", "Multi Chorus")

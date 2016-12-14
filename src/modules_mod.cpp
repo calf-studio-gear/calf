@@ -62,12 +62,15 @@ void flanger_audio_module::params_changed()
     float min_delay = *params[par_delay] / 1000.0;
     float mod_depth = *params[par_depth] / 1000.0;
     float fb = *params[par_fb];
+    int lfo_active = *params[param_lfo];
     left.set_dry(dry); right.set_dry(dry);
     left.set_wet(wet); right.set_wet(wet);
     left.set_rate(rate); right.set_rate(rate);
     left.set_min_delay(min_delay); right.set_min_delay(min_delay);
     left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
     left.set_fb(fb); right.set_fb(fb);
+    left.set_lfo_active(lfo_active); right.set_lfo_active(lfo_active);
+    
     float r_phase = *params[par_stereo] * (1.f / 360.f);
     clear_reset = false;
     if (*params[par_reset] >= 0.5) {
@@ -159,6 +162,7 @@ void phaser_audio_module::params_changed()
     float base_frq = *params[par_freq];
     float mod_depth = *params[par_depth];
     float fb = *params[par_fb];
+    int lfo_active = *params[param_lfo];
     int stages = (int)*params[par_stages];
     left.set_dry(dry); right.set_dry(dry);
     left.set_wet(wet); right.set_wet(wet);
@@ -167,6 +171,7 @@ void phaser_audio_module::params_changed()
     left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
     left.set_fb(fb); right.set_fb(fb);
     left.set_stages(stages); right.set_stages(stages);
+    left.set_lfo_active(lfo_active); right.set_lfo_active(lfo_active);
     float r_phase = *params[par_stereo] * (1.f / 360.f);
     clear_reset = false;
     if (*params[par_reset] >= 0.5) {
@@ -484,11 +489,13 @@ void multichorus_audio_module::params_changed()
     float min_delay = *params[par_delay] / 1000.0;
     float mod_depth = *params[par_depth] / 1000.0;
     float overlap = *params[par_overlap];
+    int lfo_active = *params[param_lfo];
     left.set_dry(dry); right.set_dry(dry);
     left.set_wet(wet); right.set_wet(wet);
     left.set_rate(rate); right.set_rate(rate);
     left.set_min_delay(min_delay); right.set_min_delay(min_delay);
     left.set_mod_depth(mod_depth); right.set_mod_depth(mod_depth);
+    left.set_lfo_active(lfo_active); right.set_lfo_active(lfo_active);
     int voices = (int)*params[par_voices];
     left.lfo.set_voices(voices); right.lfo.set_voices(voices);
     left.lfo.set_overlap(overlap);right.lfo.set_overlap(overlap);

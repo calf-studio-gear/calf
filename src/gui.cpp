@@ -609,6 +609,7 @@ image_factory::image_factory (string p) {
     i["toggle_2_void"]            = NULL;
     i["toggle_2_gui"]             = NULL;
     i["toggle_2_connect"]         = NULL;
+    i["toggle_2_pauseplay"]       = NULL;
 }
 image_factory::~image_factory() {
     

@@ -151,8 +151,8 @@ public:
         mdepth = mdepth >> 2;
         T scale = lfo.get_scale();
         for (int i=0; i<nsamples; i++) {
-            phase += dphase;
-            
+            if (lfo_active)
+                phase += dphase;
             float in = *buf_in++ * level_in;
             
             delay.put(in);
@@ -174,7 +174,8 @@ public:
             T sdry = in * gs_dry.get();
             T swet = out * gs_wet.get() * scale;
             *buf_out++ = (sdry + (active ? swet : 0)) * level_out;
-            lfo.step();
+            if (lfo_active)
+                lfo.step();
         }
         post.sanitize();
     }

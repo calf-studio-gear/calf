@@ -115,6 +115,7 @@ CALF_PORT_PROPS(flanger) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo", "LFO" }, \
     {}
 };
 
@@ -138,6 +139,7 @@ CALF_PORT_PROPS(phaser) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo", "LFO" }, \
     {}
 };
 
@@ -392,6 +394,7 @@ CALF_PORT_PROPS(multichorus) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
     METERING_PARAMS
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "lfo", "LFO" }, \
 };
 
 CALF_PLUGIN_INFO(multichorus) = { 0x8501, "MultiChorus", "Calf Multi Chorus", "Calf Studio Gear / Krzysztof Foltman", calf_plugins::calf_copyright_info, "ModulatorPlugin" };
