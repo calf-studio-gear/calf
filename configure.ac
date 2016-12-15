@@ -183,19 +183,19 @@ if test "$OLD_JACK" = "yes"; then
   AC_DEFINE(OLD_JACK, 1, [Old JACK version (with extra nframes argument) is to be used])
 fi
 if test "$LASH_ENABLED" = "yes"; then
-  AC_DEFINE(USE_LASH, 1, "LASH Audio Session Handler client functionality is enabled")
+  AC_DEFINE(USE_LASH, 1, [LASH Audio Session Handler client functionality is enabled])
   if test "$LASH_0_6_FOUND" = "yes"; then
-    AC_DEFINE(USE_LASH_0_6, 1, "Unstable LASH API is enabled")
+    AC_DEFINE(USE_LASH_0_6, 1, [Unstable LASH API is enabled])
   fi
 fi
 if test "$LV2_GUI_ENABLED" = "yes"; then
   AC_DEFINE(USE_LV2_GUI, 1, [GTK+ GUI executable will be used for LV2])
 fi
 if test "$set_enable_experimental" = "yes"; then
-  AC_DEFINE([ENABLE_EXPERIMENTAL], [1], "Experimental features are enabled")
+  AC_DEFINE([ENABLE_EXPERIMENTAL], [1], [Experimental features are enabled])
 fi
 if test "$SORDI_ENABLED" = "yes"; then
-  AC_DEFINE(USE_SORDI, 1, "Sordi sanity checks are enabled")
+  AC_DEFINE(USE_SORDI, 1, [Sordi sanity checks are enabled])
 fi
 ############################################################################################
 # Output directories

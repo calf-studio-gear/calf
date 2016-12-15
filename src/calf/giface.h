@@ -27,7 +27,6 @@
 #include <exception>
 #include <string>
 #include <vector>
-#include <cairo/cairo.h>
 
 namespace osctl {
     struct osc_client;
@@ -158,7 +157,6 @@ struct parameter_properties
 
 struct cairo_iface
 {
-    cairo_t *context;
     int size_x, size_y, pad_x, pad_y;
     virtual void set_source_rgba(float r, float g, float b, float a = 1.f) = 0;
     virtual void set_line_width(float width) = 0;

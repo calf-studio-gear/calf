@@ -35,6 +35,7 @@ plugin_gui::plugin_gui(plugin_gui_widget *_window)
 : last_status_serial_no(0)
 , window(_window)
 {
+    plugin = NULL;
     ignore_stack = 0;
     top_container = NULL;
     param_count = 0;

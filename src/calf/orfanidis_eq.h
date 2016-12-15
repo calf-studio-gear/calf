@@ -87,7 +87,7 @@ class conversions
         if((x >= -db_min_max) && (x < db_min_max - 1))
             return db_min_max + int_x;
     
-        return db_min_max;      
+        return db_min_max;
     }
 
     conversions(){}
@@ -109,7 +109,7 @@ public:
     }
 
     inline eq_double_t fast_lin_2_db(eq_double_t x) {
-        if((x >= lin_gains[0]) && (x < lin_gains[lin_gains.size() - 1])) {  
+        if((x >= lin_gains[0]) && (x < lin_gains[lin_gains.size() - 1])) {
             for (unsigned int i = 0; i < lin_gains.size() - 2; i++)
                 if((x >= lin_gains[i]) && (x < lin_gains[i + 1])) {
                     int int_part = i - db_min_max;
@@ -186,7 +186,7 @@ public:
             freqs_.push_back(band_freqs(fmin, f0, fmax));
         }
         else
-            return invalid_input_data_error;    
+            return invalid_input_data_error;
         return no_error;
     }
 
@@ -731,7 +731,7 @@ public:
     eq_error_t set_eq(freq_grid& fg, filter_type eqt) {
         band_gains_.clear();
         cleanup_filters_array();    
-        filters_.clear();           
+        filters_.clear();
         freq_grid_ = fg;
 
         for(unsigned int i = 0; i < freq_grid_.get_number_of_bands(); i++) {
@@ -868,7 +868,7 @@ public:
 
      eq_error_t sbs_process(eq_single_t *in, eq_single_t *out) {
         eq_error_t err = no_error;
-        eq_single_t acc_out = 0;        
+        eq_single_t acc_out = 0;		
         for(unsigned int j = 0; j < get_number_of_bands(); j++) {
             eq_single_t band_out = 0;
             err = sbs_process_band(j, in, &band_out);
@@ -1006,12 +1006,12 @@ public:
                     current_channel_type_ = none;
                     return invalid_input_data_error;
                 }
-            }   
+            }
         }
         
         //Get current filter index
         current_gain_db_ = 0;
-        current_filter_index_ = get_flt_index(current_gain_db_);    
+        current_filter_index_ = get_flt_index(current_gain_db_);	
         
         return no_error;
     }
@@ -1060,7 +1060,7 @@ public:
     
     eq_error_t set_eq(const freq_grid& fg, filter_type ft) {
         cleanup_channels_array();
-        channels_.clear();          
+        channels_.clear();
         freq_grid_ = fg;
 
         for(unsigned int i = 0; i < freq_grid_.get_number_of_bands(); i++) {
@@ -1089,43 +1089,42 @@ public:
     }
     
     eq_error_t change_gains(std::vector<eq_single_t> band_gains) {
-        if(channels_.size() == band_gains.size())
+        if(channels_.size() == band_gains.size()) {
             for(unsigned int j = 0; j < channels_.size(); j++)
                 channels_[j]->set_gain_db(conv_.fast_lin_2_db(band_gains[j]));
-        else
+            return no_error;
+        } else
             return invalid_input_data_error;
         
-        return no_error;
     }
     
     eq_error_t change_gains_db(std::vector<eq_single_t> band_gains) {
-        if(channels_.size() == band_gains.size())
+        if(channels_.size() == band_gains.size()) {
             for(unsigned int j = 0; j < channels_.size(); j++)
                 channels_[j]->set_gain_db(band_gains[j]);
-        else
+            return no_error;
+        } else
             return invalid_input_data_error;
         
-        return no_error;
     }
     
     eq_error_t change_band_gain(unsigned int band_number, 
         eq_single_t band_gain) {
-        if(band_number < channels_.size())
-           channels_[band_number]->set_gain_db(conv_.fast_lin_2_db(band_gain));
-        else
+        if(band_number < channels_.size()) {
+            channels_[band_number]->set_gain_db(conv_.fast_lin_2_db(band_gain));
+            return no_error;
+        } else
             return invalid_input_data_error;
-
-        return no_error;
     }
     
     eq_error_t change_band_gain_db(unsigned int band_number, 
         eq_single_t band_gain) {
-        if(band_number < channels_.size())
-                channels_[band_number]->set_gain_db(band_gain);
-            else
-                return invalid_input_data_error;
-
+        if(band_number < channels_.size()) {
+            channels_[band_number]->set_gain_db(band_gain);
             return no_error;
+        } else
+            return invalid_input_data_error;
+
     }
     
     eq_error_t sbs_process_band(unsigned int band_number, 
@@ -1135,7 +1134,7 @@ public:
         else
             return invalid_input_data_error; 
             
-        return no_error;    
+        return no_error;
     }
     
     eq_error_t sbs_process(eq_single_t *in, eq_single_t *out) {
