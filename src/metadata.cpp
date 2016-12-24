@@ -30,8 +30,8 @@ using namespace calf_plugins;
 using namespace std;
 
 const char *calf_plugins::calf_copyright_info = "(C) 2001-2013 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
-const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8" };
-const char *mb_crossover_filter_choices[] = { "LR4", "LR8" };
+const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8", "LR4+8", "LR8+4+8"};
+const char *mb_crossover_filter_choices[] = { "LR4", "LR8", "LR4+8", "LR8+4+8"};
 
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
