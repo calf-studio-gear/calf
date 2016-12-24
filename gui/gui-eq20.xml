@@ -1,0 +1,389 @@
+<vbox>
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="3" attach-y="0" expand-x="0" />
+        <toggle param="bypass" attach-x="3" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
+        
+        <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
+    </table>
+
+    <table expand-y="0" expand-x="0" spacing="4" rows="1" cols="2">
+        <vbox expand-x="0" fill="0" attach-x="0" attach-y="0">
+            <frame label="Highpass">
+                <vbox spacing="3">
+                    <combo param="hp_active"/>
+                    <label/>
+                    <label param="hp_freq" text="Frequency"/>
+                    <knob param="hp_freq" size="3"/>
+                    <value param="hp_freq" />
+                    <label/>
+                    <label param="hp_mode" text="Rolloff"/>
+                    <combo param="hp_mode" />
+                </vbox>
+            </frame>
+            <frame label="Lowshelf">
+                <vbox>
+                    <combo size="1" param="ls_active" />
+                    <label/>
+                    <label param="ls_freq" text="Frequency"/>
+                    <knob param="ls_freq"/>
+                    <value param="ls_freq" align-y="0"/>
+                    <label/>
+                    <label param="ls_level" text="Level"/>
+                    <knob param="ls_level" type="1"/>
+                    <value param="ls_level" />
+                </vbox>
+            </frame>
+        </vbox>
+
+        <if cond="directlink">
+            <frame label="Frequency Response" attach-x="1" attach-y="0">
+                <table cols="3" rows="1">
+                    <line-graph attach-x="1" attach-y="1" refresh="1" height="350" param="ls_freq"
+            expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="20" 
+            handle1-x="hp_freq" style1="1" label1="HP" active1="hp_active" 
+            handle2-x="ls_freq" handle2-y="ls_level" label2="LS" active2="ls_active" 
+            handle3-x="p1_freq" handle3-y="p1_level" handle3-z="p1_q" label3="#1" active3="p1_active" 
+            handle4-x="p2_freq" handle4-y="p2_level" handle4-z="p2_q" label4="#2" active4="p2_active" 
+            handle5-x="p3_freq" handle5-y="p3_level" handle5-z="p3_q" label5="#3" active5="p3_active" 
+            handle6-x="p4_freq" handle6-y="p4_level" handle6-z="p4_q" label6="#4" active6="p4_active" 
+            handle7-x="p5_freq" handle7-y="p5_level" handle7-z="p5_q" label7="#5" active7="p5_active" 
+            handle8-x="p6_freq" handle8-y="p6_level" handle8-z="p6_q" label8="#6" active8="p6_active" 
+            handle9-x="p7_freq" handle9-y="p7_level" handle9-z="p7_q" label9="#7" active9="p7_active" 
+            handle10-x="p8_freq" handle10-y="p8_level" handle10-z="p8_q" label10="#8" active10="p8_active" 
+            handle11-x="p9_freq" handle11-y="p9_level" handle11-z="p9_q" label11="#9" active11="p9_active" 
+            handle12-x="p10_freq" handle12-y="p10_level" handle12-z="p10_q" label12="#10" active12="p10_active" 
+            handle13-x="p11_freq" handle13-y="p11_level" handle13-z="p11_q" label13="#11" active13="p11_active" 
+            handle14-x="p12_freq" handle14-y="p12_level" handle14-z="p12_q" label14="#12" active14="p12_active" 
+            handle15-x="p13_freq" handle15-y="p13_level" handle15-z="p13_q" label15="#9" active15="p13_active" 
+            handle16-x="p14_freq" handle16-y="p14_level" handle16-z="p14_q" label16="#10" active16="p14_active" 
+            handle17-x="p15_freq" handle17-y="p15_level" handle17-z="p15_q" label17="#11" active17="p15_active" 
+            handle18-x="p16_freq" handle18-y="p16_level" handle18-z="p16_q" label18="#12" active18="p16_active" 
+            handle19-x="hs_freq" handle19-y="hs_level" label19="HS" active19="hs_active" 
+            handle20-x="lp_freq" style20="4" label20="LP" active20="lp_active"/>
+
+                    <vbox attach-x="2" attach-y="1" spacing="3" expand-x="0" fill-x="0">
+                        <label text="Zoom"/>
+                        <vscale param="zoom" inverted="1"/>
+                        <value param="zoom"/>
+                    </vbox>
+                    <align attach-x="1" attach-y="0" align-x="1.0">
+                        <hbox expand="0" fill="0" spacing="30">
+                            <hbox expand="0" fill="0" spacing="10">
+                                <label text="Individual Graphs"/>
+                                <toggle size="1" param="individuals"/>
+                            </hbox>
+                            <hbox expand="0" fill="0" spacing="10">
+                                <label text="Analyzer"/>
+                                <toggle size="1" param="analyzer"/>
+                                <combo param="analyzer_mode"/>
+                            </hbox>
+                        </hbox>
+                    </align>
+                </table>
+            </frame>
+        </if>
+
+        <vbox expand-x="0" fill="0" attach-x="2" attach-y="0">
+            <frame label="Lowpass">
+                <vbox spacing="3">
+                    <combo param="lp_active"/>
+                    <label/>
+                    <label param="lp_freq" text="Frequency"/>
+                    <knob param="lp_freq" size="3" />
+                    <value param="lp_freq" />
+                    <label/>
+                    <label param="lp_mode" text="Rolloff"/>
+                    <combo param="lp_mode" />
+                </vbox>
+            </frame>
+            <frame label="Highshelf">
+                <vbox>
+                    <combo size="1" param="hs_active" />
+                    <label/>
+                    <label param="hs_freq" text="Frequency"/>
+                    <knob param="hs_freq"/>
+                    <value param="hs_freq" align-y="0"/>
+                    <label/>
+                    <label param="hs_level" text="Level"/>
+                    <knob param="hs_level" type="1"/>
+                    <value param="hs_level" />
+                </vbox>
+            </frame>
+        </vbox>
+    </table>
+    
+    <hbox>
+        <frame label="Parametrics" attach-x="1" attach-y="1">
+            <table rows="4" cols="17">
+                <label text="Freq" attach-x="0" attach-y="1" />
+                <label text="Level" attach-x="0" attach-y="2" />
+                <label text="Q" attach-x="0" attach-y="3" />
+                <label text="Active" attach-x="0" attach-y="0" />
+                
+                <vbox attach-x="1" attach-y="1">
+                    <knob param="p1_freq" />
+                    <value param="p1_freq" />
+                </vbox>
+                <vbox attach-x="1" attach-y="2">
+                    <knob param="p1_level" type="1" />
+                    <value param="p1_level" />
+                </vbox>
+                <vbox attach-x="1" attach-y="3">
+                    <knob param="p1_q" />
+                    <value param="p1_q" />
+                </vbox>
+                <vbox attach-x="1" attach-y="0">
+                    <combo size="1" param="p1_active" />
+                </vbox>
+                <vbox attach-x="2" attach-y="1">
+                    <knob param="p2_freq" />
+                    <value param="p2_freq" />
+                </vbox>
+                <vbox attach-x="2" attach-y="2">
+                    <knob param="p2_level" type="1" />
+                    <value param="p2_level" />
+                </vbox>
+                <vbox attach-x="2" attach-y="3">
+                    <knob param="p2_q" />
+                    <value param="p2_q" />
+                </vbox>
+                <vbox attach-x="2" attach-y="0">
+                    <combo size="1" param="p2_active" />
+                </vbox>
+                <vbox attach-x="3" attach-y="1">
+                    <knob param="p3_freq" />
+                    <value param="p3_freq" />
+                </vbox>
+                <vbox attach-x="3" attach-y="2">
+                    <knob param="p3_level" type="1" />
+                    <value param="p3_level" />
+                </vbox>
+                <vbox attach-x="3" attach-y="3">
+                    <knob param="p3_q" />
+                    <value param="p3_q" />
+                </vbox>
+                <vbox attach-x="3" attach-y="0">
+                    <combo size="1" param="p3_active" />
+                </vbox>
+                <vbox attach-x="4" attach-y="1">
+                    <knob param="p4_freq" />
+                    <value param="p4_freq" />
+                </vbox>
+                <vbox attach-x="4" attach-y="2">
+                    <knob param="p4_level" type="1" />
+                    <value param="p4_level" />
+                </vbox>
+                <vbox attach-x="4" attach-y="3">
+                    <knob param="p4_q" />
+                    <value param="p4_q" />
+                </vbox>
+                <vbox  attach-x="4" attach-y="0">
+                    <combo size="1" param="p4_active" />
+                </vbox>
+                <vbox attach-x="5" attach-y="1">
+                    <knob param="p5_freq" />
+                    <value param="p5_freq" />
+                </vbox>
+                <vbox attach-x="5" attach-y="2">
+                    <knob param="p5_level" type="1" />
+                    <value param="p5_level" />
+                </vbox>
+                <vbox attach-x="5" attach-y="3">
+                    <knob param="p5_q" />
+                    <value param="p5_q" />
+                </vbox>
+                <vbox  attach-x="5" attach-y="0">
+                    <combo size="1" param="p5_active" />
+                </vbox>
+                <vbox attach-x="6" attach-y="1">
+                    <knob param="p6_freq" />
+                    <value param="p6_freq" />
+                </vbox>
+                <vbox attach-x="6" attach-y="2">
+                    <knob param="p6_level" type="1" />
+                    <value param="p6_level" />
+                </vbox>
+                <vbox attach-x="6" attach-y="3">
+                    <knob param="p6_q" />
+                    <value param="p6_q" />
+                </vbox>
+                <vbox  attach-x="6" attach-y="0">
+                    <combo size="1" param="p6_active" />
+                </vbox>
+                <vbox attach-x="7" attach-y="1">
+                    <knob param="p7_freq" />
+                    <value param="p7_freq" />
+                </vbox>
+                <vbox attach-x="7" attach-y="2">
+                    <knob param="p7_level" type="1" />
+                    <value param="p7_level" />
+                </vbox>
+                <vbox attach-x="7" attach-y="3">
+                    <knob param="p7_q" />
+                    <value param="p7_q" />
+                </vbox>
+                <vbox  attach-x="7" attach-y="0">
+                    <combo size="1" param="p7_active" />
+                </vbox>
+                <vbox attach-x="8" attach-y="1">
+                    <knob param="p8_freq" />
+                    <value param="p8_freq" />
+                </vbox>
+                <vbox attach-x="8" attach-y="2">
+                    <knob param="p8_level" type="1" />
+                    <value param="p8_level" />
+                </vbox>
+                <vbox attach-x="8" attach-y="3">
+                    <knob param="p8_q" />
+                    <value param="p8_q" />
+                </vbox>
+                <vbox  attach-x="8" attach-y="0">
+                    <combo size="1" param="p8_active" />
+                </vbox>
+                <vbox attach-x="9" attach-y="1">
+                    <knob param="p9_freq" />
+                    <value param="p9_freq" />
+                </vbox>
+                <vbox attach-x="9" attach-y="2">
+                    <knob param="p9_level" type="1" />
+                    <value param="p9_level" />
+                </vbox>
+                <vbox attach-x="9" attach-y="3">
+                    <knob param="p9_q" />
+                    <value param="p9_q" />
+                </vbox>
+                <vbox  attach-x="9" attach-y="0">
+                    <combo size="1" param="p9_active" />
+                </vbox>
+                <vbox attach-x="10" attach-y="1">
+                    <knob param="p10_freq" />
+                    <value param="p10_freq" />
+                </vbox>
+                <vbox attach-x="10" attach-y="2">
+                    <knob param="p10_level" type="1" />
+                    <value param="p10_level" />
+                </vbox>
+                <vbox attach-x="10" attach-y="3">
+                    <knob param="p10_q" />
+                    <value param="p10_q" />
+                </vbox>
+                <vbox  attach-x="10" attach-y="0">
+                    <combo size="1" param="p10_active" />
+                </vbox>
+                <vbox attach-x="11" attach-y="1">
+                    <knob param="p11_freq" />
+                    <value param="p11_freq" />
+                </vbox>
+                <vbox attach-x="11" attach-y="2">
+                    <knob param="p11_level" type="1" />
+                    <value param="p11_level" />
+                </vbox>
+                <vbox attach-x="11" attach-y="3">
+                    <knob param="p11_q" />
+                    <value param="p11_q" />
+                </vbox>
+                <vbox  attach-x="11" attach-y="0">
+                    <combo size="1" param="p11_active" />
+                </vbox>
+                <vbox attach-x="12" attach-y="1">
+                    <knob param="p12_freq" />
+                    <value param="p12_freq" />
+                </vbox>
+                <vbox attach-x="12" attach-y="2">
+                    <knob param="p12_level" type="1" />
+                    <value param="p12_level" />
+                </vbox>
+                <vbox attach-x="12" attach-y="3">
+                    <knob param="p12_q" />
+                    <value param="p12_q" />
+                </vbox>
+                <vbox  attach-x="12" attach-y="0">
+                    <combo size="1" param="p12_active" />
+                </vbox>
+                <vbox attach-x="13" attach-y="1">
+                    <knob param="p13_freq" />
+                    <value param="p13_freq" />
+                </vbox>
+                <vbox attach-x="13" attach-y="2">
+                    <knob param="p13_level" type="1" />
+                    <value param="p13_level" />
+                </vbox>
+                <vbox attach-x="13" attach-y="3">
+                    <knob param="p13_q" />
+                    <value param="p13_q" />
+                </vbox>
+                <vbox attach-x="13" attach-y="0">
+                    <combo size="1" param="p13_active" />
+                </vbox>
+                <vbox attach-x="14" attach-y="1">
+                    <knob param="p14_freq" />
+                    <value param="p14_freq" />
+                </vbox>
+                <vbox attach-x="14" attach-y="2">
+                    <knob param="p14_level" type="1" />
+                    <value param="p14_level" />
+                </vbox>
+                <vbox attach-x="14" attach-y="3">
+                    <knob param="p14_q" />
+                    <value param="p14_q" />
+                </vbox>
+                <vbox  attach-x="14" attach-y="0">
+                    <combo size="1" param="p14_active" />
+                </vbox>
+                <vbox attach-x="15" attach-y="1">
+                    <knob param="p15_freq" />
+                    <value param="p15_freq" />
+                </vbox>
+                <vbox attach-x="15" attach-y="2">
+                    <knob param="p15_level" type="1" />
+                    <value param="p15_level" />
+                </vbox>
+                <vbox attach-x="15" attach-y="3">
+                    <knob param="p15_q" />
+                    <value param="p15_q" />
+                </vbox>
+                <vbox  attach-x="15" attach-y="0">
+                    <combo size="1" param="p15_active" />
+                </vbox>
+                <vbox attach-x="16" attach-y="1">
+                    <knob param="p16_freq" />
+                    <value param="p16_freq" />
+                </vbox>
+                <vbox attach-x="16" attach-y="2">
+                    <knob param="p16_level" type="1" />
+                    <value param="p16_level" />
+                </vbox>
+                <vbox attach-x="16" attach-y="3">
+                    <knob param="p16_q" />
+                    <value param="p16_q" />
+                </vbox>
+                <vbox  attach-x="16" attach-y="0">
+                    <combo size="1" param="p16_active" />
+                </vbox>
+
+            </table>
+        </frame>
+    </hbox>
+</vbox>

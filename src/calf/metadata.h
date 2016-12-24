@@ -436,6 +436,37 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
     enum { PeakBands = 8, first_graph_param = param_hp_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("equalizer12band", "eq12", "Equalizer 12 Band")
 };
+/// Markus's 20-band EQ - metadata
+struct equalizer20band_metadata: public plugin_metadata<equalizer20band_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_hp_active, param_hp_freq, param_hp_mode,
+           param_lp_active, param_lp_freq, param_lp_mode,
+           param_ls_active, param_ls_level, param_ls_freq,
+           param_hs_active, param_hs_level, param_hs_freq,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_p9_active, param_p9_level, param_p9_freq, param_p9_q,
+           param_p10_active, param_p10_level, param_p10_freq, param_p10_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_count };
+    enum { PeakBands = 16, first_graph_param = param_hp_active, last_graph_param = param_p16_q };
+    PLUGIN_NAME_ID_LABEL("equalizer20band", "eq20", "Equalizer 20 Band")
+};
 /// 30-band EQ - metadata
 struct equalizer30band_metadata: public plugin_metadata<equalizer30band_metadata>
 {

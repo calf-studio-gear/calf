@@ -504,6 +504,7 @@ float equalizerNband_audio_module<BaseClass, has_lphp, has_lshs>::freq_gain(int 
 template class equalizerNband_audio_module<equalizer5band_metadata, false, true>;
 template class equalizerNband_audio_module<equalizer8band_metadata, true, true>;
 template class equalizerNband_audio_module<equalizer12band_metadata, true, true>;
+template class equalizerNband_audio_module<equalizer20band_metadata, true, true>;
 template class equalizerNband_audio_module<equalizer58band_metadata, false, false>;
 
 /**********************************************************************

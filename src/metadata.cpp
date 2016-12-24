@@ -852,6 +852,37 @@ CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(equalizer20band) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(equalizer20band) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    LPHP_PARAMS
+    SHELF_PARAMS
+    EQ_BAND_PARAMS(1, 30)
+    EQ_BAND_PARAMS(2, 60)
+    EQ_BAND_PARAMS(3, 100)
+    EQ_BAND_PARAMS(4, 120)
+    EQ_BAND_PARAMS(5, 200)
+    EQ_BAND_PARAMS(6, 400)
+    EQ_BAND_PARAMS(7, 600)
+    EQ_BAND_PARAMS(8, 800)
+    EQ_BAND_PARAMS(9, 1000)
+    EQ_BAND_PARAMS(10, 1500)
+    EQ_BAND_PARAMS(11, 2000)
+    EQ_BAND_PARAMS(12, 4000)
+    EQ_BAND_PARAMS(13, 8000)
+    EQ_BAND_PARAMS(14, 10000)
+    EQ_BAND_PARAMS(15, 12000)
+    EQ_BAND_PARAMS(16, 16000)
+    EQ_DISPLAY_PARAMS
+    {}
+};
+
+CALF_PLUGIN_INFO(equalizer20band) = { 0x8513, "Equalizer20Band", "Calf Equalizer 20 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 #define GRAPHICEQ_BAND_PARAMS(band) \
     {           0, -1, 1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain" #band, "Gain " #band },\
     {           33, 10, 25000, 0,   PF_INT | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL,  NULL, "freq" #band, "Freq " #band },\

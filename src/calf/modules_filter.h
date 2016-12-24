@@ -99,6 +99,7 @@ public:
 typedef equalizerNband_audio_module<equalizer5band_metadata,  false, true> equalizer5band_audio_module;
 typedef equalizerNband_audio_module<equalizer8band_metadata,  true, true>  equalizer8band_audio_module;
 typedef equalizerNband_audio_module<equalizer12band_metadata, true, true>  equalizer12band_audio_module;
+typedef equalizerNband_audio_module<equalizer20band_metadata, true, true>  equalizer20band_audio_module;
 typedef equalizerNband_audio_module<equalizer58band_metadata, false, false>  equalizer58band_audio_module;
 
 /**********************************************************************
