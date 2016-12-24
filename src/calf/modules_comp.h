@@ -106,7 +106,7 @@ public:
 
 class expander_audio_module {
 private:
-    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
+    float linSlopeL, linSlopeR, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
     float compressedKneeStop, adjKneeStart, range, thres, attack_coeff, release_coeff;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_gate;
     float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;

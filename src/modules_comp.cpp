@@ -517,7 +517,8 @@ expander_audio_module::expander_audio_module()
     old_mute      = 0.f;
     old_trigger   = 0.f;
     old_stereo_link = 0.f;
-    linSlope      = 0.f;
+    linSlopeL     = 0.f;
+    linSlopeR     = 0.f;
     linKneeStop   = 0.f;
     redraw_graph  = true;
 }
@@ -568,22 +569,52 @@ void expander_audio_module::process(float &left, float &right, const float *det_
     if(bypass < 0.5f) {
         // this routine is mainly copied from Damien's expander module based on Thor's compressor
         bool rms = (detection == 0);
-        bool average = (stereo_link == 0);
-        float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
-        if(rms) absample *= absample;
+        float gainL = 1.f;
+        float gainR = 1.f;
 
-        dsp::sanitize(linSlope);
+        if (stereo_link >= 0) {
+            bool average = (stereo_link == 0);
+            float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
+            if(rms) absample *= absample;
 
-        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
-        float gain = 1.f;
-        if(linSlope > 0.f) {
-            gain = output_gain(linSlope, rms);
+            dsp::sanitize(linSlopeL);
+
+            linSlopeL += (absample - linSlopeL) * (absample > linSlopeL ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainL * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
+        } else {
+            float absampleL = fabs(*det_left);
+            float absampleR = fabs(*det_right);
+            if (rms) {
+                absampleL *= absampleL;
+                absampleR *= absampleR;
+            }
+
+            dsp::sanitize(linSlopeL);
+            dsp::sanitize(linSlopeR);
+
+            linSlopeL += (absampleL - linSlopeL) * (absampleL > linSlopeL ? attack_coeff : release_coeff);
+            linSlopeR += (absampleR - linSlopeR) * (absampleR > linSlopeR ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+            if(linSlopeR > 0.f) {
+                gainR = output_gain(linSlopeR, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainR * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
         }
-        left *= gain * makeup;
-        right *= gain * makeup;
-        meter_out = std::max(fabs(left), fabs(right));
-        meter_gate = gain;
-        detected = linSlope;
     }
 }
 
