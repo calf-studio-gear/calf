@@ -40,7 +40,7 @@ namespace calf_plugins {
  * EQUALIZER N BAND by Markus Schmidt and Krzysztof Foltman
 **********************************************************************/
 
-template<class BaseClass, bool has_lphp>
+template<class BaseClass, bool has_lphp, bool has_lshs>
 class equalizerNband_audio_module: public audio_module<BaseClass>, public frequency_response_line_graph {
 public:
     typedef audio_module<BaseClass> AM;
@@ -96,9 +96,9 @@ public:
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
 };
 
-typedef equalizerNband_audio_module<equalizer5band_metadata,  false> equalizer5band_audio_module;
-typedef equalizerNband_audio_module<equalizer8band_metadata,  true>  equalizer8band_audio_module;
-typedef equalizerNband_audio_module<equalizer12band_metadata, true>  equalizer12band_audio_module;
+typedef equalizerNband_audio_module<equalizer5band_metadata,  false, true> equalizer5band_audio_module;
+typedef equalizerNband_audio_module<equalizer8band_metadata,  true, true>  equalizer8band_audio_module;
+typedef equalizerNband_audio_module<equalizer12band_metadata, true, true>  equalizer12band_audio_module;
 
 /**********************************************************************
  * EQUALIZER 30 BAND
