@@ -407,6 +407,43 @@ public:
 };
 
 /**********************************************************************
+ * MULTIBAND SOFT by Adriano Moura
+**********************************************************************/
+
+class multibandsoft_audio_module: public audio_module<multibandsoft_metadata>, public frequency_response_line_graph {
+private:
+    typedef multibandsoft_audio_module AM;
+    static const int strips = 12;
+    bool solo[strips];
+    float xout[strips*2], xin[2];
+    bool no_solo;
+    float meter_inL, meter_inR;
+    expander_audio_module gate[strips];
+    dsp::crossover crossover;
+    int mode, page, fast, bypass_;
+    mutable int redraw;
+    vumeters meters;
+public:
+    uint32_t srate;
+    bool is_active;
+    multibandsoft_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = param_attack2 - param_attack1 };
+    float * buffer;
+    unsigned int pos;
+    unsigned int buffer_size;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    const expander_audio_module *get_strip_by_param_index(int index) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+/**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt
 **********************************************************************/
 
