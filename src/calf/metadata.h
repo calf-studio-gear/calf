@@ -518,6 +518,79 @@ struct equalizer30band_metadata: public plugin_metadata<equalizer30band_metadata
 
     PLUGIN_NAME_ID_LABEL("equalizer30band", "eq30", "Equalizer 30 Band")
 };
+/// Markus's 58-band EQ - metadata
+struct equalizer58band_metadata: public plugin_metadata<equalizer58band_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_p9_active, param_p9_level, param_p9_freq, param_p9_q,
+           param_p10_active, param_p10_level, param_p10_freq, param_p10_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_p17_active, param_p17_level, param_p17_freq, param_p17_q,
+           param_p18_active, param_p18_level, param_p18_freq, param_p18_q,
+           param_p19_active, param_p19_level, param_p19_freq, param_p19_q,
+           param_p20_active, param_p20_level, param_p20_freq, param_p20_q,
+           param_p21_active, param_p21_level, param_p21_freq, param_p21_q,
+           param_p22_active, param_p22_level, param_p22_freq, param_p22_q,
+           param_p23_active, param_p23_level, param_p23_freq, param_p23_q,
+           param_p24_active, param_p24_level, param_p24_freq, param_p24_q,
+           param_p25_active, param_p25_level, param_p25_freq, param_p25_q,
+           param_p26_active, param_p26_level, param_p26_freq, param_p26_q,
+           param_p27_active, param_p27_level, param_p27_freq, param_p27_q,
+           param_p28_active, param_p28_level, param_p28_freq, param_p28_q,
+           param_p29_active, param_p29_level, param_p29_freq, param_p29_q,
+           param_p30_active, param_p30_level, param_p30_freq, param_p30_q,
+           param_p31_active, param_p31_level, param_p31_freq, param_p31_q,
+           param_p32_active, param_p32_level, param_p32_freq, param_p32_q,
+           param_p33_active, param_p33_level, param_p33_freq, param_p33_q,
+           param_p34_active, param_p34_level, param_p34_freq, param_p34_q,
+           param_p35_active, param_p35_level, param_p35_freq, param_p35_q,
+           param_p36_active, param_p36_level, param_p36_freq, param_p36_q,
+           param_p37_active, param_p37_level, param_p37_freq, param_p37_q,
+           param_p38_active, param_p38_level, param_p38_freq, param_p38_q,
+           param_p39_active, param_p39_level, param_p39_freq, param_p39_q,
+           param_p40_active, param_p40_level, param_p40_freq, param_p40_q,
+           param_p41_active, param_p41_level, param_p41_freq, param_p41_q,
+           param_p42_active, param_p42_level, param_p42_freq, param_p42_q,
+           param_p43_active, param_p43_level, param_p43_freq, param_p43_q,
+           param_p44_active, param_p44_level, param_p44_freq, param_p44_q,
+           param_p45_active, param_p45_level, param_p45_freq, param_p45_q,
+           param_p46_active, param_p46_level, param_p46_freq, param_p46_q,
+           param_p47_active, param_p47_level, param_p47_freq, param_p47_q,
+           param_p48_active, param_p48_level, param_p48_freq, param_p48_q,
+           param_p49_active, param_p49_level, param_p49_freq, param_p49_q,
+           param_p50_active, param_p50_level, param_p50_freq, param_p50_q,
+           param_p51_active, param_p51_level, param_p51_freq, param_p51_q,
+           param_p52_active, param_p52_level, param_p52_freq, param_p52_q,
+           param_p53_active, param_p53_level, param_p53_freq, param_p53_q,
+           param_p54_active, param_p54_level, param_p54_freq, param_p54_q,
+           param_p55_active, param_p55_level, param_p55_freq, param_p55_q,
+           param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
+           param_p57_active, param_p57_level, param_p57_freq, param_p57_q,
+           param_p58_active, param_p58_level, param_p58_freq, param_p58_q,
+           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_count };
+    enum { PeakBands = 58, first_graph_param = param_p1_active, last_graph_param = param_p58_q };
+    PLUGIN_NAME_ID_LABEL("equalizer58band", "eq58", "Equalizer 58 Band")
+    // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
+    // and potentially making inlining and optimization harder for the compiler
+    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq, param_ls_active, param_hs_active, param_hs_level, param_ls_level, param_hs_freq, param_ls_freq};
+};
+
 /// Markus's X-Overs
 struct xover2_metadata: public plugin_metadata<xover2_metadata>
 {

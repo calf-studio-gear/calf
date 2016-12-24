@@ -960,6 +960,77 @@ CALF_PLUGIN_INFO(equalizer30band) = { 0x8514, "Equalizer30Band", "Calf Equalizer
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(equalizer58band) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(equalizer58band) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    EQ_BAND_PARAMS(1, 25)
+    EQ_BAND_PARAMS(2, 40)
+    EQ_BAND_PARAMS(3, 60)
+    EQ_BAND_PARAMS(4, 100)
+    EQ_BAND_PARAMS(5, 200)
+    EQ_BAND_PARAMS(6, 300)
+    EQ_BAND_PARAMS(7, 400)
+    EQ_BAND_PARAMS(8, 500)
+    EQ_BAND_PARAMS(9, 600)
+    EQ_BAND_PARAMS(10, 700)
+    EQ_BAND_PARAMS(11, 800)
+    EQ_BAND_PARAMS(12, 900)
+    EQ_BAND_PARAMS(13, 1000)
+    EQ_BAND_PARAMS(14, 1200)
+    EQ_BAND_PARAMS(15, 1400)
+    EQ_BAND_PARAMS(16, 1800)
+    EQ_BAND_PARAMS(17, 2000)
+    EQ_BAND_PARAMS(18, 2500)
+    EQ_BAND_PARAMS(19, 3000)
+    EQ_BAND_PARAMS(20, 3500)
+    EQ_BAND_PARAMS(21, 4000)
+    EQ_BAND_PARAMS(22, 4500)
+    EQ_BAND_PARAMS(23, 5000)
+    EQ_BAND_PARAMS(24, 5500)
+    EQ_BAND_PARAMS(25, 6000)
+    EQ_BAND_PARAMS(26, 6500)
+    EQ_BAND_PARAMS(27, 7000)
+    EQ_BAND_PARAMS(28, 7500)
+    EQ_BAND_PARAMS(29, 8000)
+    EQ_BAND_PARAMS(30, 9000)
+    EQ_BAND_PARAMS(31, 11000)
+    EQ_BAND_PARAMS(32, 12000)
+    EQ_BAND_PARAMS(33, 13000)
+    EQ_BAND_PARAMS(34, 14000)
+    EQ_BAND_PARAMS(35, 15000)
+    EQ_BAND_PARAMS(36, 16000)
+    EQ_BAND_PARAMS(37, 17000)
+    EQ_BAND_PARAMS(38, 17500)
+    EQ_BAND_PARAMS(39, 18500)
+    EQ_BAND_PARAMS(40, 19000)
+    EQ_BAND_PARAMS(41, 19500)
+    EQ_BAND_PARAMS(42, 19750)
+    EQ_BAND_PARAMS(43, 13000)
+    EQ_BAND_PARAMS(44, 14000)
+    EQ_BAND_PARAMS(45, 15000)
+    EQ_BAND_PARAMS(46, 16000)
+    EQ_BAND_PARAMS(47, 17000)
+    EQ_BAND_PARAMS(48, 17500)
+    EQ_BAND_PARAMS(49, 18500)
+    EQ_BAND_PARAMS(50, 19000)
+    EQ_BAND_PARAMS(51, 19500)
+    EQ_BAND_PARAMS(52, 19750)
+    EQ_BAND_PARAMS(53, 13000)
+    EQ_BAND_PARAMS(54, 14000)
+    EQ_BAND_PARAMS(55, 15000)
+    EQ_BAND_PARAMS(56, 16000)
+    EQ_BAND_PARAMS(57, 17000)
+    EQ_BAND_PARAMS(58, 17500)
+    EQ_DISPLAY_PARAMS
+    {}
+};
+
+CALF_PLUGIN_INFO(equalizer58band) = { 0x8518, "Equalizer58Band", "Calf Equalizer 58 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 #define XOVER_BAND_PARAMS(band) \
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "level" #band, "Gain " #band }, \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "active" #band, "Active " #band }, \
