@@ -36,6 +36,7 @@
     PER_MODULE_ITEM(gate,                false, "gate")
     PER_MODULE_ITEM(sidechaingate,       false, "sidechaingate")
     PER_MODULE_ITEM(multibandgate,       false, "multibandgate")
+    PER_MODULE_ITEM(multibandsoft,       false, "multibandsoft")
     
     // Limiter
     PER_MODULE_ITEM(limiter,             false, "limiter")
@@ -56,7 +57,9 @@
     PER_MODULE_ITEM(equalizer5band,      false, "eq5")
     PER_MODULE_ITEM(equalizer8band,      false, "eq8")
     PER_MODULE_ITEM(equalizer12band,     false, "eq12")
+    PER_MODULE_ITEM(equalizer20band,     false, "eq20")
     PER_MODULE_ITEM(equalizer30band,     false, "eq30")
+    PER_MODULE_ITEM(equalizer58band,     false, "eq58")
     
     // Distrotion
     PER_MODULE_ITEM(saturator,           false, "saturator")

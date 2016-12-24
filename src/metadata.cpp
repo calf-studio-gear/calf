@@ -30,8 +30,8 @@ using namespace calf_plugins;
 using namespace std;
 
 const char *calf_plugins::calf_copyright_info = "(C) 2001-2016 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
-const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8" };
-const char *mb_crossover_filter_choices[] = { "LR4", "LR8" };
+const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8", "LR4+8", "LR8+4+8"};
+const char *mb_crossover_filter_choices[] = { "LR4", "LR8", "LR4+8", "LR8+4+8"};
 
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
@@ -580,7 +580,7 @@ CALF_PLUGIN_INFO(deesser) = { 0x8515, "Deesser", "Calf Deesser", "Calf Studio Ge
 CALF_PORT_NAMES(gate) = {"In L", "In R", "Out L", "Out R"};
 
 const char *gate_detection_names[] = { "RMS", "Peak" };
-const char *gate_stereo_link_names[] = { "Average", "Maximum" };
+const char *gate_stereo_link_names[] = { "Unlinked", "Average", "Maximum" };
 
 CALF_PORT_PROPS(gate) = {
     { 0,      0,  1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
@@ -597,7 +597,7 @@ CALF_PORT_PROPS(gate) = {
     { 1,      1, 64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
     { 2.828427125,      1,  8,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, gate_detection_names, "detection", "Detection" },
-    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, gate_stereo_link_names, "stereo_link", "Stereo Link" },
+    { 0,      -1,  1,    0, PF_ENUM | PF_CTL_COMBO, gate_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating", "Gating" },
     {}
 };
@@ -609,7 +609,7 @@ CALF_PLUGIN_INFO(gate) = { 0x8503, "Gate", "Calf Gate", "Calf Studio Gear / Dami
 CALF_PORT_NAMES(sidechaingate) = {"In L", "In R", "Out L", "Out R"};
 
 const char *sidechaingate_detection_names[] = { "RMS", "Peak" };
-const char *sidechaingate_stereo_link_names[] = { "Average", "Maximum" };
+const char *sidechaingate_stereo_link_names[] = { "Unlinked", "Average", "Maximum" };
 const char *sidechaingate_mode_names[] = {"Wideband (F1:off / F2:off)",
                                                 "High gate wide (F1:Bell / F2:HP)",
                                                 "High gate split (F1:off / F2:HP)",
@@ -638,7 +638,7 @@ CALF_PORT_PROPS(sidechaingate) = {
     { 1,      1, 64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup", "Makeup Gain" },
     { 2.828427125,      1,  8,   0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee", "Knee" },
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, sidechaingate_detection_names, "detection", "Detection" },
-    { 1,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, sidechaingate_stereo_link_names, "stereo_link", "Stereo Link" },
+    { 1,      -1,  1,    0, PF_ENUM | PF_CTL_COMBO, sidechaingate_stereo_link_names, "stereo_link", "Stereo Link" },
     { 0, 0.03125, 1,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating", "Gating" },
     { 0,      0,  9,    0, PF_ENUM | PF_CTL_COMBO, sidechaingate_mode_names, "sc_mode", "S/C Mode" },
     { 250,    10,18000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "f1_freq", "F1 Freq" },
@@ -690,6 +690,67 @@ CALF_PORT_PROPS(multibandgate) = {
 };
 
 CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gate", "Calf Studio Gear / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+#define MULTI_BAND_SOFT_PARAMS(band1, band2) \
+    { 0.06125,     0.000015849, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "range" #band1, "Reduction " #band2 }, \
+    { 1,           0.000976563, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "threshold" #band1, "Threshold " #band2 }, \
+    { 1.2,         1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio" #band1, "Ratio " #band2 }, \
+    { 150,         0.01,        2000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack" #band1, "Attack " #band2 }, \
+    { 300,         0.01,        2000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release" #band1, "Release " #band2 }, \
+    { 1,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup" #band1, "Makeup " #band2 }, \
+    { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee" #band1, "Knee " #band2 }, \
+    { 0.0,       0.0,        20.0,     0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "delay" #band1, "Delay " #band2 }, \
+    { 1,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_detection_names, "detection" #band1, "Detection " #band2 }, \
+    { 1,           -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" #band1, "Stereo Link" #band2}, \
+    { 1,           0.0625,      1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating" #band1, "Gating " #band2 }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output" #band1, "Output " #band2 }, \
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band1, "Solo " #band2 }, \
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass" #band1, "Bypass " #band2 },
+
+CALF_PORT_NAMES(multibandsoft) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Out 7 L", "Out 7 R", "Out 8 L", "Out 8 R", "Out 9 L", "Out 9 R", "Out 10 L", "Out 10 R", "Out 11 L", "Out 11 R", "Out 12 L", "Out 12 R" };
+
+const char *multibandsoft_detection_names[] = { "RMS", "Peak" };
+const char *multibandsoft_stereo_link_names[] = { "Unlinked", "Average", "Maximum" };
+const char *multibandsoft_fast_choices[] = { "No", "Yes" };
+
+CALF_PORT_PROPS(multibandsoft) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inL", "Meter-InL" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inR", "Meter-InR" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_inL", "0dB-InL" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_inR", "0dB-InR" }, \
+    { 50,          10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq0", "Split 1/11" },
+    { 100,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/11" },
+    { 200,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/11" },
+    { 500,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq3", "Split 4/11" },
+    { 1000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq4", "Split 5/11" },
+    { 2000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq5", "Split 6/11" },
+    { 4000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq6", "Split 7/11" },
+    { 8000,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq7", "Split 8/11" },
+    { 10000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq8", "Split 9/11" },
+    { 15000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq9", "Split 10/11" },
+    { 18000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq10", "Split 11/11" },
+    { 1,      0,  3,    0, PF_ENUM | PF_CTL_COMBO, mb_crossover_filter_choices, "mode", "Filter Mode" },
+    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandsoft_fast_choices, "fast", "Fast Mode" },
+    MULTI_BAND_SOFT_PARAMS(0,1)
+    MULTI_BAND_SOFT_PARAMS(1,2)
+    MULTI_BAND_SOFT_PARAMS(2,3)
+    MULTI_BAND_SOFT_PARAMS(3,4)
+    MULTI_BAND_SOFT_PARAMS(4,5)
+    MULTI_BAND_SOFT_PARAMS(5,6)
+    MULTI_BAND_SOFT_PARAMS(6,7)
+    MULTI_BAND_SOFT_PARAMS(7,8)
+    MULTI_BAND_SOFT_PARAMS(8,9)
+    MULTI_BAND_SOFT_PARAMS(9,10)
+    MULTI_BAND_SOFT_PARAMS(10,11)
+    MULTI_BAND_SOFT_PARAMS(11,12)
+    { 0,           0,           3,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF,  NULL, "notebook", "Notebook" },
+    {}
+};
+
+CALF_PLUGIN_INFO(multibandsoft) = { 0x8505, "MultibandSoft", "Calf Multiband Soft", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -915,6 +976,37 @@ CALF_PLUGIN_INFO(equalizer12band) = { 0x8513, "Equalizer12Band", "Calf Equalizer
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(equalizer20band) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(equalizer20band) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    LPHP_PARAMS
+    SHELF_PARAMS
+    EQ_BAND_PARAMS(1, 30)
+    EQ_BAND_PARAMS(2, 60)
+    EQ_BAND_PARAMS(3, 100)
+    EQ_BAND_PARAMS(4, 120)
+    EQ_BAND_PARAMS(5, 200)
+    EQ_BAND_PARAMS(6, 400)
+    EQ_BAND_PARAMS(7, 600)
+    EQ_BAND_PARAMS(8, 800)
+    EQ_BAND_PARAMS(9, 1000)
+    EQ_BAND_PARAMS(10, 1500)
+    EQ_BAND_PARAMS(11, 2000)
+    EQ_BAND_PARAMS(12, 4000)
+    EQ_BAND_PARAMS(13, 8000)
+    EQ_BAND_PARAMS(14, 10000)
+    EQ_BAND_PARAMS(15, 12000)
+    EQ_BAND_PARAMS(16, 16000)
+    EQ_DISPLAY_PARAMS
+    {}
+};
+
+CALF_PLUGIN_INFO(equalizer20band) = { 0x8513, "Equalizer20Band", "Calf Equalizer 20 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 #define GRAPHICEQ_BAND_PARAMS(band) \
     {           0, -1, 1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_OPTIONAL, NULL, "gain" #band, "Gain " #band },\
     {           0, -32, 32, 0, PF_FLOAT | PF_DIGIT_1 | PF_SCALE_LINEAR | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "gain_scale" #band, "Gain Scale " #band },
@@ -1023,6 +1115,77 @@ CALF_PORT_PROPS(equalizer30band) = {
 };
 
 CALF_PLUGIN_INFO(equalizer30band) = { 0x8514, "Equalizer30Band", "Calf Equalizer 30 Band", "Calf Studio Gear / drgreenthumb", calf_plugins::calf_copyright_info, "EQPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(equalizer58band) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(equalizer58band) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    EQ_BAND_PARAMS(1, 25)
+    EQ_BAND_PARAMS(2, 40)
+    EQ_BAND_PARAMS(3, 60)
+    EQ_BAND_PARAMS(4, 100)
+    EQ_BAND_PARAMS(5, 200)
+    EQ_BAND_PARAMS(6, 300)
+    EQ_BAND_PARAMS(7, 400)
+    EQ_BAND_PARAMS(8, 500)
+    EQ_BAND_PARAMS(9, 600)
+    EQ_BAND_PARAMS(10, 700)
+    EQ_BAND_PARAMS(11, 800)
+    EQ_BAND_PARAMS(12, 900)
+    EQ_BAND_PARAMS(13, 1000)
+    EQ_BAND_PARAMS(14, 1200)
+    EQ_BAND_PARAMS(15, 1400)
+    EQ_BAND_PARAMS(16, 1800)
+    EQ_BAND_PARAMS(17, 2000)
+    EQ_BAND_PARAMS(18, 2500)
+    EQ_BAND_PARAMS(19, 3000)
+    EQ_BAND_PARAMS(20, 3500)
+    EQ_BAND_PARAMS(21, 4000)
+    EQ_BAND_PARAMS(22, 4500)
+    EQ_BAND_PARAMS(23, 5000)
+    EQ_BAND_PARAMS(24, 5500)
+    EQ_BAND_PARAMS(25, 6000)
+    EQ_BAND_PARAMS(26, 6500)
+    EQ_BAND_PARAMS(27, 7000)
+    EQ_BAND_PARAMS(28, 7500)
+    EQ_BAND_PARAMS(29, 8000)
+    EQ_BAND_PARAMS(30, 9000)
+    EQ_BAND_PARAMS(31, 11000)
+    EQ_BAND_PARAMS(32, 12000)
+    EQ_BAND_PARAMS(33, 13000)
+    EQ_BAND_PARAMS(34, 14000)
+    EQ_BAND_PARAMS(35, 15000)
+    EQ_BAND_PARAMS(36, 16000)
+    EQ_BAND_PARAMS(37, 17000)
+    EQ_BAND_PARAMS(38, 17500)
+    EQ_BAND_PARAMS(39, 18500)
+    EQ_BAND_PARAMS(40, 19000)
+    EQ_BAND_PARAMS(41, 19500)
+    EQ_BAND_PARAMS(42, 19750)
+    EQ_BAND_PARAMS(43, 13000)
+    EQ_BAND_PARAMS(44, 14000)
+    EQ_BAND_PARAMS(45, 15000)
+    EQ_BAND_PARAMS(46, 16000)
+    EQ_BAND_PARAMS(47, 17000)
+    EQ_BAND_PARAMS(48, 17500)
+    EQ_BAND_PARAMS(49, 18500)
+    EQ_BAND_PARAMS(50, 19000)
+    EQ_BAND_PARAMS(51, 19500)
+    EQ_BAND_PARAMS(52, 19750)
+    EQ_BAND_PARAMS(53, 13000)
+    EQ_BAND_PARAMS(54, 14000)
+    EQ_BAND_PARAMS(55, 15000)
+    EQ_BAND_PARAMS(56, 16000)
+    EQ_BAND_PARAMS(57, 17000)
+    EQ_BAND_PARAMS(58, 17500)
+    EQ_DISPLAY_PARAMS
+    {}
+};
+
+CALF_PLUGIN_INFO(equalizer58band) = { 0x8518, "Equalizer58Band", "Calf Equalizer 58 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

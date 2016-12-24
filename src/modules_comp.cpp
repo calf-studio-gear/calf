@@ -517,7 +517,8 @@ expander_audio_module::expander_audio_module()
     old_mute      = 0.f;
     old_trigger   = 0.f;
     old_stereo_link = 0.f;
-    linSlope      = 0.f;
+    linSlopeL     = 0.f;
+    linSlopeR     = 0.f;
     linKneeStop   = 0.f;
     redraw_graph  = true;
 }
@@ -568,22 +569,52 @@ void expander_audio_module::process(float &left, float &right, const float *det_
     if(bypass < 0.5f) {
         // this routine is mainly copied from Damien's expander module based on Thor's compressor
         bool rms = (detection == 0);
-        bool average = (stereo_link == 0);
-        float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
-        if(rms) absample *= absample;
+        float gainL = 1.f;
+        float gainR = 1.f;
 
-        dsp::sanitize(linSlope);
+        if (stereo_link >= 0) {
+            bool average = (stereo_link == 0);
+            float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
+            if(rms) absample *= absample;
 
-        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
-        float gain = 1.f;
-        if(linSlope > 0.f) {
-            gain = output_gain(linSlope, rms);
+            dsp::sanitize(linSlopeL);
+
+            linSlopeL += (absample - linSlopeL) * (absample > linSlopeL ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainL * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
+        } else {
+            float absampleL = fabs(*det_left);
+            float absampleR = fabs(*det_right);
+            if (rms) {
+                absampleL *= absampleL;
+                absampleR *= absampleR;
+            }
+
+            dsp::sanitize(linSlopeL);
+            dsp::sanitize(linSlopeR);
+
+            linSlopeL += (absampleL - linSlopeL) * (absampleL > linSlopeL ? attack_coeff : release_coeff);
+            linSlopeR += (absampleR - linSlopeR) * (absampleR > linSlopeR ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+            if(linSlopeR > 0.f) {
+                gainR = output_gain(linSlopeR, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainR * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
         }
-        left *= gain * makeup;
-        right *= gain * makeup;
-        meter_out = std::max(fabs(left), fabs(right));
-        meter_gate = gain;
-        detected = linSlope;
     }
 }
 
@@ -2454,6 +2485,385 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, int phase
 }
 
 bool multibandgate_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        r = crossover.get_layers(index, generation, layers);
+    }
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
+}
+
+
+/**********************************************************************
+ * MULTIBAND SOFT by Adriano Moura and Markus Schmidt
+**********************************************************************/
+
+multibandsoft_audio_module::multibandsoft_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    mode       = 0;
+    redraw     = 0;
+    page       = 0;
+    fast       = 0;
+    bypass_    = 0;
+    crossover.init(2, strips, 44100);
+}
+
+void multibandsoft_audio_module::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+    // activate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+    }
+}
+
+void multibandsoft_audio_module::deactivate()
+{
+    is_active = false;
+    // deactivate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+    }
+}
+
+void multibandsoft_audio_module::params_changed()
+{
+    // determine mute/solo states
+    solo[0] = *params[param_solo0] > 0.f ? true : false;
+    solo[1] = *params[param_solo1] > 0.f ? true : false;
+    solo[2] = *params[param_solo2] > 0.f ? true : false;
+    solo[3] = *params[param_solo3] > 0.f ? true : false;
+    solo[4] = *params[param_solo4] > 0.f ? true : false;
+    solo[5] = *params[param_solo5] > 0.f ? true : false;
+    solo[6] = *params[param_solo6] > 0.f ? true : false;
+    solo[7] = *params[param_solo7] > 0.f ? true : false;
+    solo[8] = *params[param_solo8] > 0.f ? true : false;
+    solo[9] = *params[param_solo9] > 0.f ? true : false;
+    solo[10] = *params[param_solo10] > 0.f ? true : false;
+    solo[11] = *params[param_solo11] > 0.f ? true : false;
+    no_solo = (*params[param_solo0] > 0.f ||
+            *params[param_solo1] > 0.f ||
+            *params[param_solo2] > 0.f ||
+            *params[param_solo3] > 0.f ||
+            *params[param_solo4] > 0.f ||
+            *params[param_solo5] > 0.f ||
+            *params[param_solo6] > 0.f ||
+            *params[param_solo7] > 0.f ||
+            *params[param_solo8] > 0.f ||
+            *params[param_solo9] > 0.f ||
+            *params[param_solo10] > 0.f ||
+            *params[param_solo11] > 0.f) ? false : true;
+
+    int f = *params[param_fast];
+    if (f != fast) {
+        fast = *params[param_fast];
+    }
+
+    int m = *params[param_mode];
+    if (m != mode) {
+        mode = *params[param_mode];
+    }
+    
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+
+    int b = (int)*params[param_bypass0] + (int)*params[param_bypass1] + (int)*params[param_bypass2] + (int)*params[param_bypass3] + (int)*params[param_bypass4] + (int)*params[param_bypass5] + (int)*params[param_bypass6] + (int)*params[param_bypass7] + (int)*params[param_bypass8] + (int)*params[param_bypass9] + (int)*params[param_bypass10] + (int)*params[param_bypass11];
+    if (b != bypass_) {
+        redraw = strips * 2 + strips;
+        bypass_ = b;
+    }
+    
+    crossover.set_mode(mode + 1);
+    crossover.set_filter(0, *params[param_freq0]);
+    crossover.set_filter(1, *params[param_freq1]);
+    crossover.set_filter(2, *params[param_freq2]);
+    crossover.set_filter(3, *params[param_freq3]);
+    crossover.set_filter(4, *params[param_freq4]);
+    crossover.set_filter(5, *params[param_freq5]);
+    crossover.set_filter(6, *params[param_freq6]);
+    crossover.set_filter(7, *params[param_freq7]);
+    crossover.set_filter(8, *params[param_freq8]);
+    crossover.set_filter(9, *params[param_freq9]);
+    crossover.set_filter(10, *params[param_freq10]);
+
+    // set the params of all strips
+    gate[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], *params[param_stereo_link0], *params[param_bypass0], !(solo[0] || no_solo), *params[param_range0]);
+    gate[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], *params[param_stereo_link1], *params[param_bypass1], !(solo[1] || no_solo), *params[param_range1]);
+    gate[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], *params[param_stereo_link2], *params[param_bypass2], !(solo[2] || no_solo), *params[param_range2]);
+    gate[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], *params[param_stereo_link3], *params[param_bypass3], !(solo[3] || no_solo), *params[param_range3]);
+    gate[4].set_params(*params[param_attack4], *params[param_release4], *params[param_threshold4], *params[param_ratio4], *params[param_knee4], *params[param_makeup4], *params[param_detection4], *params[param_stereo_link4], *params[param_bypass4], !(solo[4] || no_solo), *params[param_range4]);
+    gate[5].set_params(*params[param_attack5], *params[param_release5], *params[param_threshold5], *params[param_ratio5], *params[param_knee5], *params[param_makeup5], *params[param_detection5], *params[param_stereo_link5], *params[param_bypass5], !(solo[5] || no_solo), *params[param_range5]);
+    gate[6].set_params(*params[param_attack6], *params[param_release6], *params[param_threshold6], *params[param_ratio6], *params[param_knee6], *params[param_makeup6], *params[param_detection6], *params[param_stereo_link6], *params[param_bypass6], !(solo[6] || no_solo), *params[param_range6]);
+    gate[7].set_params(*params[param_attack7], *params[param_release7], *params[param_threshold7], *params[param_ratio7], *params[param_knee7], *params[param_makeup7], *params[param_detection7], *params[param_stereo_link7], *params[param_bypass7], !(solo[7] || no_solo), *params[param_range7]);
+    gate[8].set_params(*params[param_attack8], *params[param_release8], *params[param_threshold8], *params[param_ratio8], *params[param_knee8], *params[param_makeup8], *params[param_detection8], *params[param_stereo_link8], *params[param_bypass8], !(solo[8] || no_solo), *params[param_range8]);
+    gate[9].set_params(*params[param_attack9], *params[param_release9], *params[param_threshold9], *params[param_ratio9], *params[param_knee9], *params[param_makeup9], *params[param_detection9], *params[param_stereo_link9], *params[param_bypass9], !(solo[9] || no_solo), *params[param_range9]);
+    gate[10].set_params(*params[param_attack10], *params[param_release10], *params[param_threshold10], *params[param_ratio10], *params[param_knee10], *params[param_makeup10], *params[param_detection10], *params[param_stereo_link10], *params[param_bypass10], !(solo[10] || no_solo), *params[param_range10]);
+    gate[11].set_params(*params[param_attack11], *params[param_release11], *params[param_threshold11], *params[param_ratio11], *params[param_knee11], *params[param_makeup11], *params[param_detection11], *params[param_stereo_link11], *params[param_bypass11], !(solo[11] || no_solo), *params[param_range11]);
+
+}
+
+void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    // set srate of all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+    }
+    // set srate of crossover
+    crossover.set_sample_rate(srate);
+
+    // buffer size attack rate multiplied by channels and strips
+    buffer_size = (int)(srate / 10 * 2 * strips + 2 * strips); 
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    pos = 0;
+
+    int meter[] = {param_meter_inL, param_meter_inR,
+                   param_output0, -param_gating0,
+                   param_output1, -param_gating1,
+                   param_output2, -param_gating2,
+                   param_output3, -param_gating3,
+                   param_output4, -param_gating4,
+                   param_output5, -param_gating5,
+                   param_output6, -param_gating6,
+                   param_output7, -param_gating7,
+                   param_output8, -param_gating8,
+                   param_output9, -param_gating9,
+                   param_output10, -param_gating10,
+                   param_output11, -param_gating11 };
+    int clip[] = {param_clip_inL, param_clip_inR, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, 26, srate);
+}
+
+uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    numsamples += offset;
+    if (fast) {
+        // process all strips
+        while(offset < numsamples) {
+            // process crossover, cycle trough samples, in level
+            xin[0] = ins[0][offset] * *params[param_level_in];
+            xin[1] = ins[1][offset] * *params[param_level_in];
+            crossover.process(xin);
+            // out vars
+            for (int i = 0; i < strips; i++) {
+                int delayval = *params[param_delay0 + i*params_per_band];
+
+                // is delay enabled?
+                if (delayval) {
+                    int nbuf = 0;
+                    int ptr = i * 2;
+
+                    // calc position in delay buffer
+                    nbuf = srate * (fabs(delayval) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    gate[i].process(left, right);
+
+                    // fill delay buffer
+                    buffer[pos + ptr] = left;
+                    buffer[pos + ptr + 1] = right;
+                    
+                    // get value from delay buffer if neccessary
+                    outs[i*2][offset] = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    outs[i*2 +1][offset] = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+                } else {
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    gate[i].process(left, right);
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                }
+            } // process single strip
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+    } else {
+        for (int i = 0; i < strips; i++)
+            gate[i].update_curve();
+
+        float inL = 0.f;
+        float inR = 0.f;
+
+        // process all strips
+        while(offset < numsamples) {
+            // cycle through samples
+            inL = ins[0][offset];
+            inR = ins[1][offset];
+            // in level
+            inR *= *params[param_level_in];
+            inL *= *params[param_level_in];
+            // process crossover
+            xin[0] = inL;
+            xin[1] = inR;
+            crossover.process(xin);
+            // out vars
+            for (int i = 0; i < strips; i ++) {
+                int nbuf = 0;
+                int off = i * params_per_band;
+                int ptr = i * 2;
+                // calc position in delay buffer
+                if (*params[param_delay0 + off]) {
+                    nbuf = srate * (fabs(*params[param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+                }
+
+                float left;
+                float right;
+                // cycle trough strips
+                if (solo[i] || no_solo) {
+                    // strip unmuted
+                    left = crossover.get_value(0, i);
+                    right = crossover.get_value(1, i);
+                    gate[i].process(left, right);
+                } else {
+                    left = 0.f;
+                    right = 0.f;
+                }
+
+                // fill delay buffer
+                buffer[pos + ptr] = left;
+                buffer[pos + ptr + 1] = right;
+                
+                // get value from delay buffer if neccessary
+                if (*params[param_delay0 + off]) {
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+                }
+
+                outs[i*2][offset] = left;
+                outs[i*2 +1][offset] = right;
+            } // process single strip
+
+            float values[2 + strips*2];
+            values[0] = inL;
+            values[1] = inR;
+            for (int i=0; i < strips; i++)  {
+                if (*params[param_bypass0 + params_per_band * i]) {
+                    values[2 + i*2] = 0;
+                    values[3 + i*2] = 1;
+                } else {
+                    values[2 + i*2] = gate[i].get_output_level();
+                    values[3 + i*2] = gate[i].get_expander_level();
+                }
+            }
+            meters.process(values);
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+
+
+        meters.fall(numsamples);
+    }
+
+    return outputs_mask;
+}
+
+const expander_audio_module *multibandsoft_audio_module::get_strip_by_param_index(int index) const
+{
+    // let's handle by the corresponding strip
+    //if ((index - param_range0) % params_per_band)
+    //    return &gate[(index - param_solo0) / params_per_band];
+    switch (index) {
+        case param_solo0:
+            return &gate[0];
+        case param_solo1:
+            return &gate[1];
+        case param_solo2:
+            return &gate[2];
+        case param_solo3:
+            return &gate[3];
+        case param_solo4:
+            return &gate[4];
+        case param_solo5:
+            return &gate[5];
+        case param_solo6:
+            return &gate[6];
+        case param_solo7:
+            return &gate[7];
+        case param_solo8:
+            return &gate[8];
+        case param_solo9:
+            return &gate[9];
+        case param_solo10:
+            return &gate[10];
+        case param_solo11:
+            return &gate[11];
+    }
+    return NULL;
+}
+
+bool multibandsoft_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    printf("get_graph: index=%d subindex=%d\n", index, subindex);
+    bool r;
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+        
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if (index == param_solo0 + params_per_band * page and subindex == 1) {
+        printf("if1: index=%d subindex=%d\n", index, subindex);
+        //*mode = 1;
+    }
+    if (subindex == 1) {
+        printf("if2: index=%d subindex=%d\n", index, subindex);
+        if (r 
+        and ((*params[index - 1])
+        or   (*params[param_bypass0 + params_per_band * subindex])))
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        else
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    return r;
+}
+
+bool multibandsoft_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_dot(subindex, x, y, size, context);
+    return false;
+}
+
+bool multibandsoft_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    if (phase) return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+bool multibandsoft_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     bool r;
     const expander_audio_module *m = get_strip_by_param_index(index);

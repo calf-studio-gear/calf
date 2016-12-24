@@ -70,7 +70,7 @@ struct FreqHandle
     inline bool is_active() { return (param_active_no < 0 || active); }
 };
 
-#define FREQ_HANDLES 32
+#define FREQ_HANDLES 58
 #define HANDLE_WIDTH 20.0
 
 struct CalfLineGraph
