@@ -623,8 +623,8 @@ class crossover {
 private:
 public:
     int channels, bands, mode;
-    float freq[8], active[8], level[8], out[8][8];
-    dsp::biquad_d2 lp[8][8][4], hp[8][8][4];
+    float freq[12], active[12], level[12], modes[12], out[8][12];
+    dsp::biquad_d2 lp[8][12][4], hp[8][12][4];
     mutable int redraw_graph;
     uint32_t srate;
     crossover();

@@ -1030,7 +1030,7 @@ void crossover::set_sample_rate(uint32_t sr) {
 }
 void crossover::init(int c, int b, uint32_t sr) {
     channels = std::min(8, c);
-    bands    = std::min(8, b);
+    bands    = std::min(12, b);
     srate    = sr;
     for(int b = 0; b < bands; b ++) {
         // reset frequency settings
