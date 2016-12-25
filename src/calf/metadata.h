@@ -514,10 +514,10 @@ struct equalizer20band_metadata: public plugin_metadata<equalizer20band_metadata
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_hp_active, param_hp_freq, param_hp_mode,
-           param_lp_active, param_lp_freq, param_lp_mode,
-           param_ls_active, param_ls_level, param_ls_freq,
-           param_hs_active, param_hs_level, param_hs_freq,
+           param_hp_active, param_hp_freq, param_hp_mode, param_hp_q,
+           param_lp_active, param_lp_freq, param_lp_mode, param_lp_q,
+           param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
+           param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
@@ -693,7 +693,7 @@ struct equalizer58band_metadata: public plugin_metadata<equalizer58band_metadata
     PLUGIN_NAME_ID_LABEL("equalizer58band", "eq58", "Equalizer 58 Band")
     // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
     // and potentially making inlining and optimization harder for the compiler
-    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq, param_ls_active, param_hs_active, param_hs_level, param_ls_level, param_hs_freq, param_ls_freq};
+    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq, param_hp_q, param_lp_q, param_ls_active, param_hs_active, param_hs_level, param_ls_level, param_hs_freq, param_ls_freq, param_ls_q, param_hs_q};
 };
 
 /// Markus's X-Overs
