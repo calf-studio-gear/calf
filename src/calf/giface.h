@@ -354,6 +354,8 @@ struct plugin_metadata_iface
     virtual bool get_midi() const =0;
     /// @return true if plugin has MIDI input
     virtual bool requires_midi() const =0;
+    /// @return true if plugin requires instance access
+    virtual bool requires_instance_access() const =0;
     /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
     virtual int get_param_port_offset() const  = 0;
     /// @return NULL-terminated list of menu commands
@@ -719,6 +721,7 @@ public:
     int get_param_count() const { return Metadata::param_count; }
     bool get_midi() const { return Metadata::support_midi; }
     bool requires_midi() const { return Metadata::require_midi; }
+    bool requires_instance_access() const { return Metadata::require_instance_access; }
     bool is_rt_capable() const { return Metadata::rt_capable; }
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
     char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s/%s", prefix, get_id()); char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }

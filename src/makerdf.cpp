@@ -304,7 +304,7 @@ void make_ttl(string path_prefix, const string *data_dir)
             "\n";
 
 #if USE_LV2_GUI
-        string gui_uri = (!strcmp(lpi.label, "Analyzer")) ? gtkgui_uri_req : gtkgui_uri;
+        string gui_uri = (pi->requires_instance_access()) ? gtkgui_uri_req : gtkgui_uri;
 
         for (int j = 0; j < pi->get_param_count(); j++)
         {
