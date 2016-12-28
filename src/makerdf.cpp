@@ -257,7 +257,8 @@ void make_ttl(string path_prefix, const string *data_dir)
     string gui_header;
     
 #if USE_LV2_GUI
-    string gtkgui_uri = "<" + plugin_uri_prefix + "gui/gtk2-gui>";
+    string gtkgui_uri     = "<" + plugin_uri_prefix + "gui/gtk2-gui>";
+    string gtkgui_uri_req = "<" + plugin_uri_prefix + "gui/gtk2-gui-req>";
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    lv2:extensionData uiext:idleInterface ,\n"
@@ -269,6 +270,16 @@ void make_ttl(string path_prefix, const string *data_dir)
         "    lv2:optionalFeature <" LV2_ATOM_URI "> ;\n"
         "    uiext:binary <calflv2gui.so> .\n"
         "\n"
+        "\n" + gtkgui_uri_req + "\n"
+        "    a uiext:GtkUI ;\n"
+        "    lv2:extensionData uiext:idleInterface ,\n"
+        "        uiext:showInterface ;\n"
+        "    lv2:requiredFeature uiext:makeResident ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
+        "    lv2:optionalFeature <" LV2_OPTIONS_URI "> ;\n"
+        "    lv2:optionalFeature <" LV2_ATOM_URI "> ;\n"
+        "    uiext:binary <calflv2gui.so> .\n"
     ;
 #endif
     
@@ -293,13 +304,15 @@ void make_ttl(string path_prefix, const string *data_dir)
             "\n";
 
 #if USE_LV2_GUI
+        string gui_uri = (!strcmp(lpi.label, "Analyzer")) ? gtkgui_uri_req : gtkgui_uri;
+
         for (int j = 0; j < pi->get_param_count(); j++)
         {
             const parameter_properties &props = *pi->get_param_props(j);
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
-                ttl += gtkgui_uri + portnot;
+                ttl += gui_uri + portnot;
             }
         }
 #endif
@@ -335,7 +348,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         ttl += "    lv2:project project:project ;\n";
 
 #if USE_LV2_GUI
-        ttl += "    uiext:ui " + gtkgui_uri + " ;\n";
+        ttl += "    uiext:ui " + gui_uri + " ;\n";
 #endif
         
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
