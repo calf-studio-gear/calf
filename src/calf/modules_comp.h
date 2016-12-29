@@ -415,7 +415,8 @@ private:
     typedef multibandsoft_audio_module AM;
     static const int strips = 12;
     bool solo[strips];
-    float xout[strips*2], xin[2];
+    static const int intch = 2; // internal channels
+    float xout[strips*intch], xin[intch];
     bool no_solo;
     float meter_inL, meter_inR;
     expander_audio_module gate[strips];
@@ -424,6 +425,7 @@ private:
     int mode_set[strips];
     mutable int redraw;
     vumeters meters;
+    dsp::tap_distortion dist[strips][intch];
 public:
     uint32_t srate;
     bool is_active;

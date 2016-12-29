@@ -2514,6 +2514,8 @@ void multibandsoft_audio_module::activate()
     for (int j = 0; j < strips; j ++) {
         gate[j].activate();
         gate[j].id = j;
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].activate();
     }
 }
 
@@ -2523,6 +2525,8 @@ void multibandsoft_audio_module::deactivate()
     // deactivate all strips
     for (int j = 0; j < strips; j ++) {
         gate[j].deactivate();
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].deactivate();
     }
 }
 
@@ -2577,6 +2581,11 @@ void multibandsoft_audio_module::params_changed()
                            *params[param_bypass0 + j], \
                            !(solo[i] || no_solo), \
                            *params[param_range0 + j]);
+        for (int k = 0; k < intch; k ++)
+            dist[i][k].set_params(*params[param_blend0 + j],
+                                  *params[param_drive0 + j]);
+
+        gate[i].update_curve();
     }
 }
 
@@ -2586,6 +2595,8 @@ void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
     // set srate of all strips
     for (int j = 0; j < strips; j ++) {
         gate[j].set_sample_rate(srate);
+        for (int k = 0; k < intch; k ++)
+            dist[j][k].set_sample_rate(srate);
     }
     // set srate of crossover
     crossover.set_sample_rate(srate);
@@ -2618,6 +2629,8 @@ void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
+    float dleft, left;
+    float dright, right;
     numsamples += offset;
     if (fast) { // Ignores a bunch of stuff, including delay, solo!!
         // process all strips
@@ -2626,11 +2639,22 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
             xin[0] = ins[0][offset] * *params[param_level_in];
             xin[1] = ins[1][offset] * *params[param_level_in];
             crossover.process(xin);
+
+            // cycle trough strips
             for (int i = 0; i < strips; i++) {
-                //cycle trough strips
+                int off = i * params_per_band;
                 float left  = crossover.get_value(0, i);
                 float right = crossover.get_value(1, i);
                 gate[i].process(left, right);
+
+                if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                    // process harmonics
+                    dleft = dist[i][0].process(left);
+                    dright = dist[i][1].process(right);
+                    // compensate saturation
+                    left += (dleft / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                    right += (dright / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                }
 
                 outs[i*2][offset] = left;
                 outs[i*2 +1][offset] = right;
@@ -2657,7 +2681,8 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
             xin[0] = inL;
             xin[1] = inR;
             crossover.process(xin);
-            // out vars
+
+            // cycle trough strips
             for (int i = 0; i < strips; i ++) {
                 int nbuf = 0;
                 int off = i * params_per_band;
@@ -2668,19 +2693,22 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                     nbuf -= nbuf % (strips * 2);
                 }
 
-                float left;
-                float right;
-                // cycle trough strips
+                left = 0.f; right = 0.f;
                 if (solo[i] || no_solo) {
                     // strip unmuted
                     left = crossover.get_value(0, i);
                     right = crossover.get_value(1, i);
                     gate[i].process(left, right);
-                } else {
-                    left = 0.f;
-                    right = 0.f;
-                }
 
+                    if (*params[param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        dleft = dist[i][0].process(left);
+                        dright = dist[i][1].process(right);
+                        // compensate saturation
+                        left += (dleft / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                        right += (dright / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                    }
+                }
                 // fill delay buffer
                 buffer[pos + ptr] = left;
                 buffer[pos + ptr + 1] = right;
@@ -2693,7 +2721,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
 
                 outs[i*2][offset] = left;
                 outs[i*2 +1][offset] = right;
-            } // process single strip
+            }
 
             float values[2 + strips*2];
             values[0] = inL;
