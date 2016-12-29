@@ -1252,7 +1252,6 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
 {
     is_active = false;
     srate      = 0;
-    mode       = 0;
     redraw     = 0;
     page       = 0;
     bypass_    = 0;
@@ -1292,12 +1291,6 @@ void multibandcompressor_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    
-    int m = *params[param_mode];
-    if (m != mode) {
-        mode = *params[param_mode];
-    }
-    
     int p = (int)*params[param_notebook];
     if (p != page) {
         page = p;
@@ -1310,7 +1303,8 @@ void multibandcompressor_audio_module::params_changed()
         bypass_ = b;
     }
     
-    crossover.set_mode(mode + 1);
+    mode_set[0] = *params[param_mode] + 1;
+    crossover.set_mode(mode_set);
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);
@@ -2265,7 +2259,6 @@ multibandgate_audio_module::multibandgate_audio_module()
 {
     is_active = false;
     srate = 0;
-    mode       = 0;
     redraw     = 0;
     page       = 0;
     bypass_    = 0;
@@ -2305,11 +2298,6 @@ void multibandgate_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    int m = *params[param_mode];
-    if (m != mode) {
-        mode = *params[param_mode];
-    }
-    
     int p = (int)*params[param_notebook];
     if (p != page) {
         page = p;
@@ -2322,7 +2310,8 @@ void multibandgate_audio_module::params_changed()
         bypass_ = b;
     }
     
-    crossover.set_mode(mode + 1);
+    mode_set[0] = *params[param_mode] + 1;
+    crossover.set_mode(mode_set);
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);
@@ -2509,7 +2498,6 @@ multibandsoft_audio_module::multibandsoft_audio_module()
 {
     is_active = false;
     srate = 0;
-    mode       = 0;
     redraw     = 0;
     page       = 0;
     fast       = 0;
@@ -2588,33 +2576,13 @@ void multibandsoft_audio_module::params_changed()
         bypass_ = b;
     }
     
-    crossover.set_mode(mode + 1);
-    crossover.set_filter(0, *params[param_freq0]);
-    crossover.set_filter(1, *params[param_freq1]);
-    crossover.set_filter(2, *params[param_freq2]);
-    crossover.set_filter(3, *params[param_freq3]);
-    crossover.set_filter(4, *params[param_freq4]);
-    crossover.set_filter(5, *params[param_freq5]);
-    crossover.set_filter(6, *params[param_freq6]);
-    crossover.set_filter(7, *params[param_freq7]);
-    crossover.set_filter(8, *params[param_freq8]);
-    crossover.set_filter(9, *params[param_freq9]);
-    crossover.set_filter(10, *params[param_freq10]);
-
-    // set the params of all strips
-    gate[0].set_params(*params[param_attack0], *params[param_release0], *params[param_threshold0], *params[param_ratio0], *params[param_knee0], *params[param_makeup0], *params[param_detection0], *params[param_stereo_link0], *params[param_bypass0], !(solo[0] || no_solo), *params[param_range0]);
-    gate[1].set_params(*params[param_attack1], *params[param_release1], *params[param_threshold1], *params[param_ratio1], *params[param_knee1], *params[param_makeup1], *params[param_detection1], *params[param_stereo_link1], *params[param_bypass1], !(solo[1] || no_solo), *params[param_range1]);
-    gate[2].set_params(*params[param_attack2], *params[param_release2], *params[param_threshold2], *params[param_ratio2], *params[param_knee2], *params[param_makeup2], *params[param_detection2], *params[param_stereo_link2], *params[param_bypass2], !(solo[2] || no_solo), *params[param_range2]);
-    gate[3].set_params(*params[param_attack3], *params[param_release3], *params[param_threshold3], *params[param_ratio3], *params[param_knee3], *params[param_makeup3], *params[param_detection3], *params[param_stereo_link3], *params[param_bypass3], !(solo[3] || no_solo), *params[param_range3]);
-    gate[4].set_params(*params[param_attack4], *params[param_release4], *params[param_threshold4], *params[param_ratio4], *params[param_knee4], *params[param_makeup4], *params[param_detection4], *params[param_stereo_link4], *params[param_bypass4], !(solo[4] || no_solo), *params[param_range4]);
-    gate[5].set_params(*params[param_attack5], *params[param_release5], *params[param_threshold5], *params[param_ratio5], *params[param_knee5], *params[param_makeup5], *params[param_detection5], *params[param_stereo_link5], *params[param_bypass5], !(solo[5] || no_solo), *params[param_range5]);
-    gate[6].set_params(*params[param_attack6], *params[param_release6], *params[param_threshold6], *params[param_ratio6], *params[param_knee6], *params[param_makeup6], *params[param_detection6], *params[param_stereo_link6], *params[param_bypass6], !(solo[6] || no_solo), *params[param_range6]);
-    gate[7].set_params(*params[param_attack7], *params[param_release7], *params[param_threshold7], *params[param_ratio7], *params[param_knee7], *params[param_makeup7], *params[param_detection7], *params[param_stereo_link7], *params[param_bypass7], !(solo[7] || no_solo), *params[param_range7]);
-    gate[8].set_params(*params[param_attack8], *params[param_release8], *params[param_threshold8], *params[param_ratio8], *params[param_knee8], *params[param_makeup8], *params[param_detection8], *params[param_stereo_link8], *params[param_bypass8], !(solo[8] || no_solo), *params[param_range8]);
-    gate[9].set_params(*params[param_attack9], *params[param_release9], *params[param_threshold9], *params[param_ratio9], *params[param_knee9], *params[param_makeup9], *params[param_detection9], *params[param_stereo_link9], *params[param_bypass9], !(solo[9] || no_solo), *params[param_range9]);
-    gate[10].set_params(*params[param_attack10], *params[param_release10], *params[param_threshold10], *params[param_ratio10], *params[param_knee10], *params[param_makeup10], *params[param_detection10], *params[param_stereo_link10], *params[param_bypass10], !(solo[10] || no_solo), *params[param_range10]);
-    gate[11].set_params(*params[param_attack11], *params[param_release11], *params[param_threshold11], *params[param_ratio11], *params[param_knee11], *params[param_makeup11], *params[param_detection11], *params[param_stereo_link11], *params[param_bypass11], !(solo[11] || no_solo), *params[param_range11]);
-
+    for (int i=0; i < strips-1; ++i) {
+        mode_set[i] = *params[param_mode0 + params_per_band * i] + 1;
+    }
+    crossover.set_mode(mode_set);
+    for (int i=0; i < strips-1; ++i) {
+        crossover.set_filter(i, *params[param_freq0 + i]); // freq is not declared on each band
+    }
 }
 
 void multibandsoft_audio_module::set_sample_rate(uint32_t sr)

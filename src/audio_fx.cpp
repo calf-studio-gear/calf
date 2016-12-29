@@ -1042,9 +1042,8 @@ void transients::process(float *in, float s) {
 //////////////////////////////////////////////////////////////////
 
 crossover::crossover() {
-    bands     = -1;
-    mode      = -1;
-    redraw_graph = 1;
+    bands        = -1;
+    redraw_graph =  1;
 }
 void crossover::set_sample_rate(uint32_t sr) {
     srate = sr;
@@ -1118,30 +1117,20 @@ float crossover::set_filter(int b, float f, bool force) {
     redraw_graph = std::min(2, redraw_graph + 1);
     return freq[b];
 }
-void crossover::set_mode(int m) {
-    if(mode == m)
-        return;
-    mode = m;
-    for(int i = 0; i < bands - 1; i ++) {
-        if (mode == 3) {
-            if (i == 0)
-                modes[i] = 1;
-            else
-                modes[i] = 2;
-        } else if (mode == 4) {
-            if (i == 0)
-                modes[i] = 2;
-            else if (i == 1)
-                modes[i] = 1;
-            else
-                modes[i] = 2;
-        } else {
-            modes[i] = mode;
-        }
+void crossover::set_mode(int mset[12]) {
+    int redraw=0, modex=0;
 
-        set_filter(i, freq[i], true);
+    for(int i = 0; i < bands - 1; i ++) {
+        if ( mset[i] > 0 )
+            modex = mset[i];
+        if ( modes[i] != modex ) {
+            modes[i] = modex;
+            set_filter(i, freq[i], true);
+            redraw = 1;
+        }
     }
-    redraw_graph = std::min(2, redraw_graph + 1);
+    if (redraw)
+        redraw_graph = std::min(2, redraw_graph + 1);
 }
 void crossover::set_active(int b, bool a) {
     if (active[b] == a)

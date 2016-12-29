@@ -11,17 +11,36 @@
         <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
         <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
         <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
-
-        <label param="fast" attach-x="3" attach-y="0" expand-x="0" />
-        <combo param="fast" attach-x="3" attach-y="1" attach-h="2" expand-x="0" />
     </table>
     
     <frame label="X-Over">
         <vbox>
-            <align align-x="1.0" scale-x="0.1" scale-y="1.0">
+            <align align-x="0.0" scale-x="0.1" scale-y="1.0">
                 <hbox spacing="8">
-                    <label param="mode"/>
-                    <combo param="mode"/>
+                    <label param="mode0"/>
+                    <combo param="mode0"/>
+                    <label param="mode1"/>
+                    <combo param="mode1"/>
+                    <label param="mode2"/>
+                    <combo param="mode2"/>
+                    <label param="mode3"/>
+                    <combo param="mode3"/>
+                    <label param="mode4"/>
+                    <combo param="mode4"/>
+                    <label param="mode5"/>
+                    <combo param="mode5"/>
+                    <label param="mode6"/>
+                    <combo param="mode6"/>
+                    <label param="mode7"/>
+                    <combo param="mode7"/>
+                    <label param="mode8"/>
+                    <combo param="mode8"/>
+                    <label param="mode9"/>
+                    <combo param="mode9"/>
+                    <label param="mode10"/>
+                    <combo param="mode10"/>
+                    <label param="fast"/>
+                    <combo param="fast"/>
                 </hbox>
             </align>
             <if cond="directlink">

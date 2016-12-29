@@ -380,6 +380,7 @@ public:
     bool is_active;
     float * buffer;
     float in[channels];
+    int mode_set[12];
     unsigned int pos;
     unsigned int buffer_size;
     int last_peak;

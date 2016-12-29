@@ -150,7 +150,7 @@ class multibandenhancer_audio_module: public audio_module<multibandenhancer_meta
     public frequency_response_line_graph, public phase_graph_iface {
 private:
     static const int strips = 4;
-    int _mode, mode_old, channels;
+    int mode_set[12], mode_old, channels;
     float envelope[strips];
     float attack_coef;
     float release_coef;

@@ -992,8 +992,9 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
 template<class XoverBaseClass>
 void xover_audio_module<XoverBaseClass>::params_changed()
 {
-    int mode = *params[AM::param_mode];
-    crossover.set_mode(mode);
+    mode_set[0] = *params[AM::param_mode];
+    crossover.set_mode(mode_set);
+
     for (int i = 0; i < AM::bands - 1; i++) {
         crossover.set_filter(i,  *params[AM::param_freq0 + i]);
     }

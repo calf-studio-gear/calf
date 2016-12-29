@@ -30,8 +30,9 @@ using namespace calf_plugins;
 using namespace std;
 
 const char *calf_plugins::calf_copyright_info = "(C) 2001-2016 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
-const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8", "LR4+8", "LR8+4+8"};
-const char *mb_crossover_filter_choices[] = { "LR4", "LR8", "LR4+8", "LR8+4+8"};
+const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8", "LR10", "LR12" };
+const char *mb_crossover_filter_choices[] = { "LR4", "LR8", "LR10", "LR12" };
+const char *mb_crossover_filter_split[] = { "Off", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th" };
 
 ////////////////////////////////////////////////////////////////////////////
 // A few macros to make
@@ -706,6 +707,7 @@ CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gat
     { 1,           -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" #band1, "Stereo Link" #band2}, \
     { 1,           0.0625,      1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating" #band1, "Gating " #band2 }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output" #band1, "Output " #band2 }, \
+    { 1,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, mb_crossover_filter_choices, "mode" #band1, #band2 }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band1, "Solo " #band2 }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass" #band1, "Bypass " #band2 },
 
@@ -732,7 +734,6 @@ CALF_PORT_PROPS(multibandsoft) = {
     { 10000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq8", "Split 9/11" },
     { 15000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq9", "Split 10/11" },
     { 18000,       10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq10", "Split 11/11" },
-    { 1,      0,  3,    0, PF_ENUM | PF_CTL_COMBO, mb_crossover_filter_choices, "mode", "Filter Mode" },
     { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandsoft_fast_choices, "fast", "Fast Mode" },
     MULTI_BAND_SOFT_PARAMS(0,1)
     MULTI_BAND_SOFT_PARAMS(1,2)

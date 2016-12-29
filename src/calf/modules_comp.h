@@ -220,7 +220,7 @@ private:
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;
-    int mode, page, bypass_;
+    int mode_set[12], page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -387,7 +387,7 @@ private:
     expander_audio_module gate[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;
-    int mode, page, bypass_;
+    int mode_set[12], page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -420,7 +420,8 @@ private:
     float meter_inL, meter_inR;
     expander_audio_module gate[strips];
     dsp::crossover crossover;
-    int mode, page, fast, bypass_;
+    int page, fast, bypass_;
+    int mode_set[strips];
     mutable int redraw;
     vumeters meters;
 public:
