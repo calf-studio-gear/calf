@@ -1079,14 +1079,20 @@ float crossover::set_filter(int b, float f, bool force) {
     float q;
     switch (m) {
         case 0:
-        default:
+        default: // LR2
             q = 0.5;
             break;
-        case 1:
+        case 1:  // LR4
             q = 0.7071068123730965;
             break;
-        case 2:
+        case 2:  // LR8
             q = 0.54;
+            break;
+        case 3:  // LR10
+            q = 0.5;
+            break;
+        case 4:  // LR12
+            q = 0.52;
             break;
     }
     for (int c = 0; c < channels; c ++) {
@@ -1097,7 +1103,7 @@ float crossover::set_filter(int b, float f, bool force) {
             lp[c][b][0].copy_coeffs(lp[c-1][b][0]);
             hp[c][b][0].copy_coeffs(hp[c-1][b][0]);
         }
-        if (m > 1) {
+        if (m == 2) {
             if (!c) {
                 lp[c][b][1].set_lp_rbj(freq[b], 1.34, (float)srate);
                 hp[c][b][1].set_hp_rbj(freq[b], 1.34, (float)srate);
@@ -1109,6 +1115,40 @@ float crossover::set_filter(int b, float f, bool force) {
             hp[c][b][2].copy_coeffs(hp[c][b][0]);
             lp[c][b][3].copy_coeffs(lp[c][b][1]);
             hp[c][b][3].copy_coeffs(hp[c][b][1]);
+        } else if (m == 3) {
+            if (!c) {
+                lp[c][b][1].set_lp_rbj(freq[b], 0.62, (float)srate);
+                hp[c][b][1].set_hp_rbj(freq[b], 0.62, (float)srate);
+                lp[c][b][2].set_lp_rbj(freq[b], 1.62, (float)srate);
+                hp[c][b][2].set_hp_rbj(freq[b], 1.62, (float)srate);
+            } else {
+                lp[c][b][1].copy_coeffs(lp[c-1][b][1]);
+                hp[c][b][1].copy_coeffs(hp[c-1][b][1]);
+                lp[c][b][2].copy_coeffs(lp[c-1][b][2]);
+                hp[c][b][2].copy_coeffs(hp[c-1][b][2]);
+            }
+            lp[c][b][3].copy_coeffs(lp[c][b][1]);
+            hp[c][b][3].copy_coeffs(hp[c][b][1]);
+            lp[c][b][4].copy_coeffs(lp[c][b][2]);
+            hp[c][b][4].copy_coeffs(hp[c][b][2]);
+        } else if (m == 4) {
+            if (!c) {
+                lp[c][b][1].set_lp_rbj(freq[b], 0.71, (float)srate);
+                hp[c][b][1].set_hp_rbj(freq[b], 0.71, (float)srate);
+                lp[c][b][2].set_lp_rbj(freq[b], 1.93, (float)srate);
+                hp[c][b][2].set_hp_rbj(freq[b], 1.93, (float)srate);
+            } else {
+                lp[c][b][1].copy_coeffs(lp[c-1][b][1]);
+                hp[c][b][1].copy_coeffs(hp[c-1][b][1]);
+                lp[c][b][2].copy_coeffs(lp[c-1][b][2]);
+                hp[c][b][2].copy_coeffs(hp[c-1][b][2]);
+            }
+            lp[c][b][3].copy_coeffs(lp[c][b][0]);
+            hp[c][b][3].copy_coeffs(hp[c][b][0]);
+            lp[c][b][4].copy_coeffs(lp[c][b][1]);
+            hp[c][b][4].copy_coeffs(hp[c][b][1]);
+            lp[c][b][5].copy_coeffs(lp[c][b][2]);
+            hp[c][b][5].copy_coeffs(hp[c][b][2]);
         } else {
             lp[c][b][1].copy_coeffs(lp[c][b][0]);
             hp[c][b][1].copy_coeffs(hp[c][b][0]);
@@ -1206,6 +1246,10 @@ int crossover::get_filter_count(int m) const
             return 2;
         case 2:
             return 4;
+        case 3:
+            return 5;
+        case 4:
+            return 6;
     }
 }
 
