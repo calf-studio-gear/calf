@@ -803,7 +803,7 @@
         <frame label="Band 1">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo0" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo0" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass0" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -816,7 +816,7 @@
         <frame label="Band 2">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo1" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo1" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass1" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -829,7 +829,7 @@
         <frame label="Band 3">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo2" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo2" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass2" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -842,7 +842,7 @@
         <frame label="Band 4">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo3" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo3" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="bypass3" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
@@ -855,7 +855,7 @@
         <frame label="Band 5">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo4" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo4" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo4" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -867,7 +867,7 @@
         <frame label="Band 6">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo5" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo5" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo5" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -881,7 +881,7 @@
         <frame label="Band 7">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo6" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo6" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo6" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -893,7 +893,7 @@
         <frame label="Band 8">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo7" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo7" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo7" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -905,7 +905,7 @@
         <frame label="Band 9">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo8" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo8" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo8" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -917,7 +917,7 @@
         <frame label="Band 10">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo9" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo9" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo9" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -929,7 +929,7 @@
         <frame label="Band 11">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo10" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo10" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo10" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
@@ -941,7 +941,7 @@
         <frame label="Band 12">
             <vbox>
                 <if cond="directlink">
-                    <line-graph refresh="1" width="160" height="160" param="solo11" square="1"/>
+                    <line-graph refresh="1" width="140" height="140" param="solo11" square="1"/>
                 </if>
                 <table cols="2" rows="2">
                     <led param="solo11" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>

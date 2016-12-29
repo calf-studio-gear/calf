@@ -379,7 +379,7 @@ struct multibandsoft_metadata: public plugin_metadata<multibandsoft_metadata>
            param_detection11, param_stereo_link11, param_gating11, param_output11, param_mode11, param_solo11, param_bypass11,
            param_notebook,
            param_count };
-    PLUGIN_NAME_ID_LABEL("multibandsoft", "multibandsoft", "Multiband Gate")
+    PLUGIN_NAME_ID_LABEL("multibandsoft", "multibandsoft", "Multiband Soft")
 };
 
 /// Markus's limiter - metadata
