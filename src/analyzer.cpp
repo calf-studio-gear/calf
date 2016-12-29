@@ -17,7 +17,8 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
- 
+
+#include <cairo/cairo.h>
 #include <limits.h>
 #include <memory.h>
 #include <math.h>
@@ -32,6 +33,7 @@ using namespace calf_plugins;
 
 #define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
 #define RGBAtoINT(r, g, b, a) ((uint32_t)(r * 255) << 24) + ((uint32_t)(g * 255) << 16) + ((uint32_t)(b * 255) << 8) + (uint32_t)(a * 255)
+
 
 analyzer::analyzer() {
     _accuracy       = -1;
@@ -391,7 +393,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
         if(_scale or _view == 2) {
             // we have linear view enabled or we want to see tit... erm curves
             if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
-                _iter = std::max(1, (int)floor(freq * \
+                _iter = std::max<double>(1, (int)floor(freq * \
                     (float)_accuracy / (float)srate));
             }    
         } else {
@@ -442,7 +444,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                                 break;
                             case 3:
                                 // Analyzer Denoised Peaks - filter out unwanted noise
-                                for(int k = 0; k < std::max(10 , std::min(400 ,\
+                                for(int k = 0; k < std::max<double>(10 , std::min<double>(400 ,\
                                     (int)(2.f*(float)((_iter - iter))))); k++) {
                                     //collect amplitudes in the environment of _iter to
                                     //be able to erase them from signal and leave just
@@ -469,13 +471,13 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                                 lastoutL = fft_outL[_iter];
                                 //pumping up actual signal an erase surrounding
                                 // sounds
-                                fft_outL[_iter] = 0.25f * std::max((float)(n * 0.6f * \
-                                    fabs(fft_outL[_iter]) - var1L), 1e-20f);
+                                fft_outL[_iter] = 0.25f * std::max<double>(n * 0.6f * \
+                                    fabs(fft_outL[_iter]) - var1L , 1e-20);
                                 if(_mode == 3 or _mode == 4) {
                                     // do the same with R channel if needed
                                     lastoutR = fft_outR[_iter];
-                                    fft_outR[_iter] = 0.25f * std::max((float)(n * \
-                                        0.6f * fabs(fft_outR[_iter]) - var1R), 1e-20f);
+                                    fft_outR[_iter] = 0.25f * std::max<double>(n * \
+                                        0.6f * fabs(fft_outR[_iter]) - var1R , 1e-20);
                                 }
                                 break;
                         }
@@ -691,7 +693,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
 //                
 //                if(((i % lintrans == 0 and points - i > lintrans) or i == points - 1 ) and subindex == 0) {
 
-//                    _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
+//                    _iter = std::max<double>(1, (int)floor(freq * (float)_accuracy / (float)srate));
 //                    //printf("_iter %3d\n",_iter);
 //                }
 //                if(_iter > iter and subindex == 0)
@@ -929,7 +931,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
               or ((sub & 1) and _draw_upper > 0)) {
                 // add a label and make the lines straight
                 std::stringstream ss;
-                ss << (subindex - std::max(0, _draw_upper)) * -6 << " dB";
+                ss << (subindex - std::max<double>(0, _draw_upper)) * -6 << " dB";
                 legend = ss.str();
                 context->set_dash(dash, 0);
             }
@@ -969,7 +971,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             if ((!(subindex & 1) and !_draw_upper)
               or ((subindex & 1) and _draw_upper)) {
                 std::stringstream ss;
-                ss << (subindex - std::max(0, _draw_upper)) * 6 - 72 << " dB";
+                ss << (subindex - std::max<double>(0, _draw_upper)) * 6 - 72 << " dB";
                 legend = ss.str();
                 context->set_dash(dash, 0);
             }

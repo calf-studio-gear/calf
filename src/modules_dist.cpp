@@ -172,21 +172,19 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             
             for (int i = 0; i < c; ++i) {
                 // all pre filters in chain
-                if (*params[param_pre] > 0.5) {
-                    proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
-                    proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
-                }
+                proc[i] = lp[i][1].process(lp[i][0].process(proc[i]));
+                proc[i] = hp[i][1].process(hp[i][0].process(proc[i]));
+
                 // ...saturate...
                 proc[i] = dist[i].process(proc[i]);
                 
                 // tone control
                 proc[i] = p[i].process(proc[i]);
-                
+
                 // all post filters in chain
-                if (*params[param_post] > 0.5) {
-                    proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
-                    proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
-                }
+                proc[i] = lp[i][2].process(lp[i][3].process(proc[i]));
+                proc[i] = hp[i][2].process(hp[i][3].process(proc[i]));
+                
                 //subtract gain
                 proc[i] *= onedivlevelin;
                 
@@ -390,7 +388,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             maxDrive = dist[0].get_distortion_level() * *params[param_amount];
             
             if(in_count > 1 && out_count > 1) {
-                maxDrive = std::max(maxDrive, dist[1].get_distortion_level() * *params[param_amount]);
+                maxDrive = std::max<double>(maxDrive, dist[1].get_distortion_level() * *params[param_amount]);
                 // full stereo
                 out[0] = (proc[0] * *params[param_amount] + in2out * in[0]) * *params[param_level_out];
                 out[1] = (proc[1] * *params[param_amount] + in2out * in[1]) * *params[param_level_out];
@@ -581,7 +579,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
                 else
                     out[1] = (proc[1] * *params[param_amount] + in[1]) * *params[param_level_out];
                 outs[1][offset] = out[1];
-                maxDrive = std::max(dist[0].get_distortion_level() * *params[param_amount],
+                maxDrive = std::max<double>(dist[0].get_distortion_level() * *params[param_amount],
                                             dist[1].get_distortion_level() * *params[param_amount]);
             } else if(out_count > 1) {
                 // mono -> pseudo stereo
@@ -796,8 +794,8 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             lfo2.advance(1);
             
             // dot
-            rms = std::max((double)rms, (double)((fabs(Lo) + fabs(Ro)) / 2));
-            input = std::max((double)input, (double)((fabs(Lc) + fabs(Rc)) / 2));
+            rms = std::max<double>((double)rms, (fabs(Lo) + fabs(Ro)) / 2);
+            input = std::max<double>((double)input, (fabs(Lc) + fabs(Rc)) / 2);
             
             float values[] = {inL, inR, outs[0][i], outs[1][i]};
             meters.process(values);
@@ -944,7 +942,7 @@ void crusher_audio_module::params_changed()
     lfo.set_params(*params[param_lforate], 0, 0.f, srate, 0.5f);
     // calc lfo offsets
     float rad  = *params[param_lforange] / 2.f;
-    smin = std::max(*params[param_samples] - rad, 1.f);
+    smin = std::max<double>(*params[param_samples] - rad, 1.f);
     float sun  = *params[param_samples] - rad - smin;
     float smax = std::min(*params[param_samples] + rad, 250.f);
     float sov  = *params[param_samples] + rad - smax;
