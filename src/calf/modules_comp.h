@@ -30,6 +30,7 @@
 #include "loudness.h"
 #include "metadata.h"
 #include "plugin_tools.h"
+#include "analyzer.h"
 #include "bypass.h"
 
 namespace calf_plugins {
@@ -443,6 +444,47 @@ public:
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+/**********************************************************************
+ * SOFT EQUALIZER by Adriano Moura
+**********************************************************************/
+
+class softeq_audio_module: public audio_module<softeq_metadata>, public frequency_response_line_graph {
+private:
+    typedef softeq_audio_module AM;
+    analyzer _analyzer;
+    enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
+    int indiv_old;
+    bool analyzer_old;
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    static const int intch = 2; // internal channels
+    float xout[intch], xin[intch];
+    float meter_inL, meter_inR;
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    expander_audio_module gate;
+    int keep_gliding;
+    mutable int last_peak;
+    int bypass_;
+    mutable int redraw;
+    vumeters meters;
+public:
+    typedef std::complex<double> cfloat;
+    mutable volatile int last_generation, last_calculated_generation;
+    uint32_t srate;
+    bool is_active;
+    softeq_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    float freq_gain(int index, double freq) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 

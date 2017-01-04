@@ -2833,6 +2833,342 @@ bool multibandsoft_audio_module::get_layers(int index, int generation, unsigned 
     return r;
 }
 
+/**********************************************************************
+ * SOFT EQ by Adriano Moura
+**********************************************************************/
+
+softeq_audio_module::softeq_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    redraw     = 0;
+    bypass_    = 0;
+
+    keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
+    analyzer_old = false;
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
+}
+
+void softeq_audio_module::activate()
+{
+    is_active = true;
+    params_changed();
+    gate.activate();
+    gate.id = 0;
+}
+
+void softeq_audio_module::deactivate()
+{
+    is_active = false;
+    gate.deactivate();
+}
+
+static inline double glide(double value, double target, int &keep_gliding)
+{
+    if (target == value)
+        return value;
+    keep_gliding = 1;
+    if (target > value)
+        return std::min(target, (value + 0.1) * 1.003);
+    else
+        return std::max(target, (value / 1.003) - 0.1);
+}
+
+void softeq_audio_module::params_changed()
+{
+    int b = (int)*params[param_bypass];
+    if (b != bypass_) {
+        redraw = 1;
+        bypass_ = b;
+    }
+    keep_gliding = 0;
+    
+    gate.set_params(*params[param_attack], \
+                    *params[param_release], \
+                    *params[param_threshold], \
+                    *params[param_ratio], \
+                    *params[param_knee], \
+                    *params[param_makeup], \
+                    *params[param_detection], \
+                    *params[param_stereo_link], \
+                    *params[param_bypass], \
+                    0, \
+                    *params[param_range]);
+    gate.update_curve();
+
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        int offset = i * params_per_band;
+        float freq = *params[AM::param_p1_freq + offset];
+        float level = *params[AM::param_p1_level + offset];
+        float q = *params[AM::param_p1_q + offset];
+        if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
+            pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
+            pR[i].copy_coeffs(pL[i]);
+            p_freq_old[i] = freq;
+            p_level_old[i] = level;
+            p_q_old[i] = q;
+        }
+    }
+    if (*params[AM::param_individuals] != indiv_old) {
+        indiv_old = *params[AM::param_individuals];
+        redraw_graph = true;
+    }
+    
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
+            redraw_graph = true;
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+    _analyzer.set_params(
+        256, 1, 6, 0, 1,
+        *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
+        0, 0, 15, 2, 0, 0
+    );
+    
+    if ((bool)*params[AM::param_analyzer_active] != analyzer_old) {
+        redraw_graph = true;
+        analyzer_old = (bool)*params[AM::param_analyzer_active];
+    }
+}
+
+void softeq_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    gate.set_sample_rate(srate);
+    _analyzer.set_sample_rate(sr);
+
+    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR, \
+                   -param_gating };
+    // put eq params
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
+    meters.init(params, meter, clip, 5, srate);
+
+    gate.update_curve();
+}
+
+uint32_t softeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (keep_gliding)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
+
+    numsamples += offset;
+
+    float inL, gprocL, outL = 0.f;
+    float inR, gprocR, outR = 0.f;
+
+    if (bypass_) {
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            _analyzer.process(0, 0);
+            ++offset;
+        }
+    } else {
+        while(offset < numsamples) {
+            inL = ins[0][offset] * *params[param_level_in];
+            inR = ins[1][offset] * *params[param_level_in];
+            gprocL = inL;
+            gprocR = inR;
+            gate.process(gprocL, gprocR);
+
+            float procL = gprocL;
+            float procR = gprocR;
+
+            for (int i = 0; i < AM::PeakBands; i++)
+            {
+                int offset = i * params_per_band;
+                int active = *params[AM::param_p1_active + offset];
+                //if (active > 3) dsp.diff_ms(procL, procR);
+                if (active == 1 or active == 2 or active == 4)
+                    procL = pL[i].process(procL);
+                if (active == 1 or active == 3 or active == 5)
+                    procR = pR[i].process(procR);
+                //if (active > 3) dsp.undiff_ms(procL, procR);
+            }
+            
+            outL = (procL - gprocL + inL) * *params[param_level_out];
+            outR = (procR - gprocR + inR) * *params[param_level_out];
+
+            // analyzer
+            _analyzer.process((inL + inR) / 2.f, (outL + outR) / 2.f);
+
+            float values[] = {inL, inR, outL, outR, 0};
+            values[4] = gate.get_expander_level();
+            meters.process(values);
+
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+
+            ++offset;
+        }
+
+        for(int i = 0; i < AM::PeakBands; ++i) {
+            pL[i].sanitize();
+            pR[i].sanitize();
+        }
+    }
+
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+bool softeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    bool r;
+    const expander_audio_module *m = &gate;
+
+    if (m && (index >= param_range && index <= param_gating ) ) {
+        if (redraw)
+            redraw = std::max(0, redraw - 1);
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        if (phase and *params[AM::param_analyzer_active]) {
+            r = _analyzer.get_graph(subindex, phase, data, points, context, mode);
+            if (*params[AM::param_analyzer_mode] == 2) {
+                set_channel_color(context, subindex ? 0 : 1, 0.15);
+            } else {
+                context->set_source_rgba(0,0,0,0.1);
+            }
+            return r;
+        } else if (phase and !*params[AM::param_analyzer_active]) {
+            redraw_graph = false;
+            return false;
+        } else {
+            int max = PeakBands;
+            
+            if (!is_active
+            or (subindex and !*params[AM::param_individuals])
+            or (subindex > max and *params[AM::param_individuals])) {
+                redraw_graph = false;
+                return false;
+            }
+            
+            // first graph is the overall frequency response graph
+            if (!subindex)
+                return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+            
+            // get out if max band is reached
+            if (last_peak >= max) {
+                last_peak = 0;
+                redraw_graph = false;
+                return false;
+            }
+            
+            // get the next filter to draw a curve for and leave out inactive
+            // filters
+            while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
+                last_peak ++;
+
+            // get out if max band is reached
+            if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+                last_peak = 0;
+                redraw_graph = false;
+                return false;
+            }
+                
+            // draw the individual curve of the actual filter
+            for (int i = 0; i < points; i++) {
+                double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+                if (last_peak < PeakBands) {
+                    data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+                }
+                data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+            }
+            
+            last_peak ++;
+            *mode = 4;
+            context->set_source_rgba(0,0,0,0.075);
+            return true;
+        }
+    }
+
+    return r;
+}
+
+bool softeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = &gate;
+    if (m && (index >= param_range && index <= param_gating ) )
+        return m->get_dot(subindex, x, y, size, context);
+    return false;
+}
+
+bool softeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = &gate;
+    if (m && (index >= param_range && index <= param_gating ) )
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    else
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+
+    if (phase)
+        return false;
+
+    return false;
+}
+
+float softeq_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+
+    for (int i = 0; i < PeakBands; i++) {
+        if (*params[AM::param_p1_active + i * params_per_band] > 0.f)
+            ret *= pL[i].freq_gain(freq, (float)srate);
+        else
+            ret *= 1.f;
+    }
+    return ret;
+}
+
+bool softeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = &gate;
+
+    if (m && (index >= param_range && index <= param_gating ) )
+        r = m->get_layers(index, generation, layers);
+    else {
+        redraw_graph = redraw_graph || !generation;
+        layers = *params[AM::param_analyzer_active] ? LG_REALTIME_GRAPH : 0;
+        layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+        redraw_graph |= (bool)*params[AM::param_analyzer_active];
+        return redraw_graph or !generation;
+    }
+
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
+}
+
 
 /**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt

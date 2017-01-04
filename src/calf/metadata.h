@@ -394,6 +394,27 @@ struct multibandsoft_metadata: public plugin_metadata<multibandsoft_metadata>
     PLUGIN_NAME_ID_LABEL("multibandsoft", "multibandsoft", "Multiband Soft")
 };
 
+/// Adriano's Soft EQ - metadata
+struct softeq_metadata: public plugin_metadata<softeq_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_range, param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_gating,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_count };
+    enum { PeakBands = 8, first_graph_param = param_p1_active, last_graph_param = param_p8_q };
+    PLUGIN_NAME_ID_LABEL("softeq", "softeq", "Soft Equalizer")
+};
+
 /// Markus's limiter - metadata
 struct limiter_metadata: public plugin_metadata<limiter_metadata>
 {
