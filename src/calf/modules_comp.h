@@ -30,6 +30,7 @@
 #include "loudness.h"
 #include "metadata.h"
 #include "plugin_tools.h"
+#include "analyzer.h"
 #include "bypass.h"
 
 namespace calf_plugins {
@@ -453,8 +454,10 @@ public:
 class softeq_audio_module: public audio_module<softeq_metadata>, public frequency_response_line_graph {
 private:
     typedef softeq_audio_module AM;
+    analyzer _analyzer;
     enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     int indiv_old;
+    bool analyzer_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
     static const int intch = 2; // internal channels

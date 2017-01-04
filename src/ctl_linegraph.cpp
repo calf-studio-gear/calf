@@ -1447,6 +1447,7 @@ calf_line_graph_init (CalfLineGraph *lg)
     lg->force_redraw         = false;
     lg->zoom                 = 1;
     lg->param_zoom           = -1;
+    lg->param_force          = -1;
     lg->offset               = 0;
     lg->param_offset         = -1;
     lg->recreate_surfaces    = 1;

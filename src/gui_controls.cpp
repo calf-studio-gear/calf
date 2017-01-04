@@ -1270,7 +1270,15 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     const string &zoom_name = attribs["zoom"];
     if (zoom_name != "")
         clg->param_zoom = gui->get_param_no_by_name(zoom_name);
-    
+
+    //const string &force_name = attribs["force"];
+    //if (force_name != "")
+    //    clg->param_force = gui->get_param_no_by_name(force_name);
+
+    // atrribs seems to return nothing for "force", so use this for now...
+    const string fuck = "force";
+    clg->param_force = gui->get_param_no_by_name(fuck);
+
     const string &offset_name = attribs["offset"];
     if (offset_name != "")
         clg->param_offset = gui->get_param_no_by_name(offset_name);
@@ -1397,7 +1405,14 @@ void line_graph_param_control::set()
         int ws = gdk_window_get_state(widget->window);
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
-        
+
+        if (clg->param_force >= 0) {
+            int _f = gui->plugin->get_param_value(clg->param_force);
+            if (_f > 0) {
+                force = true;
+                clg->force_redraw = true;
+            }
+        }
         if (clg->param_zoom >= 0) {
             float _z = gui->plugin->get_param_value(clg->param_zoom);
             if (_z != clg->zoom) {
