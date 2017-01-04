@@ -944,6 +944,7 @@ CALF_PORT_PROPS(softeq) = {
     EQ_BAND_PARAMS(6, 2000)
     EQ_BAND_PARAMS(7, 8000)
     EQ_BAND_PARAMS(8, 12000)
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "force", "Auto refresh" } , \
     EQ_DISPLAY_PARAMS
     {}
 };

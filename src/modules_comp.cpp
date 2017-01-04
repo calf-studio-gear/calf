@@ -2847,7 +2847,6 @@ softeq_audio_module::softeq_audio_module()
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
-    analyzer_old = false;
     for (int i = 0; i < AM::PeakBands; i++)
     {
         p_freq_old[i] = 0;
@@ -2932,23 +2931,12 @@ void softeq_audio_module::params_changed()
         old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
     
-    _analyzer.set_params(
-        256, 1, 6, 0, 1,
-        *params[AM::param_analyzer_mode] + (*params[AM::param_analyzer_mode] >= 3 ? 5 : 1),
-        0, 0, 15, 2, 0, 0
-    );
-    
-    if ((bool)*params[AM::param_analyzer_active] != analyzer_old) {
-        redraw_graph = true;
-        analyzer_old = (bool)*params[AM::param_analyzer_active];
-    }
 }
 
 void softeq_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
-    _analyzer.set_sample_rate(sr);
 
     int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR, \
                    -param_gating };
@@ -2987,7 +2975,6 @@ uint32_t softeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             outs[1][offset] = ins[1][offset];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
-            _analyzer.process(0, 0);
             ++offset;
         }
     } else {
@@ -3016,8 +3003,8 @@ uint32_t softeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             outL = (procL - gprocL + inL) * *params[param_level_out];
             outR = (procR - gprocR + inR) * *params[param_level_out];
 
-            float values[] = {inL, inR, outL, outR, 0};
-            values[4] = gate.get_expander_level();
+            glevel = gate.get_expander_level();
+            float values[] = {inL, inR, outL, outR, glevel};
             meters.process(values);
 
             outs[0][offset] = outL;
@@ -3128,7 +3115,7 @@ float softeq_audio_module::freq_gain(int index, double freq) const
         else
             ret *= 1.f;
     }
-    return ret;
+    return (ret - 1) * glevel + 1;
 }
 
 bool softeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
