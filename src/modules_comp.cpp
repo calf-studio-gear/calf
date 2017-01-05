@@ -2896,7 +2896,7 @@ void softeq_audio_module::params_changed()
                     *params[param_threshold], \
                     *params[param_ratio], \
                     *params[param_knee], \
-                    *params[param_makeup], \
+                    1.f, \
                     *params[param_detection], \
                     *params[param_stereo_link], \
                     *params[param_bypass], \

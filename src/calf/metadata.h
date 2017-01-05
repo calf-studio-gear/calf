@@ -400,7 +400,7 @@ struct softeq_metadata: public plugin_metadata<softeq_metadata>
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
            STEREO_VU_METER_PARAMS,
-           param_range, param_threshold, param_ratio, param_attack, param_release, param_makeup, param_knee, param_detection, param_stereo_link, param_gating,
+           param_range, param_threshold, param_ratio, param_attack, param_release, param_knee, param_detection, param_stereo_link, param_gating,
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,

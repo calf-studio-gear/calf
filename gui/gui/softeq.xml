@@ -1,5 +1,5 @@
 <vbox>
-    <table expand-y="0" expand-x="1" spacing="3" rows="1" cols="8">
+    <table expand-y="0" expand-x="1" spacing="3" rows="1" cols="7">
         <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
         <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
         <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
@@ -24,14 +24,10 @@
         <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
         <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
         <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
-
-        <label param="range" attach-x="6" attach-y="0" expand-x="0"/>
-        <knob param="range"  attach-x="6" attach-y="1" attach-h="2" expand-x="0" ticks="0 0.0625 0.25 0.5 1" />
-        <value param="range" attach-x="6" attach-y="3" expand-x="0"/>
         
-        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
     </table>
 
     <table expand-y="0" expand-x="1" spacing="0" rows="2" cols="2">
@@ -236,9 +232,9 @@
                             <value param="threshold" />
                         </vbox>
                         <vbox expand="0" attach-x="2" attach-y="1">
-                            <label param="makeup" />
-                            <knob param="makeup" />
-                            <value param="makeup" />
+                            <label param="range"/>
+                            <knob param="range" ticks="0 0.0625 0.25 0.5 1" />
+                            <value param="range"/>
                         </vbox>
                     </table>
                     <hbox homogeneous="1">

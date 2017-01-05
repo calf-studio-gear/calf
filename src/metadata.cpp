@@ -931,7 +931,6 @@ CALF_PORT_PROPS(softeq) = {
     { 1.2,         1,           20,    21, PF_FLOAT | PF_SCALE_LOG_INF | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "ratio" , "Ratio"  }, \
     { 150,         0.01,        2000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "attack" , "Attack"  }, \
     { 300,         0.01,        2000,  0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_MSEC, NULL, "release" , "Release"  }, \
-    { 1,           1,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "makeup" , "Makeup"  }, \
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee" , "Knee"  }, \
     { 1,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_detection_names, "detection" , "Detection"  }, \
     { 1,          -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" , "Stereo Link"}, \
