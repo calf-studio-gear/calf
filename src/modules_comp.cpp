@@ -3115,7 +3115,10 @@ float softeq_audio_module::freq_gain(int index, double freq) const
         else
             ret *= 1.f;
     }
-    return (ret - 1) * glevel + 1;
+    if ( *params[AM::param_force] )
+        return (ret - 1) * glevel + 1;
+    else
+        return ret;
 }
 
 bool softeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
