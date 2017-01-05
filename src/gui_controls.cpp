@@ -1271,13 +1271,9 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     if (zoom_name != "")
         clg->param_zoom = gui->get_param_no_by_name(zoom_name);
 
-    //const string &force_name = attribs["force"];
-    //if (force_name != "")
-    //    clg->param_force = gui->get_param_no_by_name(force_name);
-
-    // atrribs seems to return nothing for "force", so use this for now...
-    const string fuck = "force";
-    clg->param_force = gui->get_param_no_by_name(fuck);
+    const string &force_name = attribs["force"];
+    if (force_name != "")
+        clg->param_force = gui->get_param_no_by_name(force_name);
 
     const string &offset_name = attribs["offset"];
     if (offset_name != "")
