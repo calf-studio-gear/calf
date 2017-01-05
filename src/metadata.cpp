@@ -85,11 +85,23 @@ const char *periodical_mode_names[] = {
     { frequency,   10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "p" #band "_freq", "Freq " #band }, \
     { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
 
+#define EQ_BAND_NOMS_PARAMS(band, frequency) \
+    { 0,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, active_mode_names_noms, "p" #band "_active", "F" #band " Active" }, \
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "p" #band "_level", "Level " #band }, \
+    { frequency,   10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "p" #band "_freq", "Freq " #band }, \
+    { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
+
 #define EQ_DISPLAY_PARAMS \
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "force", "Auto refresh" } , \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
     { 0.25,   0.0625,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB, NULL, "zoom", "Zoom" }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer Active" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, eq_analyzer_mode_names, "analyzer_mode", "Analyzer Mode" }, \
+
+#define EQ_DISPLAY_NO_ANALYZER_PARAMS \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "force", "Auto refresh" } , \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
+    { 0.25,   0.0625,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB, NULL, "zoom", "Zoom" }, \
 
 #define PERIODICAL_DEFINITIONS(init) \
     { init,      0,    3,     0, PF_ENUM | PF_CTL_COMBO, periodical_mode_names, "timing", "Timing" }, \
@@ -918,6 +930,7 @@ CALF_PLUGIN_INFO(emphasis) = { 0x8599, "Emphasis", "Calf Emphasis", "Calf Studio
 
 ////////////////////////////////////////////////////////////////////////////
 const char *active_mode_names[] = { " ", "ON", "Left", "Right", "Mid", "Side" };
+const char *active_mode_names_noms[] = { " ", "ON", "Left", "Right" };
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -935,16 +948,15 @@ CALF_PORT_PROPS(softeq) = {
     { 1,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_detection_names, "detection" , "Detection"  }, \
     { 1,          -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" , "Stereo Link"}, \
     { 1,           0.0625,      1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating" , "Gating"  }, \
-    EQ_BAND_PARAMS(1, 30)
-    EQ_BAND_PARAMS(2, 100)
-    EQ_BAND_PARAMS(3, 200)
-    EQ_BAND_PARAMS(4, 600)
-    EQ_BAND_PARAMS(5, 1000)
-    EQ_BAND_PARAMS(6, 2000)
-    EQ_BAND_PARAMS(7, 8000)
-    EQ_BAND_PARAMS(8, 12000)
-    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "force", "Auto refresh" } , \
-    EQ_DISPLAY_PARAMS
+    EQ_BAND_NOMS_PARAMS(1, 30)
+    EQ_BAND_NOMS_PARAMS(2, 100)
+    EQ_BAND_NOMS_PARAMS(3, 200)
+    EQ_BAND_NOMS_PARAMS(4, 600)
+    EQ_BAND_NOMS_PARAMS(5, 1000)
+    EQ_BAND_NOMS_PARAMS(6, 2000)
+    EQ_BAND_NOMS_PARAMS(7, 8000)
+    EQ_BAND_NOMS_PARAMS(8, 12000)
+    EQ_DISPLAY_NO_ANALYZER_PARAMS
     {}
 };
 
