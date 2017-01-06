@@ -1402,9 +1402,14 @@ void line_graph_param_control::set()
         if (ws & (GDK_WINDOW_STATE_WITHDRAWN | GDK_WINDOW_STATE_ICONIFIED))
             return;
 
-        if (clg->param_force >= 0) {
+        if (clg->param_force >= 0 || clg->force_count) {
             int _f = gui->plugin->get_param_value(clg->param_force);
             if (_f > 0) {
+                clg->force_count = 2;
+                force = true;
+                clg->force_redraw = true;
+            } else if (clg->force_count) {
+                clg->force_count -= 1;
                 force = true;
                 clg->force_redraw = true;
             }
