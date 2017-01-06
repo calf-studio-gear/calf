@@ -484,6 +484,7 @@ public:
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     float freq_gain(int index, double freq) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
+    inline std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
 };
 
 /**********************************************************************

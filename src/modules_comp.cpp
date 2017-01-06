@@ -3141,6 +3141,11 @@ bool elasticeq_audio_module::get_layers(int index, int generation, unsigned int 
     return r;
 }
 
+inline std::string elasticeq_audio_module::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
+}
+
 
 /**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt
