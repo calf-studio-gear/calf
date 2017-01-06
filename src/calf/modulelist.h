@@ -37,7 +37,7 @@
     PER_MODULE_ITEM(sidechaingate,       false, "sidechaingate")
     PER_MODULE_ITEM(multibandgate,       false, "multibandgate")
     PER_MODULE_ITEM(multibandsoft,       false, "multibandsoft")
-    PER_MODULE_ITEM(softeq,              false, "softeq")
+    PER_MODULE_ITEM(elasticeq,              false, "elasticeq")
     
     // Limiter
     PER_MODULE_ITEM(limiter,             false, "limiter")

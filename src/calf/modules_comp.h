@@ -447,12 +447,12 @@ public:
 };
 
 /**********************************************************************
- * SOFT EQUALIZER by Adriano Moura
+ * ELASTIC EQUALIZER by Adriano Moura
 **********************************************************************/
 
-class softeq_audio_module: public audio_module<softeq_metadata>, public frequency_response_line_graph {
+class elasticeq_audio_module: public audio_module<elasticeq_metadata>, public frequency_response_line_graph {
 private:
-    typedef softeq_audio_module AM;
+    typedef elasticeq_audio_module AM;
     enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
     int indiv_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
@@ -473,7 +473,7 @@ public:
     uint32_t srate;
     float glevel;
     bool is_active;
-    softeq_audio_module();
+    elasticeq_audio_module();
     void activate();
     void deactivate();
     void params_changed();

@@ -394,8 +394,8 @@ struct multibandsoft_metadata: public plugin_metadata<multibandsoft_metadata>
     PLUGIN_NAME_ID_LABEL("multibandsoft", "multibandsoft", "Multiband Soft")
 };
 
-/// Adriano's Soft EQ - metadata
-struct softeq_metadata: public plugin_metadata<softeq_metadata>
+/// Adriano's Elastic EQ - metadata
+struct elasticeq_metadata: public plugin_metadata<elasticeq_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_bypass, param_level_in, param_level_out,
@@ -412,7 +412,7 @@ struct softeq_metadata: public plugin_metadata<softeq_metadata>
            param_force, param_individuals, param_zoom,
            param_count };
     enum { PeakBands = 8, first_graph_param = param_p1_active, last_graph_param = param_p8_q };
-    PLUGIN_NAME_ID_LABEL("softeq", "softeq", "Soft Equalizer")
+    PLUGIN_NAME_ID_LABEL("elasticeq", "elasticeq", "Elastic Equalizer")
 };
 
 /// Markus's limiter - metadata

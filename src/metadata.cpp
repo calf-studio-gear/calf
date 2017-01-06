@@ -933,9 +933,9 @@ const char *active_mode_names_noms[] = { " ", "ON", "Left", "Right" };
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(softeq) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_NAMES(elasticeq) = {"In L", "In R", "Out L", "Out R"};
 
-CALF_PORT_PROPS(softeq) = {
+CALF_PORT_PROPS(elasticeq) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 0.06125,     0.000015849, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "range" , "Reduction"  }, \
@@ -959,7 +959,7 @@ CALF_PORT_PROPS(softeq) = {
     {}
 };
 
-CALF_PLUGIN_INFO(softeq) = { 0x8505, "SoftEq", "Calf Soft Equalizer", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "EQPlugin" };
+CALF_PLUGIN_INFO(elasticeq) = { 0x8505, "ElasticEQ", "Calf Elastic Equalizer", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

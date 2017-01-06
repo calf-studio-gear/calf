@@ -2834,10 +2834,10 @@ bool multibandsoft_audio_module::get_layers(int index, int generation, unsigned 
 }
 
 /**********************************************************************
- * SOFT EQ by Adriano Moura
+ * ELASTIC EQ by Adriano Moura
 **********************************************************************/
 
-softeq_audio_module::softeq_audio_module()
+elasticeq_audio_module::elasticeq_audio_module()
 {
     is_active = false;
     srate = 0;
@@ -2857,7 +2857,7 @@ softeq_audio_module::softeq_audio_module()
         old_params_for_graph[i] = -1;
 }
 
-void softeq_audio_module::activate()
+void elasticeq_audio_module::activate()
 {
     is_active = true;
     params_changed();
@@ -2865,7 +2865,7 @@ void softeq_audio_module::activate()
     gate.id = 0;
 }
 
-void softeq_audio_module::deactivate()
+void elasticeq_audio_module::deactivate()
 {
     is_active = false;
     gate.deactivate();
@@ -2882,7 +2882,7 @@ static inline double glide(double value, double target, int &keep_gliding)
         return std::max(target, (value / 1.003) - 0.1);
 }
 
-void softeq_audio_module::params_changed()
+void elasticeq_audio_module::params_changed()
 {
     int b = (int)*params[param_bypass];
     if (b != bypass_) {
@@ -2933,7 +2933,7 @@ void softeq_audio_module::params_changed()
     
 }
 
-void softeq_audio_module::set_sample_rate(uint32_t sr)
+void elasticeq_audio_module::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     gate.set_sample_rate(srate);
@@ -2947,7 +2947,7 @@ void softeq_audio_module::set_sample_rate(uint32_t sr)
     gate.update_curve();
 }
 
-uint32_t softeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+uint32_t elasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     if (keep_gliding)
     {
@@ -3023,7 +3023,7 @@ uint32_t softeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint
     return outputs_mask;
 }
 
-bool softeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+bool elasticeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     bool r;
     const expander_audio_module *m = &gate;
@@ -3083,7 +3083,7 @@ bool softeq_audio_module::get_graph(int index, int subindex, int phase, float *d
     return r;
 }
 
-bool softeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+bool elasticeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
     const expander_audio_module *m = &gate;
     if (m && (index >= param_range && index <= param_gating ) )
@@ -3091,7 +3091,7 @@ bool softeq_audio_module::get_dot(int index, int subindex, int phase, float &x, 
     return false;
 }
 
-bool softeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool elasticeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     const expander_audio_module *m = &gate;
     if (m && (index >= param_range && index <= param_gating ) )
@@ -3105,7 +3105,7 @@ bool softeq_audio_module::get_gridline(int index, int subindex, int phase, float
     return false;
 }
 
-float softeq_audio_module::freq_gain(int index, double freq) const
+float elasticeq_audio_module::freq_gain(int index, double freq) const
 {
     float ret = 1.f;
 
@@ -3121,7 +3121,7 @@ float softeq_audio_module::freq_gain(int index, double freq) const
         return ret;
 }
 
-bool softeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool elasticeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     bool r;
     const expander_audio_module *m = &gate;
