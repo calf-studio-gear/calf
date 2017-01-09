@@ -829,6 +829,23 @@ struct xover4_metadata: public plugin_metadata<xover4_metadata>
     enum { channels = 2, bands = 4 };
     PLUGIN_NAME_ID_LABEL("xover4band", "xover4", "X-Over 4 Band")
 };
+struct xover8_metadata: public plugin_metadata<xover8_metadata>
+{
+    enum { in_count = 2, out_count = 16, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level, param_meter_0, param_meter_1, param_mode,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4, param_freq5, param_freq6,
+           param_level1, param_active1, param_phase1, param_delay1, param_meter_01, param_meter_11,
+           param_level2, param_active2, param_phase2, param_delay2, param_meter_02, param_meter_12,
+           param_level3, param_active3, param_phase3, param_delay3, param_meter_03, param_meter_13,
+           param_level4, param_active4, param_phase4, param_delay4, param_meter_04, param_meter_14,
+           param_level5, param_active5, param_phase5, param_delay5, param_meter_05, param_meter_15,
+           param_level6, param_active6, param_phase6, param_delay6, param_meter_06, param_meter_16,
+           param_level7, param_active7, param_phase7, param_delay7, param_meter_07, param_meter_17,
+           param_level8, param_active8, param_phase8, param_delay8, param_meter_08, param_meter_18,
+           param_count };
+    enum { channels = 2, bands = 8 };
+    PLUGIN_NAME_ID_LABEL("xover8band", "xover8", "X-Over 8 Band")
+};
 
 /// Markus and Chrischis Vocoder - metadata
 struct vocoder_metadata: public plugin_metadata<vocoder_metadata>

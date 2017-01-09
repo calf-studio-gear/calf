@@ -1,0 +1,228 @@
+<vbox>
+    <hbox spacing="8">
+        <frame label="Input">
+            <vbox attach-x="0">
+                <vumeter param="meter_L" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <hbox spacing="12">
+                    <label/>
+                    <vbox>
+                        <label/>
+                        <label param="level" />
+                        <knob param="level" size="5" type="1" />
+                        <value param="level" />
+                        <label/>
+                        <combo param="mode" fill="0" expand="0"/>
+                    </vbox>
+                    <label/>
+                </hbox>
+            </vbox>
+        </frame>
+        <frame label="X-Over">
+            <if cond="directlink">
+                <line-graph refresh="1" width="800" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="9" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2" handle4-x="freq3" handle5-x="freq4" handle6-x="freq5" handle7-x="freq6"/>
+            </if>
+        </frame>
+    </hbox>
+    <hbox spacing="8">
+        <frame label="Band 1">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active1" size="1"/>
+                        <toggle param="phase1" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level1" type="1"/>
+                        <value param="level1"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay1"/>
+                        <value param="delay1"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R1" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 2">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active2" size="1"/>
+                        <toggle param="phase2" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level2" type="1"/>
+                        <value param="level2"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay2"/>
+                        <value param="delay2"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R2" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 3">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active3" size="1"/>
+                        <toggle param="phase3" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level3" type="1"/>
+                        <value param="level3"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay3"/>
+                        <value param="delay3"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R3" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 4">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active4" size="1"/>
+                        <toggle param="phase4" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level4" type="1"/>
+                        <value param="level4"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay4"/>
+                        <value param="delay4"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L4" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R4" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+
+        <frame label="Band 5">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active5" size="1"/>
+                        <toggle param="phase5" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level5" type="1"/>
+                        <value param="level5"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay5"/>
+                        <value param="delay5"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L5" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R5" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 6">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active6" size="1"/>
+                        <toggle param="phase6" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level6" type="1"/>
+                        <value param="level6"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay6"/>
+                        <value param="delay6"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L6" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R6" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 7">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active7" size="1"/>
+                        <toggle param="phase7" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level7" type="1"/>
+                        <value param="level7"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay7"/>
+                        <value param="delay7"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L7" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R7" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+        
+        <frame label="Band 8">
+            <vbox>
+                <hbox>
+                    <vbox spacing="4">
+                        <label text="Active"/>
+                        <toggle param="active8" size="1"/>
+                        <toggle param="phase8" size="1"/>
+                        <label text="Phase"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Level"/>
+                        <knob param="level8" type="1"/>
+                        <value param="level8"/>
+                    </vbox>
+                    <vbox>
+                        <label text="Delay (ms)"/>
+                        <knob param="delay8"/>
+                        <value param="delay8"/>
+                    </vbox>
+                </hbox>
+                <vumeter param="meter_L8" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+                <vumeter param="meter_R8" height="12" mode="0" position="2" hold="1.5" falloff="2.5"/>
+            </vbox>
+        </frame>
+    </hbox>
+</vbox>

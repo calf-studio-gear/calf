@@ -1376,6 +1376,34 @@ CALF_PLUGIN_INFO(xover4) = { 0x8515, "XOver4Band", "Calf X-Over 4 Band", "Calf S
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(xover8) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Out 7 L", "Out 7 R", "Out 8 L", "Out 8 R"};
+
+CALF_PORT_PROPS(xover8) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "level", "Gain" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_L", "Input L" },
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_R", "Input R" },
+    { 1,      0,  4,    0, PF_ENUM | PF_CTL_COMBO, crossover_filter_choices, "mode", "Filter Mode" },
+    { 62,        10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq0", "Transition 1" },
+    { 156,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq1", "Transition 2" },
+    { 390,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq2", "Transition 3" },
+    { 976,       10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq3", "Transition 3" },
+    { 2441,      10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq4", "Transition 3" },
+    { 6103,      10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq5", "Transition 3" },
+    { 15257,     10,           20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "freq6", "Transition 3" },
+    XOVER_BAND_PARAMS(1)
+    XOVER_BAND_PARAMS(2)
+    XOVER_BAND_PARAMS(3)
+    XOVER_BAND_PARAMS(4)
+    XOVER_BAND_PARAMS(5)
+    XOVER_BAND_PARAMS(6)
+    XOVER_BAND_PARAMS(7)
+    XOVER_BAND_PARAMS(8)
+    {}
+};
+CALF_PLUGIN_INFO(xover8) = { 0x8515, "XOver8Band", "Calf X-Over 8 Band", "Calf Studio Gear / Markus Schmidt", calf_plugins::calf_copyright_info, "UtilityPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 #define VOCODER_BAND_PARAMS(band) \
     {           1, 0.000015849, 16, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "volume" #band, "Vol " #band }, \
     {           0,          -1,  1, 0, PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pan" #band, "Pan " #band }, \

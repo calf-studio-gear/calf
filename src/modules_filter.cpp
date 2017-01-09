@@ -1079,6 +1079,7 @@ bool xover_audio_module<XoverBaseClass>::get_layers(int index, int generation, u
 template class xover_audio_module<xover2_metadata>;
 template class xover_audio_module<xover3_metadata>;
 template class xover_audio_module<xover4_metadata>;
+template class xover_audio_module<xover8_metadata>;
 
 
 /**********************************************************************

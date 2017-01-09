@@ -405,6 +405,7 @@ public:
 typedef xover_audio_module<xover2_metadata> xover2_audio_module;
 typedef xover_audio_module<xover3_metadata> xover3_audio_module;
 typedef xover_audio_module<xover4_metadata> xover4_audio_module;
+typedef xover_audio_module<xover8_metadata> xover8_audio_module;
 
 /**********************************************************************
  * VOCODER by Markus Schmidt & Christian Holschuh
