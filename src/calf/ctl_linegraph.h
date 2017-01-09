@@ -92,8 +92,8 @@ struct CalfLineGraph
     int size_x, size_y;
     int x, y;
     float zoom, offset;
-    int force_count;
-    int param_zoom, param_offset, param_force;
+    bool drawl;
+    int param_zoom, param_offset, param_drawl;
     
     cairo_surface_t *background_surface;
     cairo_surface_t *grid_surface;

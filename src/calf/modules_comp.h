@@ -467,7 +467,7 @@ private:
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;
-    mutable volatile int last_generation, last_calculated_generation;
+    mutable volatile int last_generation, last_calculated_generation, redraw_individuals;
     uint32_t srate;
     float glevel;
     bool is_active;

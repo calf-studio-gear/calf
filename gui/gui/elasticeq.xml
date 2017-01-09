@@ -37,6 +37,10 @@
                 <align attach-x="0" attach-y="0" attach-w="2" align-x="1.0">
                     <hbox expand="0" fill="0" spacing="8">
                         <hbox> 
+                            <label  param="draw_labels"/>
+                            <toggle size="1" param="draw_labels"/>
+                        </hbox>
+                        <hbox> 
                             <label  param="individuals"/>
                             <toggle size="1" param="individuals"/>
                         </hbox>
@@ -48,7 +52,7 @@
                 </align>
                 <if cond="directlink">
                     <line-graph attach-x="0" attach-y="1" refresh="1" height="200" width="500"
-                        param="p1_freq" expand="1" fill="1" zoom="zoom" force="force"
+                        param="p1_freq" expand="1" fill="1" zoom="zoom" draw_labels="draw_labels"
                         crosshairs="1" freqhandles="8"
                         handle1-x="p1_freq" handle1-y="p1_level" handle1-z="p1_q" label1="P I" active1="p1_active"
                         handle2-x="p2_freq" handle2-y="p2_level" handle2-z="p2_q" label2="P II" active2="p2_active"

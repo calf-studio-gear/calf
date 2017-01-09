@@ -2840,6 +2840,7 @@ elasticeq_audio_module::elasticeq_audio_module()
     bypass_    = 0;
 	indiv_old = -1;
     show_effect = -1;
+    redraw_individuals = 1;
 
     keep_gliding = 0;
     last_peak = 0;
@@ -2883,10 +2884,18 @@ void elasticeq_audio_module::params_changed()
 {
     int b = (int)*params[param_bypass];
     if (b != bypass_) {
-        redraw = 1;
         bypass_ = b;
     }
     keep_gliding = 0;
+
+    int se = (int)*params[AM::param_force];
+    if (se != show_effect) {
+        show_effect = se;
+        redraw_graph = true;
+	    redraw_individuals = 0;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
     
     gate.set_params(*params[param_attack], \
                     *params[param_release], \
@@ -2916,15 +2925,21 @@ void elasticeq_audio_module::params_changed()
             p_q_old[i] = q;
         }
     }
-    if (*params[AM::param_individuals] != indiv_old) {
-        indiv_old = *params[AM::param_individuals];
-        redraw_graph = true;
+	int ind = *params[AM::param_individuals];
+    if (ind != indiv_old) {
+        indiv_old = ind;
+	    redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
     }
     
     // check if any important parameter for redrawing the graph changed
     for (int i = 0; i < graph_param_count; i++) {
-        if (*params[AM::first_graph_param + i] != old_params_for_graph[i])
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i]) {
             redraw_graph = true;
+			if (! show_effect)
+				redraw_individuals = 1;
+		}
         old_params_for_graph[i] = *params[AM::first_graph_param + i];
     }
     
@@ -2959,6 +2974,10 @@ uint32_t elasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, u
         }
         if (keep_gliding)
             params_changed();
+    }
+
+    if (show_effect) {
+        redraw_graph = true;
     }
 
     numsamples += offset;
@@ -3038,13 +3057,14 @@ bool elasticeq_audio_module::get_graph(int index, int subindex, int phase, float
         // first graph is the overall frequency response graph
         if (!subindex)
             return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
-        
-        // get out if max band is reached
-        if (last_peak >= max) {
+
+		// When param_force (visualize effect) is enabled, redrawing all individual filters @60fps
+		//is too costly. Cant seem to cache it, so it's disabled while param_force is on for now.
+		if (! redraw_individuals) {
             last_peak = 0;
             redraw_graph = false;
-            return false;
-        }
+			return false;
+		}
         
         // get the next filter to draw a curve for and leave out inactive
         // filters

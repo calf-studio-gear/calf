@@ -409,7 +409,7 @@ struct elasticeq_metadata: public plugin_metadata<elasticeq_metadata>
            param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
            param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
            param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
-           param_force, param_individuals, param_zoom,
+           param_draw_labels, param_force, param_individuals, param_zoom,
            param_count };
     enum { PeakBands = 8, first_graph_param = param_p1_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("elasticeq", "elasticeq", "Elastic Equalizer")
