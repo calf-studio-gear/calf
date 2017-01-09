@@ -715,14 +715,13 @@ CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gat
     { 2.828427125, 1,           8,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "knee" #band1, "Knee " #band2 }, \
     { 0.0,       0.0,        20.0,     0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "delay" #band1, "Delay " #band2 }, \
     { 1,           0,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_detection_names, "detection" #band1, "Detection " #band2 }, \
-    { 1,           -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" #band1, "Stereo Link" #band2}, \
+    { 1,          -1,           1,     0,  PF_ENUM | PF_CTL_COMBO, multibandsoft_stereo_link_names, "stereo_link" #band1, "Stereo Link" #band2}, \
     { 1,           0.0625,      1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "gating" #band1, "Gating " #band2 }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "output" #band1, "Output " #band2 }, \
     { 1,           0,           3,     0,  PF_ENUM | PF_CTL_COMBO, mb_crossover_filter_choices, "mode" #band1, #band2 }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "solo" #band1, "Solo " #band2 }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass" #band1, "Bypass " #band2 }, \
-    { 0.5,         0,           64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "amount" #band1, "Amount " #band2 }, \
-    { 0.1,           0.1,         10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive" #band1, "Harmonics " #band2 }, \
+    { 0.1,         0.1,         10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive" #band1, "Harmonics " #band2 }, \
     { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "blend" #band1, "Blend harmonics " #band2 },
 
 CALF_PORT_NAMES(multibandsoft) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Out 7 L", "Out 7 R", "Out 8 L", "Out 8 R", "Out 9 L", "Out 9 R", "Out 10 L", "Out 10 R", "Out 11 L", "Out 11 R", "Out 12 L", "Out 12 R" };

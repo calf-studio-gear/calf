@@ -51,7 +51,7 @@
     
     <notebook param="notebook">
         <hbox page="Band 1" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass0"/>
                     <toggle param="bypass0"/>
@@ -119,11 +119,6 @@
                     <knob param="drive0"/>
                     <value param="drive0" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount0"/>
-                    <knob param="amount0"/>
-                    <value param="amount0" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend0"/>
@@ -134,7 +129,7 @@
         </hbox>
         
         <hbox page="Band 2" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass1"/>
                     <toggle param="bypass1"/>
@@ -202,11 +197,6 @@
                     <knob param="drive1"/>
                     <value param="drive1" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount1"/>
-                    <knob param="amount1"/>
-                    <value param="amount1" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend1"/>
@@ -217,7 +207,7 @@
         </hbox>
         
         <hbox page="Band 3" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass2"/>
                     <toggle param="bypass2"/>
@@ -285,11 +275,6 @@
                     <knob param="drive2"/>
                     <value param="drive2" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount2"/>
-                    <knob param="amount2"/>
-                    <value param="amount2" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend2"/>
@@ -300,7 +285,7 @@
         </hbox>
         
         <hbox page="Band 4" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass3"/>
                     <toggle param="bypass3"/>
@@ -368,11 +353,6 @@
                     <knob param="drive3"/>
                     <value param="drive3" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount3"/>
-                    <knob param="amount3"/>
-                    <value param="amount3" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend3"/>
@@ -383,7 +363,7 @@
         </hbox>
 
         <hbox page="Band 5" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass4"/>
                     <toggle param="bypass4"/>
@@ -451,11 +431,6 @@
                     <knob param="drive4"/>
                     <value param="drive4" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount4"/>
-                    <knob param="amount4"/>
-                    <value param="amount4" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend4"/>
@@ -466,7 +441,7 @@
         </hbox>
 
         <hbox page="Band 6" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass5"/>
                     <toggle param="bypass5"/>
@@ -534,11 +509,6 @@
                     <knob param="drive5"/>
                     <value param="drive5" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount5"/>
-                    <knob param="amount5"/>
-                    <value param="amount5" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend5"/>
@@ -549,7 +519,7 @@
         </hbox>
 
         <hbox page="Band 7" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass6"/>
                     <toggle param="bypass6"/>
@@ -617,11 +587,6 @@
                     <knob param="drive6"/>
                     <value param="drive6" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount6"/>
-                    <knob param="amount6"/>
-                    <value param="amount6" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend6"/>
@@ -632,7 +597,7 @@
         </hbox>
 
         <hbox page="Band 8" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass7"/>
                     <toggle param="bypass7"/>
@@ -700,11 +665,6 @@
                     <knob param="drive7"/>
                     <value param="drive7" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount7"/>
-                    <knob param="amount7"/>
-                    <value param="amount7" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend7"/>
@@ -715,7 +675,7 @@
         </hbox>
 
         <hbox page="Band 9" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass8"/>
                     <toggle param="bypass8"/>
@@ -783,11 +743,6 @@
                     <knob param="drive8"/>
                     <value param="drive8" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount8"/>
-                    <knob param="amount8"/>
-                    <value param="amount8" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend8"/>
@@ -798,7 +753,7 @@
         </hbox>
 
         <hbox page="Band 10" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass9"/>
                     <toggle param="bypass9"/>
@@ -866,11 +821,6 @@
                     <knob param="drive9"/>
                     <value param="drive9" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount9"/>
-                    <knob param="amount9"/>
-                    <value param="amount9" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend9"/>
@@ -881,7 +831,7 @@
         </hbox>
 
         <hbox page="Band 11" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass10"/>
                     <toggle param="bypass10"/>
@@ -949,11 +899,6 @@
                     <knob param="drive10"/>
                     <value param="drive10" />
                 </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount10"/>
-                    <knob param="amount10"/>
-                    <value param="amount10" />
-                </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">
                     <label param="blend10"/>
@@ -964,7 +909,7 @@
         </hbox>
 
         <hbox page="Band 12" homogeneous="1">
-            <table expand="1" rows="2" cols="8" homogeneous="1" >
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
                 <vbox expand="0" attach-x="0" attach-y="0">
                     <label param="bypass11"/>
                     <toggle param="bypass11"/>
@@ -1031,11 +976,6 @@
                     <label param="drive11"/>
                     <knob param="drive11"/>
                     <value param="drive11" />
-                </vbox>
-                <vbox expand="0" attach-x="7" attach-y="0">
-                    <label param="amount11"/>
-                    <knob param="amount11"/>
-                    <value param="amount11" />
                 </vbox>
 
                 <vbox expand="0" attach-x="6" attach-y="1">

@@ -2629,8 +2629,8 @@ void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
 
 uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
-    float dleft, left;
-    float dright, right;
+    float left;
+    float right;
     numsamples += offset;
     if (fast) { // Ignores a bunch of stuff, including delay, solo!!
         // process all strips
@@ -2645,16 +2645,14 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                 int off = i * params_per_band;
                 float left  = crossover.get_value(0, i);
                 float right = crossover.get_value(1, i);
-                gate[i].process(left, right);
 
                 if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
                     // process harmonics
-                    dleft = dist[i][0].process(left);
-                    dright = dist[i][1].process(right);
-                    // compensate saturation
-                    left += (dleft / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
-                    right += (dright / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                    left = dist[i][0].process(left);
+                    right = dist[i][1].process(right);
                 }
+
+                gate[i].process(left, right);
 
                 outs[i*2][offset] = left;
                 outs[i*2 +1][offset] = right;
@@ -2698,16 +2696,14 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                     // strip unmuted
                     left = crossover.get_value(0, i);
                     right = crossover.get_value(1, i);
-                    gate[i].process(left, right);
 
                     if (*params[param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
                         // process harmonics
-                        dleft = dist[i][0].process(left);
-                        dright = dist[i][1].process(right);
-                        // compensate saturation
-                        left += (dleft / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
-                        right += (dright / (1 + *params[param_drive0 + off] * 0.075)) * *params[param_amount0 + off];
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
                     }
+
+                    gate[i].process(left, right);
                 }
                 // fill delay buffer
                 buffer[pos + ptr] = left;
