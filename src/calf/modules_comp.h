@@ -454,7 +454,6 @@ class elasticeq_audio_module: public audio_module<elasticeq_metadata>, public fr
 private:
     typedef elasticeq_audio_module AM;
     enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
-    int indiv_old;
     float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
     mutable float old_params_for_graph[graph_param_count];
     static const int intch = 2; // internal channels
@@ -464,8 +463,7 @@ private:
     expander_audio_module gate;
     int keep_gliding;
     mutable int last_peak;
-    int bypass_;
-    mutable int redraw;
+    int bypass_, indiv_old, show_effect;
     vumeters meters;
 public:
     typedef std::complex<double> cfloat;

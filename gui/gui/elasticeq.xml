@@ -34,10 +34,16 @@
     
         <frame attach-x="0" attach-y="0" label="Frequency Response">
             <table rows="2" cols="2">
-                <align attach-x="0" attach-y="0" align-x="1.0" scale-x="0.1" scale-y="1.0">
-                    <hbox spacing="8">
-                        <label param="force"/>
-                        <toggle size="1" param="force"/>
+                <align attach-x="0" attach-y="0" attach-w="2" align-x="1.0">
+                    <hbox expand="0" fill="0" spacing="8">
+                        <hbox> 
+                            <label  param="individuals"/>
+                            <toggle size="1" param="individuals"/>
+                        </hbox>
+                        <hbox>
+                            <label param="force"/>
+                            <toggle size="1" param="force"/>
+                        </hbox>
                     </hbox>
                 </align>
                 <if cond="directlink">
