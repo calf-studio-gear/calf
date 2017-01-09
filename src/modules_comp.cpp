@@ -3155,6 +3155,373 @@ inline std::string elasticeq_audio_module::get_crosshair_label(int x, int y, int
     return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
+/**********************************************************************
+ * MULTISTRIP ELASTIC EQ by Adriano Moura
+**********************************************************************/
+
+mstripelasticeq_audio_module::mstripelasticeq_audio_module()
+{
+    is_active = false;
+    srate     = 0;
+    bypass_   = 0;
+	page      = 0;
+	indiv_old = -1;
+    show_effect = -1;
+    redraw_individuals = 1;
+
+    keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
+}
+
+void mstripelasticeq_audio_module::activate()
+{
+    is_active = true;
+    params_changed();
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+    }
+}
+
+void mstripelasticeq_audio_module::deactivate()
+{
+    is_active = false;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+    }
+}
+
+void mstripelasticeq_audio_module::params_changed()
+{
+    int b = (int)*params[param_bypass];
+    if (b != bypass_) {
+        bypass_ = b;
+    }
+    keep_gliding = 0;
+
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int se = (int)*params[AM::param_force];
+    if (se != show_effect) {
+        show_effect = se;
+        redraw_graph = true;
+	    redraw_individuals = 0;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int s = (int)*params[AM::param_selected_only];
+    if (s != selected_only) {
+        selected_only = s;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[param_attack0 + j], \
+                           *params[param_release0 + j], \
+                           *params[param_threshold0 + j], \
+                           *params[param_ratio0 + j], \
+                           *params[param_knee0 + j], \
+                           1.f, \
+                           *params[param_detection0 + j], \
+                           *params[param_stereo_link0 + j], \
+                           0, \
+                           0, \
+                           *params[param_range0 + j]);
+        gate[i].update_curve();
+    }
+
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        int offset = i * params_per_peak;
+        float freq = *params[AM::param_p01_freq + offset];
+        float level = *params[AM::param_p01_level + offset];
+        float q = *params[AM::param_p01_q + offset];
+        if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
+            pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
+            pR[i].copy_coeffs(pL[i]);
+            p_freq_old[i] = freq;
+            p_level_old[i] = level;
+            p_q_old[i] = q;
+        }
+    }
+	int ind = *params[AM::param_individuals];
+    if (ind != indiv_old) {
+        indiv_old = ind;
+	    redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i]) {
+            redraw_graph = true;
+			if (! show_effect)
+				redraw_individuals = 1;
+		}
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+}
+
+void mstripelasticeq_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+    }
+
+    int meter[] = {-param_gating0,
+                   -param_gating1,
+                   -param_gating2,
+                   -param_gating3,
+                   -param_gating4,
+                   -param_gating5,
+                   -param_gating6 };
+    int clip[] = {-1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, strips, srate);
+
+    for (int i = 0; i < strips; i++)
+       gate[i].update_curve();
+}
+
+uint32_t mstripelasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (keep_gliding)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
+
+    if (show_effect) {
+        redraw_graph = true;
+    }
+
+    numsamples += offset;
+
+    float inL, gprocL = 0.f;
+    float inR, gprocR = 0.f;
+
+    while(offset < numsamples) {
+        for (int j = 0; j < strips; j++) {
+            inL = ins[j*2    ][offset];
+            inR = ins[j*2 + 1][offset];
+
+            gprocL = inL;
+            gprocR = inR;
+            gate[j].process(gprocL, gprocR);
+
+            float procL = gprocL;
+            float procR = gprocR;
+            for (int i = 0; i < peaks_per_strip; i++) {
+                int poffset = i * params_per_peak;
+                int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+                int active = *params[strip_offset + poffset];
+                if (active == 1 or active == 2)
+                    procL = pL[j * peaks_per_strip + i].process(procL);
+                if (active == 1 or active == 3)
+                    procR = pR[j * peaks_per_strip + i].process(procR);
+            }
+
+            glevel[j] = gate[j].get_expander_level();
+
+            buff[j*2    ] = (procL - gprocL + inL);
+            buff[j*2 + 1] = (procR - gprocR + inR);
+        } 
+		// Will break with different strips size
+        outs[0][offset] = buff[0] + buff[2] + buff[4] + buff[6] + buff[8] + buff[10] + buff[12];
+        outs[1][offset] = buff[1] + buff[3] + buff[5] + buff[7] + buff[9] + buff[11] + buff[13];
+
+        float values[] = {glevel[0], glevel[1], glevel[2], glevel[3], glevel[4], glevel[5], glevel[6]};
+        meters.process(values);
+
+        ++offset;
+    }
+
+    for(int i = 0; i < AM::PeakBands; ++i) {
+        pL[i].sanitize();
+        pR[i].sanitize();
+    }
+
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+const expander_audio_module *mstripelasticeq_audio_module::get_strip_by_param_index(int index) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (param_range0 + params_per_band * i) == index )
+            return &gate[i];
+    }
+
+    return NULL;
+}
+
+
+bool mstripelasticeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        int max = PeakBands;
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals])) {
+            redraw_graph = false;
+            return false;
+        }
+
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        
+		// When param_force (visualize effect) is enabled, redrawing all individual filters @60fps
+		//is too costly. Cant seem to cache it, so it's disabled while param_force is on for now.
+		if (! redraw_individuals) {
+            last_peak = 0;
+            redraw_graph = false;
+			return false;
+		}
+
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p01_active + last_peak * params_per_peak])
+            last_peak ++;
+
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            redraw_graph = false;
+            return false;
+        }
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
+    }
+
+    return r;
+}
+
+bool mstripelasticeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+bool mstripelasticeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    else
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+
+    if (phase)
+        return false;
+
+    return false;
+}
+
+float mstripelasticeq_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+    float buffer[strips];
+    int fstrip = 0, lstrip = strips;
+    // Will break when strip is too big!
+    float glevel_flat[strips] = {1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f};
+    const float *pglevel = glevel;
+
+    if (*params[AM::param_selected_only]) {
+        fstrip = *params[AM::param_notebook];
+        lstrip = *params[AM::param_notebook]+1;
+    }
+    if ( ! *params[AM::param_force] ) {
+        pglevel = glevel_flat;
+    }
+
+    for (int j = fstrip; j < lstrip; j++) {
+        buffer[j] = 1.f;
+        for (int i = 0; i < peaks_per_strip; i++) {
+            int offset = i * params_per_peak;
+            int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+            if (*params[strip_offset + offset])
+                buffer[j] *= pL[j * peaks_per_strip + i].freq_gain(freq, (float)srate);
+            else
+                buffer[j] *= 1.f;
+        }
+        ret *= (buffer[j] - 1) * pglevel[j] + 1;
+    }
+
+    return ret;
+}
+
+bool mstripelasticeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        redraw_graph = redraw_graph || !generation;
+        layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+        return redraw_graph or !generation;
+    }
+
+    return r;
+}
+
+inline std::string mstripelasticeq_audio_module::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
+}
+
 
 /**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt

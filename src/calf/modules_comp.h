@@ -486,6 +486,48 @@ public:
 };
 
 /**********************************************************************
+ * MULTISTRIP ELASTIC EQUALIZER by Adriano Moura
+**********************************************************************/
+
+class mstripelasticeq_audio_module: public audio_module<mstripelasticeq_metadata>, public frequency_response_line_graph {
+private:
+    typedef mstripelasticeq_audio_module AM;
+    static const int strips = 7;
+    enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_peak = AM::param_p02_active - AM::param_p01_active };
+    static const int peaks_per_strip = PeakBands / strips;
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    static const int intch = 2; // internal channels
+    float xout[intch], xin[intch*strips], buff[intch*strips];
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    expander_audio_module gate[strips];
+    int keep_gliding;
+    mutable int last_peak;
+    int bypass_, indiv_old, selected_only, page, show_effect;
+    vumeters meters;
+public:
+    typedef std::complex<double> cfloat;
+    mutable volatile int last_generation, last_calculated_generation, redraw_individuals;
+    uint32_t srate;
+    float glevel[strips];
+    bool is_active;
+    mstripelasticeq_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = param_attack2 - param_attack1 };
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    const expander_audio_module *get_strip_by_param_index(int index) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    float freq_gain(int index, double freq) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+    inline std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
+};
+
+/**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt
 **********************************************************************/
 
