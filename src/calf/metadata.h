@@ -553,7 +553,7 @@ struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
     // and potentially making inlining and optimization harder for the compiler
@@ -576,7 +576,7 @@ struct equalizer8band_metadata: public plugin_metadata<equalizer8band_metadata>
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
            param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 4, first_graph_param = param_hp_active, last_graph_param = param_p4_q };
     PLUGIN_NAME_ID_LABEL("equalizer8band", "eq8", "Equalizer 8 Band")
@@ -599,7 +599,7 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
            param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
            param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
            param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 8, first_graph_param = param_hp_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("equalizer12band", "eq12", "Equalizer 12 Band")
@@ -630,7 +630,7 @@ struct equalizer20band_metadata: public plugin_metadata<equalizer20band_metadata
            param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
            param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
            param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 16, first_graph_param = param_hp_active, last_graph_param = param_p16_q };
     PLUGIN_NAME_ID_LABEL("equalizer20band", "eq20", "Equalizer 20 Band")
@@ -783,7 +783,7 @@ struct equalizer58band_metadata: public plugin_metadata<equalizer58band_metadata
            param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
            param_p57_active, param_p57_level, param_p57_freq, param_p57_q,
            param_p58_active, param_p58_level, param_p58_freq, param_p58_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 58, first_graph_param = param_p1_active, last_graph_param = param_p58_q };
     PLUGIN_NAME_ID_LABEL("equalizer58band", "eq58", "Equalizer 58 Band")

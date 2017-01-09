@@ -92,13 +92,14 @@ const char *periodical_mode_names[] = {
     { 1,           0.1,         100,   1,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "p" #band "_q", "Q " #band },
 
 #define EQ_DISPLAY_PARAMS \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "draw_labels", "Show Labels" } , \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
     { 0.25,   0.0625,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB, NULL, "zoom", "Zoom" }, \
     { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "analyzer", "Analyzer Active" }, \
     { 1,           0,           2,     0,  PF_ENUM | PF_CTL_COMBO, eq_analyzer_mode_names, "analyzer_mode", "Analyzer Mode" }, \
 
 #define EQ_DISPLAY_NO_ANALYZER_PARAMS \
-    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "draw_labels", "Draw Labels" } , \
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "draw_labels", "Show Labels" } , \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "force", "Visualize Effect" } , \
     { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "individuals", "Individual Filters" }, \
     { 0.25,   0.0625,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_FADER | PF_UNIT_DB, NULL, "zoom", "Zoom" }, \
