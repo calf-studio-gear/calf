@@ -2632,7 +2632,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
     float left;
     float right;
     numsamples += offset;
-    if (fast) { // Ignores a bunch of stuff, including delay, solo!!
+    if (fast) { // Ignores stuff like solo, bypass and meters, + a few optimizations!!
         // process all strips
         while(offset < numsamples) {
             // process crossover, cycle trough samples, in level
@@ -2643,23 +2643,57 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
             // cycle trough strips
             for (int i = 0; i < strips; i++) {
                 int off = i * params_per_band;
-                float left  = crossover.get_value(0, i);
-                float right = crossover.get_value(1, i);
+                if (*params[param_delay0 + off]) {
+                    int nbuf = 0;
+                    int ptr = i * 2;
 
-                if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
-                    // process harmonics
-                    left = dist[i][0].process(left);
-                    right = dist[i][1].process(right);
+                    // calc position in delay buffer
+                    nbuf = srate * (fabs(*params[param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+
+                    if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    // fill delay buffer
+                    buffer[pos + ptr] = left;
+                    buffer[pos + ptr + 1] = right;
+                    
+                    // get value from delay buffer if neccessary
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+
+                    gate[i].process(left, right);
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                } else {
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+
+                    if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    gate[i].process(left, right);
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
                 }
-
-                gate[i].process(left, right);
-
-                outs[i*2][offset] = left;
-                outs[i*2 +1][offset] = right;
             } 
 
             // next sample
             ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
         } // cycle trough samples
     } else {
         for (int i = 0; i < strips; i++)
@@ -2685,6 +2719,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                 int nbuf = 0;
                 int off = i * params_per_band;
                 int ptr = i * 2;
+
                 // calc position in delay buffer
                 if (*params[param_delay0 + off]) {
                     nbuf = srate * (fabs(*params[param_delay0 + off]) / 1000.f) * strips * 2;
