@@ -28,7 +28,7 @@
 
 namespace calf_plugins {
 
-class plugin_strip;
+struct plugin_strip;
 class calf_connector;
 
 struct connector_port
