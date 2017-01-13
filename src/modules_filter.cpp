@@ -936,6 +936,7 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
     is_active = false;
     srate = 0;
     redraw_graph = true;
+    buffer = NULL;
     crossover.init(AM::channels, AM::bands, 44100);
 }
 template<class XoverBaseClass>

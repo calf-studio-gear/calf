@@ -2490,6 +2490,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     transients.set_channels(channels);
     hp_f_old = hp_m_old = lp_f_old = lp_m_old = 0;
     redraw = false;
+    pbuffer = NULL;
 }
 transientdesigner_audio_module::~transientdesigner_audio_module()
 {

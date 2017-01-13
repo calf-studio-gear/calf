@@ -608,6 +608,9 @@ lookahead_limiter::lookahead_limiter() {
     asc_pos = -1;
     asc_changed = false;
     asc_coeff = 1.f;
+    buffer = NULL;
+    nextpos = NULL;
+    nextdelta = NULL;
 }
 lookahead_limiter::~lookahead_limiter()
 {
