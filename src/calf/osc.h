@@ -206,7 +206,9 @@ struct waveform_family: public std::map<uint32_t, float *>
             float *wf = new float[SIZE+1];
             bl.make_waveform(wf, cutoff, foldover);
             wf[SIZE] = wf[0];
-            (*this)[base * (top / cutoff)] = wf;
+            float **storage = &(*this)[base * (top / cutoff)];
+            delete[] *storage;
+            *storage = wf;
             cutoff = (int)(0.75 * cutoff);
         }
     }
