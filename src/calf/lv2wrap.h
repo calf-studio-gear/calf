@@ -227,6 +227,7 @@ struct lv2_wrapper
     static void cb_cleanup(LV2_Handle Instance)
     {
         instance *const mod = (instance *)Instance;
+        delete mod->module;
         delete mod;
     }
 

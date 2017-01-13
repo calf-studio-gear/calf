@@ -158,7 +158,7 @@ vector <direntry> list_directory(const string &path)
 {
     std::vector <direntry> out;
     DIR *dir;
-    class dirent *ent;
+    struct dirent *ent;
     dir = opendir(path.empty() ? "." : path.c_str());
     while ((ent = readdir(dir)) != NULL) {
         direntry f;

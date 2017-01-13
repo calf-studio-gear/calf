@@ -89,6 +89,7 @@ analyzer::~analyzer()
     free(fft_outL);
     free(fft_inR);
     free(fft_inL);
+    free(fft_buffer);
     free(spline_buffer);
 }
 void analyzer::set_sample_rate(uint32_t sr) {

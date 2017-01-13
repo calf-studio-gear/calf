@@ -41,6 +41,7 @@ using namespace calf_plugins;
 stereo_audio_module::stereo_audio_module() {
     active      = false;
     _phase      = -1;
+    buffer = NULL;
 }
 stereo_audio_module::~stereo_audio_module() {
     free(buffer);
@@ -256,6 +257,7 @@ mono_audio_module::mono_audio_module() {
     meter_outR  = 0.f;
     _phase      = -1.f;
     _sc_level   = 0.f;
+    buffer = NULL;
 }
 mono_audio_module::~mono_audio_module() {
     free(buffer);
@@ -577,7 +579,8 @@ multibandenhancer_audio_module::multibandenhancer_audio_module()
 }
 multibandenhancer_audio_module::~multibandenhancer_audio_module()
 {
-    free(phase_buffer);
+    for (int i = 0; i < strips; i++)
+      free(phase_buffer[i]);
 }
 void multibandenhancer_audio_module::activate()
 {
