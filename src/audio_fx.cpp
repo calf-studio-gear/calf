@@ -1347,7 +1347,6 @@ resampleN::resampleN()
 }
 resampleN::~resampleN()
 {
-    free(tmp);
 }
 void resampleN::set_params(uint32_t sr, int fctr = 2, int fltrs = 2)
 {
