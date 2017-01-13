@@ -501,9 +501,11 @@ inline string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_la
     return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
+namespace calf_plugins {
 template class equalizerNband_audio_module<equalizer5band_metadata, false>;
 template class equalizerNband_audio_module<equalizer8band_metadata, true>;
 template class equalizerNband_audio_module<equalizer12band_metadata, true>;
+}
 
 /**********************************************************************
  * EQUALIZER 30 BAND
@@ -1064,9 +1066,11 @@ bool xover_audio_module<XoverBaseClass>::get_layers(int index, int generation, u
     return crossover.get_layers(index, generation, layers);
 }
 
+namespace calf_plugins {
 template class xover_audio_module<xover2_metadata>;
 template class xover_audio_module<xover3_metadata>;
 template class xover_audio_module<xover4_metadata>;
+}
 
 
 /**********************************************************************
