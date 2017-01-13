@@ -577,7 +577,8 @@ multibandenhancer_audio_module::multibandenhancer_audio_module()
 }
 multibandenhancer_audio_module::~multibandenhancer_audio_module()
 {
-    free(phase_buffer);
+    for (int i = 0; i < strips; i++)
+      free(phase_buffer[i]);
 }
 void multibandenhancer_audio_module::activate()
 {
