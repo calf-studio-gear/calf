@@ -727,13 +727,13 @@ CALF_PLUGIN_INFO(multibandgate) = { 0x8505, "MultibandGate", "Calf Multiband Gat
     { 0.1,         0.1,         10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "drive" #band1, "Harmonics " #band2 }, \
     { 0,          -10,          10,    0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "blend" #band1, "Blend harmonics " #band2 },
 
-CALF_PORT_NAMES(multibandsoft) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Out 7 L", "Out 7 R", "Out 8 L", "Out 8 R", "Out 9 L", "Out 9 R", "Out 10 L", "Out 10 R", "Out 11 L", "Out 11 R", "Out 12 L", "Out 12 R" };
+CALF_PORT_NAMES(multibandsoft12band) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Out 7 L", "Out 7 R", "Out 8 L", "Out 8 R", "Out 9 L", "Out 9 R", "Out 10 L", "Out 10 R", "Out 11 L", "Out 11 R", "Out 12 L", "Out 12 R" };
 
 const char *multibandsoft_detection_names[] = { "RMS", "Peak" };
 const char *multibandsoft_stereo_link_names[] = { "Unlinked", "Average", "Maximum" };
 const char *multibandsoft_fast_choices[] = { "No", "Yes" };
 
-CALF_PORT_PROPS(multibandsoft) = {
+CALF_PORT_PROPS(multibandsoft12band) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inL", "Meter-InL" }, \
     { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inR", "Meter-InR" }, \
@@ -767,7 +767,35 @@ CALF_PORT_PROPS(multibandsoft) = {
     {}
 };
 
-CALF_PLUGIN_INFO(multibandsoft) = { 0x8505, "MultibandSoft", "Calf Multiband Soft", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+CALF_PLUGIN_INFO(multibandsoft12band) = { 0x8505, "MultibandSoft12band", "Calf Multiband Soft 12 Bands", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(multibandsoft6band) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L"};
+
+CALF_PORT_PROPS(multibandsoft6band) = {
+    { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inL", "Meter-InL" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "meter_inR", "Meter-InR" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_inL", "0dB-InL" }, \
+    { 0,           0,           1,     0,  PF_FLOAT | PF_CTL_LED | PF_PROP_OUTPUT | PF_PROP_OPTIONAL, NULL, "clip_inR", "0dB-InR" }, \
+    { 55,          10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq0", "Split 1/5" },
+    { 225,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq1", "Split 2/5" },
+    { 790,         10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq2", "Split 3/5" },
+    { 2700,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq3", "Split 4/5" },
+    { 9700,        10,          20000, 0,  PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ | PF_PROP_GRAPH, NULL, "freq4", "Split 5/5" },
+    { 0,      0,  1,    0, PF_ENUM | PF_CTL_COMBO, multibandsoft_fast_choices, "fast", "Fast Mode" },
+    MULTI_BAND_SOFT_PARAMS(0,1)
+    MULTI_BAND_SOFT_PARAMS(1,2)
+    MULTI_BAND_SOFT_PARAMS(2,3)
+    MULTI_BAND_SOFT_PARAMS(3,4)
+    MULTI_BAND_SOFT_PARAMS(4,5)
+    MULTI_BAND_SOFT_PARAMS(5,6)
+    { 0,           0,           3,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF,  NULL, "notebook", "Notebook" },
+    {}
+};
+
+CALF_PLUGIN_INFO(multibandsoft6band) = { 0x8505, "MultibandSoft6band", "Calf Multiband Soft 6 Bands", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "ExpanderPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 

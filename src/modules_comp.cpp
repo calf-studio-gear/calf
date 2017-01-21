@@ -2494,7 +2494,8 @@ bool multibandgate_audio_module::get_layers(int index, int generation, unsigned 
  * MULTIBAND SOFT by Adriano Moura and Markus Schmidt
 **********************************************************************/
 
-multibandsoft_audio_module::multibandsoft_audio_module()
+template<class MBSBaseClass, int strips>
+multibandsoft_audio_module<MBSBaseClass, strips>::multibandsoft_audio_module()
 {
     is_active = false;
     srate = 0;
@@ -2505,7 +2506,8 @@ multibandsoft_audio_module::multibandsoft_audio_module()
     crossover.init(2, strips, 44100);
 }
 
-void multibandsoft_audio_module::activate()
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::activate()
 {
     is_active = true;
     // set all filters and strips
@@ -2519,7 +2521,8 @@ void multibandsoft_audio_module::activate()
     }
 }
 
-void multibandsoft_audio_module::deactivate()
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::deactivate()
 {
     is_active = false;
     // deactivate all strips
@@ -2530,21 +2533,22 @@ void multibandsoft_audio_module::deactivate()
     }
 }
 
-void multibandsoft_audio_module::params_changed()
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::params_changed()
 {
     bool s=0;
     for (int i=0; i < strips; ++i) {
         // determine mute/solo states
-        solo[i] = *params[param_solo0 + params_per_band * i] > 0.f ? true : false;
-        s |= *params[param_solo0 + params_per_band * i] > 0.f;
+        solo[i] = *params[AM::param_solo0 + params_per_band * i] > 0.f ? true : false;
+        s |= *params[AM::param_solo0 + params_per_band * i] > 0.f;
     }
     no_solo = s ? false : true;
 
-    int f = *params[param_fast];
+    int f = *params[AM::param_fast];
     if (f != fast) {
-        fast = *params[param_fast];
+        fast = *params[AM::param_fast];
     }
-    int p = (int)*params[param_notebook];
+    int p = (int)*params[AM::param_notebook];
     if (p != page) {
         page = p;
         redraw = strips * 2 + strips;
@@ -2552,7 +2556,7 @@ void multibandsoft_audio_module::params_changed()
 
     int b=0;
     for (int i=0; i < strips; ++i) {
-        b += (int)*params[param_bypass0 + params_per_band * i];
+        b += (int)*params[AM::param_bypass0 + params_per_band * i];
     }
     if (b != bypass_) {
         redraw = strips * 2 + strips;
@@ -2560,36 +2564,37 @@ void multibandsoft_audio_module::params_changed()
     }
     
     for (int i=0; i < strips-1; ++i) {
-        mode_set[i] = *params[param_mode0 + params_per_band * i] + 1;
+        mode_set[i] = *params[AM::param_mode0 + params_per_band * i] + 1;
     }
     crossover.set_mode(mode_set);
     for (int i=0; i < strips-1; ++i) {
-        crossover.set_filter(i, *params[param_freq0 + i]); // freq is not declared on each band
+        crossover.set_filter(i, *params[AM::param_freq0 + i]); // freq is not declared on each band
     }
    
     for (int i=0; i < strips; ++i) {
         // set the params of all strips
         int j = params_per_band * i;
-        gate[i].set_params(*params[param_attack0 + j], \
-                           *params[param_release0 + j], \
-                           *params[param_threshold0 + j], \
-                           *params[param_ratio0 + j], \
-                           *params[param_knee0 + j], \
-                           *params[param_makeup0 + j], \
-                           *params[param_detection0 + j], \
-                           *params[param_stereo_link0 + j], \
-                           *params[param_bypass0 + j], \
+        gate[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_detection0 + j], \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_bypass0 + j], \
                            !(solo[i] || no_solo), \
-                           *params[param_range0 + j]);
+                           *params[AM::param_range0 + j]);
         for (int k = 0; k < intch; k ++)
-            dist[i][k].set_params(*params[param_blend0 + j],
-                                  *params[param_drive0 + j]);
+            dist[i][k].set_params(*params[AM::param_blend0 + j],
+                                  *params[AM::param_drive0 + j]);
 
         gate[i].update_curve();
     }
 }
 
-void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t sr)
 {
     srate = sr;
     // set srate of all strips
@@ -2606,28 +2611,29 @@ void multibandsoft_audio_module::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     pos = 0;
 
-    //// This is the only part of the code left to adapt for arbritary number strips
-    int meter[] = {param_meter_inL, param_meter_inR,
-                   param_output0, -param_gating0,
-                   param_output1, -param_gating1,
-                   param_output2, -param_gating2,
-                   param_output3, -param_gating3,
-                   param_output4, -param_gating4,
-                   param_output5, -param_gating5,
-                   param_output6, -param_gating6,
-                   param_output7, -param_gating7,
-                   param_output8, -param_gating8,
-                   param_output9, -param_gating9,
-                   param_output10, -param_gating10,
-                   param_output11, -param_gating11 };
-    int clip[] = {param_clip_inL, param_clip_inR, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    int nmeters = 2 + 2*strips;
+    int meter[nmeters];
+    meter[0] = AM::param_meter_inL;
+    meter[1] = AM::param_meter_inR;
+    int clip[nmeters];
+    clip[0] = AM::param_clip_inL;
+    clip[1] = AM::param_clip_inR;
+
+    for (int i=2, j=0; i < nmeters; i+=2, ++j) {
+        meter[i] = AM::param_output0 + params_per_band * j;
+        meter[i+1] = AM::param_gating0 + params_per_band * j;
+        clip[i] = -1;
+        clip[i+1] = -1;
+    }
+    
     meters.init(params, meter, clip, 2 + 2 * strips, srate);
 
     for (int i = 0; i < strips; i++)
         gate[i].update_curve();
 }
 
-uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+template<class MBSBaseClass, int strips>
+uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     float left;
     float right;
@@ -2636,25 +2642,25 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
         // process all strips
         while(offset < numsamples) {
             // process crossover, cycle trough samples, in level
-            xin[0] = ins[0][offset] * *params[param_level_in];
-            xin[1] = ins[1][offset] * *params[param_level_in];
+            xin[0] = ins[0][offset] * *params[AM::param_level_in];
+            xin[1] = ins[1][offset] * *params[AM::param_level_in];
             crossover.process(xin);
 
             // cycle trough strips
             for (int i = 0; i < strips; i++) {
                 int off = i * params_per_band;
-                if (*params[param_delay0 + off]) {
+                if (*params[AM::param_delay0 + off]) {
                     int nbuf = 0;
                     int ptr = i * 2;
 
                     // calc position in delay buffer
-                    nbuf = srate * (fabs(*params[param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
                     nbuf -= nbuf % (strips * 2);
 
                     float left  = crossover.get_value(0, i);
                     float right = crossover.get_value(1, i);
 
-                    if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
                         // process harmonics
                         left = dist[i][0].process(left);
                         right = dist[i][1].process(right);
@@ -2676,7 +2682,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                     float left  = crossover.get_value(0, i);
                     float right = crossover.get_value(1, i);
 
-                    if (*params[param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
                         // process harmonics
                         left = dist[i][0].process(left);
                         right = dist[i][1].process(right);
@@ -2707,8 +2713,8 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
             inL = ins[0][offset];
             inR = ins[1][offset];
             // in level
-            inR *= *params[param_level_in];
-            inL *= *params[param_level_in];
+            inR *= *params[AM::param_level_in];
+            inL *= *params[AM::param_level_in];
             // process crossover
             xin[0] = inL;
             xin[1] = inR;
@@ -2721,8 +2727,8 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                 int ptr = i * 2;
 
                 // calc position in delay buffer
-                if (*params[param_delay0 + off]) {
-                    nbuf = srate * (fabs(*params[param_delay0 + off]) / 1000.f) * strips * 2;
+                if (*params[AM::param_delay0 + off]) {
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
                     nbuf -= nbuf % (strips * 2);
                 }
 
@@ -2732,7 +2738,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                     left = crossover.get_value(0, i);
                     right = crossover.get_value(1, i);
 
-                    if (*params[param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
+                    if (*params[AM::param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
                         // process harmonics
                         left = dist[i][0].process(left);
                         right = dist[i][1].process(right);
@@ -2745,7 +2751,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
                 buffer[pos + ptr + 1] = right;
                 
                 // get value from delay buffer if neccessary
-                if (*params[param_delay0 + off]) {
+                if (*params[AM::param_delay0 + off]) {
                     left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
                     right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
                 }
@@ -2758,7 +2764,7 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
             values[0] = inL;
             values[1] = inR;
             for (int i=0; i < strips; i++)  {
-                if (*params[param_bypass0 + params_per_band * i]) {
+                if (*params[AM::param_bypass0 + params_per_band * i]) {
                     values[2 + i*2] = 0;
                     values[3 + i*2] = 1;
                 } else {
@@ -2781,21 +2787,23 @@ uint32_t multibandsoft_audio_module::process(uint32_t offset, uint32_t numsample
     return outputs_mask;
 }
 
-const expander_audio_module *multibandsoft_audio_module::get_strip_by_param_index(int index) const
+template<class MBSBaseClass, int strips>
+const expander_audio_module *multibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index) const
 {
     // let's handle by the corresponding strip
     //if ((index - param_range0) % params_per_band)
     //    return &gate[(index - param_solo0) / params_per_band];
     
     for (int i=0; i < strips; ++i) {
-        if ( (param_solo0 + params_per_band * i) == index )
+        if ( (AM::param_solo0 + params_per_band * i) == index )
             return &gate[i];
     }
 
     return NULL;
 }
 
-bool multibandsoft_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
     if (fast)
         return false;
@@ -2810,7 +2818,7 @@ bool multibandsoft_audio_module::get_graph(int index, int subindex, int phase, f
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
-    if ((index == param_solo0 + params_per_band * page and subindex == 1)
+    if ((index == AM::param_solo0 + params_per_band * page and subindex == 1)
     or  (index == 0 and subindex == page)) {
         *mode = 1;
     }
@@ -2818,7 +2826,7 @@ bool multibandsoft_audio_module::get_graph(int index, int subindex, int phase, f
     or  (index == 0)) {
         if (r 
         and ((index != 0 and *params[index - 1])
-        or   (index == 0 and *params[param_bypass0 + params_per_band * subindex])))
+        or   (index == 0 and *params[AM::param_bypass0 + params_per_band * subindex])))
             context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
         else
             context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
@@ -2826,7 +2834,8 @@ bool multibandsoft_audio_module::get_graph(int index, int subindex, int phase, f
     return r;
 }
 
-bool multibandsoft_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (fast)
         return false;
@@ -2837,7 +2846,8 @@ bool multibandsoft_audio_module::get_dot(int index, int subindex, int phase, flo
     return false;
 }
 
-bool multibandsoft_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
@@ -2846,7 +2856,8 @@ bool multibandsoft_audio_module::get_gridline(int index, int subindex, int phase
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
 
-bool multibandsoft_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int generation, unsigned int &layers) const
 {
     if (fast)
         return false;
@@ -2863,6 +2874,9 @@ bool multibandsoft_audio_module::get_layers(int index, int generation, unsigned 
     }
     return r;
 }
+
+template class multibandsoft_audio_module<multibandsoft6band_metadata, 6>;
+template class multibandsoft_audio_module<multibandsoft12band_metadata, 12>;
 
 /**********************************************************************
  * ELASTIC EQ by Adriano Moura

@@ -410,10 +410,19 @@ public:
  * MULTIBAND SOFT by Adriano Moura
 **********************************************************************/
 
-class multibandsoft_audio_module: public audio_module<multibandsoft_metadata>, public frequency_response_line_graph {
+template<class MBSBaseClass, int strips>
+class multibandsoft_audio_module: public audio_module<MBSBaseClass>, public frequency_response_line_graph {
+public:
+    typedef audio_module<MBSBaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
 private:
-    typedef multibandsoft_audio_module AM;
-    static const int strips = 12;
+    //typedef multibandsoft_audio_module AM;
+    //static const int strips = 12;
     bool solo[strips];
     static const int intch = 2; // internal channels
     float xout[strips*intch], xin[intch];
@@ -433,7 +442,7 @@ public:
     void activate();
     void deactivate();
     void params_changed();
-    enum { params_per_band = param_attack2 - param_attack1 };
+    enum { params_per_band = AM::param_attack2 - AM::param_attack1 };
     float * buffer;
     unsigned int pos;
     unsigned int buffer_size;
@@ -445,6 +454,9 @@ public:
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
+
+typedef multibandsoft_audio_module<multibandsoft6band_metadata, 6> multibandsoft6band_audio_module;
+typedef multibandsoft_audio_module<multibandsoft12band_metadata, 12> multibandsoft12band_audio_module;
 
 /**********************************************************************
  * ELASTIC EQUALIZER by Adriano Moura
