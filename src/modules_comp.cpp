@@ -756,6 +756,294 @@ bool expander_audio_module::get_layers(int index, int generation, unsigned int &
 
 
 /**********************************************************************
+ * SOFT by Damien Zammit
+**********************************************************************/
+
+soft_audio_module::soft_audio_module()
+{
+    is_active       = false;
+    srate           = 0;
+    old_threshold   = 0.f;
+    old_ratio       = 0.f;
+    old_knee        = 0.f;
+    old_makeup      = 0.f;
+    old_detection   = 0.f;
+    old_bypass      = 0.f;
+    old_mute        = 0.f;
+    linSlope        = 0.f;
+    attack          = -1;
+    release         = -1;
+    detection       = -1;
+    stereo_link     = -1;
+    threshold       = -1;
+    ratio           = -1;
+    knee            = -1;
+    makeup          = -1;
+    bypass          = -1;
+    mute            = -1;
+    old_y1          = 0.f;
+    old_yl          = 0.f;
+    old_detected    = 0.f;
+    redraw_graph    = true;
+}
+
+void soft_audio_module::activate()
+{
+    is_active = true;
+    float l;
+    l = 0.f;
+    float byp = bypass;
+    bypass = 0.0;
+    process(l, l);
+    bypass = byp;
+}
+
+void soft_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void soft_audio_module::update_curve()
+{
+    width = (knee-0.99f)*8.f;
+    attack_coeff = exp(-1000.f/(attack * srate));
+    release_coeff = exp(-1000.f/(release * srate));
+    thresdb = 20.f*log10(threshold);
+}
+
+void soft_audio_module::process(float &left, float &right)
+{
+    if(bypass < 0.5f) {
+        float absample;
+        float gainL = 1.f, gainR = 1.f;
+
+        if (stereo_link >= 0) {
+            bool average = (stereo_link == 0);
+            absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
+
+            float xg, xl, yg, yl, y1;
+            yg=0.f;
+            xg = (absample==0.f) ? -160.f : 20.f*log10(absample);
+
+            if (2.f*(xg-thresdb)<-width) {
+                yg = xg;
+            }
+            if (2.f*fabs(xg-thresdb)<=width) {
+                yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*(xg-thresdb)>width) {
+                yg = thresdb + (xg-thresdb)*invratio;
+            }
+                
+            xl = xg - yg;
+                
+            y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
+            yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+            
+            gainL = exp(-yl/20.f*log(10.f));
+
+            left *= gainL * makeup;
+            right *= gainL * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_comp = gainL;
+            detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
+            old_detected = detected;
+
+            old_yl = yl;
+            old_y1 = y1;
+        } else {
+            float xg, xl, yg, yl, y1;
+            float xg_2, xl_2, yg_2, yl_2, y1_2;
+            yg=0.f; yg_2=0.f;
+            xg = (left==0.f) ? -160.f : 20.f*log10(fabs(left));
+            xg_2 = (right==0.f) ? -160.f : 20.f*log10(fabs(right));
+
+            if (2.f*(xg-thresdb)<-width) {
+                yg = xg;
+            }
+            if (2.f*(xg_2-thresdb)<-width) {
+                yg_2 = xg_2;
+            }
+            if (2.f*fabs(xg-thresdb)<=width) {
+                yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*fabs(xg_2-thresdb)<=width) {
+                yg_2 = xg_2 + (invratio-1.f)*(xg_2-thresdb+width/2.f)*(xg_2-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*(xg-thresdb)>width) {
+                yg = thresdb + (xg-thresdb)*invratio;
+            }
+            if (2.f*(xg_2-thresdb)>width) {
+                yg_2 = thresdb + (xg_2-thresdb)*invratio;
+            }
+                
+            xl = xg - yg;
+            xl_2 = xg_2 - yg_2;
+                
+            y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
+            y1_2 = std::max(xl_2, release_coeff*old_y1_2+(1.f-release_coeff)*xl_2);
+            yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+            yl_2 = attack_coeff*old_yl_2+(1.f-attack_coeff)*y1_2;
+            
+            gainL = exp(-yl/20.f*log(10.f));
+            gainR = exp(-yl_2/20.f*log(10.f));
+
+            left *= gainL * makeup;
+            right *= gainR * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_comp = gainL;
+            detected = ( exp(yg/20.f*log(10.f)) + old_detected)/2.f;
+            old_detected = detected;
+
+            old_yl = yl;
+            old_yl_2 = yl_2;
+            old_y1 = y1;
+            old_y1_2 = y1_2;
+        }
+    }
+}
+
+float soft_audio_module::output_level(float inputt) const {
+    return (output_gain(inputt) * makeup);
+}
+
+float soft_audio_module::output_gain(float inputt) const {
+	float xg, yg;
+
+	yg=0.f;
+	xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
+
+	if (2.f*(xg-thresdb)<-width) {
+		yg = xg;
+	}
+	if (2.f*fabs(xg-thresdb)<=width) {
+		yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+	}
+	if (2.f*(xg-thresdb)>width) {
+		yg = thresdb + (xg-thresdb)*invratio;
+	}
+    
+    return(exp(yg/20.f*log(10.f)));
+}
+
+void soft_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+void soft_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu, int stl, int mod)
+{
+    // set all params
+    attack          = att;
+    release         = rel;
+    threshold       = thr;
+    ratio           = rat;
+    knee            = kn;
+    makeup          = mak;
+    bypass          = byp;
+    mute            = mu;
+    mode            = mod;
+    stereo_link     = stl;
+
+    if (mode == 0) {
+        invratio = (1.f/ratio);
+    } else {
+        invratio = ratio;
+    }
+
+    if(mute > 0.f) {
+        meter_out  = 0.f;
+        meter_comp = 1.f;
+    }
+    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) + fabs(stereo_link - old_stereo_link) + fabs(mode - old_mode) > 0.000001f) {
+        old_threshold   = threshold;
+        old_ratio       = ratio;
+        old_knee        = knee;
+        old_makeup      = makeup;
+        old_detection   = detection;
+        old_bypass      = bypass;
+        old_mute        = mute;
+        old_stereo_link = stereo_link;
+        old_mode        = mode;
+        redraw_graph    = true;
+    }
+}
+float soft_audio_module::get_output_level() {
+    // returns output level (max(left, right))
+    return meter_out;
+}
+float soft_audio_module::get_comp_level() {
+    // returns amount of compression
+    return meter_comp;
+}
+
+bool soft_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    redraw_graph = false;
+    if (!is_active or subindex > 1)
+        return false;
+    
+    for (int i = 0; i < points; i++)
+    {
+        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
+        if (subindex == 0) {
+            if (i == 0 or i >= points - 1)
+                data[i] = dB_grid(input);
+            else
+                data[i] = INFINITY;
+        } else {
+            float output = output_level(input);
+            data[i] = dB_grid(output);
+        }
+    }
+    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+    else {
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    if (!subindex)
+        context->set_line_width(1.);
+    return true;
+}
+
+bool soft_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
+        return false;
+        
+    bool rms = (detection == 0);
+    float det = rms ? sqrt(detected) : detected;
+    x = 0.5 + 0.5 * dB_grid(det);
+    y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+    return true;
+}
+
+bool soft_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    bool tmp;
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}
+
+bool soft_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
+    return true;
+}
+
+
+/**********************************************************************
  * COMPRESSOR by Thor Harald Johanssen
 **********************************************************************/
 
