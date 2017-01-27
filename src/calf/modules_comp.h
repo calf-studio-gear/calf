@@ -461,11 +461,13 @@ private:
     //typedef multibandsoft_audio_module AM;
     //static const int strips = 12;
     bool solo[strips];
+    int strip_mode[strips]; // 0 = comp 1 = soft 2 = gate
     static const int intch = 2; // internal channels
     float xout[strips*intch], xin[intch];
     bool no_solo;
     float meter_inL, meter_inR;
     expander_audio_module gate[strips];
+    soft_audio_module mcompressor[strips];
     dsp::crossover crossover;
     int page, fast, bypass_;
     int mode_set[strips];
@@ -485,7 +487,15 @@ public:
     unsigned int buffer_size;
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     void set_sample_rate(uint32_t sr);
-    const expander_audio_module *get_strip_by_param_index(int index) const;
+
+    typedef struct {
+        int mode;
+        const expander_audio_module *exp_am;
+        const soft_audio_module *cmp_am;
+    } multi_am_t;
+
+    void get_strip_by_param_index(int index, multi_am_t *multi_am) const;
+
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;

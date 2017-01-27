@@ -65,11 +65,6 @@
                     <knob param="range0" />
                     <value param="range0" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection0"/>
-                    <combo param="detection0"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo0"/>
@@ -96,9 +91,16 @@
                     <knob param="delay0" />
                     <value param="delay0" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection0"/>
+                    <combo param="detection0"/>
+                    <label/>
                     <label param="stereo_link0"/>
                     <combo param="stereo_link0"/>
+                    <label/>
+                    <label param="strip_mode0"/>
+                    <combo param="strip_mode0"/>
                     <label/>
                 </vbox>
 
@@ -143,11 +145,6 @@
                     <knob param="range1" />
                     <value param="range1" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection1"/>
-                    <combo param="detection1"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo1"/>
@@ -174,9 +171,16 @@
                     <knob param="delay1" />
                     <value param="delay1" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection1"/>
+                    <combo param="detection1"/>
+                    <label/>
                     <label param="stereo_link1"/>
                     <combo param="stereo_link1"/>
+                    <label/>
+                    <label param="strip_mode1"/>
+                    <combo param="strip_mode1"/>
                     <label/>
                 </vbox>
 
@@ -221,11 +225,6 @@
                     <knob param="range2" />
                     <value param="range2" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection2"/>
-                    <combo param="detection2"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo2"/>
@@ -252,9 +251,16 @@
                     <knob param="delay2" />
                     <value param="delay2" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection2"/>
+                    <combo param="detection2"/>
+                    <label/>
                     <label param="stereo_link2"/>
                     <combo param="stereo_link2"/>
+                    <label/>
+                    <label param="strip_mode2"/>
+                    <combo param="strip_mode2"/>
                     <label/>
                 </vbox>
 
@@ -299,11 +305,6 @@
                     <knob param="range3" />
                     <value param="range3" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection3"/>
-                    <combo param="detection3"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo3"/>
@@ -330,9 +331,16 @@
                     <knob param="delay3" />
                     <value param="delay3" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection3"/>
+                    <combo param="detection3"/>
+                    <label/>
                     <label param="stereo_link3"/>
                     <combo param="stereo_link3"/>
+                    <label/>
+                    <label param="strip_mode3"/>
+                    <combo param="strip_mode3"/>
                     <label/>
                 </vbox>
 
@@ -377,11 +385,6 @@
                     <knob param="range4" />
                     <value param="range4" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection4"/>
-                    <combo param="detection4"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo4"/>
@@ -408,9 +411,16 @@
                     <knob param="delay4" />
                     <value param="delay4" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection4"/>
+                    <combo param="detection4"/>
+                    <label/>
                     <label param="stereo_link4"/>
                     <combo param="stereo_link4"/>
+                    <label/>
+                    <label param="strip_mode4"/>
+                    <combo param="strip_mode4"/>
                     <label/>
                 </vbox>
 
@@ -455,11 +465,6 @@
                     <knob param="range5" />
                     <value param="range5" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="0">
-                    <label param="detection5"/>
-                    <combo param="detection5"/>
-                    <label/>
-                </vbox>
 
                 <vbox expand="0" attach-x="0" attach-y="1">
                     <label param="solo5"/>
@@ -486,9 +491,16 @@
                     <knob param="delay5" />
                     <value param="delay5" />
                 </vbox>
-                <vbox expand="0" attach-x="5" attach-y="1">
+
+                <vbox epxand="0" attach-x="5" attach-y="0" attach-h="2">
+                    <label param="detection5"/>
+                    <combo param="detection5"/>
+                    <label/>
                     <label param="stereo_link5"/>
                     <combo param="stereo_link5"/>
+                    <label/>
+                    <label param="strip_mode5"/>
+                    <combo param="strip_mode5"/>
                     <label/>
                 </vbox>
 

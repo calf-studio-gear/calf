@@ -2804,6 +2804,8 @@ void multibandsoft_audio_module<MBSBaseClass, strips>::activate()
     for (int j = 0; j < strips; j ++) {
         gate[j].activate();
         gate[j].id = j;
+        mcompressor[j].activate();
+        mcompressor[j].id = j;
         for (int i = 0; i < intch; i ++)
             dist[j][i].activate();
     }
@@ -2816,6 +2818,7 @@ void multibandsoft_audio_module<MBSBaseClass, strips>::deactivate()
     // deactivate all strips
     for (int j = 0; j < strips; j ++) {
         gate[j].deactivate();
+        mcompressor[j].deactivate();
         for (int i = 0; i < intch; i ++)
             dist[j][i].deactivate();
     }
@@ -2873,11 +2876,26 @@ void multibandsoft_audio_module<MBSBaseClass, strips>::params_changed()
                            *params[AM::param_bypass0 + j], \
                            !(solo[i] || no_solo), \
                            *params[AM::param_range0 + j]);
+
+        mcompressor[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_strip_mode0 + j]);
+
         for (int k = 0; k < intch; k ++)
             dist[i][k].set_params(*params[AM::param_blend0 + j],
                                   *params[AM::param_drive0 + j]);
 
+        strip_mode[i] = *params[AM::param_strip_mode0 + j];
+
         gate[i].update_curve();
+        mcompressor[i].update_curve();
     }
 }
 
@@ -2888,6 +2906,7 @@ void multibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t 
     // set srate of all strips
     for (int j = 0; j < strips; j ++) {
         gate[j].set_sample_rate(srate);
+        mcompressor[j].set_sample_rate(srate);
         for (int k = 0; k < intch; k ++)
             dist[j][k].set_sample_rate(srate);
     }
@@ -2916,8 +2935,10 @@ void multibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t 
     
     meters.init(params, meter, clip, 2 + 2 * strips, srate);
 
-    for (int i = 0; i < strips; i++)
+    for (int i = 0; i < strips; i++) {
         gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
 }
 
 template<class MBSBaseClass, int strips>
@@ -2954,6 +2975,12 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
                         right = dist[i][1].process(right);
                     }
 
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
+
                     // fill delay buffer
                     buffer[pos + ptr] = left;
                     buffer[pos + ptr + 1] = right;
@@ -2961,8 +2988,6 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
                     // get value from delay buffer if neccessary
                     left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
                     right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
-
-                    gate[i].process(left, right);
 
                     outs[i*2][offset] = left;
                     outs[i*2 +1][offset] = right;
@@ -2976,7 +3001,11 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
                         right = dist[i][1].process(right);
                     }
 
-                    gate[i].process(left, right);
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
 
                     outs[i*2][offset] = left;
                     outs[i*2 +1][offset] = right;
@@ -2990,8 +3019,10 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
             pos = (pos + 2 * strips) % buffer_size;
         } // cycle trough samples
     } else {
-        for (int i = 0; i < strips; i++)
+        for (int i = 0; i < strips; i++) {
             gate[i].update_curve();
+            mcompressor[i].update_curve();
+        }
         float inL = 0.f;
         float inR = 0.f;
 
@@ -3032,7 +3063,11 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
                         right = dist[i][1].process(right);
                     }
 
-                    gate[i].process(left, right);
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
                 }
                 // fill delay buffer
                 buffer[pos + ptr] = left;
@@ -3056,8 +3091,13 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
                     values[2 + i*2] = 0;
                     values[3 + i*2] = 1;
                 } else {
-                    values[2 + i*2] = gate[i].get_output_level();
-                    values[3 + i*2] = gate[i].get_expander_level();
+                    if ( strip_mode[i] == 2 ) {
+                        values[2 + i*2] = gate[i].get_output_level();
+                        values[3 + i*2] = gate[i].get_expander_level();
+                    } else {
+                        values[2 + i*2] = mcompressor[i].get_output_level();
+                        values[3 + i*2] = mcompressor[i].get_comp_level();
+                    }
                 }
             }
             meters.process(values);
@@ -3076,18 +3116,24 @@ uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offs
 }
 
 template<class MBSBaseClass, int strips>
-const expander_audio_module *multibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index) const
+void multibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index, multi_am_t *multi_am) const
 {
-    // let's handle by the corresponding strip
-    //if ((index - param_range0) % params_per_band)
-    //    return &gate[(index - param_solo0) / params_per_band];
-    
     for (int i=0; i < strips; ++i) {
-        if ( (AM::param_solo0 + params_per_band * i) == index )
-            return &gate[i];
+        if ( (AM::param_solo0 + params_per_band * i) == index ) {
+            if (strip_mode[i] == 2) {
+                multi_am->mode = 2;
+                multi_am->exp_am = &gate[i];
+                return;
+            } else {
+                multi_am->mode = strip_mode[i];
+                multi_am->cmp_am = &mcompressor[i];
+                return;
+            }
+        }
     }
 
-    return NULL;
+    multi_am->mode = -1;
+    return;
 }
 
 template<class MBSBaseClass, int strips>
@@ -3099,10 +3145,14 @@ bool multibandsoft_audio_module<MBSBaseClass, strips>::get_graph(int index, int 
     bool r;
     if (redraw)
         redraw = std::max(0, redraw - 1);
+
+    multi_am_t multi_am;
         
-    const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m) {
-        r = m->get_graph(subindex, data, points, context, mode);
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2) {
+        r = multi_am.exp_am->get_graph(subindex, data, points, context, mode);
+    } else if (multi_am.mode == 0 || multi_am.mode == 1) {
+        r = multi_am.cmp_am->get_graph(subindex, data, points, context, mode);
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
@@ -3128,18 +3178,28 @@ bool multibandsoft_audio_module<MBSBaseClass, strips>::get_dot(int index, int su
     if (fast)
         return false;
 
-    const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_dot(subindex, x, y, size, context);
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_dot(subindex, x, y, size, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_dot(subindex, x, y, size, context);
+
     return false;
 }
 
 template<class MBSBaseClass, int strips>
 bool multibandsoft_audio_module<MBSBaseClass, strips>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m)
-        return m->get_gridline(subindex, pos, vertical, legend, context);
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_gridline(subindex, pos, vertical, legend, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_gridline(subindex, pos, vertical, legend, context);
+
     if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
@@ -3149,13 +3209,18 @@ bool multibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int
 {
     if (fast)
         return false;
+
     bool r;
-    const expander_audio_module *m = get_strip_by_param_index(index);
-    if (m) {
-        r = m->get_layers(index, generation, layers);
-    } else {
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        r = multi_am.exp_am->get_layers(index, generation, layers);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        r = multi_am.cmp_am->get_layers(index, generation, layers);
+    else
         r = crossover.get_layers(index, generation, layers);
-    }
+
     if (redraw) {
         layers |= LG_CACHE_GRAPH;
         r = true;
