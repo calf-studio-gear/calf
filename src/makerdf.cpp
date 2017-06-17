@@ -459,7 +459,7 @@ void make_ttl(string path_prefix, const string *data_dir)
             + ">";
         ttl += uri + " a lv2p:Preset ;\n"
             "    lv2:appliesTo " + ilm->second.second + " ;\n"
-            "    rdfs:seeAlso <presets-" + pr.plugin + ".ttl> .\n";
+            "    rdfs:seeAlso <presets-" + ilm->second.first + ".ttl> .\n";
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"
