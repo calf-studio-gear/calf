@@ -25,6 +25,7 @@ JACK_ENABLED="no"
 OLD_JACK="no"
 GUI_ENABLED="no"
 LASH_ENABLED="no"
+OBS_CHECK_ENABLED="yes"
 
 ############################################################################################
 # Create configure substitutions for dependencies
@@ -116,6 +117,13 @@ if test "$LASH_FOUND" = "yes"; then
       [if test "$withval" = "no"; then LASH_ENABLED="no"; fi],[])
   AC_MSG_RESULT($LASH_ENABLED)
 fi
+
+AC_MSG_CHECKING([whether to check for old LADSPA plugin])
+AC_ARG_WITH(obsolete-check,
+AC_HELP_STRING([--without-obsolete-check],[do not check for obsolete files]),
+  [if test "$withval" = "no"; then OBS_CHECK_ENABLED="no"; fi],[])
+AC_MSG_RESULT($OBS_CHECK_ENABLED)
+
 
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
 AC_ARG_ENABLE(experimental,
@@ -267,6 +275,23 @@ AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
     Installation prefix:         $prefix
     
 ])
+
+if test "$OBS_CHECK_ENABLED" == "yes"; then
+for fn in $prefix/lib/ladspa /usr/lib/ladspa /usr/local/ladspa `echo $PATH | tr : "\n"` ; do
+    fn2=$fn/calf.so
+    if test -a $fn2; then
+        AC_MSG_ERROR([
+
+Obsolete LADSPA version of the Calf plugins has been detected:
+
+    $fn2/calf.so
+
+It will interfere with the current version. Please remove the file and try
+again.
+])
+    fi
+done
+fi
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
     AC_MSG_RESULT([
