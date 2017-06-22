@@ -277,7 +277,7 @@ AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
 ])
 
 if test "$OBS_CHECK_ENABLED" == "yes"; then
-for fn in $prefix/lib/ladspa /usr/lib/ladspa /usr/local/ladspa `echo $PATH | tr : "\n"` ; do
+for fn in $prefix/lib/ladspa /usr/lib/ladspa /usr/local/lib/ladspa `echo $LADSPA_PATH | tr : "\n"` ; do
     fn2=$fn/calf.so
     if test -a $fn2; then
         AC_MSG_ERROR([
