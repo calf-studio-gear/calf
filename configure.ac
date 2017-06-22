@@ -284,11 +284,27 @@ for fn in $prefix/lib/ladspa /usr/lib/ladspa /usr/local/lib/ladspa `echo $LADSPA
 
 Obsolete LADSPA version of the Calf plugins has been detected:
 
-    $fn2/calf.so
+    $fn2
 
 It will interfere with the current version. Please remove the file and try
 again.
 ])
+    fi
+done
+fnr=`dirname $prefix/lib/lv2/calf.lv2/calf.so`
+for fn in /usr/lib/lv2 /usr/local/lib/lv2 `echo $LV2_PATH | tr : "\n"` ; do
+    fn2=$fn/calf.lv2/calf.so
+    echo "Checking $fn2"
+    if test -a $fn2 -a "`dirname $fn2`" != "$fnr"; then
+        AC_MSG_ERROR([
+
+Another version of the Calf plugins has been detected:
+
+    $fn2
+
+It will interfere with the current version. Please remove the old version
+from $fn/calf.lv2 and try again.
+    ])
     fi
 done
 fi
