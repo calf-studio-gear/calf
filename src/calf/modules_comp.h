@@ -505,6 +505,71 @@ public:
 typedef multibandsoft_audio_module<multibandsoft6band_metadata, 6> multibandsoft6band_audio_module;
 typedef multibandsoft_audio_module<multibandsoft12band_metadata, 12> multibandsoft12band_audio_module;
 
+
+/**********************************************************************
+ * SIDECHAIN MULTIBAND SOFT by Adriano Moura
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+class scmultibandsoft_audio_module: public audio_module<MBSBaseClass>, public frequency_response_line_graph {
+public:
+    typedef audio_module<MBSBaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+private:
+    //typedef scmultibandsoft_audio_module AM;
+    //static const int strips = 12;
+    bool solo[strips];
+    int strip_mode[strips]; // 0 = comp 1 = soft 2 = gate
+    static const int intch = 2; // internal channels
+    static const int scch = intch; // sidechain channels
+    float xout[strips*intch], xin[intch], xsc[scch];
+    bool no_solo;
+    float meter_inL, meter_inR;
+    expander_audio_module gate[strips];
+    soft_audio_module mcompressor[strips];
+    dsp::crossover crossover;
+    dsp::crossover sccrossover;
+    int page, fast, bypass_;
+    int mode_set[strips], scmode_set[strips];
+    mutable int redraw;
+    vumeters meters;
+    dsp::tap_distortion dist[strips][intch];
+public:
+    uint32_t srate;
+    bool is_active;
+    scmultibandsoft_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = AM::param_attack2 - AM::param_attack1 };
+    float * buffer;
+    unsigned int pos;
+    unsigned int buffer_size;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+
+    typedef struct {
+        int mode;
+        const expander_audio_module *exp_am;
+        const soft_audio_module *cmp_am;
+    } multi_am_t;
+
+    void get_strip_by_param_index(int index, multi_am_t *multi_am) const;
+
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+typedef scmultibandsoft_audio_module<scmultibandsoft6band_metadata, 6> scmultibandsoft6band_audio_module;
+
+
 /**********************************************************************
  * ELASTIC EQUALIZER by Adriano Moura
 **********************************************************************/

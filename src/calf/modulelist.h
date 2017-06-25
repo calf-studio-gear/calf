@@ -38,6 +38,7 @@
     PER_MODULE_ITEM(multibandgate,       false, "multibandgate")
     PER_MODULE_ITEM(multibandsoft6band,  false, "multibandsoft6band")
     PER_MODULE_ITEM(multibandsoft12band, false, "multibandsoft12band")
+    PER_MODULE_ITEM(scmultibandsoft6band,false, "scmultibandsoft6band")
     PER_MODULE_ITEM(elasticeq,           false, "elasticeq")
     PER_MODULE_ITEM(mstripelasticeq,     false, "mstripelasticeq")
     

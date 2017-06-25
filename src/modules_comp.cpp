@@ -3237,6 +3237,478 @@ bool multibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int
 template class multibandsoft_audio_module<multibandsoft6band_metadata, 6>;
 template class multibandsoft_audio_module<multibandsoft12band_metadata, 12>;
 
+
+/**********************************************************************
+ * SIDECHAIN MULTIBAND SOFT by Adriano Moura and Markus Schmidt
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+scmultibandsoft_audio_module<MBSBaseClass, strips>::scmultibandsoft_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    redraw     = 0;
+    page       = 0;
+    fast       = 0;
+    bypass_    = 0;
+    crossover.init(2, strips, 44100);
+    sccrossover.init(2, strips, 44100);
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+    // activate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+        mcompressor[j].activate();
+        mcompressor[j].id = j;
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].activate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::deactivate()
+{
+    is_active = false;
+    // deactivate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+        mcompressor[j].deactivate();
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].deactivate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::params_changed()
+{
+    bool s=0;
+    for (int i=0; i < strips; ++i) {
+        // determine mute/solo states
+        solo[i] = *params[AM::param_solo0 + params_per_band * i] > 0.f ? true : false;
+        s |= *params[AM::param_solo0 + params_per_band * i] > 0.f;
+    }
+    no_solo = s ? false : true;
+
+    int f = *params[AM::param_fast];
+    if (f != fast) {
+        fast = *params[AM::param_fast];
+    }
+    int p = (int)*params[AM::param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+
+    int b=0;
+    for (int i=0; i < strips; ++i) {
+        b += (int)*params[AM::param_bypass0 + params_per_band * i];
+    }
+    if (b != bypass_) {
+        redraw = strips * 2 + strips;
+        bypass_ = b;
+    }
+    
+    for (int i=0; i < strips-1; ++i) {
+        mode_set[i] = *params[AM::param_mode0 + params_per_band * i] + 1;
+        scmode_set[i] = *params[AM::param_scmode] + 1;
+    }
+    crossover.set_mode(mode_set);
+    sccrossover.set_mode(scmode_set);
+
+    for (int i=0; i < strips-1; ++i) {
+        crossover.set_filter(i, *params[AM::param_freq0 + i]); // freq is not declared on each band
+        sccrossover.set_filter(i, *params[AM::param_freq0 + i]);
+    }
+   
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_detection0 + j], \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_range0 + j]);
+
+        mcompressor[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_strip_mode0 + j]);
+
+        for (int k = 0; k < intch; k ++)
+            dist[i][k].set_params(*params[AM::param_blend0 + j],
+                                  *params[AM::param_drive0 + j]);
+
+        strip_mode[i] = *params[AM::param_strip_mode0 + j];
+
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    // set srate of all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+        mcompressor[j].set_sample_rate(srate);
+        for (int k = 0; k < intch; k ++)
+            dist[j][k].set_sample_rate(srate);
+    }
+    // set srate of crossover
+    crossover.set_sample_rate(srate);
+    sccrossover.set_sample_rate(srate);
+
+    // buffer size attack rate multiplied by channels and strips
+    buffer_size = (int)(srate / 10 * 2 * strips + 2 * strips); 
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    pos = 0;
+
+    int nmeters = 2 + 2*strips;
+    int meter[nmeters];
+    meter[0] = AM::param_meter_inL;
+    meter[1] = AM::param_meter_inR;
+    int clip[nmeters];
+    clip[0] = AM::param_clip_inL;
+    clip[1] = AM::param_clip_inR;
+
+    for (int i=2, j=0; i < nmeters; i+=2, ++j) {
+        meter[i] = AM::param_output0 + params_per_band * j;
+        meter[i+1] = AM::param_gating0 + params_per_band * j;
+        clip[i] = -1;
+        clip[i+1] = -1;
+    }
+    
+    meters.init(params, meter, clip, 2 + 2 * strips, srate);
+
+    for (int i = 0; i < strips; i++) {
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+uint32_t scmultibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    float left, scleft;
+    float right, scright;
+    numsamples += offset;
+    if (fast) { // Ignores stuff like solo, bypass and meters, + a few optimizations!!
+        // process all strips
+        while(offset < numsamples) {
+            // process crossover, cycle trough samples, in level
+            xin[0] = ins[0][offset] * *params[AM::param_level_in];
+            xin[1] = ins[1][offset] * *params[AM::param_level_in];
+            xsc[0] = ins[2][offset];
+            xsc[1] = ins[3][offset];
+            crossover.process(xin);
+            sccrossover.process(xsc);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i++) {
+                int off = i * params_per_band;
+                if (*params[AM::param_delay0 + off]) {
+                    int nbuf = 0;
+                    int ptr = i * 2;
+
+                    // calc position in delay buffer
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    float scleft  = sccrossover.get_value(0, i);
+                    float scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+
+                    // fill delay buffer
+                    buffer[pos + ptr] = left;
+                    buffer[pos + ptr + 1] = right;
+                    
+                    // get value from delay buffer if neccessary
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                } else {
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    float scleft  = sccrossover.get_value(0, i);
+                    float scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                }
+            } 
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+    } else {
+        for (int i = 0; i < strips; i++) {
+            gate[i].update_curve();
+            mcompressor[i].update_curve();
+        }
+        float inL = 0.f;
+        float inR = 0.f;
+
+        // process all strips
+        while(offset < numsamples) {
+            // cycle through samples
+            inL = ins[0][offset];
+            inR = ins[1][offset];
+            xsc[0] = ins[2][offset];
+            xsc[1] = ins[3][offset];
+            // in level
+            inR *= *params[AM::param_level_in];
+            inL *= *params[AM::param_level_in];
+            // process crossover
+            xin[0] = inL;
+            xin[1] = inR;
+            crossover.process(xin);
+            sccrossover.process(xsc);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i ++) {
+                int nbuf = 0;
+                int off = i * params_per_band;
+                int ptr = i * 2;
+
+                // calc position in delay buffer
+                if (*params[AM::param_delay0 + off]) {
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+                }
+
+                left = 0.f; right = 0.f;
+                if (solo[i] || no_solo) {
+                    // strip unmuted
+                    left = crossover.get_value(0, i);
+                    right = crossover.get_value(1, i);
+                    scleft = sccrossover.get_value(0, i);
+                    scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+                }
+                // fill delay buffer
+                buffer[pos + ptr] = left;
+                buffer[pos + ptr + 1] = right;
+                
+                // get value from delay buffer if neccessary
+                if (*params[AM::param_delay0 + off]) {
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+                }
+
+                outs[i*2][offset] = left;
+                outs[i*2 +1][offset] = right;
+            }
+
+            float values[2 + strips*2];
+            values[0] = inL;
+            values[1] = inR;
+            for (int i=0; i < strips; i++)  {
+                if (*params[AM::param_bypass0 + params_per_band * i]) {
+                    values[2 + i*2] = 0;
+                    values[3 + i*2] = 1;
+                } else {
+                    if ( strip_mode[i] == 2 ) {
+                        values[2 + i*2] = gate[i].get_output_level();
+                        values[3 + i*2] = gate[i].get_expander_level();
+                    } else {
+                        values[2 + i*2] = mcompressor[i].get_output_level();
+                        values[3 + i*2] = mcompressor[i].get_comp_level();
+                    }
+                }
+            }
+            meters.process(values);
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+
+        meters.fall(numsamples);
+    }
+
+    return outputs_mask;
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index, multi_am_t *multi_am) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (AM::param_solo0 + params_per_band * i) == index ) {
+            if (strip_mode[i] == 2) {
+                multi_am->mode = 2;
+                multi_am->exp_am = &gate[i];
+                return;
+            } else {
+                multi_am->mode = strip_mode[i];
+                multi_am->cmp_am = &mcompressor[i];
+                return;
+            }
+        }
+    }
+
+    multi_am->mode = -1;
+    return;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2) {
+        r = multi_am.exp_am->get_graph(subindex, data, points, context, mode);
+    } else if (multi_am.mode == 0 || multi_am.mode == 1) {
+        r = multi_am.cmp_am->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if ((index == AM::param_solo0 + params_per_band * page and subindex == 1)
+    or  (index == 0 and subindex == page)) {
+        *mode = 1;
+    }
+    if ((subindex == 1 and index != 0)
+    or  (index == 0)) {
+        if (r 
+        and ((index != 0 and *params[index - 1])
+        or   (index == 0 and *params[AM::param_bypass0 + params_per_band * subindex])))
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        else
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    return r;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (fast)
+        return false;
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_dot(subindex, x, y, size, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_gridline(subindex, pos, vertical, legend, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_gridline(subindex, pos, vertical, legend, context);
+
+    if (phase) return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        r = multi_am.exp_am->get_layers(index, generation, layers);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        r = multi_am.cmp_am->get_layers(index, generation, layers);
+    else
+        r = crossover.get_layers(index, generation, layers);
+
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
+}
+
+template class scmultibandsoft_audio_module<scmultibandsoft6band_metadata, 6>;
+
+
 /**********************************************************************
  * ELASTIC EQ by Adriano Moura
 **********************************************************************/

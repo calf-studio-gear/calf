@@ -425,6 +425,36 @@ struct multibandsoft6band_metadata: public plugin_metadata<multibandsoft6band_me
     PLUGIN_NAME_ID_LABEL("multibandsoft6band", "multibandsoft6band", "Multiband Soft 6 band")
 };
 
+/// Adriano's sidechain multiband soft 6 band - metadata
+struct scmultibandsoft6band_metadata: public plugin_metadata<scmultibandsoft6band_metadata>
+{
+    enum { in_count = 4, out_count = 12, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level_in,
+           STEREO_VU_METER_IN_PARAMS,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4,
+           param_fast, param_scmode,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0, param_delay0,
+           param_detection0, param_stereo_link0, param_strip_mode0, param_gating0, param_output0, param_mode0, param_solo0, param_bypass0,
+           param_drive0, param_blend0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_makeup1, param_knee1, param_delay1,
+           param_detection1, param_stereo_link1, param_strip_mode1, param_gating1, param_output1, param_mode1, param_solo1, param_bypass1,
+           param_drive1, param_blend1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_makeup2, param_knee2, param_delay2,
+           param_detection2, param_stereo_link2, param_strip_mode2, param_gating2, param_output2, param_mode2, param_solo2, param_bypass2,
+           param_drive2, param_blend2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3, param_delay3,
+           param_detection3, param_stereo_link3, param_strip_mode3, param_gating3, param_output3, param_mode3, param_solo3, param_bypass3,
+           param_drive3, param_blend3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_makeup4, param_knee4, param_delay4,
+           param_detection4, param_stereo_link4, param_strip_mode4, param_gating4, param_output4, param_mode4, param_solo4, param_bypass4,
+           param_drive4, param_blend4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_makeup5, param_knee5, param_delay5,
+           param_detection5, param_stereo_link5, param_strip_mode5, param_gating5, param_output5, param_mode5, param_solo5, param_bypass5,
+           param_drive5, param_blend5,
+           param_notebook,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("scmultibandsoft6band", "scmultibandsoft6band", "Sidechain Multiband Soft 6 band")
+};
 
 /// Adriano's Elastic EQ - metadata
 struct elasticeq_metadata: public plugin_metadata<elasticeq_metadata>
