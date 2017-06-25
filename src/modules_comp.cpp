@@ -794,7 +794,7 @@ void soft_audio_module::activate()
     l = 0.f;
     float byp = bypass;
     bypass = 0.0;
-    process(l, l);
+    process(l, l, 0, 0);
     bypass = byp;
 }
 
@@ -811,15 +811,21 @@ void soft_audio_module::update_curve()
     thresdb = 20.f*log10(threshold);
 }
 
-void soft_audio_module::process(float &left, float &right)
+void soft_audio_module::process(float &left, float &right, const float *det_left, const float *det_right)
 {
+    if(!det_left) {
+        det_left = &left;
+    }
+    if(!det_right) {
+        det_right = &right;
+    }
     if(bypass < 0.5f) {
         float absample;
         float gainL = 1.f, gainR = 1.f;
 
         if (stereo_link >= 0) {
             bool average = (stereo_link == 0);
-            absample = average ? (fabs(left) + fabs(right)) * 0.5f : std::max(fabs(left), fabs(right));
+            absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
 
             float xg, xl, yg, yl, y1;
             yg=0.f;

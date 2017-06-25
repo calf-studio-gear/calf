@@ -154,7 +154,7 @@ public:
     soft_audio_module();
     void set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu, int stl, int mod);
     void update_curve();
-    void process(float &left, float &right);
+    void process(float &left, float &right, const float *det_left = NULL, const float *det_right = NULL);
     void activate();
     void deactivate();
     int id;
