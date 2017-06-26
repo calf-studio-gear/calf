@@ -41,6 +41,7 @@
     PER_MODULE_ITEM(scmultibandsoft6band,false, "scmultibandsoft6band")
     PER_MODULE_ITEM(elasticeq,           false, "elasticeq")
     PER_MODULE_ITEM(mstripelasticeq,     false, "mstripelasticeq")
+    PER_MODULE_ITEM(scmstripelasticeq,   false, "scmstripelasticeq")
     
     // Limiter
     PER_MODULE_ITEM(limiter,             false, "limiter")

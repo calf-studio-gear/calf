@@ -539,6 +539,67 @@ struct mstripelasticeq_metadata: public plugin_metadata<mstripelasticeq_metadata
     PLUGIN_NAME_ID_LABEL("mstripelasticeq", "mstripelasticeq", "Multstrip Elastic Equalizer")
 };
 
+/// Adriano's Sidechain Multistrip Elastic EQ - metadata
+struct scmstripelasticeq_metadata: public plugin_metadata<scmstripelasticeq_metadata>
+{
+    enum { in_count = 28, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_knee0, param_detection0, param_stereo_link0, param_gating0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_knee1, param_detection1, param_stereo_link1, param_gating1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_knee2, param_detection2, param_stereo_link2, param_gating2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_knee3, param_detection3, param_stereo_link3, param_gating3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_knee4, param_detection4, param_stereo_link4, param_gating4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_knee5, param_detection5, param_stereo_link5, param_gating5,
+           param_range6, param_threshold6, param_ratio6, param_attack6, param_release6, param_knee6, param_detection6, param_stereo_link6, param_gating6,
+           param_p01_active, param_p01_level, param_p01_freq, param_p01_q,
+           param_p02_active, param_p02_level, param_p02_freq, param_p02_q,
+           param_p03_active, param_p03_level, param_p03_freq, param_p03_q,
+           param_p04_active, param_p04_level, param_p04_freq, param_p04_q,
+           param_p05_active, param_p05_level, param_p05_freq, param_p05_q,
+           param_p06_active, param_p06_level, param_p06_freq, param_p06_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_p21_active, param_p21_level, param_p21_freq, param_p21_q,
+           param_p22_active, param_p22_level, param_p22_freq, param_p22_q,
+           param_p23_active, param_p23_level, param_p23_freq, param_p23_q,
+           param_p24_active, param_p24_level, param_p24_freq, param_p24_q,
+           param_p25_active, param_p25_level, param_p25_freq, param_p25_q,
+           param_p26_active, param_p26_level, param_p26_freq, param_p26_q,
+           param_p31_active, param_p31_level, param_p31_freq, param_p31_q,
+           param_p32_active, param_p32_level, param_p32_freq, param_p32_q,
+           param_p33_active, param_p33_level, param_p33_freq, param_p33_q,
+           param_p34_active, param_p34_level, param_p34_freq, param_p34_q,
+           param_p35_active, param_p35_level, param_p35_freq, param_p35_q,
+           param_p36_active, param_p36_level, param_p36_freq, param_p36_q,
+           param_p41_active, param_p41_level, param_p41_freq, param_p41_q,
+           param_p42_active, param_p42_level, param_p42_freq, param_p42_q,
+           param_p43_active, param_p43_level, param_p43_freq, param_p43_q,
+           param_p44_active, param_p44_level, param_p44_freq, param_p44_q,
+           param_p45_active, param_p45_level, param_p45_freq, param_p45_q,
+           param_p46_active, param_p46_level, param_p46_freq, param_p46_q,
+           param_p51_active, param_p51_level, param_p51_freq, param_p51_q,
+           param_p52_active, param_p52_level, param_p52_freq, param_p52_q,
+           param_p53_active, param_p53_level, param_p53_freq, param_p53_q,
+           param_p54_active, param_p54_level, param_p54_freq, param_p54_q,
+           param_p55_active, param_p55_level, param_p55_freq, param_p55_q,
+           param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
+           param_p61_active, param_p61_level, param_p61_freq, param_p61_q,
+           param_p62_active, param_p62_level, param_p62_freq, param_p62_q,
+           param_p63_active, param_p63_level, param_p63_freq, param_p63_q,
+           param_p64_active, param_p64_level, param_p64_freq, param_p64_q,
+           param_p65_active, param_p65_level, param_p65_freq, param_p65_q,
+           param_p66_active, param_p66_level, param_p66_freq, param_p66_q,
+           param_notebook,
+           param_draw_labels, param_force, param_individuals, param_zoom,
+           param_selected_only,
+           param_count };
+    enum { PeakBands = 42, first_graph_param = param_p01_active, last_graph_param = param_p66_q };
+    PLUGIN_NAME_ID_LABEL("scmstripelasticeq", "scmstripelasticeq", "Sidechain Multistrip Elastic Equalizer")
+};
 
 /// Markus's limiter - metadata
 struct limiter_metadata: public plugin_metadata<limiter_metadata>

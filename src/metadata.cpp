@@ -1095,6 +1095,70 @@ CALF_PORT_PROPS(mstripelasticeq) = {
 
 CALF_PLUGIN_INFO(mstripelasticeq) = { 0x8505, "MultistripElasticEQ", "Calf Multistrip Elastic Equalizer", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "EQPlugin" };
 
+////////////////////////////////////////////////////////////////////////////
+
+CALF_PORT_NAMES(scmstripelasticeq) = {"In 1 L", "In 1 R", "In 2 L", "In 2 R", "In 3 L", "In 3 R", "In 4 L", "In 4 R", "In 5 L", "In 5 R", "In 6 L", "In 6 R", "In 7 L", "In 7 R", \
+                                      "Side L 1", "Side R 1", "Side L 2", "Side R 2", "Side L 3", "Side R 3", "Side L 4", "Side R 4", "Side L 5", "Side R 5", "Side L 6", "Side R 6", "Side L 7", "Side R 7", \
+                                      "Out L", "Out R"};
+
+CALF_PORT_PROPS(scmstripelasticeq) = {
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" }, \
+    MULTI_STRIP_GATE_PARAMS(0, 1)
+    MULTI_STRIP_GATE_PARAMS(1, 2)
+    MULTI_STRIP_GATE_PARAMS(2, 3)
+    MULTI_STRIP_GATE_PARAMS(3, 4)
+    MULTI_STRIP_GATE_PARAMS(4, 5)
+    MULTI_STRIP_GATE_PARAMS(5, 6)
+    MULTI_STRIP_GATE_PARAMS(6, 7)
+    EQ_BAND_NOMS_PARAMS(01, 20)
+    EQ_BAND_NOMS_PARAMS(02, 25)
+    EQ_BAND_NOMS_PARAMS(03, 30)
+    EQ_BAND_NOMS_PARAMS(04, 35)
+    EQ_BAND_NOMS_PARAMS(05, 40)
+    EQ_BAND_NOMS_PARAMS(06, 45)
+    EQ_BAND_NOMS_PARAMS(11, 50)
+    EQ_BAND_NOMS_PARAMS(12, 60)
+    EQ_BAND_NOMS_PARAMS(13, 70)
+    EQ_BAND_NOMS_PARAMS(14, 80)
+    EQ_BAND_NOMS_PARAMS(15, 90)
+    EQ_BAND_NOMS_PARAMS(16, 100)
+    EQ_BAND_NOMS_PARAMS(21, 110)
+    EQ_BAND_NOMS_PARAMS(22, 120)
+    EQ_BAND_NOMS_PARAMS(23, 140)
+    EQ_BAND_NOMS_PARAMS(24, 160)
+    EQ_BAND_NOMS_PARAMS(25, 200)
+    EQ_BAND_NOMS_PARAMS(26, 240)
+    EQ_BAND_NOMS_PARAMS(31, 300)
+    EQ_BAND_NOMS_PARAMS(32, 350)
+    EQ_BAND_NOMS_PARAMS(33, 400)
+    EQ_BAND_NOMS_PARAMS(34, 500)
+    EQ_BAND_NOMS_PARAMS(35, 600)
+    EQ_BAND_NOMS_PARAMS(36, 800)
+    EQ_BAND_NOMS_PARAMS(41, 1000)
+    EQ_BAND_NOMS_PARAMS(42, 1100)
+    EQ_BAND_NOMS_PARAMS(43, 1300)
+    EQ_BAND_NOMS_PARAMS(44, 1500)
+    EQ_BAND_NOMS_PARAMS(45, 2000)
+    EQ_BAND_NOMS_PARAMS(46, 2200)
+    EQ_BAND_NOMS_PARAMS(51, 3000)
+    EQ_BAND_NOMS_PARAMS(52, 3500)
+    EQ_BAND_NOMS_PARAMS(53, 4000)
+    EQ_BAND_NOMS_PARAMS(54, 5000)
+    EQ_BAND_NOMS_PARAMS(55, 5500)
+    EQ_BAND_NOMS_PARAMS(56, 6000)
+    EQ_BAND_NOMS_PARAMS(61, 7000)
+    EQ_BAND_NOMS_PARAMS(62, 8000)
+    EQ_BAND_NOMS_PARAMS(63, 9000)
+    EQ_BAND_NOMS_PARAMS(64, 10000)
+    EQ_BAND_NOMS_PARAMS(65, 12000)
+    EQ_BAND_NOMS_PARAMS(66, 14000)
+    { 0,           0,           5,     0,  PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF,  NULL, "notebook", "Notebook" }, \
+    EQ_DISPLAY_NO_ANALYZER_PARAMS
+    { 1,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "selected_only", "Selected strip only" } , \
+    {}
+};
+
+CALF_PLUGIN_INFO(scmstripelasticeq) = { 0x8505, "SCMultistripElasticEQ", "Calf Sidechain Multistrip Elastic Equalizer", "Calf Studio Gear / Adriano Moura / Markus Schmidt / Damien Zammit / Thor Harald Johansen", calf_plugins::calf_copyright_info, "EQPlugin" };
 
 ////////////////////////////////////////////////////////////////////////////
 
