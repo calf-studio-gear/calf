@@ -428,7 +428,7 @@ struct multibandsoft6band_metadata: public plugin_metadata<multibandsoft6band_me
 /// Adriano's sidechain multiband soft 6 band - metadata
 struct scmultibandsoft6band_metadata: public plugin_metadata<scmultibandsoft6band_metadata>
 {
-    enum { in_count = 4, out_count = 12, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { in_count = 4, out_count = 24, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
     enum { param_level_in,
            STEREO_VU_METER_IN_PARAMS,
            param_freq0, param_freq1, param_freq2, param_freq3, param_freq4,

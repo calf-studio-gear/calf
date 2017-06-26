@@ -773,7 +773,7 @@ CALF_PLUGIN_INFO(multibandsoft12band) = { 0x8505, "MultibandSoft12band", "Calf M
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(multibandsoft6band) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L"};
+CALF_PORT_NAMES(multibandsoft6band) = {"In L", "In R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R" };
 
 CALF_PORT_PROPS(multibandsoft6band) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \
@@ -801,7 +801,8 @@ CALF_PLUGIN_INFO(multibandsoft6band) = { 0x8505, "MultibandSoft6band", "Calf Mul
 
 ////////////////////////////////////////////////////////////////////////////
 
-CALF_PORT_NAMES(scmultibandsoft6band) = {"In L", "In R", "Side L", "Side R", "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L"};
+CALF_PORT_NAMES(scmultibandsoft6band) = {"In L", "In R", "Side L", "Side R", \
+                                         "Out 1 L", "Out 1 R", "Out 2 L", "Out 2 R", "Out 3 L", "Out 3 R", "Out 4 L", "Out 4 R", "Out 5 L", "Out 5 R", "Out 6 L", "Out 6 R", "Side 1 L", "Side 1 R", "Side 2 L", "Side 2 R", "Side 3 L", "Side 3 R", "Side 4 L", "Side 4 R", "Side 5 L", "Side 5 R", "Side 6 L", "Side 6 R"};
 
 CALF_PORT_PROPS(scmultibandsoft6band) = {
     { 1,           0.015625,    64,    0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" }, \

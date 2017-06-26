@@ -3460,8 +3460,10 @@ uint32_t scmultibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t of
                     left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
                     right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
 
-                    outs[i*2][offset] = left;
-                    outs[i*2 +1][offset] = right;
+                    outs[i*2][offset]     = left;
+                    outs[i*2 + 1][offset] = right;
+                    outs[strips*intch + i*2][offset]     = scleft;
+                    outs[strips*intch + i*2 + 1][offset] = scright;
                 } else {
                     float left  = crossover.get_value(0, i);
                     float right = crossover.get_value(1, i);
@@ -3482,6 +3484,8 @@ uint32_t scmultibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t of
 
                     outs[i*2][offset] = left;
                     outs[i*2 +1][offset] = right;
+                    outs[strips*intch + i*2][offset]     = scleft;
+                    outs[strips*intch + i*2 + 1][offset] = scright;
                 }
             } 
 
@@ -3559,6 +3563,8 @@ uint32_t scmultibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t of
 
                 outs[i*2][offset] = left;
                 outs[i*2 +1][offset] = right;
+                outs[strips*intch + i*2][offset]     = scleft;
+                outs[strips*intch + i*2 + 1][offset] = scright;
             }
 
             float values[2 + strips*2];

@@ -527,7 +527,7 @@ private:
     int strip_mode[strips]; // 0 = comp 1 = soft 2 = gate
     static const int intch = 2; // internal channels
     static const int scch = intch; // sidechain channels
-    float xout[strips*intch], xin[intch], xsc[scch];
+    float xin[intch], xsc[scch];
     bool no_solo;
     float meter_inL, meter_inR;
     expander_audio_module gate[strips];
