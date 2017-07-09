@@ -1804,6 +1804,7 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
 }
 void notebook_param_control::created()
 {
+    hook_params();
     gtk_widget_show_all(widget);
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
