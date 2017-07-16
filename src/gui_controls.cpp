@@ -940,7 +940,6 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
     
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (toggle_value_changed), (gpointer)this);
     //gtk_widget_set_name(GTK_WIDGET(widget), "Calf-ToggleButton");
-    printf("toggle::create\n");
     return widget;
 }
 
@@ -949,7 +948,6 @@ void toggle_param_control::get()
     const parameter_properties &props = get_props();
     float value = props.from_01(gtk_range_get_value(GTK_RANGE(widget)));
     gui->set_param_value(param_no, value, this);
-    printf("toggle::get %.2f\n", value);
 }
 
 void toggle_param_control::set()
@@ -958,14 +956,12 @@ void toggle_param_control::set()
     const parameter_properties &props = get_props();
     float value = gui->plugin->get_param_value(param_no);
     gtk_range_set_value(GTK_RANGE(widget), props.to_01(value));
-    printf("toggle::get %.2f\n", value);
 }
 
 void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer value)
 {
     param_control *jhp = (param_control *)value;
     jhp->get();
-    printf("toggle::value_changed %.2f\n", value);
 }
 
 /******************************** Tap Button ********************************/
@@ -1799,7 +1795,6 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
         gui->window->get_environment()->get_image_factory()->get("notebook_screw"));
     gtk_widget_set_name(widget, "Calf-Notebook");
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
-    printf("notebook::create %d\n", page);
     return nb;
 }
 void notebook_param_control::created()
@@ -1808,14 +1803,12 @@ void notebook_param_control::created()
     gtk_widget_show_all(widget);
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
-    printf("notebook::created %d\n", page);
     //set();
 }
 void notebook_param_control::get()
 {
     if (param_no >= 0)
         gui->set_param_value(param_no, page, this);
-    printf("notebook::get %d\n", page);
 }
 void notebook_param_control::set()
 {
@@ -1824,18 +1817,15 @@ void notebook_param_control::set()
     _GUARD_CHANGE_
     page = (gint)gui->plugin->get_param_value(param_no);
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
-    printf("notebook::set %d\n", page);
 }
 void notebook_param_control::add(control_base *base)
 {
     gtk_notebook_append_page(GTK_NOTEBOOK(widget), base->widget, gtk_label_new_with_mnemonic(base->attribs["page"].c_str()));
-    printf("notebook::add\n");
 }
 void notebook_param_control::notebook_page_changed(GtkWidget *widget, GtkWidget *page, guint id, gpointer user)
 {
     notebook_param_control *jhp = (notebook_param_control *)user;
     jhp->page = (int)id;
-    printf("notebook::page_changed %d\n", (int)id);
     jhp->get();
 }
 
