@@ -43,6 +43,9 @@
                 <value param="processed" expand="0" fill="0"/>
             </vbox>
         </frame>
+        <frame label="Bypass">
+            <toggle param="bypass" icon="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        </frame>
         <frame label="Output">
             <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="8">
                 <label attach-x="1" attach-y="0" expand-x="1" text="Output" />
