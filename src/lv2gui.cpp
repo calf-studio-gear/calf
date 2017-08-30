@@ -109,16 +109,17 @@ struct plugin_proxy_base
 };
 
 plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features)
+  : instance_handle(NULL),
+    data_access(NULL),
+    urid_map(NULL),
+    instance(NULL),
+    ext_ui_host(NULL)
 {
     plugin_metadata = metadata;
     
     write_function = wf;
     controller = c;
-
-    instance = NULL;
-    instance_handle = NULL;
-    data_access = NULL;
-    ext_ui_host = NULL;
+    
     atom_present = true; // XXXKF
     
     param_count = metadata->get_param_count();
