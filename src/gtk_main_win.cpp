@@ -745,7 +745,9 @@ void gtk_main_window::create()
     register_icons();
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     std::string title = "Calf JACK Host";
-    gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
+    if (!owner->get_client_name().empty())
+        title = title + " - " + owner->get_client_name();
+    gtk_window_set_title(toplevel, title.c_str());
     gtk_window_set_icon_name(toplevel, "calf");
     gtk_window_set_role(toplevel, "calf_rack");
     
