@@ -861,8 +861,8 @@ void soft_audio_module::process(float &left, float &right, const float *det_left
             float xg, xl, yg, yl, y1;
             float xg_2, xl_2, yg_2, yl_2, y1_2;
             yg=0.f; yg_2=0.f;
-            xg = (left==0.f) ? -160.f : 20.f*log10(fabs(left));
-            xg_2 = (right==0.f) ? -160.f : 20.f*log10(fabs(right));
+            xg = (*det_left==0.f) ? -160.f : 20.f*log10(fabs(*det_left));
+            xg_2 = (*det_right==0.f) ? -160.f : 20.f*log10(fabs(*det_right));
 
             if (2.f*(xg-thresdb)<-width) {
                 yg = xg;
