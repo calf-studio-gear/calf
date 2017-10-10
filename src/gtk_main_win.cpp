@@ -19,7 +19,6 @@
  */
  
 #include <calf/gtk_main_win.h>
-#include <X11/Xutil.h>
 
 using namespace calf_plugins;
 using namespace std;
@@ -755,6 +754,9 @@ void gtk_main_window::create()
     //gtk_window_set_wmclass (). even though it says not to use this
     //function, it is the only way to get primitive WMs like fluxbox
     //to separate calf instances so that it can remember different positions.
+    //Unlike what is stated there gtk_window_set_role() is not 
+    //interpreted correctly by fluxbox and thus wmclass call is not
+    //yet obsolete
     gtk_window_set_wmclass(toplevel, title.c_str(), "calfjackhost");
     
     load_style((PKGLIBDIR "styles/" + get_config()->style).c_str());
