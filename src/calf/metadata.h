@@ -790,7 +790,23 @@ struct transientdesigner_metadata: public plugin_metadata<transientdesigner_meta
            param_count };
     PLUGIN_NAME_ID_LABEL("transientdesigner", "transientdesigner", "Transient Designer")
 };
-/// Chrischi's and Markus's Tape Simulator
+/// Markus's Vinyl Simulator
+struct vinyl_metadata: public plugin_metadata<vinyl_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true, require_instance_access = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_drone, param_speed, param_aging, param_freq,
+           param_gain0, param_pitch0, param_active0,
+           param_gain1, param_pitch1, param_active1,
+           param_gain2, param_pitch2, param_active2,
+           param_gain3, param_pitch3, param_active3,
+           param_gain4, param_pitch4, param_active4,
+           param_gain5, param_pitch5, param_active5,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("vinyl", "vinyl", "Vinyl")
+};
+/// Markus's Tape Simulator
 struct tapesimulator_metadata: public plugin_metadata<tapesimulator_metadata>
 {
     enum { in_count = 2, out_count = 2, ins_optional = 1, outs_optional = 1, support_midi = false, require_midi = false, rt_capable = true, require_instance_access = false };

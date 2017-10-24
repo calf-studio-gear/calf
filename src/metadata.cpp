@@ -1564,6 +1564,41 @@ CALF_PLUGIN_INFO(transientdesigner) = { 0x8588, "TransientDesigner", "Calf Trans
 
 ////////////////////////////////////////////////////////////////////////////
 
+#define VINYL_SYNTH(band) \
+    { 0, -1, 1, 0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "pitch" #band, "Pitch " #band }, \
+    {           0,           0,  1, 0, PF_BOOL | PF_CTL_TOGGLE, NULL, "active" #band, "Activate " #band },
+    
+CALF_PORT_NAMES(vinyl) = {"In L", "In R", "Out L", "Out R"};
+CALF_PORT_PROPS(vinyl) = {
+    { 0,        0,      1, 0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "bypass", "Bypass" },
+    { 1,      0.015625,    64, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_in", "Input Gain" },
+    { 1,        0.015625,    64, 0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB | PF_PROP_NOBOUNDS, NULL, "level_out", "Output Gain" },
+    METERING_PARAMS
+    { 0,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "drone", "Drone" },
+    { 33,      33,     78, 1,  PF_INT | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "speed", "Speed" },
+    { 0,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "aging", "Aging" },
+    { 1000,   600,   1800, 0,  PF_INT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ , NULL, "freq", "Frequency" },
+    
+    { 0.0078125, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain1", "Vol 1" },
+    VINYL_SYNTH(1)
+    { 0.015625, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain2", "Vol 2" },
+    VINYL_SYNTH(2)
+    { 0.0078125, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain3", "Vol 3" },
+    VINYL_SYNTH(3)
+    { 0.03125, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain4", "Vol 4" },
+    VINYL_SYNTH(4)
+    { 0.0625, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain5", "Vol 5" },
+    VINYL_SYNTH(5)
+    { 0.0625, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain6", "Vol 6" },
+    VINYL_SYNTH(6)
+    
+    {}
+};
+
+CALF_PLUGIN_INFO(vinyl) = { 0x1589, "Vinyl", "Calf Vinyl", "Calf Studio Gear", calf_plugins::calf_copyright_info, "SimulatorPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(tapesimulator) = {"In L", "In R", "Out L", "Out R"};
 const char *tapesimulator_speed_names[] = { "Slow", "Fast" };
 CALF_PORT_PROPS(tapesimulator) = {

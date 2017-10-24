@@ -36,7 +36,8 @@ install-data-local:
 	install -c -m 644 $(top_srcdir)/doc/manuals/images/icons/* $(DESTDIR)$(docdir)/images/icons/
 	install -c -m 644 $(top_srcdir)/doc/manuals/scripts/*.css $(DESTDIR)$(docdir)/scripts/
 	install -c -m 644 $(top_srcdir)/doc/manuals/scripts/*.js $(DESTDIR)$(docdir)/scripts/
-        
+	cp -r $(top_srcdir)/sf2 $(DESTDIR)$(pkgdatadir)
+	    
 uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/*.html
 	rm -f $(DESTDIR)$(docdir)/images/*.png
@@ -46,3 +47,4 @@ uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/scripts/*.css
 	rm -f $(DESTDIR)$(docdir)/scripts/*.js
 	rmdir $(DESTDIR)$(docdir)/scripts $(DESTDIR)$(docdir)/images/icons $(DESTDIR)$(docdir)/images/prettyPhoto/dark_rounded $(DESTDIR)$(docdir)/images/prettyPhoto $(DESTDIR)$(docdir)/images $(DESTDIR)$(docdir) || true
+	rm -rf $(DESTDIR)$(pkgdatadir)/sf2

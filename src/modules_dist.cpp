@@ -22,6 +22,7 @@
 #include <memory.h>
 #include <calf/giface.h>
 #include <calf/modules_dist.h>
+#include <string>
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -627,6 +628,203 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
     meters.fall(numsamples);
     return outputs_mask;
 }
+
+
+/**********************************************************************
+ * VINYL by Markus Schmidt
+**********************************************************************/
+
+vinyl_audio_module::vinyl_audio_module() {
+    active          = false;
+    clip_inL        = 0.f;
+    clip_inR        = 0.f;
+    clip_outL       = 0.f;
+    clip_outR       = 0.f;
+    meter_inL       = 0.f;
+    meter_inR       = 0.f;
+    meter_outL      = 0.f;
+    meter_outR      = 0.f;
+    dbufsize        = 0;
+    
+    speed_old       = 0.f;
+    freq_old        = 0.f;
+    aging_old       = 0.f;
+}
+
+void vinyl_audio_module::activate() {
+    active = true;
+}
+
+void vinyl_audio_module::deactivate() {
+    active = false;
+}
+
+void vinyl_audio_module::params_changed() {
+    if (speed_old != *params[param_speed]) {
+        lfo.set_params(1.f / (60.f / *params[param_speed]), 0, 0.f, srate, 0.5f);
+        speed_old = *params[param_speed];
+    }
+    if (freq_old != *params[param_freq] or aging_old != *params[param_aging]) {
+        aging_old = *params[param_aging];
+        freq_old = *params[param_freq];
+        float lp = (freq_old + 500.f) * pow(double(20000.f / (freq_old + 500.f)), 1.f - aging_old);
+        float hp = 10.f * pow(double((freq_old - 250) / 10.f), aging_old);
+        filters[0][0].set_hp_rbj(hp, 0.707 + aging_old * 0.5, (float)srate);
+        filters[0][1].copy_coeffs(filters[0][0]);
+        filters[0][2].set_peakeq_rbj(freq_old, 1, 1.f + aging_old * 4.f, (float)srate);
+        filters[0][3].set_lp_rbj(lp, 0.707 + aging_old * 0.5, (float)srate);
+        filters[0][4].copy_coeffs(filters[0][0]);
+        for (int i = 1; i < channels; i++) {
+            for (int j = 0; j < _filters; j++)
+                filters[i][j].copy_coeffs(filters[0][j]);
+        }
+    }
+    for (int j = 0; j < _synths; j++) {
+        fluid_synth_pitch_bend(synths[j], 0, (int)(*params[param_pitch0 + j * _synthsp] * 8191 + 8192));
+    }
+}
+
+uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    uint32_t orig_offset = offset;
+    for(uint32_t i = offset; i < offset + numsamples; i++) {
+        float L = ins[0][i];
+        float R = ins[1][i];
+        if(bypassed) {
+            outs[0][i]  = ins[0][i];
+            outs[1][i]  = ins[1][i];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+        } else {
+            // gain
+            L *= *params[param_level_in];
+            R *= *params[param_level_in];
+            
+            // meters
+            float inL = L;
+            float inR = R;
+            
+            // droning
+            memmove(&dbuf[channels], &dbuf[0], (dbufsize * channels - channels) * sizeof(float));
+            dbuf[0] = L;
+            dbuf[1] = R;
+            
+            if (*params[param_drone] > 0.f) {
+                uint32_t bpos = (lfo.get_value() + 0.5) * *params[param_drone] * dbufsize;
+                lfo.advance(1);
+            
+                L = dbuf[bpos * channels];
+                R = dbuf[bpos * channels + 1];
+            }
+            
+            
+            // synths
+            float sL;
+            float sR;
+            
+            for (int j = 0; j < _synths; j++) {
+                if (*params[param_active0 + j * _synthsp] < 0.5f) continue;
+                fluid_synth_write_float(synths[j], 1, &sL, 0, 1, &sR, 0, 1);
+                L += *params[param_gain0 + j * _synthsp] * sL;
+                R += *params[param_gain0 + j * _synthsp] * sR;
+            }
+            
+            // filter
+            if (*params[param_aging] > 0.f) {
+                for (int j = 0; j < _filters; j++) {
+                    L = filters[0][j].process(L);
+                    R = filters[1][j].process(R);
+                }
+            }
+            
+            // levels out
+            float areduce = (1.f - aging_old * 0.9);
+            L *= *params[param_level_out] * areduce;
+            R *= *params[param_level_out] * areduce;
+            
+            // output
+            outs[0][i] = L;
+            outs[1][i] = R;
+            
+            // sanitize filters
+            if (*params[param_aging] > 0.f) {
+                for (int j = 0; j < _filters; j++) {
+                    filters[0][j].sanitize();
+                    filters[1][j].sanitize();
+                }
+            }
+            
+            float values[] = {inL, inR, outs[0][i], outs[1][i]};
+            meters.process(values);
+        }
+    }
+    if (bypassed)
+        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+void vinyl_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
+    int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
+    meters.init(params, meter, clip, 4, srate);
+    dbufsize = srate / 100;
+    dbuf = (float*) calloc(dbufsize * channels, sizeof(float));
+    
+    fluid_settings_t *new_settings = new_fluid_settings();
+    fluid_settings_setnum(new_settings, "synth.sample-rate", srate);
+    
+    std::string* paths = new std::string[_synths] {
+        PKGLIBDIR "sf2/Vinyl - Motor.sf2",
+        PKGLIBDIR "sf2/Vinyl - Static.sf2",
+        PKGLIBDIR "sf2/Vinyl - Noise.sf2",
+        PKGLIBDIR "sf2/Vinyl - Rumble.sf2",
+        PKGLIBDIR "sf2/Vinyl - Crackle.sf2",
+        PKGLIBDIR "sf2/Vinyl - Crinkle.sf2"
+    };
+    int id;
+    for (int i = 0; i < _synths; i++) {
+        synths[i] = new_fluid_synth(new_settings);
+        id = fluid_synth_sfload(synths[i], paths[i].c_str(), 1);
+        fluid_synth_set_gain(synths[i], 1.f);
+        fluid_synth_sfont_select(synths[i], 0, id);
+        fluid_synth_program_select (synths[i], 0, id, 0, 0);
+        fluid_synth_pitch_wheel_sens(synths[i], 0, 12);
+        fluid_synth_noteon(synths[i], 0, 60, 127);
+    }
+}
+vinyl_audio_module::~vinyl_audio_module()
+{
+    free(dbuf);
+}
+
+
+bool vinyl_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (subindex > 0)
+        return false;
+    return ::get_graph(*this, subindex, data, points);
+}
+float vinyl_audio_module::freq_gain(int index, double freq) const
+{
+    float s = 1.f;
+    if (*params[param_aging] > 0)
+        for (int i = 0; i < _filters; i++)
+            s *= filters[0][i].freq_gain(freq, srate);
+    return s;
+}
+bool vinyl_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = 0;
+    if (!generation)
+        layers |= LG_CACHE_GRID;
+    if (index == param_freq)
+        layers |= LG_REALTIME_GRAPH;
+    return true;
+}
+
 
 /**********************************************************************
  * TAPESIMULATOR by Markus Schmidt
