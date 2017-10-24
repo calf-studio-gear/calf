@@ -31,13 +31,7 @@
     </table>
     <hbox spacing="16">
         
-        <vbox>
-            <label param="drone"/>
-            <knob param="drone" size="5" ticks="0 0.25 0.5 0.75 1"/>
-            <value param="drone"/>
-        </vbox>
-        
-        <hbox homogeneous="1">
+        <hbox homogeneous="1" spacing="5">
             <vbox spacing="5">
                 <toggle param="active1" size="0"/>
                 <vscale size="1" param="gain1" inverted="1"/>
@@ -85,7 +79,7 @@
         <vbox>
             <vbox>
                 <label param="aging"/>
-                <knob param="aging" size="2"/>
+                <knob param="aging" size="3"/>
                 <value param="aging"/>
             </vbox>
             <vbox>
@@ -96,9 +90,19 @@
         </vbox>
         
         <vbox>
-            <label param="speed"/>
-            <knob param="speed" size="5" ticks="33 45 78"/>
-            <value param="speed"/>
+            <vbox>
+                <label param="drone"/>
+                <knob param="drone" size="3" ticks="0 0.25 0.5 0.75 1"/>
+                <value param="drone"/>
+            </vbox>
+            <vbox>
+                <label param="speed"/>
+                <knob param="speed" size="2" ticks="33 45 78"/>
+                <hbox>
+                    <value param="speed"/>
+                    <label text="rpm"/>
+                </hbox>
+            </vbox>
         </vbox>
         
     </hbox>
