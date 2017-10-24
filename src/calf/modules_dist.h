@@ -136,6 +136,7 @@ class vinyl_audio_module:
     dsp::simple_lfo lfo;
     dsp::biquad_d2 filters[2][_filters];
     fluid_synth_t *synths[_synths];
+    fluid_settings_t* settings;
     
     uint32_t dbufsize;
     float *dbuf;

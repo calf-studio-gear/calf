@@ -773,8 +773,8 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
     dbufsize = srate / 100;
     dbuf = (float*) calloc(dbufsize * channels, sizeof(float));
     
-    fluid_settings_t *new_settings = new_fluid_settings();
-    fluid_settings_setnum(new_settings, "synth.sample-rate", srate);
+    settings = new_fluid_settings();
+    fluid_settings_setnum(settings, "synth.sample-rate", srate);
     
     std::string* paths = new std::string[_synths] {
         PKGLIBDIR "sf2/Vinyl - Motor.sf2",
@@ -786,7 +786,7 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
     };
     int id;
     for (int i = 0; i < _synths; i++) {
-        synths[i] = new_fluid_synth(new_settings);
+        synths[i] = new_fluid_synth(settings);
         id = fluid_synth_sfload(synths[i], paths[i].c_str(), 1);
         fluid_synth_set_gain(synths[i], 1.f);
         fluid_synth_sfont_select(synths[i], 0, id);
@@ -798,6 +798,10 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
 vinyl_audio_module::~vinyl_audio_module()
 {
     free(dbuf);
+    for (int j = 0; j < _synths; j++) {
+        delete_fluid_synth(synths[j]);
+    }
+    delete_fluid_settings(settings);
 }
 
 
