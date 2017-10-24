@@ -89,7 +89,7 @@
                 <value param="aging"/>
             </vbox>
             <vbox>
-                <label param="freq"/>
+                <label text="Color"/>
                 <knob param="freq" size="2"/>
                 <value param="freq"/>
             </vbox>
