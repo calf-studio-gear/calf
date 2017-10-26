@@ -33,6 +33,12 @@
         
         <hbox homogeneous="1" spacing="5">
             <vbox spacing="5">
+                <toggle param="active0" size="0"/>
+                <vscale size="1" param="gain0" inverted="1"/>
+                <knob param="pitch0" type="1" size="1"/>
+                <label text="Hum"/>
+            </vbox>
+            <vbox spacing="5">
                 <toggle param="active1" size="0"/>
                 <vscale size="1" param="gain1" inverted="1"/>
                 <knob param="pitch1" type="1" size="1"/>
@@ -99,8 +105,10 @@
                 <label param="speed"/>
                 <knob param="speed" size="2" ticks="33 45 78"/>
                 <hbox>
+                    <label/><label/>
                     <value param="speed"/>
                     <label text="rpm"/>
+                    <label/><label/>
                 </hbox>
             </vbox>
         </vbox>

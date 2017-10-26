@@ -777,6 +777,7 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
     fluid_settings_setnum(settings, "synth.sample-rate", srate);
     
     std::string* paths = new std::string[_synths] {
+        PKGLIBDIR "sf2/Vinyl - Hum.sf2",
         PKGLIBDIR "sf2/Vinyl - Motor.sf2",
         PKGLIBDIR "sf2/Vinyl - Static.sf2",
         PKGLIBDIR "sf2/Vinyl - Noise.sf2",

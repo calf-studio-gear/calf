@@ -126,7 +126,7 @@ class vinyl_audio_module:
     
     const static int channels = 2;
     const static int _filters = 5;
-    const static int _synths = 6;
+    const static int _synths = 7;
     const static int _synthsp = 3;
     const float freq_min = 600.f;
     const float freq_max = 1800.f;

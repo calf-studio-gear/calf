@@ -1579,6 +1579,8 @@ CALF_PORT_PROPS(vinyl) = {
     { 0,        0,      1, 0,  PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF , NULL, "aging", "Aging" },
     { 1000,   600,   1800, 0,  PF_INT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ , NULL, "freq", "Frequency" },
     
+    { 0.0078125, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain0", "Vol 0" },
+    VINYL_SYNTH(0)
     { 0.0078125, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain1", "Vol 1" },
     VINYL_SYNTH(1)
     { 0.015625, 0.000015849, 1, 0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "gain2", "Vol 2" },
