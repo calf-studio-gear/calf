@@ -803,6 +803,7 @@ struct vinyl_metadata: public plugin_metadata<vinyl_metadata>
            param_gain3, param_pitch3, param_active3,
            param_gain4, param_pitch4, param_active4,
            param_gain5, param_pitch5, param_active5,
+           param_gain6, param_pitch6, param_active6,
            param_count };
     PLUGIN_NAME_ID_LABEL("vinyl", "vinyl", "Vinyl")
 };
