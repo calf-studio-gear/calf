@@ -105,8 +105,10 @@
                 <label param="speed"/>
                 <knob param="speed" size="2" ticks="33 45 78"/>
                 <hbox>
+                    <label/><label/>
                     <value param="speed"/>
                     <label text="rpm"/>
+                    <label/><label/>
                 </hbox>
             </vbox>
         </vbox>
