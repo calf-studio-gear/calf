@@ -89,7 +89,7 @@
       <frame label="Compression">
         <vbox spacing="8">
             <if cond="directlink">
-                <line-graph refresh="1" width="265" height="265" param="bypass" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="320" height="320" param="bypass" square="1" expand="1" fill="1"/>
             </if>
             <vbox spacing="3">
                 <vumeter param="compression" position="2" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>

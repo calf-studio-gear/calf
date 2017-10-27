@@ -71,7 +71,7 @@
     <frame label="Compression">
         <vbox >
             <if cond="directlink">
-                <line-graph refresh="1" width="250" height="250" param="level_in" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="320" height="320" param="level_in" square="1" expand="1" fill="1"/>
             </if>
         </vbox>
     </frame>

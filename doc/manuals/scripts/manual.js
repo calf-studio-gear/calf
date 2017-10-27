@@ -7,7 +7,7 @@ $(document).ready(function () {
                 ["Index", "index.html", "images/Index.png"],
                 ["About", "About.html", "images/Calf Studio Gear.jpg"],
                 ["Controls", "Controls.html", "images/Calf - Controls.jpg"],
-                ["Calf Rack", "Calf.html", "images/Calf.jpg"]
+                ["Calf Rack", "Calf.html", "images/Calf JACK Host.jpg"]
             ],
             "icons/index.png"
         ],
@@ -93,6 +93,7 @@ $(document).ready(function () {
                 ["Mono Input", "Mono Input.html", "images/Calf - Mono Input.jpg"],
                 ["Stereo Tools", "Stereo Tools.html", "images/Calf - Stereo Tools.jpg"],
                 ["(Haas Stereo Enhancer)", "Haas Stereo Enhancer.html", "images/Calf - Haas Stereo Enhancer.jpg"],
+                ["Multi Spread", "Multi Spread.html", "images/Calf - Multi Spread.jpg"],
                 ["Analyzer", "Analyzer.html", "images/Calf - Analyzer.jpg"],
                 ["(X-Over 2 Band)", "X-Over 2 Band.html", "images/Calf - X-Over 2 Band.jpg"],
                 ["(X-Over 3 Band)", "X-Over 3 Band.html", "images/Calf - X-Over 3 Band.jpg"],

@@ -770,6 +770,6 @@ uint32_t reverse_delay_audio_module::process(uint32_t offset, uint32_t numsample
         float values[] = {inL, inR, outL, outR};
         meters.process(values);
     }
-
+    meters.fall(numsamples);
     return ostate;
 }
