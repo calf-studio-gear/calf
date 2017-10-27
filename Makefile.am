@@ -9,7 +9,7 @@ dist_desktopfiles_DATA = calf.desktop
 
 docdir = $(datadir)/doc/${PACKAGE}
 
-EXTRA_DIST = COPYING.GPL TODO autogen.sh presets.xml calf.7 calfjackhost.1 calf-gui.xml doc/manuals
+EXTRA_DIST = COPYING.GPL TODO autogen.sh presets.xml calf.7 calfjackhost.1 calf-gui.xml doc/manuals $(wildcard sf2/*.sf2)
 
 dist_man_MANS = calf.7 calfjackhost.1
 
@@ -17,6 +17,8 @@ if ENABLE_BASH_COMPLETION
 bashcompletiondir = $(BASH_COMPLETION_DIR)
 dist_bashcompletion_DATA = calf
 endif
+
+AM_DISTCHECK_CONFIGURE_FLAGS = --with-bash-completion-dir=no
 
 clean-local:
 	rm -f *~ *.old *.bak

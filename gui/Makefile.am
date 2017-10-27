@@ -5,15 +5,17 @@ EXTRA_DIST = $(wildcard $(srcdir)/styles) $(wildcard $(srcdir)/strips) $(wildcar
 
 install-data-hook:
 	$(top_builddir)/src/calfmakerdf -m gui -p $(DESTDIR)$(pkgdatadir)
+	install -d -m 755 $(DESTDIR)$(pkgdatadir)/styles/
 	for f in ${STYLES}; do \
 		sn=`basename $${f}` ; \
-		sed 's#@guidatadir@#$(pkgdatadir)/styles/'$${sn}'#g' "$${f}"/gtk.rc.in >"$${f}"/gtk.rc ; \
+		install -d -m 755 $(DESTDIR)$(pkgdatadir)/styles/$${sn} ; \
+		install -c -m 644 $(srcdir)/styles/$${sn}/*.png $(DESTDIR)$(pkgdatadir)/styles/$${sn}/ ; \
+		sed 's#@guidatadir@#$(pkgdatadir)/styles/'$${sn}'#g' "$${f}"/gtk.rc.in >"$(DESTDIR)$(pkgdatadir)/styles/$${sn}/gtk.rc" ; \
 	done
-	cp -r $(srcdir)/styles $(DESTDIR)$(pkgdatadir)
-	rm -f $(srcdir)/styles/*/*.rc
-	rm -f $(DESTDIR)$(pkgdatadir)/styles/*/*.rc.in
-	cp -r $(srcdir)/gui $(DESTDIR)$(pkgdatadir)
-	cp -r $(srcdir)/strips $(DESTDIR)$(pkgdatadir)
+	install -d -m 755 $(DESTDIR)$(pkgdatadir)/gui
+	install -c -m 644 $(srcdir)/gui/*.xml $(DESTDIR)$(pkgdatadir)/gui/
+	install -d -m 755 $(DESTDIR)$(pkgdatadir)/strips
+	install -c -m 644 $(srcdir)/strips/*.xml $(DESTDIR)$(pkgdatadir)/strips/
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(pkgdatadir)/*.rc
