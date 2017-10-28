@@ -1252,8 +1252,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                         led[i] = env_mods[0][i] + env_mods[1][i];
                     
                 // advance envelopes
-                env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
-                env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
+                env_mods[0][i] = _sanitize((fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_));
+                env_mods[1][i] = _sanitize((fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_));
             }
             
             outL = pL;
