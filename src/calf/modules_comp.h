@@ -78,7 +78,7 @@ private:
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
     float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
     mutable bool redraw_graph;
-    float old_y1,old_yl,old_detected;
+    float old_y1, old_yl, old_mre, old_mae;
     uint32_t srate;
     bool is_active;
     inline float output_level(float inputt) const;

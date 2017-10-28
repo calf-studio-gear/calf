@@ -291,7 +291,8 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
     mute            = -1;
     old_y1          = 0.f;
     old_yl          = 0.f;
-    old_detected    = 0.f;
+    old_mae         = 0.f;
+    old_mre         = 0.f;
     redraw_graph    = true;
 }
 
@@ -342,18 +343,24 @@ void gain_reduction2_audio_module::process(float &left)
             
         xl = xg - yg;
             
-        y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
-        yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+        y1 = _sanitize(std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl));
+        yl = _sanitize(attack_coeff*old_yl+(1.f-attack_coeff)*y1);
         
         cdb = -yl;
         gain = exp(cdb/20.f*log(10.f));
 
-    left *= gain * makeup;
-    meter_out = (fabs(left));
+        left *= gain * makeup;
+        meter_out = (fabs(left));
         meter_comp = gain;
-    detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
-    old_detected = detected;
 
+        float mre = _sanitize(std::max(xg, release_coeff*old_mre+(1.f-release_coeff)*xg));
+        float mae = _sanitize(attack_coeff*old_mae+(1.f-attack_coeff)*mre);
+        
+        old_mre = mre;
+        old_mae = mae;
+        
+        detected = exp(mae/20.f*log(10.f));
+    
         old_yl = yl;
         old_y1 = y1;
     }
