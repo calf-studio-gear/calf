@@ -680,13 +680,22 @@ void vinyl_audio_module::params_changed() {
         }
     }
     for (int j = 0; j < _synths; j++) {
-        fluid_synth_pitch_bend(synths[j], 0, (int)(*params[param_pitch0 + j * _synthsp] * 8191 + 8192));
+        fluid_synth_pitch_bend(synth, j, (int)(*params[param_pitch0 + j * _synthsp] * 8191 + 8192));
     }
 }
 
 uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t orig_offset = offset;
+    float sL[_synths][numsamples], sR[_synths][numsamples];
+    if (!bypassed) {
+        float *psL[_synths], *psR[_synths];
+        for (int i = 0; i < _synths; ++i) {
+            psL[i] = &sL[i][0];
+            psR[i] = &sR[i][0];
+        }
+        fluid_synth_nwrite_float(synth, numsamples, psL, psR, NULL, NULL);
+    }
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
         float R = ins[1][i];
@@ -705,28 +714,27 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
             float inR = R;
             
             // droning
-            memmove(&dbuf[channels], &dbuf[0], (dbufsize * channels - channels) * sizeof(float));
-            dbuf[0] = L;
-            dbuf[1] = R;
+            dbuf[dbufpos * channels + 0] = L;
+            dbuf[dbufpos * channels + 1] = R;
             
             if (*params[param_drone] > 0.f) {
-                uint32_t bpos = (lfo.get_value() + 0.5) * *params[param_drone] * dbufsize;
-                lfo.advance(1);
+                int32_t bpos = (lfo.get_value() + 0.5) * *params[param_drone] * dbufrange;
+                bpos = (dbufpos - bpos) & (dbufsize - 1);
             
                 L = dbuf[bpos * channels];
                 R = dbuf[bpos * channels + 1];
+
+                lfo.advance(1);
             }
+            dbufpos = (dbufpos + 1) & (dbufsize - 1);
             
             
             // synths
-            float sL;
-            float sR;
-            
             for (int j = 0; j < _synths; j++) {
                 if (*params[param_active0 + j * _synthsp] < 0.5f) continue;
-                fluid_synth_write_float(synths[j], 1, &sL, 0, 1, &sR, 0, 1);
-                L += *params[param_gain0 + j * _synthsp] * sL;
-                R += *params[param_gain0 + j * _synthsp] * sR;
+                float gain = *params[param_gain0 + j * _synthsp];
+                L += gain * sL[j][i - offset];
+                R += gain * sR[j][i - offset];
             }
             
             // filter
@@ -770,11 +778,24 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
     int meter[] = {param_meter_inL,  param_meter_inR, param_meter_outL, param_meter_outR};
     int clip[]  = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR};
     meters.init(params, meter, clip, 4, srate);
-    dbufsize = srate / 100;
+}
+
+void vinyl_audio_module::post_instantiate(uint32_t sr)
+{    
+    dbufsize = (sr + 49) / 50;
+    // Round up to the nearest power of 2 if it's not already
+    // This makes the circular buffer implementation faster and simpler
+    if((dbufsize & (dbufsize - 1)))
+        dbufsize = 1 << (32 - __builtin_clz(dbufsize - 1));
+    dbufrange = sr / 100.0;
     dbuf = (float*) calloc(dbufsize * channels, sizeof(float));
-    
+    dbufpos = 0;
     settings = new_fluid_settings();
-    fluid_settings_setnum(settings, "synth.sample-rate", srate);
+    fluid_settings_setnum(settings, "synth.sample-rate", sr);
+    fluid_settings_setint(settings, "synth.audio-channels", _synths);
+    fluid_settings_setint(settings, "synth.audio-groups", _synths);
+    fluid_settings_setint(settings, "synth.reverb.active", 0);
+    fluid_settings_setint(settings, "synth.chorus.active", 0);
     
     std::string* paths = new std::string[_synths] {
         PKGLIBDIR "sf2/Hum.sf2",
@@ -785,23 +806,20 @@ void vinyl_audio_module::set_sample_rate(uint32_t sr)
         PKGLIBDIR "sf2/Crackle.sf2",
         PKGLIBDIR "sf2/Crinkle.sf2"
     };
-    int id;
+    synth = new_fluid_synth(settings);
+    fluid_synth_set_gain(synth, 1.f);
     for (int i = 0; i < _synths; i++) {
-        synths[i] = new_fluid_synth(settings);
-        id = fluid_synth_sfload(synths[i], paths[i].c_str(), 1);
-        fluid_synth_set_gain(synths[i], 1.f);
-        fluid_synth_sfont_select(synths[i], 0, id);
-        fluid_synth_program_select (synths[i], 0, id, 0, 0);
-        fluid_synth_pitch_wheel_sens(synths[i], 0, 12);
-        fluid_synth_noteon(synths[i], 0, 60, 127);
+        int id = fluid_synth_sfload(synth, paths[i].c_str(), 1);
+        fluid_synth_sfont_select(synth, i, id);
+        fluid_synth_program_select (synth, i, id, 0, 0);
+        fluid_synth_pitch_wheel_sens(synth, i, 12);
+        fluid_synth_noteon(synth, i, 60, 127);
     }
 }
 vinyl_audio_module::~vinyl_audio_module()
 {
     free(dbuf);
-    for (int j = 0; j < _synths; j++) {
-        delete_fluid_synth(synths[j]);
-    }
+    delete_fluid_synth(synth);
     delete_fluid_settings(settings);
 }
 

@@ -135,11 +135,12 @@ class vinyl_audio_module:
     vumeters meters;
     dsp::simple_lfo lfo;
     dsp::biquad_d2 filters[2][_filters];
-    fluid_synth_t *synths[_synths];
+    fluid_synth_t *synth;
     fluid_settings_t* settings;
     
-    uint32_t dbufsize;
+    uint32_t dbufsize, dbufpos;
     float *dbuf;
+    float dbufrange;
     
 public:
     uint32_t srate;
@@ -147,6 +148,7 @@ public:
     ~vinyl_audio_module();
     void params_changed();
     void activate();
+    void post_instantiate(uint32_t sr);
     void set_sample_rate(uint32_t sr);
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
