@@ -687,14 +687,27 @@ void vinyl_audio_module::params_changed() {
 uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t orig_offset = offset;
-    float sL[_synths][numsamples], sR[_synths][numsamples];
+    float sL[numsamples], sR[numsamples];
     if (!bypassed) {
-        float *psL[_synths], *psR[_synths];
-        for (int i = 0; i < _synths; ++i) {
-            psL[i] = &sL[i][0];
-            psR[i] = &sR[i][0];
+        for (int j = 0; j < _synths; ++j) {
+            float gain = 0;
+            if (*params[param_active0 + j * _synthsp] >= 0.5f) {
+                gain = *params[param_gain0 + j * _synthsp];
+            }
+            if (gain == last_gain[j])
+                continue;
+            if (last_gain[j] == 0 && gain != 0) {
+                fluid_synth_noteon(synth, j, 60, 127);
+            }
+            if (last_gain[j] != 0 && gain == 0) {
+                fluid_synth_noteoff(synth, j, 60);
+            }
+            if (gain > 0) {
+                fluid_synth_set_gen(synth, j, GEN_ATTENUATION, 200 * log10(1.0 / gain));
+            }
+            last_gain[j] = gain;
         }
-        fluid_synth_nwrite_float(synth, numsamples, psL, psR, NULL, NULL);
+        fluid_synth_write_float(synth, numsamples, sL, 0, 1, sR, 0, 1);
     }
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
@@ -728,14 +741,9 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
             }
             dbufpos = (dbufpos + 1) & (dbufsize - 1);
             
-            
             // synths
-            for (int j = 0; j < _synths; j++) {
-                if (*params[param_active0 + j * _synthsp] < 0.5f) continue;
-                float gain = *params[param_gain0 + j * _synthsp];
-                L += gain * sL[j][i - offset];
-                R += gain * sR[j][i - offset];
-            }
+            L += sL[i - offset];
+            R += sR[i - offset];
             
             // filter
             if (*params[param_aging] > 0.f) {
@@ -792,8 +800,8 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     dbufpos = 0;
     settings = new_fluid_settings();
     fluid_settings_setnum(settings, "synth.sample-rate", sr);
-    fluid_settings_setint(settings, "synth.audio-channels", _synths);
-    fluid_settings_setint(settings, "synth.audio-groups", _synths);
+    fluid_settings_setint(settings, "synth.polyphony", 32);
+    fluid_settings_setint(settings, "synth.midi-channels", _synths);
     fluid_settings_setint(settings, "synth.reverb.active", 0);
     fluid_settings_setint(settings, "synth.chorus.active", 0);
     
@@ -809,11 +817,10 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     synth = new_fluid_synth(settings);
     fluid_synth_set_gain(synth, 1.f);
     for (int i = 0; i < _synths; i++) {
-        int id = fluid_synth_sfload(synth, paths[i].c_str(), 1);
-        fluid_synth_sfont_select(synth, i, id);
+        int id = fluid_synth_sfload(synth, paths[i].c_str(), 0);
         fluid_synth_program_select (synth, i, id, 0, 0);
         fluid_synth_pitch_wheel_sens(synth, i, 12);
-        fluid_synth_noteon(synth, i, 60, 127);
+        last_gain[i] = 0;
     }
 }
 vinyl_audio_module::~vinyl_audio_module()

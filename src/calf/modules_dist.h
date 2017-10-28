@@ -137,6 +137,7 @@ class vinyl_audio_module:
     dsp::biquad_d2 filters[2][_filters];
     fluid_synth_t *synth;
     fluid_settings_t* settings;
+    float last_gain[_synths];
     
     uint32_t dbufsize, dbufpos;
     float *dbuf;
