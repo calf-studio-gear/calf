@@ -85,7 +85,7 @@ strong {
     max-width: 1280px;
     margin: auto;
     text-align: left;
-    padding: 0 30px 30px 80px;
+    padding: 80px 30px 30px 80px;
 }
 .footer {
     padding-bottom: 20px;
@@ -139,8 +139,8 @@ strong {
     box-shadow:         0 3px 10px #111;
 }
 #menu {
-    width: 56px;
-    min-height: 100%;
+    height: 56px;
+    min-width: 100%;
     position: fixed;
     z-index:1000;
     left: 0;
@@ -160,9 +160,11 @@ strong {
 }
 #menu > li {
     padding: 0;
-    margin: 0;
+    margin: 0 5px;
     line-height: 0;
     position: relative;
+    display: inline-block;
+    vertical-align: top;
 }
 
 #menu > li > .micon {
@@ -183,15 +185,20 @@ strong {
 }
 #menu > li > span {
     font-size: 0;
-    color: white;
+    color: #555555;
     padding: 0 0 5px 0;
     font-size: 8.5px;
     line-height: 8.5px;
     letter-spacing: -0.02em;
+    display: block;
+    transition: all 0.3s;
+}
+#menu > li:hover > span {
+    opacity: 0;
 }
 #menu > li > .submenu {
     margin: 0;
-    padding: 0 0 0 6px;
+    padding: 6px 0 0 0;
     line-height: 1.5em;
     list-style: none;
     position: absolute;
@@ -199,16 +206,13 @@ strong {
     transform: scaleY(0);
     transition: all 0.3s;
     border: none;
-    left: 70px;
-    top: 5px;
+    left: 0px;
+    top: 80px;
     -moz-border-radius: 0px;
     -webkit-border-radius: 0px;
     border-radius: 0px;
     text-align: left;
-    background-image: url(../images/marrow.png);
-    background-position: top 4px;
-    background-repeat: no-repeat;
-    background-color: transparent;
+    background: transparent;
 }
 #menu > li:hover > .submenu {
     transform: scaleY(1);
