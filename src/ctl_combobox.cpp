@@ -79,9 +79,9 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
             hover = true;
             
         // background
-        float radius, bevel;
-        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
-        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, radius, bevel, g_ascii_isspace(lab[0]) ? 0 : 1, 4, hover ? 0.5 : 0, hover ? 0.1 : 0.25);
+        float radius, bevel, shadow, lights, lightshover, dull, dullhover;
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, "lightshover", &lightshover, "dull", &dull, "dullhover", &dullhover, NULL);
+        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, radius, bevel, g_ascii_isspace(lab[0]) ? 0 : 1, shadow, hover ? lightshover : lights, hover ? dullhover : dull);
         
         // text
         gtk_container_propagate_expose (GTK_CONTAINER (widget),
@@ -120,6 +120,21 @@ calf_combobox_class_init (CalfComboboxClass *klass)
     gtk_widget_class_install_style_property(
         widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
         -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("shadow", "Shadow", "Draw shadows inside",
+        0, 16, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("lights", "Lights", "Draw lights inside",
+        0, 1, 0, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("lightshover", "Lights Hover", "Draw lights inside when hovered",
+        0, 1, 0.5, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("dull", "Dull", "Draw dull inside",
+        0, 1, 0.25, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("dullhover", "Dull Hover", "Draw dull inside when hovered",
+        0, 1, 0.1, GParamFlags(G_PARAM_READWRITE)));
 }
 
 static void

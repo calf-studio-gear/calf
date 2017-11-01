@@ -150,15 +150,20 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     cairo_set_source (c, pt);
     cairo_fill_preserve(c);
     
-    pt = cairo_pattern_create_linear (ox, oy, ox, oy + sy);
-    cairo_pattern_add_color_stop_rgba (pt, 0,     1, 1, 1, 0.4);
-    cairo_pattern_add_color_stop_rgba (pt, 0.4,   1, 1, 1, 0.1);
-    cairo_pattern_add_color_stop_rgba (pt, 0.401, 0, 0, 0, 0.0);
-    cairo_pattern_add_color_stop_rgba (pt, 1,     0, 0, 0, 0.2);
-    cairo_set_source (c, pt);
-    cairo_fill(c);
-    cairo_pattern_destroy(pt);
-
+    float glass;
+    gtk_widget_style_get(widget, "glass",  &glass, NULL);
+        
+    if (glass > 0.f) {
+        pt = cairo_pattern_create_linear (ox, oy, ox, oy + sy);
+        cairo_pattern_add_color_stop_rgba (pt, 0,     1, 1, 1, 0.4 * glass);
+        cairo_pattern_add_color_stop_rgba (pt, 0.4,   1, 1, 1, 0.1 * glass);
+        cairo_pattern_add_color_stop_rgba (pt, 0.401, 0, 0, 0, 0.0);
+        cairo_pattern_add_color_stop_rgba (pt, 1,     0, 0, 0, 0.2 * glass);
+        cairo_set_source (c, pt);
+        cairo_fill(c);
+        cairo_pattern_destroy(pt);
+    }
+    
     cairo_destroy(c);
 
     return TRUE;
@@ -209,6 +214,9 @@ calf_led_class_init (CalfLedClass *klass)
     gtk_widget_class_install_style_property(
         widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
         -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("glass", "Glass", "Glass effect on top",
+        0, 1, 1, GParamFlags(G_PARAM_READWRITE)));
 }
 
 static void
