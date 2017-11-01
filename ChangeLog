@@ -9,7 +9,8 @@ Version 0.90.0.0
 + Vocoder: Upper and lower tilt, higher Q, band related Q
 + All plugins: input/output meters and knobs
 + Themeing capabilities
-+ New Designs
++ New Designs: Default, Flat Default, 0.0.19, Hybreed, Lost Wages,
+  Midnight, Orange, Wood
 + Knobs with ticks for better orientation
 + Scales attached to level meters
 + Bash completion for effect names

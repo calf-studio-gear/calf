@@ -667,8 +667,8 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         lg->pad_y = widget->style->ythickness;
         lg->x = widget->allocation.x;
         lg->y = widget->allocation.y;
-        float radius, bevel;
-        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        float radius, bevel, shadow, lights;
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, NULL);
     
         if (lg->debug) printf("recreation...\n");
         calf_line_graph_create_surfaces(widget);
@@ -677,7 +677,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         // draw the yellowish lighting on the background surface
         cairo_t *bg = cairo_create(lg->background_surface);
         if (lg->debug) printf("(draw background)\n");
-        display_background(widget, bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y, radius, bevel);
+        display_background(widget, bg, 0, 0, lg->size_x, lg->size_y, lg->pad_x, lg->pad_y, radius, bevel, 1, shadow, lights);
         cairo_destroy(bg);
     }
     
@@ -1414,6 +1414,12 @@ calf_line_graph_class_init (CalfLineGraphClass *klass)
     gtk_widget_class_install_style_property(
         widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
         -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("shadow", "Shadow", "Draw shadows inside",
+        0, 16, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("lights", "Lights", "Draw lights inside",
+        0, 1, 1, GParamFlags(G_PARAM_READWRITE)));
         
     g_signal_new("freqhandle-changed",
          G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST,
