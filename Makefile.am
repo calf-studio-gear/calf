@@ -18,7 +18,7 @@ bashcompletiondir = $(BASH_COMPLETION_DIR)
 dist_bashcompletion_DATA = calf
 endif
 
-AM_DISTCHECK_CONFIGURE_FLAGS = --with-bash-completion-dir=no
+AM_DISTCHECK_CONFIGURE_FLAGS = --with-bash-completion-dir=no --without-obsolete-check
 
 clean-local:
 	rm -f *~ *.old *.bak
