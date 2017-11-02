@@ -112,8 +112,8 @@ plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2U
   : instance_handle(NULL),
     data_access(NULL),
     urid_map(NULL),
-    instance(NULL),
-    ext_ui_host(NULL)
+    ext_ui_host(NULL),
+    instance(NULL)
 {
     plugin_metadata = metadata;
     
