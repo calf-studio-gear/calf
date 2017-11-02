@@ -143,16 +143,25 @@ void jack_host::rename_ports() {
         snprintf(buf, sizeof(buf), "%s In #%d", instance_name.c_str(), i+1);
         inputs[i].nice_name = buf;
         jack_port_set_name(inputs[i].handle, buf);
+        // replacement:
+        // jack_port_rename(client->client, (inputs[i].handle, buf);
+        // but we have to check which jack version first
     }
     if (metadata->get_midi()) {
         snprintf(buf, sizeof(buf), "%s MIDI In", instance_name.c_str());
         midi_port.nice_name = buf;
         jack_port_set_name(midi_port.handle, buf);
+        // replacement:
+        // jack_port_rename(client->client, (midi_port.handle, buf);
+        // but we have to check which jack version first
     }
     for (int i=0; i<out_count; i++) {
         snprintf(buf, sizeof(buf), "%s Out #%d", instance_name.c_str(), i+1);
         outputs[i].nice_name = buf;
         jack_port_set_name(outputs[i].handle, buf);
+        // replacement:
+        // jack_port_rename(client->client, (outputs[i].handle, buf);
+        // but we have to check which jack version first
     }
 }
 
