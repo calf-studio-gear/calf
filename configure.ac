@@ -74,6 +74,9 @@ fi
 if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
+if test "$JACK_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(JACK_RENAME_PORT, jack >= 0.124.2, JACK_HAS_RENAME="yes", JACK_HAS_RENAME="no")
+fi
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 6, LV2_FOUND="yes", LV2_FOUND="no")
 
@@ -190,6 +193,9 @@ fi
 if test "$OLD_JACK" = "yes"; then
   AC_DEFINE(OLD_JACK, 1, [Old JACK version (with extra nframes argument) is to be used])
 fi
+if test "$JACK_HAS_RENAME" = "yes"; then
+  AC_DEFINE(JACK_HAS_RENAME, 1, [JACK function jack_port_rename should be used instead of jack_port_set_name])
+fi
 if test "$LASH_ENABLED" = "yes"; then
   AC_DEFINE(USE_LASH, 1, [LASH Audio Session Handler client functionality is enabled])
   if test "$LASH_0_6_FOUND" = "yes"; then
@@ -271,6 +277,7 @@ if test "$LASH_ENABLED" = "yes"; then
   AC_MSG_RESULT([    Unstable LASH API:           $LASH_0_6_FOUND])
 fi
 AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
+    JACK has jack_port_rename:   $JACK_HAS_RENAME
     
     Installation prefix:         $prefix
     
