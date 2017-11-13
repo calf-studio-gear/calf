@@ -132,7 +132,7 @@ char *vintage_delay_audio_module::configure(const char *key, const char *value)
         return NULL;
     }
     else
-    return "Unsupported key";
+    return strdup("Unsupported key");
 }
 
 void vintage_delay_audio_module::params_changed()
