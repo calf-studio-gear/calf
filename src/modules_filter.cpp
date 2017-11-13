@@ -389,6 +389,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         }
         return r;
     } else if (phase and !*params[AM::param_analyzer_active]) {
+        last_peak = 0;
         redraw_graph = false;
         return false;
     } else {
@@ -397,6 +398,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp>::get_graph(int index, int 
         if (!is_active
         or (subindex and !*params[AM::param_individuals])
         or (subindex > max and *params[AM::param_individuals])) {
+            last_peak = 0;
             redraw_graph = false;
             return false;
         }
