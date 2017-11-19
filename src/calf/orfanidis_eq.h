@@ -500,7 +500,7 @@ public:
         eq_double_t c0 = cos(w0);
         if (w0 == 0) c0 = 1;
         if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 =- 1;
+        if (w0 == pi) c0 = -1;
 
         //Calculate every section
         for(unsigned int i = 1; i <= L; i++) {
@@ -579,7 +579,7 @@ public:
         eq_double_t c0 = cos(w0);
         if (w0 == 0) c0 = 1;
         if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 =- 1;
+        if (w0 == pi) c0 = -1;
 
         //Calculate every section
         for(unsigned int i = 1; i <= L; i++) {
@@ -658,7 +658,7 @@ public:
         eq_double_t c0 = cos(w0);
         if (w0 == 0) c0 = 1;
         if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 =- 1;
+        if (w0 == pi) c0 = -1;
 
         //Calculate every section
         for(unsigned int i = 1; i <= L; i++) {
