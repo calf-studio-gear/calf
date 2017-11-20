@@ -1416,7 +1416,7 @@ CALF_PORT_PROPS(multispread) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 0,          0,            1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono" },
-    { 2,          1,            4,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "filters", "Filters" },
+    { 2,          1,           16,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "filters", "Filters" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount0", "Intensity Sub" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount1", "Intensity Low" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount2", "Intensity Mid" },

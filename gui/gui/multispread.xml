@@ -76,7 +76,7 @@
             <hbox>
                 <vbox>
                     <label param="filters"/>
-                    <knob param="filters" size="3" ticks="1 2 3 4" />
+                    <knob param="filters" size="3" ticks="1 2 4 8 16" />
                     <value param="filters" />
                 </vbox>
                 <vbox>

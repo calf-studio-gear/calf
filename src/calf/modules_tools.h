@@ -190,7 +190,7 @@ class multispread_audio_module: public audio_module<multispread_metadata>,
 private:
     dsp::bypass bypass;
     vumeters meters;
-    dsp::biquad_d1 L[16], R[16];
+    dsp::biquad_d1 L[4*16], R[4*16];
 public:
     uint32_t srate;
     bool is_active;
