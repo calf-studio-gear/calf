@@ -76,8 +76,13 @@
             <hbox>
                 <vbox>
                     <label param="filters"/>
-                    <knob param="filters" size="3" ticks="1 2 4 8 16" />
+                    <knob param="filters" size="2" ticks="1 2 4 8 16" />
                     <value param="filters" />
+                </vbox>
+                <vbox>
+                    <label param="intensity"/>
+                    <knob param="intensity" size="2"/>
+                    <value param="intensity" />
                 </vbox>
                 <vbox>
                     <label text="Mono In"/>

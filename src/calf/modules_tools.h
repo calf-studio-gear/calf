@@ -195,7 +195,7 @@ public:
     uint32_t srate;
     bool is_active;
     mutable bool redraw_graph;
-    float amount0, amount1, amount2, amount3, filters;
+    float amount0, amount1, amount2, amount3, filters, intensity;
     float fcoeff;
     multispread_audio_module();
     ~multispread_audio_module();
