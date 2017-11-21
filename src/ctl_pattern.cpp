@@ -159,10 +159,10 @@ calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
         p->height = widget->allocation.height;
         p->size_x = p->width - 2 * p->pad_x;
         p->size_y = p->height - 2 * p->pad_y;
-        float radius, bevel;
-        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        float radius, bevel, shadow, lights;
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, NULL);
         cairo_t *bg = cairo_create(p->background_surface);
-        display_background(widget, bg, 0, 0, p->size_x, p->size_y, p->pad_x, p->pad_y, radius, bevel);
+        display_background(widget, bg, 0, 0, p->size_x, p->size_y, p->pad_x, p->pad_y, radius, bevel, 1, shadow, lights);
         calf_pattern_draw_background(widget, bg);
         cairo_destroy(bg);
     }
