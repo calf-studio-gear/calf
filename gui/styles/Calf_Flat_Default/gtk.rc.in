@@ -151,7 +151,7 @@ style "calf-button"
     CalfButton::bevel          = 0
     CalfButton::inset          = 0
     
-    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
     bg[PRELIGHT] = { 0.90, 0.90, 0.90 }
     bg[ACTIVE] = { 0.95, 0.95, 0.95 }
     
@@ -194,7 +194,7 @@ style "calf-combobox"
     xthickness = 4
     ythickness = 3
     font_name  = "Sans 8"
-    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
     base[NORMAL] = { 0.8, 0.9, 0.4 }
     base[PRELIGHT] = { 0.89, 1.00, 0.45 }
     text[NORMAL] = "black"
@@ -326,7 +326,7 @@ style "calf-frame"
 ### VUMETERS ###
 style "calf-vumeter"
 {
-    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
     fg[NORMAL] = { 0, 0.11, 0.11 }
     fg[ACTIVE] = "#cc0000"
     CalfVUMeter::border-radius  = 3
@@ -350,7 +350,7 @@ style "calf-meterscale-rack"
 ### LED ###
 style "calf-led"
 {
-    bg[NORMAL] = { 0.85, 0.85, 0.85 }
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
     CalfLed::border-radius  = 3
     CalfLed::bevel          = 0
     CalfLed::glass          = 0
@@ -360,7 +360,7 @@ style "calf-led"
 
 ### DISPLAYS ###
 style "calf-display" {
-    bg[NORMAL]   = { 0.85, 0.85, 0.85 }
+    bg[NORMAL]   = { 0.9, 0.9, 0.9 }
     base[NORMAL] = { 0.89, 1.00, 0.45 }
     fg[NORMAL]   = { 0.35, 0.4, 0.2 }
     text[NORMAL] = { 0.35, 0.4, 0.2 }
