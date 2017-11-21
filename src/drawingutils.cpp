@@ -45,7 +45,8 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
     // inner screen
     get_base_color(widget, NULL, &r, &g, &b);
     cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * r * 0.75, br * g * 0.75, br * b * 0.75);
+    float l = (1. - 0.75 * lights);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * r * l, br * g * l, br * b * l);
     cairo_pattern_add_color_stop_rgb(pt, 1.0, br * r, br * g, br * b);
     cairo_set_source (c, pt);
     cairo_rectangle(c, x + ox, y + oy, sx, sy);
