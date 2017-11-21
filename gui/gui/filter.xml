@@ -54,7 +54,7 @@
         </hbox>
         <if cond="directlink">
             <frame label="Freq. response" expand-x="1" fill-x="1" attach-x="1" attach-y="0" attach-h="2">
-                <line-graph refresh="1" width="360" height="160" param="freq" crosshairs="1" freqhandles="3" handle1-x="freq"/>
+                <line-graph refresh="1" width="360" height="160" param="freq" crosshairs="1" freqhandles="1" handle1-x="freq"/>
             </frame>
         </if>
     </table>

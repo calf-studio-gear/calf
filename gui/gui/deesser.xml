@@ -81,7 +81,7 @@
     </hbox>
     <frame label="Filter" attach-x="1" attach-y="1" expand-x="1" fill-x="1" expand-y="1" fill-y="1">
         <if cond="directlink">
-            <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="180"  crosshairs="1" freqhandles="4" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
+            <line-graph refresh="1" param="f1_freq" expand="1" fill="1" width="400" height="180"  crosshairs="1" freqhandles="2" handle1-x="f2_freq" label1="Peak" handle2-x="f1_freq" label2="Split"/>
         </if>
     </frame>
 </table>

@@ -35,7 +35,7 @@
     
     <frame label="X-Over">
         <if cond="directlink">
-            <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="5" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
+            <line-graph refresh="1" width="300" height="130" param="bypass" expand="1" fill="1" crosshairs="1" freqhandles="3" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2"/>
         </if>
     </frame>
     

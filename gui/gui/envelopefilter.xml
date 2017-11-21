@@ -87,7 +87,7 @@
         <if cond="directlink">
             <frame label="Frequency Response">
                 <vbox>
-                    <line-graph refresh="1" width="320" height="120" param="res" crosshairs="1" freqhandles="4" handle1-x="lower" label1="Lower" handle2-x="upper" label2="Upper" />
+                    <line-graph refresh="1" width="320" height="120" param="res" crosshairs="1" freqhandles="2" handle1-x="lower" label1="Lower" handle2-x="upper" label2="Upper" />
                 </vbox>
             </frame>
         </if>

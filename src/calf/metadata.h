@@ -759,6 +759,7 @@ struct multispread_metadata: public plugin_metadata<multispread_metadata>
            STEREO_VU_METER_PARAMS,
            param_mono, param_filters,
            param_amount0, param_amount1, param_amount2, param_amount3,
+           param_intensity,
            param_count };
     PLUGIN_NAME_ID_LABEL("multispread", "multispread", "Multi Spread")
 };
