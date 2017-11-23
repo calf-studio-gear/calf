@@ -29,7 +29,7 @@ using namespace dsp;
 using namespace calf_plugins;
 using namespace std;
 
-const char *calf_plugins::calf_copyright_info = "(C) 2001-2016 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt and others; license: LGPL";
+const char *calf_plugins::calf_copyright_info = "(C) 2001-2017 Krzysztof Foltman, Thor Harald Johanssen, Markus Schmidt, Christian Holschuh and others; license: LGPL";
 const char *crossover_filter_choices[] = { "LR2", "LR4", "LR8" };
 const char *mb_crossover_filter_choices[] = { "LR4", "LR8" };
 
@@ -1416,11 +1416,12 @@ CALF_PORT_PROPS(multispread) = {
     BYPASS_AND_LEVEL_PARAMS
     METERING_PARAMS
     { 0,          0,            1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "mono", "Mono" },
-    { 2,          1,            4,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "filters", "Filters" },
+    { 2,          1,           16,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "filters", "Filters" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount0", "Intensity Sub" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount1", "Intensity Low" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount2", "Intensity Mid" },
     { 1,   0.015625,           64,    0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DB, NULL, "amount3", "Intensity High" },
+    { 1,          0,            1,    0, PF_FLOAT | PF_SCALE_PERC | PF_CTL_KNOB | PF_UNIT_COEF, NULL, "intensity", "Intensity" },
 
     {}
 };

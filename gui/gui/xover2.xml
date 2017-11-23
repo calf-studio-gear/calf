@@ -20,7 +20,7 @@
         </frame>
         <frame label="X-Over">
             <if cond="directlink">
-                <line-graph refresh="1" width="350" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="3" enforce-handle-order="1" handle1-x="freq0"/>
+                <line-graph refresh="1" width="350" height="120" param="freq0" expand="1" fill="1" crosshairs="1" freqhandles="1" enforce-handle-order="1" handle1-x="freq0"/>
             </if>
         </frame>
     </hbox>

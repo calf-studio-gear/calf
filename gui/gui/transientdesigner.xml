@@ -45,7 +45,7 @@
         <if cond="directlink">
             <frame label="Envelope Filter">
                 <vbox spacing="8">
-                    <line-graph refresh="1" width="240" height="140" param="hipass"  crosshairs="1" freqhandles="4" handle1-x="hipass" label1="High Pass" handle2-x="lopass" label2="Low Pass" active1="hp_mode" active2="lp_mode" enforce-handle-order="1"/>
+                    <line-graph refresh="1" width="240" height="160" param="hipass"  crosshairs="1" freqhandles="2" handle1-x="hipass" label1="High Pass" handle2-x="lopass" label2="Low Pass" active1="hp_mode" active2="lp_mode" enforce-handle-order="1"/>
                     <hbox spacing="8">
                         <combo param="hp_mode"/>
                         <combo param="lp_mode"/>
@@ -91,7 +91,7 @@
             <frame label="Waveform">
                 <hbox>
                     <vbox spacing="8">
-                        <line-graph refresh="1" width="240" height="140" param="sustain_threshold"/>
+                        <line-graph refresh="1" width="240" height="160" param="sustain_threshold"/>
                         <combo param="view"/>
                     </vbox>
                     <vbox spacing="8">

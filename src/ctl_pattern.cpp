@@ -159,10 +159,10 @@ calf_pattern_expose (GtkWidget *widget, GdkEventExpose *event)
         p->height = widget->allocation.height;
         p->size_x = p->width - 2 * p->pad_x;
         p->size_y = p->height - 2 * p->pad_y;
-        float radius, bevel;
-        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        float radius, bevel, shadow, lights, dull;
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, "dull", &dull, NULL);
         cairo_t *bg = cairo_create(p->background_surface);
-        display_background(widget, bg, 0, 0, p->size_x, p->size_y, p->pad_x, p->pad_y, radius, bevel);
+        display_background(widget, bg, 0, 0, p->size_x, p->size_y, p->pad_x, p->pad_y, radius, bevel, 1, shadow, lights, dull);
         calf_pattern_draw_background(widget, bg);
         cairo_destroy(bg);
     }
@@ -423,6 +423,15 @@ calf_pattern_class_init (CalfPatternClass *klass)
     gtk_widget_class_install_style_property(
         widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
         -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("shadow", "Shadow", "Draw shadows inside",
+        0, 16, 4, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("lights", "Lights", "Draw lights inside",
+        0, 1, 1, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("dull", "Dull", "Draw dull inside",
+        0, 1, 0.25, GParamFlags(G_PARAM_READWRITE)));
         
     g_signal_new("handle-changed",
          G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST,
