@@ -70,7 +70,7 @@ struct FreqHandle
     inline bool is_active() { return (param_active_no < 0 || active); }
 };
 
-#define FREQ_HANDLES 32
+#define FREQ_HANDLES 58
 #define HANDLE_WIDTH 20.0
 
 struct CalfLineGraph
@@ -92,7 +92,8 @@ struct CalfLineGraph
     int size_x, size_y;
     int x, y;
     float zoom, offset;
-    int param_zoom, param_offset;
+    bool drawl;
+    int param_zoom, param_offset, param_drawl;
     
     cairo_surface_t *background_surface;
     cairo_surface_t *grid_surface;
