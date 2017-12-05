@@ -28,6 +28,7 @@
 #define MONO_VU_METER_PARAMS param_meter_in, param_meter_out, param_clip_in, param_clip_out
 #define STEREO_VU_METER_PARAMS param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR, param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR
 #define PERIODICAL_PARAMS param_timing, param_bpm, param_ms, param_hz, param_bpm_host
+#define STEREO_VU_METER_IN_PARAMS param_meter_inL, param_meter_inR, param_clip_inL, param_clip_inR
 
 namespace calf_plugins {
 
@@ -344,6 +345,262 @@ struct multibandgate_metadata: public plugin_metadata<multibandgate_metadata>
     PLUGIN_NAME_ID_LABEL("multibandgate", "multibandgate", "Multiband Gate")
 };
 
+/// Adriano's multiband soft 12 band- metadata
+struct multibandsoft12band_metadata: public plugin_metadata<multibandsoft12band_metadata>
+{
+    enum { in_count = 2, out_count = 24, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level_in,
+           STEREO_VU_METER_IN_PARAMS,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4, param_freq5, param_freq6, param_freq7, param_freq8, param_freq9, param_freq10,
+           param_fast,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0, param_delay0,
+           param_detection0, param_stereo_link0, param_strip_mode0, param_gating0, param_output0, param_mode0, param_solo0, param_bypass0,
+           param_drive0, param_blend0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_makeup1, param_knee1, param_delay1,
+           param_detection1, param_stereo_link1, param_strip_mode1, param_gating1, param_output1, param_mode1, param_solo1, param_bypass1,
+           param_drive1, param_blend1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_makeup2, param_knee2, param_delay2,
+           param_detection2, param_stereo_link2, param_strip_mode2, param_gating2, param_output2, param_mode2, param_solo2, param_bypass2,
+           param_drive2, param_blend2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3, param_delay3,
+           param_detection3, param_stereo_link3, param_strip_mode3, param_gating3, param_output3, param_mode3, param_solo3, param_bypass3,
+           param_drive3, param_blend3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_makeup4, param_knee4, param_delay4,
+           param_detection4, param_stereo_link4, param_strip_mode4, param_gating4, param_output4, param_mode4, param_solo4, param_bypass4,
+           param_drive4, param_blend4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_makeup5, param_knee5, param_delay5,
+           param_detection5, param_stereo_link5, param_strip_mode5, param_gating5, param_output5, param_mode5, param_solo5, param_bypass5,
+           param_drive5, param_blend5,
+           param_range6, param_threshold6, param_ratio6, param_attack6, param_release6, param_makeup6, param_knee6, param_delay6,
+           param_detection6, param_stereo_link6, param_strip_mode6, param_gating6, param_output6, param_mode6, param_solo6, param_bypass6,
+           param_drive6, param_blend6,
+           param_range7, param_threshold7, param_ratio7, param_attack7, param_release7, param_makeup7, param_knee7, param_delay7,
+           param_detection7, param_stereo_link7, param_strip_mode7, param_gating7, param_output7, param_mode7, param_solo7, param_bypass7,
+           param_drive7, param_blend7,
+           param_range8, param_threshold8, param_ratio8, param_attack8, param_release8, param_makeup8, param_knee8, param_delay8,
+           param_detection8, param_stereo_link8, param_strip_mode8, param_gating8, param_output8, param_mode8, param_solo8, param_bypass8,
+           param_drive8, param_blend8,
+           param_range9, param_threshold9, param_ratio9, param_attack9, param_release9, param_makeup9, param_knee9, param_delay9,
+           param_detection9, param_stereo_link9, param_strip_mode9, param_gating9, param_output9, param_mode9, param_solo9, param_bypass9,
+           param_drive9, param_blend9,
+           param_range10, param_threshold10, param_ratio10, param_attack10, param_release10, param_makeup10, param_knee10, param_delay10,
+           param_detection10, param_stereo_link10, param_strip_mode10, param_gating10, param_output10, param_mode10, param_solo10, param_bypass10,
+           param_drive10, param_blend10,
+           param_range11, param_threshold11, param_ratio11, param_attack11, param_release11, param_makeup11, param_knee11, param_delay11,
+           param_detection11, param_stereo_link11, param_strip_mode11, param_gating11, param_output11, param_mode11, param_solo11, param_bypass11,
+           param_drive11, param_blend11,
+           param_notebook,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("multibandsoft12band", "multibandsoft12band", "Multiband Soft 12 band")
+};
+
+/// Adriano's multiband soft 6 band - metadata
+struct multibandsoft6band_metadata: public plugin_metadata<multibandsoft6band_metadata>
+{
+    enum { in_count = 2, out_count = 12, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level_in,
+           STEREO_VU_METER_IN_PARAMS,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4,
+           param_fast,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0, param_delay0,
+           param_detection0, param_stereo_link0, param_strip_mode0, param_gating0, param_output0, param_mode0, param_solo0, param_bypass0,
+           param_drive0, param_blend0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_makeup1, param_knee1, param_delay1,
+           param_detection1, param_stereo_link1, param_strip_mode1, param_gating1, param_output1, param_mode1, param_solo1, param_bypass1,
+           param_drive1, param_blend1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_makeup2, param_knee2, param_delay2,
+           param_detection2, param_stereo_link2, param_strip_mode2, param_gating2, param_output2, param_mode2, param_solo2, param_bypass2,
+           param_drive2, param_blend2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3, param_delay3,
+           param_detection3, param_stereo_link3, param_strip_mode3, param_gating3, param_output3, param_mode3, param_solo3, param_bypass3,
+           param_drive3, param_blend3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_makeup4, param_knee4, param_delay4,
+           param_detection4, param_stereo_link4, param_strip_mode4, param_gating4, param_output4, param_mode4, param_solo4, param_bypass4,
+           param_drive4, param_blend4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_makeup5, param_knee5, param_delay5,
+           param_detection5, param_stereo_link5, param_strip_mode5, param_gating5, param_output5, param_mode5, param_solo5, param_bypass5,
+           param_drive5, param_blend5,
+           param_notebook,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("multibandsoft6band", "multibandsoft6band", "Multiband Soft 6 band")
+};
+
+/// Adriano's sidechain multiband soft 6 band - metadata
+struct scmultibandsoft6band_metadata: public plugin_metadata<scmultibandsoft6band_metadata>
+{
+    enum { in_count = 4, out_count = 24, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level_in,
+           STEREO_VU_METER_IN_PARAMS,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4,
+           param_fast, param_scmode,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_makeup0, param_knee0, param_delay0,
+           param_detection0, param_stereo_link0, param_strip_mode0, param_gating0, param_output0, param_mode0, param_solo0, param_bypass0,
+           param_drive0, param_blend0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_makeup1, param_knee1, param_delay1,
+           param_detection1, param_stereo_link1, param_strip_mode1, param_gating1, param_output1, param_mode1, param_solo1, param_bypass1,
+           param_drive1, param_blend1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_makeup2, param_knee2, param_delay2,
+           param_detection2, param_stereo_link2, param_strip_mode2, param_gating2, param_output2, param_mode2, param_solo2, param_bypass2,
+           param_drive2, param_blend2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_makeup3, param_knee3, param_delay3,
+           param_detection3, param_stereo_link3, param_strip_mode3, param_gating3, param_output3, param_mode3, param_solo3, param_bypass3,
+           param_drive3, param_blend3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_makeup4, param_knee4, param_delay4,
+           param_detection4, param_stereo_link4, param_strip_mode4, param_gating4, param_output4, param_mode4, param_solo4, param_bypass4,
+           param_drive4, param_blend4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_makeup5, param_knee5, param_delay5,
+           param_detection5, param_stereo_link5, param_strip_mode5, param_gating5, param_output5, param_mode5, param_solo5, param_bypass5,
+           param_drive5, param_blend5,
+           param_notebook,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("scmultibandsoft6band", "scmultibandsoft6band", "Sidechain Multiband Soft 6 band")
+};
+
+/// Adriano's Elastic EQ - metadata
+struct elasticeq_metadata: public plugin_metadata<elasticeq_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_range, param_threshold, param_ratio, param_attack, param_release, param_knee, param_detection, param_stereo_link, param_gating,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_draw_labels, param_force, param_individuals, param_zoom,
+           param_count };
+    enum { PeakBands = 8, first_graph_param = param_p1_active, last_graph_param = param_p8_q };
+    PLUGIN_NAME_ID_LABEL("elasticeq", "elasticeq", "Elastic Equalizer")
+};
+
+/// Adriano's Multistrip Elastic EQ - metadata
+struct mstripelasticeq_metadata: public plugin_metadata<mstripelasticeq_metadata>
+{
+    enum { in_count = 14, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_knee0, param_detection0, param_stereo_link0, param_gating0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_knee1, param_detection1, param_stereo_link1, param_gating1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_knee2, param_detection2, param_stereo_link2, param_gating2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_knee3, param_detection3, param_stereo_link3, param_gating3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_knee4, param_detection4, param_stereo_link4, param_gating4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_knee5, param_detection5, param_stereo_link5, param_gating5,
+           param_range6, param_threshold6, param_ratio6, param_attack6, param_release6, param_knee6, param_detection6, param_stereo_link6, param_gating6,
+           param_p01_active, param_p01_level, param_p01_freq, param_p01_q,
+           param_p02_active, param_p02_level, param_p02_freq, param_p02_q,
+           param_p03_active, param_p03_level, param_p03_freq, param_p03_q,
+           param_p04_active, param_p04_level, param_p04_freq, param_p04_q,
+           param_p05_active, param_p05_level, param_p05_freq, param_p05_q,
+           param_p06_active, param_p06_level, param_p06_freq, param_p06_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_p21_active, param_p21_level, param_p21_freq, param_p21_q,
+           param_p22_active, param_p22_level, param_p22_freq, param_p22_q,
+           param_p23_active, param_p23_level, param_p23_freq, param_p23_q,
+           param_p24_active, param_p24_level, param_p24_freq, param_p24_q,
+           param_p25_active, param_p25_level, param_p25_freq, param_p25_q,
+           param_p26_active, param_p26_level, param_p26_freq, param_p26_q,
+           param_p31_active, param_p31_level, param_p31_freq, param_p31_q,
+           param_p32_active, param_p32_level, param_p32_freq, param_p32_q,
+           param_p33_active, param_p33_level, param_p33_freq, param_p33_q,
+           param_p34_active, param_p34_level, param_p34_freq, param_p34_q,
+           param_p35_active, param_p35_level, param_p35_freq, param_p35_q,
+           param_p36_active, param_p36_level, param_p36_freq, param_p36_q,
+           param_p41_active, param_p41_level, param_p41_freq, param_p41_q,
+           param_p42_active, param_p42_level, param_p42_freq, param_p42_q,
+           param_p43_active, param_p43_level, param_p43_freq, param_p43_q,
+           param_p44_active, param_p44_level, param_p44_freq, param_p44_q,
+           param_p45_active, param_p45_level, param_p45_freq, param_p45_q,
+           param_p46_active, param_p46_level, param_p46_freq, param_p46_q,
+           param_p51_active, param_p51_level, param_p51_freq, param_p51_q,
+           param_p52_active, param_p52_level, param_p52_freq, param_p52_q,
+           param_p53_active, param_p53_level, param_p53_freq, param_p53_q,
+           param_p54_active, param_p54_level, param_p54_freq, param_p54_q,
+           param_p55_active, param_p55_level, param_p55_freq, param_p55_q,
+           param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
+           param_p61_active, param_p61_level, param_p61_freq, param_p61_q,
+           param_p62_active, param_p62_level, param_p62_freq, param_p62_q,
+           param_p63_active, param_p63_level, param_p63_freq, param_p63_q,
+           param_p64_active, param_p64_level, param_p64_freq, param_p64_q,
+           param_p65_active, param_p65_level, param_p65_freq, param_p65_q,
+           param_p66_active, param_p66_level, param_p66_freq, param_p66_q,
+           param_notebook,
+           param_draw_labels, param_force, param_individuals, param_zoom,
+           param_selected_only,
+           param_count };
+    enum { PeakBands = 42, first_graph_param = param_p01_active, last_graph_param = param_p66_q };
+    PLUGIN_NAME_ID_LABEL("mstripelasticeq", "mstripelasticeq", "Multstrip Elastic Equalizer")
+};
+
+/// Adriano's Sidechain Multistrip Elastic EQ - metadata
+struct scmstripelasticeq_metadata: public plugin_metadata<scmstripelasticeq_metadata>
+{
+    enum { in_count = 28, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass,
+           param_range0, param_threshold0, param_ratio0, param_attack0, param_release0, param_knee0, param_detection0, param_stereo_link0, param_gating0,
+           param_range1, param_threshold1, param_ratio1, param_attack1, param_release1, param_knee1, param_detection1, param_stereo_link1, param_gating1,
+           param_range2, param_threshold2, param_ratio2, param_attack2, param_release2, param_knee2, param_detection2, param_stereo_link2, param_gating2,
+           param_range3, param_threshold3, param_ratio3, param_attack3, param_release3, param_knee3, param_detection3, param_stereo_link3, param_gating3,
+           param_range4, param_threshold4, param_ratio4, param_attack4, param_release4, param_knee4, param_detection4, param_stereo_link4, param_gating4,
+           param_range5, param_threshold5, param_ratio5, param_attack5, param_release5, param_knee5, param_detection5, param_stereo_link5, param_gating5,
+           param_range6, param_threshold6, param_ratio6, param_attack6, param_release6, param_knee6, param_detection6, param_stereo_link6, param_gating6,
+           param_p01_active, param_p01_level, param_p01_freq, param_p01_q,
+           param_p02_active, param_p02_level, param_p02_freq, param_p02_q,
+           param_p03_active, param_p03_level, param_p03_freq, param_p03_q,
+           param_p04_active, param_p04_level, param_p04_freq, param_p04_q,
+           param_p05_active, param_p05_level, param_p05_freq, param_p05_q,
+           param_p06_active, param_p06_level, param_p06_freq, param_p06_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_p21_active, param_p21_level, param_p21_freq, param_p21_q,
+           param_p22_active, param_p22_level, param_p22_freq, param_p22_q,
+           param_p23_active, param_p23_level, param_p23_freq, param_p23_q,
+           param_p24_active, param_p24_level, param_p24_freq, param_p24_q,
+           param_p25_active, param_p25_level, param_p25_freq, param_p25_q,
+           param_p26_active, param_p26_level, param_p26_freq, param_p26_q,
+           param_p31_active, param_p31_level, param_p31_freq, param_p31_q,
+           param_p32_active, param_p32_level, param_p32_freq, param_p32_q,
+           param_p33_active, param_p33_level, param_p33_freq, param_p33_q,
+           param_p34_active, param_p34_level, param_p34_freq, param_p34_q,
+           param_p35_active, param_p35_level, param_p35_freq, param_p35_q,
+           param_p36_active, param_p36_level, param_p36_freq, param_p36_q,
+           param_p41_active, param_p41_level, param_p41_freq, param_p41_q,
+           param_p42_active, param_p42_level, param_p42_freq, param_p42_q,
+           param_p43_active, param_p43_level, param_p43_freq, param_p43_q,
+           param_p44_active, param_p44_level, param_p44_freq, param_p44_q,
+           param_p45_active, param_p45_level, param_p45_freq, param_p45_q,
+           param_p46_active, param_p46_level, param_p46_freq, param_p46_q,
+           param_p51_active, param_p51_level, param_p51_freq, param_p51_q,
+           param_p52_active, param_p52_level, param_p52_freq, param_p52_q,
+           param_p53_active, param_p53_level, param_p53_freq, param_p53_q,
+           param_p54_active, param_p54_level, param_p54_freq, param_p54_q,
+           param_p55_active, param_p55_level, param_p55_freq, param_p55_q,
+           param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
+           param_p61_active, param_p61_level, param_p61_freq, param_p61_q,
+           param_p62_active, param_p62_level, param_p62_freq, param_p62_q,
+           param_p63_active, param_p63_level, param_p63_freq, param_p63_q,
+           param_p64_active, param_p64_level, param_p64_freq, param_p64_q,
+           param_p65_active, param_p65_level, param_p65_freq, param_p65_q,
+           param_p66_active, param_p66_level, param_p66_freq, param_p66_q,
+           param_notebook,
+           param_draw_labels, param_force, param_individuals, param_zoom,
+           param_selected_only,
+           param_count };
+    enum { PeakBands = 42, first_graph_param = param_p01_active, last_graph_param = param_p66_q };
+    PLUGIN_NAME_ID_LABEL("scmstripelasticeq", "scmstripelasticeq", "Sidechain Multistrip Elastic Equalizer")
+};
+
 /// Markus's limiter - metadata
 struct limiter_metadata: public plugin_metadata<limiter_metadata>
 {
@@ -419,7 +676,7 @@ struct equalizer5band_metadata: public plugin_metadata<equalizer5band_metadata>
            param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
     // and potentially making inlining and optimization harder for the compiler
@@ -442,7 +699,7 @@ struct equalizer8band_metadata: public plugin_metadata<equalizer8band_metadata>
            param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
            param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
            param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 4, first_graph_param = param_hp_active, last_graph_param = param_p4_q };
     PLUGIN_NAME_ID_LABEL("equalizer8band", "eq8", "Equalizer 8 Band")
@@ -465,10 +722,41 @@ struct equalizer12band_metadata: public plugin_metadata<equalizer12band_metadata
            param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
            param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
            param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
-           param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
            param_count };
     enum { PeakBands = 8, first_graph_param = param_hp_active, last_graph_param = param_p8_q };
     PLUGIN_NAME_ID_LABEL("equalizer12band", "eq12", "Equalizer 12 Band")
+};
+/// Markus's 20-band EQ - metadata
+struct equalizer20band_metadata: public plugin_metadata<equalizer20band_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_hp_active, param_hp_freq, param_hp_mode, param_hp_q,
+           param_lp_active, param_lp_freq, param_lp_mode, param_lp_q,
+           param_ls_active, param_ls_level, param_ls_freq, param_ls_q,
+           param_hs_active, param_hs_level, param_hs_freq, param_hs_q,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_p9_active, param_p9_level, param_p9_freq, param_p9_q,
+           param_p10_active, param_p10_level, param_p10_freq, param_p10_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_count };
+    enum { PeakBands = 16, first_graph_param = param_hp_active, last_graph_param = param_p16_q };
+    PLUGIN_NAME_ID_LABEL("equalizer20band", "eq20", "Equalizer 20 Band")
 };
 /// 30-band EQ - metadata
 struct equalizer30band_metadata: public plugin_metadata<equalizer30band_metadata>
@@ -554,6 +842,79 @@ struct equalizer30band_metadata: public plugin_metadata<equalizer30band_metadata
 
     PLUGIN_NAME_ID_LABEL("equalizer30band", "eq30", "Equalizer 30 Band")
 };
+/// Markus's 58-band EQ - metadata
+struct equalizer58band_metadata: public plugin_metadata<equalizer58band_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_p1_active, param_p1_level, param_p1_freq, param_p1_q,
+           param_p2_active, param_p2_level, param_p2_freq, param_p2_q,
+           param_p3_active, param_p3_level, param_p3_freq, param_p3_q,
+           param_p4_active, param_p4_level, param_p4_freq, param_p4_q,
+           param_p5_active, param_p5_level, param_p5_freq, param_p5_q,
+           param_p6_active, param_p6_level, param_p6_freq, param_p6_q,
+           param_p7_active, param_p7_level, param_p7_freq, param_p7_q,
+           param_p8_active, param_p8_level, param_p8_freq, param_p8_q,
+           param_p9_active, param_p9_level, param_p9_freq, param_p9_q,
+           param_p10_active, param_p10_level, param_p10_freq, param_p10_q,
+           param_p11_active, param_p11_level, param_p11_freq, param_p11_q,
+           param_p12_active, param_p12_level, param_p12_freq, param_p12_q,
+           param_p13_active, param_p13_level, param_p13_freq, param_p13_q,
+           param_p14_active, param_p14_level, param_p14_freq, param_p14_q,
+           param_p15_active, param_p15_level, param_p15_freq, param_p15_q,
+           param_p16_active, param_p16_level, param_p16_freq, param_p16_q,
+           param_p17_active, param_p17_level, param_p17_freq, param_p17_q,
+           param_p18_active, param_p18_level, param_p18_freq, param_p18_q,
+           param_p19_active, param_p19_level, param_p19_freq, param_p19_q,
+           param_p20_active, param_p20_level, param_p20_freq, param_p20_q,
+           param_p21_active, param_p21_level, param_p21_freq, param_p21_q,
+           param_p22_active, param_p22_level, param_p22_freq, param_p22_q,
+           param_p23_active, param_p23_level, param_p23_freq, param_p23_q,
+           param_p24_active, param_p24_level, param_p24_freq, param_p24_q,
+           param_p25_active, param_p25_level, param_p25_freq, param_p25_q,
+           param_p26_active, param_p26_level, param_p26_freq, param_p26_q,
+           param_p27_active, param_p27_level, param_p27_freq, param_p27_q,
+           param_p28_active, param_p28_level, param_p28_freq, param_p28_q,
+           param_p29_active, param_p29_level, param_p29_freq, param_p29_q,
+           param_p30_active, param_p30_level, param_p30_freq, param_p30_q,
+           param_p31_active, param_p31_level, param_p31_freq, param_p31_q,
+           param_p32_active, param_p32_level, param_p32_freq, param_p32_q,
+           param_p33_active, param_p33_level, param_p33_freq, param_p33_q,
+           param_p34_active, param_p34_level, param_p34_freq, param_p34_q,
+           param_p35_active, param_p35_level, param_p35_freq, param_p35_q,
+           param_p36_active, param_p36_level, param_p36_freq, param_p36_q,
+           param_p37_active, param_p37_level, param_p37_freq, param_p37_q,
+           param_p38_active, param_p38_level, param_p38_freq, param_p38_q,
+           param_p39_active, param_p39_level, param_p39_freq, param_p39_q,
+           param_p40_active, param_p40_level, param_p40_freq, param_p40_q,
+           param_p41_active, param_p41_level, param_p41_freq, param_p41_q,
+           param_p42_active, param_p42_level, param_p42_freq, param_p42_q,
+           param_p43_active, param_p43_level, param_p43_freq, param_p43_q,
+           param_p44_active, param_p44_level, param_p44_freq, param_p44_q,
+           param_p45_active, param_p45_level, param_p45_freq, param_p45_q,
+           param_p46_active, param_p46_level, param_p46_freq, param_p46_q,
+           param_p47_active, param_p47_level, param_p47_freq, param_p47_q,
+           param_p48_active, param_p48_level, param_p48_freq, param_p48_q,
+           param_p49_active, param_p49_level, param_p49_freq, param_p49_q,
+           param_p50_active, param_p50_level, param_p50_freq, param_p50_q,
+           param_p51_active, param_p51_level, param_p51_freq, param_p51_q,
+           param_p52_active, param_p52_level, param_p52_freq, param_p52_q,
+           param_p53_active, param_p53_level, param_p53_freq, param_p53_q,
+           param_p54_active, param_p54_level, param_p54_freq, param_p54_q,
+           param_p55_active, param_p55_level, param_p55_freq, param_p55_q,
+           param_p56_active, param_p56_level, param_p56_freq, param_p56_q,
+           param_p57_active, param_p57_level, param_p57_freq, param_p57_q,
+           param_p58_active, param_p58_level, param_p58_freq, param_p58_q,
+           param_draw_labels, param_individuals, param_zoom, param_analyzer_active, param_analyzer_mode,
+           param_count };
+    enum { PeakBands = 58, first_graph_param = param_p1_active, last_graph_param = param_p58_q };
+    PLUGIN_NAME_ID_LABEL("equalizer58band", "eq58", "Equalizer 58 Band")
+    // dummy parameter numbers, shouldn't be used EVER, they're only there to avoid pushing LP/HP filters to a separate class
+    // and potentially making inlining and optimization harder for the compiler
+    enum { param_lp_active = 0xDEADBEEF, param_hp_active, param_hp_mode, param_lp_mode, param_hp_freq, param_lp_freq, param_hp_q, param_lp_q, param_ls_active, param_hs_active, param_hs_level, param_ls_level, param_hs_freq, param_ls_freq, param_ls_q, param_hs_q};
+};
+
 /// Markus's X-Overs
 struct xover2_metadata: public plugin_metadata<xover2_metadata>
 {
@@ -590,6 +951,23 @@ struct xover4_metadata: public plugin_metadata<xover4_metadata>
            param_count };
     enum { channels = 2, bands = 4 };
     PLUGIN_NAME_ID_LABEL("xover4band", "xover4", "X-Over 4 Band")
+};
+struct xover8_metadata: public plugin_metadata<xover8_metadata>
+{
+    enum { in_count = 2, out_count = 16, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true };
+    enum { param_level, param_meter_0, param_meter_1, param_mode,
+           param_freq0, param_freq1, param_freq2, param_freq3, param_freq4, param_freq5, param_freq6,
+           param_level1, param_active1, param_phase1, param_delay1, param_meter_01, param_meter_11,
+           param_level2, param_active2, param_phase2, param_delay2, param_meter_02, param_meter_12,
+           param_level3, param_active3, param_phase3, param_delay3, param_meter_03, param_meter_13,
+           param_level4, param_active4, param_phase4, param_delay4, param_meter_04, param_meter_14,
+           param_level5, param_active5, param_phase5, param_delay5, param_meter_05, param_meter_15,
+           param_level6, param_active6, param_phase6, param_delay6, param_meter_06, param_meter_16,
+           param_level7, param_active7, param_phase7, param_delay7, param_meter_07, param_meter_17,
+           param_level8, param_active8, param_phase8, param_delay8, param_meter_08, param_meter_18,
+           param_count };
+    enum { channels = 2, bands = 8 };
+    PLUGIN_NAME_ID_LABEL("xover8band", "xover8", "X-Over 8 Band")
 };
 
 /// Markus and Chrischis Vocoder - metadata

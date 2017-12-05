@@ -32,8 +32,12 @@
     
     <align attach-x="0" attach-y="0" attach-w="2" align-x="1.0">
         <hbox expand="0" fill="0" spacing="30">
+            <hbox expand="0" fill="0" spacing="10"> 
+                <label param="draw_labels"/>
+                <toggle size="1" param="draw_labels"/>
+            </hbox>
             <hbox expand="0" fill="0" spacing="10">
-                <label text="Individual Graphs"/>
+                <label param="individuals"/>
                 <toggle size="1" param="individuals"/>
             </hbox>
             <hbox expand="0" fill="0" spacing="10">
@@ -47,7 +51,8 @@
         <table rows="1" cols="2">
             <if cond="directlink">
                 <line-graph attach-x="0" attach-y="0" refresh="1" height="200" width="500"
-                param="ls_freq" expand="1" fill="1" zoom="zoom" crosshairs="1" freqhandles="5"
+                param="ls_freq" expand="1" fill="1" zoom="zoom" draw_labels="draw_labels"
+                crosshairs="1" freqhandles="7"
                 handle1-x="ls_freq" handle1-y="ls_level" handle1-z="ls_q" label1="LS" active1="ls_active"
                 handle2-x="p1_freq" handle2-y="p1_level" handle2-z="p1_q" label2="P I" active2="p1_active"
                 handle3-x="p2_freq" handle3-y="p2_level" handle3-z="p2_q" label3="P II" active3="p2_active"

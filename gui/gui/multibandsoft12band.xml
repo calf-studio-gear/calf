@@ -1,0 +1,1143 @@
+<vbox spacing="8">
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+    </table>
+    
+    <frame label="X-Over">
+        <vbox>
+            <align align-x="0.0" scale-x="0.1" scale-y="1.0">
+                <hbox spacing="8">
+                    <label param="mode0"/>
+                    <combo param="mode0"/>
+                    <label param="mode1"/>
+                    <combo param="mode1"/>
+                    <label param="mode2"/>
+                    <combo param="mode2"/>
+                    <label param="mode3"/>
+                    <combo param="mode3"/>
+                    <label param="mode4"/>
+                    <combo param="mode4"/>
+                    <label param="mode5"/>
+                    <combo param="mode5"/>
+                    <label param="mode6"/>
+                    <combo param="mode6"/>
+                    <label param="mode7"/>
+                    <combo param="mode7"/>
+                    <label param="mode8"/>
+                    <combo param="mode8"/>
+                    <label param="mode9"/>
+                    <combo param="mode9"/>
+                    <label param="mode10"/>
+                    <combo param="mode10"/>
+                    <label param="fast"/>
+                    <combo param="fast"/>
+                </hbox>
+            </align>
+            <if cond="directlink">
+                <line-graph refresh="1" width="300" height="130" expand="1" fill="1" crosshairs="1" freqhandles="11" enforce-handle-order="1" handle1-x="freq0" handle2-x="freq1" handle3-x="freq2" handle4-x="freq3" handle5-x="freq4" handle6-x="freq5" handle7-x="freq6" handle8-x="freq7" handle9-x="freq8" handle10-x="freq9" handle11-x="freq10"/>
+            </if>
+        </vbox>
+    </frame>
+    
+    <notebook param="notebook">
+        <hbox page="Band 1" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass0"/>
+                    <toggle param="bypass0"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack0" />
+                    <knob param="attack0" />
+                    <value param="attack0" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release0" />
+                    <knob param="release0" />
+                    <value param="release0" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee0" />
+                    <knob param="knee0" />
+                    <value param="knee0" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range0" />
+                    <knob param="range0" />
+                    <value param="range0" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection0"/>
+                    <combo param="detection0"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo0"/>
+                    <toggle param="solo0"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio0" />
+                    <knob param="ratio0" />
+                    <value param="ratio0" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold0" />
+                    <knob param="threshold0"/>
+                    <value param="threshold0" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup0" />
+                    <knob param="makeup0" />
+                    <value param="makeup0" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay0" />
+                    <knob param="delay0" />
+                    <value param="delay0" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link0"/>
+                    <combo param="stereo_link0"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive0"/>
+                    <knob param="drive0"/>
+                    <value param="drive0" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend0"/>
+                    <knob param="blend0"/>
+                    <value param="blend0" />
+                </vbox>
+            </table>
+        </hbox>
+        
+        <hbox page="Band 2" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass1"/>
+                    <toggle param="bypass1"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack1" />
+                    <knob param="attack1" />
+                    <value param="attack1" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release1" />
+                    <knob param="release1" />
+                    <value param="release1" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee1" />
+                    <knob param="knee1" />
+                    <value param="knee1" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range1" />
+                    <knob param="range1" />
+                    <value param="range1" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection1"/>
+                    <combo param="detection1"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo1"/>
+                    <toggle param="solo1"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio1" />
+                    <knob param="ratio1" />
+                    <value param="ratio1" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold1" />
+                    <knob param="threshold1"/>
+                    <value param="threshold1" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup1" />
+                    <knob param="makeup1" />
+                    <value param="makeup1" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay1" />
+                    <knob param="delay1" />
+                    <value param="delay1" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link1"/>
+                    <combo param="stereo_link1"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive1"/>
+                    <knob param="drive1"/>
+                    <value param="drive1" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend1"/>
+                    <knob param="blend1"/>
+                    <value param="blend1" />
+                </vbox>
+            </table>
+        </hbox>
+        
+        <hbox page="Band 3" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass2"/>
+                    <toggle param="bypass2"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack2" />
+                    <knob param="attack2" />
+                    <value param="attack2" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release2" />
+                    <knob param="release2" />
+                    <value param="release2" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee2" />
+                    <knob param="knee2" />
+                    <value param="knee2" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range2" />
+                    <knob param="range2" />
+                    <value param="range2" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection2"/>
+                    <combo param="detection2"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo2"/>
+                    <toggle param="solo2"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio2" />
+                    <knob param="ratio2" />
+                    <value param="ratio2" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold2" />
+                    <knob param="threshold2"/>
+                    <value param="threshold2" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup2" />
+                    <knob param="makeup2" />
+                    <value param="makeup2" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay2" />
+                    <knob param="delay2" />
+                    <value param="delay2" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link2"/>
+                    <combo param="stereo_link2"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive2"/>
+                    <knob param="drive2"/>
+                    <value param="drive2" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend2"/>
+                    <knob param="blend2"/>
+                    <value param="blend2" />
+                </vbox>
+            </table>
+        </hbox>
+        
+        <hbox page="Band 4" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass3"/>
+                    <toggle param="bypass3"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack3" />
+                    <knob param="attack3" />
+                    <value param="attack3" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release3" />
+                    <knob param="release3" />
+                    <value param="release3" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee3" />
+                    <knob param="knee3" />
+                    <value param="knee3" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range3" />
+                    <knob param="range3" />
+                    <value param="range3" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection3"/>
+                    <combo param="detection3"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo3"/>
+                    <toggle param="solo3"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio3" />
+                    <knob param="ratio3" />
+                    <value param="ratio3" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold3" />
+                    <knob param="threshold3"/>
+                    <value param="threshold3" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup3" />
+                    <knob param="makeup3" />
+                    <value param="makeup3" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay3" />
+                    <knob param="delay3" />
+                    <value param="delay3" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link3"/>
+                    <combo param="stereo_link3"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive3"/>
+                    <knob param="drive3"/>
+                    <value param="drive3" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend3"/>
+                    <knob param="blend3"/>
+                    <value param="blend3" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 5" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass4"/>
+                    <toggle param="bypass4"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack4" />
+                    <knob param="attack4" />
+                    <value param="attack4" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release4" />
+                    <knob param="release4" />
+                    <value param="release4" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee4" />
+                    <knob param="knee4" />
+                    <value param="knee4" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range4" />
+                    <knob param="range4" />
+                    <value param="range4" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection4"/>
+                    <combo param="detection4"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo4"/>
+                    <toggle param="solo4"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio4" />
+                    <knob param="ratio4" />
+                    <value param="ratio4" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold4" />
+                    <knob param="threshold4"/>
+                    <value param="threshold4" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup4" />
+                    <knob param="makeup4" />
+                    <value param="makeup4" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay4" />
+                    <knob param="delay4" />
+                    <value param="delay4" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link4"/>
+                    <combo param="stereo_link4"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive4"/>
+                    <knob param="drive4"/>
+                    <value param="drive4" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend4"/>
+                    <knob param="blend4"/>
+                    <value param="blend4" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 6" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass5"/>
+                    <toggle param="bypass5"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack5" />
+                    <knob param="attack5" />
+                    <value param="attack5" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release5" />
+                    <knob param="release5" />
+                    <value param="release5" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee5" />
+                    <knob param="knee5" />
+                    <value param="knee5" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range5" />
+                    <knob param="range5" />
+                    <value param="range5" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection5"/>
+                    <combo param="detection5"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo5"/>
+                    <toggle param="solo5"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio5" />
+                    <knob param="ratio5" />
+                    <value param="ratio5" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold5" />
+                    <knob param="threshold5"/>
+                    <value param="threshold5" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup5" />
+                    <knob param="makeup5" />
+                    <value param="makeup5" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay5" />
+                    <knob param="delay5" />
+                    <value param="delay5" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link5"/>
+                    <combo param="stereo_link5"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive5"/>
+                    <knob param="drive5"/>
+                    <value param="drive5" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend5"/>
+                    <knob param="blend5"/>
+                    <value param="blend5" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 7" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass6"/>
+                    <toggle param="bypass6"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack6" />
+                    <knob param="attack6" />
+                    <value param="attack6" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release6" />
+                    <knob param="release6" />
+                    <value param="release6" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee6" />
+                    <knob param="knee6" />
+                    <value param="knee6" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range6" />
+                    <knob param="range6" />
+                    <value param="range6" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection6"/>
+                    <combo param="detection6"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo6"/>
+                    <toggle param="solo6"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio6" />
+                    <knob param="ratio6" />
+                    <value param="ratio6" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold6" />
+                    <knob param="threshold6"/>
+                    <value param="threshold6" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup6" />
+                    <knob param="makeup6" />
+                    <value param="makeup6" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay6" />
+                    <knob param="delay6" />
+                    <value param="delay6" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link6"/>
+                    <combo param="stereo_link6"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive6"/>
+                    <knob param="drive6"/>
+                    <value param="drive6" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend6"/>
+                    <knob param="blend6"/>
+                    <value param="blend6" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 8" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass7"/>
+                    <toggle param="bypass7"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack7" />
+                    <knob param="attack7" />
+                    <value param="attack7" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release7" />
+                    <knob param="release7" />
+                    <value param="release7" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee7" />
+                    <knob param="knee7" />
+                    <value param="knee7" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range7" />
+                    <knob param="range7" />
+                    <value param="range7" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection7"/>
+                    <combo param="detection7"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo7"/>
+                    <toggle param="solo7"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio7" />
+                    <knob param="ratio7" />
+                    <value param="ratio7" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold7" />
+                    <knob param="threshold7"/>
+                    <value param="threshold7" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup7" />
+                    <knob param="makeup7" />
+                    <value param="makeup7" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay7" />
+                    <knob param="delay7" />
+                    <value param="delay7" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link7"/>
+                    <combo param="stereo_link7"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive7"/>
+                    <knob param="drive7"/>
+                    <value param="drive7" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend7"/>
+                    <knob param="blend7"/>
+                    <value param="blend7" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 9" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass8"/>
+                    <toggle param="bypass8"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack8" />
+                    <knob param="attack8" />
+                    <value param="attack8" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release8" />
+                    <knob param="release8" />
+                    <value param="release8" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee8" />
+                    <knob param="knee8" />
+                    <value param="knee8" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range8" />
+                    <knob param="range8" />
+                    <value param="range8" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection8"/>
+                    <combo param="detection8"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo8"/>
+                    <toggle param="solo8"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio8" />
+                    <knob param="ratio8" />
+                    <value param="ratio8" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold8" />
+                    <knob param="threshold8"/>
+                    <value param="threshold8" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup8" />
+                    <knob param="makeup8" />
+                    <value param="makeup8" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay8" />
+                    <knob param="delay8" />
+                    <value param="delay8" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link8"/>
+                    <combo param="stereo_link8"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive8"/>
+                    <knob param="drive8"/>
+                    <value param="drive8" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend8"/>
+                    <knob param="blend8"/>
+                    <value param="blend8" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 10" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass9"/>
+                    <toggle param="bypass9"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack9" />
+                    <knob param="attack9" />
+                    <value param="attack9" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release9" />
+                    <knob param="release9" />
+                    <value param="release9" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee9" />
+                    <knob param="knee9" />
+                    <value param="knee9" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range9" />
+                    <knob param="range9" />
+                    <value param="range9" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection9"/>
+                    <combo param="detection9"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo9"/>
+                    <toggle param="solo9"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio9" />
+                    <knob param="ratio9" />
+                    <value param="ratio9" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold9" />
+                    <knob param="threshold9"/>
+                    <value param="threshold9" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup9" />
+                    <knob param="makeup9" />
+                    <value param="makeup9" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay9" />
+                    <knob param="delay9" />
+                    <value param="delay9" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link9"/>
+                    <combo param="stereo_link9"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive9"/>
+                    <knob param="drive9"/>
+                    <value param="drive9" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend9"/>
+                    <knob param="blend9"/>
+                    <value param="blend9" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 11" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass10"/>
+                    <toggle param="bypass10"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack10" />
+                    <knob param="attack10" />
+                    <value param="attack10" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release10" />
+                    <knob param="release10" />
+                    <value param="release10" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee10" />
+                    <knob param="knee10" />
+                    <value param="knee10" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range10" />
+                    <knob param="range10" />
+                    <value param="range10" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection10"/>
+                    <combo param="detection10"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo10"/>
+                    <toggle param="solo10"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio10" />
+                    <knob param="ratio10" />
+                    <value param="ratio10" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold10" />
+                    <knob param="threshold10"/>
+                    <value param="threshold10" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup10" />
+                    <knob param="makeup10" />
+                    <value param="makeup10" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay10" />
+                    <knob param="delay10" />
+                    <value param="delay10" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link10"/>
+                    <combo param="stereo_link10"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive10"/>
+                    <knob param="drive10"/>
+                    <value param="drive10" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend10"/>
+                    <knob param="blend10"/>
+                    <value param="blend10" />
+                </vbox>
+            </table>
+        </hbox>
+
+        <hbox page="Band 12" homogeneous="1">
+            <table expand="1" rows="2" cols="7" homogeneous="1" >
+                <vbox expand="0" attach-x="0" attach-y="0">
+                    <label param="bypass11"/>
+                    <toggle param="bypass11"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="0">
+                    <label param="attack11" />
+                    <knob param="attack11" />
+                    <value param="attack11" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="0">
+                    <label param="release11" />
+                    <knob param="release11" />
+                    <value param="release11" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="0">
+                    <label param="knee11" />
+                    <knob param="knee11" />
+                    <value param="knee11" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="0">
+                    <label param="range11" />
+                    <knob param="range11" />
+                    <value param="range11" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="0">
+                    <label param="detection11"/>
+                    <combo param="detection11"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="0" attach-y="1">
+                    <label param="solo11"/>
+                    <toggle param="solo11"/>
+                    <label/>
+                </vbox>
+                <vbox expand="0" attach-x="1" attach-y="1">
+                    <label param="ratio11" />
+                    <knob param="ratio11" />
+                    <value param="ratio11" />
+                </vbox>
+                <vbox expand="0" attach-x="2" attach-y="1">
+                    <label param="threshold11" />
+                    <knob param="threshold11"/>
+                    <value param="threshold11" />
+                </vbox>
+                <vbox expand="0" attach-x="3" attach-y="1">
+                    <label param="makeup11" />
+                    <knob param="makeup11" />
+                    <value param="makeup11" />
+                </vbox>
+                <vbox expand="0" attach-x="4" attach-y="1">
+                    <label param="delay11" />
+                    <knob param="delay11" />
+                    <value param="delay11" />
+                </vbox>
+                <vbox expand="0" attach-x="5" attach-y="1">
+                    <label param="stereo_link11"/>
+                    <combo param="stereo_link11"/>
+                    <label/>
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="0">
+                    <label param="drive11"/>
+                    <knob param="drive11"/>
+                    <value param="drive11" />
+                </vbox>
+
+                <vbox expand="0" attach-x="6" attach-y="1">
+                    <label param="blend11"/>
+                    <knob param="blend11"/>
+                    <value param="blend11" />
+                </vbox>
+            </table>
+        </hbox>
+    </notebook>
+    
+    <hbox>
+        <frame label="Band 1">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo0" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="bypass0" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo0" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating0" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output0" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 2">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo1" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="bypass1" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo1" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating1" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output1" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 3">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo2" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="bypass2" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo2" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating2" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output2" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 4">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo3" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="bypass3" mode="0" attach-x="0" attach-y="0" expand-x="0" fill-x="0"/>
+                    <led param="solo3" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating3" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output3" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 5">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo4" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo4" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating4" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output4" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 6">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo5" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo5" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating5" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output5" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+    </hbox>
+    <hbox>
+        <frame label="Band 7">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo6" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo6" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating6" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output6" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 8">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo7" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo7" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating7" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output7" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 9">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo8" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo8" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating8" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output8" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 10">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo9" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo9" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating9" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output9" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 11">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo10" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo10" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating10" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output10" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+        <frame label="Band 12">
+            <vbox>
+                <if cond="directlink">
+                    <line-graph refresh="1" width="140" height="140" param="solo11" square="1"/>
+                </if>
+                <table cols="2" rows="2">
+                    <led param="solo11" mode="1" attach-x="0" attach-y="1" expand-x="0" fill-x="0"/>
+                    <vumeter param="gating11" position="2" mode="2" hold="1.5" falloff="2.5" attach-x="1" attach-y="0"/>
+                    <vumeter param="output11" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1"/>
+                </table>
+            </vbox>
+        </frame>
+    </hbox>
+    
+</vbox>    

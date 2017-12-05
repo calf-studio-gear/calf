@@ -106,7 +106,7 @@ public:
 
 class expander_audio_module {
 private:
-    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
+    float linSlopeL, linSlopeR, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
     float compressedKneeStop, adjKneeStart, range, thres, attack_coeff, release_coeff;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_gate;
     float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;
@@ -131,6 +131,43 @@ public:
     bool _get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool _get_layers(int index, int generation, unsigned int &layers) const;
 };
+
+/**********************************************************************
+ * SOFT by Damien Zammit
+**********************************************************************/
+
+class soft_audio_module
+{
+private:
+    float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
+    float width, attack_coeff, release_coeff, thresdb;
+    float attack, release, threshold, ratio, invratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
+    float old_threshold, old_ratio, old_invratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    int mode, old_mode;
+    mutable bool redraw_graph;
+    float old_y1, old_y1_2, old_yl, old_yl_2, old_detected;
+    uint32_t srate;
+    bool is_active;
+    inline float output_level(float inputt) const;
+    inline float output_gain(float inputt) const;
+public:
+    soft_audio_module();
+    void set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu, int stl, int mod);
+    void update_curve();
+    void process(float &left, float &right, const float *det_left = NULL, const float *det_right = NULL);
+    void activate();
+    void deactivate();
+    int id;
+    void set_sample_rate(uint32_t sr);
+    float get_output_level();
+    float get_comp_level();
+    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+
 
 /**********************************************************************
  * COMPRESSOR by Thor Harald Johanssen
@@ -220,7 +257,7 @@ private:
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;
-    int mode, page, bypass_;
+    int mode_set[12], page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -387,7 +424,7 @@ private:
     expander_audio_module gate[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;
-    int mode, page, bypass_;
+    int mode_set[12], page, bypass_;
     mutable int redraw;
     vumeters meters;
 public:
@@ -405,6 +442,260 @@ public:
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
 };
+
+/**********************************************************************
+ * MULTIBAND SOFT by Adriano Moura
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+class multibandsoft_audio_module: public audio_module<MBSBaseClass>, public frequency_response_line_graph {
+public:
+    typedef audio_module<MBSBaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+private:
+    //typedef multibandsoft_audio_module AM;
+    //static const int strips = 12;
+    bool solo[strips];
+    int strip_mode[strips]; // 0 = comp 1 = soft 2 = gate
+    static const int intch = 2; // internal channels
+    float xout[strips*intch], xin[intch];
+    bool no_solo;
+    float meter_inL, meter_inR;
+    expander_audio_module gate[strips];
+    soft_audio_module mcompressor[strips];
+    dsp::crossover crossover;
+    int page, fast, bypass_;
+    int mode_set[strips];
+    mutable int redraw;
+    vumeters meters;
+    dsp::tap_distortion dist[strips][intch];
+public:
+    uint32_t srate;
+    bool is_active;
+    multibandsoft_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = AM::param_attack2 - AM::param_attack1 };
+    float * buffer;
+    unsigned int pos;
+    unsigned int buffer_size;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+
+    typedef struct {
+        int mode;
+        const expander_audio_module *exp_am;
+        const soft_audio_module *cmp_am;
+    } multi_am_t;
+
+    void get_strip_by_param_index(int index, multi_am_t *multi_am) const;
+
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+typedef multibandsoft_audio_module<multibandsoft6band_metadata, 6> multibandsoft6band_audio_module;
+typedef multibandsoft_audio_module<multibandsoft12band_metadata, 12> multibandsoft12band_audio_module;
+
+
+/**********************************************************************
+ * SIDECHAIN MULTIBAND SOFT by Adriano Moura
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+class scmultibandsoft_audio_module: public audio_module<MBSBaseClass>, public frequency_response_line_graph {
+public:
+    typedef audio_module<MBSBaseClass> AM;
+    using AM::ins;
+    using AM::outs;
+    using AM::params;
+    using AM::in_count;
+    using AM::out_count;
+    using AM::param_count;
+private:
+    //typedef scmultibandsoft_audio_module AM;
+    //static const int strips = 12;
+    bool solo[strips];
+    int strip_mode[strips]; // 0 = comp 1 = soft 2 = gate
+    static const int intch = 2; // internal channels
+    static const int scch = intch; // sidechain channels
+    float xin[intch], xsc[scch];
+    bool no_solo;
+    float meter_inL, meter_inR;
+    expander_audio_module gate[strips];
+    soft_audio_module mcompressor[strips];
+    dsp::crossover crossover;
+    dsp::crossover sccrossover;
+    int page, fast, bypass_;
+    int mode_set[strips], scmode_set[strips];
+    mutable int redraw;
+    vumeters meters;
+    dsp::tap_distortion dist[strips][intch];
+public:
+    uint32_t srate;
+    bool is_active;
+    scmultibandsoft_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = AM::param_attack2 - AM::param_attack1 };
+    float * buffer;
+    unsigned int pos;
+    unsigned int buffer_size;
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+
+    typedef struct {
+        int mode;
+        const expander_audio_module *exp_am;
+        const soft_audio_module *cmp_am;
+    } multi_am_t;
+
+    void get_strip_by_param_index(int index, multi_am_t *multi_am) const;
+
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+};
+
+typedef scmultibandsoft_audio_module<scmultibandsoft6band_metadata, 6> scmultibandsoft6band_audio_module;
+
+
+/**********************************************************************
+ * ELASTIC EQUALIZER by Adriano Moura
+**********************************************************************/
+
+class elasticeq_audio_module: public audio_module<elasticeq_metadata>, public frequency_response_line_graph {
+private:
+    typedef elasticeq_audio_module AM;
+    enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_band = AM::param_p2_active - AM::param_p1_active };
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    static const int intch = 2; // internal channels
+    float xout[intch], xin[intch];
+    float meter_inL, meter_inR;
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    expander_audio_module gate;
+    int keep_gliding;
+    mutable int last_peak;
+    int bypass_, indiv_old, show_effect;
+    vumeters meters;
+public:
+    typedef std::complex<double> cfloat;
+    mutable volatile int last_generation, last_calculated_generation, redraw_individuals;
+    uint32_t srate;
+    float glevel;
+    bool is_active;
+    elasticeq_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    float freq_gain(int index, double freq) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+    inline std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
+};
+
+
+/**********************************************************************
+ * MULTISTRIP ELASTIC EQUALIZER by Adriano Moura
+**********************************************************************/
+
+class mstripelasticeq_audio_module: public audio_module<mstripelasticeq_metadata>, public frequency_response_line_graph {
+private:
+    typedef mstripelasticeq_audio_module AM;
+    static const int strips = 7;
+    enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_peak = AM::param_p02_active - AM::param_p01_active };
+    static const int peaks_per_strip = PeakBands / strips;
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    static const int intch = 2; // internal channels
+    float xout[intch], xin[intch*strips], buff[intch*strips];
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    expander_audio_module gate[strips];
+    int keep_gliding;
+    mutable int last_peak;
+    int bypass_, indiv_old, selected_only, page, show_effect;
+    vumeters meters;
+public:
+    typedef std::complex<double> cfloat;
+    mutable volatile int last_generation, last_calculated_generation, redraw_individuals;
+    uint32_t srate;
+    float glevel[strips];
+    bool is_active;
+    mstripelasticeq_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = param_attack2 - param_attack1 };
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    const expander_audio_module *get_strip_by_param_index(int index) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    float freq_gain(int index, double freq) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+    inline std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
+};
+
+
+/**********************************************************************
+ * SIDECHAIN MULTISTRIP ELASTIC EQUALIZER by Adriano Moura
+**********************************************************************/
+
+class scmstripelasticeq_audio_module: public audio_module<scmstripelasticeq_metadata>, public frequency_response_line_graph {
+private:
+    typedef scmstripelasticeq_audio_module AM;
+    static const int strips = 7;
+    enum { graph_param_count = last_graph_param - first_graph_param + 1, params_per_peak = AM::param_p02_active - AM::param_p01_active };
+    static const int peaks_per_strip = PeakBands / strips;
+    float p_level_old[PeakBands], p_freq_old[PeakBands], p_q_old[PeakBands];
+    mutable float old_params_for_graph[graph_param_count];
+    static const int intch = 2; // internal channels
+    static const int scch = intch * strips; // sidechain channels
+    float buff[intch*strips];
+    dsp::biquad_d2 pL[PeakBands], pR[PeakBands];
+    expander_audio_module gate[strips];
+    int keep_gliding;
+    mutable int last_peak;
+    int bypass_, indiv_old, selected_only, page, show_effect;
+    vumeters meters;
+public:
+    typedef std::complex<double> cfloat;
+    mutable volatile int last_generation, last_calculated_generation, redraw_individuals;
+    uint32_t srate;
+    float glevel[strips];
+    bool is_active;
+    scmstripelasticeq_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    enum { params_per_band = param_attack2 - param_attack1 };
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
+    const expander_audio_module *get_strip_by_param_index(int index) const;
+    virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const;
+    virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    float freq_gain(int index, double freq) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
+    inline std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
+};
+
 
 /**********************************************************************
  * TRANSIENT DESIGNER by Christian Holschuh and Markus Schmidt

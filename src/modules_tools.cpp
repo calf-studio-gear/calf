@@ -566,7 +566,6 @@ bool analyzer_audio_module::get_layers(int index, int generation, unsigned int &
 multibandenhancer_audio_module::multibandenhancer_audio_module()
 {
     srate               = 0;
-    _mode               = -1;
     channels            = 2;
     is_active           = false;
     ppos                = 0;
@@ -614,12 +613,8 @@ void multibandenhancer_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    int m = *params[param_mode];
-    if (m != _mode) {
-        _mode = *params[param_mode];
-    }
-    
-    crossover.set_mode(_mode + 1);
+    mode_set[0] = *params[param_mode] + 1;
+    crossover.set_mode(mode_set);
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);

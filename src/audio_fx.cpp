@@ -1045,16 +1045,15 @@ void transients::process(float *in, float s) {
 //////////////////////////////////////////////////////////////////
 
 crossover::crossover() {
-    bands     = -1;
-    mode      = -1;
-    redraw_graph = 1;
+    bands        = -1;
+    redraw_graph =  1;
 }
 void crossover::set_sample_rate(uint32_t sr) {
     srate = sr;
 }
 void crossover::init(int c, int b, uint32_t sr) {
     channels = std::min(8, c);
-    bands    = std::min(8, b);
+    bands    = std::min(12, b);
     srate    = sr;
     for(int b = 0; b < bands; b ++) {
         // reset frequency settings
@@ -1079,17 +1078,24 @@ float crossover::set_filter(int b, float f, bool force) {
     if (freq[b] == f and !force)
         return freq[b];
     freq[b] = f;
+    int m = modes[b];
     float q;
-    switch (mode) {
+    switch (m) {
         case 0:
-        default:
+        default: // LR2
             q = 0.5;
             break;
-        case 1:
+        case 1:  // LR4
             q = 0.7071068123730965;
             break;
-        case 2:
+        case 2:  // LR8
             q = 0.54;
+            break;
+        case 3:  // LR10
+            q = 0.5;
+            break;
+        case 4:  // LR12
+            q = 0.52;
             break;
     }
     for (int c = 0; c < channels; c ++) {
@@ -1100,7 +1106,7 @@ float crossover::set_filter(int b, float f, bool force) {
             lp[c][b][0].copy_coeffs(lp[c-1][b][0]);
             hp[c][b][0].copy_coeffs(hp[c-1][b][0]);
         }
-        if (mode > 1) {
+        if (m == 2) {
             if (!c) {
                 lp[c][b][1].set_lp_rbj(freq[b], 1.34, (float)srate);
                 hp[c][b][1].set_hp_rbj(freq[b], 1.34, (float)srate);
@@ -1112,6 +1118,40 @@ float crossover::set_filter(int b, float f, bool force) {
             hp[c][b][2].copy_coeffs(hp[c][b][0]);
             lp[c][b][3].copy_coeffs(lp[c][b][1]);
             hp[c][b][3].copy_coeffs(hp[c][b][1]);
+        } else if (m == 3) {
+            if (!c) {
+                lp[c][b][1].set_lp_rbj(freq[b], 0.62, (float)srate);
+                hp[c][b][1].set_hp_rbj(freq[b], 0.62, (float)srate);
+                lp[c][b][2].set_lp_rbj(freq[b], 1.62, (float)srate);
+                hp[c][b][2].set_hp_rbj(freq[b], 1.62, (float)srate);
+            } else {
+                lp[c][b][1].copy_coeffs(lp[c-1][b][1]);
+                hp[c][b][1].copy_coeffs(hp[c-1][b][1]);
+                lp[c][b][2].copy_coeffs(lp[c-1][b][2]);
+                hp[c][b][2].copy_coeffs(hp[c-1][b][2]);
+            }
+            lp[c][b][3].copy_coeffs(lp[c][b][1]);
+            hp[c][b][3].copy_coeffs(hp[c][b][1]);
+            lp[c][b][4].copy_coeffs(lp[c][b][2]);
+            hp[c][b][4].copy_coeffs(hp[c][b][2]);
+        } else if (m == 4) {
+            if (!c) {
+                lp[c][b][1].set_lp_rbj(freq[b], 0.71, (float)srate);
+                hp[c][b][1].set_hp_rbj(freq[b], 0.71, (float)srate);
+                lp[c][b][2].set_lp_rbj(freq[b], 1.93, (float)srate);
+                hp[c][b][2].set_hp_rbj(freq[b], 1.93, (float)srate);
+            } else {
+                lp[c][b][1].copy_coeffs(lp[c-1][b][1]);
+                hp[c][b][1].copy_coeffs(hp[c-1][b][1]);
+                lp[c][b][2].copy_coeffs(lp[c-1][b][2]);
+                hp[c][b][2].copy_coeffs(hp[c-1][b][2]);
+            }
+            lp[c][b][3].copy_coeffs(lp[c][b][0]);
+            hp[c][b][3].copy_coeffs(hp[c][b][0]);
+            lp[c][b][4].copy_coeffs(lp[c][b][1]);
+            hp[c][b][4].copy_coeffs(hp[c][b][1]);
+            lp[c][b][5].copy_coeffs(lp[c][b][2]);
+            hp[c][b][5].copy_coeffs(hp[c][b][2]);
         } else {
             lp[c][b][1].copy_coeffs(lp[c][b][0]);
             hp[c][b][1].copy_coeffs(hp[c][b][0]);
@@ -1120,14 +1160,20 @@ float crossover::set_filter(int b, float f, bool force) {
     redraw_graph = std::min(2, redraw_graph + 1);
     return freq[b];
 }
-void crossover::set_mode(int m) {
-    if(mode == m)
-        return;
-    mode = m;
+void crossover::set_mode(int mset[12]) {
+    int redraw=0, modex=0;
+
     for(int i = 0; i < bands - 1; i ++) {
-        set_filter(i, freq[i], true);
+        if ( mset[i] > 0 )
+            modex = mset[i];
+        if ( modes[i] != modex ) {
+            modes[i] = modex;
+            set_filter(i, freq[i], true);
+            redraw = 1;
+        }
     }
-    redraw_graph = std::min(2, redraw_graph + 1);
+    if (redraw)
+        redraw_graph = std::min(2, redraw_graph + 1);
 }
 void crossover::set_active(int b, bool a) {
     if (active[b] == a)
@@ -1145,14 +1191,16 @@ void crossover::process(float *data) {
     for (int c = 0; c < channels; c++) {
         for(int b = 0; b < bands; b ++) {
             out[c][b] = data[c];
-            for (int f = 0; f < get_filter_count(); f++){
-                if(b + 1 < bands) {
+            if (b + 1 < bands) {
+                for (int f = 0; f < get_filter_count(modes[b]); f++){
                     out[c][b] = lp[c][b][f].process(out[c][b]);
                     lp[c][b][f].sanitize();
                 }
-                if(b - 1 >= 0) {
-                    out[c][b] = hp[c][b - 1][f].process(out[c][b]);
-                    hp[c][b - 1][f].sanitize();
+            }
+            if (b - 1 >= 0) {
+                for (int f = 0; f < get_filter_count(modes[b-1]); f++){
+                        out[c][b] = hp[c][b - 1][f].process(out[c][b]);
+                        hp[c][b - 1][f].sanitize();
                 }
             }
             out[c][b] *= level[b];
@@ -1173,12 +1221,12 @@ bool crossover::get_graph(int subindex, int phase, float *data, int points, cair
     for (int i = 0; i < points; i++) {
         ret = 1.f;
         freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
-        for(int f = 0; f < get_filter_count(); f ++) {
-            if(subindex < bands -1)
+        if (subindex + 1 < bands)
+            for (int f = 0; f < get_filter_count(modes[subindex]); f ++)
                 ret *= lp[0][subindex][f].freq_gain(freq, (float)srate);
-            if(subindex > 0)
-                ret *= hp[0][subindex - 1][f].freq_gain(freq, (float)srate);
-        }
+        if (subindex - 1 >= 0)
+            for (int f = 0; f < get_filter_count(modes[subindex -1]); f ++)
+                ret *= hp[0][subindex-1][f].freq_gain(freq, (float)srate);
         ret *= level[subindex];
         context->set_source_rgba(0.15, 0.2, 0.0, !active[subindex] ? 0.3 : 0.8);
         data[i] = dB_grid(ret);
@@ -1191,9 +1239,9 @@ bool crossover::get_layers(int index, int generation, unsigned int &layers) cons
     return redraw_graph or !generation;
 }
 
-int crossover::get_filter_count() const
+int crossover::get_filter_count(int m) const
 {
-    switch (mode) {
+    switch (m) {
         case 0:
         default:
             return 1;
@@ -1201,6 +1249,10 @@ int crossover::get_filter_count() const
             return 2;
         case 2:
             return 4;
+        case 3:
+            return 5;
+        case 4:
+            return 6;
     }
 }
 

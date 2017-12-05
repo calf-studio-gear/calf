@@ -375,10 +375,14 @@ void make_ttl(string path_prefix, const string *data_dir)
 
         string ports = "";
         int pn = 0;
-        const char *in_symbols[] = { "in_l", "in_r", "sidechain", "sidechain2" };
-        const char *in_names[] = { "In L", "In R", "Sidechain", "Sidechain 2" };
-        const char *out_symbols[] = { "out_l", "out_r", "out_l_2", "out_r_2", "out_l_3", "out_r_3", "out_l_4", "out_r_4" };
-        const char *out_names[] = { "Out L", "Out R", "Out L 2", "Out R 2", "Out L 3", "Out R 3", "Out L 4", "Out R 4" };
+        const char *in_symbols[] = { "in_l", "in_r", "in_l_2", "in_r_2", "in_l_3", "in_r_3",  "in_l_4", "in_r_4",  "in_l_5", "in_r_5", "in_l_6", "in_r_6", "in_l_7", "in_r_7",\
+                                     "in_l_8", "in_r_8", "in_l_9", "in_r_9", "in_l_10", "in_r_10", "in_l_11", "in_r_11", "in_l_12", "in_r_12", "in_l_13", "in_r_13", "in_l_14", "in_r_14" };
+        const char *in_names[] = { "In L", "In R", "In L 2", "In R 2", "In L 3", "In R 3", "In L 4", "In R 4", "In L 5", "In R 5",  "In L 6", "In R 6", "In L 7", "In R 7",\
+                                   "In L 8", "In R 8", "In L 9", "In R 9", "In L 10", "In R 10", "In L 11", "In R 11", "In L 12", "In R 12", "In L 13", "In R 13", "In L 14", "In R 14" };
+        const char *out_symbols[] = { "out_l", "out_r", "out_l_2", "out_r_2", "out_l_3", "out_r_3", "out_l_4", "out_r_4", "out_l_5", "out_r_5", "out_l_6", "out_r_6", "out_l_7", "out_r_7", \
+                                      "out_l_8", "out_r_8", "out_l_9", "out_r_9", "out_l_10", "out_r_10", "out_l_11", "out_r_11", "out_l_12", "out_r_12", "out_l_13", "out_r_13", "out_l_14", "out_r_14"};
+        const char *out_names[] = { "Out L", "Out R", "Out L 2", "Out R 2", "Out L 3", "Out R 3", "Out L 4", "Out R 4", "Out L 5", "Out R 5", "Out L 6", "Out R 6", "Out L 7", "Out R 7", \
+                                    "Out L 8", "Out R 8", "Out L 9", "Out R 9", "Out L 10", "Out R 10", "Out L 11", "Out R 11", "Out L 12", "Out R 12", "Out L 13", "Out R 13", "Out L 14", "Out R 14"};
         for (int i = 0; i < pi->get_input_count(); i++)
             if(i <= pi->get_input_count() - pi->get_inputs_optional() - 1 && !(i == 1 && pi->get_simulate_stereo_input()))
                 add_port(ports, in_symbols[i], in_names[i], "Input", pn++);

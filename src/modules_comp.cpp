@@ -524,7 +524,8 @@ expander_audio_module::expander_audio_module()
     old_mute      = 0.f;
     old_trigger   = 0.f;
     old_stereo_link = 0.f;
-    linSlope      = 0.f;
+    linSlopeL     = 0.f;
+    linSlopeR     = 0.f;
     linKneeStop   = 0.f;
     redraw_graph  = true;
 }
@@ -575,22 +576,52 @@ void expander_audio_module::process(float &left, float &right, const float *det_
     if(bypass < 0.5f) {
         // this routine is mainly copied from Damien's expander module based on Thor's compressor
         bool rms = (detection == 0);
-        bool average = (stereo_link == 0);
-        float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
-        if(rms) absample *= absample;
+        float gainL = 1.f;
+        float gainR = 1.f;
 
-        dsp::sanitize(linSlope);
+        if (stereo_link >= 0) {
+            bool average = (stereo_link == 0);
+            float absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
+            if(rms) absample *= absample;
 
-        linSlope += (absample - linSlope) * (absample > linSlope ? attack_coeff : release_coeff);
-        float gain = 1.f;
-        if(linSlope > 0.f) {
-            gain = output_gain(linSlope, rms);
+            dsp::sanitize(linSlopeL);
+
+            linSlopeL += (absample - linSlopeL) * (absample > linSlopeL ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainL * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
+        } else {
+            float absampleL = fabs(*det_left);
+            float absampleR = fabs(*det_right);
+            if (rms) {
+                absampleL *= absampleL;
+                absampleR *= absampleR;
+            }
+
+            dsp::sanitize(linSlopeL);
+            dsp::sanitize(linSlopeR);
+
+            linSlopeL += (absampleL - linSlopeL) * (absampleL > linSlopeL ? attack_coeff : release_coeff);
+            linSlopeR += (absampleR - linSlopeR) * (absampleR > linSlopeR ? attack_coeff : release_coeff);
+            if(linSlopeL > 0.f) {
+                gainL = output_gain(linSlopeL, rms);
+            }
+            if(linSlopeR > 0.f) {
+                gainR = output_gain(linSlopeR, rms);
+            }
+
+            left *= gainL * makeup;
+            right *= gainR * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_gate = gainL;
+            detected = linSlopeL;
         }
-        left *= gain * makeup;
-        right *= gain * makeup;
-        meter_out = std::max(fabs(left), fabs(right));
-        meter_gate = gain;
-        detected = linSlope;
     }
 }
 
@@ -725,6 +756,300 @@ bool expander_audio_module::_get_gridline(int subindex, float &pos, bool &vertic
 }
 
 bool expander_audio_module::_get_layers(int index, int generation, unsigned int &layers) const
+{
+    layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
+    return true;
+}
+
+
+/**********************************************************************
+ * SOFT by Damien Zammit
+**********************************************************************/
+
+soft_audio_module::soft_audio_module()
+{
+    is_active       = false;
+    srate           = 0;
+    old_threshold   = 0.f;
+    old_ratio       = 0.f;
+    old_knee        = 0.f;
+    old_makeup      = 0.f;
+    old_detection   = 0.f;
+    old_bypass      = 0.f;
+    old_mute        = 0.f;
+    linSlope        = 0.f;
+    attack          = -1;
+    release         = -1;
+    detection       = -1;
+    stereo_link     = -1;
+    threshold       = -1;
+    ratio           = -1;
+    knee            = -1;
+    makeup          = -1;
+    bypass          = -1;
+    mute            = -1;
+    old_y1          = 0.f;
+    old_yl          = 0.f;
+    old_detected    = 0.f;
+    redraw_graph    = true;
+}
+
+void soft_audio_module::activate()
+{
+    is_active = true;
+    float l;
+    l = 0.f;
+    float byp = bypass;
+    bypass = 0.0;
+    process(l, l, 0, 0);
+    bypass = byp;
+}
+
+void soft_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void soft_audio_module::update_curve()
+{
+    width = (knee-0.99f)*8.f;
+    attack_coeff = exp(-1000.f/(attack * srate));
+    release_coeff = exp(-1000.f/(release * srate));
+    thresdb = 20.f*log10(threshold);
+}
+
+void soft_audio_module::process(float &left, float &right, const float *det_left, const float *det_right)
+{
+    if(!det_left) {
+        det_left = &left;
+    }
+    if(!det_right) {
+        det_right = &right;
+    }
+    if(bypass < 0.5f) {
+        float absample;
+        float gainL = 1.f, gainR = 1.f;
+
+        if (stereo_link >= 0) {
+            bool average = (stereo_link == 0);
+            absample = average ? (fabs(*det_left) + fabs(*det_right)) * 0.5f : std::max(fabs(*det_left), fabs(*det_right));
+
+            float xg, xl, yg, yl, y1;
+            yg=0.f;
+            xg = (absample==0.f) ? -160.f : 20.f*log10(absample);
+
+            if (2.f*(xg-thresdb)<-width) {
+                yg = xg;
+            }
+            if (2.f*fabs(xg-thresdb)<=width) {
+                yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*(xg-thresdb)>width) {
+                yg = thresdb + (xg-thresdb)*invratio;
+            }
+                
+            xl = xg - yg;
+                
+            y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
+            yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+            
+            gainL = exp(-yl/20.f*log(10.f));
+
+            left *= gainL * makeup;
+            right *= gainL * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_comp = gainL;
+            detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
+            old_detected = detected;
+
+            old_yl = yl;
+            old_y1 = y1;
+        } else {
+            float xg, xl, yg, yl, y1;
+            float xg_2, xl_2, yg_2, yl_2, y1_2;
+            yg=0.f; yg_2=0.f;
+            xg = (*det_left==0.f) ? -160.f : 20.f*log10(fabs(*det_left));
+            xg_2 = (*det_right==0.f) ? -160.f : 20.f*log10(fabs(*det_right));
+
+            if (2.f*(xg-thresdb)<-width) {
+                yg = xg;
+            }
+            if (2.f*(xg_2-thresdb)<-width) {
+                yg_2 = xg_2;
+            }
+            if (2.f*fabs(xg-thresdb)<=width) {
+                yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*fabs(xg_2-thresdb)<=width) {
+                yg_2 = xg_2 + (invratio-1.f)*(xg_2-thresdb+width/2.f)*(xg_2-thresdb+width/2.f)/(2.f*width);
+            }
+            if (2.f*(xg-thresdb)>width) {
+                yg = thresdb + (xg-thresdb)*invratio;
+            }
+            if (2.f*(xg_2-thresdb)>width) {
+                yg_2 = thresdb + (xg_2-thresdb)*invratio;
+            }
+                
+            xl = xg - yg;
+            xl_2 = xg_2 - yg_2;
+                
+            y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
+            y1_2 = std::max(xl_2, release_coeff*old_y1_2+(1.f-release_coeff)*xl_2);
+            yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+            yl_2 = attack_coeff*old_yl_2+(1.f-attack_coeff)*y1_2;
+            
+            gainL = exp(-yl/20.f*log(10.f));
+            gainR = exp(-yl_2/20.f*log(10.f));
+
+            left *= gainL * makeup;
+            right *= gainR * makeup;
+            meter_out = std::max(fabs(left), fabs(right));
+            meter_comp = gainL;
+            detected = ( exp(yg/20.f*log(10.f)) + old_detected)/2.f;
+            old_detected = detected;
+
+            old_yl = yl;
+            old_yl_2 = yl_2;
+            old_y1 = y1;
+            old_y1_2 = y1_2;
+        }
+    }
+}
+
+float soft_audio_module::output_level(float inputt) const {
+    return (output_gain(inputt) * makeup);
+}
+
+float soft_audio_module::output_gain(float inputt) const {
+	float xg, yg;
+
+	yg=0.f;
+	xg = (inputt==0.f) ? -160.f : 20.f*log10(fabs(inputt));
+
+	if (2.f*(xg-thresdb)<-width) {
+		yg = xg;
+	}
+	if (2.f*fabs(xg-thresdb)<=width) {
+		yg = xg + (invratio-1.f)*(xg-thresdb+width/2.f)*(xg-thresdb+width/2.f)/(2.f*width);
+	}
+	if (2.f*(xg-thresdb)>width) {
+		yg = thresdb + (xg-thresdb)*invratio;
+	}
+    
+    return(exp(yg/20.f*log(10.f)));
+}
+
+void soft_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+}
+void soft_audio_module::set_params(float att, float rel, float thr, float rat, float kn, float mak, float byp, float mu, int stl, int mod)
+{
+    // set all params
+    attack          = att;
+    release         = rel;
+    threshold       = thr;
+    ratio           = rat;
+    knee            = kn;
+    makeup          = mak;
+    bypass          = byp;
+    mute            = mu;
+    mode            = mod;
+    stereo_link     = stl;
+
+    if (mode == 0) {
+        invratio = (1.f/ratio);
+    } else {
+        invratio = ratio;
+    }
+
+    if(mute > 0.f) {
+        meter_out  = 0.f;
+        meter_comp = 1.f;
+    }
+    if (fabs(threshold-old_threshold) + fabs(ratio - old_ratio) + fabs(knee - old_knee) + fabs(makeup - old_makeup) + fabs(detection - old_detection) + fabs(bypass - old_bypass) + fabs(mute - old_mute) + fabs(stereo_link - old_stereo_link) + fabs(mode - old_mode) > 0.000001f) {
+        old_threshold   = threshold;
+        old_ratio       = ratio;
+        old_knee        = knee;
+        old_makeup      = makeup;
+        old_detection   = detection;
+        old_bypass      = bypass;
+        old_mute        = mute;
+        old_stereo_link = stereo_link;
+        old_mode        = mode;
+        redraw_graph    = true;
+    }
+}
+float soft_audio_module::get_output_level() {
+    // returns output level (max(left, right))
+    return meter_out;
+}
+float soft_audio_module::get_comp_level() {
+    // returns amount of compression
+    return meter_comp;
+}
+
+bool soft_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+{
+    redraw_graph = false;
+    if (!is_active or subindex > 1)
+        return false;
+    
+    for (int i = 0; i < points; i++)
+    {
+        float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
+        if (subindex == 0) {
+            if (i == 0 or i >= points - 1)
+                data[i] = dB_grid(input);
+            else
+                data[i] = INFINITY;
+        } else {
+            float output = output_level(input);
+            data[i] = dB_grid(output);
+        }
+    }
+    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+    else {
+        context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    if (!subindex)
+        context->set_line_width(1.);
+    return true;
+}
+
+bool soft_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
+        return false;
+        
+    bool rms = (detection == 0);
+    float det = rms ? sqrt(detected) : detected;
+    x = 0.5 + 0.5 * dB_grid(det);
+    y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+    return true;
+}
+
+bool soft_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    bool tmp;
+    vertical = (subindex & 1) != 0;
+    bool result = get_freq_gridline(subindex >> 1, pos, tmp, legend, context, false);
+    if (result && vertical) {
+        if ((subindex & 4) && !legend.empty()) {
+            legend = "";
+        }
+        else {
+            size_t pos = legend.find(" dB");
+            if (pos != std::string::npos)
+                legend.erase(pos);
+        }
+        pos = 0.5 + 0.5 * pos;
+    }
+    return result;
+}
+
+bool soft_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
@@ -1228,7 +1553,6 @@ multibandcompressor_audio_module::multibandcompressor_audio_module()
 {
     is_active = false;
     srate      = 0;
-    mode       = 0;
     redraw     = 0;
     page       = 0;
     bypass_    = 0;
@@ -1268,12 +1592,6 @@ void multibandcompressor_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    
-    int m = *params[param_mode];
-    if (m != mode) {
-        mode = *params[param_mode];
-    }
-    
     int p = (int)*params[param_notebook];
     if (p != page) {
         page = p;
@@ -1286,7 +1604,8 @@ void multibandcompressor_audio_module::params_changed()
         bypass_ = b;
     }
     
-    crossover.set_mode(mode + 1);
+    mode_set[0] = *params[param_mode] + 1;
+    crossover.set_mode(mode_set);
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);
@@ -2241,7 +2560,6 @@ multibandgate_audio_module::multibandgate_audio_module()
 {
     is_active = false;
     srate = 0;
-    mode       = 0;
     redraw     = 0;
     page       = 0;
     bypass_    = 0;
@@ -2281,11 +2599,6 @@ void multibandgate_audio_module::params_changed()
             *params[param_solo2] > 0.f ||
             *params[param_solo3] > 0.f) ? false : true;
 
-    int m = *params[param_mode];
-    if (m != mode) {
-        mode = *params[param_mode];
-    }
-    
     int p = (int)*params[param_notebook];
     if (p != page) {
         page = p;
@@ -2298,7 +2611,8 @@ void multibandgate_audio_module::params_changed()
         bypass_ = b;
     }
     
-    crossover.set_mode(mode + 1);
+    mode_set[0] = *params[param_mode] + 1;
+    crossover.set_mode(mode_set);
     crossover.set_filter(0, *params[param_freq0]);
     crossover.set_filter(1, *params[param_freq1]);
     crossover.set_filter(2, *params[param_freq2]);
@@ -2474,6 +2788,1999 @@ bool multibandgate_audio_module::get_layers(int index, int generation, unsigned 
         r = true;
     }
     return r;
+}
+
+
+/**********************************************************************
+ * MULTIBAND SOFT by Adriano Moura and Markus Schmidt
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+multibandsoft_audio_module<MBSBaseClass, strips>::multibandsoft_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    redraw     = 0;
+    page       = 0;
+    fast       = 0;
+    bypass_    = 0;
+    crossover.init(2, strips, 44100);
+}
+
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+    // activate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+        mcompressor[j].activate();
+        mcompressor[j].id = j;
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].activate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::deactivate()
+{
+    is_active = false;
+    // deactivate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+        mcompressor[j].deactivate();
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].deactivate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::params_changed()
+{
+    bool s=0;
+    for (int i=0; i < strips; ++i) {
+        // determine mute/solo states
+        solo[i] = *params[AM::param_solo0 + params_per_band * i] > 0.f ? true : false;
+        s |= *params[AM::param_solo0 + params_per_band * i] > 0.f;
+    }
+    no_solo = s ? false : true;
+
+    int f = *params[AM::param_fast];
+    if (f != fast) {
+        fast = *params[AM::param_fast];
+    }
+    int p = (int)*params[AM::param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+
+    int b=0;
+    for (int i=0; i < strips; ++i) {
+        b += (int)*params[AM::param_bypass0 + params_per_band * i];
+    }
+    if (b != bypass_) {
+        redraw = strips * 2 + strips;
+        bypass_ = b;
+    }
+    
+    for (int i=0; i < strips-1; ++i) {
+        mode_set[i] = *params[AM::param_mode0 + params_per_band * i] + 1;
+    }
+    crossover.set_mode(mode_set);
+    for (int i=0; i < strips-1; ++i) {
+        crossover.set_filter(i, *params[AM::param_freq0 + i]); // freq is not declared on each band
+    }
+   
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_detection0 + j], \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_range0 + j]);
+
+        mcompressor[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_strip_mode0 + j]);
+
+        for (int k = 0; k < intch; k ++)
+            dist[i][k].set_params(*params[AM::param_blend0 + j],
+                                  *params[AM::param_drive0 + j]);
+
+        strip_mode[i] = *params[AM::param_strip_mode0 + j];
+
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    // set srate of all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+        mcompressor[j].set_sample_rate(srate);
+        for (int k = 0; k < intch; k ++)
+            dist[j][k].set_sample_rate(srate);
+    }
+    // set srate of crossover
+    crossover.set_sample_rate(srate);
+
+    // buffer size attack rate multiplied by channels and strips
+    buffer_size = (int)(srate / 10 * 2 * strips + 2 * strips); 
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    pos = 0;
+
+    int nmeters = 2 + 2*strips;
+    int meter[nmeters];
+    meter[0] = AM::param_meter_inL;
+    meter[1] = AM::param_meter_inR;
+    int clip[nmeters];
+    clip[0] = AM::param_clip_inL;
+    clip[1] = AM::param_clip_inR;
+
+    for (int i=2, j=0; i < nmeters; i+=2, ++j) {
+        meter[i] = AM::param_output0 + params_per_band * j;
+        meter[i+1] = AM::param_gating0 + params_per_band * j;
+        clip[i] = -1;
+        clip[i+1] = -1;
+    }
+    
+    meters.init(params, meter, clip, 2 + 2 * strips, srate);
+
+    for (int i = 0; i < strips; i++) {
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+uint32_t multibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    float left;
+    float right;
+    numsamples += offset;
+    if (fast) { // Ignores stuff like solo, bypass and meters, + a few optimizations!!
+        // process all strips
+        while(offset < numsamples) {
+            // process crossover, cycle trough samples, in level
+            xin[0] = ins[0][offset] * *params[AM::param_level_in];
+            xin[1] = ins[1][offset] * *params[AM::param_level_in];
+            crossover.process(xin);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i++) {
+                int off = i * params_per_band;
+                if (*params[AM::param_delay0 + off]) {
+                    int nbuf = 0;
+                    int ptr = i * 2;
+
+                    // calc position in delay buffer
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
+
+                    // fill delay buffer
+                    buffer[pos + ptr] = left;
+                    buffer[pos + ptr + 1] = right;
+                    
+                    // get value from delay buffer if neccessary
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                } else {
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                }
+            } 
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+    } else {
+        for (int i = 0; i < strips; i++) {
+            gate[i].update_curve();
+            mcompressor[i].update_curve();
+        }
+        float inL = 0.f;
+        float inR = 0.f;
+
+        // process all strips
+        while(offset < numsamples) {
+            // cycle through samples
+            inL = ins[0][offset];
+            inR = ins[1][offset];
+            // in level
+            inR *= *params[AM::param_level_in];
+            inL *= *params[AM::param_level_in];
+            // process crossover
+            xin[0] = inL;
+            xin[1] = inR;
+            crossover.process(xin);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i ++) {
+                int nbuf = 0;
+                int off = i * params_per_band;
+                int ptr = i * 2;
+
+                // calc position in delay buffer
+                if (*params[AM::param_delay0 + off]) {
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+                }
+
+                left = 0.f; right = 0.f;
+                if (solo[i] || no_solo) {
+                    // strip unmuted
+                    left = crossover.get_value(0, i);
+                    right = crossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right);
+                    } else {
+                        mcompressor[i].process(left, right);
+                    }
+                }
+                // fill delay buffer
+                buffer[pos + ptr] = left;
+                buffer[pos + ptr + 1] = right;
+                
+                // get value from delay buffer if neccessary
+                if (*params[AM::param_delay0 + off]) {
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+                }
+
+                outs[i*2][offset] = left;
+                outs[i*2 +1][offset] = right;
+            }
+
+            float values[2 + strips*2];
+            values[0] = inL;
+            values[1] = inR;
+            for (int i=0; i < strips; i++)  {
+                if (*params[AM::param_bypass0 + params_per_band * i]) {
+                    values[2 + i*2] = 0;
+                    values[3 + i*2] = 1;
+                } else {
+                    if ( strip_mode[i] == 2 ) {
+                        values[2 + i*2] = gate[i].get_output_level();
+                        values[3 + i*2] = gate[i].get_expander_level();
+                    } else {
+                        values[2 + i*2] = mcompressor[i].get_output_level();
+                        values[3 + i*2] = mcompressor[i].get_comp_level();
+                    }
+                }
+            }
+            meters.process(values);
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+
+        meters.fall(numsamples);
+    }
+
+    return outputs_mask;
+}
+
+template<class MBSBaseClass, int strips>
+void multibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index, multi_am_t *multi_am) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (AM::param_solo0 + params_per_band * i) == index ) {
+            if (strip_mode[i] == 2) {
+                multi_am->mode = 2;
+                multi_am->exp_am = &gate[i];
+                return;
+            } else {
+                multi_am->mode = strip_mode[i];
+                multi_am->cmp_am = &mcompressor[i];
+                return;
+            }
+        }
+    }
+
+    multi_am->mode = -1;
+    return;
+}
+
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2) {
+        r = multi_am.exp_am->get_graph(subindex, data, points, context, mode);
+    } else if (multi_am.mode == 0 || multi_am.mode == 1) {
+        r = multi_am.cmp_am->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if ((index == AM::param_solo0 + params_per_band * page and subindex == 1)
+    or  (index == 0 and subindex == page)) {
+        *mode = 1;
+    }
+    if ((subindex == 1 and index != 0)
+    or  (index == 0)) {
+        if (r 
+        and ((index != 0 and *params[index - 1])
+        or   (index == 0 and *params[AM::param_bypass0 + params_per_band * subindex])))
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        else
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    return r;
+}
+
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (fast)
+        return false;
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_dot(subindex, x, y, size, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_gridline(subindex, pos, vertical, legend, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_gridline(subindex, pos, vertical, legend, context);
+
+    if (phase) return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+template<class MBSBaseClass, int strips>
+bool multibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        r = multi_am.exp_am->get_layers(index, generation, layers);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        r = multi_am.cmp_am->get_layers(index, generation, layers);
+    else
+        r = crossover.get_layers(index, generation, layers);
+
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
+}
+
+template class multibandsoft_audio_module<multibandsoft6band_metadata, 6>;
+template class multibandsoft_audio_module<multibandsoft12band_metadata, 12>;
+
+
+/**********************************************************************
+ * SIDECHAIN MULTIBAND SOFT by Adriano Moura and Markus Schmidt
+**********************************************************************/
+
+template<class MBSBaseClass, int strips>
+scmultibandsoft_audio_module<MBSBaseClass, strips>::scmultibandsoft_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    redraw     = 0;
+    page       = 0;
+    fast       = 0;
+    bypass_    = 0;
+    crossover.init(2, strips, 44100);
+    sccrossover.init(2, strips, 44100);
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+    // activate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+        mcompressor[j].activate();
+        mcompressor[j].id = j;
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].activate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::deactivate()
+{
+    is_active = false;
+    // deactivate all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+        mcompressor[j].deactivate();
+        for (int i = 0; i < intch; i ++)
+            dist[j][i].deactivate();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::params_changed()
+{
+    bool s=0;
+    for (int i=0; i < strips; ++i) {
+        // determine mute/solo states
+        solo[i] = *params[AM::param_solo0 + params_per_band * i] > 0.f ? true : false;
+        s |= *params[AM::param_solo0 + params_per_band * i] > 0.f;
+    }
+    no_solo = s ? false : true;
+
+    int f = *params[AM::param_fast];
+    if (f != fast) {
+        fast = *params[AM::param_fast];
+    }
+    int p = (int)*params[AM::param_notebook];
+    if (p != page) {
+        page = p;
+        redraw = strips * 2 + strips;
+    }
+
+    int b=0;
+    for (int i=0; i < strips; ++i) {
+        b += (int)*params[AM::param_bypass0 + params_per_band * i];
+    }
+    if (b != bypass_) {
+        redraw = strips * 2 + strips;
+        bypass_ = b;
+    }
+    
+    for (int i=0; i < strips-1; ++i) {
+        mode_set[i] = *params[AM::param_mode0 + params_per_band * i] + 1;
+        scmode_set[i] = *params[AM::param_scmode] + 1;
+    }
+    crossover.set_mode(mode_set);
+    sccrossover.set_mode(scmode_set);
+
+    for (int i=0; i < strips-1; ++i) {
+        crossover.set_filter(i, *params[AM::param_freq0 + i]); // freq is not declared on each band
+        sccrossover.set_filter(i, *params[AM::param_freq0 + i]);
+    }
+   
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_detection0 + j], \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_range0 + j]);
+
+        mcompressor[i].set_params(*params[AM::param_attack0 + j], \
+                           *params[AM::param_release0 + j], \
+                           *params[AM::param_threshold0 + j], \
+                           *params[AM::param_ratio0 + j], \
+                           *params[AM::param_knee0 + j], \
+                           *params[AM::param_makeup0 + j], \
+                           *params[AM::param_bypass0 + j], \
+                           !(solo[i] || no_solo), \
+                           *params[AM::param_stereo_link0 + j], \
+                           *params[AM::param_strip_mode0 + j]);
+
+        for (int k = 0; k < intch; k ++)
+            dist[i][k].set_params(*params[AM::param_blend0 + j],
+                                  *params[AM::param_drive0 + j]);
+
+        strip_mode[i] = *params[AM::param_strip_mode0 + j];
+
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    // set srate of all strips
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+        mcompressor[j].set_sample_rate(srate);
+        for (int k = 0; k < intch; k ++)
+            dist[j][k].set_sample_rate(srate);
+    }
+    // set srate of crossover
+    crossover.set_sample_rate(srate);
+    sccrossover.set_sample_rate(srate);
+
+    // buffer size attack rate multiplied by channels and strips
+    buffer_size = (int)(srate / 10 * 2 * strips + 2 * strips); 
+    buffer = (float*) calloc(buffer_size, sizeof(float));
+    pos = 0;
+
+    int nmeters = 2 + 2*strips;
+    int meter[nmeters];
+    meter[0] = AM::param_meter_inL;
+    meter[1] = AM::param_meter_inR;
+    int clip[nmeters];
+    clip[0] = AM::param_clip_inL;
+    clip[1] = AM::param_clip_inR;
+
+    for (int i=2, j=0; i < nmeters; i+=2, ++j) {
+        meter[i] = AM::param_output0 + params_per_band * j;
+        meter[i+1] = AM::param_gating0 + params_per_band * j;
+        clip[i] = -1;
+        clip[i+1] = -1;
+    }
+    
+    meters.init(params, meter, clip, 2 + 2 * strips, srate);
+
+    for (int i = 0; i < strips; i++) {
+        gate[i].update_curve();
+        mcompressor[i].update_curve();
+    }
+}
+
+template<class MBSBaseClass, int strips>
+uint32_t scmultibandsoft_audio_module<MBSBaseClass, strips>::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    float left, scleft;
+    float right, scright;
+    numsamples += offset;
+    if (fast) { // Ignores stuff like solo, bypass and meters, + a few optimizations!!
+        // process all strips
+        while(offset < numsamples) {
+            // process crossover, cycle trough samples, in level
+            xin[0] = ins[0][offset] * *params[AM::param_level_in];
+            xin[1] = ins[1][offset] * *params[AM::param_level_in];
+            xsc[0] = ins[2][offset];
+            xsc[1] = ins[3][offset];
+            crossover.process(xin);
+            sccrossover.process(xsc);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i++) {
+                int off = i * params_per_band;
+                if (*params[AM::param_delay0 + off]) {
+                    int nbuf = 0;
+                    int ptr = i * 2;
+
+                    // calc position in delay buffer
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    float scleft  = sccrossover.get_value(0, i);
+                    float scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+
+                    // fill delay buffer
+                    buffer[pos + ptr] = left;
+                    buffer[pos + ptr + 1] = right;
+                    
+                    // get value from delay buffer if neccessary
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+
+                    outs[i*2][offset]     = left;
+                    outs[i*2 + 1][offset] = right;
+                    outs[strips*intch + i*2][offset]     = scleft;
+                    outs[strips*intch + i*2 + 1][offset] = scright;
+                } else {
+                    float left  = crossover.get_value(0, i);
+                    float right = crossover.get_value(1, i);
+                    float scleft  = sccrossover.get_value(0, i);
+                    float scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+
+                    outs[i*2][offset] = left;
+                    outs[i*2 +1][offset] = right;
+                    outs[strips*intch + i*2][offset]     = scleft;
+                    outs[strips*intch + i*2 + 1][offset] = scright;
+                }
+            } 
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+    } else {
+        for (int i = 0; i < strips; i++) {
+            gate[i].update_curve();
+            mcompressor[i].update_curve();
+        }
+        float inL = 0.f;
+        float inR = 0.f;
+
+        // process all strips
+        while(offset < numsamples) {
+            // cycle through samples
+            inL = ins[0][offset];
+            inR = ins[1][offset];
+            xsc[0] = ins[2][offset];
+            xsc[1] = ins[3][offset];
+            // in level
+            inR *= *params[AM::param_level_in];
+            inL *= *params[AM::param_level_in];
+            // process crossover
+            xin[0] = inL;
+            xin[1] = inR;
+            crossover.process(xin);
+            sccrossover.process(xsc);
+
+            // cycle trough strips
+            for (int i = 0; i < strips; i ++) {
+                int nbuf = 0;
+                int off = i * params_per_band;
+                int ptr = i * 2;
+
+                // calc position in delay buffer
+                if (*params[AM::param_delay0 + off]) {
+                    nbuf = srate * (fabs(*params[AM::param_delay0 + off]) / 1000.f) * strips * 2;
+                    nbuf -= nbuf % (strips * 2);
+                }
+
+                left = 0.f; right = 0.f;
+                if (solo[i] || no_solo) {
+                    // strip unmuted
+                    left = crossover.get_value(0, i);
+                    right = crossover.get_value(1, i);
+                    scleft = sccrossover.get_value(0, i);
+                    scright = sccrossover.get_value(1, i);
+
+                    if (*params[AM::param_drive0 + off] >= 0.15 ) { // dist can behave bad when turning it down to 0
+                        // process harmonics
+                        left = dist[i][0].process(left);
+                        right = dist[i][1].process(right);
+                    }
+
+                    if ( strip_mode[i] == 2 ) {
+                        gate[i].process(left, right, &scleft, &scright);
+                    } else {
+                        mcompressor[i].process(left, right, &scleft, &scright);
+                    }
+                }
+                // fill delay buffer
+                buffer[pos + ptr] = left;
+                buffer[pos + ptr + 1] = right;
+                
+                // get value from delay buffer if neccessary
+                if (*params[AM::param_delay0 + off]) {
+                    left = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
+                    right = buffer[(pos - (int)nbuf + ptr + 1 + buffer_size) % buffer_size];
+                }
+
+                outs[i*2][offset] = left;
+                outs[i*2 +1][offset] = right;
+                outs[strips*intch + i*2][offset]     = scleft;
+                outs[strips*intch + i*2 + 1][offset] = scright;
+            }
+
+            float values[2 + strips*2];
+            values[0] = inL;
+            values[1] = inR;
+            for (int i=0; i < strips; i++)  {
+                if (*params[AM::param_bypass0 + params_per_band * i]) {
+                    values[2 + i*2] = 0;
+                    values[3 + i*2] = 1;
+                } else {
+                    if ( strip_mode[i] == 2 ) {
+                        values[2 + i*2] = gate[i].get_output_level();
+                        values[3 + i*2] = gate[i].get_expander_level();
+                    } else {
+                        values[2 + i*2] = mcompressor[i].get_output_level();
+                        values[3 + i*2] = mcompressor[i].get_comp_level();
+                    }
+                }
+            }
+            meters.process(values);
+
+            // next sample
+            ++offset;
+
+            // delay buffer pos forward
+            pos = (pos + 2 * strips) % buffer_size;
+        } // cycle trough samples
+
+        meters.fall(numsamples);
+    }
+
+    return outputs_mask;
+}
+
+template<class MBSBaseClass, int strips>
+void scmultibandsoft_audio_module<MBSBaseClass, strips>::get_strip_by_param_index(int index, multi_am_t *multi_am) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (AM::param_solo0 + params_per_band * i) == index ) {
+            if (strip_mode[i] == 2) {
+                multi_am->mode = 2;
+                multi_am->exp_am = &gate[i];
+                return;
+            } else {
+                multi_am->mode = strip_mode[i];
+                multi_am->cmp_am = &mcompressor[i];
+                return;
+            }
+        }
+    }
+
+    multi_am->mode = -1;
+    return;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    if (redraw)
+        redraw = std::max(0, redraw - 1);
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2) {
+        r = multi_am.exp_am->get_graph(subindex, data, points, context, mode);
+    } else if (multi_am.mode == 0 || multi_am.mode == 1) {
+        r = multi_am.cmp_am->get_graph(subindex, data, points, context, mode);
+    } else {
+        r = crossover.get_graph(subindex, phase, data, points, context, mode);
+    }
+    if ((index == AM::param_solo0 + params_per_band * page and subindex == 1)
+    or  (index == 0 and subindex == page)) {
+        *mode = 1;
+    }
+    if ((subindex == 1 and index != 0)
+    or  (index == 0)) {
+        if (r 
+        and ((index != 0 and *params[index - 1])
+        or   (index == 0 and *params[AM::param_bypass0 + params_per_band * subindex])))
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
+        else
+            context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
+    }
+    return r;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    if (fast)
+        return false;
+
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_dot(subindex, x, y, size, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        return multi_am.exp_am->get_gridline(subindex, pos, vertical, legend, context);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        return multi_am.cmp_am->get_gridline(subindex, pos, vertical, legend, context);
+
+    if (phase) return false;
+    return get_freq_gridline(subindex, pos, vertical, legend, context);
+}
+
+template<class MBSBaseClass, int strips>
+bool scmultibandsoft_audio_module<MBSBaseClass, strips>::get_layers(int index, int generation, unsigned int &layers) const
+{
+    if (fast)
+        return false;
+
+    bool r;
+    multi_am_t multi_am;
+        
+    get_strip_by_param_index(index, &multi_am);
+    if (multi_am.mode == 2)
+        r = multi_am.exp_am->get_layers(index, generation, layers);
+    else if (multi_am.mode == 0 || multi_am.mode == 1)
+        r = multi_am.cmp_am->get_layers(index, generation, layers);
+    else
+        r = crossover.get_layers(index, generation, layers);
+
+    if (redraw) {
+        layers |= LG_CACHE_GRAPH;
+        r = true;
+    }
+    return r;
+}
+
+template class scmultibandsoft_audio_module<scmultibandsoft6band_metadata, 6>;
+
+
+/**********************************************************************
+ * ELASTIC EQ by Adriano Moura
+**********************************************************************/
+
+elasticeq_audio_module::elasticeq_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    bypass_    = 0;
+	indiv_old = -1;
+    show_effect = -1;
+    redraw_individuals = 1;
+
+    keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
+}
+
+void elasticeq_audio_module::activate()
+{
+    is_active = true;
+    params_changed();
+    gate.activate();
+    gate.id = 0;
+}
+
+void elasticeq_audio_module::deactivate()
+{
+    is_active = false;
+    gate.deactivate();
+}
+
+static inline double glide(double value, double target, int &keep_gliding)
+{
+    if (target == value)
+        return value;
+    keep_gliding = 1;
+    if (target > value)
+        return std::min(target, (value + 0.1) * 1.003);
+    else
+        return std::max(target, (value / 1.003) - 0.1);
+}
+
+void elasticeq_audio_module::params_changed()
+{
+    int b = (int)*params[param_bypass];
+    if (b != bypass_) {
+        bypass_ = b;
+    }
+    keep_gliding = 0;
+
+    int se = (int)*params[AM::param_force];
+    if (se != show_effect) {
+        show_effect = se;
+        redraw_graph = true;
+	    redraw_individuals = 0;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    
+    gate.set_params(*params[param_attack], \
+                    *params[param_release], \
+                    *params[param_threshold], \
+                    *params[param_ratio], \
+                    *params[param_knee], \
+                    1.f, \
+                    *params[param_detection], \
+                    *params[param_stereo_link], \
+                    *params[param_bypass], \
+                    0, \
+                    *params[param_range]);
+    gate.update_curve();
+
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        int offset = i * params_per_band;
+        float freq = *params[AM::param_p1_freq + offset];
+        float level = *params[AM::param_p1_level + offset];
+        float q = *params[AM::param_p1_q + offset];
+        if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
+            pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
+            pR[i].copy_coeffs(pL[i]);
+            p_freq_old[i] = freq;
+            p_level_old[i] = level;
+            p_q_old[i] = q;
+        }
+    }
+	int ind = *params[AM::param_individuals];
+    if (ind != indiv_old) {
+        indiv_old = ind;
+	    redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i]) {
+            redraw_graph = true;
+			if (! show_effect)
+				redraw_individuals = 1;
+		}
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+}
+
+void elasticeq_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    gate.set_sample_rate(srate);
+
+    int meter[] = {param_meter_inL, param_meter_inR, param_meter_outL, param_meter_outR, \
+                   -param_gating };
+    // put eq params
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
+    meters.init(params, meter, clip, 5, srate);
+
+    gate.update_curve();
+}
+
+uint32_t elasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (keep_gliding)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
+
+    if (show_effect) {
+        redraw_graph = true;
+    }
+
+    numsamples += offset;
+
+    float inL, gprocL, outL = 0.f;
+    float inR, gprocR, outR = 0.f;
+
+    if (bypass_) {
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+        while(offset < numsamples) {
+            inL = ins[0][offset] * *params[param_level_in];
+            inR = ins[1][offset] * *params[param_level_in];
+            gprocL = inL;
+            gprocR = inR;
+            gate.process(gprocL, gprocR);
+
+            float procL = gprocL;
+            float procR = gprocR;
+
+            for (int i = 0; i < AM::PeakBands; i++)
+            {
+                int poffset = i * params_per_band;
+                int active = *params[AM::param_p1_active + poffset];
+                if (active == 1 or active == 2)
+                    procL = pL[i].process(procL);
+                if (active == 1 or active == 3)
+                    procR = pR[i].process(procR);
+            }
+            
+            outL = (procL - gprocL + inL) * *params[param_level_out];
+            outR = (procR - gprocR + inR) * *params[param_level_out];
+
+            glevel = gate.get_expander_level();
+            float values[] = {inL, inR, outL, outR, glevel};
+            meters.process(values);
+
+            outs[0][offset] = outL;
+            outs[1][offset] = outR;
+
+            ++offset;
+        }
+
+        for(int i = 0; i < AM::PeakBands; ++i) {
+            pL[i].sanitize();
+            pR[i].sanitize();
+        }
+    }
+
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+bool elasticeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    bool r;
+    const expander_audio_module *m = &gate;
+
+    if (m && (index == param_gating ) ) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        int max = PeakBands;
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals])) {
+            redraw_graph = false;
+            return false;
+        }
+        
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+
+		// When param_force (visualize effect) is enabled, redrawing all individual filters @60fps
+		//is too costly. Cant seem to cache it, so it's disabled while param_force is on for now.
+		if (! redraw_individuals) {
+            last_peak = 0;
+            redraw_graph = false;
+			return false;
+		}
+        
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p1_active + last_peak * params_per_band])
+            last_peak ++;
+
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            redraw_graph = false;
+            return false;
+        }
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
+    }
+
+    return r;
+}
+
+bool elasticeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = &gate;
+    if (m && (index == param_gating ) )
+        return m->get_dot(subindex, x, y, size, context);
+    return false;
+}
+
+bool elasticeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = &gate;
+    if (m && (index == param_gating ) )
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    else
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+
+    if (phase)
+        return false;
+
+    return false;
+}
+
+float elasticeq_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+
+    for (int i = 0; i < PeakBands; i++) {
+        if (*params[AM::param_p1_active + i * params_per_band] > 0.f)
+            ret *= pL[i].freq_gain(freq, (float)srate);
+        else
+            ret *= 1.f;
+    }
+    if ( *params[AM::param_force] )
+        return (ret - 1) * glevel + 1;
+    else
+        return ret;
+}
+
+bool elasticeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = &gate;
+
+    if (m && (index == param_gating ) )
+        r = m->get_layers(index, generation, layers);
+    else {
+        redraw_graph = redraw_graph || !generation;
+        layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+        return redraw_graph or !generation;
+    }
+
+    return r;
+}
+
+inline std::string elasticeq_audio_module::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
+}
+
+/**********************************************************************
+ * MULTISTRIP ELASTIC EQ by Adriano Moura
+**********************************************************************/
+
+mstripelasticeq_audio_module::mstripelasticeq_audio_module()
+{
+    is_active = false;
+    srate     = 0;
+    bypass_   = 0;
+	page      = 0;
+	indiv_old = -1;
+    show_effect = -1;
+    redraw_individuals = 1;
+
+    keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
+}
+
+void mstripelasticeq_audio_module::activate()
+{
+    is_active = true;
+    params_changed();
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+    }
+}
+
+void mstripelasticeq_audio_module::deactivate()
+{
+    is_active = false;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+    }
+}
+
+void mstripelasticeq_audio_module::params_changed()
+{
+    int b = (int)*params[param_bypass];
+    if (b != bypass_) {
+        bypass_ = b;
+    }
+    keep_gliding = 0;
+
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int se = (int)*params[AM::param_force];
+    if (se != show_effect) {
+        show_effect = se;
+        redraw_graph = true;
+	    redraw_individuals = 0;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int s = (int)*params[AM::param_selected_only];
+    if (s != selected_only) {
+        selected_only = s;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[param_attack0 + j], \
+                           *params[param_release0 + j], \
+                           *params[param_threshold0 + j], \
+                           *params[param_ratio0 + j], \
+                           *params[param_knee0 + j], \
+                           1.f, \
+                           *params[param_detection0 + j], \
+                           *params[param_stereo_link0 + j], \
+                           0, \
+                           0, \
+                           *params[param_range0 + j]);
+        gate[i].update_curve();
+    }
+
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        int offset = i * params_per_peak;
+        float freq = *params[AM::param_p01_freq + offset];
+        float level = *params[AM::param_p01_level + offset];
+        float q = *params[AM::param_p01_q + offset];
+        if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
+            pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
+            pR[i].copy_coeffs(pL[i]);
+            p_freq_old[i] = freq;
+            p_level_old[i] = level;
+            p_q_old[i] = q;
+        }
+    }
+	int ind = *params[AM::param_individuals];
+    if (ind != indiv_old) {
+        indiv_old = ind;
+	    redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i]) {
+            redraw_graph = true;
+			if (! show_effect)
+				redraw_individuals = 1;
+		}
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+}
+
+void mstripelasticeq_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+    }
+
+    int meter[] = {-param_gating0,
+                   -param_gating1,
+                   -param_gating2,
+                   -param_gating3,
+                   -param_gating4,
+                   -param_gating5,
+                   -param_gating6 };
+    int clip[] = {-1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, strips, srate);
+
+    for (int i = 0; i < strips; i++)
+       gate[i].update_curve();
+}
+
+uint32_t mstripelasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (keep_gliding)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
+
+    if (show_effect) {
+        redraw_graph = true;
+    }
+
+    numsamples += offset;
+
+    float inL, gprocL = 0.f;
+    float inR, gprocR = 0.f;
+
+    while(offset < numsamples) {
+        for (int j = 0; j < strips; j++) {
+            inL = ins[j*2    ][offset];
+            inR = ins[j*2 + 1][offset];
+
+            gprocL = inL;
+            gprocR = inR;
+            gate[j].process(gprocL, gprocR);
+
+            float procL = gprocL;
+            float procR = gprocR;
+            for (int i = 0; i < peaks_per_strip; i++) {
+                int poffset = i * params_per_peak;
+                int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+                int active = *params[strip_offset + poffset];
+                if (active == 1 or active == 2)
+                    procL = pL[j * peaks_per_strip + i].process(procL);
+                if (active == 1 or active == 3)
+                    procR = pR[j * peaks_per_strip + i].process(procR);
+            }
+
+            glevel[j] = gate[j].get_expander_level();
+
+            buff[j*2    ] = (procL - gprocL + inL);
+            buff[j*2 + 1] = (procR - gprocR + inR);
+        } 
+		// Will break with different strips size
+        outs[0][offset] = buff[0] + buff[2] + buff[4] + buff[6] + buff[8] + buff[10] + buff[12];
+        outs[1][offset] = buff[1] + buff[3] + buff[5] + buff[7] + buff[9] + buff[11] + buff[13];
+
+        float values[] = {glevel[0], glevel[1], glevel[2], glevel[3], glevel[4], glevel[5], glevel[6]};
+        meters.process(values);
+
+        ++offset;
+    }
+
+    for(int i = 0; i < AM::PeakBands; ++i) {
+        pL[i].sanitize();
+        pR[i].sanitize();
+    }
+
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+const expander_audio_module *mstripelasticeq_audio_module::get_strip_by_param_index(int index) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (param_range0 + params_per_band * i) == index )
+            return &gate[i];
+    }
+
+    return NULL;
+}
+
+
+bool mstripelasticeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        int max = PeakBands;
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals])) {
+            redraw_graph = false;
+            return false;
+        }
+
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        
+		// When param_force (visualize effect) is enabled, redrawing all individual filters @60fps
+		//is too costly. Cant seem to cache it, so it's disabled while param_force is on for now.
+		if (! redraw_individuals) {
+            last_peak = 0;
+            redraw_graph = false;
+			return false;
+		}
+
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p01_active + last_peak * params_per_peak])
+            last_peak ++;
+
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            redraw_graph = false;
+            return false;
+        }
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
+    }
+
+    return r;
+}
+
+bool mstripelasticeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+bool mstripelasticeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    else
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+
+    if (phase)
+        return false;
+
+    return false;
+}
+
+float mstripelasticeq_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+    float buffer[strips];
+    int fstrip = 0, lstrip = strips;
+    // Will break when strip is too big!
+    float glevel_flat[strips] = {1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f};
+    const float *pglevel = glevel;
+
+    if (*params[AM::param_selected_only]) {
+        fstrip = *params[AM::param_notebook];
+        lstrip = *params[AM::param_notebook]+1;
+    }
+    if ( ! *params[AM::param_force] ) {
+        pglevel = glevel_flat;
+    }
+
+    for (int j = fstrip; j < lstrip; j++) {
+        buffer[j] = 1.f;
+        for (int i = 0; i < peaks_per_strip; i++) {
+            int offset = i * params_per_peak;
+            int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+            if (*params[strip_offset + offset])
+                buffer[j] *= pL[j * peaks_per_strip + i].freq_gain(freq, (float)srate);
+            else
+                buffer[j] *= 1.f;
+        }
+        ret *= (buffer[j] - 1) * pglevel[j] + 1;
+    }
+
+    return ret;
+}
+
+bool mstripelasticeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        redraw_graph = redraw_graph || !generation;
+        layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+        return redraw_graph or !generation;
+    }
+
+    return r;
+}
+
+inline std::string mstripelasticeq_audio_module::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
+}
+
+
+/**********************************************************************
+ * SIUDECHAIN MULTISTRIP ELASTIC EQ by Adriano Moura
+**********************************************************************/
+
+scmstripelasticeq_audio_module::scmstripelasticeq_audio_module()
+{
+    is_active = false;
+    srate     = 0;
+    bypass_   = 0;
+	page      = 0;
+	indiv_old = -1;
+    show_effect = -1;
+    redraw_individuals = 1;
+
+    keep_gliding = 0;
+    last_peak = 0;
+    indiv_old = -1;
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        p_freq_old[i] = 0;
+        p_level_old[i] = 0;
+        p_q_old[i] = 0;
+    }
+    for (int i = 0; i < graph_param_count; i++)
+        old_params_for_graph[i] = -1;
+}
+
+void scmstripelasticeq_audio_module::activate()
+{
+    is_active = true;
+    params_changed();
+    for (int j = 0; j < strips; j ++) {
+        gate[j].activate();
+        gate[j].id = j;
+    }
+}
+
+void scmstripelasticeq_audio_module::deactivate()
+{
+    is_active = false;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].deactivate();
+    }
+}
+
+void scmstripelasticeq_audio_module::params_changed()
+{
+    int b = (int)*params[param_bypass];
+    if (b != bypass_) {
+        bypass_ = b;
+    }
+    keep_gliding = 0;
+
+    int p = (int)*params[param_notebook];
+    if (p != page) {
+        page = p;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int se = (int)*params[AM::param_force];
+    if (se != show_effect) {
+        show_effect = se;
+        redraw_graph = true;
+	    redraw_individuals = 0;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    int s = (int)*params[AM::param_selected_only];
+    if (s != selected_only) {
+        selected_only = s;
+        redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+
+    for (int i=0; i < strips; ++i) {
+        // set the params of all strips
+        int j = params_per_band * i;
+        gate[i].set_params(*params[param_attack0 + j], \
+                           *params[param_release0 + j], \
+                           *params[param_threshold0 + j], \
+                           *params[param_ratio0 + j], \
+                           *params[param_knee0 + j], \
+                           1.f, \
+                           *params[param_detection0 + j], \
+                           *params[param_stereo_link0 + j], \
+                           0, \
+                           0, \
+                           *params[param_range0 + j]);
+        gate[i].update_curve();
+    }
+
+    for (int i = 0; i < AM::PeakBands; i++)
+    {
+        int offset = i * params_per_peak;
+        float freq = *params[AM::param_p01_freq + offset];
+        float level = *params[AM::param_p01_level + offset];
+        float q = *params[AM::param_p01_q + offset];
+        if(freq != p_freq_old[i] or level != p_level_old[i] or q != p_q_old[i]) {
+            freq = glide(p_freq_old[i], freq, keep_gliding);
+            pL[i].set_peakeq_rbj(freq, q, level, (float)srate);
+            pR[i].copy_coeffs(pL[i]);
+            p_freq_old[i] = freq;
+            p_level_old[i] = level;
+            p_q_old[i] = q;
+        }
+    }
+	int ind = *params[AM::param_individuals];
+    if (ind != indiv_old) {
+        indiv_old = ind;
+	    redraw_graph = true;
+		if (! show_effect)
+	        redraw_individuals = 1;
+    }
+    
+    // check if any important parameter for redrawing the graph changed
+    for (int i = 0; i < graph_param_count; i++) {
+        if (*params[AM::first_graph_param + i] != old_params_for_graph[i]) {
+            redraw_graph = true;
+			if (! show_effect)
+				redraw_individuals = 1;
+		}
+        old_params_for_graph[i] = *params[AM::first_graph_param + i];
+    }
+    
+}
+
+void scmstripelasticeq_audio_module::set_sample_rate(uint32_t sr)
+{
+    srate = sr;
+    for (int j = 0; j < strips; j ++) {
+        gate[j].set_sample_rate(srate);
+    }
+
+    int meter[] = {-param_gating0,
+                   -param_gating1,
+                   -param_gating2,
+                   -param_gating3,
+                   -param_gating4,
+                   -param_gating5,
+                   -param_gating6 };
+    int clip[] = {-1, -1, -1, -1, -1, -1, -1};
+    meters.init(params, meter, clip, strips, srate);
+
+    for (int i = 0; i < strips; i++)
+       gate[i].update_curve();
+}
+
+uint32_t scmstripelasticeq_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    if (keep_gliding)
+    {
+        // ensure that if params have changed, the params_changed method is
+        // called every 8 samples to interpolate filter parameters
+        while(numsamples > 8 && keep_gliding)
+        {
+            params_changed();
+            outputs_mask |= process(offset, 8, inputs_mask, outputs_mask);
+            offset += 8;
+            numsamples -= 8;
+        }
+        if (keep_gliding)
+            params_changed();
+    }
+
+    if (show_effect) {
+        redraw_graph = true;
+    }
+
+    numsamples += offset;
+
+    float inL, gprocL = 0.f;
+    float inR, gprocR = 0.f;
+
+    while(offset < numsamples) {
+        for (int j = 0; j < strips; j++) {
+            inL = ins[j*2    ][offset];
+            inR = ins[j*2 + 1][offset];
+
+            gprocL = inL;
+            gprocR = inR;
+            gate[j].process(gprocL, gprocR, ins[scch + j*2], ins[scch + j*2 + 1]);
+
+            float procL = gprocL;
+            float procR = gprocR;
+            for (int i = 0; i < peaks_per_strip; i++) {
+                int poffset = i * params_per_peak;
+                int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+                int active = *params[strip_offset + poffset];
+                if (active == 1 or active == 2)
+                    procL = pL[j * peaks_per_strip + i].process(procL);
+                if (active == 1 or active == 3)
+                    procR = pR[j * peaks_per_strip + i].process(procR);
+            }
+
+            glevel[j] = gate[j].get_expander_level();
+
+            buff[j*2    ] = (procL - gprocL + inL);
+            buff[j*2 + 1] = (procR - gprocR + inR);
+        } 
+		// Will break with different strips size
+        outs[0][offset] = buff[0] + buff[2] + buff[4] + buff[6] + buff[8] + buff[10] + buff[12];
+        outs[1][offset] = buff[1] + buff[3] + buff[5] + buff[7] + buff[9] + buff[11] + buff[13];
+
+        float values[] = {glevel[0], glevel[1], glevel[2], glevel[3], glevel[4], glevel[5], glevel[6]};
+        meters.process(values);
+
+        ++offset;
+    }
+
+    for(int i = 0; i < AM::PeakBands; ++i) {
+        pL[i].sanitize();
+        pR[i].sanitize();
+    }
+
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+
+const expander_audio_module *scmstripelasticeq_audio_module::get_strip_by_param_index(int index) const
+{
+    for (int i=0; i < strips; ++i) {
+        if ( (param_range0 + params_per_band * i) == index )
+            return &gate[i];
+    }
+
+    return NULL;
+}
+
+
+bool scmstripelasticeq_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_graph(subindex, data, points, context, mode);
+    } else {
+        int max = PeakBands;
+        
+        if (!is_active
+        or (subindex and !*params[AM::param_individuals])
+        or (subindex > max and *params[AM::param_individuals])) {
+            redraw_graph = false;
+            return false;
+        }
+
+        // first graph is the overall frequency response graph
+        if (!subindex)
+            return ::get_graph(*this, subindex, data, points, 128 * *params[AM::param_zoom], 0);
+        
+		// When param_force (visualize effect) is enabled, redrawing all individual filters @60fps
+		//is too costly. Cant seem to cache it, so it's disabled while param_force is on for now.
+		if (! redraw_individuals) {
+            last_peak = 0;
+            redraw_graph = false;
+			return false;
+		}
+
+        // get the next filter to draw a curve for and leave out inactive
+        // filters
+        while (last_peak < PeakBands and !*params[AM::param_p01_active + last_peak * params_per_peak])
+            last_peak ++;
+
+        // get out if max band is reached
+        if (last_peak >= max) { // and !*params[param_analyzer_active]) {
+            last_peak = 0;
+            redraw_graph = false;
+            return false;
+        }
+            
+        // draw the individual curve of the actual filter
+        for (int i = 0; i < points; i++) {
+            double freq = 20.0 * pow (20000.0 / 20.0, i * 1.0 / points);
+            if (last_peak < PeakBands) {
+                data[i] = pL[last_peak].freq_gain(freq, (float)srate);
+            }
+            data[i] = dB_grid(data[i], 128 * *params[AM::param_zoom], 0);
+        }
+        
+        last_peak ++;
+        *mode = 4;
+        context->set_source_rgba(0,0,0,0.075);
+        return true;
+    }
+
+    return r;
+}
+
+bool scmstripelasticeq_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_dot(subindex, x, y, size, context);
+
+    return false;
+}
+
+bool scmstripelasticeq_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+{
+    const expander_audio_module *m = get_strip_by_param_index(index);
+    if (m)
+        return m->get_gridline(subindex, pos, vertical, legend, context);
+    else
+        return get_freq_gridline(subindex, pos, vertical, legend, context, true, 128 * *params[AM::param_zoom], 0);
+
+    if (phase)
+        return false;
+
+    return false;
+}
+
+float scmstripelasticeq_audio_module::freq_gain(int index, double freq) const
+{
+    float ret = 1.f;
+    float buffer[strips];
+    int fstrip = 0, lstrip = strips;
+    // Will break when strip is too big!
+    float glevel_flat[strips] = {1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f};
+    const float *pglevel = glevel;
+
+    if (*params[AM::param_selected_only]) {
+        fstrip = *params[AM::param_notebook];
+        lstrip = *params[AM::param_notebook]+1;
+    }
+    if ( ! *params[AM::param_force] ) {
+        pglevel = glevel_flat;
+    }
+
+    for (int j = fstrip; j < lstrip; j++) {
+        buffer[j] = 1.f;
+        for (int i = 0; i < peaks_per_strip; i++) {
+            int offset = i * params_per_peak;
+            int strip_offset = AM::param_p01_active + (params_per_peak * peaks_per_strip * j);
+            if (*params[strip_offset + offset])
+                buffer[j] *= pL[j * peaks_per_strip + i].freq_gain(freq, (float)srate);
+            else
+                buffer[j] *= 1.f;
+        }
+        ret *= (buffer[j] - 1) * pglevel[j] + 1;
+    }
+
+    return ret;
+}
+
+bool scmstripelasticeq_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+{
+    bool r;
+    const expander_audio_module *m = get_strip_by_param_index(index);
+
+    if (m) {
+        r = m->get_layers(index, generation, layers);
+    } else {
+        redraw_graph = redraw_graph || !generation;
+        layers |= (generation ? LG_NONE : LG_CACHE_GRID) | (redraw_graph ? LG_CACHE_GRAPH : LG_NONE);
+        return redraw_graph or !generation;
+    }
+
+    return r;
+}
+
+inline std::string scmstripelasticeq_audio_module::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+{ 
+    return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
 

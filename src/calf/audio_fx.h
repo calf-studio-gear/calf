@@ -633,9 +633,9 @@ public:
 class crossover {
 private:
 public:
-    int channels, bands, mode;
-    float freq[8], active[8], level[8], out[8][8];
-    dsp::biquad_d2 lp[8][8][4], hp[8][8][4];
+    int channels, bands;
+    float freq[12], active[12], level[12], modes[12], out[8][12];
+    dsp::biquad_d2 lp[8][12][6], hp[8][12][6];
     mutable int redraw_graph;
     uint32_t srate;
     crossover();
@@ -645,8 +645,8 @@ public:
     float set_filter(int b, float f, bool force = false);
     void set_level(int b, float l);
     void set_active(int b, bool a);
-    void set_mode(int m);
-    int get_filter_count() const;
+    void set_mode(int mset[12]);
+    int get_filter_count(int m) const;
     void init(int c, int b, uint32_t sr);
     virtual bool get_graph(int subindex, int phase, float *data, int points, calf_plugins::cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
