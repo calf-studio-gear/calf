@@ -1,0 +1,117 @@
+<vbox spacing="8">
+    <table expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
+        <toggle param="bypass" icon="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
+        
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="8" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
+    </table>
+    <hbox spacing="16">
+        
+        <hbox homogeneous="1" spacing="5">
+            <vbox spacing="5">
+                <toggle param="active0" size="0"/>
+                <vscale size="1" param="gain0" inverted="1"/>
+                <knob param="pitch0" type="1" size="1"/>
+                <label text="Hum"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active1" size="0"/>
+                <vscale size="1" param="gain1" inverted="1"/>
+                <knob param="pitch1" type="1" size="1"/>
+                <label text="Motor"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active2" size="0"/>
+                <vscale size="1" param="gain2" inverted="1"/>
+                <knob param="pitch2" type="1" size="1"/>
+                <label text="Static"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active3" size="0"/>
+                <vscale size="1" param="gain3" inverted="1"/>
+                <knob param="pitch3" type="1" size="1"/>
+                <label text="Noise"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active4" size="0"/>
+                <vscale size="1" param="gain4" inverted="1"/>
+                <knob param="pitch4" type="1" size="1"/>
+                <label text="Rumble"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active5" size="0"/>
+                <vscale size="1" param="gain5" inverted="1"/>
+                <knob param="pitch5" type="1" size="1"/>
+                <label text="Crackle"/>
+            </vbox>
+            <vbox spacing="5">
+                <toggle param="active6" size="0"/>
+                <vscale size="1" param="gain6" inverted="1"/>
+                <knob param="pitch6" type="1" size="1"/>
+                <label text="Crinkle"/>
+            </vbox>
+        </hbox>
+        
+        <frame label="Frequency Response">
+            <if cond="directlink">
+                <line-graph refresh="1" width="240" height="160" param="freq"/>
+            </if>
+        </frame>
+        
+        <vbox>
+            <vbox>
+                <label param="aging"/>
+                <knob param="aging" size="3"/>
+                <value param="aging"/>
+            </vbox>
+            <vbox>
+                <label text="Color"/>
+                <knob param="freq" size="2"/>
+                <value param="freq"/>
+            </vbox>
+        </vbox>
+        
+        <vbox>
+            <vbox>
+                <label param="drone"/>
+                <knob param="drone" size="3" ticks="0 0.25 0.5 0.75 1"/>
+                <value param="drone"/>
+            </vbox>
+            <vbox>
+                <label param="speed"/>
+                <knob param="speed" size="2" ticks="33 45 78"/>
+                <hbox>
+                    <label/><label/>
+                    <value param="speed"/>
+                    <label text="rpm"/>
+                    <label/><label/>
+                </hbox>
+            </vbox>
+        </vbox>
+        
+    </hbox>
+</vbox>

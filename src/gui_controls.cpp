@@ -954,7 +954,8 @@ void toggle_param_control::set()
 {
     _GUARD_CHANGE_
     const parameter_properties &props = get_props();
-    gtk_range_set_value(GTK_RANGE(widget), props.to_01 (gui->plugin->get_param_value(param_no)));
+    float value = gui->plugin->get_param_value(param_no);
+    gtk_range_set_value(GTK_RANGE(widget), props.to_01(value));
 }
 
 void toggle_param_control::toggle_value_changed(GtkWidget *widget, gpointer value)
@@ -1813,10 +1814,11 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
 }
 void notebook_param_control::created()
 {
+    hook_params();
     gtk_widget_show_all(widget);
     gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), page);
     g_signal_connect (GTK_OBJECT (widget), "switch-page", G_CALLBACK (notebook_page_changed), (gpointer)this);
-    set();
+    //set();
 }
 void notebook_param_control::get()
 {

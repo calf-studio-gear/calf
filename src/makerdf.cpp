@@ -257,18 +257,27 @@ void make_ttl(string path_prefix, const string *data_dir)
     string gui_header;
     
 #if USE_LV2_GUI
-    string gtkgui_uri = "<" + plugin_uri_prefix + "gui/gtk2-gui>";
+    string gtkgui_uri     = "<" + plugin_uri_prefix + "gui/gtk2-gui>";
+    string gtkgui_uri_req = "<" + plugin_uri_prefix + "gui/gtk2-gui-req>";
     gui_header = gtkgui_uri + "\n"
         "    a uiext:GtkUI ;\n"
         "    lv2:extensionData uiext:idleInterface ,\n"
         "        uiext:showInterface ;\n"
         "    lv2:requiredFeature uiext:makeResident ;\n"
-        "    lv2:optionalFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
         "    lv2:optionalFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
         "    lv2:optionalFeature <" LV2_OPTIONS_URI "> ;\n"
         "    lv2:optionalFeature <" LV2_ATOM_URI "> ;\n"
         "    uiext:binary <calflv2gui.so> .\n"
-        "\n"
+        "\n" + gtkgui_uri_req + "\n"
+        "    a uiext:GtkUI ;\n"
+        "    lv2:extensionData uiext:idleInterface ,\n"
+        "        uiext:showInterface ;\n"
+        "    lv2:requiredFeature uiext:makeResident ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/instance-access> ;\n"
+        "    lv2:requiredFeature <http://lv2plug.in/ns/ext/data-access> ;\n"
+        "    lv2:optionalFeature <" LV2_OPTIONS_URI "> ;\n"
+        "    lv2:optionalFeature <" LV2_ATOM_URI "> ;\n"
+        "    uiext:binary <calflv2gui.so> .\n"
     ;
 #endif
     
@@ -284,22 +293,18 @@ void make_ttl(string path_prefix, const string *data_dir)
         id_to_info[pi->get_id()] = make_pair(lpi.label, uri);
         string ttl;
         ttl = "@prefix : <" + unquoted_uri + "#> .\n";
-        ttl += "@prefix project: <" + unquoted_uri + "/project#> .\n";
-        ttl += header + gui_header;
-        ttl += "project:project\n"
-            "    a doap:Project ;\n"
-            "    doap:maintainer <http://calf.sourceforge.net/team> ;\n"
-            "    doap:name \"" + string(lpi.name) + "\" .\n"
-            "\n";
+        ttl += header + gui_header + "\n";
 
 #if USE_LV2_GUI
+        string gui_uri = (pi->requires_instance_access()) ? gtkgui_uri_req : gtkgui_uri;
+
         for (int j = 0; j < pi->get_param_count(); j++)
         {
             const parameter_properties &props = *pi->get_param_props(j);
             if (props.flags & PF_PROP_OUTPUT)
             {
                 string portnot = " uiext:portNotification [\n    uiext:plugin " + uri + " ;\n    uiext:portIndex " + i2s(j) + "\n] .\n\n";
-                ttl += gtkgui_uri + portnot;
+                ttl += gui_uri + portnot;
             }
         }
 #endif
@@ -332,13 +337,13 @@ void make_ttl(string path_prefix, const string *data_dir)
             ttl += " a lv2:Plugin ;\n";
             
         ttl += "    doap:name \"" + string(lpi.name) + "\" ;\n";
-        ttl += "    lv2:project project:project ;\n";
+        ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
+        ttl += "    doap:maintainer <http://calf.sourceforge.net/team> ;\n";
 
 #if USE_LV2_GUI
-        ttl += "    uiext:ui " + gtkgui_uri + " ;\n";
+        ttl += "    uiext:ui " + gui_uri + " ;\n";
 #endif
         
-        ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
         ttl += "    dct:replaces <urn:ladspa:" + i2s(lpi.unique_id) + "> ;\n";
         // XXXKF not really optional for now, to be honest
         ttl += "    lv2:optionalFeature epp:supportsStrictBounds ;\n";
@@ -450,7 +455,7 @@ void make_ttl(string path_prefix, const string *data_dir)
             + ">";
         ttl += uri + " a lv2p:Preset ;\n"
             "    lv2:appliesTo " + ilm->second.second + " ;\n"
-            "    rdfs:seeAlso <presets-" + pr.plugin + ".ttl> .\n";
+            "    rdfs:seeAlso <presets-" + ilm->second.first + ".ttl> .\n";
         
         presets_ttl += uri + 
             " a lv2p:Preset ;\n"

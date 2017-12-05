@@ -1,0 +1,23 @@
+<hbox spacing="5" homogeneous="1">
+    <vbox>
+        <label param="drone"/>
+        <knob param="drone"/>
+        <value param="drone"/>
+    </vbox>
+    <vbox>
+        <label param="speed"/>
+        <knob param="speed"/>
+        <value param="speed"/>
+    </vbox>
+    <vbox>
+        <label param="aging"/>
+        <knob param="aging"/>
+        <value param="aging"/>
+    </vbox>
+    <vbox>
+        <label text="Color"/>
+        <knob param="freq"/>
+        <value param="freq"/>
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

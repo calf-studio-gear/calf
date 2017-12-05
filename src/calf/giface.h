@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this program; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02111-1307, USA.
  */
 #ifndef CALF_GIFACE_H
@@ -37,7 +37,7 @@ namespace calf_plugins {
 enum {
     MAX_SAMPLE_RUN = 256
 };
-    
+
 struct automation_range;
 
 /// Values ORed together for flags field in parameter_properties
@@ -49,7 +49,7 @@ enum parameter_flags
   PF_BOOL = 0x0002,  ///< bool value (usually >=0.5f is treated as TRUE, which is inconsistent with LV2 etc. which treats anything >0 as TRUE)
   PF_ENUM = 0x0003,  ///< enum value (min, min+1, ..., max, only guaranteed to work when min = 0)
   PF_ENUM_MULTI = 0x0004, ///< SET / multiple-choice
-  
+
   PF_SCALEMASK = 0xF0, ///< bit mask for scale
   PF_SCALE_DEFAULT = 0x00, ///< no scale given
   PF_SCALE_LINEAR = 0x10, ///< linear scale
@@ -70,7 +70,7 @@ enum parameter_flags
   PF_CTL_METER  =     0x000700, ///< volume meter
   PF_CTL_LED    =     0x000800, ///< light emitting diode
   PF_CTL_LABEL  =     0x000900, ///< label
-  
+
   PF_CTLOPTIONS     = 0x00F000, ///< bit mask for control (widget) options
   PF_CTLO_HORIZ     = 0x001000, ///< horizontal version of the control (unused)
   PF_CTLO_VERT      = 0x002000, ///< vertical version of the control (unused)
@@ -87,6 +87,7 @@ enum parameter_flags
 
   PF_UNITMASK     = 0x0F000000,  ///< bit mask for units   \todo reduce to use only 5 bits
   PF_UNIT_DB      = 0x01000000,  ///< decibels
+  PF_UNIT_DBFS      = 0x0E000000,  ///< decibels relative to Full Scale
   PF_UNIT_COEF    = 0x02000000,  ///< multiply-by factor
   PF_UNIT_HZ      = 0x03000000,  ///< Hertz
   PF_UNIT_SEC     = 0x04000000,  ///< second
@@ -98,7 +99,7 @@ enum parameter_flags
   PF_UNIT_NOTE    = 0x0A000000,  ///< MIDI note number
   PF_UNIT_RPM     = 0x0B000000,  ///< revolutions per minute
   PF_UNIT_SAMPLES = 0x0C000000,  ///< samples
-  
+
   PF_SYNC_BPM     = 0x10000000, ///< sync a bpm setting with the host environment
 
   PF_DIGITMASK    = 0xE0000000,
@@ -205,7 +206,7 @@ struct line_graph_iface
     /// @retval true graph data was returned; subindex+1 graph may or may not be available
     /// @retval false graph data was not returned; subindex+1 graph does not exist either
     virtual bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode = 0) const { return false; }
-    
+
     /// Obtain subindex'th moving surface of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex mvoing line number (there may be multiple graphs for one parameter)
@@ -214,33 +215,33 @@ struct line_graph_iface
     /// @param x number of points direction to fill in x
     /// @param y number of points direction to fill in y
     virtual bool get_moving(int index, int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const { return false; }
-    
+
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
     /// @param phase 0 if in cache phase or 1 if in realtime phase
     virtual bool get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const { return false; }
-    
+
     /// Obtain subindex'th dot of parameter 'index'
     /// @param index parameter/dot number (usually tied to particular plugin control port)
     /// @param subindex dot number (there may be multiple dots graphs for one parameter)
     /// @param phase 0 if in cache phase or 1 if in realtime phase
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const { return false; }
-    
+
     /// Retrun which layers need to be redrawn in the next GTK drawing cycle
     /// @param index Parameter/graph identifier (usually tied to particular plugin control port)
     /// @param generation The overall amount of drawing cycles since the last full refresh of all surfaces
     /// @param layers Bitmask defining the layers to be redrawn (see layers_flags above)
     /// @retval true there's at least one layer to be redrawn; false nothing to draw in this cycle
     virtual bool get_layers(int index, int generation, unsigned int &layers) const { return false; }
-    
+
     /// Return a label for the crosshairs they are enabled
     /// @param x Position of the mouse pointer in x direction
     /// @param y Position of the mouse pointer in y direction
     /// @param sx Horizontal size of the widget in pixels
     /// @param sy Vertical size of the widget in pixels
     virtual std::string get_crosshair_label( int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const { std::string s = ""; return s; }
-    
+
     /// Standard destructor to make compiler happy
     virtual ~line_graph_iface() {}
 };
@@ -262,7 +263,7 @@ enum table_column_type
     TCT_LABEL, ///< string value (encoded as C-escaped string)
 };
 
-/// parameters of 
+/// parameters of
 struct table_column_info
 {
     const char *name; ///< column label
@@ -281,7 +282,7 @@ struct table_metadata_iface
 
     /// return the fixed number of rows, or 0 if the number of rows is variable
     virtual uint32_t get_table_rows() const = 0;
-    
+
     virtual ~table_metadata_iface() {}
 };
 
@@ -292,7 +293,7 @@ struct send_configure_iface
     /// @param key variable name
     /// @param value variable content
     virtual void send_configure(const char *key, const char *value) = 0;
-    
+
     virtual ~send_configure_iface() {}
 };
 
@@ -303,7 +304,7 @@ struct send_updates_iface
     /// @param key variable name
     /// @param value variable content
     virtual void send_status(const char *key, const char *value) = 0;
-    
+
     virtual ~send_updates_iface() {}
 };
 
@@ -354,6 +355,8 @@ struct plugin_metadata_iface
     virtual bool get_midi() const =0;
     /// @return true if plugin has MIDI input
     virtual bool requires_midi() const =0;
+    /// @return true if plugin requires instance access
+    virtual bool requires_instance_access() const =0;
     /// @return port offset of first control (parameter) port (= number of audio inputs + number of audio outputs in all existing plugins as for 1 Aug 2008)
     virtual int get_param_port_offset() const  = 0;
     /// @return NULL-terminated list of menu commands
@@ -414,10 +417,10 @@ struct plugin_ctl_iface
     virtual const phase_graph_iface *get_phase_graph_iface() const = 0;
     /// @return serial number of last automation write (JACK host only)
     virtual int get_write_serial(int param_no) { return 0; }
-    
+
     /// Add or update parameter automation routing
     virtual void add_automation(uint32_t source, const automation_range &dest) {}
-    /// Remove parameter automation routing        
+    /// Remove parameter automation routing
     virtual void delete_automation(uint32_t source, int param_no) {}
     /// Retrieve automation list for a given parameter
     /// @param param_no parameter to retrieve automation list for, or -1 for all
@@ -519,7 +522,7 @@ public:
     using Metadata::in_count;
     using Metadata::out_count;
     using Metadata::param_count;
-    float *ins[Metadata::in_count]; 
+    float *ins[Metadata::in_count];
     float *outs[Metadata::out_count];
     float *params[Metadata::param_count];
     bool questionable_data_reported_in;
@@ -572,7 +575,7 @@ public:
     void post_instantiate(uint32_t) {}
     /// Handle 'message context' port message
     /// @arg output_ports pointer to bit array of output port "changed" flags, note that 0 = first audio input, not first parameter (use input_count + output_count)
-    uint32_t message_run(const void *valid_ports, void *output_ports) { 
+    uint32_t message_run(const void *valid_ports, void *output_ports) {
         fprintf(stderr, "ERROR: message run not implemented\n");
         return 0;
     }
@@ -683,10 +686,10 @@ struct dssi_feedback_sender
     std::vector<int> indices;
     /// Source for the graph data (interface to marshal)
     const calf_plugins::line_graph_iface *graph;
-    
+
     /// Source for the graph data (interface to marshal)
     const calf_plugins::phase_graph_iface *phase;
-    
+
     /// Create using a new client
     dssi_feedback_sender(const char *URI, const line_graph_iface *_graph);
     dssi_feedback_sender(osctl::osc_client *_client, const line_graph_iface *_graph);
@@ -699,7 +702,7 @@ struct dssi_feedback_sender
 /// Metadata base class template, to provide default versions of interface functions
 template<class Metadata>
 class plugin_metadata: public plugin_metadata_iface
-{    
+{
 public:
     static const char *port_names[];
     static parameter_properties param_props[];
@@ -709,9 +712,9 @@ public:
     // These below are stock implementations based on enums and static members in Metadata classes
     // they may be overridden to provide more interesting functionality
 
-    const char *get_name() const { return Metadata::impl_get_name(); } 
-    const char *get_id() const { return Metadata::impl_get_id(); } 
-    const char *get_label() const { return Metadata::impl_get_label(); } 
+    const char *get_name() const { return Metadata::impl_get_name(); }
+    const char *get_id() const { return Metadata::impl_get_id(); }
+    const char *get_label() const { return Metadata::impl_get_label(); }
     int get_input_count() const { return Metadata::in_count; }
     int get_output_count() const { return Metadata::out_count; }
     int get_inputs_optional() const { return Metadata::ins_optional; }
@@ -719,6 +722,7 @@ public:
     int get_param_count() const { return Metadata::param_count; }
     bool get_midi() const { return Metadata::support_midi; }
     bool requires_midi() const { return Metadata::require_midi; }
+    bool requires_instance_access() const { return Metadata::require_instance_access; }
     bool is_rt_capable() const { return Metadata::rt_capable; }
     int get_param_port_offset()  const { return Metadata::in_count + Metadata::out_count; }
     char *get_gui_xml(const char *prefix) const { char xmlf[64]; sprintf(xmlf, "%s/%s", prefix, get_id()); char *data_ptr = calf_plugins::load_gui_xml(xmlf); return data_ptr; }
@@ -739,11 +743,11 @@ public:
     static const char *impl_get_name() { return name; } \
     static const char *impl_get_id() { return id; } \
     static const char *impl_get_label() { return label; } \
-    
+
 extern const char *calf_copyright_info;
 
 bool get_freq_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context, bool use_frequencies = true, float res = 256, float ofs = 0.4);
-    
+
 /// convert amplitude value to normalized grid-ish value
 static inline float dB_grid(float amp, float res = 256, float ofs = 0.4)
 {
@@ -769,7 +773,7 @@ static inline float dB_grid_inv(float pos, float res = 256, float ofs = 0.4)
 }
 
 /// Line graph interface implementation for frequency response graphs
-class frequency_response_line_graph: public line_graph_iface 
+class frequency_response_line_graph: public line_graph_iface
 {
 public:
     mutable bool redraw_graph;
@@ -791,7 +795,7 @@ struct preset_access_iface
 {
     virtual void store_preset() = 0;
     virtual void activate_preset(int preset, bool builtin) = 0;
-    virtual ~preset_access_iface() {} 
+    virtual ~preset_access_iface() {}
 };
 
 /// Implementation of table_metadata_iface providing metadata for mod matrices
@@ -821,7 +825,7 @@ public:
 protected:
     /// Column descriptions for table widget
     table_column_info table_columns[6];
-    
+
     unsigned int matrix_rows;
 };
 
@@ -854,7 +858,7 @@ struct automation_range
     float min_value;
     float max_value;
     int param_no;
-    
+
     automation_range(float l, float u, int param)
     : min_value(l)
     , max_value(u)

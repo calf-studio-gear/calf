@@ -153,7 +153,7 @@ calf_tuner_expose (GtkWidget *widget, GdkEventExpose *event)
         cairo_move_to (c, ox + marg - te.x_bearing, oy + marg - te.y_bearing);
         cairo_show_text (c, note);
         // octave
-        char octn[4];
+        char octn[20];
         sprintf(octn, "%d", oct);
         cairo_set_font_size(c, fsize / 2);
         cairo_text_extents (c, octn, &te);

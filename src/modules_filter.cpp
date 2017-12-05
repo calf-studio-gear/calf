@@ -395,6 +395,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp, has_lshs>::get_graph(int i
         }
         return r;
     } else if (phase and !*params[AM::param_analyzer_active]) {
+        last_peak = 0;
         redraw_graph = false;
         return false;
     } else {
@@ -403,6 +404,7 @@ bool equalizerNband_audio_module<BaseClass, has_lphp, has_lshs>::get_graph(int i
         if (!is_active
         or (subindex and !*params[AM::param_individuals])
         or (subindex > max and *params[AM::param_individuals])) {
+            last_peak = 0;
             redraw_graph = false;
             return false;
         }
@@ -510,11 +512,13 @@ inline string equalizerNband_audio_module<BaseClass, has_lphp, has_lshs>::get_cr
     return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
 
+namespace calf_plugins {
 template class equalizerNband_audio_module<equalizer5band_metadata, false, true>;
 template class equalizerNband_audio_module<equalizer8band_metadata, true, true>;
 template class equalizerNband_audio_module<equalizer12band_metadata, true, true>;
 template class equalizerNband_audio_module<equalizer20band_metadata, true, true>;
 template class equalizerNband_audio_module<equalizer58band_metadata, false, false>;
+}
 
 /**********************************************************************
  * EQUALIZER 30 BAND
@@ -945,6 +949,7 @@ xover_audio_module<XoverBaseClass>::xover_audio_module()
     is_active = false;
     srate = 0;
     redraw_graph = true;
+    buffer = NULL;
     crossover.init(AM::channels, AM::bands, 44100);
 }
 template<class XoverBaseClass>
@@ -1076,6 +1081,7 @@ bool xover_audio_module<XoverBaseClass>::get_layers(int index, int generation, u
     return crossover.get_layers(index, generation, layers);
 }
 
+namespace calf_plugins {
 template class xover_audio_module<xover2_metadata>;
 template class xover_audio_module<xover3_metadata>;
 template class xover_audio_module<xover4_metadata>;
@@ -1260,8 +1266,8 @@ uint32_t vocoder_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                         led[i] = env_mods[0][i] + env_mods[1][i];
                     
                 // advance envelopes
-                env_mods[0][i] = (fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_);
-                env_mods[1][i] = (fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_);
+                env_mods[0][i] = _sanitize((fabs(mL_) > env_mods[0][i] ? attack : release) * (env_mods[0][i] - fabs(mL_)) + fabs(mL_));
+                env_mods[1][i] = _sanitize((fabs(mR_) > env_mods[1][i] ? attack : release) * (env_mods[1][i] - fabs(mR_)) + fabs(mR_));
             }
             
             outL = pL;

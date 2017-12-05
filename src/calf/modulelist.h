@@ -15,6 +15,7 @@
     // Simulator
     PER_MODULE_ITEM(rotary_speaker,      false, "rotaryspeaker")
     PER_MODULE_ITEM(tapesimulator,       false, "tapesimulator")
+    PER_MODULE_ITEM(vinyl,               false, "vinyl")
     
     // Reverb
     PER_MODULE_ITEM(reverb,              false, "reverb")

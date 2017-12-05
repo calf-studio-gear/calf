@@ -1,0 +1,514 @@
+#Calf Flat Default
+
+pixmap_path "@guidatadir@"
+
+style "calf-default"
+{
+    GtkWidget      ::focus-line-width     = 0
+    GtkMenuBar     ::internal-padding     = 4
+    GtkArrow       ::arrow-scaling        = 0.0
+    GtkComboBox    ::arrow-size           = 13
+    GtkStatusbar   ::shadow_type          = GTK_SHADOW_NONE
+    GtkWidget      ::separator-width      = 4
+    
+    xthickness         = 0
+    ythickness         = 0
+    
+    font_name          = "Sans 8"
+    
+    #fg[NORMAL]        = "#fff"
+    #fg[PRELIGHT]      = "#fff"
+    #fg[ACTIVE]        = "#fff"
+    #fg[SELECTED]      = "#fff"
+    #fg[INSENSITIVE]   = "#aaa"
+
+    #bg[NORMAL]        = "#222"
+    #bg[PRELIGHT]      = "#444"
+    #bg[ACTIVE]        = "#222"
+    #bg[SELECTED]      = "#0af"
+    #bg[INSENSITIVE]   = "#666"
+
+    #base[NORMAL]      = "#eee"
+    #base[PRELIGHT]    = "#fff"
+    #base[ACTIVE]      = "#ddd"
+    #base[SELECTED]    = "#0af"
+    #base[INSENSITIVE] = "#666"
+
+    #text[NORMAL]      = "#333"
+    #text[PRELIGHT]    = "#000"
+    #text[ACTIVE]      = "#000"
+    #text[SELECTED]    = "#000"
+    #text[INSENSITIVE] = "#aaa"
+    
+    #engine "clearlooks" { }
+}
+
+style "debug"
+{
+    fg[NORMAL]       = "red"
+    fg[PRELIGHT]     = "green"
+    fg[SELECTED]     = "yellow"
+    fg[ACTIVE]       = "blue"
+    fg[INSENSITIVE]  = "grey"
+}
+
+style "calf-wide"
+{
+    xthickness   = 5
+    ythickness   = 4
+}
+
+style "calf-rack"
+{
+    bg_pixmap[NORMAL] = "background_rack.png"
+}
+
+style "calf-rack-title"
+{
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    font_name  = "Open Sans Condensed 11"
+    xthickness = 7
+    ythickness = 3
+}
+style "calf-rack-entry"
+{
+    font_name  = "Open Sans Condensed 11"
+    xthickness = 7
+    ythickness = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
+}
+
+style "calf-rack-widgets"
+{
+    fg[NORMAL]        = { 0.33, 0.33, 0.33 }
+    font_name         = "Sans 5"
+}
+
+style "calf-rack-label"
+{
+    fg[NORMAL]        = { 0.33, 0.33, 0.33 }
+    font_name         = "Sans 5"
+}
+
+style "calf-main-left"
+{
+    bg_pixmap[NORMAL] = "side_d_w.png"
+}
+style "calf-main-right"
+{
+    bg_pixmap[NORMAL] = "side_d_e.png"
+}
+
+
+style "calf-plugin"
+{
+    bg_pixmap[NORMAL] = "background_plugin.png"
+}
+style "calf-plugin-left"
+{
+    bg_pixmap[NORMAL] = "side_w.png"
+}
+style "calf-plugin-right"
+{
+    bg_pixmap[NORMAL] = "side_e.png"
+}
+
+style "calf-connector"
+{
+    
+}
+style "calf-connector-children"
+{
+    font_name  = "Sans 8"
+}
+style "calf-connector-title"
+{
+    font_name  = "Sans 13"
+}
+
+style "calf-label" {
+    font_name  = "Sans 7"
+    fg[NORMAL] = "#fff"
+}
+
+
+### BUTTON ###
+
+style "calf-button"
+{
+    GtkButton      ::child-displacement-x = 0
+    GtkButton      ::child-displacement-y = 0
+    GtkButton      ::inner-border         = { 10, 10, 6, 6}
+    
+    CalfButton::alpha-normal   = 0.33
+    CalfButton::alpha-prelight = 0.66
+    CalfButton::alpha-active   = 1.0
+    
+    CalfButton::border-radius  = 8
+    CalfButton::bevel          = 0
+    CalfButton::inset          = 0
+    
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
+    bg[PRELIGHT] = { 0.90, 0.90, 0.90 }
+    bg[ACTIVE] = { 0.95, 0.95, 0.95 }
+    
+    fg[NORMAL]   = "#001a1a"
+    fg[PRELIGHT] = "#001a1a"
+    fg[ACTIVE]   = "#001a1a"
+    
+    text[NORMAL]   = "#001a1a"
+    text[PRELIGHT] = "#001a1a"
+    text[ACTIVE]   = "#001a1a"
+    
+    font_name         = "Sans 8"
+    
+    xthickness = 4
+    ythickness = 3
+    
+}
+
+### TOGGLE BUTTON ###
+
+style "calf-toggle" = "calf-button"
+{
+    GtkButton::inner-border = { 10, 26, 6, 6}
+    
+    CalfToggleButton::alpha-normal   = 0.3
+    CalfToggleButton::alpha-prelight = 1.0
+    CalfToggleButton::alpha-active   = 1.0
+    
+    CalfToggleButton::border-radius  = 8
+    CalfToggleButton::bevel          = 0
+    CalfToggleButton::inset          = 0
+    
+    CalfToggleButton::indicator      = 10
+}
+
+### COMBOBOX ###
+
+style "calf-combobox"
+{
+    xthickness = 4
+    ythickness = 3
+    font_name  = "Sans 8"
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
+    base[NORMAL] = { 0.8, 0.9, 0.4 }
+    base[PRELIGHT] = { 0.89, 1.00, 0.45 }
+    text[NORMAL] = "black"
+    text[PRELIGHT] = "black"
+    text[ACTIVE] = "black"
+    CalfCombobox::border-radius  = 3
+    CalfCombobox::bevel          = 0
+    CalfCombobox::shadow         = 0
+    CalfCombobox::lights         = 0
+    CalfCombobox::lightshover    = 0
+    CalfCombobox::dull           = 0
+    CalfCombobox::dullhover      = 0
+}
+
+### TEXT ENTRY ###
+
+style "calf-entry"
+{
+    base[SELECTED] = "#D1EA73"
+    base[NORMAL]   = "#000"
+    text[SELECTED] = "#000"
+    text[NORMAL]   = "#D1EA73"
+    xthickness     = 3
+    ythickness     = 3
+    bg[NORMAL]        = "#000"
+    bg[PRELIGHT]      = "#000"
+    bg[SELECTED]      = "#000"
+    bg[ACTIVE]        = "#000"
+}
+
+### MENU ###
+
+style "calf-menu" = "calf-wide"
+{
+    fg[NORMAL]   = "#ddd"
+    fg[SELECTED] = "#fff"
+    fg[PRELIGHT] = "#fff"
+    bg[NORMAL]   = "#111"
+    bg[SELECTED] = "#333"
+    font_name    = "Sans 8"
+    bg_pixmap[NORMAL] = "background_menu.png"
+}
+
+### H/V SCALES ###
+
+style "calf-scale"
+{
+    fg[NORMAL]                     = "white"
+    GtkRange::trough-border        = 0
+    GtkScale::trough-side-details  = 0
+    GtkScale::activate-slider      = 1
+}
+
+style "calf-scale-small" = "calf-scale"
+{
+    GtkScale::slider-length = 38
+    GtkScale::slider-width = 25
+}
+
+style "calf-scale-big" = "calf-scale"
+{
+    GtkScale::slider-length = 46
+    GtkScale::slider-width = 36
+}
+
+### SCROLLBAR ###
+
+style "calf-scrollbar"
+{
+    
+}
+
+### NOTEBOOK ###
+
+style "calf-notebook"
+{
+    CalfNotebook::background-alpha = 0.5
+    
+    xthickness   = 12
+    ythickness   = 8
+    
+    fg[NORMAL]   = "#fff"
+    fg[PRELIGHT] = "#fff"
+    fg[ACTIVE]   = "#eee"
+    
+    bg[NORMAL]   = "#fff"
+    
+    base[NORMAL]   = "#000"
+}
+
+### TREEVIEW ###
+
+style "calf-treeview"
+{
+    GtkTreeView::odd-row-color = "#323942"
+    base[NORMAL]       = "#222932" # rows background
+    base[SELECTED]     = "#49596a" # rows background selected
+    base[ACTIVE]       = "#49596a" # rows background selected but not focused
+    
+    text[NORMAL]       = "#dddddd" # rows text
+    text[SELECTED]     = "#ffffff" # rows text selected
+    text[ACTIVE]       = "#ffffff" # rows text selected but not focused
+    
+    xthickness   = 24
+    ythickness   = 8
+}
+
+style "calf-treehead"
+{
+    bg[NORMAL]         = "#eeeeee" # header background
+    fg[NORMAL]         = "white" # header text
+    fg[PRELIGHT]       = "white" # header text
+    fg[SELECTED]       = "white" # header text
+    fg[ACTIVE]         = "white" # header text
+}
+
+
+### FRAMES ###
+
+style "calf-frame"
+{
+    xthickness = 6
+    ythickness = 6
+    fg[NORMAL]   = "white"
+    text[NORMAL] = "white"
+    CalfFrame::border-radius = 6
+}
+
+### VUMETERS ###
+style "calf-vumeter"
+{
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
+    fg[NORMAL] = { 0, 0.11, 0.11 }
+    fg[ACTIVE] = "#cc0000"
+    CalfVUMeter::border-radius  = 3
+    CalfVUMeter::bevel          = 0
+    CalfVUMeter::glass          = 0
+    xthickness = 4
+    ythickness = 3
+}
+
+### METERSCALE ###
+style "calf-meterscale"
+{
+    fg[NORMAL] = { 1.00, 1.00, 1.00 }
+    xthickness = 5
+}
+style "calf-meterscale-rack"
+{
+    fg[NORMAL] = { 0.33, 0.33, 0.33 }
+}
+
+### LED ###
+style "calf-led"
+{
+    bg[NORMAL] = { 0.9, 0.9, 0.9 }
+    CalfLed::border-radius  = 3
+    CalfLed::bevel          = 0
+    CalfLed::glass          = 0
+    xthickness = 4
+    ythickness = 3
+}
+
+### DISPLAYS ###
+style "calf-display" {
+    bg[NORMAL]   = { 0.9, 0.9, 0.9 }
+    base[NORMAL] = { 0.89, 1.00, 0.45 }
+    fg[NORMAL]   = { 0.35, 0.4, 0.2 }
+    text[NORMAL] = { 0.35, 0.4, 0.2 }
+    xthickness = 0
+    ythickness = 0
+    CalfLineGraph::border-radius  = 0
+    CalfLineGraph::bevel          = 0
+    CalfLineGraph::shadow         = 0
+    CalfLineGraph::lights         = 0
+    CalfLineGraph::dull           = 0
+    CalfPhaseGraph::border-radius = 0
+    CalfPhaseGraph::bevel         = 0
+    CalfPhaseGraph::shadow        = 0
+    CalfPhaseGraph::lights        = 0
+    CalfPhaseGraph::dull          = 0
+    CalfPattern::border-radius = 0
+    CalfPattern::bevel         = 0
+    CalfPattern::shadow        = 0
+    CalfPattern::lights        = 0
+    CalfPattern::dull          = 0
+}
+
+### KNOBS ###
+style "calf-knob"
+{
+    fg[NORMAL]   = "#001a1a" # ring unlit color
+    fg[PRELIGHT] = "#001a1a" # ring lit color
+    fg[ACTIVE]   = "#001a1a" # tick color
+    CalfKnob::alpha-normal   = 0.3
+    CalfKnob::alpha-prelight = 1.0
+}
+style "calf-knob1" = "calf-knob" {
+    CalfKnob::ring-margin = 2.2
+    CalfKnob::ring-width  = 2.2
+    CalfKnob::tick-margin = 6.0
+    CalfKnob::tick-width  = 3.0
+    CalfKnob::tick-length = 3.0
+}
+style "calf-knob2" = "calf-knob" {
+    CalfKnob::ring-margin = 5.5
+    CalfKnob::ring-width  = 3.5
+    CalfKnob::tick-margin = 12.0
+    CalfKnob::tick-width  = 1.0
+    CalfKnob::tick-length = 8.0
+}
+style "calf-knob3" = "calf-knob" {
+    CalfKnob::ring-margin = 4
+    CalfKnob::ring-width  = 3.8
+    CalfKnob::tick-margin = 9.2
+    CalfKnob::tick-width  = 1.0
+    CalfKnob::tick-length = 5.5
+}
+style "calf-knob4" = "calf-knob" {
+    CalfKnob::ring-margin = 6.2
+    CalfKnob::ring-width  = 4.2
+    CalfKnob::tick-margin = 12.0
+    CalfKnob::tick-width  = 1.0
+    CalfKnob::tick-length = 14.0
+}
+style "calf-knob5" = "calf-knob" {
+    CalfKnob::ring-margin = 8.5
+    CalfKnob::ring-width  = 4.5
+    CalfKnob::tick-margin = 16.5
+    CalfKnob::tick-width  = 1.0
+    CalfKnob::tick-length = 17.0
+}
+
+### TOGGLE ###
+style "calf-toggle0" {
+    xthickness = 24
+    ythickness = 24
+}
+style "calf-toggle1" {
+    xthickness = 32
+    ythickness = 30
+}
+style "calf-toggle2" {
+    xthickness = 60
+    ythickness = 50
+}
+
+widget "*Calf*"                                   style : rc "calf-default"
+
+widget "*Calf-Rack"                               style : highest "calf-rack"
+widget "*Calf-Rack*"                              style : highest "calf-rack-widgets"
+widget "*Calf-Rack*Calf-Rack-Title"               style : highest "calf-rack-title"
+widget "*Calf-Rack*Calf-Rack-Entry"               style : highest "calf-rack-entry"
+widget "*CalfMainLeft"                            style : highest "calf-main-left"
+widget "*CalfMainRight"                           style : highest "calf-main-right"
+
+widget "*Calf-Plugin"                             style : highest "calf-plugin"
+widget "*CalfPluginLeft"                          style : highest "calf-plugin-left"
+widget "*CalfPluginRight"                         style : highest "calf-plugin-right"
+
+widget "*Connector"                               style : highest "calf-connector"
+widget "*Connector*View*"                         style : highest "calf-connector-children"
+widget "*Connector*Ports*"                        style : highest "calf-connector-children"
+widget "*Connector*Title*"                        style : highest "calf-connector-title"
+
+widget "*Calf-Label"                              style : highest "calf-label"
+widget "*Calf-Value"                              style : highest "calf-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Label"        style : highest "calf-rack-label"
+widget "*Calf-Rack*Calf-Plugin*Calf-Value"        style : highest "calf-rack-label"
+
+widget "*Calf-Menu*"                              style : highest "calf-menu"
+
+widget "*Calf*Notebook*"                          style : highest "calf-notebook"
+
+widget "*Calf*Frame"                              style : highest "calf-frame"
+
+
+widget "*Calf*Button*"                            style : highest "calf-button"
+widget "*Calf*ToggleButton*"                      style : highest "calf-toggle"
+widget "*Calf*CheckButton"                        style : highest "calf-toggle"
+widget "*Calf*RadioButton"                        style : highest "calf-toggle"
+
+widget "*Calf*Combobox*"                          style : highest "calf-combobox"
+
+widget "*Calf*Entry*"                             style : highest "calf-entry"
+
+widget "*Calf*Range"                              style : highest "calf-scale"
+widget "*Calf*Scale1"                             style : highest "calf-scale-small"
+widget "*Calf*Scale2"                             style : highest "calf-scale-big"
+widget_class "*Scrollbar*"                        style : highest "calf-scrollbar"
+
+widget_class "*Calf*GtkTreeView*"                 style : highest "calf-treeview"
+widget_class "*Calf*TreeView*Button*"             style : highest "calf-treehead"
+
+widget "*Calf*VUMeter"                            style : highest "calf-vumeter"
+widget "*CalfVUMeter*"                            style : highest "calf-vumeter"
+widget "*CalfMeterScale*"                         style : highest "calf-meterscale"
+widget "*Calf*MeterScale"                         style : highest "calf-meterscale"
+widget "*Calf-Rack*MeterScale"                    style : highest "calf-meterscale-rack"
+
+
+widget "*Calf*Led*"                                style : highest "calf-led"
+widget "*Calf*LED*"                                style : highest "calf-led"
+
+widget "*Calf*Graph"                              style : highest "calf-display"
+widget "*Calf*Tuner"                              style : highest "calf-display"
+widget "*Calf*Pattern"                            style : highest "calf-display"
+
+widget "*Calf*Knob*1*"                            style : highest "calf-knob1"
+widget "*Calf*Knob*2*"                            style : highest "calf-knob2"
+widget "*Calf*Knob*3*"                            style : highest "calf-knob3"
+widget "*Calf*Knob*4*"                            style : highest "calf-knob4"
+widget "*Calf*Knob*5*"                            style : highest "calf-knob5"
+
+widget "*CalfToggle*_0*"                          style : highest "calf-toggle0"
+widget "*CalfToggle*_1*"                          style : highest "calf-toggle1"
+widget "*CalfToggle*_2*"                          style : highest "calf-toggle2"

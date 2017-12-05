@@ -192,6 +192,7 @@ multibandlimiter_audio_module::multibandlimiter_audio_module()
     _sanitize           = false;
     is_active           = false;
     cnt = 0;
+    buffer = NULL;
     
     for(int i = 0; i < strips; i ++) {
         weight_old[i] = -1.f;
@@ -580,6 +581,7 @@ sidechainlimiter_audio_module::sidechainlimiter_audio_module()
     _sanitize           = false;
     is_active           = false;
     cnt = 0;
+    buffer = NULL;
     
     for(int i = 0; i < strips; i ++) {
         weight_old[i] = -1.f;

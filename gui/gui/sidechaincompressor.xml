@@ -89,7 +89,7 @@
       <frame label="Compression">
         <vbox spacing="8">
             <if cond="directlink">
-                <line-graph refresh="1" width="265" height="265" param="bypass" square="1" expand="1" fill="1"/>
+                <line-graph refresh="1" width="320" height="320" param="bypass" square="1" expand="1" fill="1"/>
             </if>
             <vbox spacing="3">
                 <vumeter param="compression" position="2" mode="2" hold="1.5" attach-w="2" expand="0" fill="1"/>
@@ -115,7 +115,7 @@
         <if cond="directlink">
             <frame label="S/C Filter">
                 <vbox spacing="8">
-                    <line-graph refresh="1" width="235" height="112" param="sc_listen" expand="1" fill="1" crosshairs="1" freqhandles="4" handle1-x="f1_freq" label1="F1" handle2-x="f2_freq" label2="F2" active1="f1_active" active2="f2_active" />
+                    <line-graph refresh="1" width="235" height="112" param="sc_listen" expand="1" fill="1" crosshairs="1" freqhandles="2" handle1-x="f1_freq" label1="F1" handle2-x="f2_freq" label2="F2" active1="f1_active" active2="f2_active" />
                     <combo param="sc_mode" fill="0" expand="0" />
                 </vbox>
             </frame>

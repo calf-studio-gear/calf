@@ -28,7 +28,7 @@
 void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int sy, int ox, int oy, float radius, float bevel, float brightness, int shadow, float lights, float dull) 
 {
     float br = brightness * 0.5 + 0.5;
-    
+    //printf("bevel:%.2f brightness:%.2f shadow:%d lights:%.2f dull:%.2f\n", bevel, brightness, shadow, lights, dull);
     if (!c) {
         GdkWindow *window = widget->window;
         c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -45,7 +45,8 @@ void display_background(GtkWidget *widget, cairo_t* c, int x, int y, int sx, int
     // inner screen
     get_base_color(widget, NULL, &r, &g, &b);
     cairo_pattern_t *pt = cairo_pattern_create_linear(x + ox, y + oy, x + ox, y + sy);
-    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * r * 0.75, br * g * 0.75, br * b * 0.75);
+    float l = (1. - 0.25 * lights);
+    cairo_pattern_add_color_stop_rgb(pt, 0.0, br * r * l, br * g * l, br * b * l);
     cairo_pattern_add_color_stop_rgb(pt, 1.0, br * r, br * g, br * b);
     cairo_set_source (c, pt);
     cairo_rectangle(c, x + ox, y + oy, sx, sy);

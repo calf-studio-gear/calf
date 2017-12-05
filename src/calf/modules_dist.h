@@ -29,6 +29,8 @@
 #include "giface.h"
 #include "metadata.h"
 #include "plugin_tools.h"
+#include <fluidsynth.h>
+
 
 namespace calf_plugins {
 
@@ -105,6 +107,55 @@ public:
     void params_changed();
     void set_sample_rate(uint32_t sr);
     uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+};
+
+/**********************************************************************
+ * VINYL by Markus Schmidt
+**********************************************************************/
+
+class vinyl_audio_module:
+    public audio_module<vinyl_metadata>, public frequency_response_line_graph
+{
+    typedef vinyl_audio_module AM;
+    bool active;
+    uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
+    float meter_inL, meter_inR, meter_outL, meter_outR;
+    mutable bool redraw_output;
+    
+    float speed_old, freq_old, aging_old;
+    
+    const static int channels = 2;
+    const static int _filters = 5;
+    const static int _synths = 7;
+    const static int _synthsp = 3;
+    const float freq_min = 600.f;
+    const float freq_max = 1800.f;
+    
+    dsp::bypass bypass;
+    vumeters meters;
+    dsp::simple_lfo lfo;
+    dsp::biquad_d2 filters[2][_filters];
+    fluid_synth_t *synth;
+    fluid_settings_t* settings;
+    float last_gain[_synths];
+    
+    uint32_t dbufsize, dbufpos;
+    float *dbuf;
+    float dbufrange;
+    
+public:
+    uint32_t srate;
+    vinyl_audio_module();
+    ~vinyl_audio_module();
+    void params_changed();
+    void activate();
+    void post_instantiate(uint32_t sr);
+    void set_sample_rate(uint32_t sr);
+    void deactivate();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    float freq_gain(int index, double freq) const;
+    bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
+    bool get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************

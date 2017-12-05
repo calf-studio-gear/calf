@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
-AC_INIT([calf],[0.0.60],[wdev@foltman.com])
+AC_INIT([calf],[0.90.0],[wdev@foltman.com])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 LT_INIT([dlopen])
@@ -25,6 +25,7 @@ JACK_ENABLED="no"
 OLD_JACK="no"
 GUI_ENABLED="no"
 LASH_ENABLED="no"
+OBS_CHECK_ENABLED="yes"
 
 ############################################################################################
 # Create configure substitutions for dependencies
@@ -73,6 +74,10 @@ fi
 if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_MIDI_DEPS, jack >= 0.105.0, OLD_JACK="no", OLD_JACK="yes")
 fi
+if test "$JACK_FOUND" = "yes"; then
+  PKG_CHECK_MODULES(JACK_RENAME_PORT, jack >= 0.124.2 jack < 1.9.0, JACK_HAS_RENAME="yes", JACK_HAS_RENAME="no")
+  PKG_CHECK_MODULES(JACK_RENAME_PORT, jack >= 1.9.11, JACK_HAS_RENAME="yes", JACK_HAS_RENAME_DUMMY="no")
+fi
 
 PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 6, LV2_FOUND="yes", LV2_FOUND="no")
 
@@ -116,6 +121,13 @@ if test "$LASH_FOUND" = "yes"; then
       [if test "$withval" = "no"; then LASH_ENABLED="no"; fi],[])
   AC_MSG_RESULT($LASH_ENABLED)
 fi
+
+AC_MSG_CHECKING([whether to check for old LADSPA plugin])
+AC_ARG_WITH(obsolete-check,
+AC_HELP_STRING([--without-obsolete-check],[do not check for obsolete files]),
+  [if test "$withval" = "no"; then OBS_CHECK_ENABLED="no"; fi],[])
+AC_MSG_RESULT($OBS_CHECK_ENABLED)
+
 
 AC_MSG_CHECKING([whether to enable experimental/unfinished features])
 AC_ARG_ENABLE(experimental,
@@ -182,6 +194,9 @@ fi
 if test "$OLD_JACK" = "yes"; then
   AC_DEFINE(OLD_JACK, 1, [Old JACK version (with extra nframes argument) is to be used])
 fi
+if test "$JACK_HAS_RENAME" = "yes"; then
+  AC_DEFINE(JACK_HAS_RENAME, 1, [JACK function jack_port_rename should be used instead of jack_port_set_name])
+fi
 if test "$LASH_ENABLED" = "yes"; then
   AC_DEFINE(USE_LASH, 1, [LASH Audio Session Handler client functionality is enabled])
   if test "$LASH_0_6_FOUND" = "yes"; then
@@ -228,7 +243,7 @@ AC_ARG_WITH([bash-completion-dir],
     
 if test "x$with_bash_completion_dir" = "xyes"; then
     PKG_CHECK_MODULES([BASH_COMPLETION], [bash-completion >= 2.0],
-        [BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion`"],
+        [BASH_COMPLETION_DIR="`pkg-config --define-variable=prefix=$prefix --variable=completionsdir bash-completion`"],
         [BASH_COMPLETION_DIR="$datadir/bash-completion/completions"])
 else
     BASH_COMPLETION_DIR="$with_bash_completion_dir"
@@ -263,10 +278,44 @@ if test "$LASH_ENABLED" = "yes"; then
   AC_MSG_RESULT([    Unstable LASH API:           $LASH_0_6_FOUND])
 fi
 AC_MSG_RESULT([    Old-style JACK MIDI:         $OLD_JACK
+    JACK has jack_port_rename:   $JACK_HAS_RENAME
     
     Installation prefix:         $prefix
     
 ])
+
+if test "$OBS_CHECK_ENABLED" == "yes"; then
+for fn in $prefix/lib/ladspa /usr/lib/ladspa /usr/local/lib/ladspa `echo $LADSPA_PATH | tr : "\n"` ; do
+    fn2=$fn/calf.so
+    if test -a $fn2; then
+        AC_MSG_ERROR([
+
+Obsolete LADSPA version of the Calf plugins has been detected:
+
+    $fn2
+
+It will interfere with the current version. Please remove the file and try
+again.
+])
+    fi
+done
+fnr=`dirname $prefix/lib/lv2/calf.lv2/calf.so`
+for fn in /usr/lib/lv2 /usr/local/lib/lv2 `echo $LV2_PATH | tr : "\n"` ; do
+    fn2=$fn/calf.lv2/calf.so
+    echo "Checking $fn2"
+    if test -a $fn2 -a "`dirname $fn2`" != "$fnr"; then
+        AC_MSG_ERROR([
+
+Another version of the Calf plugins has been detected:
+
+    $fn2
+
+It will interfere with the current version. Please remove the old version
+from $fn/calf.lv2 and try again.
+    ])
+    fi
+done
+fi
 
 if test "$SLV2_UNSUPPORTED" == "yes" -a "$LV2_ENABLED" == "yes"; then 
     AC_MSG_RESULT([

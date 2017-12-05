@@ -76,6 +76,8 @@ struct plugin_proxy_base
     int param_offset;
     /// Signal handler for main widget destroyed
     gulong widget_destroyed_signal;
+    /// Signal handler for external window destroyed
+    gulong window_destroyed_signal;
     
     plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features);
 
@@ -107,21 +109,23 @@ struct plugin_proxy_base
 };
 
 plugin_proxy_base::plugin_proxy_base(const plugin_metadata_iface *metadata, LV2UI_Write_Function wf, LV2UI_Controller c, const LV2_Feature* const* features)
+  : instance_handle(NULL),
+    data_access(NULL),
+    urid_map(NULL),
+    ext_ui_host(NULL),
+    instance(NULL)
 {
     plugin_metadata = metadata;
     
     write_function = wf;
     controller = c;
-
-    instance = NULL;
-    instance_handle = NULL;
-    data_access = NULL;
-    ext_ui_host = NULL;
+    
     atom_present = true; // XXXKF
     
     param_count = metadata->get_param_count();
     param_offset = metadata->get_param_port_offset();
     widget_destroyed_signal = 0;
+    window_destroyed_signal = 0;
     
     /// Block all updates until GUI is ready
     sends.resize(param_count, false);
@@ -262,6 +266,7 @@ struct lv2_plugin_proxy: public plugin_ctl_iface, public plugin_proxy_base, publ
     : plugin_proxy_base(md, wf, c, f)
     {
         gui = NULL;
+        source_id = 0;
         if (instance)
         {
             conditions.insert("directlink");
@@ -425,10 +430,16 @@ void gui_cleanup(LV2UI_Handle handle)
     }
     gui->destroy_child_widgets(gui->optwidget);
     gui->optwidget = NULL;
-    if (gui->optwindow)
-        gtk_widget_destroy(gui->optwindow);
+
     if (gui->opttitle)
+    {
         free((void*)gui->opttitle);
+
+        // idle is no longer called after this, so make sure all events are handled now
+        while (gtk_events_pending())
+            gtk_main_iteration();
+    }
+
     delete gui;
 }
 
@@ -479,11 +490,12 @@ void gui_destroy(GtkWidget*, gpointer data)
 int gui_show(LV2UI_Handle handle)
 {
     plugin_gui *gui = (plugin_gui *)handle;
+    lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
 
     if (! gui->optwindow)
     {
         gui->optwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        g_signal_connect(G_OBJECT(gui->optwindow), "destroy", G_CALLBACK(gui_destroy), (gpointer)gui);
+        proxy->window_destroyed_signal = g_signal_connect(G_OBJECT(gui->optwindow), "destroy", G_CALLBACK(gui_destroy), (gpointer)gui);
 
         if (gui->optwidget)
             gtk_container_add(GTK_CONTAINER(gui->optwindow), gui->optwidget);
@@ -503,9 +515,22 @@ int gui_show(LV2UI_Handle handle)
 int gui_hide(LV2UI_Handle handle)
 {
     plugin_gui *gui = (plugin_gui *)handle;
+    lv2_plugin_proxy *proxy = dynamic_cast<lv2_plugin_proxy *>(gui->plugin);
 
     if (gui->optwindow)
+    {
+        g_signal_handler_disconnect(gui->optwindow, proxy->window_destroyed_signal);
+        proxy->window_destroyed_signal = 0;
+
         gtk_widget_hide_all(gui->optwindow);
+        gtk_widget_destroy(gui->optwindow);
+        gui->optwindow = NULL;
+        gui->optclosed = true;
+
+        // idle is no longer called after this, so make sure all events are handled now
+        while (gtk_events_pending())
+            gtk_main_iteration();
+    }
 
     return 0;
 }

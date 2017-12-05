@@ -745,10 +745,19 @@ void gtk_main_window::create()
     register_icons();
     toplevel = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
     std::string title = "Calf JACK Host";
-    gtk_window_set_title(toplevel, title.c_str()); //(owner->get_client_name() + " - Calf JACK Host").c_str());
+    if (!owner->get_client_name().empty())
+        title = title + " - session: " + owner->get_client_name();
+    gtk_window_set_title(toplevel, title.c_str());
     gtk_window_set_icon_name(toplevel, "calf");
     gtk_window_set_role(toplevel, "calf_rack");
-    
+    //due to https://developer.gnome.org/gtk2/stable/GtkWindow.html
+    //gtk_window_set_wmclass (). even though it says not to use this
+    //function, it is the only way to get primitive WMs like fluxbox
+    //to separate calf instances so that it can remember different positions.
+    //Unlike what is stated there gtk_window_set_role() is not 
+    //interpreted correctly by fluxbox and thus wmclass call is not
+    //yet obsolete
+    gtk_window_set_wmclass(toplevel, title.c_str(), "calfjackhost");
     
     load_style((PKGLIBDIR "styles/" + get_config()->style).c_str());
     

@@ -41,6 +41,7 @@ using namespace calf_plugins;
 stereo_audio_module::stereo_audio_module() {
     active      = false;
     _phase      = -1;
+    buffer = NULL;
 }
 stereo_audio_module::~stereo_audio_module() {
     free(buffer);
@@ -256,6 +257,7 @@ mono_audio_module::mono_audio_module() {
     meter_outR  = 0.f;
     _phase      = -1.f;
     _sc_level   = 0.f;
+    buffer = NULL;
 }
 mono_audio_module::~mono_audio_module() {
     free(buffer);
@@ -576,7 +578,8 @@ multibandenhancer_audio_module::multibandenhancer_audio_module()
 }
 multibandenhancer_audio_module::~multibandenhancer_audio_module()
 {
-    free(phase_buffer);
+    for (int i = 0; i < strips; i++)
+      free(phase_buffer[i]);
 }
 void multibandenhancer_audio_module::activate()
 {
@@ -806,6 +809,7 @@ void multispread_audio_module::params_changed()
     or  *params[param_amount1] != amount1
     or  *params[param_amount2] != amount2
     or  *params[param_amount3] != amount3
+    or  *params[param_intensity] != intensity
     or  *params[param_filters] != filters) {
         redraw_graph = true;
         amount0 = *params[param_amount0];
@@ -816,9 +820,11 @@ void multispread_audio_module::params_changed()
         int amount = filters * 4;
         float q = filters / 3.;
         float gain1, gain2;
+        float j = 1. + pow(1 - *params[param_intensity], 4) * 99;
         for (int i = 0; i < amount; i++) {
-            gain1 = *params[param_amount0 + int(i / filters)];
-            gain2 = 1. / *params[param_amount0 + int(i / filters)];
+            float f = pow(*params[param_amount0 + int(i / filters)], 1. / j);
+            gain1 = f;
+            gain2 = 1. / f;
             L[i].set_peakeq_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)amount), q, (i % 2) ? gain1 : gain2, (double)srate);
             R[i].set_peakeq_rbj(pow(10, fcoeff + (0.5f + (float)i) * 3.f / (float)amount), q, (i % 2) ? gain2 : gain1, (double)srate);
         }

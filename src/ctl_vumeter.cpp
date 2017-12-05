@@ -96,9 +96,9 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         vu->cache_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height );
         cairo_t *cache_cr = cairo_create( vu->cache_surface );
         
-        float radius, bevel;
+        float radius, bevel, glass;
         get_bg_color(widget, NULL, &r, &g, &b);
-        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "glass", &glass, NULL);
         create_rectangle(cache_cr, 0, 0, width, height, radius);
         cairo_set_source_rgb(cache_cr, r, g, b);
         cairo_fill(cache_cr);
@@ -184,12 +184,14 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         }
         // create blinder pattern
         cairo_pattern_t *pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
-        cairo_pattern_add_color_stop_rgba (pat, 0, 1, 1, 1, 0.25);
-        cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.5, 0.5, 0.5, 0.0);
-        cairo_pattern_add_color_stop_rgba (pat, 1, 0.0, 0.0, 0.0, 0.25);
-        cairo_rectangle(cache_cr, led_x, led_y, led_w, led_h);
-        cairo_set_source(cache_cr, pat);
-        cairo_fill(cache_cr);
+        if (glass > 0.f) {
+            cairo_pattern_add_color_stop_rgba (pat, 0, 1, 1, 1, 0.25 * glass);
+            cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.5, 0.5, 0.5, 0.0);
+            cairo_pattern_add_color_stop_rgba (pat, 1, 0.0, 0.0, 0.0, 0.25 * glass);
+            cairo_rectangle(cache_cr, led_x, led_y, led_w, led_h);
+            cairo_set_source(cache_cr, pat);
+            cairo_fill(cache_cr);
+        }
         
         // create overlay
         vu->cache_overlay = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -202,10 +204,11 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         
         // create blinder pattern
         pat = cairo_pattern_create_linear (led_x, led_y, led_x, led_y + led_h);
-        cairo_pattern_add_color_stop_rgba (pat, 0, 0.2, 0.2, 0.2, 0.7);
+        float c1 = 0.05 + 0.15 * glass;
+        cairo_pattern_add_color_stop_rgba (pat, 0, c1, c1, c1, 0.7);
         cairo_pattern_add_color_stop_rgba (pat, 0.4, 0.05, 0.05, 0.05, 0.7);
-        cairo_pattern_add_color_stop_rgba (pat, 0.401, 0.05, 0.05, 0.05, 0.9);
-        cairo_pattern_add_color_stop_rgba (pat, 1, 0.05, 0.05, 0.05, 0.75);
+        cairo_pattern_add_color_stop_rgba (pat, 0.401, 0.05, 0.05, 0.05, 0.7 + 0.2 * glass);
+        cairo_pattern_add_color_stop_rgba (pat, 1, 0.05, 0.05, 0.05, 0.7 + 0.05 * glass);
         
         // draw on top of overlay
         cairo_set_source(over_cr, pat);
@@ -417,6 +420,9 @@ calf_vumeter_class_init (CalfVUMeterClass *klass)
     gtk_widget_class_install_style_property(
         widget_class, g_param_spec_float("bevel", "Bevel", "Bevel the object",
         -2, 2, 0.2, GParamFlags(G_PARAM_READWRITE)));
+    gtk_widget_class_install_style_property(
+        widget_class, g_param_spec_float("glass", "Glass", "Glass effect on top",
+        0, 1, 1, GParamFlags(G_PARAM_READWRITE)));
 }
 
 static void

@@ -195,7 +195,7 @@ float gain_reduction_audio_module::get_comp_level() {
     return meter_comp;
 }
 
-bool gain_reduction_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool gain_reduction_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
     if (!is_active or subindex > 1)
@@ -224,7 +224,7 @@ bool gain_reduction_audio_module::get_graph(int subindex, float *data, int point
     return true;
 }
 
-bool gain_reduction_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool gain_reduction_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
         return false;
@@ -236,7 +236,7 @@ bool gain_reduction_audio_module::get_dot(int subindex, float &x, float &y, int 
     return true;
 }
 
-bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool gain_reduction_audio_module::_get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     if (!is_active)
         return false;
@@ -257,7 +257,7 @@ bool gain_reduction_audio_module::get_gridline(int subindex, float &pos, bool &v
     return result;
 }
 
-bool gain_reduction_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool gain_reduction_audio_module::_get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
@@ -291,7 +291,8 @@ gain_reduction2_audio_module::gain_reduction2_audio_module()
     mute            = -1;
     old_y1          = 0.f;
     old_yl          = 0.f;
-    old_detected    = 0.f;
+    old_mae         = 0.f;
+    old_mre         = 0.f;
     redraw_graph    = true;
 }
 
@@ -342,18 +343,24 @@ void gain_reduction2_audio_module::process(float &left)
             
         xl = xg - yg;
             
-        y1 = std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl);
-        yl = attack_coeff*old_yl+(1.f-attack_coeff)*y1;
+        y1 = _sanitize(std::max(xl, release_coeff*old_y1+(1.f-release_coeff)*xl));
+        yl = _sanitize(attack_coeff*old_yl+(1.f-attack_coeff)*y1);
         
         cdb = -yl;
         gain = exp(cdb/20.f*log(10.f));
 
-    left *= gain * makeup;
-    meter_out = (fabs(left));
+        left *= gain * makeup;
+        meter_out = (fabs(left));
         meter_comp = gain;
-    detected = (exp(yg/20.f*log(10.f))+old_detected)/2.f;
-    old_detected = detected;
 
+        float mre = _sanitize(std::max(xg, release_coeff*old_mre+(1.f-release_coeff)*xg));
+        float mae = _sanitize(attack_coeff*old_mae+(1.f-attack_coeff)*mre);
+        
+        old_mre = mre;
+        old_mae = mae;
+        
+        detected = exp(mae/20.f*log(10.f));
+    
         old_yl = yl;
         old_y1 = y1;
     }
@@ -423,7 +430,7 @@ float gain_reduction2_audio_module::get_comp_level() {
     return meter_comp;
 }
 
-bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool gain_reduction2_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
     if (!is_active or subindex > 1)
@@ -452,7 +459,7 @@ bool gain_reduction2_audio_module::get_graph(int subindex, float *data, int poin
     return true;
 }
 
-bool gain_reduction2_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool gain_reduction2_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
         return false;
@@ -464,7 +471,7 @@ bool gain_reduction2_audio_module::get_dot(int subindex, float &x, float &y, int
     return true;
 }
 
-bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool gain_reduction2_audio_module::_get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     bool tmp;
     vertical = (subindex & 1) != 0;
@@ -483,7 +490,7 @@ bool gain_reduction2_audio_module::get_gridline(int subindex, float &pos, bool &
     return result;
 }
 
-bool gain_reduction2_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool gain_reduction2_audio_module::_get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
@@ -689,7 +696,7 @@ float expander_audio_module::get_expander_level() {
     return meter_gate;
 }
 
-bool expander_audio_module::get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
+bool expander_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
     if (!is_active or subindex > 1)
@@ -717,7 +724,7 @@ bool expander_audio_module::get_graph(int subindex, float *data, int points, cai
     return true;
 }
 
-bool expander_audio_module::get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
+bool expander_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
     if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
         return false;
@@ -729,7 +736,7 @@ bool expander_audio_module::get_dot(int subindex, float &x, float &y, int &size,
     return true;
 }
 
-bool expander_audio_module::get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
+bool expander_audio_module::_get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
     bool tmp;
     vertical = (subindex & 1) != 0;
@@ -748,7 +755,7 @@ bool expander_audio_module::get_gridline(int subindex, float &pos, bool &vertica
     return result;
 }
 
-bool expander_audio_module::get_layers(int index, int generation, unsigned int &layers) const
+bool expander_audio_module::_get_layers(int index, int generation, unsigned int &layers) const
 {
     layers = LG_REALTIME_DOT | (generation ? 0 : LG_CACHE_GRID) | ((redraw_graph || !generation) ? LG_CACHE_GRAPH : 0);
     return true;
@@ -1148,22 +1155,22 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
 }
 bool compressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    return compressor.get_graph(subindex, data, points, context, mode);
+    return compressor._get_graph(subindex, data, points, context, mode);
 }
 
 bool compressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    return compressor.get_dot(subindex, x, y, size, context);
+    return compressor._get_dot(subindex, x, y, size, context);
 }
 
 bool compressor_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    return compressor.get_gridline(subindex, pos, vertical, legend, context);
+    return compressor._get_gridline(subindex, pos, vertical, legend, context);
 }
 
 bool compressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    return compressor.get_layers(index, generation, layers);
+    return compressor._get_layers(index, generation, layers);
 }
 
 /**********************************************************************
@@ -1501,7 +1508,7 @@ bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int ph
     if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
     } else if(index == param_bypass) {
-        return compressor.get_graph(subindex, data, points, context, mode);
+        return compressor._get_graph(subindex, data, points, context, mode);
     }
     return false;
 }
@@ -1511,7 +1518,7 @@ bool sidechaincompressor_audio_module::get_dot(int index, int subindex, int phas
     if (!is_active or !phase)
         return false;
     if (index == param_bypass) {
-        return compressor.get_dot(subindex, x, y, size, context);
+        return compressor._get_dot(subindex, x, y, size, context);
     }
     return false;
 }
@@ -1521,7 +1528,7 @@ bool sidechaincompressor_audio_module::get_gridline(int index, int subindex, int
     if (!is_active or phase)
         return false;
     if (index == param_bypass) {
-        return compressor.get_gridline(subindex, pos, vertical, legend, context);
+        return compressor._get_gridline(subindex, pos, vertical, legend, context);
     } else {
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
@@ -1531,7 +1538,7 @@ bool sidechaincompressor_audio_module::get_gridline(int index, int subindex, int
 bool sidechaincompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     if(index == param_bypass)
-        return compressor.get_layers(index, generation, layers);
+        return compressor._get_layers(index, generation, layers);
     bool redraw = redraw_graph || !generation;
     layers = 0 | (generation ? 0 : LG_CACHE_GRID) | (redraw ? LG_CACHE_GRAPH : 0);
     redraw_graph = false;
@@ -1725,7 +1732,7 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, int ph
         
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m) {
-        r = m->get_graph(subindex, data, points, context, mode);
+        r = m->_get_graph(subindex, data, points, context, mode);
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
@@ -1749,7 +1756,7 @@ bool multibandcompressor_audio_module::get_dot(int index, int subindex, int phas
 {
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_dot(subindex, x, y, size, context);
+        return m->_get_dot(subindex, x, y, size, context);
     return false;
 }
 
@@ -1757,7 +1764,7 @@ bool multibandcompressor_audio_module::get_gridline(int index, int subindex, int
 {
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_gridline(subindex, pos, vertical, legend, context);
+        return m->_get_gridline(subindex, pos, vertical, legend, context);
     if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
@@ -1767,7 +1774,7 @@ bool multibandcompressor_audio_module::get_layers(int index, int generation, uns
     bool r;
     const gain_reduction_audio_module *m = get_strip_by_param_index(index);
     if (m) {
-        r = m->get_layers(index, generation, layers);
+        r = m->_get_layers(index, generation, layers);
     } else {
         r = crossover.get_layers(index, generation, layers);
     }
@@ -1876,22 +1883,22 @@ uint32_t monocompressor_audio_module::process(uint32_t offset, uint32_t numsampl
 }
 bool monocompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    return monocompressor.get_graph(subindex, data, points, context, mode);
+    return monocompressor._get_graph(subindex, data, points, context, mode);
 }
 
 bool monocompressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    return monocompressor.get_dot(subindex, x, y, size, context);
+    return monocompressor._get_dot(subindex, x, y, size, context);
 }
 
 bool monocompressor_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    return monocompressor.get_gridline(subindex, pos, vertical, legend, context);
+    return monocompressor._get_gridline(subindex, pos, vertical, legend, context);
 }
 
 bool monocompressor_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    return monocompressor.get_layers(index, generation, layers);
+    return monocompressor._get_layers(index, generation, layers);
 }
 
 /**********************************************************************
@@ -2165,22 +2172,22 @@ uint32_t gate_audio_module::process(uint32_t offset, uint32_t numsamples, uint32
 }
 bool gate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    return gate.get_graph(subindex, data, points, context, mode);
+    return gate._get_graph(subindex, data, points, context, mode);
 }
 
 bool gate_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    return gate.get_dot(subindex, x, y, size, context);
+    return gate._get_dot(subindex, x, y, size, context);
 }
 
 bool gate_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    return gate.get_gridline(subindex, pos, vertical, legend, context);
+    return gate._get_gridline(subindex, pos, vertical, legend, context);
 }
 
 bool gate_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
-    return gate.get_layers(index, generation, layers);
+    return gate._get_layers(index, generation, layers);
 }
 
 /**********************************************************************
@@ -2508,7 +2515,7 @@ bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, f
     if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
     } else if(index == param_bypass) {
-        return gate.get_graph(subindex, data, points, context, mode);
+        return gate._get_graph(subindex, data, points, context, mode);
     }
     return false;
 }
@@ -2518,7 +2525,7 @@ bool sidechaingate_audio_module::get_dot(int index, int subindex, int phase, flo
     if (!is_active or !phase)
         return false;
     if (index == param_bypass) {
-        return gate.get_dot(subindex, x, y, size, context);
+        return gate._get_dot(subindex, x, y, size, context);
     }
     return false;
 }
@@ -2528,7 +2535,7 @@ bool sidechaingate_audio_module::get_gridline(int index, int subindex, int phase
     if (!is_active or phase)
         return false;
     if (index == param_bypass) {
-        return gate.get_gridline(subindex, pos, vertical, legend, context);
+        return gate._get_gridline(subindex, pos, vertical, legend, context);
     } else {
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     }
@@ -2537,7 +2544,7 @@ bool sidechaingate_audio_module::get_gridline(int index, int subindex, int phase
 bool sidechaingate_audio_module::get_layers(int index, int generation, unsigned int &layers) const
 {
     if(index == param_bypass)
-        return gate.get_layers(index, generation, layers);
+        return gate._get_layers(index, generation, layers);
     bool redraw = redraw_graph || !generation;
     layers = 0 | (generation ? 0 : LG_CACHE_GRID) | (redraw ? LG_CACHE_GRAPH : 0);
     redraw_graph = false;
@@ -2730,7 +2737,7 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, f
         
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m) {
-        r = m->get_graph(subindex, data, points, context, mode);
+        r = m->_get_graph(subindex, data, points, context, mode);
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
@@ -2754,7 +2761,7 @@ bool multibandgate_audio_module::get_dot(int index, int subindex, int phase, flo
 {
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_dot(subindex, x, y, size, context);
+        return m->_get_dot(subindex, x, y, size, context);
     return false;
 }
 
@@ -2762,7 +2769,7 @@ bool multibandgate_audio_module::get_gridline(int index, int subindex, int phase
 {
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m)
-        return m->get_gridline(subindex, pos, vertical, legend, context);
+        return m->_get_gridline(subindex, pos, vertical, legend, context);
     if (phase) return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context);
 }
@@ -2772,7 +2779,7 @@ bool multibandgate_audio_module::get_layers(int index, int generation, unsigned 
     bool r;
     const expander_audio_module *m = get_strip_by_param_index(index);
     if (m) {
-        r = m->get_layers(index, generation, layers);
+        r = m->_get_layers(index, generation, layers);
     } else {
         r = crossover.get_layers(index, generation, layers);
     }
@@ -4797,6 +4804,7 @@ transientdesigner_audio_module::transientdesigner_audio_module() {
     transients.set_channels(channels);
     hp_f_old = hp_m_old = lp_f_old = lp_m_old = 0;
     redraw = false;
+    pbuffer = NULL;
 }
 transientdesigner_audio_module::~transientdesigner_audio_module()
 {

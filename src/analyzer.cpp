@@ -30,7 +30,7 @@
 using namespace dsp;
 using namespace calf_plugins;
 
-#define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
+#define sinc(x) (x == 0) ? 1 : sin(M_PI * x)/(M_PI * x);
 #define RGBAtoINT(r, g, b, a) ((uint32_t)(r * 255) << 24) + ((uint32_t)(g * 255) << 16) + ((uint32_t)(b * 255) << 8) + (uint32_t)(a * 255)
 
 analyzer::analyzer() {
@@ -89,6 +89,7 @@ analyzer::~analyzer()
     free(fft_outL);
     free(fft_inR);
     free(fft_inL);
+    free(fft_buffer);
     free(spline_buffer);
 }
 void analyzer::set_sample_rate(uint32_t sr) {

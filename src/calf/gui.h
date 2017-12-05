@@ -212,8 +212,8 @@ public:
     static void xml_element_end(void *data, const char *element);
 };
 
-class main_window_iface;
-class main_window_owner_iface;
+struct main_window_iface;
+struct main_window_owner_iface;
 
 /// A class used to inform the plugin GUIs about the environment they run in
 /// (currently: what plugin features are accessible)

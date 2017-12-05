@@ -1,4 +1,23 @@
-Version 0.0.60.0 (unreleased)
+Version 0.90.0.0
+
++ New plug-ins: Multiband Enhancer, Multi Spread, Vinyl
++ Calfjackhost: important values controlable from rack
++ Calfjackhost: custom names for rack devices
++ EQ8/EQ12: Q for high and low pass
++ EQ30: linked mode
++ VintageDelay/Pulsator: new timing settings
++ Vocoder: Upper and lower tilt, higher Q, band related Q
++ All plugins: input/output meters and knobs
++ Themeing capabilities
++ New Designs: Default, Flat Default, 0.0.19, Hybreed, Lost Wages,
+  Midnight, Orange, Wood
++ Knobs with ticks for better orientation
++ Scales attached to level meters
++ Bash completion for effect names
++ More readme and documentation
++ Lots of fixes and minor improvements
+
+Version 0.0.60.0
 + Awesome new bitmap-based GUI by Markus Schmidt
 + New plugins by Markus Schmidt and Christian Holschuh:
   * several EQs (5, 8, 12 bands)

@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this program; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA  02110-1301  USA
  */
 #include <config.h>
@@ -55,7 +55,7 @@ automation_range *automation_range::new_from_configure(const plugin_metadata_ifa
     }
     from_controller = (uint32_t)atoi(from_ctl.c_str());
     key = totoken + 4;
-    
+
     size_t pcount = metadata->get_param_count();
     for (size_t i = 0; i < pcount; ++i) {
         const parameter_properties *props = metadata->get_param_props(i);
@@ -67,7 +67,7 @@ automation_range *automation_range::new_from_configure(const plugin_metadata_ifa
             return new automation_range(minv, maxv, i);
         }
     }
-    
+
     return NULL;
 }
 
@@ -153,7 +153,7 @@ float parameter_properties::get_increment() const
     float increment = 0.01;
     if (step > 1)
         increment = 1.0 / (step - 1);
-    else 
+    else
     if (step > 0 && step < 1)
         increment = step;
     else
@@ -206,10 +206,18 @@ std::string parameter_properties::to_string(float value) const
         return string(buf);
     }
     if ((flags & PF_SCALEMASK) == PF_SCALE_GAIN) {
-        if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
-            return "-inf dB"; // XXXKF change to utf-8 infinity
-        snprintf(buf, sizeof(buf), "%0.1f dB", dsp::amp2dB(value));
-        return string(buf);
+        if ((flags & PF_UNITMASK) == PF_UNIT_DBFS) {
+            if (value < 1.0 / 1024.0) // new bottom limit - 60 dBFS
+                return "-inf dBFS"; // XXXKF change to utf-8 infinity
+            snprintf(buf, sizeof(buf), "%0.1f dBFS", dsp::amp2dB(value));
+            return string(buf);
+        }
+        else {
+            if (value < 1.0 / 1024.0) // new bottom limit - 60 dB
+                return "-inf dB"; // XXXKF change to utf-8 infinity
+            snprintf(buf, sizeof(buf), "%0.1f dB", dsp::amp2dB(value));
+            return string(buf);
+        }
     }
     std::string s_;
     switch(flags & PF_TYPEMASK)
@@ -252,9 +260,10 @@ std::string parameter_properties::to_string(float value) const
 
     if ((flags & PF_SCALEMASK) == PF_SCALE_LOG_INF && IS_FAKE_INFINITY(value))
         snprintf(buf, sizeof(buf), "∞"); // XXXKF change to utf-8 infinity
-    
+
     switch(flags & PF_UNITMASK) {
     case PF_UNIT_DB: return string(buf) + " dB";
+    case PF_UNIT_DBFS: return string(buf) + " dBFS";
     case PF_UNIT_HZ: return string(buf) + " Hz";
     case PF_UNIT_SEC: return string(buf) + " s";
     case PF_UNIT_MSEC: return string(buf) + " ms";
@@ -264,7 +273,7 @@ std::string parameter_properties::to_string(float value) const
     case PF_UNIT_RPM: return string(buf) + " rpm";
     case PF_UNIT_DEG: return string(buf) + " deg";
     case PF_UNIT_SAMPLES: return string(buf) + " smpl";
-    case PF_UNIT_NOTE: 
+    case PF_UNIT_NOTE:
         {
             static const char *notes = "C C#D D#E F F#G G#A A#B ";
             int note = (int)value;
@@ -357,7 +366,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
 
     if (!(subindex & 1)) {
         std::stringstream ss;
-        ss << (36 - 6 * subindex) << " dB";
+        ss << (36 - 6 * subindex) << " dBFS";
         legend = ss.str();
     }
     if (!legend.empty() and subindex != 6) {
@@ -437,11 +446,11 @@ bool frequency_response_line_graph::get_layers(int index, int generation, unsign
     return r;
 }
 std::string frequency_response_line_graph::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
-{ 
+{
     return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents);
 }
 std::string calf_plugins::frequency_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents, double res, double ofs)
-{ 
+{
     std::stringstream ss;
     char str[1024];
     char tmp[1024];
@@ -492,7 +501,7 @@ const plugin_metadata_iface *calf_plugins::plugin_registry::get_by_uri(const cha
     {
         if (!strcmp(plugins[i]->get_plugin_info().label, label))
             return plugins[i];
-    }    
+    }
     return NULL;
 }
 
@@ -517,15 +526,15 @@ bool calf_plugins::parse_table_key(const char *key, const char *prefix, bool &is
     column = -1;
     if (0 != strncmp(key, prefix, strlen(prefix)))
         return false;
-    
+
     key += strlen(prefix);
-    
+
     if (!strcmp(key, "rows"))
     {
         is_rows = true;
         return true;
     }
-    
+
     const char *comma = strchr(key, ',');
     if (comma)
     {
@@ -533,9 +542,9 @@ bool calf_plugins::parse_table_key(const char *key, const char *prefix, bool &is
         column = atoi(comma + 1);
         return true;
     }
-    
+
     printf("Unknown key %s under prefix %s", key, prefix);
-    
+
     return false;
 }
 
@@ -581,7 +590,7 @@ void mod_matrix_metadata::get_configure_vars(std::vector<std::string> &names) co
             snprintf(buf, sizeof(buf), "mod_matrix:%d,%d", i, j);
             names.push_back(buf);
         }
-    }        
+    }
 }
 
 
