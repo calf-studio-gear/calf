@@ -543,7 +543,10 @@ int gui_idle(LV2UI_Handle handle)
         return 1;
 
     if (gui->optwindow)
-        gtk_main_iteration();
+    {
+        while (gtk_events_pending())
+            gtk_main_iteration();
+    }
 
     return 0;
 }

@@ -60,10 +60,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_comp_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_layers(int index, int generation, unsigned int &layers) const;
+    bool _get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool _get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool _get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool _get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -94,10 +94,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_comp_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_layers(int index, int generation, unsigned int &layers) const;
+    bool _get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool _get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool _get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool _get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
@@ -126,10 +126,10 @@ public:
     void set_sample_rate(uint32_t sr);
     float get_output_level();
     float get_expander_level();
-    bool get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
-    bool get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
-    bool get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
-    bool get_layers(int index, int generation, unsigned int &layers) const;
+    bool _get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const;
+    bool _get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const;
+    bool _get_gridline(int subindex, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+    bool _get_layers(int index, int generation, unsigned int &layers) const;
 };
 
 /**********************************************************************
