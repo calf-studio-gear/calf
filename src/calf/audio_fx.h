@@ -693,7 +693,7 @@ class samplereduction
 private:
 public:
     float target, real, amount;
-    uint samples, round, cnt;
+    unsigned int samples, round, cnt;
     double last;
     samplereduction();
     void set_params(float am);

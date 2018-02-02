@@ -20,7 +20,9 @@
 #include <config.h>
 #include <calf/osctl.h>
 #include <calf/utils.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <sstream>
 
 using namespace std;

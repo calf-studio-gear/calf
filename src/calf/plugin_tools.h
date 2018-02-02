@@ -55,14 +55,14 @@ public:
     void process(float *values) {
         for (size_t i = 0; i < meters.size(); ++i) {
             meter_data &md = meters[i];
-            if ((md.level_idx != -1 && params[(int)fabs(md.level_idx)] != NULL) || 
-                (md.clip_idx != -1 && params[(int)fabs(md.clip_idx)] != NULL))
+            if ((md.level_idx != -1 && params[(int)abs(md.level_idx)] != NULL) || 
+                (md.clip_idx != -1 && params[(int)abs(md.clip_idx)] != NULL))
             {
                 md.meter.process(values[i]);
-                if (md.level_idx != -1 && params[(int)fabs(md.level_idx)])
-                    *params[(int)fabs(md.level_idx)] = md.meter.level;
-                if (md.clip_idx != -1 && params[(int)fabs(md.clip_idx)])
-                    *params[(int)fabs(md.clip_idx)] = md.meter.clip > 0 ? 1.f : 0.f;
+                if (md.level_idx != -1 && params[(int)abs(md.level_idx)])
+                    *params[(int)abs(md.level_idx)] = md.meter.level;
+                if (md.clip_idx != -1 && params[(int)abs(md.clip_idx)])
+                    *params[(int)abs(md.clip_idx)] = md.meter.clip > 0 ? 1.f : 0.f;
             }
         }
     }
