@@ -668,7 +668,7 @@ int main(int argc, char *argv[])
                     fprintf(stderr, "calfmakerdf: Data directory must not be empty\n");
                     exit(1);
                 }
-                if (pkglibdir_path[path_prefix.length() - 1] != '/')
+                if (pkglibdir_path[pkglibdir_path.length() - 1] != '/')
                     pkglibdir_path += '/';
                 break;
 #endif
