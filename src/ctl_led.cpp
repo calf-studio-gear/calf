@@ -24,10 +24,14 @@
 #include <stdlib.h>
 #include <calf/drawingutils.h>
 
+using namespace calf_plugins;
+
 GtkWidget *
-calf_led_new()
+calf_led_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_LED, NULL ));
+    CalfLed *self = CALF_LED(widget);
+    self->config = config;
     return widget;
 }
 
@@ -39,13 +43,14 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
     CalfLed *self = CALF_LED(widget);
     GdkWindow *window = widget->window;
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+    double scale = self->config->scale;
     
     int width = widget->allocation.width;
     int height = widget->allocation.height;
     int x  = widget->allocation.x;
     int y  = widget->allocation.y;
-    int ox = widget->style->xthickness;
-    int oy = widget->style->ythickness;
+    int ox = widget->style->xthickness * scale;
+    int oy = widget->style->ythickness * scale;
     int sx = width - ox * 2;
     int sy = height - oy * 2;
     int xc = x + width / 2;
@@ -61,6 +66,7 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
         float radius, bevel;
         get_bg_color(widget, NULL, &r, &g, &b);
         gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, NULL);
+        radius *= scale; 
         create_rectangle(cache_cr, 0, 0, width, height, radius);
         cairo_set_source_rgb(cache_cr, r, g, b);
         cairo_fill(cache_cr);
@@ -146,7 +152,7 @@ calf_led_expose (GtkWidget *widget, GdkEventExpose *event)
             break;
     }
     
-    cairo_rectangle(c, ox + 1, oy + 1, sx - 2, sy - 2);
+    cairo_rectangle(c, ox + 1 * scale, oy + 1 * scale, sx - 2 * scale, sy - 2 * scale);
     cairo_set_source (c, pt);
     cairo_fill_preserve(c);
     
@@ -175,8 +181,9 @@ calf_led_size_request (GtkWidget *widget,
 {
     g_assert(CALF_IS_LED(widget));
     CalfLed *self = CALF_LED(widget);
-    requisition->width = self->size ? 24 : 19;
-    requisition->height = self->size ? 18 : 14;
+    double scale = self->config->scale;
+    requisition->width = self->size ? 24 * scale : 19 * scale;
+    requisition->height = self->size ? 18 * scale : 14 * scale;
 }
 
 static void

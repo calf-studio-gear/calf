@@ -35,6 +35,8 @@
 #include <calf/ctl_vumeter.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 
 //#include <gtk/gtkrange.h>
 //#include "config.h"
@@ -69,6 +71,7 @@ struct CalfMeterScale
     CalfVUMeterMode mode;
     int position;
     int dots;
+    calf_utils::gui_config *config;
 };
 
 struct CalfMeterScaleClass
@@ -76,7 +79,7 @@ struct CalfMeterScaleClass
     GtkDrawingAreaClass parent_class;
 };
 
-extern GtkWidget *calf_meter_scale_new();
+extern GtkWidget *calf_meter_scale_new(calf_utils::gui_config *config);
 extern GType calf_meter_scale_get_type();
 
 G_END_DECLS

@@ -57,9 +57,11 @@ struct _GtkNotebookPage
 };
 
 GtkWidget *
-calf_notebook_new()
+calf_notebook_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_NOTEBOOK, NULL ));
+    CalfNotebook *self = CALF_NOTEBOOK(widget);
+    self->config = config;
     return widget;
 }
 static gboolean

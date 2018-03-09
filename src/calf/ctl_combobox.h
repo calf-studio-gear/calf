@@ -33,6 +33,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 
@@ -49,6 +51,7 @@ struct CalfCombobox
 {
     GtkComboBox parent;
     GdkPixbuf *arrow;
+    calf_utils::gui_config *config;
 };
 
 struct CalfComboboxClass
@@ -57,7 +60,7 @@ struct CalfComboboxClass
 };
 
 extern void calf_combobox_set_arrow(CalfCombobox *self, GdkPixbuf *arrow);
-extern GtkWidget *calf_combobox_new();
+extern GtkWidget *calf_combobox_new(calf_utils::gui_config *config);
 extern GType calf_combobox_get_type();
 
 

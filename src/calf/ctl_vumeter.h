@@ -33,6 +33,9 @@
 #include <sys/time.h>
 //#include <string>
 #include <calf/drawingutils.h>
+#include <calf/gui.h>
+
+using namespace calf_plugins;
 
 G_BEGIN_DECLS
 
@@ -72,6 +75,7 @@ struct CalfVUMeter
     int vumeter_position;
     cairo_surface_t *cache_surface;
     cairo_surface_t *cache_overlay;
+    calf_utils::gui_config *config;
 };
 
 struct CalfVUMeterClass
@@ -79,7 +83,7 @@ struct CalfVUMeterClass
     GtkDrawingAreaClass parent_class;
 };
 
-extern GtkWidget *calf_vumeter_new();
+extern GtkWidget *calf_vumeter_new(calf_utils::gui_config *config);
 extern GType calf_vumeter_get_type();
 extern void calf_vumeter_set_value(CalfVUMeter *meter, float value);
 extern float calf_vumeter_get_value(CalfVUMeter *meter);

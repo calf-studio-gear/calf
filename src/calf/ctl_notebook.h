@@ -33,6 +33,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 
@@ -49,6 +51,7 @@ struct CalfNotebook
 {
     GtkNotebook parent;
     GdkPixbuf *screw;
+    calf_utils::gui_config *config;
 };
 
 struct CalfNotebookClass
@@ -56,7 +59,7 @@ struct CalfNotebookClass
     GtkNotebookClass parent_class;
 };
 
-extern GtkWidget *calf_notebook_new();
+extern GtkWidget *calf_notebook_new(calf_utils::gui_config *config);
 extern GType calf_notebook_get_type();
 extern void calf_notebook_set_pixbuf(CalfNotebook *self, GdkPixbuf *image);
 

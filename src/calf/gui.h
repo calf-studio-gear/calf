@@ -44,13 +44,15 @@ public:
 struct image_factory
 {
     std::string path;
+    double scale;
     std::map<std::string, GdkPixbuf*> i;
     GdkPixbuf *create_image (std::string image);
     void recreate_images ();
     void set_path (std::string p);
+    void set_scale (double s);
     GdkPixbuf *get (std::string image);
     gboolean available (std::string image);
-    image_factory (std::string p = "");
+    image_factory (std::string p = "", double s = 1);
     ~image_factory();
 };
 
@@ -327,11 +329,11 @@ protected:
     static void on_window_destroyed(GtkWidget *window, gpointer data);
     void cleanup();
 protected:
-    plugin_gui *gui;
     GtkWidget *container;
     gui_environment_iface *environment;
     main_window_iface *main;
 public:
+    plugin_gui *gui;
     std::string prefix;
     GtkWidget *toplevel;
 public:

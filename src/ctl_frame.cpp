@@ -29,11 +29,12 @@ using namespace dsp;
 
 
 GtkWidget *
-calf_frame_new(const char *label)
+calf_frame_new(calf_utils::gui_config *config, const char *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_FRAME, NULL ));
     CalfFrame *self = CALF_FRAME(widget);
     gtk_frame_set_label(GTK_FRAME(self), label);
+    self->config = config;
     return widget;
 }
 static gboolean
@@ -41,6 +42,9 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_FRAME(widget));
     if (gtk_widget_is_drawable (widget)) {
+        
+        CalfFrame *self = CALF_FRAME(widget);
+        double scale = self->config->scale;
         
         GdkWindow *window = widget->window;
         cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
@@ -53,11 +57,12 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         
         float rad;
         gtk_widget_style_get(widget, "border-radius", &rad, NULL);
+        rad *= scale;
     
         double pad  = widget->style->xthickness;
-        double txp  = 4;
-        double m    = 0.5;
-        double size = 10;
+        double txp  = 4 * scale;
+        double m    = 0.5 * scale;
+        double size = 9 * scale;
         
         float r, g, b;
     
@@ -76,9 +81,9 @@ calf_frame_expose (GtkWidget *widget, GdkEventExpose *event)
         
         double lw = extents.width + txp * 2.;
         
-        cairo_set_line_width(c, 1.);
+        cairo_set_line_width(c, 1. * scale);
         
-        cairo_move_to(c, ox + rad + txp + m, oy + size - 2 + m);
+        cairo_move_to(c, ox + rad + txp + m, oy + size - 2 * scale + m);
         get_text_color(widget, NULL, &r, &g, &b);
         cairo_set_source_rgb(c, r, g, b);
         cairo_show_text(c, lab);

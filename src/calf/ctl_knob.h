@@ -35,6 +35,8 @@ G_BEGIN_DECLS
 #define CALF_KNOB_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass),  CALF_TYPE_KNOB, CalfKnobClass))
 #define CALF_IS_KNOB_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CALF_TYPE_KNOB))
 
+using namespace calf_plugins;
+
 struct CalfKnob
 {
     static const unsigned int debug = 0;
@@ -44,6 +46,7 @@ struct CalfKnob
     double start_x, start_y, last_y, start_value, default_value;
     std::vector<double> ticks;
     GdkPixbuf *knob_image;
+    calf_utils::gui_config *config;
 };
 
 struct CalfKnobClass
@@ -51,8 +54,8 @@ struct CalfKnobClass
     GtkRangeClass parent_class;
 };
 
-extern GtkWidget *calf_knob_new();
-extern GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment);
+extern GtkWidget *calf_knob_new(calf_utils::gui_config *config);
+extern GtkWidget *calf_knob_new_with_adjustment(calf_utils::gui_config *config, GtkAdjustment *_adjustment);
 extern void calf_knob_set_size (CalfKnob*self, int size);
 extern void calf_knob_set_pixbuf (CalfKnob*self, GdkPixbuf *pixbuf);
 

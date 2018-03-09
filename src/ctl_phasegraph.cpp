@@ -30,31 +30,35 @@ using namespace dsp;
 static void
 calf_phase_graph_draw_background(GtkWidget *widget, cairo_t *ctx, int sx, int sy, int ox, int oy, float radius, float bevel, float brightness, float shadow, float lights, float dull )
 {
+    CalfPhaseGraph * self = CALF_PHASE_GRAPH(widget);
+    
     int cx = ox + sx / 2;
     int cy = oy + sy / 2;
+    
+    double scale = self->config->scale;
     
     display_background(widget, ctx, 0, 0, sx, sy, ox, oy, radius, bevel, brightness, shadow, lights, dull);
     cairo_set_source_rgb(ctx, 0.35, 0.4, 0.2);
     
     if (sx > 128 and sy > 128) {
         cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(ctx, 9);
+        cairo_set_font_size(ctx, 9 * scale);
         cairo_text_extents_t te;
         
         cairo_text_extents (ctx, "M", &te);
-        cairo_move_to (ctx, cx + 5, oy + 12);
+        cairo_move_to (ctx, cx + 5 * scale, oy + 12 * scale);
         cairo_show_text (ctx, "M");
         
         cairo_text_extents (ctx, "S", &te);
-        cairo_move_to (ctx, ox + 5, cy - 5);
+        cairo_move_to (ctx, ox + 5 * scale, cy - 5 * scale);
         cairo_show_text (ctx, "S");
         
         cairo_text_extents (ctx, "L", &te);
-        cairo_move_to (ctx, ox + 18, oy + 12);
+        cairo_move_to (ctx, ox + 18 * scale, oy + 12 * scale);
         cairo_show_text (ctx, "L");
         
         cairo_text_extents (ctx, "R", &te);
-        cairo_move_to (ctx, ox + sx - 22, oy + 12);
+        cairo_move_to (ctx, ox + sx - 22 * scale, oy + 12 * scale);
         cairo_show_text (ctx, "R");
     }
     
@@ -99,11 +103,13 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     if (!pg->source) 
         return FALSE;
     
+    double scale = pg->config->scale;
+    
     // dimensions
     int width  = widget->allocation.width;
     int height = widget->allocation.height;
-    int ox     = widget->style->xthickness;
-    int oy     = widget->style->ythickness;
+    int ox     = widget->style->xthickness * scale;
+    int oy     = widget->style->ythickness * scale;
     int sx     = width - ox * 2;
     int sy     = height - oy * 2;
     int x      = widget->allocation.x;
@@ -117,6 +123,7 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     float radius, bevel, shadow, lights, dull;
     gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, "dull", &dull, NULL);
+    radius *= scale; shadow *= scale;
     
     // some values as pointers for the audio plug-in call
     float * phase_buffer = 0;
@@ -182,15 +189,15 @@ calf_phase_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             switch(mode) {
                 case 0:
                     // small dots
-                    cairo_rectangle (ctx_cache, x_ * rad + cx, y_ * rad + cy, 1, 1);
+                    cairo_rectangle (ctx_cache, x_ * rad + cx, y_ * rad + cy, 1 * scale, 1 * scale);
                     break;
                 case 1:
                     // medium dots
-                    cairo_rectangle (ctx_cache, x_ * rad + cx - 0.25, y_ * rad + cy - 0.25, 1.5, 1.5);
+                    cairo_rectangle (ctx_cache, x_ * rad + cx - 0.25, y_ * rad + cy - 0.25, 1.5 * scale, 1.5 * scale);
                     break;
                 case 2:
                     // big dots
-                    cairo_rectangle (ctx_cache, x_ * rad + cx - 0.5, y_ * rad + cy - 0.5, 2, 2);
+                    cairo_rectangle (ctx_cache, x_ * rad + cx - 0.5, y_ * rad + cy - 0.5, 2 * scale, 2 * scale);
                     break;
                 case 3:
                     // fields
@@ -312,9 +319,12 @@ calf_phase_graph_init (CalfPhaseGraph *self)
 }
 
 GtkWidget *
-calf_phase_graph_new()
+calf_phase_graph_new(calf_utils::gui_config *config)
 {
-    return GTK_WIDGET(g_object_new (CALF_TYPE_PHASE_GRAPH, NULL));
+    GtkWidget *widget = GTK_WIDGET(g_object_new (CALF_TYPE_PHASE_GRAPH, NULL));
+    CalfPhaseGraph *self = CALF_PHASE_GRAPH(widget);
+    self->config = config;
+    return widget;
 }
 
 GType

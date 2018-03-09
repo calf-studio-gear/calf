@@ -21,6 +21,7 @@
 
 #include <calf/ctl_vumeter.h>
 
+using namespace calf_plugins;
 
 ///////////////////////////////////////// vu meter ///////////////////////////////////////////////
 
@@ -32,6 +33,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
 
     CalfVUMeter *vu = CALF_VUMETER(widget);
     cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    double scale = vu->config->scale;
     
     float r, g, b;
     
@@ -41,12 +43,12 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     int height = widget->allocation.height;
     int border_x = widget->style->xthickness;
     int border_y = widget->style->ythickness;
-    int space_x = 1; int space_y = 1; // inner border around led bar
-    int led = 2; // single LED size
-    int led_m = 1; // margin between LED
+    int space_x = 1 * scale; int space_y = 1 * scale; // inner border around led bar
+    int led = 2 * scale; // single LED size
+    int led_m = 1 * scale; // margin between LED
     int led_s = led + led_m; // size of LED with margin
-    int led_x = widget->style->xthickness;
-    int led_y = widget->style->ythickness; // position of first LED
+    int led_x = widget->style->xthickness * scale;
+    int led_y = widget->style->ythickness * scale; // position of first LED
     int led_w = width - 2 * led_x + led_m; // width of LED bar w/o text calc (additional led margin, is removed later; used for filling the led bar completely w/o margin gap)
     int led_h = height - 2 * led_y; // height of LED bar w/o text calc
     int text_x = 0; int text_y = 0;
@@ -57,7 +59,7 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if(vu->vumeter_position) {
         cairo_select_font_face(c, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(c, 8);
+        cairo_set_font_size(c, 8 * scale);
 
         cairo_text_extents(c, "-88.88", &extents);
         text_w = extents.width;
@@ -99,10 +101,10 @@ calf_vumeter_expose (GtkWidget *widget, GdkEventExpose *event)
         float radius, bevel, glass;
         get_bg_color(widget, NULL, &r, &g, &b);
         gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "glass", &glass, NULL);
-        create_rectangle(cache_cr, 0, 0, width, height, radius);
+        create_rectangle(cache_cr, 0, 0, width, height, radius * scale);
         cairo_set_source_rgb(cache_cr, r, g, b);
         cairo_fill(cache_cr);
-        draw_bevel(cache_cr, 0, 0, width, height, radius, bevel);
+        draw_bevel(cache_cr, 0, 0, width, height, radius * scale, bevel);
         
         // border around LED
         cairo_rectangle(cache_cr, led_x, led_y, led_w, led_h);
@@ -443,9 +445,12 @@ calf_vumeter_init (CalfVUMeter *self)
 }
 
 GtkWidget *
-calf_vumeter_new()
+calf_vumeter_new(calf_utils::gui_config *config)
 {
-    return GTK_WIDGET( g_object_new (CALF_TYPE_VUMETER, NULL ));
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_VUMETER, NULL ));
+    CalfVUMeter *self = CALF_VUMETER(widget);
+    self->config = config;
+    return widget;
 }
 
 GType

@@ -31,7 +31,7 @@ using namespace dsp;
 //#define GTK_COMBO_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_COMBO_BOX, GtkComboBoxPrivate))
 
 GtkWidget *
-calf_combobox_new()
+calf_combobox_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_COMBOBOX, NULL ));
     GtkCellRenderer *column = gtk_cell_renderer_text_new();
@@ -39,6 +39,8 @@ calf_combobox_new()
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), column,
                                    "text", 0,
                                    NULL);
+    CalfCombobox *self = CALF_COMBOBOX(widget);
+    self->config = config;
     return widget;
 }
 static gboolean
@@ -48,13 +50,15 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if (gtk_widget_is_drawable (widget)) {
         
-        int padx = widget->style->xthickness;
-        int pady = widget->style->ythickness;
-        
         GtkComboBox *cb = GTK_COMBO_BOX(widget);
         CalfCombobox *ccb = CALF_COMBOBOX(widget);
         GdkWindow *window = widget->window;
         cairo_t *c = gdk_cairo_create(GDK_DRAWABLE(window));
+        
+        double scale = ccb->config->scale;
+        
+        int padx = widget->style->xthickness * scale;
+        int pady = widget->style->ythickness * scale;
         
         GtkTreeModel *model = gtk_combo_box_get_model(cb);
         GtkTreeIter iter;
@@ -81,7 +85,7 @@ calf_combobox_expose (GtkWidget *widget, GdkEventExpose *event)
         // background
         float radius, bevel, shadow, lights, lightshover, dull, dullhover;
         gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, "lightshover", &lightshover, "dull", &dull, "dullhover", &dullhover, NULL);
-        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, radius, bevel, g_ascii_isspace(lab[0]) ? 0 : 1, shadow, hover ? lightshover : lights, hover ? dullhover : dull);
+        display_background(widget, c, x, y, sx - padx * 2, sy - pady * 2, padx, pady, radius*scale, bevel, g_ascii_isspace(lab[0]) ? 0 : 1, shadow*scale, hover ? lightshover : lights, hover ? dullhover : dull);
         
         // text
         gtk_container_propagate_expose (GTK_CONTAINER (widget),

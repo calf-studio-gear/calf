@@ -24,16 +24,19 @@
 #include <stdlib.h>
 #include <math.h>
 
+using namespace calf_plugins;
+
 static gpointer parent_class = NULL;
 
 GtkWidget *
-calf_curve_new(unsigned int point_limit)
+calf_curve_new(calf_utils::gui_config *config, unsigned int point_limit)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_CURVE, NULL ));
     g_assert(CALF_IS_CURVE(widget));
     
     CalfCurve *self = CALF_CURVE(widget);
     self->point_limit = point_limit;
+    self->config = config;
     return widget;
 }
 
@@ -48,6 +51,9 @@ calf_curve_expose (GtkWidget *widget, GdkEventExpose *event)
     GdkColor scHot = { 0, 65535, 0, 0 };
     GdkColor scPoint = { 0, 65535, 65535, 65535 };
     GdkColor scLine = { 0, 32767, 32767, 32767 };
+    
+    double scale = self->config->scale;
+    
     if (self->points->size())
     {
         gdk_cairo_set_source_color(c, &scLine);
@@ -73,7 +79,7 @@ calf_curve_expose (GtkWidget *widget, GdkEventExpose *event)
         float x = pt.first, y = pt.second;
         self->log2phys(x, y);
         gdk_cairo_set_source_color(c, (i == (size_t)self->cur_pt) ? &scHot : &scPoint);
-        cairo_rectangle(c, x - 2, y - 2, 5, 5);
+        cairo_rectangle(c, x - 2.5*scale, y - 2.5*scale, 5*scale, 5*scale);
         cairo_fill(c);
     }
     cairo_destroy(c);

@@ -30,6 +30,8 @@
 #include <gdk/gdk.h>
 #include <sys/time.h>
 
+using namespace calf_plugins;
+
 static gboolean
 calf_tube_expose (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -287,9 +289,11 @@ calf_tube_init (CalfTube *self)
 }
 
 GtkWidget *
-calf_tube_new()
+calf_tube_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TUBE, NULL ));
+    CalfTube *self = CALF_TUBE(widget);
+    self->config = config;
     return widget;
 }
 

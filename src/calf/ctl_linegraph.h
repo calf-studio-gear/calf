@@ -30,6 +30,8 @@
 #include <calf/giface.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 #define CALF_TYPE_LINE_GRAPH           (calf_line_graph_get_type())
@@ -66,7 +68,7 @@ struct FreqHandle
     float left_bound;
     float right_bound;
     gpointer data;
-
+    gui_environment *environment;
     inline bool is_active() { return (param_active_no < 0 || active); }
 };
 
@@ -118,6 +120,7 @@ struct CalfLineGraph
     GdkCursor *hand_cursor;
     /// Cached arrow (drag) cursor
     GdkCursor *arrow_cursor;
+    calf_utils::gui_config *config;
 };
 
 struct CalfLineGraphClass
@@ -125,7 +128,7 @@ struct CalfLineGraphClass
     GtkEventBoxClass parent_class;
 };
 
-extern GtkWidget *calf_line_graph_new();
+extern GtkWidget *calf_line_graph_new(calf_utils::gui_config *config);
 
 extern GType calf_line_graph_get_type();
 

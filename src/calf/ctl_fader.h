@@ -34,6 +34,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 /// FADER //////////////////////////////////////////////////////////////
@@ -61,6 +63,7 @@ struct CalfFader
     GdkPixbuf *image;
     CalfFaderLayout layout;
     bool hover;
+    calf_utils::gui_config *config;
 };
 
 struct CalfFaderClass
@@ -68,7 +71,7 @@ struct CalfFaderClass
     GtkScaleClass parent_class;
 };
 
-extern GtkWidget *calf_fader_new(const int horiz, const int size, const double min, const double max, const double step);
+extern GtkWidget *calf_fader_new(calf_utils::gui_config *config, const int horiz, const int size, const double min, const double max, const double step);
 extern GType calf_fader_get_type();
 extern void calf_fader_set_pixbuf(CalfFader *self, GdkPixbuf *image);
 extern void calf_fader_set_layout(GtkWidget *widget);

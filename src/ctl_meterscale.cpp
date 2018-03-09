@@ -29,10 +29,11 @@ using namespace dsp;
 
 
 GtkWidget *
-calf_meter_scale_new()
+calf_meter_scale_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_METER_SCALE, NULL ));
-    //CalfMeterScale *self = CALF_METER_SCALE(widget);
+    CalfMeterScale *self = CALF_METER_SCALE(widget);
+    self->config = config;
     return widget;
 }
 static gboolean
@@ -40,6 +41,8 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_METER_SCALE(widget));
     CalfMeterScale *ms = CALF_METER_SCALE(widget);
+    double scale = ms->config->scale;
+    
     if (gtk_widget_is_drawable (widget)) {
         
         GdkWindow *window = widget->window;
@@ -50,12 +53,12 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         double oy = widget->allocation.y;
         double width  = widget->allocation.width;
         double height = widget->allocation.height;
-        double xthick = widget->style->xthickness;
+        double xthick = widget->style->xthickness * scale;
         double text_w = 0, bar_x = 0, bar_width = 0, bar_y = 0;
         float r, g, b;
-        double text_m = 3;
-        double dot_s  = 2;
-        double dot_m  = 2;
+        double text_m = 3*scale;
+        double dot_s  = 2*scale;
+        double dot_m  = 2*scale;
         double dot_y  = 0;
         double dot_y2 = 0;
         cairo_rectangle(cr, ox, oy, width, height);
@@ -63,7 +66,7 @@ calf_meter_scale_expose (GtkWidget *widget, GdkEventExpose *event)
         
         if (ms->position) {
             cairo_select_font_face(cr, "cairo:sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-            cairo_set_font_size(cr, 8);
+            cairo_set_font_size(cr, 8*scale);
             cairo_text_extents(cr, "-88.88", &extents);
             text_w = extents.width;
         }
@@ -148,11 +151,11 @@ calf_meter_scale_size_request (GtkWidget *widget,
 {
     g_assert(CALF_IS_METER_SCALE(widget));
     CalfMeterScale *self = CALF_METER_SCALE(widget);
-    
-    double ythick = widget->style->ythickness;
-    double text_h = 8; // FIXME: Pango layout should be used here
-    double dot_s  = 2;
-    double dot_m  = 2;
+    double scale = self->config->scale;
+    double ythick = widget->style->ythickness * scale;
+    double text_h = 8 * scale; // FIXME: Pango layout should be used here
+    double dot_s  = 2 * scale;
+    double dot_m  = 2 * scale;
     
     requisition->height = ythick*2 + text_h + (dot_m + dot_s) * (self->dots == 3 ? 2 : 1);
 }

@@ -456,6 +456,8 @@ void plugin_gui_window::close()
 
 GtkWidget *plugin_gui_window::decorate(GtkWidget *widget) {
     GtkWidget *decoTable = gtk_table_new(3, 1, FALSE);
+    GtkStyle *style;
+    GdkPixmap *background;
     
     // images for left side
     GtkWidget *nwImg     = gtk_image_new_from_pixbuf(environment->get_image_factory()->get("side_nw"));
@@ -473,6 +475,11 @@ GtkWidget *plugin_gui_window::decorate(GtkWidget *widget) {
     gtk_box_pack_end(GTK_BOX(leftBox), GTK_WIDGET(swImg), FALSE, FALSE, 0);
     gtk_widget_set_name(leftBG, "CalfPluginLeft");
     
+    gdk_pixbuf_render_pixmap_and_mask(environment->get_image_factory()->get("side_w"), &background, NULL, 0);
+    style = gtk_style_new();
+    style->bg_pixmap[0] = background;
+    gtk_widget_set_style(leftBG, style);
+    
     // pack right box
     rightBG  = gtk_event_box_new();
     GtkWidget *rightBox = gtk_vbox_new(FALSE, 0);
@@ -480,6 +487,11 @@ GtkWidget *plugin_gui_window::decorate(GtkWidget *widget) {
     gtk_box_pack_start(GTK_BOX(rightBox), GTK_WIDGET(neImg), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(rightBox), GTK_WIDGET(seImg), FALSE, FALSE, 0);
     gtk_widget_set_name(rightBG, "CalfPluginRight");
+    
+    gdk_pixbuf_render_pixmap_and_mask(environment->get_image_factory()->get("side_e"), &background, NULL, 0);
+    style = gtk_style_new();
+    style->bg_pixmap[0] = background;
+    gtk_widget_set_style(rightBG, style);
     
     //gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(bgImg),     0, 2, 0, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
     gtk_table_attach(GTK_TABLE(decoTable), GTK_WIDGET(leftBG),   0, 1, 0, 1, (GtkAttachOptions)(0), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);

@@ -20,7 +20,8 @@
  */
  
 #include <calf/ctl_fader.h>
-
+#include <string>
+using namespace std;
 using namespace calf_plugins;
 using namespace dsp;
 
@@ -36,13 +37,19 @@ void calf_fader_set_layout(GtkWidget *widget)
     GdkRectangle t;
     gint sstart, send;
     
+    double scale = fader->config->scale;
+    
     gtk_range_get_range_rect(range, &t);
     gtk_range_get_slider_range(range, &sstart, &send);
     
     int hor = fader->horizontal;
-    int slength;
-    gtk_widget_style_get(widget, "slider-length", &slength, NULL);
+    int slength, swidth;
     
+    gtk_widget_style_get(widget, "slider-length", &slength, "slider-width", &swidth, NULL);
+    printf("layout: length %d width %d\n", slength, swidth);
+    slength *= scale;
+    swidth *= scale;
+
     // widget layout
     l.x = widget->allocation.x + t.x;
     l.y = widget->allocation.y + t.y;
@@ -95,7 +102,7 @@ void calf_fader_set_layout(GtkWidget *widget)
 }
 
 GtkWidget *
-calf_fader_new(const int horiz = 0, const int size = 2, const double min = 0, const double max = 1, const double step = 0.1)
+calf_fader_new(calf_utils::gui_config *config, const int horiz = 0, const int size = 2, const double min = 0, const double max = 1, const double step = 0.1)
 {
     GtkObject *adj;
     gint digits;
@@ -117,6 +124,7 @@ calf_fader_new(const int horiz = 0, const int size = 2, const double min = 0, co
     self->size = size;
     self->horizontal = horiz;
     self->hover = 0;
+    self->config = config;
     
     return widget;
 }
@@ -178,8 +186,18 @@ calf_fader_allocate (GtkWidget *widget, GtkAllocation *allocation)
     calf_fader_set_layout(widget);
 }
 static void
-calf_fader_request (GtkWidget *widget, GtkAllocation *request)
+calf_fader_request (GtkWidget *widget, GtkRequisition *request)
 {
+    //CalfFader *fader = CALF_FADER(widget);
+    //double scale = fader->config->scale;
+    //int swidth, size;
+    //gtk_widget_style_get(widget, "slider-width", &swidth, NULL);
+    //printf("request. allocated %d %d, requisition %d %d\n", widget->requisition.width, widget->requisition.height, request->width, request->height);
+    //if (fader->horizontal) {
+        //request->height = widget->allocation.height - swidth + swidth * scale;
+    //} else {
+        //request->width = widget->allocation.width - swidth + swidth * scale;
+    //}
     calf_fader_set_layout(widget);
 }
 static gboolean
@@ -266,6 +284,28 @@ calf_fader_expose (GtkWidget *widget, GdkEventExpose *event)
     return FALSE;
 }
 
+//void calf_fader_realize (GtkWidget *widget)
+//{
+    //CalfFader *fader = CALF_FADER(widget);
+    //double scale = fader->config->scale;
+    //int slength, swidth;
+    //gtk_widget_style_get(widget, "slider-length", &slength, "slider-width", &swidth, NULL);
+    //string style = "style \"calf-scale-";
+    //if (fader->size==2) style += "big";
+    //else style += "small";
+    //style += "\" = \"calf-scale\"\n";
+    //style += "{\n";
+    //style += "  GtkScale::slider-length = %d\n";
+    //style += "  GtkScale::slider-width = %d\n";
+    //style += "}\n";
+    //char _style[128];
+    //sprintf(_style, &style[0u], int(slength * scale), int(swidth * scale));
+    //printf(_style);
+    //printf("length: %d, width: %d, scale: %.2f, newl: %.2f, newh: %.2f\n", slength, swidth, scale, slength * scale, swidth * scale);
+    //gtk_rc_parse_string(_style);
+    //gtk_widget_queue_resize(widget);
+//}
+
 void
 calf_fader_set_pixbuf (CalfFader *self, GdkPixbuf *image)
 {
@@ -293,6 +333,7 @@ calf_fader_init (CalfFader *self)
     gtk_signal_connect(GTK_OBJECT(widget), "leave-notify-event", GTK_SIGNAL_FUNC (calf_fader_leave), NULL);
     gtk_signal_connect(GTK_OBJECT(widget), "size-allocate", GTK_SIGNAL_FUNC (calf_fader_allocate), NULL);
     gtk_signal_connect(GTK_OBJECT(widget), "size-request", GTK_SIGNAL_FUNC (calf_fader_request), NULL);
+    //gtk_signal_connect(GTK_OBJECT(widget), "realize", GTK_SIGNAL_FUNC (calf_fader_realize), NULL);
 }
 
 GType

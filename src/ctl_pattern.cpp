@@ -476,9 +476,12 @@ calf_pattern_init (CalfPattern *p)
 }
 
 GtkWidget *
-calf_pattern_new()
+calf_pattern_new(calf_utils::gui_config *config)
 {
-    return GTK_WIDGET( g_object_new (CALF_TYPE_PATTERN, NULL ));
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_PATTERN, NULL ));
+    CalfPattern *self = CALF_PATTERN(widget);
+    self->config = config;
+    return widget;
 }
 
 GType

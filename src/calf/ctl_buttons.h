@@ -34,6 +34,8 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 
@@ -49,6 +51,7 @@ G_BEGIN_DECLS
 struct CalfButton
 {
     GtkButton parent;
+    calf_utils::gui_config *config;
 };
 
 struct CalfButtonClass
@@ -56,7 +59,7 @@ struct CalfButtonClass
     GtkButtonClass parent_class;
 };
 
-extern GtkWidget *calf_button_new(const gchar *label);
+extern GtkWidget *calf_button_new(calf_utils::gui_config *config, const gchar *label);
 extern GType calf_button_get_type();
 
 
@@ -72,6 +75,7 @@ extern GType calf_button_get_type();
 struct CalfToggleButton
 {
     GtkToggleButton parent;
+    calf_utils::gui_config *config;
 };
 
 struct CalfToggleButtonClass
@@ -79,7 +83,7 @@ struct CalfToggleButtonClass
     GtkToggleButtonClass parent_class;
 };
 
-extern GtkWidget *calf_toggle_button_new(const gchar *label);
+extern GtkWidget *calf_toggle_button_new(calf_utils::gui_config *config, const gchar *label);
 extern GType calf_toggle_button_get_type();
 
 
@@ -95,6 +99,7 @@ extern GType calf_toggle_button_get_type();
 struct CalfRadioButton
 {
     GtkRadioButton parent;
+    calf_utils::gui_config *config;
 };
 
 struct CalfRadioButtonClass
@@ -102,7 +107,7 @@ struct CalfRadioButtonClass
     GtkRadioButtonClass parent_class;
 };
 
-extern GtkWidget *calf_radio_button_new(const gchar *label);
+extern GtkWidget *calf_radio_button_new(calf_utils::gui_config *configs, const gchar *label);
 extern GType calf_radio_button_get_type();
 
 
@@ -122,6 +127,7 @@ struct CalfToggle
     int width;
     int height;
     GdkPixbuf *toggle_image;
+    calf_utils::gui_config *config;
 };
 
 struct CalfToggleClass
@@ -129,8 +135,8 @@ struct CalfToggleClass
     GtkRangeClass parent_class;
 };
 
-extern GtkWidget *calf_toggle_new();
-extern GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment);
+extern GtkWidget *calf_toggle_new(calf_utils::gui_config *config);
+extern GtkWidget *calf_toggle_new_with_adjustment(calf_utils::gui_config *config, GtkAdjustment *_adjustment);
 extern void calf_toggle_set_size(CalfToggle *self, int size);
 extern void calf_toggle_set_pixbuf(CalfToggle *self, GdkPixbuf *pixbuf);
 extern GType calf_toggle_get_type();
@@ -150,6 +156,7 @@ struct CalfTapButton
     GtkButton parent;
     GdkPixbuf *image[3];
     int state;
+    calf_utils::gui_config *config;
 };
 
 struct CalfTapButtonClass
@@ -157,7 +164,7 @@ struct CalfTapButtonClass
     GtkButtonClass parent_class;
 };
 
-extern GtkWidget *calf_tap_button_new();
+extern GtkWidget *calf_tap_button_new(calf_utils::gui_config *config);
 extern GType calf_tap_button_get_type();
 extern void calf_tap_button_set_pixbufs (CalfTapButton *self, GdkPixbuf *image1, GdkPixbuf *image2, GdkPixbuf *image3);
 

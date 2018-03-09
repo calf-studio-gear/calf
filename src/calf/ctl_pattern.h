@@ -29,6 +29,8 @@
 #include <gtk/gtk.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 #define CALF_TYPE_PATTERN           (calf_pattern_get_type())
@@ -60,6 +62,7 @@ struct CalfPattern
     cairo_surface_t *background_surface;
     /// Cached hand (drag) cursor
     GdkCursor *hand_cursor;
+    calf_utils::gui_config *config;
 };
 
 struct CalfPatternClass
@@ -67,7 +70,7 @@ struct CalfPatternClass
     GtkEventBoxClass parent_class;
 };
 
-extern GtkWidget *calf_pattern_new();
+extern GtkWidget *calf_pattern_new(calf_utils::gui_config *config);
 
 extern GType calf_pattern_get_type();
 extern void calf_pattern_draw_handle (GtkWidget *wi, cairo_t *cr, int bar, int beat, int x, int y, double value, float alpha, bool outline = false);

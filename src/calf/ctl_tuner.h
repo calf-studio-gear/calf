@@ -32,6 +32,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 
@@ -51,6 +53,7 @@ struct CalfTuner
     int note;
     float cents;
     cairo_surface_t *background;
+    calf_utils::gui_config *config;
 };
 
 struct CalfTunerClass
@@ -58,7 +61,7 @@ struct CalfTunerClass
     GtkDrawingAreaClass parent_class;
 };
 
-extern GtkWidget *calf_tuner_new();
+extern GtkWidget *calf_tuner_new(calf_utils::gui_config *config);
 
 extern GType calf_tuner_get_type();
 

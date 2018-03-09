@@ -32,6 +32,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 /// PHASE GRAPH ////////////////////////////////////////////////////////
@@ -60,6 +62,7 @@ struct CalfPhaseGraph
             return (2.f * M_PI) + atan(x);
         return 0.f;
     }
+    calf_utils::gui_config *config;
 };
 
 struct CalfPhaseGraphClass
@@ -67,7 +70,7 @@ struct CalfPhaseGraphClass
     GtkDrawingAreaClass parent_class;
 };
 
-extern GtkWidget *calf_phase_graph_new();
+extern GtkWidget *calf_phase_graph_new(calf_utils::gui_config *config);
 
 extern GType calf_phase_graph_get_type();
 

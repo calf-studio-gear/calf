@@ -32,9 +32,11 @@ struct config_db_iface
     virtual bool has_dir(const char *key) = 0;
     virtual bool get_bool(const char *key, bool def_value) = 0;
     virtual int get_int(const char *key, int def_value) = 0;
+    virtual double get_double(const char *key, double def_value) = 0;
     virtual std::string get_string(const char *key, const std::string &def_value) = 0;
     virtual void set_bool(const char *key, bool value) = 0;
     virtual void set_int(const char *key, int value) = 0;
+    virtual void set_double(const char *key, double value) = 0;
     virtual void set_string(const char *key, const std::string &value) = 0;
     virtual void save() = 0;
     virtual config_notifier_iface *add_listener(config_listener_iface *listener) = 0;
@@ -67,9 +69,11 @@ public:
     virtual bool has_dir(const char *key);
     virtual bool get_bool(const char *key, bool def_value);
     virtual int get_int(const char *key, int def_value);
+    virtual double get_double(const char *key, double def_value);
     virtual std::string get_string(const char *key, const std::string &def_value);
     virtual void set_bool(const char *key, bool value);
     virtual void set_int(const char *key, int value);
+    virtual void set_double(const char *key, double value);
     virtual void set_string(const char *key, const std::string &value);
     virtual void save();
     virtual config_notifier_iface *add_listener(config_listener_iface *listener);
@@ -82,6 +86,7 @@ struct gui_config
     bool rack_ears;
     bool vu_meters;
     std::string style;
+    double scale;
     
     gui_config();
     ~gui_config();

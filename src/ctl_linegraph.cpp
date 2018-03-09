@@ -228,10 +228,12 @@ calf_line_graph_draw_moving(CalfLineGraph* lg, cairo_t *ctx, float *data, int di
 
 void calf_line_graph_draw_label(CalfLineGraph * lg, cairo_t *cache_cr, string label, int x, int y, double bgopac, int absx, int absy, int center)
 {
+    double scale = lg->config->scale;
+    cairo_set_font_size(cache_cr, 8 * scale);
     x += absx;
     y += absy;
-    int hmarg = 8;
-    int pad = 2;
+    int hmarg = 8 * scale;
+    int pad = 2 * scale;
     if (label.empty())
         return;
     cairo_text_extents_t tx1, tx2;
@@ -276,6 +278,8 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
     if (lg->debug) printf("(draw crosshairs)\n");
     // crosshairs
     
+    double scale = lg->config->scale;
+    
     int sx = lg->size_x;
     int sy = lg->size_y;
     int ox = absx + lg->pad_x;
@@ -293,7 +297,7 @@ void calf_line_graph_draw_crosshairs(CalfLineGraph* lg, cairo_t* cache_cr, bool 
         cairo_fill(cache_cr);
         if (alpha < 0.3) {
             cairo_move_to(cache_cr, _x, _y);
-            cairo_arc (cache_cr, _x, _y, HANDLE_WIDTH / 2, 0, 2 * M_PI);
+            cairo_arc (cache_cr, _x, _y, HANDLE_WIDTH*scale / 2, 0, 2 * M_PI);
             cairo_set_source_rgba(cache_cr, 0, 0, 0, 0.2);
             cairo_fill(cache_cr);
         }
@@ -375,9 +379,11 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
     int ox = lg->pad_x;
     int oy = lg->pad_y;
     
+    double scale = lg->config->scale;
+    
     if (lg->freqhandles > 0) {
         cairo_set_source_rgba(c, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(c, 1.0);
+        cairo_set_line_width(c, 1.0 * scale);
         string tmp;
         for (int i = 0; i < lg->freqhandles; i++) {
             FreqHandle *handle = &lg->freq_handles[i];
@@ -476,8 +482,8 @@ void calf_line_graph_draw_freqhandles(CalfLineGraph* lg, cairo_t* c)
             if (handle->dimensions == 1) {
                 calf_line_graph_draw_label(lg, c, label, val_x, oy + 2, lg->handle_hovered == i ? 0.8 : 0.5, 0, 0, 0);
             } else {
-                int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH / 2.f;
-                calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask, true, val_x, val_y, label, lg->handle_hovered == i ? 0.8 : 0.5, 0, 0);
+                int mask = 30 - log10(1 + handle->value_z * 9) * 30 + HANDLE_WIDTH*scale / 2.f;
+                calf_line_graph_draw_crosshairs(lg, c, grad, -1, pat_alpha, mask * scale, true, val_x, val_y, label, lg->handle_hovered == i ? 0.8 : 0.5, 0, 0);
             }
         }
     }
@@ -573,11 +579,12 @@ static cairo_t
 *calf_line_graph_switch_context(CalfLineGraph* lg, cairo_t *ctx, cairo_impl *cimpl)
 {
     if (lg->debug) printf("{switch context}\n");
+    double scale = lg->config->scale;
     
     cimpl->context = ctx;
     cairo_select_font_face(ctx, "Sans",
         CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(ctx, 9);
+    cairo_set_font_size(ctx, 9 * scale);
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_MITER);
     cairo_rectangle(ctx, lg->pad_x, lg->pad_y, lg->size_x, lg->size_y);
     cairo_clip(ctx);
@@ -650,6 +657,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
 {
     g_assert(CALF_IS_LINE_GRAPH(widget));
     CalfLineGraph *lg = CALF_LINE_GRAPH(widget);
+    double scale = lg->config->scale;
     
     // quit if no source available
     if (!lg->source) return FALSE;
@@ -663,13 +671,14 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     // recreate surfaces if someone needs it (init of the widget,
     // resizing the window..)
     if (lg->recreate_surfaces) {
-        lg->pad_x = widget->style->xthickness;
-        lg->pad_y = widget->style->ythickness;
+        lg->pad_x = widget->style->xthickness * scale;
+        lg->pad_y = widget->style->ythickness * scale;
         lg->x = widget->allocation.x;
         lg->y = widget->allocation.y;
         float radius, bevel, shadow, lights, dull;
         gtk_widget_style_get(widget, "border-radius", &radius, "bevel",  &bevel, "shadow", &shadow, "lights", &lights, "dull", &dull, NULL);
-    
+        radius *= scale; shadow *= scale;
+        
         if (lg->debug) printf("recreation...\n");
         calf_line_graph_create_surfaces(widget);
         
@@ -730,7 +739,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     
     // the line widths to switch to between cycles
     float grid_width  = 1.0;
-    float graph_width = 1.5;
+    float graph_width = 1.5 * scale;
     float dot_width   = 0.0;
     
     // more vars we have to initialize, mainly stuff we use in callback
@@ -1005,7 +1014,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
             {
                 if (lg->debug) printf("dot %d\n", a);
                 float yv = oy + sy / 2 - (sy / 2 - 1) * y;
-                cairo_arc(ctx, ox + x * sx, yv, size, 0, 2 * M_PI);
+                cairo_arc(ctx, ox + x * sx, yv, size * scale, 0, 2 * M_PI);
                 cairo_fill(ctx);
             }
         }
@@ -1075,7 +1084,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         string s;
         s = lg->source->get_crosshair_label((int)(lg->mouse_x - ox), (int)(lg->mouse_y - oy), sx, sy, 0, 1, 1, 1, 1);
-        cairo_set_line_width(c, 1),
+        cairo_set_line_width(c, 1 * scale),
         calf_line_graph_draw_crosshairs(lg, c, false, 0, 0.5, 5, false, lg->mouse_x - ox, lg->mouse_y - oy, s, 1.5, lg->x, lg->y);
     }
     
@@ -1106,6 +1115,8 @@ calf_line_graph_get_handle_at(CalfLineGraph *lg, double x, double y)
     int ox = lg->pad_x;
     int oy = lg->pad_y;
     
+    double scale = lg->config->scale;
+    
     sx += sx % 2 - 1;
     sy += sy % 2 - 1;
 
@@ -1117,8 +1128,8 @@ calf_line_graph_get_handle_at(CalfLineGraph *lg, double x, double y)
 
         if (handle->dimensions == 1) {
             // if user clicked inside a vertical band with width HANDLE_WIDTH handle is considered grabbed
-            if (lg->mouse_x <= ox + round(handle->value_x * sx + HANDLE_WIDTH / 2.0) + 0.5 &&
-                lg->mouse_x >= ox + round(handle->value_x * sx - HANDLE_WIDTH / 2.0) - 0.5 ) {
+            if (lg->mouse_x <= ox + round(handle->value_x * sx + HANDLE_WIDTH*scale / 2.0) + 0.5 &&
+                lg->mouse_x >= ox + round(handle->value_x * sx - HANDLE_WIDTH*scale / 2.0) - 0.5 ) {
                 return i;
             }
         } else if (handle->dimensions >= 2) {
@@ -1126,7 +1137,7 @@ calf_line_graph_get_handle_at(CalfLineGraph *lg, double x, double y)
             double dy = lg->mouse_y - round(oy + handle->value_y * sy);
 
             // if mouse clicked inside circle of HANDLE_WIDTH
-            if (sqrt(dx * dx + dy * dy) <= HANDLE_WIDTH / 2.0)
+            if (sqrt(dx * dx + dy * dy) <= HANDLE_WIDTH*scale / 2.0)
                 return i;
         }
     }
@@ -1503,9 +1514,12 @@ calf_line_graph_init (CalfLineGraph *lg)
 }
 
 GtkWidget *
-calf_line_graph_new()
+calf_line_graph_new(calf_utils::gui_config *config)
 {
-    return GTK_WIDGET( g_object_new (CALF_TYPE_LINE_GRAPH, NULL ));
+    GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_LINE_GRAPH, NULL ));
+    CalfLineGraph *self = CALF_LINE_GRAPH(widget);
+    self->config = config;
+    return widget;
 }
 
 GType

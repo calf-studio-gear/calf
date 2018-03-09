@@ -23,6 +23,9 @@
 #define CALF_CTL_LED_H
 
 #include <gtk/gtk.h>
+#include <calf/gui.h>
+
+using namespace calf_plugins;
 
 G_BEGIN_DECLS
 
@@ -41,6 +44,7 @@ struct CalfLed
     int led_mode;
     int size;
     float led_value;
+    calf_utils::gui_config *config;
 };
 
 /// Class object for CalfLed
@@ -50,7 +54,7 @@ struct CalfLedClass
 };
 
 /// Create new CalfLed
-extern GtkWidget *calf_led_new();
+extern GtkWidget *calf_led_new(calf_utils::gui_config *config);
 
 /// Get GObject type for the CalfLed
 extern GType calf_led_get_type();

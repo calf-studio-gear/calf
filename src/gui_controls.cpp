@@ -288,7 +288,7 @@ GtkWidget *combo_box_param_control::create(plugin_gui *_gui, int _param_no)
     populating = false;
     
     const parameter_properties &props = get_props();
-    widget  = calf_combobox_new ();
+    widget  = calf_combobox_new (gui->window->get_environment()->get_config());
     if (param_no != -1 && props.choices)
     {
         for (int j = (int)props.min; j <= (int)props.max; j++)
@@ -433,8 +433,9 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-
-    widget = calf_fader_new(1, get_int("size", 2), 0, 1, get_props().get_increment());
+    double scale = gui->window->get_environment()->get_config()->scale;
+    
+    widget = calf_fader_new(gui->window->get_environment()->get_config(), 1, get_int("size", 2), 0, 1, get_props().get_increment());
     
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (hscale_value_changed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "format-value", G_CALLBACK (hscale_format_value), (gpointer)this);
@@ -453,11 +454,11 @@ GtkWidget *hscale_param_control::create(plugin_gui *_gui, int _param_no)
     
     char *name = g_strdup_printf("Calf-HScale%i", size);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
-    gtk_widget_set_size_request (widget, size * 100, -1);
+    gtk_widget_set_size_request (widget, size * 100 * scale, -1);
     g_free(name);
 
     if (attribs.count("width"))
-        gtk_widget_set_size_request (widget, get_int("width", 200), -1);
+        gtk_widget_set_size_request (widget, get_int("width", 200) * scale, -1);
     if (attribs.count("position")) {
         string v = attribs["position"];
         if (v == "top") gtk_scale_set_value_pos(GTK_SCALE(widget), GTK_POS_TOP);
@@ -506,7 +507,8 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget = calf_fader_new(0, get_int("size", 2), 0, 1, get_props().get_increment());
+    double scale = gui->window->get_environment()->get_config()->scale;
+    widget = calf_fader_new(gui->window->get_environment()->get_config(), 0, get_int("size", 2), 0, 1, get_props().get_increment());
     g_signal_connect (GTK_OBJECT (widget), "value-changed", G_CALLBACK (vscale_value_changed), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "button-press-event", G_CALLBACK (scale_button_press), (gpointer)this);
 
@@ -524,13 +526,13 @@ GtkWidget *vscale_param_control::create(plugin_gui *_gui, int _param_no)
     calf_fader_set_pixbuf(CALF_FADER(widget), images->get(iname));
     
     char *name = g_strdup_printf("Calf-VScale%i", size);
-    gtk_widget_set_size_request (widget, -1, size * 100);
+    gtk_widget_set_size_request (widget, -1, size * 100 * scale);
     gtk_widget_set_name(GTK_WIDGET(widget), name);
     g_free(name);
 
     if (attribs.count("height"))
-        gtk_widget_set_size_request (widget, -1, get_int("height", 200));
-
+        gtk_widget_set_size_request (widget, -1, get_int("height", 200) * scale);
+    
     return widget;
 }
 
@@ -627,14 +629,15 @@ GtkWidget *vumeter_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
-    widget = calf_vumeter_new ();
+    widget = calf_vumeter_new (gui->window->get_environment()->get_config());
     CalfVUMeter *vu = CALF_VUMETER(widget);
+    double scale = gui->window->get_environment()->get_config()->scale;
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-vumeter");
     calf_vumeter_set_mode (vu, (CalfVUMeterMode)get_int("mode", 0));
     vu->vumeter_hold = get_float("hold", 0);
     vu->vumeter_falloff = get_float("falloff", 0.f);
-    vu->vumeter_width = get_int("width", 80);
-    vu->vumeter_height = get_int("height", 18);
+    vu->vumeter_width = get_int("width", 80) * scale;
+    vu->vumeter_height = get_int("height", 18) * scale;
     vu->vumeter_position = get_int("position", 0);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-VUMeter");
     return widget;
@@ -653,7 +656,7 @@ GtkWidget *led_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
-    widget = calf_led_new ();
+    widget = calf_led_new (gui->window->get_environment()->get_config());
     gtk_widget_set_name(GTK_WIDGET(widget), "calf-led");
     CALF_LED(widget)->led_mode = get_int("mode", 0);
     CALF_LED(widget)->size = get_int("size", 1);
@@ -674,7 +677,7 @@ GtkWidget *tube_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui, param_no = _param_no;
     // const parameter_properties &props = get_props();
-    GtkWidget *widget = calf_tube_new ();
+    GtkWidget *widget = calf_tube_new (gui->window->get_environment()->get_config());
     CalfTube *tube = CALF_TUBE(widget);
     gtk_widget_set_name(widget, "calf-tube");
     tube->size = get_int("size", 2);
@@ -825,7 +828,7 @@ GtkWidget *button_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget  = calf_button_new ((gchar*)get_props().name);
+    widget  = calf_button_new (gui->window->get_environment()->get_config(), (gchar*)get_props().name);
     g_signal_connect (GTK_OBJECT (widget), "pressed", G_CALLBACK (button_clicked), (gpointer)this);
     g_signal_connect (GTK_OBJECT (widget), "released", G_CALLBACK (button_clicked), (gpointer)this);
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Button");
@@ -859,7 +862,7 @@ GtkWidget *knob_param_control::create(plugin_gui *_gui, int _param_no)
     gui = _gui;
     param_no = _param_no;
     const parameter_properties &props = get_props();
-    widget = calf_knob_new();
+    widget = calf_knob_new(gui->window->get_environment()->get_config());
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Knob");
     CalfKnob * knob = CALF_KNOB(widget);
     
@@ -923,7 +926,7 @@ GtkWidget *toggle_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget  = calf_toggle_new ();
+    widget  = calf_toggle_new (gui->window->get_environment()->get_config());
     CalfToggle * toggle = CALF_TOGGLE(widget);
     calf_toggle_set_size(toggle, get_int("size", 2));
     
@@ -974,7 +977,7 @@ GtkWidget *tap_button_param_control::create(plugin_gui *_gui, int _param_no)
     avg_value = 0;
     value     = 0;
     timer     = 0;
-    widget    = calf_tap_button_new ();
+    widget    = calf_tap_button_new (gui->window->get_environment()->get_config());
     // set pixbuf
     calf_tap_button_set_pixbufs(CALF_TAP_BUTTON(widget),
         gui->window->get_environment()->get_image_factory()->get("tap_inactive"),
@@ -1055,7 +1058,7 @@ GtkWidget *keyboard_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     // const parameter_properties &props = get_props();
     
-    widget = calf_keyboard_new();
+    widget = calf_keyboard_new(gui->window->get_environment()->get_config());
     kb = CALF_KEYBOARD(widget);
     kb->nkeys = get_int("octaves", 4) * 7 + 1;
     kb->sink = new CalfKeyboard::EventAdapter;
@@ -1093,7 +1096,7 @@ GtkWidget *curve_param_control::create(plugin_gui *_gui, int _param_no)
     param_no = _param_no;
     require_attribute("key");
     
-    widget = calf_curve_new(get_int("maxpoints", -1));
+    widget = calf_curve_new(gui->window->get_environment()->get_config(), get_int("maxpoints", -1));
     curve = CALF_CURVE(widget);
     curve->sink = new curve_param_control_callback(this);
     // gtk_curve_set_curve_type(curve, GTK_CURVE_TYPE_LINEAR);
@@ -1130,7 +1133,7 @@ GtkWidget *meter_scale_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget  = calf_meter_scale_new ();
+    widget  = calf_meter_scale_new (gui->window->get_environment()->get_config());
     CalfMeterScale *ms = CALF_METER_SCALE(widget);
     gtk_widget_set_name(widget, "Calf-MeterScale");
     string str   = "0 0.5 1";
@@ -1251,11 +1254,13 @@ GtkWidget *line_graph_param_control::create(plugin_gui *a_gui, int a_param_no)
     param_no        = a_param_no;
     //last_generation = -1;
     
-    widget                     = calf_line_graph_new ();
+    widget                     = calf_line_graph_new (gui->window->get_environment()->get_config());
+    
+    double scale = gui->window->get_environment()->get_config()->scale;
     
     CalfLineGraph *clg         = CALF_LINE_GRAPH(widget);
-    widget->requisition.width  = get_int("width", 40);
-    widget->requisition.height = get_int("height", 40);
+    widget->requisition.width  = get_int("width", 40) * scale;
+    widget->requisition.height = get_int("height", 40) * scale;
     
     calf_line_graph_set_square(clg, get_int("square", 0));
     
@@ -1488,10 +1493,11 @@ GtkWidget *phase_graph_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget = calf_phase_graph_new ();
+    double scale = gui->window->get_environment()->get_config()->scale;
+    widget = calf_phase_graph_new (gui->window->get_environment()->get_config());
     CalfPhaseGraph *clg = CALF_PHASE_GRAPH(widget);
-    widget->requisition.width = get_int("size", 40);
-    widget->requisition.height = get_int("size", 40);
+    widget->requisition.width = get_int("size", 40) * scale;
+    widget->requisition.height = get_int("size", 40) * scale;
     clg->source = gui->plugin->get_phase_graph_iface();
     clg->source_id = param_no;
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-PhaseGraph");
@@ -1524,10 +1530,11 @@ GtkWidget *tuner_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget = calf_tuner_new ();
+    widget = calf_tuner_new (gui->window->get_environment()->get_config());
+    double scale = gui->window->get_environment()->get_config()->scale;
     //CalfTuner *tuner = CALF_TUNER(widget);
-    widget->requisition.width = get_int("width", 40);
-    widget->requisition.height = get_int("height", 40);
+    widget->requisition.width = get_int("width", 40) * scale;
+    widget->requisition.height = get_int("height", 40) * scale;
     gtk_widget_set_name(GTK_WIDGET(widget), "Calf-Tuner");
     
     const string &cents_name = attribs["param_cents"];
@@ -1560,9 +1567,10 @@ GtkWidget *pattern_param_control::create(plugin_gui *_gui, int _param_no)
 {
     gui = _gui;
     param_no = _param_no;
-    widget = calf_pattern_new ();
-    widget->requisition.width = get_int("width", 300);
-    widget->requisition.height = get_int("height", 60);
+    widget = calf_pattern_new (gui->window->get_environment()->get_config());
+    double scale = gui->window->get_environment()->get_config()->scale;
+    widget->requisition.width = get_int("width", 300) * scale;
+    widget->requisition.height = get_int("height", 60) * scale;
     const string &beats_name = attribs["beats"];
     if (beats_name != "") {
         param_beats = gui->get_param_no_by_name(beats_name);
@@ -1789,7 +1797,7 @@ GtkWidget *notebook_param_control::create(plugin_gui *_gui, int _param_no)
         page = 0;
     else
         page = gui->plugin->get_param_value(param_no);
-    GtkWidget *nb = calf_notebook_new();
+    GtkWidget *nb = calf_notebook_new(gui->window->get_environment()->get_config());
     widget = GTK_WIDGET(nb);
     calf_notebook_set_pixbuf(CALF_NOTEBOOK(nb),
         gui->window->get_environment()->get_image_factory()->get("notebook_screw"));
@@ -1833,11 +1841,12 @@ void notebook_param_control::notebook_page_changed(GtkWidget *widget, GtkWidget 
 
 GtkWidget *table_container::create(plugin_gui *_gui)
 {
+    double scale = _gui->window->get_environment()->get_config()->scale;
     require_int_attribute("rows");
     require_int_attribute("cols");
     int homog = get_int("homogeneous", 0);
-    int sx = get_int("spacing-x", 2);
-    int sy = get_int("spacing-y", 2);
+    int sx = get_int("spacing-x", 2) * scale;
+    int sy = get_int("spacing-y", 2) * scale;
     GtkWidget *table = gtk_table_new(get_int("rows", 1), get_int("cols", 1), false);
     if(homog > 0) {
         gtk_table_set_homogeneous(GTK_TABLE(table), TRUE);
@@ -1877,7 +1886,7 @@ GtkWidget *alignment_container::create(plugin_gui *_gui)
 
 GtkWidget *frame_container::create(plugin_gui *_gui)
 {
-    widget = calf_frame_new(attribs["label"].c_str());
+    widget = calf_frame_new(_gui->window->get_environment()->get_config(), attribs["label"].c_str());
     gtk_widget_set_name(widget, "Calf-Frame");
     return widget;
 }
@@ -1893,7 +1902,8 @@ void box_container::add(control_base *base)
 
 GtkWidget *hbox_container::create(plugin_gui *_gui)
 {
-    widget = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
+    double scale = _gui->window->get_environment()->get_config()->scale;
+    widget = gtk_hbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2) * scale);
     gtk_widget_set_name(widget, "Calf-HBox");
     return widget;
 }
@@ -1902,7 +1912,8 @@ GtkWidget *hbox_container::create(plugin_gui *_gui)
 
 GtkWidget *vbox_container::create(plugin_gui *_gui)
 {
-    widget = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2));
+    double scale = _gui->window->get_environment()->get_config()->scale;
+    widget = gtk_vbox_new(get_int("homogeneous") >= 1, get_int("spacing", 2) * scale);
     gtk_widget_set_name(widget, "Calf-VBox");
     return widget;
 }

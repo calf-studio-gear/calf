@@ -33,6 +33,8 @@
 #include <calf/drawingutils.h>
 #include <calf/gui.h>
 
+using namespace calf_plugins;
+
 G_BEGIN_DECLS
 
 
@@ -48,6 +50,7 @@ G_BEGIN_DECLS
 struct CalfFrame
 {
     GtkFrame parent;
+    calf_utils::gui_config *config;
 };
 
 struct CalfFrameClass
@@ -55,7 +58,7 @@ struct CalfFrameClass
     GtkFrameClass parent_class;
 };
 
-extern GtkWidget *calf_frame_new(const char *label);
+extern GtkWidget *calf_frame_new(calf_utils::gui_config *config, const char *label);
 extern GType calf_frame_get_type();
 
 G_END_DECLS

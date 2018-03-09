@@ -35,6 +35,8 @@
 
 #define range01(tick) std::min(1., std::max(0., tick))
 
+using namespace calf_plugins;
+
 ///////////////////////////////////////// knob ///////////////////////////////////////////////
 
 static void
@@ -91,7 +93,7 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     
     if (!self->knob_image)
         return FALSE;
-        
+    
     GdkPixbuf *pixbuf = self->knob_image;
     gint iw = gdk_pixbuf_get_width(pixbuf);
     gint ih = gdk_pixbuf_get_height(pixbuf);
@@ -106,12 +108,14 @@ calf_knob_expose (GtkWidget *widget, GdkEventExpose *event)
     GtkStateType state;
     
     float rmargin, rwidth, tmargin, twidth, tlength, flw;
+    double scale = self->config->scale;
     gtk_widget_style_get(widget, "ring-margin", &rmargin,
                                  "ring-width",  &rwidth,
                                  "tick-margin", &tmargin,
                                  "tick-width",  &twidth,
                                  "tick-length", &tlength,
                                  "focus-line-width", &flw, NULL);
+    rmargin*=scale; rwidth*=scale; tmargin*=scale; twidth*=scale; tlength*=scale; flw*=scale;
     
     if (self->debug > 1)
         printf("gtkrc: rm %.2f | rw %.2f | tm %.2f | tw %.2f | tl %.2f\n", rmargin, rwidth, tmargin, twidth, tlength);
@@ -557,10 +561,10 @@ calf_knob_init (CalfKnob *self)
 }
 
 GtkWidget *
-calf_knob_new()
+calf_knob_new(calf_utils::gui_config *config)
 {
     GtkAdjustment *adj = (GtkAdjustment *)gtk_adjustment_new(0, 0, 1, 0.01, 0.5, 0);
-    return calf_knob_new_with_adjustment(adj);
+    return calf_knob_new_with_adjustment(config, adj);
 }
 
 static gboolean calf_knob_value_changed(gpointer obj)
@@ -570,12 +574,14 @@ static gboolean calf_knob_value_changed(gpointer obj)
     return FALSE;
 }
 
-GtkWidget *calf_knob_new_with_adjustment(GtkAdjustment *_adjustment)
+GtkWidget *calf_knob_new_with_adjustment(calf_utils::gui_config *config, GtkAdjustment *_adjustment)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_KNOB, NULL ));
     if (widget) {
         gtk_range_set_adjustment(GTK_RANGE(widget), _adjustment);
         g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_knob_value_changed), widget);
+        CalfKnob *self = CALF_KNOB(widget);
+        self->config = config;
     }
     return widget;
 }

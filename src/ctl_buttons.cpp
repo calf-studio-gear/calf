@@ -55,8 +55,10 @@ calf_toggle_size_request (GtkWidget *widget,
                            GtkRequisition *requisition)
 {
     g_assert(CALF_IS_TOGGLE(widget));
-    requisition->width  = widget->style->xthickness;
-    requisition->height = widget->style->ythickness;
+    CalfToggle *self = CALF_TOGGLE(widget);
+    double scale = self->config->scale;
+    requisition->width  = widget->style->xthickness * scale;
+    requisition->height = widget->style->ythickness * scale;
 }
 
 static gboolean
@@ -126,10 +128,10 @@ calf_toggle_set_pixbuf (CalfToggle *self, GdkPixbuf *pixbuf)
 }
 
 GtkWidget *
-calf_toggle_new()
+calf_toggle_new(calf_utils::gui_config *config)
 {
     GtkAdjustment *adj = (GtkAdjustment *)gtk_adjustment_new(0, 0, 1, 1, 0, 0);
-    return calf_toggle_new_with_adjustment(adj);
+    return calf_toggle_new_with_adjustment(config, adj);
 }
 
 static gboolean calf_toggle_value_changed(gpointer obj)
@@ -146,12 +148,14 @@ static gboolean calf_toggle_value_changed(gpointer obj)
     return FALSE;
 }
 
-GtkWidget *calf_toggle_new_with_adjustment(GtkAdjustment *_adjustment)
+GtkWidget *calf_toggle_new_with_adjustment(calf_utils::gui_config *config, GtkAdjustment *_adjustment)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE, NULL ));
     if (widget) {
         gtk_range_set_adjustment(GTK_RANGE(widget), _adjustment);
         g_signal_connect(GTK_OBJECT(widget), "value-changed", G_CALLBACK(calf_toggle_value_changed), widget);
+        CalfToggle *self = CALF_TOGGLE(widget);
+        self->config = config;
     }
     return widget;
 }
@@ -197,10 +201,12 @@ calf_toggle_get_type (void)
 ///////////////////////////////////////// button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_button_new(const gchar *label)
+calf_button_new(calf_utils::gui_config *config, const gchar *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_BUTTON, NULL ));
     gtk_button_set_label(GTK_BUTTON(widget), label);
+    CalfButton *self = CALF_BUTTON(widget);
+    self->config = config;
     return widget;
 }
 static gboolean
@@ -348,10 +354,12 @@ calf_button_get_type (void)
 ///////////////////////////////////////// toggle button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_toggle_button_new(const gchar *label)
+calf_toggle_button_new(calf_utils::gui_config *config, const gchar *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TOGGLE_BUTTON, NULL ));
     gtk_button_set_label(GTK_BUTTON(widget), label);
+    CalfToggleButton *self = CALF_TOGGLE_BUTTON(widget);
+    self->config = config;
     return widget;
 }
 
@@ -430,10 +438,12 @@ calf_toggle_button_get_type (void)
 ///////////////////////////////////////// radio button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_radio_button_new(const gchar *label)
+calf_radio_button_new(calf_utils::gui_config *config, const gchar *label)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_RADIO_BUTTON, NULL ));
     gtk_button_set_label(GTK_BUTTON(widget), label);
+    CalfRadioButton *self = CALF_RADIO_BUTTON(widget);
+    self->config = config;
     return widget;
 }
 
@@ -512,9 +522,11 @@ calf_radio_button_get_type (void)
 ///////////////////////////////////////// tap button ///////////////////////////////////////////////
 
 GtkWidget *
-calf_tap_button_new()
+calf_tap_button_new(calf_utils::gui_config *config)
 {
     GtkWidget *widget = GTK_WIDGET( g_object_new (CALF_TYPE_TAP_BUTTON, NULL ));
+    CalfTapButton *self = CALF_TAP_BUTTON(widget);
+    self->config = config;
     return widget;
 }
 

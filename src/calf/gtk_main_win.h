@@ -116,8 +116,8 @@ namespace calf_plugins {
         static void add_plugin_action(GtkWidget *src, gpointer data);
         void display_error(const char *error, const char *filename);
         void on_config_change();
-        GtkWidget *create_vu_meter();
-        GtkWidget *create_meter_scale();
+        GtkWidget *create_vu_meter(calf_utils::gui_config *config);
+        GtkWidget *create_meter_scale(calf_utils::gui_config *config);
         /// Create a toplevel window with progress bar
         GtkWidget *create_progress_window();        
 

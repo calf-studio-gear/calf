@@ -23,6 +23,9 @@
 #define CALF_CTL_TUBE_H
 
 #include <gtk/gtk.h>
+#include <calf/gui.h>
+
+using namespace calf_plugins;
 
 G_BEGIN_DECLS
 
@@ -45,6 +48,7 @@ struct CalfTube
     float last_falloff;
     long last_falltime;
     cairo_surface_t *cache_surface;
+    calf_utils::gui_config *config;
 };
 
 struct CalfTubeClass
@@ -52,7 +56,7 @@ struct CalfTubeClass
     GtkDrawingAreaClass parent_class;
 };
 
-extern GtkWidget *calf_tube_new();
+extern GtkWidget *calf_tube_new(calf_utils::gui_config *config);
 extern GType calf_tube_get_type();
 extern void calf_tube_set_value(CalfTube *tube, float value);
 

@@ -12,6 +12,7 @@ gui_config::gui_config()
     rack_ears  = true;
     vu_meters  = true;
     style      = "Calf_Default";
+    scale      = 1.0;
 }
 
 gui_config::~gui_config()
@@ -25,6 +26,7 @@ void gui_config::load(config_db_iface *db)
     rack_ears  = db->get_bool("show-rack-ears", gui_config().rack_ears);
     vu_meters  = db->get_bool("show-vu-meters", gui_config().vu_meters);
     style      = db->get_string("style", gui_config().style);
+    scale      = db->get_double("scale", gui_config().scale);
 }
 
 void gui_config::save(config_db_iface *db)
@@ -34,6 +36,7 @@ void gui_config::save(config_db_iface *db)
     db->set_bool("show-rack-ears", rack_ears);
     db->set_bool("show-vu-meters", vu_meters);
     db->set_string("style", style);
+    db->set_double("scale", scale);
     db->save();
 }
 
@@ -144,6 +147,19 @@ std::string gkeyfile_config_db::get_string(const char *key, const std::string &d
     return value;
 }
 
+double gkeyfile_config_db::get_double(const char *key, double def_value)
+{
+    GError *err = NULL;
+    double value = g_key_file_get_double(keyfile, section.c_str(), key, &err);
+    if (err)
+    {
+        if (check_not_found_and_delete(err))
+            return def_value;
+        handle_error(err);
+    }
+    return value;
+}
+
 void gkeyfile_config_db::set_bool(const char *key, bool value)
 {
     g_key_file_set_boolean(keyfile, section.c_str(), key, (gboolean)value);
@@ -157,6 +173,11 @@ void gkeyfile_config_db::set_int(const char *key, int value)
 void gkeyfile_config_db::set_string(const char *key, const std::string &value)
 {
     g_key_file_set_string(keyfile, section.c_str(), key, value.c_str());
+}
+
+void gkeyfile_config_db::set_double(const char *key,  double value)
+{
+    g_key_file_set_double(keyfile, section.c_str(), key, value);
 }
 
 void gkeyfile_config_db::save()

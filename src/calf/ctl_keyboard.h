@@ -24,6 +24,9 @@
 #define CALF_CTL_KEYBOARD_H
 
 #include <gtk/gtk.h>
+#include <calf/gui.h>
+
+using namespace calf_plugins;
 
 G_BEGIN_DECLS
 
@@ -67,7 +70,7 @@ struct CalfKeyboard
         /// key was released
         virtual void note_off(int note) = 0;
 
-	virtual ~EventSink() {}
+    virtual ~EventSink() {}
     };
 
     /// Null implementation of CalfKeyboard::EventSink
@@ -110,6 +113,8 @@ struct CalfKeyboard
     int last_key;
     /// If true, the keyboard accepts mouse clicks and keys
     bool interactive;
+    
+    calf_utils::gui_config *config;
 };
 
 /// Class-specific data for CalfKeyboard
@@ -120,7 +125,7 @@ struct CalfKeyboardClass
 };
 
 /// Create new keyboard object;
-extern GtkWidget *calf_keyboard_new();
+extern GtkWidget *calf_keyboard_new(calf_utils::gui_config *config);
 
 /// Return a GType for CalfKeyboard
 extern GType calf_keyboard_get_type();
@@ -128,4 +133,3 @@ extern GType calf_keyboard_get_type();
 G_END_DECLS
 
 #endif
-

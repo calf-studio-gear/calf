@@ -510,8 +510,7 @@ gui_environment::gui_environment()
     
     config_db = new calf_utils::gkeyfile_config_db(keyfile, filename.c_str(), "gui");
     gui_config.load(config_db);
-    images = image_factory();
-    images.set_path(PKGLIBDIR "styles/" + get_config()->style);
+    images = image_factory(PKGLIBDIR "styles/" + get_config()->style, get_config()->scale);
 }
 
 gui_environment::~gui_environment()
@@ -527,7 +526,9 @@ GdkPixbuf *image_factory::create_image (string image) {
     string file = path + "/" + image + ".png";
     if (access(file.c_str(), F_OK))
         return NULL;
-    return gdk_pixbuf_new_from_file(file.c_str(), NULL);
+    gint width = 0, height = 0;
+    gdk_pixbuf_get_file_info(file.c_str(), &width, &height);
+    return gdk_pixbuf_new_from_file_at_size(file.c_str(), width * scale, height * scale, NULL);
 }
 void image_factory::recreate_images () {
     for (map<string, GdkPixbuf*>::iterator i_ = i.begin(); i_ != i.end(); i_++) {
@@ -537,6 +538,10 @@ void image_factory::recreate_images () {
 }
 void image_factory::set_path (string p) {
     path = p;
+    recreate_images();
+}
+void image_factory::set_scale (double s) {
+    scale = s;
     recreate_images();
 }
 GdkPixbuf *image_factory::get (string image) {
@@ -552,8 +557,9 @@ gboolean image_factory::available (string image) {
         return false;
     return true;
 }
-image_factory::image_factory (string p) {
-    set_path(p);
+image_factory::image_factory (string path, double scale) {
+    set_path(path);
+    set_scale(scale);
     
     i["combo_arrow"]              = NULL;
     i["light_top"]                = NULL;
@@ -571,11 +577,15 @@ image_factory::image_factory (string p) {
     i["side_d_nw"]                = NULL;
     i["side_d_se"]                = NULL;
     i["side_d_sw"]                = NULL;
+    i["side_d_e"]                 = NULL;
+    i["side_d_w"]                 = NULL;
     
     i["side_ne"]                  = NULL;
     i["side_nw"]                  = NULL;
     i["side_se"]                  = NULL;
     i["side_sw"]                  = NULL;
+    i["side_w"]                   = NULL;
+    i["side_e"]                   = NULL;
     i["side_e_logo"]              = NULL;
     
     i["slider_1_horiz"]            = NULL;

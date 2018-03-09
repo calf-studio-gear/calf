@@ -249,9 +249,12 @@ calf_tuner_init (CalfTuner *self)
 }
 
 GtkWidget *
-calf_tuner_new()
+calf_tuner_new(calf_utils::gui_config *config)
 {
-    return GTK_WIDGET(g_object_new (CALF_TYPE_TUNER, NULL));
+    GtkWidget *widget = GTK_WIDGET(g_object_new (CALF_TYPE_TUNER, NULL));
+    CalfTuner *self = CALF_TUNER(widget);
+    self->config = config;
+    return widget;
 }
 
 GType

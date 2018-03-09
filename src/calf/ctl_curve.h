@@ -23,7 +23,10 @@
 #define CALF_CTL_CURVE_H
 
 #include <gtk/gtk.h>
+#include <calf/gui.h>
 #include <vector>
+
+using namespace calf_plugins;
 
 G_BEGIN_DECLS
 
@@ -50,7 +53,7 @@ struct CalfCurve
         virtual void curve_changed(CalfCurve *src, const point_vector &data) = 0;
         /// Called to clip/snap/otherwise adjust candidate point coordinates
         virtual void clip(CalfCurve *src, int pt, float &x, float &y, bool &hide) = 0;
-	virtual ~EventSink() {}
+    virtual ~EventSink() {}
     };
 
     /// Null implementation of EventSink
@@ -100,6 +103,8 @@ struct CalfCurve
     /// @param y vertical logical coordinate
     /// @param hide true if point is outside "valid" range and about to be deleted
     void clip(int pt, float &x, float &y, bool &hide);
+    
+    calf_utils::gui_config *config;
 };
 
 struct CalfCurveClass
@@ -108,7 +113,7 @@ struct CalfCurveClass
 };
 
 /// Create a CalfCurve
-extern GtkWidget *calf_curve_new(unsigned int point_limit = -1);
+extern GtkWidget *calf_curve_new(calf_utils::gui_config *config, unsigned int point_limit = -1);
 
 /// Return a GObject type for class CalfCurve
 extern GType calf_curve_get_type();
@@ -119,4 +124,3 @@ extern void calf_curve_set_points(GtkWidget *widget, const CalfCurve::point_vect
 G_END_DECLS
 
 #endif
-
