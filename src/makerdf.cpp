@@ -339,6 +339,7 @@ void make_ttl(string path_prefix, const string *data_dir)
         ttl += "    doap:name \"" + string(lpi.name) + "\" ;\n";
         ttl += "    doap:license <http://usefulinc.com/doap/licenses/lgpl> ;\n";
         ttl += "    doap:developer <http://calf.sourceforge.net/team> ;\n";
+        ttl += "    doap:maintainer <http://calf.sourceforge.net/team> ;\n";
 
 #if USE_LV2_GUI
         ttl += "    uiext:ui " + gui_uri + " ;\n";
