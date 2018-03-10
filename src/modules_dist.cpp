@@ -805,7 +805,7 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     fluid_settings_setint(settings, "synth.reverb.active", 0);
     fluid_settings_setint(settings, "synth.chorus.active", 0);
     
-    std::string* paths = new std::string[_synths] {
+    char const * paths[] = {
         PKGLIBDIR "sf2/Hum.sf2",
         PKGLIBDIR "sf2/Motor.sf2",
         PKGLIBDIR "sf2/Static.sf2",
@@ -817,7 +817,7 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     synth = new_fluid_synth(settings);
     fluid_synth_set_gain(synth, 1.f);
     for (int i = 0; i < _synths; i++) {
-        int id = fluid_synth_sfload(synth, paths[i].c_str(), 0);
+        int id = fluid_synth_sfload(synth, paths[i], 0);
         fluid_synth_program_select (synth, i, id, 0, 0);
         fluid_synth_pitch_wheel_sens(synth, i, 12);
         last_gain[i] = 0;
