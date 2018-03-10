@@ -2,13 +2,17 @@
 <hbox spacing="5">
     <frame label="Global">
         <vbox border="6" spacing="10">
-            <label />
             <vbox expand="0" fill="0">
                 <label param="master"/>
                 <knob param="master" size="5" ticks="0 0.0625 0.25 0.5 1" />
                 <value param="master"/>
             </vbox>
             <label />
+            <vbox>
+                <label param="midi"/>
+                <knob param="midi" size="3" ticks="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16" />
+                <value param="midi"/>
+            </vbox>
             <hbox spacing="4" expand="0" fill="0">
                 <vbox>
                     <label param="pbend_range"/>

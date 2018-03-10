@@ -603,8 +603,9 @@ char *wavetable_audio_module::configure(const char *key, const char *value)
     return mod_matrix_impl::configure(key, value);
 }
 
-void wavetable_audio_module::control_change(int /*channel*/, int controller, int value)
+void wavetable_audio_module::control_change(int channel, int controller, int value)
 {
+    if (*params[par_midi] && channel != *params[par_midi]) return;
     dsp::basic_synth::control_change(controller, value);
     if (controller == 1)
         modwheel_value = value * (1.0 / 127.0f);

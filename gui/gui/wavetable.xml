@@ -1,223 +1,232 @@
 <?xml version="1.0"?>
-<hbox spacing="10">
-  <vbox>
-  
-    <hbox spacing="4">
-      <frame label="Oscillator 1">
-        <vbox fill="0">
-          <hbox spacing="5" border="5" fill="0">
-            <vbox spacing="10" fill="0">
-              <label text="Level" fill="0"/>
-              <knob param="o1level" size="5" fill="0"/>
-              <value param="o1level" fill="0"/>
-            </vbox>
-            <vbox fill="0" spacing="30">
-              <hbox spacing="3" fill="0">
-                <vbox>
-                  <label text="Offset"/>
-                  <knob param="o1offset"/>
-                  <value param="o1offset"/>
-                </vbox>
-                <vbox>
-                  <label text="Transpose"/>
-                  <knob param="o1trans"/>
-                  <value param="o1trans"/>
-                </vbox>
-                <vbox>
-                  <label text="Detune"/>
-                  <knob param="o1detune"/>
-                  <value param="o1detune"/>
-                </vbox>
-              </hbox>
-              <hbox fill="0">
-                <label text="Wave"/>
-                <vbox>
-                    <combo param="o1wave"/>
-                    <if cond="directlink">
-                        <line-graph param="o1wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
-                    </if>
-                </vbox>
-              </hbox>
-            </vbox>
-          </hbox>
-        </vbox>
-      </frame>
+<vbox>
+    <align align-x="1">
+        <hbox spacing="5">
+            <label param="midi"/>
+            <knob param="midi" ticks="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16" />
+            <value param="midi"/>
+        </hbox>
+    </align>
+    <hbox spacing="10">
+      <vbox>
       
-      <frame label="Oscillator 2">
-        <vbox fill="0">
-          <hbox spacing="5" border="5">
-            <vbox spacing="10" fill="0">
-              <label text="Level"/>
-              <knob param="o2level" size="5"/>
-              <value param="o2level"/>
+        <hbox spacing="4">
+          <frame label="Oscillator 1">
+            <vbox fill="0">
+              <hbox spacing="5" border="5" fill="0">
+                <vbox spacing="10" fill="0">
+                  <label text="Level" fill="0"/>
+                  <knob param="o1level" size="5" fill="0"/>
+                  <value param="o1level" fill="0"/>
+                </vbox>
+                <vbox fill="0" spacing="30">
+                  <hbox spacing="3" fill="0">
+                    <vbox>
+                      <label text="Offset"/>
+                      <knob param="o1offset"/>
+                      <value param="o1offset"/>
+                    </vbox>
+                    <vbox>
+                      <label text="Transpose"/>
+                      <knob param="o1trans"/>
+                      <value param="o1trans"/>
+                    </vbox>
+                    <vbox>
+                      <label text="Detune"/>
+                      <knob param="o1detune"/>
+                      <value param="o1detune"/>
+                    </vbox>
+                  </hbox>
+                  <hbox fill="0">
+                    <label text="Wave"/>
+                    <vbox>
+                        <combo param="o1wave"/>
+                        <if cond="directlink">
+                            <line-graph param="o1wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
+                        </if>
+                    </vbox>
+                  </hbox>
+                </vbox>
+              </hbox>
             </vbox>
-            <vbox fill="0" spacing="30">
-              <hbox spacing="3">
-                <vbox>
-                  <label text="Offset"/>
-                  <knob param="o2offset"/>
-                  <value param="o2offset"/>
+          </frame>
+          
+          <frame label="Oscillator 2">
+            <vbox fill="0">
+              <hbox spacing="5" border="5">
+                <vbox spacing="10" fill="0">
+                  <label text="Level"/>
+                  <knob param="o2level" size="5"/>
+                  <value param="o2level"/>
                 </vbox>
-                <vbox>
-                  <label text="Transpose"/>
-                  <knob param="o2trans"/>
-                  <value param="o2trans"/>
-                </vbox>
-                <vbox>
-                  <label text="Detune"/>
-                  <knob param="o2detune"/>
-                  <value param="o2detune"/>
-                </vbox>
+                <vbox fill="0" spacing="30">
+                  <hbox spacing="3">
+                    <vbox>
+                      <label text="Offset"/>
+                      <knob param="o2offset"/>
+                      <value param="o2offset"/>
+                    </vbox>
+                    <vbox>
+                      <label text="Transpose"/>
+                      <knob param="o2trans"/>
+                      <value param="o2trans"/>
+                    </vbox>
+                    <vbox>
+                      <label text="Detune"/>
+                      <knob param="o2detune"/>
+                      <value param="o2detune"/>
+                    </vbox>
+                  </hbox>
+                  <hbox>
+                    <label text="Wave"/>
+                    <vbox>
+                        <combo param="o2wave"/>
+                        <if cond="directlink">
+                            <line-graph param="o2wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
+                        </if>
+                    </vbox>
+                  </hbox>
+                </vbox>>
               </hbox>
-              <hbox>
-                <label text="Wave"/>
-                <vbox>
-                    <combo param="o2wave"/>
-                    <if cond="directlink">
-                        <line-graph param="o2wave" refresh="1" width="150" height="88" expand="1" fill="1"/>
-                    </if>
-                </vbox>
-              </hbox>
-            </vbox>>
-          </hbox>
+            </vbox>
+          </frame>
+          
+        </hbox>
+        <frame label="Envelopes Matrix">
+          <listview key="mod_matrix" />
+        </frame>
+        
+      </vbox>
+      <notebook>
+        <vbox page="LFOs" spacing="4">
+          <frame label="LFO 1">
+            <hbox homogeneous="1">
+              <vbox>
+                <label text="Frequency"/>
+                <knob height="120" param="lfo1_rate" inverted="1"/>
+                <value param="lfo1_rate"/>
+              </vbox>
+            </hbox>
+          </frame>
+          <frame label="LFO 2">
+            <hbox homogeneous="1">
+              <vbox>
+                <label text="Frequency"/>
+                <knob height="120" param="lfo2_rate" inverted="1"/>
+                <value param="lfo2_rate"/>
+              </vbox>
+            </hbox>
+          </frame>
         </vbox>
-      </frame>
-      
+        <vbox page="Envelopes" spacing="4">
+        
+          <frame label="EG 1">
+            <hbox homogeneous="1">
+              <vbox>
+                <label text="Attack"/>
+                <vscale height="120" param="adsr_a" inverted="1"/>
+                <value param="adsr_a"/>
+              </vbox>
+              <vbox>
+                <label text="Decay"/>
+                <vscale height="120" param="adsr_d" inverted="1"/>
+                <value param="adsr_d"/>
+              </vbox>
+              <vbox>
+                <label text="Sustain"/>
+                <vscale height="120" param="adsr_s" inverted="1"/>
+                <value param="adsr_s"/>
+              </vbox>
+              <vbox>
+                <label text="Fade"/>
+                <vscale height="120" param="adsr_f" inverted="1"/>
+                <value param="adsr_f"/>
+              </vbox>
+              <vbox>
+                <label text="Release"/>
+                <vscale height="120" param="adsr_r" inverted="1"/>
+                <value param="adsr_r"/>
+              </vbox>
+              <vbox fill="0">
+                <label text="Vel Mod" fill="0"/>
+                <knob param="adsr_v" size="3" fill="0"/>
+                <value param="adsr_v" fill="0"/>
+                <label text="To Amp"/>
+                <toggle param="eg1amp" size="1"/>
+              </vbox>
+            </hbox>
+          </frame>
+          
+          <frame label="EG 2">
+            <hbox homogeneous="1">
+              <vbox>
+                <label text="Attack"/>
+                <vscale height="120" param="adsr2_a" inverted="1"/>
+                <value param="adsr2_a"/>
+              </vbox>
+              <vbox>
+                <label text="Decay"/>
+                <vscale height="120" param="adsr2_d" inverted="1"/>
+                <value param="adsr2_d"/>
+              </vbox>
+              <vbox>
+                <label text="Sustain"/>
+                <vscale height="120" param="adsr2_s" inverted="1"/>
+                <value param="adsr2_s"/>
+              </vbox>
+              <vbox>
+                <label text="Fade"/>
+                <vscale height="120" param="adsr2_f" inverted="1"/>
+                <value param="adsr2_f"/>
+              </vbox>
+              <vbox>
+                <label text="Release"/>
+                <vscale height="120" param="adsr2_r" inverted="1"/>
+                <value param="adsr2_r"/>
+              </vbox>
+              <vbox fill="0">
+                <label text="Vel Mod" fill="0"/>
+                <knob param="adsr2_v" size="3" fill="0"/>
+                <value param="adsr2_v" fill="0"/>
+              </vbox>
+            </hbox>
+          </frame>
+          
+          <frame label="EG 3">
+            <hbox homogeneous="1">
+              <vbox>
+                <label text="Attack"/>
+                <vscale height="120" param="adsr3_a" inverted="1"/>
+                <value param="adsr3_a"/>
+              </vbox>
+              <vbox>
+                <label text="Decay"/>
+                <vscale height="120" param="adsr3_d" inverted="1"/>
+                <value param="adsr3_d"/>
+              </vbox>
+              <vbox>
+                <label text="Sustain"/>
+                <vscale height="120" param="adsr3_s" inverted="1"/>
+                <value param="adsr3_s"/>
+              </vbox>
+              <vbox>
+                <label text="Fade"/>
+                <vscale height="120" param="adsr3_f" inverted="1"/>
+                <value param="adsr3_f"/>
+              </vbox>
+              <vbox>
+                <label text="Release"/>
+                <vscale height="120" param="adsr3_r" inverted="1"/>
+                <value param="adsr3_r"/>
+              </vbox>
+              <vbox fill="0">
+                <label text="Vel Mod" fill="0"/>
+                <knob param="adsr3_v" size="3" fill="0"/>
+                <value param="adsr3_v" fill="0"/>
+              </vbox>
+            </hbox>
+          </frame>
+        </vbox>
+      </notebook>
     </hbox>
-    <frame label="Envelopes Matrix">
-      <listview key="mod_matrix" />
-    </frame>
-    
-  </vbox>
-  <notebook>
-    <vbox page="LFOs" spacing="4">
-      <frame label="LFO 1">
-        <hbox homogeneous="1">
-          <vbox>
-            <label text="Frequency"/>
-            <knob height="120" param="lfo1_rate" inverted="1"/>
-            <value param="lfo1_rate"/>
-          </vbox>
-        </hbox>
-      </frame>
-      <frame label="LFO 2">
-        <hbox homogeneous="1">
-          <vbox>
-            <label text="Frequency"/>
-            <knob height="120" param="lfo2_rate" inverted="1"/>
-            <value param="lfo2_rate"/>
-          </vbox>
-        </hbox>
-      </frame>
-    </vbox>
-    <vbox page="Envelopes" spacing="4">
-    
-      <frame label="EG 1">
-        <hbox homogeneous="1">
-          <vbox>
-            <label text="Attack"/>
-            <vscale height="120" param="adsr_a" inverted="1"/>
-            <value param="adsr_a"/>
-          </vbox>
-          <vbox>
-            <label text="Decay"/>
-            <vscale height="120" param="adsr_d" inverted="1"/>
-            <value param="adsr_d"/>
-          </vbox>
-          <vbox>
-            <label text="Sustain"/>
-            <vscale height="120" param="adsr_s" inverted="1"/>
-            <value param="adsr_s"/>
-          </vbox>
-          <vbox>
-            <label text="Fade"/>
-            <vscale height="120" param="adsr_f" inverted="1"/>
-            <value param="adsr_f"/>
-          </vbox>
-          <vbox>
-            <label text="Release"/>
-            <vscale height="120" param="adsr_r" inverted="1"/>
-            <value param="adsr_r"/>
-          </vbox>
-          <vbox fill="0">
-            <label text="Vel Mod" fill="0"/>
-            <knob param="adsr_v" size="3" fill="0"/>
-            <value param="adsr_v" fill="0"/>
-            <label text="To Amp"/>
-            <toggle param="eg1amp" size="1"/>
-          </vbox>
-        </hbox>
-      </frame>
-      
-      <frame label="EG 2">
-        <hbox homogeneous="1">
-          <vbox>
-            <label text="Attack"/>
-            <vscale height="120" param="adsr2_a" inverted="1"/>
-            <value param="adsr2_a"/>
-          </vbox>
-          <vbox>
-            <label text="Decay"/>
-            <vscale height="120" param="adsr2_d" inverted="1"/>
-            <value param="adsr2_d"/>
-          </vbox>
-          <vbox>
-            <label text="Sustain"/>
-            <vscale height="120" param="adsr2_s" inverted="1"/>
-            <value param="adsr2_s"/>
-          </vbox>
-          <vbox>
-            <label text="Fade"/>
-            <vscale height="120" param="adsr2_f" inverted="1"/>
-            <value param="adsr2_f"/>
-          </vbox>
-          <vbox>
-            <label text="Release"/>
-            <vscale height="120" param="adsr2_r" inverted="1"/>
-            <value param="adsr2_r"/>
-          </vbox>
-          <vbox fill="0">
-            <label text="Vel Mod" fill="0"/>
-            <knob param="adsr2_v" size="3" fill="0"/>
-            <value param="adsr2_v" fill="0"/>
-          </vbox>
-        </hbox>
-      </frame>
-      
-      <frame label="EG 3">
-        <hbox homogeneous="1">
-          <vbox>
-            <label text="Attack"/>
-            <vscale height="120" param="adsr3_a" inverted="1"/>
-            <value param="adsr3_a"/>
-          </vbox>
-          <vbox>
-            <label text="Decay"/>
-            <vscale height="120" param="adsr3_d" inverted="1"/>
-            <value param="adsr3_d"/>
-          </vbox>
-          <vbox>
-            <label text="Sustain"/>
-            <vscale height="120" param="adsr3_s" inverted="1"/>
-            <value param="adsr3_s"/>
-          </vbox>
-          <vbox>
-            <label text="Fade"/>
-            <vscale height="120" param="adsr3_f" inverted="1"/>
-            <value param="adsr3_f"/>
-          </vbox>
-          <vbox>
-            <label text="Release"/>
-            <vscale height="120" param="adsr3_r" inverted="1"/>
-            <value param="adsr3_r"/>
-          </vbox>
-          <vbox fill="0">
-            <label text="Vel Mod" fill="0"/>
-            <knob param="adsr3_v" size="3" fill="0"/>
-            <value param="adsr3_v" fill="0"/>
-          </vbox>
-        </hbox>
-      </frame>
-    </vbox>
-  </notebook>
-</hbox>
+</vbox>

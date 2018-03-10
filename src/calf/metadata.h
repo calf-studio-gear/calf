@@ -195,6 +195,7 @@ struct monosynth_metadata: public plugin_metadata<monosynth_metadata>
         par_lfo2rate, par_lfo2delay,
         par_o2unison, par_o2unisonfrq,
         par_osc1xpose,
+        par_midi,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true, require_instance_access = false };
     enum { step_size = 64, step_shift = 6 };
@@ -851,6 +852,7 @@ struct organ_enums
         par_bassgain,
         par_treblefreq,
         par_treblegain,
+        par_midi,
         param_count
     };
     enum organ_waveform {
@@ -998,6 +1000,7 @@ struct wavetable_metadata: public plugin_metadata<wavetable_metadata>
         par_eg1toamp,
         par_lfo1rate,
         par_lfo2rate,
+        par_midi,
         param_count };
     enum { in_count = 0, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = true, require_midi = true, rt_capable = true, require_instance_access = false };
     enum { mod_matrix_slots = 10 };

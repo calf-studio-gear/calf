@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <hbox spacing="8">
     <frame label="Global">
-        <vbox spacing="8">
+        <vbox spacing="5">
             <vbox>
                 <label param="master" />
                 <knob param="master" size="5" />
                 <value param="master" />
             </vbox>
-            <label/>
             <vbox>
                 <label param="transpose" />
                 <knob param="transpose" type="1" size="3" />
@@ -17,6 +16,11 @@
                 <label param="detune" />
                 <knob param="detune" type="1" size="3" />
                 <value param="detune" />
+            </vbox>
+            <vbox>
+                <label param="midi" />
+                <knob param="midi" ticks="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"/>
+                <value param="midi" />
             </vbox>
             <vbox>
                 <label param="polyphony" />

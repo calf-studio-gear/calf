@@ -352,10 +352,10 @@ public:
     uint32_t message_run(const void *valid_inputs, void *output_ports);
 public:
     // overrides
-    virtual void note_on(int /*channel*/, int note, int velocity) { dsp::drawbar_organ::note_on(note, velocity); }
-    virtual void note_off(int /*channel*/, int note, int velocity) { dsp::drawbar_organ::note_off(note, velocity); }
-    virtual void control_change(int /*channel*/, int controller, int value) { dsp::drawbar_organ::control_change(controller, value); }
-    virtual void pitch_bend(int /*channel*/, int value) { dsp::drawbar_organ::pitch_bend(value); }
+    virtual void note_on(int channel, int note, int velocity) { if (*params[par_midi] && channel != *params[par_midi]) return; dsp::drawbar_organ::note_on(note, velocity); }
+    virtual void note_off(int channel, int note, int velocity) { if (*params[par_midi] && channel != *params[par_midi]) return; dsp::drawbar_organ::note_off(note, velocity); }
+    virtual void control_change(int channel, int controller, int value) { if (*params[par_midi] && channel != *params[par_midi]) return; dsp::drawbar_organ::control_change(controller, value); }
+    virtual void pitch_bend(int channel, int value) { if (*params[par_midi] && channel != *params[par_midi]) return; dsp::drawbar_organ::pitch_bend(value); }
 };
 
 };

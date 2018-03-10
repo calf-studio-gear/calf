@@ -1733,6 +1733,9 @@ CALF_PORT_PROPS(monosynth) = {
     { 0,          0,    1,    0, PF_FLOAT | PF_CTL_KNOB | PF_SCALE_PERC, NULL, "o2_unison", "Osc2 Unison" },
     { 2,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "o2_unisonfrq", "Osc2 Unison Detune" },
     { 0,       -24,   24,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_SEMITONES, NULL, "o1_xpose", "Osc1 Transpose" },
+    
+    { 0,       0,   16,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB , NULL, "midi", "MIDI Channel" },
+    
     {}
 };
 
@@ -1967,6 +1970,8 @@ CALF_PORT_PROPS(organ) = {
     { 1,        0.1, 10,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "bass_gain", "Bass Gain" },
     { 6000,      20, 20000, 0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "treble_freq", "Treble Freq" },
     { 1,        0.1, 10,     0, PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_NOBOUNDS, NULL, "treble_gain", "Treble Gain" },
+    
+    { 0,       0,   16,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB , NULL, "midi", "MIDI Channel" },
 };
 
 void organ_metadata::get_configure_vars(vector<string> &names) const
@@ -2105,6 +2110,8 @@ CALF_PORT_PROPS(wavetable) = {
     { 1,          0,    1,    0, PF_BOOL | PF_CTL_TOGGLE, NULL, "eg1amp", "EG1->Amp" },
     { 5,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo1_rate", "LFO1 Rate" },
     { 0.25,       0.01, 20,    0, PF_FLOAT | PF_SCALE_LOG | PF_CTL_KNOB | PF_UNIT_HZ, NULL, "lfo2_rate", "LFO2 Rate" },
+    
+    { 0,       0,   16,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_KNOB , NULL, "midi", "MIDI Channel" },
     {}
 };
 
@@ -2160,4 +2167,3 @@ plugin_registry::plugin_registry()
 }
 
 }
-

@@ -676,8 +676,9 @@ void monosynth_audio_module::apply_fadeout()
     }
 }
 
-void monosynth_audio_module::note_on(int /*channel*/, int note, int vel)
+void monosynth_audio_module::note_on(int channel, int note, int vel)
 {
+    if (*params[par_midi] && channel != *params[par_midi]) return;
     queue_note_on = note;
     queue_note_on_and_off = false;
     last_key = note;
@@ -685,8 +686,10 @@ void monosynth_audio_module::note_on(int /*channel*/, int note, int vel)
     stack.push(note);
 }
 
-void monosynth_audio_module::note_off(int /*channel*/, int note, int vel)
+void monosynth_audio_module::note_off(int channel, int note, int vel)
 {
+    printf("%d %.2f\n", channel, *params[par_midi]);
+    if (*params[par_midi] && channel != *params[par_midi]) return;
     stack.pop(note);
     if (note == queue_note_on)
     {
@@ -722,13 +725,15 @@ void monosynth_audio_module::end_note()
     envelope2.note_off();
 }
 
-void monosynth_audio_module::channel_pressure(int /*channel*/, int value)
+void monosynth_audio_module::channel_pressure(int channel, int value)
 {
+    if (*params[par_midi] && channel != *params[par_midi]) return;
     inertia_pressure.set_inertia(value * (1.0 / 127.0));
 }
 
-void monosynth_audio_module::control_change(int /*channel*/, int controller, int value)
+void monosynth_audio_module::control_change(int channel, int controller, int value)
 {
+    if (*params[par_midi] && channel != *params[par_midi]) return;
     switch(controller)
     {
         case 1:

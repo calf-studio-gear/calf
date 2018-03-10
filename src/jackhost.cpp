@@ -194,7 +194,7 @@ uint32_t jack_host::get_last_automation_source()
 
 void jack_host::handle_event(uint8_t *buffer, uint32_t size)
 {
-    int channel = buffer[0] & 15;
+    int channel = (buffer[0] & 0x0f) + 1;
     int value;
     switch(buffer[0] >> 4)
     {
