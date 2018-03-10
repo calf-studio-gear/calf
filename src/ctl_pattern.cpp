@@ -347,7 +347,7 @@ calf_pattern_scroll (GtkWidget *widget, GdkEventScroll *event)
     CalfPattern *p = CALF_PATTERN(widget);
 
     calf_pattern_handle h = calf_pattern_get_handle_at(p, event->x, event->y);
-    printf("%d %d\n", h.bar, h.beat);
+    //printf("%d %d\n", h.bar, h.beat);
     if (h.bar >= 0 and h.beat >= 0) {
         if (event->direction == GDK_SCROLL_UP) {
             // raise handle value

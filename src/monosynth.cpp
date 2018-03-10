@@ -688,7 +688,6 @@ void monosynth_audio_module::note_on(int channel, int note, int vel)
 
 void monosynth_audio_module::note_off(int channel, int note, int vel)
 {
-    printf("%d %.2f\n", channel, *params[par_midi]);
     if (*params[par_midi] && channel != *params[par_midi]) return;
     stack.pop(note);
     if (note == queue_note_on)
