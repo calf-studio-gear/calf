@@ -20,7 +20,7 @@
 #include <config.h>
 #include <calf/osctl.h>
 #include <calf/utils.h>
-#include <cstdint>
+#include <stdint.h>
 #include <cstring>
 #include <cstdio>
 #include <sstream>
