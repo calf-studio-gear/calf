@@ -315,6 +315,11 @@ struct main_window_owner_iface
     virtual ~main_window_owner_iface() {}
 };
 
+struct window_state {
+    GdkScreen *screen;
+    int x, y, width, height;
+};
+
 class plugin_gui_widget: public calf_utils::config_listener_iface
 {
 private:
@@ -334,6 +339,7 @@ protected:
 public:
     std::string prefix;
     GtkWidget *toplevel;
+    window_state winstate;
 public:
     plugin_gui_widget(gui_environment_iface *_env, main_window_iface *_main);
     GtkWidget *create(plugin_ctl_iface *_plugin);
@@ -362,7 +368,6 @@ public:
     void close();
     virtual void on_config_change();
     ~plugin_gui_window();
-
     static void about_action(GtkAction *action, plugin_gui_window *gui_win);
     static void help_action(GtkAction *action, plugin_gui_window *gui_win);
     static void store_preset_action(GtkAction *action, plugin_gui_window *gui_win);

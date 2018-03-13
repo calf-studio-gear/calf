@@ -102,6 +102,7 @@ namespace calf_plugins {
         int source_id;
         main_window_owner_iface *owner;
         calf_utils::config_notifier_iface *notifier;
+        window_state winstate;
         
     protected:
         GtkWidget *progress_window;
@@ -135,6 +136,7 @@ namespace calf_plugins {
         void on_closed();
         void open_gui(plugin_ctl_iface *plugin);    
         void create();
+        void create_status_icon();
         void open_file();
         bool save_file();
         bool save_file_as();

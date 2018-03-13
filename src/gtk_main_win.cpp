@@ -825,6 +825,86 @@ void gtk_main_window::create()
     notifier = get_config_db()->add_listener(this);
     on_config_change();
     g_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
+    
+    create_status_icon();
+}
+
+window_state describe_window (GtkWindow *win)
+{
+    window_state state = {};
+    int x, y, width, height;
+    gtk_window_get_position(win, &x, &y);
+    gtk_window_get_size(win, &width, &height);
+    state.screen = gtk_window_get_screen(win);
+    state.x = x;
+    state.y = y;
+    state.width = width;
+    state.height = height;
+    return state;
+}
+
+void position_window (GtkWidget *win, window_state state)
+{
+    gdk_window_move_resize(win->window, state.x, state.y, state.width, state.height);
+    gtk_window_set_screen(GTK_WINDOW(win), state.screen);
+}
+
+static void tray_activate_cb(GObject *icon, gtk_main_window *main)
+{
+    GtkWidget *widget = GTK_WIDGET(main->toplevel);
+    GtkWindow *window = GTK_WINDOW(widget);
+    GtkWidget *pwid;
+    GtkWindow *pwin;
+    gboolean visible = gtk_widget_get_visible(widget);
+    if (visible) {
+        main->winstate = describe_window(window);
+        gtk_widget_hide(widget);
+        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
+            if (i->second && i->second->gui_win) {
+                pwid = i->second->gui_win->toplevel;
+                pwin = GTK_WINDOW(pwid);
+                i->second->gui_win->winstate = describe_window(pwin);
+                gtk_widget_hide(pwid);
+            }
+        }
+    } else {
+        gtk_widget_show(widget);
+        gtk_window_deiconify(window);
+        position_window(widget, main->winstate);
+        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
+            if (i->second && i->second->gui_win) {
+                pwid = i->second->gui_win->toplevel;
+                pwin = GTK_WINDOW(pwid);
+                gtk_widget_show(pwid);
+                gtk_window_deiconify(pwin);
+                position_window(pwid, i->second->gui_win->winstate);
+            }
+        }
+    }
+}
+
+static void tray_popup_cb(GtkStatusIcon *icon, guint button, guint32 time, gpointer menu)
+{
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
+}
+
+void gtk_main_window::create_status_icon()
+{
+    GtkStatusIcon *icon = gtk_status_icon_new_from_icon_name("calf");
+    
+    GtkWidget *menu = gtk_menu_new();
+    GtkWidget *view = gtk_menu_item_new_with_label ("View");
+    GtkWidget *exit = gtk_menu_item_new_with_label ("Exit");
+    g_signal_connect (G_OBJECT (view), "activate", G_CALLBACK (tray_activate_cb), this);
+    g_signal_connect (G_OBJECT (exit), "activate", G_CALLBACK (window_destroy_cb), this);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), view);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), exit);
+    gtk_widget_show_all (menu);
+    
+    gtk_status_icon_set_tooltip (icon, "Calf Studio Gear");
+    
+    g_signal_connect(GTK_STATUS_ICON (icon), "activate", GTK_SIGNAL_FUNC (tray_activate_cb), this);
+    g_signal_connect(GTK_STATUS_ICON (icon), "popup-menu", GTK_SIGNAL_FUNC (tray_popup_cb), menu);
 }
 
 void gtk_main_window::on_config_change()
