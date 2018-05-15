@@ -763,8 +763,8 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             if(!_sanitize) {
                 inL = ins[0][offset];
                 inR = ins[1][offset];
-                scL = ins[2][offset];
-                scR = ins[3][offset];
+                scL = ins[2] ? ins[2][offset] : 0;
+                scR = ins[3] ? ins[3][offset] : 0;
             }
             
             // in level
