@@ -1082,8 +1082,8 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
 
             float leftAC  = inL;
             float rightAC = inR;
-            float leftSC  = inL;
-            float rightSC = inR;
+            float leftSC  = inL * *params[param_sc_level];
+            float rightSC = inR * *params[param_sc_level];
             float leftMC  = inL;
             float rightMC = inR;
             float leftTC  = inL;
@@ -2097,8 +2097,8 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
             
             float leftAC  = inL;
             float rightAC = inR;
-            float leftSC  = inL;
-            float rightSC = inR;
+            float leftSC  = inL * *params[param_sc_level];
+            float rightSC = inR * *params[param_sc_level];
             float leftMC  = inL;
             float rightMC = inR;
             float leftTC  = inL;
