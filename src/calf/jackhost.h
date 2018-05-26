@@ -146,8 +146,8 @@ public:
     
 public:
     // Port access
-    port *get_inputs() { return &inputs[0]; }
-    port *get_outputs() { return &outputs[0]; }
+    port *get_inputs() { return inputs.empty() ? NULL : &inputs[0]; }
+    port *get_outputs() { return outputs.empty() ? NULL : &outputs[0]; }
     float *get_params() { return param_values; }
     port *get_midi_port() { return get_metadata_iface()->get_midi() ? &midi_port : NULL; }
 public:
