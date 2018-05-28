@@ -23,9 +23,6 @@
 #include <calf/drawingutils.h>
 #include <gdk/gdkkeysyms.h>
 #include <cairo/cairo.h>
-#if !defined(__APPLE__)
-#include <malloc.h>
-#endif
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
