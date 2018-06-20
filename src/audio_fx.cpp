@@ -643,6 +643,11 @@ float lookahead_limiter::get_attenuation()
 void lookahead_limiter::set_sample_rate(uint32_t sr)
 {
     srate = sr;
+    
+    free(buffer);
+    free(nextpos);
+    free(nextdelta);
+    
     // rebuild buffer
     overall_buffer_size = (int)(srate * (100.f / 1000.f) * channels) + channels; // buffer size attack rate multiplied by 2 channels
     buffer = (float*) calloc(overall_buffer_size, sizeof(float));
