@@ -197,6 +197,7 @@ const char *filter_choices[] = {
     "6dB/oct Bandreject",
     "12dB/oct Bandreject",
     "18dB/oct Bandreject",
+    "Allpass",
 };
 
 CALF_PORT_PROPS(filter) = {

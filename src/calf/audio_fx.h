@@ -462,6 +462,7 @@ public:
            mode_12db_hp = 3, mode_24db_hp = 4, mode_36db_hp = 5,
            mode_6db_bp  = 6, mode_12db_bp = 7, mode_18db_bp = 8,
            mode_6db_br  = 9, mode_12db_br = 10, mode_18db_br = 11,
+           mode_allpass = 12,
            mode_count
     };
 

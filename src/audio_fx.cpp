@@ -139,9 +139,12 @@ void biquad_filter_module::calculate_filter(float freq, float q, int mode, float
     } else if ( mode_6db_bp <= mode && mode <= mode_18db_bp ) {
         order = mode - mode_6db_bp + 1;
         left[0].set_bp_rbj(freq, pow(q, 1.0 / order), srate, gain);
-    } else { // mode_6db_br <= mode <= mode_18db_br
+    } else if ( mode_6db_br <= mode && mode <= mode_18db_br) {
         order = mode - mode_6db_br + 1;
         left[0].set_br_rbj(freq, order * 0.1 * q, srate, gain);
+    } else { // mode_allpass
+        order = 3;
+        left[0].set_allpass(freq, 1, srate);
     }
 
     right[0].copy_coeffs(left[0]);
