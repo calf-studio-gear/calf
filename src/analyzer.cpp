@@ -366,7 +366,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
     int _last = -1; // used for mode 10 (parallel spectralizer) to prevent overwriting real values with INFINITY
     float posneg = 1;
     int __speed = 16 - (int)_speed;
-    if (lintrans < 0) {
+    if (lintrans < 0 && srate) {
         // accuracy was changed so we have to recalc linear transition
         int _lintrans = (int)((float)points * log((20.f + 2.f * \
             (float)srate / (float)_accuracy) / 20.f) / log(1000.f));  
@@ -399,7 +399,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
             // we have logarithmic view enabled
             _iter = std::max(1, (int)floor(freq * (float)_accuracy / (float)srate));
         }
-        if(_iter > iter) {
+        if(_iter > iter && srate) {
             // we are flipping one step further in drawing
             if(fftdone and i) {
                 // ################################
@@ -769,6 +769,9 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
             else if (_last != i / 2) {
                 data[i / 2] = INFINITY;
                 data[points / 2 + i / 2] = INFINITY;
+            }
+            else {
+                data[i] = INFINITY;
             }
         }
     }
