@@ -498,7 +498,7 @@ float equalizerNband_audio_module<BaseClass, has_lphp>::freq_gain(int index, dou
 }
 
 template<class BaseClass, bool has_lphp>
-inline string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
+inline std::string equalizerNband_audio_module<BaseClass, has_lphp>::get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const
 { 
     return frequency_crosshair_label(x, y, sx, sy, q, dB, name, note, cents, 128 * *params[AM::param_zoom], 0);
 }
@@ -514,29 +514,34 @@ template class equalizerNband_audio_module<equalizer12band_metadata, true>;
 **********************************************************************/
 
 equalizer30band_audio_module::equalizer30band_audio_module() :
-    conv(orfanidis_eq::eq_min_max_gain_db),
+    conv(OrfanidisEq::eqGainRangeDb),
     swL(10000), swR(10000)
 {
     is_active = false;
     srate     = 0;
 
     //Construct equalizers
-    using namespace orfanidis_eq;
+    using namespace OrfanidisEq;
 
-    fg.set_30_bands();
+    fg.set30Bands();
 
-    eq2* ptr30L = new eq2(fg, butterworth);
-    eq2* ptr30R = new eq2(fg, butterworth);
+    Eq* ptr30L = new Eq(fg, butterworth);
+    Eq* ptr30R = new Eq(fg, butterworth);
     eq_arrL.push_back(ptr30L);
     eq_arrR.push_back(ptr30R);
 
-    ptr30L = new eq2(fg, chebyshev1);
-    ptr30R = new eq2(fg, chebyshev1);
+    ptr30L = new Eq(fg, chebyshev1);
+    ptr30R = new Eq(fg, chebyshev1);
     eq_arrL.push_back(ptr30L);
     eq_arrR.push_back(ptr30R);
 
-    ptr30L = new eq2(fg, chebyshev2);
-    ptr30R = new eq2(fg, chebyshev2);
+    ptr30L = new Eq(fg, chebyshev2);
+    ptr30R = new Eq(fg, chebyshev2);
+    eq_arrL.push_back(ptr30L);
+    eq_arrR.push_back(ptr30R);
+
+    ptr30L = new Eq(fg, elliptic);
+    ptr30R = new Eq(fg, elliptic);
     eq_arrL.push_back(ptr30L);
     eq_arrR.push_back(ptr30R);
 
@@ -572,10 +577,10 @@ void equalizer30band_audio_module::deactivate()
 
 void equalizer30band_audio_module::params_changed()
 {
-    using namespace orfanidis_eq;
+    using namespace OrfanidisEq;
 
     int psl=0, psr=0, pgl=0, pgr=0, pql=0, pqr=0;
-    
+
     switch (int(*params[param_linked])) {
         case 0:
             psl = param_gain_scale11;
@@ -608,12 +613,12 @@ void equalizer30band_audio_module::params_changed()
             *params[param_r_active] = 1;
             break;
     }
-    
+
     //Change gain indicators
     *params[param_gain_scale10] = *params[pgl] * *params[pql];
     *params[param_gain_scale20] = *params[pgr] * *params[pqr];
-    
-    for(unsigned int i = 0; i < fg.get_number_of_bands(); i++) {
+
+    for(unsigned int i = 0; i < fg.getNumberOfBands(); i++) {
         *params[param_gain_scale11 + band_params*i] = (*params[param_gain11 + band_params*i])*
                 *params[param_gainscale1];
         *params[param_gain_scale21 + band_params*i] = (*params[param_gain21 + band_params*i])*
@@ -621,9 +626,9 @@ void equalizer30band_audio_module::params_changed()
     }
 
     //Pass gains to eq's
-    for (unsigned int i = 0; i < fg.get_number_of_bands(); i++) {
-        eq_arrL[*params[param_filters]]->change_band_gain_db(i,*params[psl + band_params*i]);
-        eq_arrR[*params[param_filters]]->change_band_gain_db(i,*params[psr + band_params*i]);
+    for (unsigned int i = 0; i < fg.getNumberOfBands(); i++) {
+        eq_arrL[*params[param_filters]]->changeBandGainDb(i,*params[psl + band_params*i]);
+        eq_arrR[*params[param_filters]]->changeBandGainDb(i,*params[psr + band_params*i]);
     }
 
     //Upadte filter type
@@ -637,8 +642,8 @@ void equalizer30band_audio_module::set_sample_rate(uint32_t sr)
     //Change sample rate for eq's
     for(unsigned int i = 0; i < eq_arrL.size(); i++)
     {
-        eq_arrL[i]->set_sample_rate(srate);
-        eq_arrL[i]->set_sample_rate(srate);
+        eq_arrL[i]->setSampleRate(srate);
+        eq_arrL[i]->setSampleRate(srate);
     }
 
     int meter[] = {param_level_in_vuL, param_level_in_vuR, param_level_out_vuL, param_level_out_vuR};
@@ -672,8 +677,8 @@ uint32_t equalizer30band_audio_module::process(uint32_t offset, uint32_t numsamp
             double outR = inR;
 
             unsigned int eq_index = swL.get_state() - 1;
-            eq_arrL[eq_index]->sbs_process(&inL, &outL);
-            eq_arrR[eq_index]->sbs_process(&inR, &outR);
+            eq_arrL[eq_index]->SBSProcess(&inL, &outL);
+            eq_arrR[eq_index]->SBSProcess(&inR, &outR);
 
             //If filter type switched
             if(flt_type_old != flt_type)
@@ -686,8 +691,8 @@ uint32_t equalizer30band_audio_module::process(uint32_t offset, uint32_t numsamp
             outL *= swL.get_ramp();
             outR *= swR.get_ramp();
 
-            outL = outL* conv.fast_db_2_lin(*params[param_gain_scale10]);
-            outR = outR* conv.fast_db_2_lin(*params[param_gain_scale20]);
+            outL = outL* conv.fastDb2Lin(*params[param_gain_scale10]);
+            outR = outR* conv.fastDb2Lin(*params[param_gain_scale20]);
 
             outL = outL* *params[param_level_out];
             outR = outR* *params[param_level_out];

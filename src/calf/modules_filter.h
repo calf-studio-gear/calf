@@ -85,7 +85,7 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     float freq_gain(int index, double freq) const;
-    string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
+    std::string get_crosshair_label(int x, int y, int sx, int sy, float q, int dB, int name, int note, int cents) const;
 
     void set_sample_rate(uint32_t sr)
     {
@@ -107,16 +107,16 @@ typedef equalizerNband_audio_module<equalizer12band_metadata, true>  equalizer12
 **********************************************************************/
 
 class equalizer30band_audio_module: public audio_module<equalizer30band_metadata> {
-    orfanidis_eq::conversions conv;
-    orfanidis_eq::freq_grid fg;
-    std::vector<orfanidis_eq::eq2*> eq_arrL;
-    std::vector<orfanidis_eq::eq2*> eq_arrR;
+    OrfanidisEq::Conversions conv;
+    OrfanidisEq::FrequencyGrid fg;
+    std::vector<OrfanidisEq::Eq*> eq_arrL;
+    std::vector<OrfanidisEq::Eq*> eq_arrR;
 
-    orfanidis_eq::filter_type flt_type;
-    orfanidis_eq::filter_type flt_type_old;
+    OrfanidisEq::filter_type flt_type;
+    OrfanidisEq::filter_type flt_type_old;
 
-    dsp::switcher<orfanidis_eq::filter_type> swL;
-    dsp::switcher<orfanidis_eq::filter_type> swR;
+    dsp::switcher<OrfanidisEq::filter_type> swL;
+    dsp::switcher<OrfanidisEq::filter_type> swR;
 
 public:
     uint32_t srate;

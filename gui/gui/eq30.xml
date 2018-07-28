@@ -14,7 +14,7 @@
         <led param="level_in_clipR" attach-x="2" attach-y="2" expand-x="0" />
         
         <label param="filters" attach-x="3" attach-y="0" expand-x="0" />
-        <combo param="filters" attach-x="3" attach-y="1" expand-x="0" attach-h="2" />
+        <combo param="filters" attach-x="3" attach-y="1" expand-x="0" attach-h="3" />
         
         <label param="bypass" attach-x="4" attach-y="0" expand-x="0" />
         <toggle param="bypass" icon="bypass" attach-x="4" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>

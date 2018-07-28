@@ -1,1160 +1,1441 @@
-#ifndef ORFANIDIS_EQ_H_
-#define ORFANIDIS_EQ_H_
+/*
+ * Copyright (c) 2018 Fedor Uporov
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include <math.h>
+#pragma once
+
+#include <cmath>
 #include <vector>
+#include <complex>
+#include <limits>
+#include <numeric>
+#include <algorithm>
 
-using namespace std;
+namespace OrfanidisEq {
 
-namespace orfanidis_eq {
+/*
+ * Just version.
+ */
+static const char* eq_version = "0.02";
 
-//Eq data types.
-typedef double eq_single_t;
+/*
+ * The float type usage here could be cause the lack of precession.
+ */
 typedef double eq_double_t;
-//NOTE: the default float type usage
-//can have shortage of precision
 
-//Eq types
+/*
+ * Eq configuration constants.
+ * The defaultEqBandPassFiltersOrder should be more then 2.
+ */
+static const eq_double_t defaultSampleFreqHz = 48000;
+static const size_t defaultEqBandPassFiltersOrder = 4;
+
+/* Default frequency values to get frequency grid. */
+static const eq_double_t lowestGridCenterFreqHz = 31.25;
+static const eq_double_t bandsGridCenterFreqHz = 1000;
+static const eq_double_t lowestAudioFreqHz = 20;
+static const eq_double_t highestAudioFreqHz = 20000;
+
+/* Default gain values for every type of filter channel. */
+static const eq_double_t eqGainRangeDb = 40;
+static const eq_double_t eqGainStepDb = 1;
+static const eq_double_t eqDefaultGainDb = 0;
+
+/*
+ * Allow to convert values between different representations.
+ * Also, fast conversions between linear and logarithmic scales are included.
+ */
+class Conversions {
+	std::vector<eq_double_t> linGains;
+
+	int linGainsIndex(eq_double_t x)
+	{
+		int inTx = (int)x;
+		int range = linGains.size() / 2;
+
+		if ((x >= -range) && (x < range - 1))
+			return range + inTx;
+
+		return range;
+	}
+
+	Conversions();
+	Conversions(const Conversions&);
+	Conversions(const Conversions&&);
+	Conversions& operator= (const Conversions&);
+	Conversions& operator= (Conversions&&);
+
+public:
+	Conversions(int range)
+	{
+		int step = -range;
+
+		while (step <= range)
+			linGains.push_back(db2Lin(step++));
+	}
+
+	eq_double_t fastDb2Lin(eq_double_t x)
+	{
+		int intPart = x;
+		eq_double_t fractPart = x - intPart;
+
+		return linGains.at(linGainsIndex(intPart)) * (1-fractPart) +
+		    linGains.at(linGainsIndex(intPart + 1)) * fractPart;
+	}
+
+	eq_double_t fastLin2Db(eq_double_t x)
+	{
+		if ((x >= linGains[0]) && (x < linGains[linGains.size() - 1]))
+			for (size_t i = 0; i < linGains.size() - 2; i++)
+				if ((x >= linGains[i]) && (x < linGains[i + 1]))
+					return i - linGains.size() / 2.0 + (x - (int)(x));
+
+		return 0;
+	}
+
+	static eq_double_t db2Lin(eq_double_t x)
+	{
+		return pow(10, x/20.0);
+	}
+
+	static eq_double_t lin2Db(eq_double_t x)
+	{
+		return 20.0*log10(x);
+	}
+
+	static eq_double_t rad2Hz(eq_double_t x, eq_double_t fs)
+	{
+		return 2.0*M_PI/x*fs;
+	}
+
+	static eq_double_t hz2Rad(eq_double_t x, eq_double_t fs)
+	{
+		return 2.0*M_PI*x/fs;
+	}
+};
+
+/*
+ * Filter frequency band representation.
+ */
+class Band {
+public:
+	eq_double_t minFreq;
+	eq_double_t centerFreq;
+	eq_double_t maxFreq;
+
+	Band() : minFreq(0), centerFreq(0), maxFreq(0) {}
+	Band(eq_double_t fl, eq_double_t fc, eq_double_t fh)
+		: minFreq(fl), centerFreq(fc), maxFreq(fh) {}
+};
+
+/* Basic eq errors handling. */
 typedef enum {
-    none,
-    butterworth,
-    chebyshev1,
-    chebyshev2
-} filter_type;
-
-static const char *get_eq_text(filter_type type) {
-    switch(type) {
-        case none:
-            return "not initialized";
-        case butterworth:
-            return "butterworth";
-        case chebyshev1:
-            return "chebyshev1";
-        case chebyshev2:
-            return "chebyshev2";
-        default:
-            return "none";
-    }
-}
-
-//Eq errors
-typedef enum {
-    no_error,
-    invalid_input_data_error,
-    processing_error
+	no_error,
+	invalid_input_data_error,
+	processing_error
 } eq_error_t;
 
-//Constants
-static const eq_double_t pi = 3.1415926535897932384626433832795;
-static const unsigned int fo_section_order = 4;
+/*
+ * Frequency grid representation.
+ * Allow to calculate all required bandpass filters frequencies
+ * for equalizer construction.
+ */
+class FrequencyGrid {
+	std::vector<Band> freqs;
 
-//Default gains
-static const int max_base_gain_db = 0;
-static const int min_base_gain_db = -60;
-static const int butterworth_band_gain_db = -3;
-static const int chebyshev1_band_base_gain_db = -6;
-static const int chebyshev2_band_base_gain_db = -40;
-static const int eq_min_max_gain_db = 46;
+public:
+	FrequencyGrid() {}
 
-//Default freq's
-static const eq_double_t lowest_grid_center_freq_hz = 31.25;
-static const eq_double_t bands_grid_center_freq_hz = 1000;
-static const eq_double_t lowest_audio_freq_hz = 20;
-static const eq_double_t highest_audio_freq_hz = 20000;
+	eq_error_t setBand(eq_double_t fl, eq_double_t fc, eq_double_t fh)
+	{
+		freqs.clear();
 
-//Eq config constants
-static const unsigned int default_eq_band_filters_order = 4; //>2
-static const eq_double_t default_sample_freq_hz = 48000;
+		return addBand(fl, fc, fh);
+	}
 
-//Precomputed Eq (eq2) config constants
-static const eq_double_t p_eq_min_max_gain_db = 40;
-static const eq_double_t p_eq_gain_step_db = 1;
-static const eq_double_t common_base_gain_db = 3;
-static const eq_double_t p_eq_default_gain_db = 0;
+	eq_error_t addBand(eq_double_t fl, eq_double_t fc, eq_double_t fh)
+	{
+		if (fl < fc && fc < fh) {
+			freqs.push_back(Band(fl, fc, fh));
 
-//Version
-static const char* eq_version = "0.01";
+			return no_error;
+		}
 
+		return invalid_input_data_error;
+	}
 
-//------------ Conversion functions class ------------
-class conversions
+	eq_error_t addBand(eq_double_t fc, eq_double_t df)
+	{
+		if (fc >= df /2 ) {
+			freqs.push_back(Band(fc - df / 2, fc, fc + df / 2));
+
+			return no_error;
+		}
+
+		return invalid_input_data_error;
+	}
+
+	eq_error_t set5Bands(eq_double_t fc = bandsGridCenterFreqHz)
+	{
+		freqs.clear();
+
+		if (lowestAudioFreqHz < fc && fc < highestAudioFreqHz) {
+			/* Find lowest center frequency in the band. */
+			eq_double_t lowestFc = fc;
+
+			while (lowestFc > lowestGridCenterFreqHz)
+				lowestFc /= 4.0;
+
+			if (lowestFc < lowestGridCenterFreqHz)
+				lowestFc *= 4.0;
+
+			/* Calculate frequencies. */
+			eq_double_t f0 = lowestFc;
+			for (size_t i = 0; i < 5 ; i++) {
+				freqs.push_back(Band(f0 / 2, f0, f0 * 2));
+				f0 *= 4;
+			}
+
+			return no_error;
+		}
+
+		return invalid_input_data_error;
+	}
+
+	eq_error_t set10Bands(eq_double_t fc = bandsGridCenterFreqHz)
+	{
+		freqs.clear();
+
+		if (lowestAudioFreqHz < fc && fc < highestAudioFreqHz) {
+			/* Find lowest center frequency in the band. */
+			eq_double_t lowestFc = fc;
+
+			while (lowestFc > lowestGridCenterFreqHz)
+				lowestFc /= 2;
+
+			if (lowestFc < lowestGridCenterFreqHz)
+				lowestFc *= 2;
+
+			/* Calculate frequencies. */
+			eq_double_t f0 = lowestFc;
+			for (size_t i = 0; i < 10; i++) {
+				freqs.push_back(
+				    Band(f0 / pow(2, 0.5), f0, f0 * pow(2, 0.5)));
+
+				f0 *= 2;
+			}
+
+			return no_error;
+		}
+
+		return invalid_input_data_error;
+	}
+
+	eq_error_t set20Bands(eq_double_t fc = bandsGridCenterFreqHz)
+	{
+		freqs.clear();
+
+		if (lowestAudioFreqHz < fc && fc < highestAudioFreqHz) {
+			/* Find lowest center frequency in the band. */
+			eq_double_t lowestFc = fc;
+
+			while (lowestFc >= lowestAudioFreqHz)
+				lowestFc /= pow(2, 0.5);
+
+			if (lowestFc < lowestAudioFreqHz)
+				lowestFc *= pow(2, 0.5);
+
+			/* Calculate frequencies. */
+			eq_double_t f0 = lowestFc;
+			for (size_t i = 0; i < 20; i++) {
+				freqs.push_back(Band(f0 / pow(2, 0.25),
+				    f0, f0 * pow(2, 0.25)));
+
+				f0 *= pow(2, 0.5);
+			}
+
+			return no_error;
+		}
+
+		return invalid_input_data_error;
+	}
+
+	eq_error_t set30Bands(eq_double_t fc = bandsGridCenterFreqHz)
+	{
+		freqs.clear();
+
+		if (lowestAudioFreqHz < fc && fc < highestAudioFreqHz) {
+			/* Find lowest center frequency in the band. */
+			eq_double_t lowestFc = fc;
+			while (lowestFc > lowestAudioFreqHz)
+				lowestFc /= pow(2.0, 1.0/3.0);
+
+			if (lowestFc < lowestAudioFreqHz)
+				lowestFc *= pow(2.0, 1.0/3.0);
+
+			/* Calculate frequencies. */
+			eq_double_t f0 = lowestFc;
+			for (size_t i = 0; i < 30; i++) {
+				freqs.push_back(Band(f0 / pow(2.0, 1.0/6.0),
+				    f0, f0 * pow(2.0, 1.0/6.0)));
+
+				f0 *= pow(2, 1.0/3.0);
+			}
+
+			return no_error;
+		}
+
+		return invalid_input_data_error;
+	}
+
+	size_t getNumberOfBands()
+	{
+		return freqs.size();
+	}
+
+	std::vector<Band> getFreqs()
+	{
+		return freqs;
+	}
+
+	size_t getFreq(size_t index)
+	{
+		if (index < freqs.size())
+			return freqs[index].centerFreq;
+		else
+			return 0;
+	}
+
+	size_t getRoundedFreq(size_t index)
+	{
+		if (index < freqs.size()) {
+			size_t freq = freqs[index].centerFreq;
+			if (freq < 100) {
+				return freq;
+			} else if (freq >= 100 && freq < 1000) {
+				size_t rest = freq % 10;
+				if (rest < 5)
+					return freq - rest;
+				else
+					return freq - rest + 10;
+			} else if (freq >= 1000 && freq < 10000) {
+				size_t rest = freq % 100;
+				if (rest < 50)
+					return freq - rest;
+				else
+					return freq - rest + 100;
+			} else if (freq >= 10000) {
+				size_t rest = freq%1000;
+				if (rest < 500)
+					return freq - rest;
+				else
+					return freq - rest + 1000;
+			}
+		}
+
+		return 0;
+	}
+};
+
+/*
+ * Second order biquad section representation.
+ */
+struct SOSection
 {
-    int db_min_max;
-    std::vector<eq_double_t> lin_gains;
-
-    int lin_gains_index(eq_double_t x) {
-        int int_x = (int)x;
-        if((x >= -db_min_max) && (x < db_min_max - 1))
-            return db_min_max + int_x;
-    
-        return db_min_max;
-    }
-
-    conversions(){}
-
-public:
-    conversions(int min_max) {
-        db_min_max = min_max;
-        //Update table (vector elements) for fast conversions
-        int step = -min_max;
-        while(step <= min_max)
-            lin_gains.push_back(db_2_lin(step++));
-    }
-
-    inline eq_double_t fast_db_2_lin(eq_double_t x) {
-        int int_part = (int)x;
-        eq_double_t frac_part = x - int_part;
-        return lin_gains[lin_gains_index(int_part)]*(1-frac_part) + 
-            (lin_gains[lin_gains_index(int_part + 1)])*frac_part;
-    }
-
-    inline eq_double_t fast_lin_2_db(eq_double_t x) {
-        if((x >= lin_gains[0]) && (x < lin_gains[lin_gains.size() - 1])) {
-            for (unsigned int i = 0; i < lin_gains.size() - 2; i++)
-                if((x >= lin_gains[i]) && (x < lin_gains[i + 1])) {
-                    int int_part = i - db_min_max;
-                    eq_double_t frac_part = x - (int)(x);
-                    return int_part + frac_part; 
-                }
-        }
-        return 0;
-    }
-
-    inline static eq_double_t db_2_lin(eq_double_t x) {
-        return pow(10, x/20);
-    }
-
-    inline static eq_double_t lin_2_db(eq_double_t x) {
-        return 20*log10(x);
-    }
-
-    inline static eq_double_t rad_2_hz(eq_double_t x, eq_double_t fs) {
-        return 2*pi/x*fs;
-    }
-
-    inline static eq_double_t hz_2_rad(eq_double_t x, eq_double_t fs) {
-        return 2*pi*x/fs;
-    }
+	eq_double_t b0, b1, b2;
+	eq_double_t a0, a1, a2;
 };
 
-//------------ Band freq's structure ------------
-struct band_freqs {
-private:
-    band_freqs();
-
-public:
-    eq_double_t min_freq;
-    eq_double_t center_freq;
-    eq_double_t max_freq;
-
-    band_freqs(eq_double_t f1, eq_double_t f0, eq_double_t f2):
-        min_freq(f1), center_freq(f0), max_freq(f2){}
-
-    ~band_freqs(){}
-};
-
-//------------ Frequency grid class ------------
-class freq_grid {
-private:
-    std::vector<band_freqs> freqs_;
-
-public:
-    freq_grid(){}
-    freq_grid(const freq_grid& fg){this->freqs_ = fg.freqs_;}
-    ~freq_grid(){}
-
-    eq_error_t set_band(eq_double_t fmin, eq_double_t f0, eq_double_t fmax) {
-        freqs_.clear();
-        return add_band(fmin, f0, fmax);
-    }
-    
-    //fc, fmin, fmax
-    eq_error_t add_band(eq_double_t fmin, eq_double_t f0, eq_double_t fmax) {
-        if(fmin < f0 && f0 < fmax)
-                freqs_.push_back(band_freqs(fmin, f0, fmax));
-            else
-                return invalid_input_data_error;
-            return no_error;
-    }
-    
-    //f0, deltaf = fmax - fmin
-    eq_error_t add_band(eq_double_t f0, eq_double_t df) {
-        if(f0 >= df/2)
-        {
-            eq_double_t fmin = f0 - df/2;
-            eq_double_t fmax = f0 + df/2;
-            freqs_.push_back(band_freqs(fmin, f0, fmax));
-        }
-        else
-            return invalid_input_data_error;
-        return no_error;
-    }
-
-    eq_error_t set_5_bands(eq_double_t center_freq = bands_grid_center_freq_hz) {
-        freqs_.clear();
-        if(lowest_audio_freq_hz < center_freq &&
-                center_freq < highest_audio_freq_hz) {
-
-            //Find lowest center frequency in band
-            eq_double_t lowest_center_freq = center_freq;
-            while(lowest_center_freq > lowest_grid_center_freq_hz)
-                lowest_center_freq/=4.0;
-            if(lowest_center_freq < lowest_grid_center_freq_hz)
-                lowest_center_freq*=4.0;
-
-            //Calculate freq's
-            eq_double_t f0 = lowest_center_freq;
-            for(unsigned int i = 0; i < 5 ; i++) {
-                freqs_.push_back(band_freqs(f0/2, f0, f0*2));
-                f0 *= 4;
-            }
-        }
-        else
-            return invalid_input_data_error;
-        return no_error;
-    }
-
-    eq_error_t set_10_bands(eq_double_t center_freq = bands_grid_center_freq_hz) {
-        freqs_.clear();
-        if(lowest_audio_freq_hz < center_freq &&
-                center_freq < highest_audio_freq_hz) {
-
-            //Find lowest center frequency in band
-            eq_double_t lowest_center_freq = center_freq;
-            while(lowest_center_freq > lowest_grid_center_freq_hz)
-                lowest_center_freq/=2;
-            if(lowest_center_freq < lowest_grid_center_freq_hz)
-                lowest_center_freq*=2;
-
-            //Calculate freq's
-            eq_double_t f0 = lowest_center_freq;
-            for(unsigned int i = 0; i < 10; i++) {
-                freqs_.push_back(band_freqs(f0/pow(2,0.5), f0, f0*pow(2,0.5)));
-                f0 *= 2;
-            }
-        }
-        else
-            return invalid_input_data_error;
-        return no_error;
-    }
-
-    eq_error_t set_20_bands(eq_double_t center_freq = bands_grid_center_freq_hz) {
-        freqs_.clear();
-        if(lowest_audio_freq_hz < center_freq &&
-                center_freq < highest_audio_freq_hz) {
-
-         //Find lowest center frequency in band
-            eq_double_t lowest_center_freq = center_freq;
-            while(lowest_center_freq > lowest_audio_freq_hz)
-                lowest_center_freq/=pow(2,0.5);
-            if(lowest_center_freq < lowest_audio_freq_hz)
-                lowest_center_freq*=pow(2,0.5);
-
-            //Calculate freq's
-            eq_double_t f0 = lowest_center_freq;
-            for(unsigned int i = 0; i < 20; i++) {
-                freqs_.push_back(band_freqs(f0/pow(2,0.25), 
-                    f0, f0*pow(2,0.25)));
-                f0 *= pow(2,0.5);
-            }
-        }
-        else
-            return invalid_input_data_error;
-        return no_error;
-    }
-
-    eq_error_t set_30_bands(eq_double_t center_freq = bands_grid_center_freq_hz) {
-        freqs_.clear();
-        if(lowest_audio_freq_hz < center_freq &&
-                center_freq < highest_audio_freq_hz) {
-
-            //Find lowest center frequency in band
-            eq_double_t lowest_center_freq = center_freq;
-            while(lowest_center_freq > lowest_audio_freq_hz)
-                lowest_center_freq/=pow(2.0,1.0/3.0);
-            if(lowest_center_freq < lowest_audio_freq_hz)
-                lowest_center_freq*=pow(2.0,1.0/3.0);
-
-            //Calculate freq's
-            eq_double_t f0 = lowest_center_freq;
-            for(unsigned int i = 0; i < 30; i++) {
-                freqs_.push_back(band_freqs(f0/pow(2.0,1.0/6.0), 
-                    f0, f0*pow(2.0,1.0/6.0)));
-                f0 *= pow(2,1.0/3.0);
-            }
-        }
-        else
-            return invalid_input_data_error;
-        return no_error;
-    }
-
-    unsigned int get_number_of_bands(){return freqs_.size();}
-    
-    std::vector<band_freqs> get_freqs(){return freqs_;}
-    
-    unsigned int get_freq(unsigned int number) {
-        if(number < freqs_.size())
-            return freqs_[number].center_freq;
-        else
-            return 0;
-    }
-
-    unsigned int get_rounded_freq(unsigned int number) {
-        if(number < freqs_.size()) {
-            unsigned int freq = freqs_[number].center_freq;
-            if (freq < 100)
-                return freq;
-            else if(freq >= 100 && freq < 1000) {
-                unsigned int rest = freq%10;
-                if(rest < 5)
-                    return freq - rest;
-                else
-                    return freq - rest + 10;
-            }
-            else if(freq >= 1000 && freq < 10000) {
-                unsigned int rest = freq%100;
-                if(rest < 50)
-                    return freq - rest;
-                else
-                    return freq - rest + 100;
-            }
-            else if(freq >= 10000) {
-                unsigned int rest = freq%1000;
-                if(rest < 500)
-                    return freq - rest;
-                else
-                    return freq - rest + 1000;
-            }
-        }
-        return 0;
-    }
-};
-
-//------------ Forth order sections ------------
-class fo_section {
+/*
+ * Fourth order biquad section representation.
+ */
+class FOSection {
 protected:
-eq_single_t b0; eq_single_t b1; eq_single_t b2; eq_single_t b3; eq_single_t b4;
-eq_single_t a0; eq_single_t a1; eq_single_t a2; eq_single_t a3; eq_single_t a4;
+	eq_double_t b0, b1, b2, b3, b4;
+	eq_double_t a0, a1, a2, a3, a4;
 
-eq_single_t numBuf[fo_section_order];
-eq_single_t denumBuf[fo_section_order];
+	eq_double_t numBuf[4];
+	eq_double_t denumBuf[4];
 
-inline eq_single_t df1_fo_process(eq_single_t in) {
-        eq_single_t out = 0;
-        out+= b0*in;
-        out+= (b1*numBuf[0] - denumBuf[0]*a1);
-        out+= (b2*numBuf[1] - denumBuf[1]*a2);
-        out+= (b3*numBuf[2] - denumBuf[2]*a3);
-        out+= (b4*numBuf[3] - denumBuf[3]*a4);
+	eq_double_t df1FOProcess(eq_double_t in)
+	{
+		eq_double_t out = 0;
 
-        numBuf[3] = numBuf[2];
-        numBuf[2] = numBuf[1];
-        numBuf[1] = numBuf[0];
-        *numBuf = in;
+		out+= b0*in;
+		out+= (b1*numBuf[0] - denumBuf[0]*a1);
+		out+= (b2*numBuf[1] - denumBuf[1]*a2);
+		out+= (b3*numBuf[2] - denumBuf[2]*a3);
+		out+= (b4*numBuf[3] - denumBuf[3]*a4);
 
-        denumBuf[3] = denumBuf[2];
-        denumBuf[2] = denumBuf[1];
-        denumBuf[1] = denumBuf[0];
-        *denumBuf = out;
+		numBuf[3] = numBuf[2];
+		numBuf[2] = numBuf[1];
+		numBuf[1] = numBuf[0];
+		*numBuf = in;
 
-        return(out);
-    }
+		denumBuf[3] = denumBuf[2];
+		denumBuf[2] = denumBuf[1];
+		denumBuf[1] = denumBuf[0];
+		*denumBuf = out;
+
+		return out;
+	}
 
 public:
-    fo_section() {
-        b0 = 1; b1 = 0; b2 = 0; b3 = 0; b4 = 0;
-        a0 = 1; a1 = 0; a2 = 0; a3 = 0; a4 = 0;
+	FOSection() : b0(1), b1(0), b2(0), b3(0), b4(0),
+	    a0(1), a1(0), a2(0), a3(0), a4(0), numBuf{0}, denumBuf{0}
+	{}
 
-        for(unsigned int i = 0; i < fo_section_order; i++) {
-            numBuf[i] = 0;
-            denumBuf[i] = 0;
-        }
-    }
+	FOSection(std::vector<eq_double_t>& b, std::vector<eq_double_t> a) :
+	    numBuf{0}, denumBuf{0}
+	{
+		b0 = b[0]; b1 = b[1]; b2 = b[2]; b3 = b[3]; b4 = b[4];
+		a0 = a[0]; a1 = a[1]; a2 = a[2]; a3 = a[3]; a4 = a[4];
+	}
 
-    virtual ~fo_section(){}
-
-    eq_single_t process(eq_single_t in) {
-        return df1_fo_process(in);
-    }
-
-    virtual fo_section get() {
-        return *this;
-    }
+	eq_double_t process(eq_double_t in)
+	{
+		return df1FOProcess(in);
+	}
 };
 
-class butterworth_fo_section : public fo_section {
-    butterworth_fo_section(){}
-    butterworth_fo_section(butterworth_fo_section&){}
+/*
+ * Bandpass filter representation.
+ */
+class BPFilter {
 public:
-    butterworth_fo_section(eq_double_t beta,
-                           eq_double_t s, eq_double_t g, eq_double_t g0,
-                           eq_double_t D, eq_double_t c0) {
-        b0 = (g*g*beta*beta + 2*g*g0*s*beta + g0*g0)/D;
-        b1 = -4*c0*(g0*g0 + g*g0*s*beta)/D;
-        b2 = 2*(g0*g0*(1 + 2*c0*c0) - g*g*beta*beta)/D;
-        b3 = -4*c0*(g0*g0 - g*g0*s*beta)/D;
-        b4 = (g*g*beta*beta - 2*g*g0*s*beta + g0*g0)/D;
+	BPFilter() {}
+	virtual ~BPFilter() {}
 
-        a0 = 1;
-        a1 = -4*c0*(1 + s*beta)/D;
-        a2 = 2*(1 + 2*c0*c0 - beta*beta)/D;
-        a3 = -4*c0*(1 - s*beta)/D;
-        a4 = (beta*beta - 2*s*beta + 1)/D;
-    }
-
-    fo_section get() {return *this;}
+	virtual eq_double_t process(eq_double_t in) = 0;
 };
 
-class chebyshev_type1_fo_section : public fo_section {
-    chebyshev_type1_fo_section(){}
-    chebyshev_type1_fo_section(chebyshev_type1_fo_section&){}
+class ButterworthBPFilter : public BPFilter {
+	std::vector<FOSection> sections;
+
+	ButterworthBPFilter() {}
 public:
-    chebyshev_type1_fo_section(eq_double_t a,
-                               eq_double_t c, eq_double_t tetta_b,
-                               eq_double_t g0, eq_double_t s, eq_double_t b,
-                               eq_double_t D, eq_double_t c0) {
-        b0 = ((b*b + g0*g0*c*c)*tetta_b*tetta_b + 2*g0*b*s*tetta_b + g0*g0)/D;
-        b1 = -4*c0*(g0*g0 + g0*b*s*tetta_b)/D;
-        b2 = 2*(g0*g0*(1 + 2*c0*c0) - (b*b + g0*g0*c*c)*tetta_b*tetta_b)/D;
-        b3 = -4*c0*(g0*g0 - g0*b*s*tetta_b)/D;
-        b4 = ((b*b + g0*g0*c*c)*tetta_b*tetta_b - 2*g0*b*s*tetta_b + g0*g0)/D;
+	ButterworthBPFilter(ButterworthBPFilter& f)
+	{
+		this->sections = f.sections;
+	}
 
-        a0 = 1;
-        a1 = -4*c0*(1 + a*s*tetta_b)/D;
-        a2 = 2*(1 + 2*c0*c0 - (a*a + c*c)*tetta_b*tetta_b)/D;
-        a3 = -4*c0*(1 - a*s*tetta_b)/D;
-        a4 = ((a*a + c*c)*tetta_b*tetta_b - 2*a*s*tetta_b + 1)/D;
-    }
+	ButterworthBPFilter(size_t N,
+	    eq_double_t w0, eq_double_t wb,
+	    eq_double_t G, eq_double_t Gb)
+	{
+		/* Case if G == 0 : allpass. */
+		if (G == 0) {
+			sections.push_back(FOSection());
+			return;
+		}
 
-    fo_section get() {return *this;}
+		/* Get number of analog sections. */
+		size_t r = N % 2;
+		size_t L = (N - r) / 2;
+
+		/* Convert gains to linear scale. */
+		eq_double_t G0 = Conversions::db2Lin(0.0);
+		G = Conversions::db2Lin(G);
+		Gb = Conversions::db2Lin(Gb);
+
+		eq_double_t e = sqrt((G*G - Gb*Gb) / (Gb*Gb - G0*G0));
+		eq_double_t g = pow(G, 1.0 / N);
+		eq_double_t g0 = pow(G0, 1.0 / N);
+		eq_double_t beta = pow(e, -1.0 / N) * tan(wb / 2.0);
+		eq_double_t c0 = cos(w0);
+
+		/* Calculate every section. */
+		for (size_t i = 1; i <= L; i++) {
+			eq_double_t ui = (2.0 * i - 1) / N;
+			eq_double_t si = sin(M_PI * ui / 2.0);
+			eq_double_t Di = beta*beta + 2*si*beta + 1;
+
+			std::vector<eq_double_t> B = {
+			    (g*g*beta*beta + 2*g*g0*si*beta + g0*g0)/Di,
+			    -4*c0*(g0*g0 + g*g0*si*beta)/Di,
+			    2*(g0*g0*(1 + 2*c0*c0) - g*g*beta*beta)/Di,
+			    -4*c0*(g0*g0 - g*g0*si*beta)/Di,
+			    (g*g*beta*beta - 2*g*g0*si*beta + g0*g0)/Di
+			};
+
+			std::vector<eq_double_t> A = {
+			    1,
+			    -4*c0*(1 + si*beta)/Di,
+			    2*(1 + 2*c0*c0 - beta*beta)/Di,
+			    -4*c0*(1 - si*beta)/Di,
+			    (beta*beta - 2*si*beta + 1)/Di
+			};
+
+			sections.push_back(FOSection(B, A));
+		}
+	}
+
+	~ButterworthBPFilter() {}
+
+	static eq_double_t computeBWGainDb(eq_double_t gain)
+	{
+		eq_double_t bwGain = 0;
+		if (gain < -3)
+			bwGain = gain + 3;
+		else if (gain >= -3 && gain < 3)
+			bwGain = gain / sqrt(2);
+		else if (gain >= 3)
+			bwGain = gain - 3;
+
+		return bwGain;
+	}
+
+	virtual eq_double_t process(eq_double_t in)
+	{
+		eq_double_t p0 = in, p1 = 0;
+
+		/* Process FO sections in serial connection. */
+		for (size_t i = 0; i < sections.size(); i++) {
+			p1 = sections[i].process(p0);
+			p0 = p1;
+		}
+
+		return p1;
+	}
 };
 
-class chebyshev_type2_fo_section : public fo_section {
-    chebyshev_type2_fo_section(){}
-    chebyshev_type2_fo_section(chebyshev_type2_fo_section&){}
+class ChebyshevType1BPFilter : public BPFilter {
+	std::vector<FOSection> sections;
+
+	ChebyshevType1BPFilter() {}
 public:
-    chebyshev_type2_fo_section(eq_double_t a,
-                               eq_double_t c, eq_double_t tetta_b,
-                               eq_double_t g, eq_double_t s, eq_double_t b,
-                               eq_double_t D, eq_double_t c0) {
-        b0 = (g*g*tetta_b*tetta_b + 2*g*b*s*tetta_b + b*b + g*g*c*c)/D;
-        b1 = -4*c0*(b*b + g*g*c*c + g*b*s*tetta_b)/D;
-        b2 = 2*((b*b + g*g*c*c)*(1 + 2*c0*c0) - g*g*tetta_b*tetta_b)/D;
-        b3 = -4*c0*(b*b + g*g*c*c - g*b*s*tetta_b)/D;
-        b4 = (g*g*tetta_b*tetta_b - 2*g*b*s*tetta_b + b*b + g*g*c*c)/D;
+	ChebyshevType1BPFilter(size_t N,
+	    eq_double_t w0, eq_double_t wb,
+	    eq_double_t G, eq_double_t Gb)
+	{
+		/* Case if G == 0 : allpass. */
+		if(G == 0) {
+			sections.push_back(FOSection());
+			return;
+		}
 
-        a0 = 1;
-        a1 = -4*c0*(a*a + c*c + a*s*tetta_b)/D;
-        a2 = 2*((a*a + c*c)*(1 + 2*c0*c0) - tetta_b*tetta_b)/D;
-        a3 = -4*c0*(a*a + c*c - a*s*tetta_b)/D;
-        a4 = (tetta_b*tetta_b - 2*a*s*tetta_b + a*a + c*c)/D;
-    }
+		/* Get number of analog sections. */
+		size_t r = N % 2;
+		size_t L = (N - r) / 2;
 
-    fo_section get() {return *this;}
+		/* Convert gains to linear scale. */
+		eq_double_t G0 = Conversions::db2Lin(0.0);
+		G = Conversions::db2Lin(G);
+		Gb = Conversions::db2Lin(Gb);
+
+		eq_double_t e = sqrt((G*G - Gb*Gb) / (Gb*Gb - G0*G0));
+		eq_double_t g0 = pow(G0, 1.0 / N);
+		eq_double_t alfa = pow(1.0 / e + pow(1 + pow(e, -2.0), 0.5), 1.0 / N);
+		eq_double_t beta = pow(G / e + Gb*pow(1 + pow(e, -2.0), 0.5),1.0 / N);
+		eq_double_t a = 0.5 * (alfa - 1.0 / alfa);
+		eq_double_t b = 0.5*(beta - g0*g0*(1 / beta));
+		eq_double_t tetta_b = tan(wb / 2);
+		eq_double_t c0 = cos(w0);
+
+		/* Calculate every section. */
+		for (size_t i = 1; i <= L; i++) {
+			eq_double_t ui = (2.0*i - 1.0) / N;
+			eq_double_t ci = cos(M_PI * ui / 2.0);
+			eq_double_t si = sin(M_PI * ui / 2.0);
+			eq_double_t Di = (a*a + ci*ci) * tetta_b * tetta_b +
+			    2.0 * a * si * tetta_b + 1;
+
+			std::vector<eq_double_t> B = {
+			    ((b*b + g0*g0*ci*ci)*tetta_b*tetta_b + 2*g0*b*si*tetta_b + g0*g0)/Di,
+			    -4*c0*(g0*g0 + g0*b*si*tetta_b)/Di,
+			    2*(g0*g0*(1 + 2*c0*c0) - (b*b + g0*g0*ci*ci)*tetta_b*tetta_b)/Di,
+			    -4*c0*(g0*g0 - g0*b*si*tetta_b)/Di,
+			    ((b*b + g0*g0*ci*ci)*tetta_b*tetta_b - 2*g0*b*si*tetta_b + g0*g0)/Di
+			};
+
+			std::vector<eq_double_t> A = {
+			    1,
+			    -4*c0*(1 + a*si*tetta_b)/Di,
+			    2*(1 + 2*c0*c0 - (a*a + ci*ci)*tetta_b*tetta_b)/Di,
+			    -4*c0*(1 - a*si*tetta_b)/Di,
+			    ((a*a + ci*ci)*tetta_b*tetta_b - 2*a*si*tetta_b + 1)/Di
+			};
+
+			sections.push_back(FOSection(B, A));
+		}
+	}
+
+	~ChebyshevType1BPFilter() {}
+
+	static eq_double_t computeBWGainDb(eq_double_t gain)
+	{
+		eq_double_t bwGain = 0;
+		if (gain < 0)
+			bwGain = gain + 0.1;
+		else
+			bwGain = gain - 0.1;
+
+		return bwGain;
+	}
+
+	eq_double_t process(eq_double_t in)
+	{
+		eq_double_t p0 = in, p1 = 0;
+
+		/* Process FO sections in serial connection. */
+		for (size_t i = 0; i < sections.size(); i++) {
+			p1 = sections[i].process(p0);
+			p0 = p1;
+		}
+
+		return p1;
+	}
 };
 
-//------------ Bandpass filters ------------
-class bp_filter {
+class ChebyshevType2BPFilter : public BPFilter {
+	std::vector<FOSection> sections;
+
+	ChebyshevType2BPFilter() {}
 public:
-    bp_filter(){}
-    virtual ~bp_filter(){}
+	ChebyshevType2BPFilter(size_t N,
+	    eq_double_t w0, eq_double_t wb,
+	    eq_double_t G, eq_double_t Gb)
+	{
+		/* Case if G == 0 : allpass. */
+		if (G == 0) {
+			sections.push_back(FOSection());
+			return;
+		}
 
-    virtual eq_single_t process(eq_single_t in) = 0;
+		/* Get number of analog sections. */
+		size_t r = N % 2;
+		size_t L = (N - r) / 2;
+
+		/* Convert gains to linear scale. */
+		eq_double_t G0 = Conversions::db2Lin(0.0);
+		G = Conversions::db2Lin(G);
+		Gb = Conversions::db2Lin(Gb);
+
+		eq_double_t e = sqrt((G*G - Gb*Gb) / (Gb*Gb - G0*G0));
+		eq_double_t g = pow(G, 1.0 / N);
+		eq_double_t eu = pow(e + sqrt(1 + e*e), 1.0 / N);
+		eq_double_t ew = pow(G0*e + Gb*sqrt(1 + e*e), 1.0 / N);
+		eq_double_t a = (eu - 1.0 / eu) / 2.0;
+		eq_double_t b = (ew - g*g / ew) / 2.0;
+		eq_double_t tetta_b = tan(wb / 2);
+		eq_double_t c0 = cos(w0);
+
+		/* Calculate every section. */
+		for (size_t i = 1; i <= L; i++) {
+			eq_double_t ui = (2.0 * i - 1.0) / N;
+			eq_double_t ci = cos(M_PI * ui / 2.0);
+			eq_double_t si = sin(M_PI * ui / 2.0);
+			eq_double_t Di = tetta_b*tetta_b + 2*a*si*tetta_b +
+			    a*a + ci*ci;
+
+			std::vector<eq_double_t> B = {
+			    (g*g*tetta_b*tetta_b + 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di,
+			    -4*c0*(b*b + g*g*ci*ci + g*b*si*tetta_b)/Di,
+			    2*((b*b + g*g*ci*ci)*(1 + 2*c0*c0) - g*g*tetta_b*tetta_b)/Di,
+			    -4*c0*(b*b + g*g*ci*ci - g*b*si*tetta_b)/Di,
+			    (g*g*tetta_b*tetta_b - 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di
+			};
+
+			std::vector<eq_double_t> A = {
+			    1,
+			    -4*c0*(a*a + ci*ci + a*si*tetta_b)/Di,
+			    2*((a*a + ci*ci)*(1 + 2*c0*c0) - tetta_b*tetta_b)/Di,
+			    -4*c0*(a*a + ci*ci - a*si*tetta_b)/Di,
+			    (tetta_b*tetta_b - 2*a*si*tetta_b + a*a + ci*ci)/Di
+			};
+
+			sections.push_back(FOSection(B, A));
+		}
+	}
+
+	~ChebyshevType2BPFilter(){}
+
+	static eq_double_t computeBWGainDb(eq_double_t gain)
+	{
+		eq_double_t bwGain = 0;
+		if (gain < 0)
+			bwGain = -1;
+		else
+			bwGain = 1;
+
+		return bwGain;
+	}
+
+	eq_double_t process(eq_double_t in)
+	{
+		eq_double_t p0 = in, p1 = 0;
+
+		/* Process FO sections in serial connection. */
+		for (size_t i = 0; i < sections.size(); i++) {
+			p1 = sections[i].process(p0);
+			p0 = p1;
+		}
+
+		return p1;
+	}
 };
 
-class butterworth_bp_filter : public bp_filter {
+class EllipticTypeBPFilter : public BPFilter {
 private:
-    std::vector<fo_section> sections_;
+	/* complex -1. */
+	std::complex<eq_double_t> j;
+	std::vector<FOSection> sections;
 
-    butterworth_bp_filter(){}
+	EllipticTypeBPFilter() {}
+
+	/*
+	 * Landen transformations of an elliptic modulus.
+	 */
+	std::vector<eq_double_t> landen(eq_double_t k, eq_double_t tol)
+	{
+		std::vector<eq_double_t> v;
+
+		if (k == 0 || k == 1.0)
+			v.push_back(k);
+
+		if (tol < 1) {
+			while (k > tol) {
+				k = pow(k/(1.0 + sqrt(1.0 - k*k)), 2);
+				v.push_back(k);
+			}
+		} else {
+			eq_double_t M = tol;
+			for (size_t i = 1; i <= M; i++) {
+				k = pow(k/(1.0 + sqrt(1.0 - k*k)), 2);
+				v.push_back(k);
+			}
+		}
+
+		return v;
+	}
+
+	/*
+	 * Complete elliptic integral.
+	 */
+	void ellipk(eq_double_t k, eq_double_t tol, eq_double_t& K, eq_double_t& Kprime)
+	{
+		eq_double_t kmin = 1e-6;
+		eq_double_t kmax = sqrt(1 - kmin*kmin);
+
+		if (k == 1.0) {
+			K = std::numeric_limits<eq_double_t>::infinity();
+		} else if (k > kmax) {
+			eq_double_t kp = sqrt(1.0 - k*k);
+			eq_double_t L = -log(kp / 4.0);
+			K = L + (L - 1) * kp*kp / 4.0;
+		} else {
+			std::vector<eq_double_t> v = landen(k, tol);
+
+			std::transform(v.begin(), v.end(), v.begin(),
+			    bind2nd(std::plus<eq_double_t>(), 1.0));
+
+			K = std::accumulate(begin(v), end(v),
+			    1, std::multiplies<eq_double_t>()) * M_PI/2.0;
+		}
+
+		if (k == 0.0) {
+			Kprime = std::numeric_limits<eq_double_t>::infinity();
+		} else if (k < kmin) {
+			eq_double_t L = -log(k / 4.0);
+			Kprime = L + (L - 1.0) * k*k / 4.0;
+		} else {
+			eq_double_t kp = sqrt(1.0 - k*k);
+			std::vector<eq_double_t> vp = landen(kp, tol);
+
+			std::transform(vp.begin(), vp.end(), vp.begin(),
+			    bind2nd(std::plus<eq_double_t>(), 1.0));
+
+			Kprime = std::accumulate(std::begin(vp), std::end(vp),
+			    1.0, std::multiplies<eq_double_t>()) * M_PI/2.0;
+		}
+	}
+
+	/*
+	 * Solves the degree equation in analog elliptic filter design.
+	 */
+	eq_double_t ellipdeg2(eq_double_t n, eq_double_t k, eq_double_t tol)
+	{
+		const size_t M = 7;
+		eq_double_t K, Kprime;
+
+		ellipk(k, tol, K, Kprime);
+		eq_double_t q = exp(-M_PI * Kprime / K);
+		eq_double_t q1 = pow(q, n);
+		eq_double_t s1 = 0, s2 = 0;
+
+		for (size_t i = 1; i <= M; i++)
+		{
+			s1 += pow(q1, i*(i+1));
+			s2 += pow(q1, i*i);
+		}
+
+		return 4 * sqrt(q1) * pow((1.0 + s1) / (1.0 + 2 * s2), 2);
+	}
+
+	eq_double_t srem(eq_double_t x, eq_double_t y)
+	{
+		eq_double_t z = remainder(x, y);
+
+		return z - y * std::copysign(1.0, z) * ((eq_double_t)(abs(z) > y / 2.0));
+	}
+
+	/*
+	 * Inverse of cd elliptic function.
+	 */
+	std::complex<eq_double_t> acde(std::complex<eq_double_t> w, eq_double_t k,
+	    eq_double_t tol)
+	{
+		std::vector<eq_double_t> v = landen(k, tol);
+
+		for (size_t i = 0; i < v.size(); i++) {
+			eq_double_t v1;
+			if (i == 0)
+				v1 = k;
+			else
+				v1 = v[i - 1];
+
+			w = w / (1.0 + sqrt(1.0 - w*w * v1*v1)) * 2.0/(1 + v[i]);
+		}
+
+		std::complex<eq_double_t> u = 2.0 / M_PI * acos(w);
+		eq_double_t K, Kprime;
+		ellipk(k ,tol, K, Kprime);
+
+		return srem(real(u), 4) + j*srem(imag(u), 2*(Kprime/K));
+	}
+
+	/*
+	 * Inverse of sn elliptic function.
+	 */
+	std::complex<eq_double_t> asne(std::complex<eq_double_t> w, eq_double_t k,
+	    eq_double_t tol)
+	{
+		return 1.0 - acde(w, k, tol);
+	}
+
+	/*
+	 * cd elliptic function with normalized complex argument.
+	 */
+	std::complex<eq_double_t> cde(std::complex<eq_double_t> u, eq_double_t k,
+	    eq_double_t tol)
+	{
+		std::vector<eq_double_t> v = landen(k, tol);
+		std::complex<eq_double_t> w = cos(u * M_PI / 2.0);
+
+		for (int i = v.size() - 1; i >= 0; i--)
+			w = (1 + v[i]) * w / (1.0 + v[i] * pow(w, 2));
+
+		return w;
+	}
+
+	/*
+	 * sn elliptic function with normalized complex argument.
+	 */
+	std::vector<eq_double_t> sne(const std::vector<eq_double_t> &u,
+	    eq_double_t k, eq_double_t tol)
+	{
+		std::vector<eq_double_t> v = landen(k, tol);
+		std::vector<eq_double_t> w;
+
+		for (size_t i = 0; i < u.size(); i++)
+			w.push_back(sin(u[i] * M_PI / 2.0));
+
+		for (int i = v.size() - 1; i >= 0; i--)
+			for (size_t j = 0; j < w.size(); j++)
+				w[j] = ((1 + v[i])*w[j])/(1 + v[i]*w[j]*w[j]);
+
+		return w;
+	}
+
+	/*
+	 * Solves the degree equation in analog elliptic filter design.
+	 */
+	eq_double_t ellipdeg(size_t N, eq_double_t k1, eq_double_t tol)
+	{
+		eq_double_t L = floor(N / 2);
+		std::vector<eq_double_t> ui;
+		for (size_t i = 1; i <= L; i++)
+			ui.push_back((2.0*i - 1.0) / N);
+
+		eq_double_t kmin = 1e-6;
+		if (k1 < kmin) {
+			return ellipdeg2(1.0 / N, k1, tol);
+		} else {
+			eq_double_t kc = sqrt(1 - k1*k1);
+			std::vector<eq_double_t> w = sne(ui, kc, tol);
+			eq_double_t prod = std::accumulate(begin(w), end(w),
+			    1.0, std::multiplies<eq_double_t>());
+			eq_double_t kp = pow(kc, N) * pow(prod, 4);
+
+			return sqrt(1 - kp*kp);
+		}
+	}
+
+	/*
+	 * Bilinear transformation of analog second-order sections.
+	 */
+	void blt(const std::vector<SOSection>& aSections, eq_double_t w0,
+	    std::vector<FOSection>& sections)
+	{
+		eq_double_t c0 = cos(w0);
+		size_t K = aSections.size();
+
+		std::vector<std::vector<eq_double_t>> B, A, Bhat, Ahat;
+		for (size_t i = 0; i < K; i++) {
+			B.push_back(std::vector<eq_double_t>(5));
+			A.push_back(std::vector<eq_double_t>(5));
+			Bhat.push_back(std::vector<eq_double_t>(3));
+			Ahat.push_back(std::vector<eq_double_t>(3));
+		}
+
+		std::vector<eq_double_t> B0(3), B1(3), B2(3), A0(3), A1(3), A2(3);
+		B0[0] = aSections[0].b0; B0[1] = aSections[1].b0; B0[2] = aSections[2].b0;
+		B1[0] = aSections[0].b1; B1[1] = aSections[1].b1; B1[2] = aSections[2].b1;
+		B2[0] = aSections[0].b2; B2[1] = aSections[1].b2; B2[2] = aSections[2].b2;
+		A0[0] = aSections[0].a0; A0[1] = aSections[1].a0; A0[2] = aSections[2].a0;
+		A1[0] = aSections[0].a1; A1[1] = aSections[1].a1; A1[2] = aSections[2].a1;
+		A2[0] = aSections[0].a2; A2[1] = aSections[1].a2; A2[2] = aSections[2].a2;
+
+		/* Find 0th-order sections (i.e., gain sections). */
+		std::vector<size_t> zths;
+		for (size_t i = 0; i < B0.size(); i++)
+			if ((B1[i] == 0 && A1[i] == 0) && (B2[i] == 0 && A2[i] == 0))
+				zths.push_back(i);
+
+		for (size_t i = 0; i < zths.size(); i++) {
+			size_t j = zths[i];
+			Bhat[j][0] = B0[j] / A0[j];
+			Ahat[j][0] = 1;
+			B[j][0] = Bhat[j][0];
+			A[j][0] = 1;
+		}
+
+		/* Find 1st-order analog sections. */
+		std::vector<size_t> fths;
+		for (size_t i = 0; i < B0.size(); i++)
+			if ((B1[i] != 0 || A1[i] != 0) && (B2[i] == 0 && A2[i] == 0))
+				fths.push_back(i);
+
+		for (size_t i = 0; i < fths.size(); i++) {
+			size_t j = fths[i];
+			eq_double_t D = A0[j] + A1[j];
+			Bhat[j][0] = (B0[j] + B1[j]) / D;
+			Bhat[j][1] = (B0[j] - B1[j]) / D;
+			Ahat[j][0] = 1;
+			Ahat[j][1] = (A0[j] - A1[j]) / D;
+
+			B[j][0] = Bhat[j][0];
+			B[j][1] = c0 * (Bhat[j][1] - Bhat[j][0]);
+			B[j][2] = -Bhat[j][1];
+			A[j][0] = 1;
+			A[j][1] = c0 * (Ahat[j][1] - 1);
+			A[j][2] = -Ahat[j][1];
+		}
+
+		/* Find 2nd-order sections. */
+		std::vector<size_t> sths;
+		for (size_t i = 0; i < B0.size(); i++)
+			if (B2[i] != 0 || A2[i] != 0)
+				sths.push_back(i);
+
+		for (size_t i = 0; i < sths.size(); i++) {
+			size_t j = sths[i];
+			eq_double_t D = A0[j] + A1[j] + A2[j];
+			Bhat[j][0] = (B0[j] + B1[j] + B2[j]) / D;
+			Bhat[j][1] = 2 * (B0[j] - B2[j]) / D;
+			Bhat[j][2] = (B0[j] - B1[j] + B2[j]) / D;
+			Ahat[j][0] = 1;
+			Ahat[j][1] = 2 * (A0[j] - A2[j]) / D;
+			Ahat[j][2] = (A0[j] - A1[j] + A2[j]) /D;
+
+			B[j][0] = Bhat[j][0];
+			B[j][1] = c0 * (Bhat[j][1] - 2 * Bhat[j][0]);
+			B[j][2] = (Bhat[j][0] - Bhat[j][1] + Bhat[j][2]) *c0*c0 - Bhat[j][1];
+			B[j][3] = c0 * (Bhat[j][1] - 2 * Bhat[j][2]);
+			B[j][4] = Bhat[j][2];
+
+			A[j][0] = 1;
+			A[j][1] = c0 * (Ahat[j][1] - 2);
+			A[j][2] = (1 - Ahat[j][1] + Ahat[j][2])*c0*c0 - Ahat[j][1];
+			A[j][3] = c0 * (Ahat[j][1] - 2*Ahat[j][2]);
+			A[j][4] = Ahat[j][2];
+		}
+
+		/* LP or HP shelving filter. */
+		if (c0 == 1 || c0 == -1) {
+			for (size_t i = 0; i < Bhat.size(); i++) {
+				B[i] = Bhat[i];
+				A[i] = Ahat[i];
+			}
+
+			for (size_t i = 0; i < B.size(); i++) {
+				B[i][1] *= c0;
+				A[i][1] *= c0;
+
+				B[i][3] = 0; B[i][4] = 0;
+				A[i][3] = 0; A[i][4] = 0;
+			}
+		}
+
+		for (size_t i = 0; i < B.size(); i++)
+			sections.push_back(FOSection(B[i], A[i]));
+	}
+
 public:
-    butterworth_bp_filter(butterworth_bp_filter& f) {
-        this->sections_ = f.sections_;
-    }
-    
-    butterworth_bp_filter(unsigned int N,
-            eq_double_t w0, eq_double_t wb,
-            eq_double_t G, eq_double_t Gb, eq_double_t G0) {
-        //Case if G == 0 : allpass
-        if(G == 0 && G0 == 0) {
-            sections_.push_back(fo_section());
-            return;
-        }
-        
-        //Get number of analog sections
-        unsigned int r = N%2;
-        unsigned int L = (N - r)/2;
+	EllipticTypeBPFilter(size_t N,
+	    eq_double_t w0, eq_double_t wb,
+	    eq_double_t G, eq_double_t Gb) :
+	    j(std::complex_literals::operator""i(static_cast<long double>(1.0)))
+	{
+		/* Case if G == 0 : allpass. */
+		if(G == 0) {
+			sections.push_back(FOSection());
+			return;
+		}
 
-        //Convert gains to linear scale
-        G = conversions::db_2_lin(G);
-        Gb = conversions::db_2_lin(Gb);
-        G0 = conversions::db_2_lin(G0);
+		const eq_double_t tol = 2.2e-16;
+		eq_double_t Gs =  G - Gb;
 
-        eq_double_t epsilon = pow(((eq_double_t)(G*G - Gb*Gb))/
-            (Gb*Gb - G0*G0),0.5);
-        eq_double_t g = pow(((eq_double_t)G),1.0/((eq_double_t)N));
-        eq_double_t g0 = pow(((eq_double_t)G0),1.0/((eq_double_t)N));
-        eq_double_t beta = pow(((eq_double_t)epsilon), -1.0/((eq_double_t)N))*
-            tan(wb/2.0);
+		/* Get number of analog sections. */
+		size_t r = N % 2;
+		size_t L = (N - r) / 2;
 
-        eq_double_t c0 = cos(w0);
-        if (w0 == 0) c0 = 1;
-        if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 = -1;
+		/* Convert gains to linear scale. */
+		eq_double_t G0 = Conversions::db2Lin(0.0);
+		G = Conversions::db2Lin(G);
+		Gb = Conversions::db2Lin(Gb);
+		Gs = Conversions::db2Lin(Gs);
 
-        //Calculate every section
-        for(unsigned int i = 1; i <= L; i++) {
-            eq_double_t ui = (2.0*i-1)/N;
-            eq_double_t si = sin(pi*ui/2.0);
+		eq_double_t WB = tan(wb / 2.0);
+		eq_double_t e = sqrt((G*G - Gb*Gb) / (Gb*Gb - G0*G0));
+		eq_double_t es = sqrt((G*G - Gs*Gs) / (Gs*Gs - G0*G0));
+		eq_double_t k1 = e / es;
+		eq_double_t k = ellipdeg(N, k1, tol);
+		std::complex<eq_double_t> ju0 = asne(j*G / e / G0, k1, tol) / (eq_double_t)N;
+		std::complex<eq_double_t> jv0 = asne(j / e, k1, tol) / (eq_double_t)N;
 
-            eq_double_t Di = beta*beta + 2*si*beta + 1;
+		/* Initial initialization of analog sections. */
+		std::vector<SOSection> aSections;
+		if (r == 0) {
+			SOSection ba = {Gb, 0, 0, 1, 0, 0};
+			aSections.push_back(ba);
+		} else if (r == 1) {
+			eq_double_t A00, A01, B00, B01;
+			if (G0 == 0.0 && G != 0.0) {
+				B00 = G * WB;
+				B01 = 0.0;
+			} else {
+				eq_double_t z0 = std::real(j* cde(-1.0 + ju0, k, tol));
+				B00 = G * WB;
+				B01 = -G / z0;
+			}
+			A00 = WB;
+			A01 = -1 / std::real(j * cde(-1.0 + jv0, k, tol));
+			SOSection ba = {B00, B01, 0, A00, A01, 0};
+			aSections.push_back(ba);
+		}
 
-            sections_.push_back
-                (butterworth_fo_section(beta, si, g, g0, Di, c0));
-        }
-    }
+		if (L > 0) {
+			for (size_t i = 1; i <= L; i++) {
+				eq_double_t ui = (2.0 * i - 1) / N;
+				std::complex<eq_double_t> poles, zeros;
 
-    ~butterworth_bp_filter(){}
+				if (G0 == 0.0 && G != 0.0)
+					zeros = j / (k * cde(ui, k, tol));
+				else if (G0 != 0.0 && G == 0.0)
+					zeros = j * cde(ui, k, tol);
+				else
+					zeros = j * cde(ui - ju0, k ,tol);
 
-    static eq_single_t compute_bw_gain_db(eq_single_t gain) {
-        eq_single_t bw_gain = 0;
-        if(gain <= -6)
-            bw_gain = gain + common_base_gain_db;
-        else if(gain > -6 && gain < 6)
-            bw_gain = gain*0.5;
-        else if(gain >= 6)
-            bw_gain = gain - common_base_gain_db;
-            
-        return bw_gain;
-    }
+				poles = j * cde(ui - jv0, k, tol);
 
-    virtual eq_single_t process(eq_single_t in) {
-        eq_single_t p0 = in;
-        eq_single_t p1 = 0;
-        //Process FO sections in serial connection
-        for(unsigned int i = 0; i < sections_.size(); i++) {
-            p1 = sections_[i].process(p0);
-            p0 = p1;
-        }
+				SOSection sa = {
+				    WB*WB, -2*WB*std::real(1.0/zeros), pow(abs(1.0/zeros), 2),
+				    WB*WB, -2*WB*std::real(1.0/poles), pow(abs(1.0/poles), 2)};
 
-        return p1;
-    }
+				aSections.push_back(sa);
+			}
+		}
+
+		blt(aSections, w0, sections);
+
+	}
+
+	~EllipticTypeBPFilter(){}
+
+	static eq_double_t computeBWGainDb(eq_double_t gain)
+	{
+		eq_double_t bwGain = 0;
+		if (gain < 0)
+			bwGain = gain + 0.05;
+		else
+			bwGain = gain - 0.05;
+
+		return bwGain;
+	}
+
+	eq_double_t process(eq_double_t in)
+	{
+		eq_double_t p0 = in, p1 = 0;
+
+		/* Process FO sections in serial connection. */
+		for (size_t i = 0; i < sections.size(); i++) {
+			p1 = sections[i].process(p0);
+			p0 = p1;
+		}
+
+		return p1;
+	}
 };
 
-class chebyshev_type1_bp_filter : public bp_filter {
-private:
-    std::vector<fo_section> sections_;
+/*
+ * The next filter types are supported.
+ */
+typedef enum {
+	none,
+	butterworth,
+	chebyshev1,
+	chebyshev2,
+	elliptic
+} filter_type;
 
-    chebyshev_type1_bp_filter(){}
-public:
-    chebyshev_type1_bp_filter(unsigned int N,
-            eq_double_t w0, eq_double_t wb,
-            eq_double_t G, eq_double_t Gb, eq_double_t G0) {
-        //Case if G == 0 : allpass
-        if(G == 0 && G0 == 0) {
-            sections_.push_back(fo_section());
-            return;
-        }
-        
-        //Get number of analog sections
-        unsigned int r = N%2;
-        unsigned int L = (N - r)/2;
-                    
-        //Convert gains to linear scale
-        G = conversions::db_2_lin(G);
-        Gb = conversions::db_2_lin(Gb);
-        G0 = conversions::db_2_lin(G0);
+/*
+ * Representation of single precomputed equalizer channel
+ * contain vector of filters for every band gain value.
+ */
+class EqChannel {
+	eq_double_t f0;
+	eq_double_t fb;
+	eq_double_t samplingFrequency;
+	eq_double_t gainRangeDb;
+	eq_double_t gainStepDb;
 
-        eq_double_t epsilon = pow((eq_double_t)(G*G - Gb*Gb)/
-            (Gb*Gb - G0*G0),0.5);
-        eq_double_t g0 = pow((eq_double_t)(G0),1.0/N);
-        eq_double_t alfa = 
-            pow(1.0/epsilon + pow(1 + pow(epsilon,-2.0),0.5),1.0/N);
-        eq_double_t beta = 
-            pow(G/epsilon + Gb*pow(1 + pow(epsilon,-2.0),0.5),1.0/N);
-        eq_double_t a = 0.5*(alfa - 1.0/alfa);
-        eq_double_t b = 0.5*(beta - g0*g0*(1/beta));
-        eq_double_t tetta_b = tan(wb/2);
+	size_t currentFilterIndex;
+	eq_double_t currentGainDb;
 
-        eq_double_t c0 = cos(w0);
-        if (w0 == 0) c0 = 1;
-        if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 = -1;
+	std::vector<BPFilter*> filters;
+	filter_type currentChannelType;
 
-        //Calculate every section
-        for(unsigned int i = 1; i <= L; i++) {
-            eq_double_t ui = (2.0*i-1.0)/N;
-            eq_double_t ci = cos(pi*ui/2.0);
-            eq_double_t si = sin(pi*ui/2.0);
+	EqChannel() {}
 
-            eq_double_t Di = (a*a + ci*ci)*tetta_b*tetta_b + 
-                2.0*a*si*tetta_b + 1;
-            sections_.push_back(
-                chebyshev_type1_fo_section(a, ci, tetta_b, g0, si, b, Di, c0));
-        }
-    }
+	size_t getFltIndex(eq_double_t gainDb)
+	{
+		size_t numberOfFilters = filters.size();
+		eq_double_t scaleCoef = gainDb / gainRangeDb;
 
+		return (numberOfFilters / 2) + (numberOfFilters / 2) * scaleCoef;
+	}
 
-    ~chebyshev_type1_bp_filter(){}
-    
-    static eq_single_t compute_bw_gain_db(eq_single_t gain) {
-        eq_single_t bw_gain = 0;
-        if(gain <= -6)
-            bw_gain = gain + 1;
-        else if(gain > -6 && gain < 6)
-            bw_gain = gain*0.9;
-        else if(gain >= 6)
-            bw_gain = gain - 1;
-            
-        return bw_gain;
-    }
-    
-    eq_single_t process(eq_single_t in) {
-        eq_single_t p0 = in;
-        eq_single_t p1 = 0;
-        //Process FO sections in serial connection
-        for(unsigned int i = 0; i < sections_.size(); i++) {
-            p1 = sections_[i].process(p0);
-            p0 = p1;
-        }
-
-        return p1;
-    }
-};
-
-class chebyshev_type2_bp_filter : public bp_filter {
-private:
-    std::vector<fo_section> sections_;
-
-    chebyshev_type2_bp_filter(){}
-public:
-    chebyshev_type2_bp_filter(unsigned int N,
-            eq_double_t w0, eq_double_t wb,
-            eq_double_t G, eq_double_t Gb, eq_double_t G0) {
-        //Case if G == 0 : allpass
-        if(G == 0 && G0 == 0) {
-            sections_.push_back(fo_section());
-            return;
-        }
-        
-        //Get number of analog sections
-        unsigned int r = N%2;
-        unsigned int L = (N - r)/2;
-
-        //Convert gains to linear scale
-        G = conversions::db_2_lin(G);
-        Gb = conversions::db_2_lin(Gb);
-        G0 = conversions::db_2_lin(G0);
-
-        eq_double_t epsilon = pow((eq_double_t)((G*G - Gb*Gb)/
-            (Gb*Gb - G0*G0)),0.5);
-        eq_double_t g = pow((eq_double_t)(G),1.0/N);
-        eq_double_t eu = pow(epsilon + sqrt(1 + epsilon*epsilon), 1.0/N);
-        eq_double_t ew = pow(G0*epsilon + Gb*sqrt(1 + epsilon*epsilon), 1.0/N);
-        eq_double_t a = (eu - 1.0/eu)/2.0;
-        eq_double_t b = (ew - g*g/ew)/2.0;
-        eq_double_t tetta_b = tan(wb/2);
-
-        eq_double_t c0 = cos(w0);
-        if (w0 == 0) c0 = 1;
-        if (w0 == pi/2) c0=0;
-        if (w0 == pi) c0 = -1;
-
-        //Calculate every section
-        for(unsigned int i = 1; i <= L; i++) {
-            eq_double_t ui = (2.0*i-1.0)/N;
-            eq_double_t ci = cos(pi*ui/2.0);
-            eq_double_t si = sin(pi*ui/2.0);
-            eq_double_t Di = tetta_b*tetta_b + 2*a*si*tetta_b + a*a + ci*ci;
-
-            sections_.push_back(
-                chebyshev_type2_fo_section(a, ci, tetta_b, g, si, b, Di, c0));
-        }
-    }
-
-    ~chebyshev_type2_bp_filter(){}
-    
-    static eq_single_t compute_bw_gain_db(eq_single_t gain) {
-        eq_single_t bw_gain = 0;
-        if(gain <= -6)
-            bw_gain = -common_base_gain_db;
-        else if(gain > -6 && gain < 6)
-            bw_gain = gain*0.3;
-        else if(gain >= 6)
-            bw_gain = common_base_gain_db;
-            
-        return bw_gain;
-    }
-    
-    eq_single_t process(eq_single_t in) {
-        eq_single_t p0 = in;
-        eq_single_t p1 = 0;
-
-        //Process FO sections in serial connection
-        for(unsigned int i = 0; i < sections_.size(); i++) {
-            p1 = sections_[i].process(p0);
-            p0 = p1;
-        }
-
-        return p1;
-    }
-};
-
-// ------------ eq1 ------------
-// Equalizer with single precomputed filter for every band
-class eq1 {
-private:
-    conversions conv_;
-    eq_double_t sampling_frequency_;
-    freq_grid freq_grid_;
-    std::vector<eq_single_t> band_gains_;
-    std::vector<bp_filter*> filters_;
-    filter_type current_eq_type_;
-
-    eq1():conv_(eq_min_max_gain_db){}
-    eq1(const eq1&):conv_(eq_min_max_gain_db){}
-    
-    void cleanup_filters_array() {
-        for(unsigned int j = 0; j < filters_.size(); j++)
-            delete filters_[j];
-    }
+	void cleanupFiltersArray()
+	{
+		for(size_t j = 0; j < filters.size(); j++)
+			delete filters[j];
+	}
 
 public:
-    eq1(const freq_grid &fg, filter_type eq_t) : conv_(eq_min_max_gain_db) {
-        sampling_frequency_ = default_sample_freq_hz;
-        freq_grid_ = fg;
-        current_eq_type_ = eq_t;
-        set_eq(freq_grid_, eq_t);
-    }
-    ~eq1(){cleanup_filters_array();}
+	EqChannel(filter_type ft,
+	    eq_double_t fs, eq_double_t f0, eq_double_t fb,
+	    eq_double_t gainRangeDb = eqGainRangeDb,
+	    eq_double_t gainStepDb = eqGainStepDb)
+	{
+		samplingFrequency = fs;
+		this->f0 = f0;
+		this->fb = fb;
+		this->gainRangeDb = gainRangeDb;
+		this->gainStepDb = gainStepDb;
+		currentGainDb = 0;
+		currentFilterIndex = 0;
+		currentChannelType = ft;
 
-    eq_error_t set_eq(freq_grid& fg, filter_type eqt) {
-        band_gains_.clear();
-        cleanup_filters_array();    
-        filters_.clear();
-        freq_grid_ = fg;
+		setChannel(currentChannelType, samplingFrequency);
+	}
 
-        for(unsigned int i = 0; i < freq_grid_.get_number_of_bands(); i++) {
+	~EqChannel()
+	{
+		cleanupFiltersArray();
+	}
 
-            eq_double_t wb = conversions::hz_2_rad(
-                    freq_grid_.get_freqs()[i].max_freq - 
-                        freq_grid_.get_freqs()[i].min_freq,
-                    sampling_frequency_);
+	eq_error_t setChannel(filter_type ft, eq_double_t fs)
+	{
+		(void)fs;
 
-            eq_double_t w0 = conversions::hz_2_rad(
-                    freq_grid_.get_freqs()[i].center_freq,
-                    sampling_frequency_);
+		eq_double_t wb = Conversions::hz2Rad(fb, samplingFrequency);
+		eq_double_t w0 = Conversions::hz2Rad(f0, samplingFrequency);
 
-            switch(eqt) {
-                case (butterworth): {
-                    butterworth_bp_filter* bf = 
-                        new butterworth_bp_filter(
-                            default_eq_band_filters_order,
-                            w0,
-                            wb,
-                            max_base_gain_db,
-                            butterworth_band_gain_db,
-                            min_base_gain_db
-                            );
+		for (eq_double_t gain = -gainRangeDb; gain <= gainRangeDb;
+		    gain+= gainStepDb) {
+			switch(ft) {
+			case (butterworth): {
+				eq_double_t bw_gain =
+				    ButterworthBPFilter::computeBWGainDb(gain);
 
-                    filters_.push_back(bf);
-                    break;
-                }
-        
-                case (chebyshev1): {
-                    chebyshev_type1_bp_filter* cf1 = 
-                        new chebyshev_type1_bp_filter(
-                            default_eq_band_filters_order,
-                            w0,
-                            wb,
-                            max_base_gain_db,
-                            chebyshev1_band_base_gain_db,
-                            min_base_gain_db
-                            );
+				ButterworthBPFilter* bf =
+				    new ButterworthBPFilter(
+				    defaultEqBandPassFiltersOrder, w0,
+				    wb, gain, bw_gain);
 
-                    filters_.push_back(cf1);
-                    break;
-                }
+				filters.push_back(bf);
+				break;
+			}
 
-                case (chebyshev2): {
-                    chebyshev_type2_bp_filter* cf2 = 
-                        new chebyshev_type2_bp_filter(
-                            default_eq_band_filters_order,
-                            w0,
-                            wb,
-                            max_base_gain_db,
-                            chebyshev2_band_base_gain_db,
-                            min_base_gain_db
-                            );
+			case (chebyshev1): {
+				eq_double_t bwGain =
+				    ChebyshevType1BPFilter::computeBWGainDb(gain);
 
-                    filters_.push_back(cf2);
-                    break;
-                }
-        
-                default:
-                    current_eq_type_ = none;
-                    return invalid_input_data_error;
+				ChebyshevType1BPFilter* cf1 =
+				    new ChebyshevType1BPFilter(
+				    defaultEqBandPassFiltersOrder, w0,
+				    wb, gain, bwGain);
 
-            }
-            band_gains_.push_back(max_base_gain_db);
-        }
+				filters.push_back(cf1);
+				break;
+			}
 
-        current_eq_type_ = eqt;
-        return no_error;
-    }
+			case (chebyshev2): {
+				eq_double_t bwGain =
+				    ChebyshevType2BPFilter::computeBWGainDb(gain);
 
-    eq_error_t set_eq(filter_type eqt)
-    {
-        return set_eq(freq_grid_, eqt);
-    }
+				ChebyshevType2BPFilter* cf2 =
+				    new ChebyshevType2BPFilter(
+				    defaultEqBandPassFiltersOrder, w0,
+				    wb, gain, bwGain);
 
-    eq_error_t set_sample_rate(eq_double_t sr) {
-        eq_error_t err = no_error;
-        sampling_frequency_ = sr;
-        err = set_eq(freq_grid_, current_eq_type_);
+				filters.push_back(cf2);
+				break;
+			}
 
-        return err;
-    }
+			case (elliptic): {
+				eq_double_t bwGain =
+				    EllipticTypeBPFilter::computeBWGainDb(gain);
 
-    eq_error_t change_gains(std::vector<eq_single_t> band_gains) {
-        if(band_gains_.size() == band_gains.size())
-            band_gains_ = band_gains;
-        else
-            return invalid_input_data_error;
-        
-        return no_error;
-    }
-    
-    eq_error_t change_gains_db(std::vector<eq_single_t> band_gains) {
-        if(band_gains_.size() == band_gains.size())
-            for(unsigned int j = 0; j < get_number_of_bands(); j++)
-                band_gains_[j] = conv_.fast_db_2_lin(band_gains[j]);
-        else
-            return invalid_input_data_error;
-        
-        return no_error;
-    }
-    
-    eq_error_t change_band_gain(unsigned int band_number, 
-        eq_single_t band_gain) {
-        if(band_number < get_number_of_bands())
-            band_gains_[band_number] = band_gain;
-        else
-            return invalid_input_data_error;
+				EllipticTypeBPFilter* e =
+				    new EllipticTypeBPFilter(
+				    defaultEqBandPassFiltersOrder, w0,
+				    wb, gain, bwGain);
 
-        return no_error;
-    }
+				filters.push_back(e);
+				break;
+			}
 
-    eq_error_t change_band_gain_db(unsigned int band_number, 
-        eq_single_t band_gain) {
-        if(band_number < get_number_of_bands())
-            band_gains_[band_number] = conv_.fast_db_2_lin(band_gain);
-        else
-            return invalid_input_data_error;
+			default: {
+				currentChannelType = none;
+				return invalid_input_data_error;
+			}
+			}
+		}
 
-        return no_error;
-    }
+		/* Get current filter index. */
+		currentGainDb = 0;
+		currentFilterIndex = getFltIndex(currentGainDb);
 
-    eq_error_t sbs_process_band(unsigned int band_number, 
-        eq_single_t *in, eq_single_t *out) {
-        if(band_number < get_number_of_bands())
-            *out = band_gains_[band_number]*
-                filters_[band_number]->process(*in);
-        else
-            return invalid_input_data_error;
+		return no_error;
+	}
 
-        return no_error;
-    }
+	eq_error_t setGainDb(eq_double_t db)
+	{
+		if (db > -gainRangeDb && db < gainRangeDb) {
+			currentGainDb = db;
+			currentFilterIndex = getFltIndex(db);
 
-     eq_error_t sbs_process(eq_single_t *in, eq_single_t *out) {
-        eq_error_t err = no_error;
-        eq_single_t acc_out = 0;		
-        for(unsigned int j = 0; j < get_number_of_bands(); j++) {
-            eq_single_t band_out = 0;
-            err = sbs_process_band(j, in, &band_out);
-            acc_out += band_out;
-        }
-        *out = acc_out;
+			return no_error;
+		}
 
-        return err;
-    }
+		return invalid_input_data_error;
+	}
 
-    filter_type get_eq_type(){return current_eq_type_;}
-    const char* get_string_eq_type(){return get_eq_text(current_eq_type_);}
-    unsigned int get_number_of_bands() {
-        return freq_grid_.get_number_of_bands();
-    }
-    const char* get_version(){return eq_version;}
+	eq_error_t SBSProcess(eq_double_t *in, eq_double_t *out)
+	{
+		*out = filters[currentFilterIndex]->process(*in);
+
+		return no_error;
+	}
 };
 
-//!!! New functionality
-
-// ------------ eq_channel ------------
-// Precomputed equalizer channel, 
-// consists of vector of filters for every gain value
-class eq_channel
+static const char *getFilterName(filter_type type)
 {
-    eq_single_t f0_;
-    eq_single_t fb_;
-    eq_single_t sampling_frequency_;
-    eq_single_t min_max_gain_db_;
-    eq_single_t gain_step_db_;
-    
-    unsigned int current_filter_index_;
-    eq_single_t current_gain_db_;
-    
-    std::vector<bp_filter*> filters_;
-    filter_type current_channel_type_;
-    
-    eq_channel(){}
-    
-    unsigned int get_flt_index(eq_single_t gain_db) {
-        unsigned int number_of_filters = filters_.size();
-        eq_single_t scale_coef = gain_db/min_max_gain_db_;
-        return (number_of_filters/2) + (number_of_filters/2)*scale_coef;
-    }
-    
-    void cleanup_filters_array() {
-        for(unsigned int j = 0; j < filters_.size(); j++)
-            delete filters_[j];
-    }
-    
-public:
-    eq_channel(filter_type ft,
-        eq_single_t fs, eq_single_t f0, eq_single_t fb,
-        eq_single_t min_max_gain_db = p_eq_min_max_gain_db,
-        eq_single_t step_db = p_eq_gain_step_db) {
-        
-        //Init data fields
-        sampling_frequency_ = fs;
-        f0_ = f0;
-        fb_ = fb;
-        min_max_gain_db_ = min_max_gain_db;
-        gain_step_db_ = step_db;
-        
-        current_gain_db_ = 0;
-        current_filter_index_ = 0;
-        
-        current_channel_type_ = ft;
-        
-        set_channel(current_channel_type_, sampling_frequency_);
-    }
-    
-    ~eq_channel(){cleanup_filters_array();}
-    
-    eq_error_t set_channel(filter_type ft, eq_single_t fs) {
-        
-        eq_double_t wb = conversions::hz_2_rad(fb_, sampling_frequency_);
-        eq_double_t w0 = conversions::hz_2_rad(f0_, sampling_frequency_);
-        
-        for(eq_single_t gain = -min_max_gain_db_; gain <= min_max_gain_db_; 
-                gain+= gain_step_db_)  {
+	switch(type) {
+	case butterworth:
+		return "butterworth";
+	case chebyshev1:
+		return "chebyshev1";
+	case chebyshev2:
+		return "chebyshev2";
+	case elliptic:
+		return "elliptic";
+	default:
+		return "none";
+	}
+}
 
-              switch(ft) {
-                case (butterworth): {
-                    eq_single_t bw_gain = 
-                        butterworth_bp_filter::compute_bw_gain_db(gain);
-                
-                    butterworth_bp_filter* bf = 
-                            new butterworth_bp_filter(
-                                default_eq_band_filters_order,
-                                w0,
-                                wb,
-                                gain,
-                                bw_gain,
-                                p_eq_default_gain_db
-                                );
-                               
-                    filters_.push_back(bf);
-                    break;
-                }
-                case (chebyshev1): {
-                    eq_single_t bw_gain = 
-                        chebyshev_type1_bp_filter::compute_bw_gain_db(gain);
-                    
-                    chebyshev_type1_bp_filter* cf1 = 
-                        new chebyshev_type1_bp_filter(
-                            default_eq_band_filters_order,
-                            w0,
-                            wb,
-                            gain,
-                            bw_gain,
-                            p_eq_default_gain_db
-                            );
+/*
+ * Main equalizer class.
+ */
+class Eq {
+	Conversions conv;
+	eq_double_t samplingFrequency;
+	FrequencyGrid freqGrid;
+	std::vector<EqChannel*> channels;
+	filter_type currentEqType;
 
-                    filters_.push_back(cf1);
-                    break;
-                }
-                case (chebyshev2): {
-                    eq_single_t bw_gain = 
-                        chebyshev_type2_bp_filter::compute_bw_gain_db(gain);
-                    
-                    chebyshev_type2_bp_filter* cf2 = 
-                        new chebyshev_type2_bp_filter(
-                            default_eq_band_filters_order,
-                            w0,
-                            wb,
-                            gain,
-                            bw_gain,
-                            p_eq_default_gain_db
-                            );
-
-                    filters_.push_back(cf2);
-                    break;
-                }
-                default: {
-                    current_channel_type_ = none;
-                    return invalid_input_data_error;
-                }
-            }
-        }
-        
-        //Get current filter index
-        current_gain_db_ = 0;
-        current_filter_index_ = get_flt_index(current_gain_db_);	
-        
-        return no_error;
-    }
-    
-    eq_error_t set_gain_db(eq_single_t db) {
-        if (db > -min_max_gain_db_ && db < min_max_gain_db_) {
-            current_gain_db_ = db;
-            current_filter_index_ = get_flt_index(db);
-        } else {
-            return invalid_input_data_error;
-        }
-
-        return no_error;
-    }
-    
-    eq_error_t sbs_process(eq_single_t *in, eq_single_t *out) {
-        *out = filters_[current_filter_index_]->process(*in);
-        return no_error;
-    }
-};
-
-// ------------ eq2 ------------
-// Precomputed equalizer 
-
-class eq2
-{
-    conversions conv_;
-    eq_double_t sampling_frequency_;
-    freq_grid freq_grid_;
-    std::vector<eq_channel*> channels_;
-    filter_type current_eq_type_;
-    
-    void cleanup_channels_array() {
-        for(unsigned int j = 0; j < channels_.size(); j++)
-            delete channels_[j];
-    }
+	void cleanupChannelsArray()
+	{
+		for(size_t j = 0; j < channels.size(); j++)
+			delete channels[j];
+	}
 
 public:
-    eq2(freq_grid &fg, filter_type eq_t) : conv_(eq_min_max_gain_db) {
-        sampling_frequency_ = default_sample_freq_hz;
-        freq_grid_ = fg;
-        current_eq_type_ = eq_t;
-        set_eq(freq_grid_, eq_t);
-    }
-    ~eq2(){cleanup_channels_array();}
-    
-    eq_error_t set_eq(const freq_grid& fg, filter_type ft) {
-        cleanup_channels_array();
-        channels_.clear();
-        freq_grid_ = fg;
+	Eq(FrequencyGrid &fg, filter_type eq_t) : conv(46)
+	{
+		samplingFrequency = defaultSampleFreqHz;
+		freqGrid = fg;
+		currentEqType = eq_t;
+		setEq(freqGrid, currentEqType);
+	}
 
-        for(unsigned int i = 0; i < freq_grid_.get_number_of_bands(); i++) {
-            band_freqs b_fres = freq_grid_.get_freqs()[i];
-            
-            eq_channel* eq_ch = new eq_channel(ft, sampling_frequency_, 
-                b_fres.center_freq, b_fres.max_freq - b_fres.min_freq);
-            
-            channels_.push_back(eq_ch);
-            channels_[i]->set_gain_db(p_eq_default_gain_db);
-        }
+	~Eq()
+	{
+		cleanupChannelsArray();
+	}
 
-        current_eq_type_ = ft;
-        return no_error;
-    }
+	eq_error_t setEq(const FrequencyGrid& fg, filter_type ft)
+	{
+		cleanupChannelsArray();
+		channels.clear();
 
-    eq_error_t set_eq(filter_type ft) {
-        eq_error_t err = set_eq(freq_grid_, ft);
-        return err;
-    }
-    
-    eq_error_t set_sample_rate(eq_double_t sr) {
-        sampling_frequency_ = sr;
-        eq_error_t err = set_eq(current_eq_type_); 
-        return err;
-    }
-    
-    eq_error_t change_gains(std::vector<eq_single_t> band_gains) {
-        if(channels_.size() == band_gains.size()) {
-            for(unsigned int j = 0; j < channels_.size(); j++)
-                channels_[j]->set_gain_db(conv_.fast_lin_2_db(band_gains[j]));
-            return no_error;
-        } else
-            return invalid_input_data_error;
-        
-    }
-    
-    eq_error_t change_gains_db(std::vector<eq_single_t> band_gains) {
-        if(channels_.size() == band_gains.size()) {
-            for(unsigned int j = 0; j < channels_.size(); j++)
-                channels_[j]->set_gain_db(band_gains[j]);
-            return no_error;
-        } else
-            return invalid_input_data_error;
-        
-    }
-    
-    eq_error_t change_band_gain(unsigned int band_number, 
-        eq_single_t band_gain) {
-        if(band_number < channels_.size()) {
-            channels_[band_number]->set_gain_db(conv_.fast_lin_2_db(band_gain));
-            return no_error;
-        } else
-            return invalid_input_data_error;
-    }
-    
-    eq_error_t change_band_gain_db(unsigned int band_number, 
-        eq_single_t band_gain) {
-        if(band_number < channels_.size()) {
-            channels_[band_number]->set_gain_db(band_gain);
-            return no_error;
-        } else
-            return invalid_input_data_error;
+		freqGrid = fg;
+		currentEqType = ft;
 
-    }
-    
-    eq_error_t sbs_process_band(unsigned int band_number, 
-        eq_single_t *in, eq_single_t *out) {
-        if(band_number < get_number_of_bands())
-            channels_[band_number]->sbs_process(in, out);
-        else
-            return invalid_input_data_error; 
-            
-        return no_error;
-    }
-    
-    eq_error_t sbs_process(eq_single_t *in, eq_single_t *out) {
-        eq_error_t err = no_error;
-        eq_single_t in_out = *in;
-        for(unsigned int i = 0; i < get_number_of_bands(); i++) 
-            err = sbs_process_band(i,&in_out,&in_out);
-        
-        *out = in_out;
-        
-        return err;
-    }
-    
-    filter_type get_eq_type(){return current_eq_type_;}
-    const char* get_string_eq_type(){return get_eq_text(current_eq_type_);}
-    unsigned int get_number_of_bands() {
-        return freq_grid_.get_number_of_bands();
-    }
-    const char* get_version(){return eq_version;}
+		for (size_t i = 0; i < freqGrid.getNumberOfBands(); i++) {
+			Band bFres = freqGrid.getFreqs()[i];
+
+			EqChannel* eq_ch = new EqChannel(ft, samplingFrequency,
+			    bFres.centerFreq, bFres.maxFreq - bFres.minFreq);
+
+			channels.push_back(eq_ch);
+			channels[i]->setGainDb(eqDefaultGainDb);
+		}
+
+		return no_error;
+	}
+
+	eq_error_t setEq(filter_type ft)
+	{
+		return setEq(freqGrid, ft);
+	}
+
+	eq_error_t setSampleRate(eq_double_t sr)
+	{
+		samplingFrequency = sr;
+
+		return setEq(currentEqType);
+	}
+
+	eq_error_t changeGains(const std::vector<eq_double_t>& bandGains)
+	{
+		if (channels.size() == bandGains.size())
+			for(size_t j = 0; j < channels.size(); j++)
+				channels[j]->setGainDb(conv.fastLin2Db(bandGains[j]));
+		else
+			return invalid_input_data_error;
+
+		return no_error;
+	}
+
+	eq_error_t changeGainsDb(const std::vector<eq_double_t>& bandGains)
+	{
+		if (channels.size() == bandGains.size())
+			for(size_t j = 0; j < channels.size(); j++)
+				channels[j]->setGainDb(bandGains[j]);
+		else
+			return invalid_input_data_error;
+
+		return no_error;
+	}
+
+	eq_error_t changeBandGain(size_t bandNumber, eq_double_t bandGain)
+	{
+		if (bandNumber < channels.size())
+			channels[bandNumber]->setGainDb(conv.fastLin2Db(bandGain));
+		else
+			return invalid_input_data_error;
+
+		return no_error;
+	}
+
+	eq_error_t changeBandGainDb(size_t bandNumber, eq_double_t bandGain)
+	{
+		if (bandNumber < channels.size())
+			channels[bandNumber]->setGainDb(bandGain);
+		else
+			return invalid_input_data_error;
+
+		return no_error;
+	}
+
+	eq_error_t SBSProcessBand(size_t bandNumber, eq_double_t *in,
+	    eq_double_t *out)
+	{
+		if (bandNumber < getNumberOfBands())
+			channels[bandNumber]->SBSProcess(in, out);
+		else
+			return invalid_input_data_error;
+
+		return no_error;
+	}
+
+	eq_error_t SBSProcess(eq_double_t *in, eq_double_t *out)
+	{
+		eq_error_t err = no_error;
+		eq_double_t inOut = *in;
+
+		for (size_t i = 0; i < getNumberOfBands(); i++) {
+			err = SBSProcessBand(i, &inOut, &inOut);
+			if (err)
+				return err;
+		}
+
+		*out = inOut;
+
+		return no_error;
+	}
+
+	filter_type getEqType()
+	{
+		return currentEqType;
+	}
+
+	const char* getStringEqType()
+	{
+		return getFilterName(currentEqType);
+	}
+
+	size_t getNumberOfBands()
+	{
+		return freqGrid.getNumberOfBands();
+	}
+
+	const char *getVersion()
+	{
+		return eq_version;
+	}
 };
 
-} //namespace orfanidis_eq
-#endif //ORFANIDIS_EQ_H_
+} //namespace OrfanidisEq
