@@ -118,15 +118,16 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         g_value_unset(&path);
     }
     
+    GtkComboBoxText *rack_float = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(prefs_builder, "rack-float"));
+    gtk_combo_box_text_append_text(rack_float, "Rows");
+    gtk_combo_box_text_append_text(rack_float, "Columns");
+    gtk_combo_box_set_active(GTK_COMBO_BOX(rack_float), main->get_config()->rack_float);
     GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")), main->get_config()->rack_ears);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")), main->get_config()->win_to_tray);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-start-hidden")), main->get_config()->win_start_hidden);
-    gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 0, 1);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")), 1, 32);
-    gtk_spin_button_set_increments(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 1, 1);
     gtk_spin_button_set_increments(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")), 1, 1);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), main->get_config()->rack_float);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")), main->get_config()->float_size);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-vu-meters")), main->get_config()->vu_meters);
     int response = gtk_dialog_run(GTK_DIALOG(preferences_dlg));
@@ -139,7 +140,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         main->get_config()->rack_ears = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")));
         main->get_config()->win_to_tray = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")));
         main->get_config()->win_start_hidden = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-start-hidden")));
-        main->get_config()->rack_float = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")));
+        main->get_config()->rack_float = gtk_combo_box_get_active(GTK_COMBO_BOX(rack_float));
         main->get_config()->float_size = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")));
         main->get_config()->vu_meters = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-vu-meters")));
         main->get_config()->style = g_value_get_string(&path_);
