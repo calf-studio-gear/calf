@@ -121,6 +121,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")), main->get_config()->rack_ears);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")), main->get_config()->win_to_tray);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-start-hidden")), main->get_config()->win_start_hidden);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 0, 1);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")), 1, 32);
     gtk_spin_button_set_increments(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 1, 1);
@@ -137,6 +138,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path_);
         main->get_config()->rack_ears = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")));
         main->get_config()->win_to_tray = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")));
+        main->get_config()->win_start_hidden = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-start-hidden")));
         main->get_config()->rack_float = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")));
         main->get_config()->float_size = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")));
         main->get_config()->vu_meters = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-vu-meters")));
@@ -812,6 +814,13 @@ static void window_destroy_cb(GtkWindow *window, gtk_main_window *main)
     main->owner->on_main_window_destroy();
 }
 
+static gint window_hide (gtk_main_window *main)
+{
+    main->winstate = describe_window(main->toplevel);
+    gtk_widget_hide(GTK_WIDGET(main->toplevel));
+    return FALSE;
+}
+
 void gtk_main_window::create()
 {
     register_icons();
@@ -900,6 +909,9 @@ void gtk_main_window::create()
     g_signal_connect(GTK_OBJECT(toplevel), "delete_event", G_CALLBACK(window_delete_cb), this);
     
     create_status_icon();
+    
+    if (get_config()->win_start_hidden)
+        g_timeout_add(500, (GSourceFunc)window_hide, this);
 }
 
 void gtk_main_window::create_status_icon()
