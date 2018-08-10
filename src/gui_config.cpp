@@ -7,11 +7,12 @@ using namespace calf_utils;
 
 gui_config::gui_config()
 {
-    rack_float = 0;
-    float_size = 1;
-    rack_ears  = true;
-    vu_meters  = true;
-    style      = "Calf_Default";
+    rack_float  = 0;
+    float_size  = 1;
+    rack_ears   = true;
+    vu_meters   = true;
+    win_to_tray = false;
+    style       = "Calf_Default";
 }
 
 gui_config::~gui_config()
@@ -20,11 +21,12 @@ gui_config::~gui_config()
 
 void gui_config::load(config_db_iface *db)
 {
-    rack_float = db->get_int("rack-float", gui_config().rack_float);
-    float_size = db->get_int("float-size", gui_config().float_size);
-    rack_ears  = db->get_bool("show-rack-ears", gui_config().rack_ears);
-    vu_meters  = db->get_bool("show-vu-meters", gui_config().vu_meters);
-    style      = db->get_string("style", gui_config().style);
+    rack_float  = db->get_int("rack-float", gui_config().rack_float);
+    float_size  = db->get_int("float-size", gui_config().float_size);
+    rack_ears   = db->get_bool("show-rack-ears", gui_config().rack_ears);
+    vu_meters   = db->get_bool("show-vu-meters", gui_config().vu_meters);
+    style       = db->get_string("style", gui_config().style);
+    win_to_tray = db->get_bool("win-to-tray", gui_config().win_to_tray);
 }
 
 void gui_config::save(config_db_iface *db)
@@ -34,6 +36,7 @@ void gui_config::save(config_db_iface *db)
     db->set_bool("show-rack-ears", rack_ears);
     db->set_bool("show-vu-meters", vu_meters);
     db->set_string("style", style);
+    db->set_bool("win-to-tray", win_to_tray);
     db->save();
 }
 

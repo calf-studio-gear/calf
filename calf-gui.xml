@@ -130,10 +130,10 @@
             </child>
             
             <child>
-              <object class="GtkLabel" id="prefs_label_vu_meters">
+              <object class="GtkLabel" id="prefs_label_win_to_tray">
                 <property name="visible">True</property>
                 <property name="xalign">1.0</property>
-                <property name="label" translatable="yes">Show volume meters</property>
+                <property name="label" translatable="yes">Hide Window to Tray</property>
               </object>
               <packing>
                 <property name="top_attach">1</property>
@@ -141,7 +141,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="show-vu-meters">
+              <object class="GtkCheckButton" id="win-to-tray">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -156,14 +156,40 @@
             </child>
             
             <child>
+              <object class="GtkLabel" id="prefs_label_vu_meters">
+                <property name="visible">True</property>
+                <property name="xalign">1.0</property>
+                <property name="label" translatable="yes">Show volume meters</property>
+              </object>
+              <packing>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="show-vu-meters">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            
+            <child>
               <object class="GtkLabel" id="prefs_label_rack_float">
                 <property name="visible">True</property>
                 <property name="xalign">1.0</property>
                 <property name="label" translatable="yes">Float (0=horiz / 1=vert)</property>
               </object>
               <packing>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
               </packing>
             </child>
             <child>
@@ -175,8 +201,8 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
               </packing>
             </child>
             
@@ -187,8 +213,8 @@
                 <property name="label" translatable="yes">Float Size</property>
               </object>
               <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
               </packing>
             </child>
             <child>
@@ -200,8 +226,8 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
               </packing>
             </child>
             
@@ -212,8 +238,8 @@
                 <property name="label" translatable="yes">Style (needs restart)</property>
               </object>
               <packing>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
               </packing>
             </child>
             <child>
@@ -225,8 +251,8 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
               </packing>
             </child>
             

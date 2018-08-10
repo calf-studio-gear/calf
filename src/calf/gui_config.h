@@ -81,6 +81,7 @@ struct gui_config
     int rack_float, float_size;
     bool rack_ears;
     bool vu_meters;
+    bool win_to_tray;
     std::string style;
     
     gui_config();

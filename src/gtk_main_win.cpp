@@ -120,6 +120,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
     
     GtkWidget *preferences_dlg = GTK_WIDGET(gtk_builder_get_object(prefs_builder, "preferences"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")), main->get_config()->rack_ears);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")), main->get_config()->win_to_tray);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 0, 1);
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")), 1, 32);
     gtk_spin_button_set_increments(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")), 1, 1);
@@ -135,6 +136,7 @@ void gtk_main_window::on_preferences_action(GtkWidget *widget, gtk_main_window *
         gtk_combo_box_get_active_iter(cb, &iter);
         gtk_tree_model_get_value(GTK_TREE_MODEL(styles), &iter, 1, &path_);
         main->get_config()->rack_ears = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-rack-ears")));
+        main->get_config()->win_to_tray = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "win-to-tray")));
         main->get_config()->rack_float = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "rack-float")));
         main->get_config()->float_size = gtk_spin_button_get_value(GTK_SPIN_BUTTON(gtk_builder_get_object(prefs_builder, "float-size")));
         main->get_config()->vu_meters = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(prefs_builder, "show-vu-meters")));
@@ -735,9 +737,79 @@ std::string gtk_main_window::make_plugin_list(GtkActionGroup *actions)
     return s + plugin_post_xml;
 }
 
-static void window_destroy_cb(GtkWindow *window, gpointer data)
+
+window_state describe_window (GtkWindow *win)
 {
-    ((gtk_main_window *)data)->owner->on_main_window_destroy();
+    window_state state = {};
+    int x, y, width, height;
+    gtk_window_get_position(win, &x, &y);
+    gtk_window_get_size(win, &width, &height);
+    state.screen = gtk_window_get_screen(win);
+    state.x = x;
+    state.y = y;
+    state.width = width;
+    state.height = height;
+    return state;
+}
+
+void position_window (GtkWidget *win, window_state state)
+{
+    gdk_window_move_resize(win->window, state.x, state.y, state.width, state.height);
+    gtk_window_set_screen(GTK_WINDOW(win), state.screen);
+}
+
+static void tray_activate_cb(GObject *icon, gtk_main_window *main)
+{
+    GtkWidget *widget = GTK_WIDGET(main->toplevel);
+    GtkWindow *window = GTK_WINDOW(widget);
+    GtkWidget *pwid;
+    GtkWindow *pwin;
+    gboolean visible = gtk_widget_get_visible(widget);
+    if (visible) {
+        main->winstate = describe_window(window);
+        gtk_widget_hide(widget);
+        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
+            if (i->second && i->second->gui_win) {
+                pwid = i->second->gui_win->toplevel;
+                pwin = GTK_WINDOW(pwid);
+                i->second->gui_win->winstate = describe_window(pwin);
+                gtk_widget_hide(pwid);
+            }
+        }
+    } else {
+        gtk_widget_show(widget);
+        gtk_window_deiconify(window);
+        position_window(widget, main->winstate);
+        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
+            if (i->second && i->second->gui_win) {
+                pwid = i->second->gui_win->toplevel;
+                pwin = GTK_WINDOW(pwid);
+                gtk_widget_show(pwid);
+                gtk_window_deiconify(pwin);
+                position_window(pwid, i->second->gui_win->winstate);
+            }
+        }
+    }
+}
+
+static void tray_popup_cb(GtkStatusIcon *icon, guint button, guint32 time, gpointer menu)
+{
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
+}
+
+static gint window_delete_cb(GtkWindow *window, GdkEvent *event, gtk_main_window *main)
+{
+    if (main->get_config()->win_to_tray) {
+        tray_activate_cb(NULL, main);
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+static void window_destroy_cb(GtkWindow *window, gtk_main_window *main)
+{
+    main->owner->on_main_window_destroy();
 }
 
 void gtk_main_window::create()
@@ -825,67 +897,9 @@ void gtk_main_window::create()
     notifier = get_config_db()->add_listener(this);
     on_config_change();
     g_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
+    g_signal_connect(GTK_OBJECT(toplevel), "delete_event", G_CALLBACK(window_delete_cb), this);
     
     create_status_icon();
-}
-
-window_state describe_window (GtkWindow *win)
-{
-    window_state state = {};
-    int x, y, width, height;
-    gtk_window_get_position(win, &x, &y);
-    gtk_window_get_size(win, &width, &height);
-    state.screen = gtk_window_get_screen(win);
-    state.x = x;
-    state.y = y;
-    state.width = width;
-    state.height = height;
-    return state;
-}
-
-void position_window (GtkWidget *win, window_state state)
-{
-    gdk_window_move_resize(win->window, state.x, state.y, state.width, state.height);
-    gtk_window_set_screen(GTK_WINDOW(win), state.screen);
-}
-
-static void tray_activate_cb(GObject *icon, gtk_main_window *main)
-{
-    GtkWidget *widget = GTK_WIDGET(main->toplevel);
-    GtkWindow *window = GTK_WINDOW(widget);
-    GtkWidget *pwid;
-    GtkWindow *pwin;
-    gboolean visible = gtk_widget_get_visible(widget);
-    if (visible) {
-        main->winstate = describe_window(window);
-        gtk_widget_hide(widget);
-        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
-            if (i->second && i->second->gui_win) {
-                pwid = i->second->gui_win->toplevel;
-                pwin = GTK_WINDOW(pwid);
-                i->second->gui_win->winstate = describe_window(pwin);
-                gtk_widget_hide(pwid);
-            }
-        }
-    } else {
-        gtk_widget_show(widget);
-        gtk_window_deiconify(window);
-        position_window(widget, main->winstate);
-        for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = main->plugins.begin(); i != main->plugins.end(); ++i) {
-            if (i->second && i->second->gui_win) {
-                pwid = i->second->gui_win->toplevel;
-                pwin = GTK_WINDOW(pwid);
-                gtk_widget_show(pwid);
-                gtk_window_deiconify(pwin);
-                position_window(pwid, i->second->gui_win->winstate);
-            }
-        }
-    }
-}
-
-static void tray_popup_cb(GtkStatusIcon *icon, guint button, guint32 time, gpointer menu)
-{
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
 }
 
 void gtk_main_window::create_status_icon()
