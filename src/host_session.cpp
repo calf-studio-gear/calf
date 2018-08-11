@@ -41,14 +41,16 @@ host_session::host_session(session_environment_iface *se)
     session_env = se;
     autoconnect_midi_index = -1;
     gui_win = NULL;
+    has_gui = true;
     session_manager = NULL;
     only_load_if_exists = false;
     save_file_on_next_idle_call = false;
     quit_on_next_idle_call = 0;
     handle_event_on_next_idle_call = NULL;
-
-    main_win = session_env->create_main_window();
-    main_win->set_owner(this);
+    if (has_gui) {
+        main_win = session_env->create_main_window();
+        main_win->set_owner(this);
+    }
 }
 
 extern "C" plugin_metadata_iface *create_calf_metadata_by_name(const char *effect_name);
@@ -98,7 +100,8 @@ void host_session::add_plugin(string name, string preset, string instance_name)
     
     plugins.push_back(jh);
     client.add(jh);
-    main_win->add_plugin(jh);
+    if (has_gui)
+        main_win->add_plugin(jh);
     if (!preset.empty()) {
         if (!activate_preset(plugins.size() - 1, preset, false))
         {
@@ -130,13 +133,16 @@ void host_session::open()
     
     client.open(client_name.c_str(), !jack_session_id.empty() ? jack_session_id.c_str() : NULL);
     jack_set_session_callback(client.client, session_callback, this);
-    main_win->add_condition("jackhost");
-    main_win->add_condition("directlink");
-    main_win->add_condition("configure");
+    if (has_gui) {
+        main_win->add_condition("jackhost");
+        main_win->add_condition("directlink");
+        main_win->add_condition("configure");
+    }
     client.create_automation_input();
     if (!session_manager || !session_manager->is_being_restored()) 
         create_plugins_from_list();
-    main_win->create();
+    if (has_gui)
+        main_win->create();
 }
 
 void host_session::session_callback(jack_session_event_t *event, void *arg)
@@ -189,7 +195,8 @@ void host_session::new_plugin(const char *name)
     
     plugins.push_back(jh);
     client.add(jh);
-    main_win->add_plugin(jh);
+    if (has_gui)
+        main_win->add_plugin(jh);
 }
 
 void host_session::remove_plugin(plugin_ctl_iface *plugin)
@@ -201,7 +208,8 @@ void host_session::remove_plugin(plugin_ctl_iface *plugin)
             instances.erase(plugins[i]->instance_name);
             client.del(plugins[i]);
             plugins.erase(plugins.begin() + i);
-            main_win->del_plugin(plugin);
+            if (has_gui)
+                main_win->del_plugin(plugin);
             delete plugin;
             return;
         }
@@ -215,7 +223,8 @@ void host_session::rename_plugin(plugin_ctl_iface *plugin, const char *name) {
             instances.erase(plugins[i]->instance_name);
             instances.insert(name_);
             plugins[i]->rename(name_);
-            main_win->rename_plugin(plugin, name_);
+            if (has_gui)
+                main_win->rename_plugin(plugin, name_);
             return;
         }
     }
@@ -228,7 +237,8 @@ void host_session::remove_all_plugins()
         jack_host *plugin = plugins[0];
         client.del(plugins[0]);
         plugins.erase(plugins.begin());
-        main_win->del_plugin(plugin);
+        if (has_gui)
+            main_win->del_plugin(plugin);
         delete plugin;
     }
     instances.clear();
@@ -334,7 +344,8 @@ void host_session::connect()
             // If the file is optional and it didn't exist, suppress the error
             if (!suppress_error)
             {
-                main_win->show_error("Cannot load '" + load_name + "': " + error);
+                if (has_gui)
+                    main_win->show_error("Cannot load '" + load_name + "': " + error);
                 
                 load_name = "";
             }
@@ -350,7 +361,8 @@ void host_session::close()
 {
     if (session_manager)
         session_manager->disconnect();
-    main_win->on_closed();
+    if (has_gui)
+        main_win->on_closed();
     client.deactivate();
     client.delete_plugins();
     client.destroy_automation_input();
@@ -389,7 +401,8 @@ char *host_session::open_file(const char *name)
                     const pair<string, string> &p = ps.automation_entries[j];
                     plugins[i]->configure(p.first.c_str(), p.second.c_str());
                 }
-                main_win->refresh_plugin(plugins[i]);
+                if (has_gui)
+                    main_win->refresh_plugin(plugins[i]);
             }
         }
     }
@@ -503,7 +516,8 @@ void host_session::load(session_load_iface *stream)
                 printf("Load plugin %s\n", tmp.presets[0].plugin.c_str());
                 add_plugin(tmp.presets[0].plugin, "", instance_name);
                 tmp.presets[0].activate(plugins[nplugin]);
-                main_win->refresh_plugin(plugins[nplugin]);
+                if (has_gui)
+                    main_win->refresh_plugin(plugins[nplugin]);
                 for(dictionary::const_iterator i = automation.begin(); i != automation.end(); ++i)
                     plugins[nplugin]->configure(i->first.c_str(), i->second.c_str());
             }
@@ -570,7 +584,8 @@ void host_session::on_idle()
     if (save_file_on_next_idle_call)
     {
         save_file_on_next_idle_call = false;
-        main_win->save_file();
+        if (has_gui)
+            main_win->save_file();
         printf("LADISH Level 1 support: file '%s' saved\n", get_current_filename().c_str());
     }
 
@@ -625,5 +640,6 @@ void host_session::set_current_filename(const std::string &name)
 
 host_session::~host_session()
 {
-    delete main_win;
+    if (has_gui)
+        delete main_win;
 }

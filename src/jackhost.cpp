@@ -417,7 +417,7 @@ char *jack_host::configure(const char *key, const char *value)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char *short_options = "c:i:l:o:m:M:s:S:ehvL";
+static const char *short_options = "c:i:l:o:m:M:s:S:ehvLn";
 
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
@@ -432,14 +432,15 @@ static struct option long_options[] = {
     {"connect-midi", 1, 0, 'M'},
     {"session-id", 1, 0, 'S'},
     {"list", 0, 0, 'L'},
+    {"no-gui", 0, 0, 'n'},
     {0,0,0,0},
 };
 
 void print_help(char *argv[])
 {
     printf("JACK host for Calf effects\n"
-        "Syntax: %s [--client <name>] [--input <name>] [--output <name>] [--midi <name>] [--load|state <session>]\n"
-        "       [--connect-midi <name|capture-index>] [--help] [--version] [--list] [!] pluginname[:<preset>] [!] ...\n", 
+        "Syntax: %s [--client, -c <name>] [--input, -i <name>] [--output, -o <name>] [--midi, -m <name>] [--load|state, -l|s <session>]\n"
+        "       [--connect-midi, -M <name|capture-index>] [--help, -h] [--version, -v] [--list, -L] [--no-gui, -n] [!] pluginname[:<preset>] [!] ...\n", 
         argv[0]);
 }
 
@@ -510,6 +511,9 @@ int main(int argc, char *argv[])
                 break;
             case 'S':
                 sess.jack_session_id = optarg;
+                break;
+            case 'n':
+                sess.has_gui = false;
                 break;
             case 'l':
             case 's':
