@@ -256,8 +256,8 @@ struct lv2_wrapper
     }
     
     static lv2_wrapper &get() { 
-        static lv2_wrapper *instance = new lv2_wrapper;
-        return *instance;
+        static lv2_wrapper instance;
+        return instance;
     }
 };
 
