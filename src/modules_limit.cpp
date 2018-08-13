@@ -59,9 +59,11 @@ void limiter_audio_module::deactivate()
 }
 void limiter_audio_module::set_srates()
 {
-    resampler[0].set_params(srate, *params[param_oversampling], 2);
-    resampler[1].set_params(srate, *params[param_oversampling], 2);
-    limiter.set_sample_rate(srate * *params[param_oversampling]);
+    if (params[param_oversampling]) {
+        resampler[0].set_params(srate, *params[param_oversampling], 2);
+        resampler[1].set_params(srate, *params[param_oversampling], 2);
+        limiter.set_sample_rate(srate * *params[param_oversampling]);
+    }
 }
 void limiter_audio_module::params_changed()
 {

@@ -1361,7 +1361,7 @@ resampleN::~resampleN()
 }
 void resampleN::set_params(uint32_t sr, int fctr = 2, int fltrs = 2)
 {
-    srate   = std::max(2, sr);
+    srate   = std::max(2u, sr);
     factor  = std::min(16, std::max(1, fctr));
     filters = std::min(4, std::max(1, fltrs));
     // set all filters
