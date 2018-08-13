@@ -52,6 +52,7 @@ equalizerNband_audio_module<BaseClass, has_lphp>::equalizerNband_audio_module()
     hp_freq_old = lp_freq_old = hp_q_old = 0;
     hs_freq_old = ls_freq_old = lp_q_old = 0;
     hs_level_old = ls_level_old = 0;
+    hs_q_old = ls_q_old = 0;
     keep_gliding = 0;
     last_peak = 0;
     indiv_old = -1;
