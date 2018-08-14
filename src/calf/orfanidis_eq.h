@@ -79,9 +79,7 @@ class Conversions {
 
 	Conversions();
 	Conversions(const Conversions&);
-	Conversions(const Conversions&&);
 	Conversions& operator= (const Conversions&);
-	Conversions& operator= (Conversions&&);
 
 public:
 	Conversions(int range)
@@ -400,12 +398,17 @@ protected:
 
 public:
 	FOSection() : b0(1), b1(0), b2(0), b3(0), b4(0),
-	    a0(1), a1(0), a2(0), a3(0), a4(0), numBuf{0}, denumBuf{0}
-	{}
-
-	FOSection(std::vector<eq_double_t>& b, std::vector<eq_double_t> a) :
-	    numBuf{0}, denumBuf{0}
+	    a0(1), a1(0), a2(0), a3(0), a4(0)
 	{
+		memset(numBuf, 0, sizeof(numBuf));
+		memset(denumBuf, 0, sizeof(denumBuf));
+	}
+
+	FOSection(std::vector<eq_double_t>& b, std::vector<eq_double_t> a)
+	{
+		memset(numBuf, 0, sizeof(numBuf));
+		memset(denumBuf, 0, sizeof(denumBuf));
+
 		b0 = b[0]; b1 = b[1]; b2 = b[2]; b3 = b[3]; b4 = b[4];
 		a0 = a[0]; a1 = a[1]; a2 = a[2]; a3 = a[3]; a4 = a[4];
 	}
@@ -468,21 +471,19 @@ public:
 			eq_double_t si = sin(M_PI * ui / 2.0);
 			eq_double_t Di = beta*beta + 2*si*beta + 1;
 
-			std::vector<eq_double_t> B = {
-			    (g*g*beta*beta + 2*g*g0*si*beta + g0*g0)/Di,
-			    -4*c0*(g0*g0 + g*g0*si*beta)/Di,
-			    2*(g0*g0*(1 + 2*c0*c0) - g*g*beta*beta)/Di,
-			    -4*c0*(g0*g0 - g*g0*si*beta)/Di,
-			    (g*g*beta*beta - 2*g*g0*si*beta + g0*g0)/Di
-			};
+			std::vector<eq_double_t> B;
+			B.push_back((g*g*beta*beta + 2*g*g0*si*beta + g0*g0)/Di);
+			B.push_back(-4*c0*(g0*g0 + g*g0*si*beta)/Di);
+			B.push_back(2*(g0*g0*(1 + 2*c0*c0) - g*g*beta*beta)/Di);
+			B.push_back(-4*c0*(g0*g0 - g*g0*si*beta)/Di);
+			B.push_back((g*g*beta*beta - 2*g*g0*si*beta + g0*g0)/Di);
 
-			std::vector<eq_double_t> A = {
-			    1,
-			    -4*c0*(1 + si*beta)/Di,
-			    2*(1 + 2*c0*c0 - beta*beta)/Di,
-			    -4*c0*(1 - si*beta)/Di,
-			    (beta*beta - 2*si*beta + 1)/Di
-			};
+			std::vector<eq_double_t> A;
+			A.push_back(1);
+			A.push_back(-4*c0*(1 + si*beta)/Di);
+			A.push_back(2*(1 + 2*c0*c0 - beta*beta)/Di);
+			A.push_back(-4*c0*(1 - si*beta)/Di);
+			A.push_back((beta*beta - 2*si*beta + 1)/Di);
 
 			sections.push_back(FOSection(B, A));
 		}
@@ -558,21 +559,19 @@ public:
 			eq_double_t Di = (a*a + ci*ci) * tetta_b * tetta_b +
 			    2.0 * a * si * tetta_b + 1;
 
-			std::vector<eq_double_t> B = {
-			    ((b*b + g0*g0*ci*ci)*tetta_b*tetta_b + 2*g0*b*si*tetta_b + g0*g0)/Di,
-			    -4*c0*(g0*g0 + g0*b*si*tetta_b)/Di,
-			    2*(g0*g0*(1 + 2*c0*c0) - (b*b + g0*g0*ci*ci)*tetta_b*tetta_b)/Di,
-			    -4*c0*(g0*g0 - g0*b*si*tetta_b)/Di,
-			    ((b*b + g0*g0*ci*ci)*tetta_b*tetta_b - 2*g0*b*si*tetta_b + g0*g0)/Di
-			};
+			std::vector<eq_double_t> B;
+			B.push_back(((b*b + g0*g0*ci*ci)*tetta_b*tetta_b + 2*g0*b*si*tetta_b + g0*g0)/Di);
+			B.push_back(-4*c0*(g0*g0 + g0*b*si*tetta_b)/Di);
+			B.push_back(2*(g0*g0*(1 + 2*c0*c0) - (b*b + g0*g0*ci*ci)*tetta_b*tetta_b)/Di);
+			B.push_back(-4*c0*(g0*g0 - g0*b*si*tetta_b)/Di);
+			B.push_back(((b*b + g0*g0*ci*ci)*tetta_b*tetta_b - 2*g0*b*si*tetta_b + g0*g0)/Di);
 
-			std::vector<eq_double_t> A = {
-			    1,
-			    -4*c0*(1 + a*si*tetta_b)/Di,
-			    2*(1 + 2*c0*c0 - (a*a + ci*ci)*tetta_b*tetta_b)/Di,
-			    -4*c0*(1 - a*si*tetta_b)/Di,
-			    ((a*a + ci*ci)*tetta_b*tetta_b - 2*a*si*tetta_b + 1)/Di
-			};
+			std::vector<eq_double_t> A;
+			A.push_back(1);
+			A.push_back(-4*c0*(1 + a*si*tetta_b)/Di);
+			A.push_back(2*(1 + 2*c0*c0 - (a*a + ci*ci)*tetta_b*tetta_b)/Di);
+			A.push_back(-4*c0*(1 - a*si*tetta_b)/Di);
+			A.push_back(((a*a + ci*ci)*tetta_b*tetta_b - 2*a*si*tetta_b + 1)/Di);
 
 			sections.push_back(FOSection(B, A));
 		}
@@ -646,21 +645,19 @@ public:
 			eq_double_t Di = tetta_b*tetta_b + 2*a*si*tetta_b +
 			    a*a + ci*ci;
 
-			std::vector<eq_double_t> B = {
-			    (g*g*tetta_b*tetta_b + 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di,
-			    -4*c0*(b*b + g*g*ci*ci + g*b*si*tetta_b)/Di,
-			    2*((b*b + g*g*ci*ci)*(1 + 2*c0*c0) - g*g*tetta_b*tetta_b)/Di,
-			    -4*c0*(b*b + g*g*ci*ci - g*b*si*tetta_b)/Di,
-			    (g*g*tetta_b*tetta_b - 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di
-			};
+			std::vector<eq_double_t> B;
+			B.push_back((g*g*tetta_b*tetta_b + 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di);
+			B.push_back(-4*c0*(b*b + g*g*ci*ci + g*b*si*tetta_b)/Di);
+			B.push_back(2*((b*b + g*g*ci*ci)*(1 + 2*c0*c0) - g*g*tetta_b*tetta_b)/Di);
+			B.push_back(-4*c0*(b*b + g*g*ci*ci - g*b*si*tetta_b)/Di);
+			B.push_back((g*g*tetta_b*tetta_b - 2*g*b*si*tetta_b + b*b + g*g*ci*ci)/Di);
 
-			std::vector<eq_double_t> A = {
-			    1,
-			    -4*c0*(a*a + ci*ci + a*si*tetta_b)/Di,
-			    2*((a*a + ci*ci)*(1 + 2*c0*c0) - tetta_b*tetta_b)/Di,
-			    -4*c0*(a*a + ci*ci - a*si*tetta_b)/Di,
-			    (tetta_b*tetta_b - 2*a*si*tetta_b + a*a + ci*ci)/Di
-			};
+			std::vector<eq_double_t> A;
+			A.push_back(1);
+			A.push_back(-4*c0*(a*a + ci*ci + a*si*tetta_b)/Di);
+			A.push_back(2*((a*a + ci*ci)*(1 + 2*c0*c0) - tetta_b*tetta_b)/Di);
+			A.push_back(-4*c0*(a*a + ci*ci - a*si*tetta_b)/Di);
+			A.push_back((tetta_b*tetta_b - 2*a*si*tetta_b + a*a + ci*ci)/Di);
 
 			sections.push_back(FOSection(B, A));
 		}
@@ -700,6 +697,11 @@ private:
 	std::vector<FOSection> sections;
 
 	EllipticTypeBPFilter() {}
+
+	std::complex<eq_double_t> arccos(std::complex<eq_double_t> z)
+	{
+		return -j*log(z + sqrt(z*z - 1.0));
+	}
 
 	/*
 	 * Landen transformations of an elliptic modulus.
@@ -747,7 +749,7 @@ private:
 			std::transform(v.begin(), v.end(), v.begin(),
 			    bind2nd(std::plus<eq_double_t>(), 1.0));
 
-			K = std::accumulate(begin(v), end(v),
+			K = std::accumulate(v.begin(), v.end(),
 			    1, std::multiplies<eq_double_t>()) * M_PI/2.0;
 		}
 
@@ -763,7 +765,7 @@ private:
 			std::transform(vp.begin(), vp.end(), vp.begin(),
 			    bind2nd(std::plus<eq_double_t>(), 1.0));
 
-			Kprime = std::accumulate(std::begin(vp), std::end(vp),
+			Kprime = std::accumulate(vp.begin(), vp.end(),
 			    1.0, std::multiplies<eq_double_t>()) * M_PI/2.0;
 		}
 	}
@@ -794,7 +796,7 @@ private:
 	{
 		eq_double_t z = remainder(x, y);
 
-		return z - y * std::copysign(1.0, z) * ((eq_double_t)(abs(z) > y / 2.0));
+		return z - y * copysign(1.0, z) * ((eq_double_t)(abs(z) > y / 2.0));
 	}
 
 	/*
@@ -815,7 +817,7 @@ private:
 			w = w / (1.0 + sqrt(1.0 - w*w * v1*v1)) * 2.0/(1 + v[i]);
 		}
 
-		std::complex<eq_double_t> u = 2.0 / M_PI * acos(w);
+		std::complex<eq_double_t> u = 2.0 / M_PI * arccos(w);
 		eq_double_t K, Kprime;
 		ellipk(k ,tol, K, Kprime);
 
@@ -881,7 +883,7 @@ private:
 		} else {
 			eq_double_t kc = sqrt(1 - k1*k1);
 			std::vector<eq_double_t> w = sne(ui, kc, tol);
-			eq_double_t prod = std::accumulate(begin(w), end(w),
+			eq_double_t prod = std::accumulate(w.begin(), w.end(),
 			    1.0, std::multiplies<eq_double_t>());
 			eq_double_t kp = pow(kc, N) * pow(prod, 4);
 
@@ -898,7 +900,7 @@ private:
 		eq_double_t c0 = cos(w0);
 		size_t K = aSections.size();
 
-		std::vector<std::vector<eq_double_t>> B, A, Bhat, Ahat;
+		std::vector<std::vector<eq_double_t> > B, A, Bhat, Ahat;
 		for (size_t i = 0; i < K; i++) {
 			B.push_back(std::vector<eq_double_t>(5));
 			A.push_back(std::vector<eq_double_t>(5));
@@ -1003,7 +1005,7 @@ public:
 	EllipticTypeBPFilter(size_t N,
 	    eq_double_t w0, eq_double_t wb,
 	    eq_double_t G, eq_double_t Gb) :
-	    j(std::complex_literals::operator""i(static_cast<long double>(1.0)))
+	    j(std::complex<long double>(0.0L, 1.0L))
 	{
 		/* Case if G == 0 : allpass. */
 		if(G == 0) {
