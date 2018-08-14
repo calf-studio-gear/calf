@@ -897,10 +897,10 @@ void gtk_main_window::create()
     
     gtk_window_add_accel_group(toplevel, gtk_ui_manager_get_accel_group(ui_mgr));
     
-    gtk_widget_show(GTK_WIDGET(toplevel));
     gtk_widget_show(GTK_WIDGET(strips_table));
     gtk_widget_show(GTK_WIDGET(evbox));
     gtk_widget_show(GTK_WIDGET(all_vbox));
+    gtk_widget_show(GTK_WIDGET(toplevel));
     
     source_id = g_timeout_add_full(G_PRIORITY_DEFAULT, 1000/30, on_idle, this, NULL); // 30 fps should be enough for everybody
     
@@ -912,7 +912,7 @@ void gtk_main_window::create()
     create_status_icon();
     
     if (get_config()->win_start_hidden)
-        g_timeout_add(500, (GSourceFunc)window_hide, this);
+        g_idle_add((GSourceFunc)window_hide, this);
 }
 
 void gtk_main_window::create_status_icon()
