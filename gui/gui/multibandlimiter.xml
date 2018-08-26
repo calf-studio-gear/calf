@@ -42,6 +42,11 @@
     <frame label="Limit" expand="0" fill="1" attach-x="0" attach-y="0">
         <hbox spacing="2">
             <vbox>
+                 <label param="auto_level"/>
+                 <toggle param="auto_level" />
+                 <label />
+            </vbox>
+            <vbox>
                  <label param="oversampling"/>
                  <knob param="oversampling" size="3" ticks="1 2 3 4"/>
                  <value param="oversampling"/>

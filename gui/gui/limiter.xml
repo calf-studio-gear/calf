@@ -34,6 +34,11 @@
         <hbox homogenous="1" spacing="25">
             <label/>
             <vbox>
+                 <label param="auto_level"/>
+                 <toggle param="auto_level" />
+                 <label />
+            </vbox>
+            <vbox>
                  <label param="oversampling"/>
                  <knob param="oversampling" size="3" ticks="1 2 3 4"/>
                  <value param="oversampling"/>

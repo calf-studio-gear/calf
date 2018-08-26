@@ -34,7 +34,8 @@
                 <li><strong>Output (knob):</strong> Raise the overall volume after the compression stage</li>
                 <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
 
-                <li><strong>Limit:</strong> Don't let signals above this level pass the limiter. The removed amplitude is added automatically.</li>
+                <li><strong>Limit:</strong> Don't let signals above this level pass the limiter.</li>
+                <li><strong>Auto-level:</strong> If enabled, scales the output signal to 0 dBFS, effectively applying a gain equal to the inverse of the limit setting - adding back the removed amplitude in the process.</li>
                 <li><strong>Lookahead:</strong> The Limiter will reach its attenuation level in this amount of time (output will be delayed two times this time)</li>
                 <li><strong>Min Release:</strong>Don't let the release time fall beneath 2.5 times the lowest possible wavelength per band</li>
                 <li><strong>Release:</strong> Come back from limiting to attenuation 1.0 in this amount of milliseconds</li>
