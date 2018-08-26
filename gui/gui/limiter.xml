@@ -15,29 +15,26 @@
         
         <label attach-x="3" attach-y="0" expand-x="0"  param="bypass"/>
         <toggle attach-x="3" attach-y="1" expand-x="0" attach-h="2" param="bypass" icon="bypass"/>
-                 
-        <label attach-x="4" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="4" attach-y="2" expand-x="1" />
-        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="4" attach-y="3" expand-x="1" />
         
-        <label attach-x="5" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="5" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="5" attach-y="2" expand-x="0" />
+        <label param="auto_level" attach-x="4" attach-y="0" expand-x="0"/>
+        <toggle param="auto_level" attach-x="4" attach-y="1" attach-h="2" expand-x="0"/>
         
-        <label param="level_out" attach-x="6" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="6" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="6" attach-y="3" expand-x="0" />
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
     </table>
 
     <frame attach-x="0" attach-y="1" label="Limit" expand="0" fill="1">
-        <hbox homogenous="1" spacing="25">
-            <label/>
-            <vbox>
-                 <label param="auto_level"/>
-                 <toggle param="auto_level" />
-                 <label />
-            </vbox>
+        <hbox homogeneous="1" spacing="25">
             <vbox>
                  <label param="oversampling"/>
                  <knob param="oversampling" size="3" ticks="1 2 3 4"/>
@@ -61,12 +58,11 @@
             <vbox>
                  <label param="asc"/>
                  <align><toggle param="asc" /></align>
-                 <hbox>
+                 <align><hbox spacing="8">
                     <knob param="asc_coeff" size="1" type="1" />
                     <align><led param="asc_led" /></align>
-                </hbox>
+                </hbox></align>
             </vbox>
-            <label/>
         </hbox>
     </frame>
 

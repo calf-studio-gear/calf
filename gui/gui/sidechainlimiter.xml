@@ -23,17 +23,20 @@
         <label param="bypass" attach-x="5" attach-y="0" expand-x="0" />
         <toggle param="bypass" attach-x="5" attach-y="1" attach-h="2" expand-x="0" pad-x="10"/>
         
-        <label attach-x="6" attach-y="0" expand-x="1" text="Output level"/>
-        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="1" expand-x="1" />
-        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="6" attach-y="2" expand-x="1" />
+        <label param="auto_level" attach-x="6" attach-y="0" expand-x="0"/>
+        <toggle param="auto_level" attach-x="6" attach-y="1" attach-h="2" expand-x="0"/>
         
-        <label attach-x="7" attach-y="0" expand-x="0" text="Clip"/>
-        <led param="clip_outL" mode="1" attach-x="7" attach-y="1" expand-x="0" />
-        <led param="clip_outR" mode="1" attach-x="7" attach-y="2" expand-x="0" />
+        <label attach-x="7" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="7" attach-y="2" expand-x="1" />
         
-        <label param="level_out" attach-x="8" attach-y="0" expand-x="0" />
-        <knob param="level_out" attach-x="8" attach-y="1" attach-h="2" expand-x="0" type="1" />
-        <value param="level_out" attach-x="8" attach-y="3" expand-x="0" />
+        <label attach-x="8" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="8" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="8" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="9" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="9" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="9" attach-y="3" expand-x="0" />
     </table>
 
     <frame label="X-Over" attach-x="1" attach-y="0">
@@ -52,11 +55,6 @@
         
     <frame label="Limit" expand="0" fill="1" attach-x="0" attach-y="0">
         <hbox spacing="2">
-            <vbox>
-                 <label param="auto_level"/>
-                 <toggle param="auto_level" />
-                 <label />
-            </vbox>
             <vbox>
                  <label param="oversampling"/>
                  <knob param="oversampling" size="3"/>
