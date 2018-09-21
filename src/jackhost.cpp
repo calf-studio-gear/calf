@@ -460,7 +460,8 @@ int main(int argc, char *argv[])
         sess.calfjackhost_cmd = path;
         free(path);
     }
-    sess.session_env->init_gui(argc, argv);
+    if (sess.has_gui)
+        sess.session_env->init_gui(argc, argv);
     
     // Scan the options for the first time to find switches like --help, -h or -?
     // This avoids starting communication with LASH when displaying help text.
@@ -578,8 +579,13 @@ int main(int argc, char *argv[])
         sess.connect();
         sess.client.activate();
         sess.set_signal_handlers();
-        sess.session_env->start_gui_loop();
-        sess.close();
+        if (sess.has_gui) {
+            sess.session_env->start_gui_loop();
+            sess.close();
+        } else {
+            while (1)
+                sleep(1);
+        }
     }
     catch(std::exception &e)
     {
