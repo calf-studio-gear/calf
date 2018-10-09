@@ -74,6 +74,7 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
         new_sfid = sid;
 
         fluid_sfont_t* sfont = fluid_synth_get_sfont(s, 0);
+#if FLUIDSYNTH_VERSION_MAJOR < 2
         soundfont_name = (*sfont->get_name)(sfont);
 
         sfont->iteration_start(sfont);
@@ -92,6 +93,26 @@ fluid_synth_t *fluidsynth_audio_module::create_synth(int &new_sfid)
             if (first_preset == -1)
                 first_preset = id;
         }
+#else
+        soundfont_name = fluid_sfont_get_name(sfont);
+
+        fluid_sfont_iteration_start(sfont);
+
+        string preset_list;
+        fluid_preset_t* tmp;
+        int first_preset = -1;
+        while((tmp = fluid_sfont_iteration_next(sfont)))
+        {
+            string pname = fluid_preset_get_name(tmp);
+            int bank = fluid_preset_get_banknum(tmp);
+            int num = fluid_preset_get_num(tmp);
+            int id = num + 128 * bank;
+            sf_preset_names[id] = pname;
+            preset_list += calf_utils::i2s(id) + "\t" + pname + "\n";
+            if (first_preset == -1)
+                first_preset = id;
+        }
+#endif
         if (first_preset != -1)
         {
             fluid_synth_bank_select(s, 0, first_preset >> 7);
@@ -134,7 +155,11 @@ void fluidsynth_audio_module::update_preset_num(int channel)
 {
     fluid_preset_t *p = fluid_synth_get_channel_preset(synth, channel);
     if (p)
+#if FLUIDSYNTH_VERSION_MAJOR < 2
         last_selected_presets[channel] = p->get_num(p) + 128 * p->get_banknum(p);
+#else
+        last_selected_presets[channel] = fluid_preset_get_num(p) + 128 * fluid_preset_get_banknum(p);
+#endif
     else
         last_selected_presets[channel] = -1;
     status_serial++;
