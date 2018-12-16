@@ -42,6 +42,7 @@ host_session::host_session(session_environment_iface *se)
     autoconnect_midi_index = -1;
     gui_win = NULL;
     has_gui = true;
+    has_trayicon = true;
     session_manager = NULL;
     only_load_if_exists = false;
     save_file_on_next_idle_call = false;
@@ -143,6 +144,8 @@ void host_session::open()
         create_plugins_from_list();
     if (has_gui)
         main_win->create();
+    if (has_trayicon)
+        main_win->create_status_icon();
 }
 
 void host_session::session_callback(jack_session_event_t *event, void *arg)

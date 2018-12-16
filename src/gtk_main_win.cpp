@@ -909,8 +909,6 @@ void gtk_main_window::create()
     g_signal_connect(GTK_OBJECT(toplevel), "destroy", G_CALLBACK(window_destroy_cb), this);
     g_signal_connect(GTK_OBJECT(toplevel), "delete_event", G_CALLBACK(window_delete_cb), this);
     
-    create_status_icon();
-    
     if (get_config()->win_start_hidden)
         g_idle_add((GSourceFunc)window_hide, this);
 }

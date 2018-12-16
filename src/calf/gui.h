@@ -267,6 +267,8 @@ struct main_window_iface: public progress_report_iface
     virtual void add_condition(const std::string &name) = 0;
     /// Create the actual window associated with this interface
     virtual void create() = 0;
+    /// Create the actual window associated with this interface
+    virtual void create_status_icon() = 0;
     /// Add the plugin to the window
     virtual void add_plugin(jack_host *plugin) = 0;
     /// Remove the plugin from the window
