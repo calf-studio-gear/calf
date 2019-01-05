@@ -157,7 +157,7 @@ char *mod_matrix_impl::configure(const char *key, const char *value)
             else
             if (ci.type == TCT_FLOAT)
                 value_text = f2s(ci.def_value);
-            value = value_text.c_str();
+            value = strdup(value_text.c_str());
         }
         set_cell(row, column, value, error);
         if (!error.empty())
