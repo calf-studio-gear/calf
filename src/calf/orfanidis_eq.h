@@ -328,13 +328,13 @@ public:
 			size_t freq = freqs[index].centerFreq;
 			if (freq < 100) {
 				return freq;
-			} else if (freq >= 100 && freq < 1000) {
+			} else if (freq < 1000) {
 				size_t rest = freq % 10;
 				if (rest < 5)
 					return freq - rest;
 				else
 					return freq - rest + 10;
-			} else if (freq >= 1000 && freq < 10000) {
+			} else if (freq < 10000) {
 				size_t rest = freq % 100;
 				if (rest < 50)
 					return freq - rest;
