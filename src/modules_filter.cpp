@@ -20,6 +20,7 @@
  */
 #include <limits.h>
 #include <memory.h>
+#include <calf/utils.h>
 #include <calf/giface.h>
 #include <calf/modules_filter.h>
 
@@ -975,8 +976,8 @@ void xover_audio_module<XoverBaseClass>::set_sample_rate(uint32_t sr)
     buffer = (float*) calloc(buffer_size, sizeof(float));
     pos = 0;
     int amount = AM::bands * AM::channels + AM::channels;
-    int meter[amount];
-    int clip[amount];
+    STACKALLOC(int, meter,amount);
+    STACKALLOC(int, clip, amount);
     for(int b = 0; b < AM::bands; b++) {
         for (int c = 0; c < AM::channels; c++) {
             meter[b * AM::channels + c] = AM::param_meter_01 + b * params_per_band + c;

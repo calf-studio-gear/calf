@@ -20,6 +20,7 @@
  */
 #include <limits.h>
 #include <memory.h>
+#include <calf/utils.h>
 #include <calf/giface.h>
 #include <calf/modules_dist.h>
 #include <string>
@@ -687,7 +688,8 @@ void vinyl_audio_module::params_changed() {
 uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask) {
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     uint32_t orig_offset = offset;
-    float sL[numsamples], sR[numsamples];
+	STACKALLOC(float, sL, numsamples);
+	STACKALLOC(float, sR, numsamples);
     if (!bypassed) {
         for (int j = 0; j < _synths; ++j) {
             float gain = 0;

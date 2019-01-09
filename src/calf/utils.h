@@ -22,16 +22,27 @@
 #define __CALF_UTILS_H
 
 #include <errno.h>
-#include <pthread.h>
+
 #include <map>
 #include <string>
-#include <dirent.h>
 #include <sys/types.h>
 #include <vector>
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#else
+#include <dirent.h>
+#include <pthread.h>
+#endif
 
 namespace calf_utils
 {
 
+#ifdef _MSC_VER
+#define STACKALLOC(type, name, size) type *name = static_cast<type*>(_alloca((size)*sizeof(type)))
+//TODO: add replacements for ptmutex,...
+#else
+#define STACKALLOC(type, name, size) type name[size]
 /// Pthreads based mutex class
 class ptmutex
 {
@@ -120,7 +131,7 @@ public:
         locked = mutex.trylock();
     }
 };
-
+#endif
 /// Exception-safe temporary assignment
 template<class T, class Tref = T&>
 class scope_assign
