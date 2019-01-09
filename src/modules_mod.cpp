@@ -671,8 +671,8 @@ void pulsator_audio_module::params_changed()
         reset_old = false;
     
     double freq = 2;
-    freq = convert_periodic(*params[param_bpm + (int)((periodic_unit)*params[param_timing])],
-                                   (periodic_unit)*params[param_timing], UNIT_HZ);
+    freq = convert_periodic(*params[param_bpm + (int)((periodic_unit)int(*params[param_timing]))],
+                                   (periodic_unit)int(*params[param_timing]), UNIT_HZ);
     if (freq != freq_old) {
         freq_old = freq;
         clear_reset = true;

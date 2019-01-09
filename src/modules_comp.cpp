@@ -922,7 +922,7 @@ void sidechaincompressor_audio_module::params_changed()
         || *params[param_f2_freq] != f2_freq_old || *params[param_f2_level] != f2_level_old
         || *params[param_sc_mode] != sc_mode) {
         float q = 0.707;
-        switch ((CalfScModes)*params[param_sc_mode]) {
+        switch ((CalfScModes)int(*params[param_sc_mode])) {
             default:
             case WIDEBAND:
                 f1L.set_hp_rbj((float)*params[param_f1_freq], q, (float)srate, *params[param_f1_level]);
@@ -1009,7 +1009,7 @@ void sidechaincompressor_audio_module::params_changed()
         f1_level_old = *params[param_f1_level];
         f2_freq_old = *params[param_f2_freq];
         f2_level_old = *params[param_f2_level];
-        sc_mode = (CalfScModes)*params[param_sc_mode];
+        sc_mode = (CalfScModes)int(*params[param_sc_mode]);
     }
     // light LED's
     if(params[param_f1_active] != NULL) {
@@ -1031,7 +1031,7 @@ void sidechaincompressor_audio_module::params_changed()
         f2_freq_old1 = *params[param_f2_freq];
         f1_level_old1 = *params[param_f1_level];
         f2_level_old1 = *params[param_f2_level];
-        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        sc_mode_old1 = (CalfScModes)int(*params[param_sc_mode]);
         redraw_graph = true;
     }
 }
@@ -1094,7 +1094,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                 rightSC = in2R * *params[param_sc_level];
             }
             
-            int mode = (CalfScModes)*params[param_sc_mode];
+            int mode = (CalfScModes)int(*params[param_sc_mode]);
             switch (mode) {
                 default:
                 case WIDEBAND:
@@ -1939,7 +1939,7 @@ void sidechaingate_audio_module::params_changed()
         || *params[param_f2_freq] != f2_freq_old || *params[param_f2_level] != f2_level_old
         || *params[param_sc_mode] != sc_mode) {
         float q = 0.707;
-        switch ((CalfScModes)*params[param_sc_mode]) {
+        switch ((CalfScModes)int(*params[param_sc_mode])) {
             default:
             case WIDEBAND:
                 f1L.set_hp_rbj((float)*params[param_f1_freq], q, (float)srate, *params[param_f1_level]);
@@ -2026,7 +2026,7 @@ void sidechaingate_audio_module::params_changed()
         f1_level_old = *params[param_f1_level];
         f2_freq_old = *params[param_f2_freq];
         f2_level_old = *params[param_f2_level];
-        sc_mode = (CalfScModes)*params[param_sc_mode];
+        sc_mode = (CalfScModes)int(*params[param_sc_mode]);
     }
     // light LED's
     if(params[param_f1_active] != NULL) {
@@ -2048,7 +2048,7 @@ void sidechaingate_audio_module::params_changed()
         f2_freq_old1 = *params[param_f2_freq];
         f1_level_old1 = *params[param_f1_level];
         f2_level_old1 = *params[param_f2_level];
-        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        sc_mode_old1 = (CalfScModes)int(*params[param_sc_mode]);
         redraw_graph = true;
     }
 }
@@ -2109,7 +2109,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
                 rightSC = in2R * *params[param_sc_level];
             }
             
-            int mode = (CalfScModes)*params[param_sc_mode];
+            int mode = (CalfScModes)int(*params[param_sc_mode]);
             
             switch (mode) {
                 default:

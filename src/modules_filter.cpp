@@ -633,7 +633,7 @@ void equalizer30band_audio_module::params_changed()
     }
 
     //Upadte filter type
-    flt_type = (filter_type)(*params[param_filters] + 1);
+    flt_type = (filter_type)int((*params[param_filters] + 1));
 }
 
 void equalizer30band_audio_module::set_sample_rate(uint32_t sr)
