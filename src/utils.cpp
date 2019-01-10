@@ -24,6 +24,10 @@
 #include <cstring>
 #include <cstdio>
 #include <sstream>
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
+
 
 using namespace std;
 using namespace osctl;
@@ -156,6 +160,27 @@ file_exception::file_exception(const std::string &f, const std::string &t)
 
 
 /* Returns a list of files in a directory (except the ones that begin with a dot) */
+#ifdef _MSC_VER
+vector <direntry> list_directory(const string &path)
+{
+	std::vector <direntry> out;
+	WIN32_FIND_DATA data;
+	HANDLE hFind = FindFirstFile((path+"\\").c_str(), &data);      // DIRECTORY
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			direntry f;
+			f.directory = path;
+			f.full_path = path + "\\" + data.cFileName;
+			f.name = data.cFileName;
+			out.push_back(f);
+		} while (FindNextFile(hFind, &data) != 0);
+	}
+	FindClose(hFind);
+	return out;
+}
+#else
 vector <direntry> list_directory(const string &path)
 {
     std::vector <direntry> out;
@@ -175,5 +200,5 @@ vector <direntry> list_directory(const string &path)
     closedir(dir);
     return out;
 }
-
+#endif
 }

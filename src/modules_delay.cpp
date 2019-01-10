@@ -25,8 +25,9 @@
 #include <calf/giface.h>
 #include <calf/modules_delay.h>
 #include <calf/modules_dev.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
-
+#endif
 using namespace dsp;
 using namespace calf_plugins;
 

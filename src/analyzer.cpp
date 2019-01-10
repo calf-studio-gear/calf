@@ -24,7 +24,9 @@
 #include <calf/giface.h>
 #include <calf/analyzer.h>
 #include <calf/modules_dev.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <calf/utils.h>
 
 using namespace dsp;

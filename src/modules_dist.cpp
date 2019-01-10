@@ -24,7 +24,25 @@
 #include <calf/giface.h>
 #include <calf/modules_dist.h>
 #include <string>
+#ifdef _MSC_VER
+#include <intrin.h>
+inline int clz(unsigned int value)
+{
+	unsigned long trailing_zero = 0;
 
+	if (_BitScanForward(&trailing_zero, value))
+	{
+		return trailing_zero;
+	}
+	else
+	{
+		//GCC implementation says it's undefined in this case
+		return 32;
+	}
+}
+#else 
+inline int clz(unsigned int value) { return __builtin_clz(value); }
+#endif
 using namespace dsp;
 using namespace calf_plugins;
 
@@ -796,7 +814,7 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     // Round up to the nearest power of 2 if it's not already
     // This makes the circular buffer implementation faster and simpler
     if((dbufsize & (dbufsize - 1)))
-        dbufsize = 1 << (32 - __builtin_clz(dbufsize - 1));
+        dbufsize = 1 << (32 - clz(dbufsize - 1));
     dbufrange = sr / 100.0;
     dbuf = (float*) calloc(dbufsize * channels, sizeof(float));
     dbufpos = 0;

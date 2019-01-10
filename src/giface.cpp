@@ -24,6 +24,12 @@
 #include <math.h>
 #include <calf/giface.h>
 #include <calf/utils.h>
+#include <string.h>
+
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 using namespace std;
 using namespace calf_utils;

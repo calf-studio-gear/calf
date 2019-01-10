@@ -24,9 +24,10 @@
 #include <calf/giface.h>
 #include <calf/modules_tools.h>
 #include <calf/modules_dev.h>
-#include <sys/time.h>
 #include <calf/utils.h>
-
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
 
 using namespace dsp;
 using namespace calf_plugins;
