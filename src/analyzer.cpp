@@ -168,11 +168,11 @@ bool analyzer::do_fft(int subindex, int points) const
     
     bool fftdone = false; // if fft was renewed, this one is set to true
     int __speed = 16 - (int)_speed;
-    if(_mode == 5 and _smooth) {
+    if(_mode == 5 && _smooth) {
         // there's no falling for difference mode, only smoothing
         _smooth = 2;
     }
-    if(_mode > 5 and _mode < 11) {
+    if(_mode > 5 && _mode < 11) {
         // there's no smoothing for spectralizer mode
         //_smooth = 0;
     }
@@ -389,9 +389,9 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
         
         // let's see how many pixels we may want to skip until the drawing
         // function has to draw a bar/box/line
-        if(_scale or _view == 2) {
+        if(_scale || _view == 2) {
             // we have linear view enabled or we want to see tit... erm curves
-            if((i % lintrans == 0 and points - i > lintrans) or i == points - 1) {
+            if((i % lintrans == 0 && points - i > lintrans) || i == points - 1) {
                 _iter = std::max(1, (int)floor(freq * \
                     (float)_accuracy / (float)srate));
             }    
@@ -401,7 +401,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
         }
         if(_iter > iter && srate) {
             // we are flipping one step further in drawing
-            if(fftdone and i) {
+            if(fftdone && i) {
                 // ################################
                 // Manipulate the fft_out values
                 // according to the post processing
@@ -455,7 +455,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                                     if(k != 0) var1L += fabs(fft_outL[_iter + k]);
                                     else if(i) var1L += fabs(lastoutL);
                                     else var1L += fabs(fft_outL[_iter]);
-                                    if(_mode == 3 or _mode == 4) {
+                                    if(_mode == 3 || _mode == 4) {
                                         if(_iter - k > 0) {
                                             var1R += fabs(fft_outR[_iter - k]);
                                             n++;
@@ -472,7 +472,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                                 // sounds
                                 fft_outL[_iter] = 0.25f * std::max((float)(n * 0.6f * \
                                     fabs(fft_outL[_iter]) - var1L), 1e-20f);
-                                if(_mode == 3 or _mode == 4) {
+                                if(_mode == 3 || _mode == 4) {
                                     // do the same with R channel if needed
                                     lastoutR = fft_outR[_iter];
                                     fft_outR[_iter] = 0.25f * std::max((float)(n * \
@@ -508,7 +508,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                 float _fdelta = 0.91;
                 float _ffactor = 2000.f;
                 
-                if(_mode > 5 and _mode < 11) {
+                if(_mode > 5 && _mode < 11) {
                     _fdelta = .99f;
                     _ffactor = 50.f;
                 }
@@ -516,14 +516,14 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     // smoothing
                     if(fftdone) {
                         // rebuild delta values after fft was done
-                        if(_mode < 5 or _mode > 5) {
+                        if(_mode < 5 || _mode > 5) {
                             fft_deltaL[iter] = pow(fabs(fft_outL[iter]) / fabs(fft_smoothL[iter]), 1.f / __speed);
                         } else {
                             fft_deltaL[iter] = (posneg * fabs(fft_outL[iter]) - fft_smoothL[iter]) / __speed;
                         }
                     } else {
                         // change fft_smooth according to delta
-                        if(_mode < 5 or _mode > 5) {
+                        if(_mode < 5 || _mode > 5) {
                             fft_smoothL[iter] *= fft_deltaL[iter];
                         } else {
                             fft_smoothL[iter] += fft_deltaL[iter];
@@ -543,7 +543,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     }
                 }
                 
-                if((_mode > 2 and _mode < 5) or (_mode > 8 and _mode < 11)) {
+                if((_mode > 2 && _mode < 5) || (_mode > 8 && _mode < 11)) {
                     // we need right buffers, too for stereo image and
                     // stereo analyzer
                     if(_smooth == 2) {
@@ -586,9 +586,9 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                 // freeze enabled
                 valL = fft_freezeL[iter];
                 valR = fft_freezeR[iter];
-            } else if ((subindex == 1 and _mode < 3) \
-                or subindex > 1 \
-                or (_mode > 5 and _hold)) {
+            } else if ((subindex == 1 && _mode < 3) \
+                || subindex > 1 \
+                || (_mode > 5 && _hold)) {
                 // we draw the hold buffer
                 valL = fft_holdL[iter];
                 valR = fft_holdR[iter];
@@ -627,7 +627,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                     case 3:
                     case 9:
                         // stereo analyzer/spectralizer
-                        if(subindex == 0 or subindex == 2) {
+                        if(subindex == 0 || subindex == 2) {
                             data[i] = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                         } else {
                             data[i] = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, _resolution, _offset);
@@ -635,12 +635,12 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                         break;
                     case 4:
                         // we want to draw Stereo Image
-                        if(subindex == 0 or subindex == 2) {
+                        if(subindex == 0 || subindex == 2) {
                             // Left channel signal
                             tmp = dB_grid(fabs(valL) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                             //only signals above the middle are interesting
                             data[i] = tmp < 0 ? 0 : tmp;
-                        } else if (subindex == 1 or subindex == 3) {
+                        } else if (subindex == 1 || subindex == 3) {
                             // Right channel signal
                             tmp = dB_grid(fabs(valR) / _accuracy * 2.f + 1e-20, _resolution, _offset);
                             //only signals above the middle are interesting. after cutting away
@@ -782,12 +782,12 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     if (!phase)
         return false;
     
-    if ((subindex == 1 and !_hold and _mode < 3) \
-     or (subindex > 1  and _mode < 3) \
-     or (subindex == 2 and !_hold and (_mode == 3 or _mode == 4)) \
-     or (subindex == 4 and (_mode == 3 or _mode == 4)) \
-     or (subindex == 1 and _mode == 5) \
-     or _mode > 5 \
+    if ((subindex == 1 && !_hold && _mode < 3) \
+     || (subindex > 1  && _mode < 3) \
+     || (subindex == 2 && !_hold && (_mode == 3 || _mode == 4)) \
+     || (subindex == 4 && (_mode == 3 || _mode == 4)) \
+     || (subindex == 1 && _mode == 5) \
+     || _mode > 5 \
     ) {
         // stop drawing when all curves have been drawn according to the mode
         // and hold settings
@@ -823,7 +823,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     // 3: boxes (little things on the values position
     // 4: centered bars (0dB is centered in y direction)
     
-    if (_mode > 3 and _mode < 6) {
+    if (_mode > 3 && _mode < 6) {
         // centered viewing modes like stereo image and stereo difference
         if(!_view) {
             // boxes
@@ -840,7 +840,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
         }
     } else if(!_view) {
         // bars
-        if((subindex == 0 and _mode < 3) or (subindex <= 1 and _mode == 3)) {
+        if((subindex == 0 && _mode < 3) || (subindex <= 1 && _mode == 3)) {
             // draw bars
             *mode = 2;
         } else {
@@ -857,23 +857,23 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
     // ###################################
     
     // change alpha (or color) for hold lines or stereo modes
-    if((subindex == 1 and _mode < 3) or (subindex > 1 and _mode == 4)) {
+    if((subindex == 1 && _mode < 3) || (subindex > 1 && _mode == 4)) {
         // subtle hold line on left, right, average or stereo image
         context->set_source_rgba(0.15, 0.2, 0.0, 0.2);
     }
-    if(subindex == 0 and _mode == 3) {
+    if(subindex == 0 && _mode == 3) {
         // left channel in stereo analyzer
         context->set_source_rgba(0.25, 0.10, 0.0, 0.33);
     }
-    if(subindex == 1 and _mode == 3) {
+    if(subindex == 1 && _mode == 3) {
         // right channel in stereo analyzer
         context->set_source_rgba(0.05, 0.25, 0.0, 0.33);
     }
-    if(subindex == 2 and _mode == 3) {
+    if(subindex == 2 && _mode == 3) {
         // left hold in stereo analyzer
         context->set_source_rgba(0.45, 0.30, 0.2, 0.2);
     }
-    if(subindex == 3 and _mode == 3) {
+    if(subindex == 3 && _mode == 3) {
         // right hold in stereo analyzer
         context->set_source_rgba(0.25, 0.45, 0.2, 0.2);
     }
@@ -884,7 +884,7 @@ bool analyzer::get_graph(int subindex, int phase, float *data, int points, cairo
 
 bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int y, int &offset, uint32_t &color) const
 {
-    if ((subindex and _mode != 9) or subindex > 1)
+    if ((subindex && _mode != 9) || subindex > 1)
         return false;
     bool fftdone = false;
     if (!subindex)
@@ -892,7 +892,7 @@ bool analyzer::get_moving(int subindex, int &direction, float *data, int x, int 
     draw(subindex, data, x, fftdone);
     direction = LG_MOVING_UP;
     offset = 0;
-    if (_mode == 9 and subindex) {
+    if (_mode == 9 && subindex) {
         color = RGBAtoINT(0.35, 0.1, 0, 0.4);
     } else if (_mode == 9) {
         color = RGBAtoINT(0.15, 0.35, 0, 0.4);
@@ -929,8 +929,8 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 pos *= -1;
             
             context->set_dash(dash, 1);
-            if ((!(subindex & 1) and !_draw_upper)
-              or ((sub & 1) and _draw_upper > 0)) {
+            if ((!(subindex & 1) && !_draw_upper)
+              || ((sub & 1) && _draw_upper > 0)) {
                 // add a label and make the lines straight
                 std::stringstream ss;
                 ss << (subindex - std::max(0, _draw_upper)) * -6 << " dB";
@@ -938,7 +938,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 context->set_dash(dash, 0);
             }
         
-            if (pos < 0 and !_draw_upper) {
+            if (pos < 0 && !_draw_upper) {
                 // start drawing the lower end
                 _draw_upper = subindex;
                 pos = -2;
@@ -948,7 +948,7 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
                 _draw_upper = 0;
                 return false;
             }
-            if (pos > 0 and _draw_upper > 0) {
+            if (pos > 0 && _draw_upper > 0) {
                 // center line
                 _draw_upper = -1;
                 pos = 0;
@@ -970,18 +970,18 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             pos = dB_grid(gain, _resolution, 0);
             
             context->set_dash(dash, 1);
-            if ((!(subindex & 1) and !_draw_upper)
-              or ((subindex & 1) and _draw_upper)) {
+            if ((!(subindex & 1) && !_draw_upper)
+              || ((subindex & 1) && _draw_upper)) {
                 std::stringstream ss;
                 ss << (subindex - std::max(0, _draw_upper)) * 6 - 72 << " dB";
                 legend = ss.str();
                 context->set_dash(dash, 0);
             }
             
-            if (pos > 1 and !_draw_upper and (subindex & 1)) {
+            if (pos > 1 && !_draw_upper && (subindex & 1)) {
                 _draw_upper = subindex;
             }
-            if (pos < -1 and _draw_upper) {
+            if (pos < -1 && _draw_upper) {
                 _draw_upper = 0;
                 return false;
             }
@@ -1024,13 +1024,13 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
             //}
             if (subindex < 56) {
                 vertical = true;
-                if (subindex == 9 or subindex == 36) legend = "100 Hz";
-                if (subindex == 18 or subindex == 45) legend = "1 kHz";
-                if (subindex == 27 or subindex == 54) legend = "10 kHz";
+                if (subindex == 9 || subindex == 36) legend = "100 Hz";
+                if (subindex == 18 || subindex == 45) legend = "1 kHz";
+                if (subindex == 27 || subindex == 54) legend = "10 kHz";
     
                 float freq = subindex_to_freq(subindex - (subindex > 27 ? 27 : 0));
                 pos = log(freq / 20.0) / log(1000) / 2 + (subindex > 27 ? 0.5 : 0);
-                if (!legend.empty() and subindex != 28) {
+                if (!legend.empty() && subindex != 28) {
                     context->set_source_rgba(0, 0, 0, 0.33);
                 } else if (subindex != 28) {
                     context->set_source_rgba(0, 0, 0, 0.2);
@@ -1044,10 +1044,10 @@ bool analyzer::get_gridline(int subindex, int phase, float &pos, bool &vertical,
     
 bool analyzer::get_layers(int generation, unsigned int &layers) const
 {
-    if (_mode > 5 and _mode < 11)
+    if (_mode > 5 && _mode < 11)
         layers = LG_REALTIME_MOVING;
     else
         layers = LG_REALTIME_GRAPH;
-    layers |= ((!generation or redraw_graph) ? LG_CACHE_GRID : 0);
+    layers |= ((!generation || redraw_graph) ? LG_CACHE_GRID : 0);
     return true;
 }

@@ -96,7 +96,7 @@ void saturator_audio_module::params_changed()
             hp[1][3].copy_coeffs(hp[0][2]);
         hp_post_freq_old = *params[param_hp_post_freq];
     }
-    if(*params[param_p_freq] != p_freq_old or *params[param_p_level] != p_level_old or *params[param_p_q] != p_q_old) {
+    if(*params[param_p_freq] != p_freq_old || *params[param_p_level] != p_level_old || *params[param_p_q] != p_q_old) {
         p[0].set_peakeq_rbj((float)*params[param_p_freq], (float)*params[param_p_q], (float)*params[param_p_level], (float)srate);
         if(in_count > 1 && out_count > 1)
             p[1].copy_coeffs(p[0]);
@@ -288,7 +288,7 @@ void exciter_audio_module::params_changed()
         freq_old = *params[param_freq];
     }
     // set the params of all filters
-    if(*params[param_ceil] != ceil_old or *params[param_ceil_active] != ceil_active_old) {
+    if(*params[param_ceil] != ceil_old || *params[param_ceil_active] != ceil_active_old) {
         lp[0][0].set_lp_rbj(*params[param_ceil], 0.707, (float)srate);
         lp[0][1].copy_coeffs(lp[0][0]);
         lp[1][0].copy_coeffs(lp[0][0]);
@@ -475,7 +475,7 @@ void bassenhancer_audio_module::params_changed()
         freq_old = *params[param_freq];
     }
     // set the params of all filters
-    if(*params[param_floor] != floor_old or *params[param_floor_active] != floor_active_old) {
+    if(*params[param_floor] != floor_old || *params[param_floor_active] != floor_active_old) {
         hp[0][0].set_hp_rbj(*params[param_floor], 0.707, (float)srate);
         hp[0][1].copy_coeffs(hp[0][0]);
         hp[1][0].copy_coeffs(hp[0][0]);
@@ -664,7 +664,7 @@ void vinyl_audio_module::params_changed() {
         lfo.set_params(1.f / (60.f / *params[param_speed]), 0, 0.f, srate, 0.5f);
         speed_old = *params[param_speed];
     }
-    if (freq_old != *params[param_freq] or aging_old != *params[param_aging]) {
+    if (freq_old != *params[param_freq] || aging_old != *params[param_aging]) {
         aging_old = *params[param_aging];
         freq_old = *params[param_freq];
         float lp = (freq_old + 500.f) * pow(double(20000.f / (freq_old + 500.f)), 1.f - aging_old);
@@ -886,7 +886,7 @@ void tapesimulator_audio_module::deactivate() {
 }
 
 void tapesimulator_audio_module::params_changed() {
-    if(*params[param_lp] != lp_old or *params[param_mechanical] != mech_old) {
+    if(*params[param_lp] != lp_old || *params[param_mechanical] != mech_old) {
         lp[0][0].set_lp_rbj(*params[param_lp], 0.707, (float)srate);
         lp[0][1].copy_coeffs(lp[0][0]);
         lp[1][0].copy_coeffs(lp[0][0]);
@@ -1056,10 +1056,10 @@ bool tapesimulator_audio_module::get_graph(int index, int subindex, int phase, f
 {
     if (subindex > 1)
         return false;
-    if(index == param_lp and phase) {
+    if(index == param_lp && phase) {
         set_channel_color(context, subindex);
         return ::get_graph(*this, subindex, data, points);
-    } else if (index == param_level_in and !phase) {
+    } else if (index == param_level_in && !phase) {
         if (!subindex) {
             context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
             context->set_line_width(1);
@@ -1084,7 +1084,7 @@ float tapesimulator_audio_module::freq_gain(int index, double freq) const
 
 bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if(!active or phase)
+    if(!active || phase)
         return false;
     if (index == param_level_in) {
         bool tmp;
@@ -1109,7 +1109,7 @@ bool tapesimulator_audio_module::get_gridline(int index, int subindex, int phase
 }
 bool tapesimulator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (index == param_level_in and !subindex and phase) {
+    if (index == param_level_in && !subindex && phase) {
         x = log(input) / log(2) / 14.f + 5.f / 7.f;
         y = dB_grid(rms * *params[param_level_out]);
         rms = 0.f;
@@ -1125,7 +1125,7 @@ bool tapesimulator_audio_module::get_layers(int index, int generation, unsigned 
     if (!generation)
         layers |= LG_CACHE_GRID;
     // compression: dot in realtime, graphs as cache on new surfaces
-    if (index == param_level_in and (!generation or redraw_output)) {
+    if (index == param_level_in && (!generation || redraw_output)) {
         layers |= LG_CACHE_GRAPH;
         redraw_output = false;
     }

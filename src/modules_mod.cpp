@@ -95,14 +95,14 @@ void flanger_audio_module::params_reset()
 }
 bool flanger_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or !phase or subindex >= 2)
+    if (!is_active || !phase || subindex >= 2)
         return false;
     set_channel_color(context, subindex);
     return ::get_graph(*this, subindex, data, points, 32, 0);
 }
 bool flanger_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
 }
@@ -196,13 +196,13 @@ void phaser_audio_module::params_reset()
 }
 bool phaser_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     return get_freq_gridline(subindex, pos, vertical, legend, context, true, 32, 0);
 }
 bool phaser_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or subindex >= 2 or !phase)
+    if (!is_active || subindex >= 2 || !phase)
         return false;
     set_channel_color(context, subindex);
     return ::get_graph(*this, subindex, data, points, 32, 0);
@@ -507,7 +507,7 @@ void multichorus_audio_module::params_changed()
         right.lfo.phase += chorus_phase(r_phase * 4096);
         last_r_phase = r_phase;
     }
-    if (*params[par_freq] != freq_old or *params[par_freq2] != freq2_old or *params[par_q] != q_old) {
+    if (*params[par_freq] != freq_old || *params[par_freq2] != freq2_old || *params[par_q] != q_old) {
         left.post.f1.set_bp_rbj(*params[par_freq], *params[par_q], srate);
         left.post.f2.set_bp_rbj(*params[par_freq2], *params[par_q], srate);
         right.post.f1.copy_coeffs(left.post.f1);
@@ -555,20 +555,20 @@ bool multichorus_audio_module::get_graph(int index, int subindex, int phase, flo
         return false;
     
     // the filter graph (cached) in frequency response
-    if (index == par_delay and subindex == 2 and !phase) {
+    if (index == par_delay && subindex == 2 && !phase) {
         context->set_source_rgba(0.15, 0.2, 0.0, 0.8);
         redraw_graph = false;
         return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     // the realtime graphs in frequency response
-    if (index == par_delay and subindex < 2 and phase) {
+    if (index == par_delay && subindex < 2 && phase) {
         set_channel_color(context, subindex);
         context->set_line_width(1);
         return ::get_graph(*this, subindex, data, points, 64, 0.5);
     }
     
     // the sine curves in modulation display
-    if (index == par_rate && subindex < (int)*params[par_voices] and !phase) {
+    if (index == par_rate && subindex < (int)*params[par_voices] && !phase) {
         const sine_multi_lfo<float, 8> &lfo = left.lfo;
         for (int i = 0; i < points; i++) {
             float _phase = i * 2 * M_PI / points;
@@ -588,9 +588,9 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
     int voice = subindex >> 1;
     int nvoices = (int)*params[par_voices];
     if (!is_active
-     or !phase
-     or (index != par_rate and index != par_depth)
-     or voice >= nvoices)
+     || !phase
+     || (index != par_rate && index != par_depth)
+     || voice >= nvoices)
         return false;
 
     float unit = (1 - *params[par_overlap]);
@@ -615,7 +615,7 @@ bool multichorus_audio_module::get_dot(int index, int subindex, int phase, float
 
 bool multichorus_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (index == par_delay and !phase and is_active)
+    if (index == par_delay && !phase && is_active)
         return get_freq_gridline(subindex, pos, vertical, legend, context, true, 64, 0.5);
     return false;
 }
@@ -661,7 +661,7 @@ void pulsator_audio_module::deactivate()
 void pulsator_audio_module::params_changed()
 {
     clear_reset = false;
-    if (*params[param_reset] >= 0.5 and reset_old != true) {
+    if (*params[param_reset] >= 0.5 && reset_old != true) {
         clear_reset = true;
         lfoL.set_phase(0.f);
         lfoR.set_phase(0.f);
@@ -679,11 +679,11 @@ void pulsator_audio_module::params_changed()
     }
     
     if (*params[param_mode]   != mode_old
-     or *params[param_amount] != amount_old
-     or *params[param_offset_l] != offset_l_old
-     or *params[param_offset_r] != offset_r_old
-     or *params[param_pwidth] != pwidth_old
-     or clear_reset) {
+     || *params[param_amount] != amount_old
+     || *params[param_offset_l] != offset_l_old
+     || *params[param_offset_r] != offset_r_old
+     || *params[param_pwidth] != pwidth_old
+     || clear_reset) {
         float pw = 1;
         switch (int(*params[param_pwidth])) {
             case 0: pw = 0.125; break;
@@ -780,7 +780,7 @@ uint32_t pulsator_audio_module::process(uint32_t offset, uint32_t numsamples, ui
 
 bool pulsator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase or subindex > 1) {
+    if (!is_active || phase || subindex > 1) {
         redraw_graph = false;
         return false;
     }
@@ -790,7 +790,7 @@ bool pulsator_audio_module::get_graph(int index, int subindex, int phase, float 
 
 bool pulsator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or !phase or subindex > 1)
+    if (!is_active || !phase || subindex > 1)
         return false;
     set_channel_color(context, subindex);
     return (subindex ? lfoR : lfoL).get_dot(x, y, size, context);
@@ -798,7 +798,7 @@ bool pulsator_audio_module::get_dot(int index, int subindex, int phase, float &x
 
 bool pulsator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (phase or subindex)
+    if (phase || subindex)
         return false;
     pos = 0;
     vertical = false;
@@ -986,7 +986,7 @@ uint32_t ringmodulator_audio_module::process(uint32_t offset, uint32_t numsample
 
 bool ringmodulator_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase or subindex > 1) {
+    if (!is_active || phase || subindex > 1) {
         redraw_graph = false;
         return false;
     }
@@ -996,7 +996,7 @@ bool ringmodulator_audio_module::get_graph(int index, int subindex, int phase, f
 
 bool ringmodulator_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or !phase or subindex > 1)
+    if (!is_active || !phase || subindex > 1)
         return false;
     set_channel_color(context, subindex);
     return (subindex ? lfo2 : lfo1).get_dot(x, y, size, context);
@@ -1004,7 +1004,7 @@ bool ringmodulator_audio_module::get_dot(int index, int subindex, int phase, flo
 
 bool ringmodulator_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (phase or subindex)
+    if (phase || subindex)
         return false;
     pos = 0;
     vertical = false;

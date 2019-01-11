@@ -23,6 +23,7 @@
 #include <calf/giface.h>
 #include <calf/organ.h>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 using namespace dsp;
@@ -79,7 +80,7 @@ bool organ_audio_module::get_layers(int index, int generation, unsigned int &lay
 }
 bool organ_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (index != par_master or subindex or !phase)
+    if (index != par_master || subindex || !phase)
         return false;
     
     organ_voice_base::precalculate_waves(progress_report);
