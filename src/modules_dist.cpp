@@ -28,11 +28,13 @@
 #include <intrin.h>
 inline int clz(unsigned int value)
 {
-	unsigned long trailing_zero = 0;
+	unsigned long leading_zero = 0;
 
-	if (_BitScanForward(&trailing_zero, value))
+	if (_BitScanReverse(&leading_zero, value))
 	{
-		return trailing_zero;
+		//_BitScanReverse return the position while GCC returns number of leading zeros
+		//so reverse it.
+		return 31 - leading_zero;
 	}
 	else
 	{
