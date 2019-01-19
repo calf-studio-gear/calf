@@ -22,7 +22,7 @@
 #include <calf/preset.h>
 #include <calf/utils.h>
 #if USE_LV2
-#include <lv2.h>
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include <calf/lv2_atom.h>
 #include <calf/lv2_options.h>
 #include <calf/lv2_state.h>
