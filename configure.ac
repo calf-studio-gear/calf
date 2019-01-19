@@ -79,7 +79,7 @@ if test "$JACK_FOUND" = "yes"; then
   PKG_CHECK_MODULES(JACK_RENAME_PORT, jack >= 1.9.11, JACK_HAS_RENAME="yes", JACK_HAS_RENAME_DUMMY="no")
 fi
 
-PKG_CHECK_MODULES(LV2_DEPS, lv2core >= 6, LV2_FOUND="yes", LV2_FOUND="no")
+PKG_CHECK_MODULES(LV2_DEPS, lv2 >= 1.1.14, LV2_FOUND="yes", LV2_FOUND="no")
 
 PKG_CHECK_MODULES(LASH_DEPS, lash-1.0 >= 0.6.0,
   AC_CHECK_LIB([lash], [lash_client_is_being_restored], LASH_0_6_FOUND="yes", LASH_0_6_FOUND="no"),
