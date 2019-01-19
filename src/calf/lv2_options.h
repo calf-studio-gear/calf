@@ -20,7 +20,7 @@
 #include <stdint.h>
 
 #include "lv2_urid.h"
-#include "lv2.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
 #define LV2_OPTIONS_URI    "http://lv2plug.in/ns/ext/options"
 #define LV2_OPTIONS_PREFIX LV2_OPTIONS_URI "#"

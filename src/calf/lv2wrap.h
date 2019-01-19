@@ -25,7 +25,7 @@
 
 #include <string>
 #include <vector>
-#include <lv2.h>
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include <calf/giface.h>
 #include <calf/lv2_atom.h>
 #include <calf/lv2_atom_util.h>

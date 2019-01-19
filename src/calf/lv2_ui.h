@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 
-#include "lv2.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
 #define LV2_UI_URI "http://lv2plug.in/ns/extensions/ui"
 #define LV2_UI_PREFIX LV2_UI_URI "#"
