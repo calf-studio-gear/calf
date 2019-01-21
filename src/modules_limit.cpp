@@ -109,7 +109,7 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         }
         asc_led    = 0.f;
     } else {
-        asc_led   -= std::min(asc_led, numsamples);
+        asc_led   -= std::min<double>(asc_led, numsamples);
 
         while(offset < numsamples) {
             // cycle through samples
@@ -147,8 +147,8 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             
             // should never be used. but hackers are paranoid by default.
             // so we make shure NOTHING is above limit
-            outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
-            outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
+            outL = std::min<double>(std::max(outL, -*params[param_limit]), *params[param_limit]);
+            outR = std::min<double>(std::max(outR, -*params[param_limit]), *params[param_limit]);
 
             // autolevel
             if (*params[param_auto_level]) {
@@ -350,7 +350,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         asc_led    = 0.f;
     } else {
         // process all strips
-        asc_led     -= std::min(asc_led, numsamples);
+        asc_led     -= std::min<double>(asc_led, numsamples);
         while(offset < numsamples) {
             float inL  = 0.f; // input
             float inR  = 0.f;
@@ -434,7 +434,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // write multiband coefficient to buffer
-                buffer[pos] = std::min((float)(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR))), 1.0f);
+                buffer[pos] = std::min<double>(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR)), 1.0);
                 
                 // step forward in multiband buffer
                 pos = (pos + channels) % buffer_size;
@@ -477,8 +477,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             
             // should never be used. but hackers are paranoid by default.
             // so we make shure NOTHING is above limit
-            outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
-            outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
+            outL = std::min<double>(std::max(outL, -*params[param_limit]), *params[param_limit]);
+            outR = std::min<double>(std::max(outR, -*params[param_limit]), *params[param_limit]);
             
             // light led
             if(asc_active)  {
@@ -528,7 +528,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //} // process single strip with filter
 
             //// write multiband coefficient to buffer
-            //buffer[pos] = std::min(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
+            //buffer[pos] = std::min<double>(*params[param_limit] / std::max(fabs(sum_left), fabs(sum_right)), 1.0);
 
             //for (int i = 0; i < strips; i++) {
                 //// process gain reduction
@@ -547,9 +547,9 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //// should never be used. but hackers are paranoid by default.
             //// so we make shure NOTHING is above limit
             //outL = std::max(outL, -*params[param_limit]);
-            //outL = std::min(outL, *params[param_limit]);
+            //outL = std::min<double>(outL, *params[param_limit]);
             //outR = std::max(outR, -*params[param_limit]);
-            //outR = std::min(outR, *params[param_limit]);
+            //outR = std::min<double>(outR, *params[param_limit]);
             
             //if(asc_active)  {
                 //asc_led = srate >> 3;
@@ -748,7 +748,7 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
         asc_led    = 0.f;
     } else {
         // process all strips
-        asc_led     -= std::min(asc_led, numsamples);
+        asc_led     -= std::min<double>(asc_led, numsamples);
         while(offset < numsamples) {
             float inL  = 0.f; // input
             float inR  = 0.f;
@@ -819,7 +819,7 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // write multiband coefficient to buffer
-                buffer[pos] = std::min((float)(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR))), 1.0f);
+                buffer[pos] = std::min<double>(*params[param_limit] / std::max(fabs(tmpL), fabs(tmpR)), 1.0);
                 
                 // step forward in multiband buffer
                 pos = (pos + channels) % buffer_size;
@@ -862,8 +862,8 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             
             // should never be used. but hackers are paranoid by default.
             // so we make shure NOTHING is above limit
-            outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
-            outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
+            outL = std::min<double>(std::max(outL, -*params[param_limit]), *params[param_limit]);
+            outR = std::min<double>(std::max(outR, -*params[param_limit]), *params[param_limit]);
             
             // light led
             if(asc_active)  {
