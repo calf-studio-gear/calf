@@ -198,14 +198,14 @@ float gain_reduction_audio_module::get_comp_level() {
 bool gain_reduction_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
-    if (!is_active or subindex > 1)
+    if (!is_active || subindex > 1)
         return false;
     
     for (int i = 0; i < points; i++)
     {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points - 1)
+            if (i == 0 || i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;
@@ -214,7 +214,7 @@ bool gain_reduction_audio_module::_get_graph(int subindex, float *data, int poin
             data[i] = dB_grid(output);
         }
     }
-    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+    if (subindex == (bypass > 0.5f ? 1 : 0) || mute > 0.1f)
         context->set_source_rgba(0.15, 0.2, 0.0, 0.3);
     else {
         context->set_source_rgba(0.15, 0.2, 0.0, 0.8);
@@ -226,13 +226,13 @@ bool gain_reduction_audio_module::_get_graph(int subindex, float *data, int poin
 
 bool gain_reduction_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
+    if (!is_active || bypass > 0.5f || mute > 0.f || subindex)
         return false;
         
     bool rms = (detection == 0);
     float det = rms ? sqrt(detected) : detected;
     x = 0.5 + 0.5 * dB_grid(det);
-    y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+    y = dB_grid(bypass > 0.5f || mute > 0.f ? det : output_level(det));
     return true;
 }
 
@@ -433,14 +433,14 @@ float gain_reduction2_audio_module::get_comp_level() {
 bool gain_reduction2_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
-    if (!is_active or subindex > 1)
+    if (!is_active || subindex > 1)
         return false;
     
     for (int i = 0; i < points; i++)
     {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points - 1)
+            if (i == 0 || i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;
@@ -449,7 +449,7 @@ bool gain_reduction2_audio_module::_get_graph(int subindex, float *data, int poi
             data[i] = dB_grid(output);
         }
     }
-    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+    if (subindex == (bypass > 0.5f ? 1 : 0) || mute > 0.1f)
         context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
     else {
         context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
@@ -461,13 +461,13 @@ bool gain_reduction2_audio_module::_get_graph(int subindex, float *data, int poi
 
 bool gain_reduction2_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
+    if (!is_active || bypass > 0.5f || mute > 0.f || subindex)
         return false;
         
     bool rms = (detection == 0);
     float det = rms ? sqrt(detected) : detected;
     x = 0.5 + 0.5 * dB_grid(det);
-    y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+    y = dB_grid(bypass > 0.5f || mute > 0.f ? det : output_level(det));
     return true;
 }
 
@@ -668,13 +668,13 @@ float expander_audio_module::get_expander_level() {
 bool expander_audio_module::_get_graph(int subindex, float *data, int points, cairo_iface *context, int *mode) const
 {
     redraw_graph = false;
-    if (!is_active or subindex > 1)
+    if (!is_active || subindex > 1)
         return false;
         
     for (int i = 0; i < points; i++) {
         float input = dB_grid_inv(-1.0 + i * 2.0 / (points - 1));
         if (subindex == 0) {
-            if (i == 0 or i >= points - 1)
+            if (i == 0 || i >= points - 1)
                 data[i] = dB_grid(input);
             else
                 data[i] = INFINITY;
@@ -683,7 +683,7 @@ bool expander_audio_module::_get_graph(int subindex, float *data, int points, ca
             data[i] = dB_grid(output);
         }
     }
-    if (subindex == (bypass > 0.5f ? 1 : 0) or mute > 0.1f)
+    if (subindex == (bypass > 0.5f ? 1 : 0) || mute > 0.1f)
         context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
     else {
         context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
@@ -695,13 +695,13 @@ bool expander_audio_module::_get_graph(int subindex, float *data, int points, ca
 
 bool expander_audio_module::_get_dot(int subindex, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or bypass > 0.5f or mute > 0.f or subindex)
+    if (!is_active || bypass > 0.5f || mute > 0.f || subindex)
         return false;
         
     bool rms = (detection == 0);
     float det = rms ? sqrt(detected) : detected;
     x = 0.5 + 0.5 * dB_grid(det);
-    y = dB_grid(bypass > 0.5f or mute > 0.f ? det : output_level(det));
+    y = dB_grid(bypass > 0.5f || mute > 0.f ? det : output_level(det));
     return true;
 }
 
@@ -918,11 +918,11 @@ float sidechaincompressor_audio_module::freq_gain(int index, double freq) const
 void sidechaincompressor_audio_module::params_changed()
 {
     // set the params of all filters
-    if(*params[param_f1_freq] != f1_freq_old or *params[param_f1_level] != f1_level_old
-        or *params[param_f2_freq] != f2_freq_old or *params[param_f2_level] != f2_level_old
-        or *params[param_sc_mode] != sc_mode) {
+    if(*params[param_f1_freq] != f1_freq_old || *params[param_f1_level] != f1_level_old
+        || *params[param_f2_freq] != f2_freq_old || *params[param_f2_level] != f2_level_old
+        || *params[param_sc_mode] != sc_mode) {
         float q = 0.707;
-        switch ((CalfScModes)*params[param_sc_mode]) {
+        switch ((CalfScModes)int(*params[param_sc_mode])) {
             default:
             case WIDEBAND:
                 f1L.set_hp_rbj((float)*params[param_f1_freq], q, (float)srate, *params[param_f1_level]);
@@ -1009,7 +1009,7 @@ void sidechaincompressor_audio_module::params_changed()
         f1_level_old = *params[param_f1_level];
         f2_freq_old = *params[param_f2_freq];
         f2_level_old = *params[param_f2_level];
-        sc_mode = (CalfScModes)*params[param_sc_mode];
+        sc_mode = (CalfScModes)int(*params[param_sc_mode]);
     }
     // light LED's
     if(params[param_f1_active] != NULL) {
@@ -1022,16 +1022,16 @@ void sidechaincompressor_audio_module::params_changed()
     compressor.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f);
     
     if (*params[param_f1_freq] != f1_freq_old1
-        or *params[param_f2_freq] != f2_freq_old1
-        or *params[param_f1_level] != f1_level_old1
-        or *params[param_f2_level] != f2_level_old1
-        or *params[param_sc_mode] != sc_mode_old1)
+        || *params[param_f2_freq] != f2_freq_old1
+        || *params[param_f1_level] != f1_level_old1
+        || *params[param_f2_level] != f2_level_old1
+        || *params[param_sc_mode] != sc_mode_old1)
     {
         f1_freq_old1 = *params[param_f1_freq];
         f2_freq_old1 = *params[param_f2_freq];
         f1_level_old1 = *params[param_f1_level];
         f2_level_old1 = *params[param_f2_level];
-        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        sc_mode_old1 = (CalfScModes)int(*params[param_sc_mode]);
         redraw_graph = true;
     }
 }
@@ -1094,7 +1094,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
                 rightSC = in2R * *params[param_sc_level];
             }
             
-            int mode = (CalfScModes)*params[param_sc_mode];
+            int mode = (CalfScModes)int(*params[param_sc_mode]);
             switch (mode) {
                 default:
                 case WIDEBAND:
@@ -1178,7 +1178,7 @@ uint32_t sidechaincompressor_audio_module::process(uint32_t offset, uint32_t num
 }
 bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
@@ -1190,7 +1190,7 @@ bool sidechaincompressor_audio_module::get_graph(int index, int subindex, int ph
 
 bool sidechaincompressor_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or !phase)
+    if (!is_active || !phase)
         return false;
     if (index == param_bypass) {
         return compressor._get_dot(subindex, x, y, size, context);
@@ -1200,7 +1200,7 @@ bool sidechaincompressor_audio_module::get_dot(int index, int subindex, int phas
 
 bool sidechaincompressor_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     if (index == param_bypass) {
         return compressor._get_gridline(subindex, pos, vertical, legend, context);
@@ -1417,15 +1417,15 @@ bool multibandcompressor_audio_module::get_graph(int index, int subindex, int ph
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
-    if ((index == param_solo0 + 11 * page and subindex == 1)
-    or  (index == param_bypass and subindex == page)) {
+    if ((index == param_solo0 + 11 * page && subindex == 1)
+    ||  (index == param_bypass && subindex == page)) {
         *mode = 1;
     }
-    if ((subindex == 1 and index != param_bypass)
-    or  (index == param_bypass)) {
+    if ((subindex == 1 && index != param_bypass)
+    ||  (index == param_bypass)) {
         if (r 
-        and ((index != param_bypass and *params[index - 1])
-        or   (index == param_bypass and *params[param_bypass0 + 11 * subindex])))
+        && ((index != param_bypass && *params[index - 1])
+        ||   (index == param_bypass && *params[param_bypass0 + 11 * subindex])))
             context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
         else
             context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
@@ -1622,9 +1622,9 @@ void deesser_audio_module::deactivate()
 void deesser_audio_module::params_changed()
 {
     // set the params of all filters
-    if(*params[param_f1_freq] != f1_freq_old or *params[param_f1_level] != f1_level_old
-        or *params[param_f2_freq] != f2_freq_old or *params[param_f2_level] != f2_level_old
-        or *params[param_f2_q] != f2_q_old) {
+    if(*params[param_f1_freq] != f1_freq_old || *params[param_f1_level] != f1_level_old
+        || *params[param_f2_freq] != f2_freq_old || *params[param_f2_level] != f2_level_old
+        || *params[param_f2_q] != f2_q_old) {
         float q = 0.707;
 
         hpL.set_hp_rbj((float)*params[param_f1_freq] * (1 - 0.17), q, (float)srate, *params[param_f1_level]);
@@ -1642,10 +1642,10 @@ void deesser_audio_module::params_changed()
     // and set the compressor module
     compressor.set_params((float)*params[param_laxity], (float)*params[param_laxity] * 1.33, *params[param_threshold], *params[param_ratio], 2.8, *params[param_makeup], *params[param_detection], 0.f, *params[param_bypass], 0.f);
     if (*params[param_f1_freq] != f1_freq_old1
-        or *params[param_f2_freq] != f2_freq_old1
-        or *params[param_f1_level] != f1_level_old1
-        or *params[param_f2_level] != f2_level_old1
-        or *params[param_f2_q] !=f2_q_old1)
+        || *params[param_f2_freq] != f2_freq_old1
+        || *params[param_f1_level] != f1_level_old1
+        || *params[param_f2_level] != f2_level_old1
+        || *params[param_f2_q] !=f2_q_old1)
     {
         f1_freq_old1 = *params[param_f1_freq];
         f2_freq_old1 = *params[param_f2_freq];
@@ -1755,7 +1755,7 @@ uint32_t deesser_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         pL.sanitize();
         pR.sanitize();
     }
-    if(params[param_detected_led] != NULL and gain < 0.89)
+    if(params[param_detected_led] != NULL && gain < 0.89)
         detected_led = srate >> 3;
     *params[param_detected_led] = detected_led;
     meters.fall(numsamples);
@@ -1935,11 +1935,11 @@ float sidechaingate_audio_module::freq_gain(int index, double freq) const
 void sidechaingate_audio_module::params_changed()
 {
     // set the params of all filters
-    if(*params[param_f1_freq] != f1_freq_old or *params[param_f1_level] != f1_level_old
-        or *params[param_f2_freq] != f2_freq_old or *params[param_f2_level] != f2_level_old
-        or *params[param_sc_mode] != sc_mode) {
+    if(*params[param_f1_freq] != f1_freq_old || *params[param_f1_level] != f1_level_old
+        || *params[param_f2_freq] != f2_freq_old || *params[param_f2_level] != f2_level_old
+        || *params[param_sc_mode] != sc_mode) {
         float q = 0.707;
-        switch ((CalfScModes)*params[param_sc_mode]) {
+        switch ((CalfScModes)int(*params[param_sc_mode])) {
             default:
             case WIDEBAND:
                 f1L.set_hp_rbj((float)*params[param_f1_freq], q, (float)srate, *params[param_f1_level]);
@@ -2026,7 +2026,7 @@ void sidechaingate_audio_module::params_changed()
         f1_level_old = *params[param_f1_level];
         f2_freq_old = *params[param_f2_freq];
         f2_level_old = *params[param_f2_level];
-        sc_mode = (CalfScModes)*params[param_sc_mode];
+        sc_mode = (CalfScModes)int(*params[param_sc_mode]);
     }
     // light LED's
     if(params[param_f1_active] != NULL) {
@@ -2039,16 +2039,16 @@ void sidechaingate_audio_module::params_changed()
     gate.set_params(*params[param_attack], *params[param_release], *params[param_threshold], *params[param_ratio], *params[param_knee], *params[param_makeup], *params[param_detection], *params[param_stereo_link], *params[param_bypass], 0.f, *params[param_range]);
     
     if (*params[param_f1_freq] != f1_freq_old1
-        or *params[param_f2_freq] != f2_freq_old1
-        or *params[param_f1_level] != f1_level_old1
-        or *params[param_f2_level] != f2_level_old1
-        or *params[param_sc_mode] != sc_mode_old1)
+        || *params[param_f2_freq] != f2_freq_old1
+        || *params[param_f1_level] != f1_level_old1
+        || *params[param_f2_level] != f2_level_old1
+        || *params[param_sc_mode] != sc_mode_old1)
     {
         f1_freq_old1 = *params[param_f1_freq];
         f2_freq_old1 = *params[param_f2_freq];
         f1_level_old1 = *params[param_f1_level];
         f2_level_old1 = *params[param_f2_level];
-        sc_mode_old1 = (CalfScModes)*params[param_sc_mode];
+        sc_mode_old1 = (CalfScModes)int(*params[param_sc_mode]);
         redraw_graph = true;
     }
 }
@@ -2109,7 +2109,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
                 rightSC = in2R * *params[param_sc_level];
             }
             
-            int mode = (CalfScModes)*params[param_sc_mode];
+            int mode = (CalfScModes)int(*params[param_sc_mode]);
             
             switch (mode) {
                 default:
@@ -2192,7 +2192,7 @@ uint32_t sidechaingate_audio_module::process(uint32_t offset, uint32_t numsample
 }
 bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     if (index == param_sc_listen && !subindex) {
         return ::get_graph(*this, subindex, data, points);
@@ -2204,7 +2204,7 @@ bool sidechaingate_audio_module::get_graph(int index, int subindex, int phase, f
 
 bool sidechaingate_audio_module::get_dot(int index, int subindex, int phase, float &x, float &y, int &size, cairo_iface *context) const
 {
-    if (!is_active or !phase)
+    if (!is_active || !phase)
         return false;
     if (index == param_bypass) {
         return gate._get_dot(subindex, x, y, size, context);
@@ -2214,7 +2214,7 @@ bool sidechaingate_audio_module::get_dot(int index, int subindex, int phase, flo
 
 bool sidechaingate_audio_module::get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (!is_active or phase)
+    if (!is_active || phase)
         return false;
     if (index == param_bypass) {
         return gate._get_gridline(subindex, pos, vertical, legend, context);
@@ -2428,15 +2428,15 @@ bool multibandgate_audio_module::get_graph(int index, int subindex, int phase, f
     } else {
         r = crossover.get_graph(subindex, phase, data, points, context, mode);
     }
-    if ((index == param_solo0 + 12 * page and subindex == 1)
-    or  (index == param_bypass and subindex == page)) {
+    if ((index == param_solo0 + 12 * page && subindex == 1)
+    ||  (index == param_bypass && subindex == page)) {
         *mode = 1;
     }
-    if ((subindex == 1 and index != param_bypass)
-    or  (index == param_bypass)) {
+    if ((subindex == 1 && index != param_bypass)
+    ||  (index == param_bypass)) {
         if (r 
-        and ((index != param_bypass and *params[index - 1])
-        or   (index == param_bypass and *params[param_bypass0 + 12 * subindex])))
+        && ((index != param_bypass && *params[index - 1])
+        ||   (index == param_bypass && *params[param_bypass0 + 12 * subindex])))
             context->set_source_rgba(0.15, 0.2, 0.0, 0.15);
         else
             context->set_source_rgba(0.15, 0.2, 0.0, 0.5);
@@ -2656,9 +2656,9 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         
         attcount += 1;
         if ( transients.envelope == transients.release
-        and transients.envelope > *params[param_display_threshold]
-        and attcount >= srate / 100
-        and pbuffer_available) {
+        && transients.envelope > *params[param_display_threshold]
+        && attcount >= srate / 100
+        && pbuffer_available) {
             int diff = (int)(srate / 10 / pixels);
             diff += diff & 1;
             attack_pos = (pbuffer_pos - diff * 5 + pbuffer_size) % pbuffer_size;
@@ -2702,7 +2702,7 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
         return true;
     }
     
-    if (subindex >= 2 or (*params[param_bypass] > 0.5f and subindex >= 1))
+    if (subindex >= 2 || (*params[param_bypass] > 0.5f && subindex >= 1))
         return false;
     if (points <= 0)
         return false;
@@ -2751,9 +2751,9 @@ bool transientdesigner_audio_module::get_graph(int index, int subindex, int phas
     for (int i = 0; i <= points; i++) {
         int pos = (pbuffer_draw + i * 5) % pbuffer_size + draw_curve;
         if (hold
-        and ((pos > pbuffer_pos and ((pbuffer_pos > attack_pos and pos > attack_pos)
-            or (pbuffer_pos < attack_pos and pos < attack_pos)))
-            or  (pbuffer_pos > attack_pos and pos < attack_pos))) {
+        && ((pos > pbuffer_pos && ((pbuffer_pos > attack_pos && pos > attack_pos)
+            || (pbuffer_pos < attack_pos && pos < attack_pos)))
+            ||  (pbuffer_pos > attack_pos && pos < attack_pos))) {
             // we are drawing trigger hold stuff outside the hold window
             // so we don't want to see old data - zero it out.
             data[i] = dB_grid(2.51e-10, 128, 0.6);
@@ -2770,12 +2770,12 @@ bool transientdesigner_audio_module::get_gridline(int index, int subindex, int p
         // frequency response
         return get_freq_gridline(subindex, pos, vertical, legend, context);
     
-    if (subindex >= 16 or phase)
+    if (subindex >= 16 || phase)
         return false;
     float gain = 16.f / (1 << subindex);
     pos = dB_grid(gain, 128, 0.6);
     context->set_source_rgba(0, 0, 0, subindex & 1 ? 0.1 : 0.2);
-    if (!(subindex & 1) and subindex) {
+    if (!(subindex & 1) && subindex) {
         std::stringstream ss;
         ss << (24 - 6 * subindex) << " dB";
         legend = ss.str();

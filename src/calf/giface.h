@@ -522,8 +522,8 @@ public:
     using Metadata::in_count;
     using Metadata::out_count;
     using Metadata::param_count;
-    float *ins[Metadata::in_count];
-    float *outs[Metadata::out_count];
+    float *ins[(Metadata::in_count != 0)  ? Metadata::in_count : 1];
+    float *outs[(Metadata::out_count != 0) ? Metadata::out_count : 1];
     float *params[Metadata::param_count];
     bool questionable_data_reported_in;
     bool questionable_data_reported_out;

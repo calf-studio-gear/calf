@@ -28,6 +28,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <map>
+#include <algorithm>
 
 namespace dsp {
 

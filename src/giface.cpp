@@ -24,6 +24,12 @@
 #include <math.h>
 #include <calf/giface.h>
 #include <calf/utils.h>
+#include <string.h>
+
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 using namespace std;
 using namespace calf_utils;
@@ -369,7 +375,7 @@ bool calf_plugins::get_freq_gridline(int subindex, float &pos, bool &vertical, s
         ss << (36 - 6 * subindex) << " dBFS";
         legend = ss.str();
     }
-    if (!legend.empty() and subindex != 6) {
+    if (!legend.empty() && subindex != 6) {
         context->set_source_rgba(0, 0, 0, 0.1);
         context->set_dash(dash, 0);
     } else if (subindex != 6) {
@@ -427,7 +433,7 @@ void calf_plugins::draw_cairo_label(cairo_iface *context, const char *label, flo
 
 bool frequency_response_line_graph::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (phase or subindex)
+    if (phase || subindex)
         return false;
     return ::get_graph(*this, subindex, data, points);
 }

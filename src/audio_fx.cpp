@@ -701,7 +701,7 @@ float lookahead_limiter::get_rdelta(float peak, float _limit, float _att, bool _
 
     // calc a release delta from this attenuation
     float _rdelta = (1.0 - _att) / (srate * release);
-    if(_asc and auto_release and asc_c > 0 and _a_att > _att) {
+    if(_asc && auto_release && asc_c > 0 && _a_att > _att) {
         // check if releasing to average level of peaks is steeper than
         // releasing to 1.f
         float _delta = std::max((_a_att - _att) / (srate * release), _rdelta / 10);
@@ -740,12 +740,12 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
 
     // add an eventually appearing peak to the asc fake buffer if asc active
-    if(auto_release and peak > _limit) {
+    if(auto_release && peak > _limit) {
         asc += peak;
         asc_c ++;
     }
 
-    if(peak > _limit or multi_coeff < 1.0) {
+    if(peak > _limit || multi_coeff < 1.0) {
         float _multi_coeff = 1.f;
         float _peak;
         
@@ -820,10 +820,10 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // but only if we're not sanitizing asc buffer
     float _peak = fabs(left) > fabs(right) ? fabs(left) : fabs(right);
     float _multi_coeff = (use_multi) ? multi_buffer[(pos + channels) % buffer_size] : 1.f;
-    if(pos == asc_pos and !asc_changed) {
+    if(pos == asc_pos && !asc_changed) {
         asc_pos = -1;
     }
-    if(auto_release and asc_pos == -1 and _peak > (limit * weight * _multi_coeff)) {
+    if(auto_release && asc_pos == -1 && _peak > (limit * weight * _multi_coeff)) {
         asc -= _peak;
         asc_c --;
     }
@@ -889,12 +889,12 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
         delta = (1.0f - att) / (srate * release);
     }
 
-    if(att != 1.f and 1 - att < 0.0000000000001) {
+    if(att != 1.f && 1 - att < 0.0000000000001) {
         // denormalize att
         att = 1.f;
     }
 
-    if(delta != 0.f and fabs(delta) < 0.00000000000001) {
+    if(delta != 0.f && fabs(delta) < 0.00000000000001) {
         // denormalize delta
         delta = 0.f;
     }
@@ -910,7 +910,7 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     pos = (pos + channels) % buffer_size;
 
     // sanitizing is always done after a full cycle through the lookahead buffer
-    if(_sanitize and pos == 0) _sanitize = false;
+    if(_sanitize && pos == 0) _sanitize = false;
 
     asc_changed = false;
 }
@@ -1003,7 +1003,7 @@ void transients::process(float *in, float s) {
     double attdelta = (envelope - attack)
                    * 0.707
                    / (srate * att_time * 0.001);
-    if (sustain_ended == true and envelope / attack - 1 > 0.2f)
+    if (sustain_ended == true && envelope / attack - 1 > 0.2f)
         sustain_ended = false;
     attack += attdelta;
     
@@ -1015,7 +1015,7 @@ void transients::process(float *in, float s) {
     // starts to fall when the envelope falls beneath the
     // sustain threshold
         
-    if ((envelope / release) - sust_thres < 0 and sustain_ended == false) 
+    if ((envelope / release) - sust_thres < 0 && sustain_ended == false) 
         sustain_ended = true; 
     double reldelta = sustain_ended ? relfac : 1; 
                    
@@ -1084,7 +1084,7 @@ float crossover::set_filter(int b, float f, bool force) {
     // restrict to 10-20k
     f = std::max(10.f, std::min(20000.f, f));
     // nothing changed? return
-    if (freq[b] == f and !force)
+    if (freq[b] == f && !force)
         return freq[b];
     freq[b] = f;
     float q;
@@ -1195,8 +1195,8 @@ bool crossover::get_graph(int subindex, int phase, float *data, int points, cair
 }
 bool crossover::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = 0 | (redraw_graph or !generation ? LG_CACHE_GRAPH : 0) | (!generation ? LG_CACHE_GRID : 0);
-    return redraw_graph or !generation;
+    layers = 0 | (redraw_graph || !generation ? LG_CACHE_GRAPH : 0) | (!generation ? LG_CACHE_GRID : 0);
+    return redraw_graph || !generation;
 }
 
 int crossover::get_filter_count() const
@@ -1280,7 +1280,7 @@ float bitreduction::waveshape(float in) const
             // linear
             y = (in) * coeff;
             k = roundf(y);
-            if (k - aa1 <= y and y <= k + aa1) {
+            if (k - aa1 <= y && y <= k + aa1) {
                 k /= coeff;
             } else if (y > k + aa1) {
                 k = k / coeff + ((k + 1) / coeff - k / coeff) * 0.5 * (sin(M_PI * (fabs(y - k) - aa1) / aa - M_PI_2) + 1);
@@ -1294,7 +1294,7 @@ float bitreduction::waveshape(float in) const
             k = roundf(y);
             if(!in) {
                 k = 0;
-            } else if (k - aa1 <= y and y <= k + aa1) {
+            } else if (k - aa1 <= y && y <= k + aa1) {
                 k = in / fabs(in) * exp(k / sqr - sqr);
             } else if (y > k + aa1) {
                 k = in / fabs(in) * (exp(k / sqr - sqr) + (exp((k + 1) / sqr - sqr) - exp(k / sqr - sqr)) * 0.5 * (sin((fabs(y - k) - aa1) / aa * M_PI - M_PI_2) + 1));
@@ -1319,8 +1319,8 @@ float bitreduction::process(float in)
 
 bool bitreduction::get_layers(int index, int generation, unsigned int &layers) const
 {
-    layers = redraw_graph or !generation ? LG_CACHE_GRAPH | LG_CACHE_GRID : 0;
-    return redraw_graph or !generation;
+    layers = redraw_graph || !generation ? LG_CACHE_GRAPH | LG_CACHE_GRID : 0;
+    return redraw_graph || !generation;
 }
 bool bitreduction::get_graph(int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
@@ -1330,7 +1330,7 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
     }
     for (int i = 0; i < points; i++) {
          data[i] = sin(((float)i / (float)points * 360.) * M_PI / 180.);
-        if (subindex and !bypass)
+        if (subindex && !bypass)
             data[i] = waveshape(data[i]);
         else {
             context->set_line_width(1);
@@ -1341,7 +1341,7 @@ bool bitreduction::get_graph(int subindex, int phase, float *data, int points, c
 }
 bool bitreduction::get_gridline(int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const
 {
-    if (phase or subindex)
+    if (phase || subindex)
         return false;
     pos = 0;
     vertical = false;

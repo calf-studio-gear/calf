@@ -26,9 +26,11 @@
 #include <vector>
 #include <string.h>
 #include <errno.h>
+#include <iostream>
+#ifndef _MSC_VER
 #include <netinet/in.h>
 #include <netdb.h>
-#include <iostream>
+#endif
 
 namespace osctl
 {
@@ -462,7 +464,9 @@ struct osc_net_exception: public std::exception
     virtual const char *what() const throw() { return error_msg.c_str(); }
     virtual ~osc_net_exception() throw () {}
 };
-    
+#ifdef _MSC_VER
+//TODO: add replacement for osc_net_dns_exception
+#else
 struct osc_net_dns_exception: public std::exception
 {
     int net_errno;
@@ -476,7 +480,7 @@ struct osc_net_dns_exception: public std::exception
     virtual const char *what() const throw() { return error_msg.c_str(); }
     virtual ~osc_net_dns_exception() throw () {}
 };
-    
+#endif
 template<class OscStream>
 struct osc_message_sink
 {

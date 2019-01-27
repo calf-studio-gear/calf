@@ -24,9 +24,10 @@
 #include <calf/giface.h>
 #include <calf/modules_tools.h>
 #include <calf/modules_dev.h>
-#include <sys/time.h>
 #include <calf/utils.h>
-
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
 
 using namespace dsp;
 using namespace calf_plugins;
@@ -219,7 +220,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             meter_outR = R;
             
             // phase meter
-            if(fabs(L) > 0.001 and fabs(R) > 0.001) {
+            if(fabs(L) > 0.001 && fabs(R) > 0.001) {
                 meter_phase = fabs(fabs(L+R) > 0.000000001 ? sin(fabs((L-R)/(L+R))) : 0.f);
             } else {
                 meter_phase = 0.f;
@@ -811,11 +812,11 @@ void multispread_audio_module::deactivate()
 void multispread_audio_module::params_changed()
 {
     if (*params[param_amount0] != amount0
-    or  *params[param_amount1] != amount1
-    or  *params[param_amount2] != amount2
-    or  *params[param_amount3] != amount3
-    or  *params[param_intensity] != intensity
-    or  *params[param_filters] != filters) {
+    ||  *params[param_amount1] != amount1
+    ||  *params[param_amount2] != amount2
+    ||  *params[param_amount3] != amount3
+    ||  *params[param_intensity] != intensity
+    ||  *params[param_filters] != filters) {
         redraw_graph = true;
         amount0 = *params[param_amount0];
         amount1 = *params[param_amount1];
@@ -926,7 +927,7 @@ uint32_t multispread_audio_module::process(uint32_t offset, uint32_t numsamples,
 }
 bool multispread_audio_module::get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const
 {
-    if (subindex or phase)
+    if (subindex || phase)
         return false;
     return ::get_graph(*this, index, data, points, 64, 0);
 }

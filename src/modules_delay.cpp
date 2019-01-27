@@ -25,8 +25,9 @@
 #include <calf/giface.h>
 #include <calf/modules_delay.h>
 #include <calf/modules_dev.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
-
+#endif
 using namespace dsp;
 using namespace calf_plugins;
 
@@ -138,8 +139,8 @@ char *vintage_delay_audio_module::configure(const char *key, const char *value)
 void vintage_delay_audio_module::params_changed()
 {
     double bpm = 120;
-    bpm = convert_periodic(*params[param_bpm + (int)((periodic_unit)*params[param_timing])],
-                                  (periodic_unit)*params[param_timing], UNIT_BPM);
+    bpm = convert_periodic(*params[param_bpm + (int)((periodic_unit)int(*params[param_timing]))],
+                                  (periodic_unit)int(*params[param_timing]), UNIT_BPM);
     
     // not implemented by now
     //switch ((int)*params[par_frag]) {
