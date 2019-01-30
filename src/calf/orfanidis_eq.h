@@ -28,6 +28,7 @@
 #include <limits>
 #include <numeric>
 #include <algorithm>
+#include <functional>
 
 namespace OrfanidisEq {
 
