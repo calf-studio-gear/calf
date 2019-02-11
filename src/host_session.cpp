@@ -48,10 +48,6 @@ host_session::host_session(session_environment_iface *se)
     save_file_on_next_idle_call = false;
     quit_on_next_idle_call = 0;
     handle_event_on_next_idle_call = NULL;
-    if (has_gui) {
-        main_win = session_env->create_main_window();
-        main_win->set_owner(this);
-    }
 }
 
 extern "C" plugin_metadata_iface *create_calf_metadata_by_name(const char *effect_name);
@@ -134,7 +130,10 @@ void host_session::open()
     
     client.open(client_name.c_str(), !jack_session_id.empty() ? jack_session_id.c_str() : NULL);
     jack_set_session_callback(client.client, session_callback, this);
+
     if (has_gui) {
+        main_win = session_env->create_main_window();
+        main_win->set_owner(this);
         main_win->add_condition("jackhost");
         main_win->add_condition("directlink");
         main_win->add_condition("configure");
