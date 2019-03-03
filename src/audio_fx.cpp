@@ -942,6 +942,7 @@ transients::transients() {
     lookpos         = 0;
     channels        = 1;
     sustain_ended   = false;
+    srand(1);
 }
 transients::~transients()
 {
@@ -979,7 +980,7 @@ void transients::calc_relfac()
     relfac = pow(0.5f, 1.f / (0.001 * rel_time * srate));
 }
 void transients::process(float *in, float s) {
-    s = fabs(s);
+    s = fabs(s) + 1e-10f * ((float)rand() / (float)RAND_MAX);
     // fill lookahead buffer
     for (int i = 0; i < channels; i++) {
         lookbuf[lookpos + i] = in[i];
