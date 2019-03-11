@@ -34,3 +34,4 @@ doc/html/*
 dist/*
 .cproject
 .project
+compile
