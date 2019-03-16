@@ -590,11 +590,12 @@ int main(int argc, char *argv[])
         sess.set_signal_handlers();
         if (sess.has_gui) {
             sess.session_env->start_gui_loop();
-            sess.close();
         } else {
-            while (1)
+            while (sess.quit_on_next_idle_call == 0){
                 sleep(1);
+            }   
         }
+        sess.close();
     }
     catch(std::exception &e)
     {

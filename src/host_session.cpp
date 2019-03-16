@@ -156,7 +156,11 @@ void host_session::session_callback(jack_session_event_t *event, void *arg)
     case JackSessionSaveAndQuit:
     case JackSessionSaveTemplate:
         host_session *hs = (host_session *)arg;
-        hs->handle_event_on_next_idle_call = event;
+        if(hs->has_gui){
+            hs->handle_jack_session_event(event);
+        } else {
+            hs->handle_event_on_next_idle_call = event;
+        }
     }
     // XXXKF if more than one event happen in a short sequence, the other event
     // may be lost. This calls for implementing a proper event queue.
@@ -586,8 +590,7 @@ void host_session::on_idle()
     if (save_file_on_next_idle_call)
     {
         save_file_on_next_idle_call = false;
-        if (has_gui)
-            main_win->save_file();
+        main_win->save_file();
         printf("LADISH Level 1 support: file '%s' saved\n", get_current_filename().c_str());
     }
 
