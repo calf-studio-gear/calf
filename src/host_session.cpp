@@ -157,9 +157,9 @@ void host_session::session_callback(jack_session_event_t *event, void *arg)
     case JackSessionSaveTemplate:
         host_session *hs = (host_session *)arg;
         if(hs->has_gui){
-            hs->handle_event_on_next_idle_call = event;
-        } else {
             hs->handle_jack_session_event(event);
+        } else {
+            hs->handle_event_on_next_idle_call = event;
         }
     }
     // XXXKF if more than one event happen in a short sequence, the other event
