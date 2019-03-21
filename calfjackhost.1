@@ -1,4 +1,4 @@
-.TH calfjackhost 1 2008-01-29
+.TH calfjackhost 1 2019-03-21
 .SH NAME
 calfjackhost \- JACK wrapper for Calf plugins
 .SH SYNOPSIS
@@ -41,6 +41,9 @@ List all available plug-ins
 .TP
 \fB-h -? --help\fR
 prints a help text
+.TP
+\fB-t --no-tray\fR
+disable the tray icon on start
 .PP
 An exclamation mark (!) in place of plugin name means automatic connection. If "!" is placed before the first plugin name, the first plugin has its inputs connected to \fBsystem:capture_1\fR
 and \fBsystem:capture_2\fR. If it's placed between plugin names, those plugins are connected together (first plugin's output is connected to second
