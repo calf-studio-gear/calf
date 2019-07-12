@@ -367,8 +367,11 @@ void host_session::close()
 {
     if (session_manager)
         session_manager->disconnect();
-    if (has_gui)
+    if (has_gui){
         main_win->on_closed();
+        delete main_win;
+    }
+        
     client.deactivate();
     client.delete_plugins();
     client.destroy_automation_input();
@@ -644,7 +647,5 @@ void host_session::set_current_filename(const std::string &name)
 }
 
 host_session::~host_session()
-{
-    if (has_gui)
-        delete main_win;
+{      
 }
