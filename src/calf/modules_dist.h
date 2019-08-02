@@ -120,7 +120,6 @@ class vinyl_audio_module:
     bool active;
     uint32_t clip_inL, clip_inR, clip_outL, clip_outR;
     float meter_inL, meter_inR, meter_outL, meter_outR;
-    mutable bool redraw_output;
     
     float speed_old, freq_old, aging_old;
     

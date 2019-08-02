@@ -32,6 +32,13 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+FORWARD_DECLARE_METADATA(stereo)
+FORWARD_DECLARE_METADATA(mono)
+FORWARD_DECLARE_METADATA(multispread)
+FORWARD_DECLARE_METADATA(multibandenhancer)
+FORWARD_DECLARE_METADATA(analyzer)
+FORWARD_DECLARE_METADATA(widgets)
+
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 #define sinc(x) (!x) ? 1 : sin(M_PI * x)/(M_PI * x);
 

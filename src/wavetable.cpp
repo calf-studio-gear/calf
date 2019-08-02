@@ -27,6 +27,8 @@
 #include <calf/modules_synths.h>
 #include <iostream>
 
+FORWARD_DECLARE_METADATA(wavetable)
+
 using namespace dsp;
 using namespace calf_plugins;
 using namespace std;

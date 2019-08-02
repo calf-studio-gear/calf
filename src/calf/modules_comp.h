@@ -40,10 +40,10 @@ namespace calf_plugins {
 class gain_reduction_audio_module
 {
 private:
-    float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
+    float linSlope, detected, kneeStart, linKneeStart, kneeStop;
     float compressedKneeStop, adjKneeStart, thres;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
-    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection;
     mutable bool redraw_graph;
     uint32_t srate;
     bool is_active;
@@ -73,10 +73,9 @@ public:
 class gain_reduction2_audio_module
 {
 private:
-    float linSlope, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop;
-    float compressedKneeStop, adjKneeStart, thres;
+    float linSlope, detected;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_comp;
-    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection, old_stereo_link;
+    float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_mute, old_detection;
     mutable bool redraw_graph;
     float old_y1, old_yl, old_mre, old_mae;
     uint32_t srate;
@@ -106,7 +105,7 @@ public:
 
 class expander_audio_module {
 private:
-    float linSlope, peak, detected, kneeSqrt, kneeStart, linKneeStart, kneeStop, linKneeStop;
+    float linSlope, detected, kneeStart, linKneeStart, kneeStop, linKneeStop;
     float compressedKneeStop, adjKneeStart, range, thres, attack_coeff, release_coeff;
     float attack, release, threshold, ratio, knee, makeup, detection, stereo_link, bypass, mute, meter_out, meter_gate;
     float old_threshold, old_ratio, old_knee, old_makeup, old_bypass, old_range, old_trigger, old_mute, old_detection, old_stereo_link;
@@ -180,7 +179,7 @@ private:
     float f1_freq_old, f2_freq_old, f1_level_old, f2_level_old;
     float f1_freq_old1, f2_freq_old1, f1_level_old1, f2_level_old1;
     CalfScModes sc_mode;
-    CalfScModes sc_mode_old, sc_mode_old1;
+    CalfScModes sc_mode_old1;
     mutable bool redraw_graph;
     float f1_active, f2_active;
     gain_reduction_audio_module compressor;
@@ -214,9 +213,8 @@ private:
     typedef multibandcompressor_audio_module AM;
     static const int strips = 4;
     bool solo[strips];
-    float xout[strips], xin[2];
+    float xin[2];
     bool no_solo;
-    float meter_inL, meter_inR, meter_outL, meter_outR;
     gain_reduction_audio_module strip[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;
@@ -381,9 +379,8 @@ private:
     typedef multibandgate_audio_module AM;
     static const int strips = 4;
     bool solo[strips];
-    float xout[strips], xin[2];
+    float xin[2];
     bool no_solo;
-    float meter_inL, meter_inR, meter_outL, meter_outR;
     expander_audio_module gate[strips];
     dsp::crossover crossover;
     dsp::bypass bypass;

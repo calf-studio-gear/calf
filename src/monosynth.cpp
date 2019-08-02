@@ -27,6 +27,8 @@ using namespace std;
 
 float silence[4097];
 
+FORWARD_DECLARE_METADATA(monosynth)
+
 monosynth_audio_module::monosynth_audio_module()
 : mod_matrix_impl(mod_matrix_data, &mm_metadata)
 , inertia_cutoff(1)

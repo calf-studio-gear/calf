@@ -889,4 +889,10 @@ inline float subindex_to_freq(int subindex)
 
 };
 
+#define FORWARD_DECLARE_METADATA(plugin) \
+    template<> const char *calf_plugins::plugin_metadata<calf_plugins::plugin##_metadata>::port_names[]; \
+    template<> calf_plugins::parameter_properties calf_plugins::plugin_metadata<calf_plugins::plugin##_metadata>::param_props[]; \
+    template<> calf_plugins::ladspa_plugin_info calf_plugins::plugin_metadata<calf_plugins::plugin##_metadata>::plugin_info;
+
+
 #endif

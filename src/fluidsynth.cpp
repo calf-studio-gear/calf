@@ -29,6 +29,8 @@ using namespace dsp;
 using namespace calf_plugins;
 using namespace std;
 
+FORWARD_DECLARE_METADATA(fluidsynth)
+
 fluidsynth_audio_module::fluidsynth_audio_module()
 {
     settings = NULL;

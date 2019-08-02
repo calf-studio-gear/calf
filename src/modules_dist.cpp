@@ -24,6 +24,14 @@
 #include <calf/giface.h>
 #include <calf/modules_dist.h>
 #include <string>
+
+FORWARD_DECLARE_METADATA(saturator)
+FORWARD_DECLARE_METADATA(exciter)
+FORWARD_DECLARE_METADATA(bassenhancer)
+FORWARD_DECLARE_METADATA(vinyl)
+FORWARD_DECLARE_METADATA(tapesimulator)
+FORWARD_DECLARE_METADATA(crusher)
+
 #ifdef _MSC_VER
 #include <intrin.h>
 inline int clz(unsigned int value)

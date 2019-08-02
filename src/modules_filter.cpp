@@ -27,6 +27,19 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+FORWARD_DECLARE_METADATA(equalizer5band)
+FORWARD_DECLARE_METADATA(equalizer8band)
+FORWARD_DECLARE_METADATA(equalizer12band)
+FORWARD_DECLARE_METADATA(equalizer30band)
+FORWARD_DECLARE_METADATA(envelopefilter)
+FORWARD_DECLARE_METADATA(filter)
+FORWARD_DECLARE_METADATA(filterclavier)
+FORWARD_DECLARE_METADATA(emphasis)
+FORWARD_DECLARE_METADATA(xover2)
+FORWARD_DECLARE_METADATA(xover3)
+FORWARD_DECLARE_METADATA(xover4)
+FORWARD_DECLARE_METADATA(vocoder)
+
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
 /**********************************************************************

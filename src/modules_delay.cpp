@@ -31,6 +31,12 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+FORWARD_DECLARE_METADATA(reverb)
+FORWARD_DECLARE_METADATA(vintage_delay)
+FORWARD_DECLARE_METADATA(comp_delay)
+FORWARD_DECLARE_METADATA(haas_enhancer)
+FORWARD_DECLARE_METADATA(reverse_delay)
+
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
 /**********************************************************************

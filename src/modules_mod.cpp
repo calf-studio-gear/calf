@@ -26,6 +26,13 @@
 using namespace dsp;
 using namespace calf_plugins;
 
+FORWARD_DECLARE_METADATA(flanger)
+FORWARD_DECLARE_METADATA(phaser)
+FORWARD_DECLARE_METADATA(rotary_speaker)
+FORWARD_DECLARE_METADATA(multichorus)
+FORWARD_DECLARE_METADATA(pulsator)
+FORWARD_DECLARE_METADATA(ringmodulator)
+
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
 /**********************************************************************

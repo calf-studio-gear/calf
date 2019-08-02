@@ -29,6 +29,15 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
+FORWARD_DECLARE_METADATA(compressor)
+FORWARD_DECLARE_METADATA(sidechaincompressor)
+FORWARD_DECLARE_METADATA(multibandcompressor)
+FORWARD_DECLARE_METADATA(monocompressor)
+FORWARD_DECLARE_METADATA(gate)
+FORWARD_DECLARE_METADATA(sidechaingate)
+FORWARD_DECLARE_METADATA(multibandgate)
+FORWARD_DECLARE_METADATA(transientdesigner)
+FORWARD_DECLARE_METADATA(deesser)
 
 /**********************************************************************
  * GAIN REDUCTION by Thor Harald Johanssen

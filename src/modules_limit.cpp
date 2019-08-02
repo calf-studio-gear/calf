@@ -30,6 +30,10 @@ using namespace calf_plugins;
 
 #define SET_IF_CONNECTED(name) if (params[AM::param_##name] != NULL) *params[AM::param_##name] = name;
 
+FORWARD_DECLARE_METADATA(limiter)
+FORWARD_DECLARE_METADATA(multibandlimiter)
+FORWARD_DECLARE_METADATA(sidechainlimiter)
+
 /**********************************************************************
  * LIMITER by Christian Holschuh and Markus Schmidt
 **********************************************************************/

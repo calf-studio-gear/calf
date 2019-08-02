@@ -31,9 +31,7 @@ using namespace calf_plugins;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<> const char *plugin_metadata<organ_metadata>::port_names[];
-template<> parameter_properties plugin_metadata<organ_metadata>::param_props[];
-template<> ladspa_plugin_info plugin_metadata<organ_metadata>::plugin_info;
+FORWARD_DECLARE_METADATA(organ)
 
 organ_audio_module::organ_audio_module()
 : drawbar_organ(&par_values)

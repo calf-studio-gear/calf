@@ -41,7 +41,7 @@ class limiter_audio_module: public audio_module<limiter_metadata>, public line_g
 private:
     typedef limiter_audio_module AM;
     uint32_t asc_led;
-    int mode, mode_old, oversampling_old;
+    int oversampling_old;
     dsp::lookahead_limiter limiter;
     dsp::resampleN resampler[2];
     dsp::bypass bypass;
@@ -70,7 +70,7 @@ private:
     typedef multibandlimiter_audio_module AM;
     static const int strips = 4;
     uint32_t asc_led, cnt;
-    int _mode, mode_old;
+    int _mode;
     bool solo[strips];
     bool no_solo;
     dsp::lookahead_limiter strip[strips];
@@ -84,7 +84,6 @@ private:
     unsigned int overall_buffer_size;
     float *buffer;
     int channels;
-    float striprel[strips];
     float weight[strips];
     float weight_old[strips];
     float limit_old;
@@ -113,7 +112,7 @@ private:
     typedef sidechainlimiter_audio_module AM;
     static const int strips = 5;
     uint32_t asc_led, cnt;
-    int _mode, mode_old;
+    int _mode;
     bool solo[strips];
     bool no_solo;
     dsp::lookahead_limiter strip[strips];
@@ -127,7 +126,6 @@ private:
     unsigned int overall_buffer_size;
     float *buffer;
     int channels;
-    float striprel[strips];
     float weight[strips];
     float weight_old[strips];
     float limit_old;
