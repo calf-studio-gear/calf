@@ -165,7 +165,7 @@ if test "$set_enable_debug" = "yes"; then
   CXXFLAGS="$CXXFLAGS -O0 -g -Wall"
 else
   # TODO: remove -finline options if clang is used
-  CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -Wall"
+  CXXFLAGS="$CXXFLAGS -O3 -finline-functions -finline-functions-called-once -finline-limit=80 -Wall"
 fi
 
 if test "$set_enable_sse" = "yes"; then

@@ -28,6 +28,8 @@
 
 #if ENABLE_EXPERIMENTAL
 
+FORWARD_DECLARE_METADATA(pitch)
+
 // http://www.cs.otago.ac.nz/tartini/papers/A_Smarter_Way_to_Find_Pitch.pdf
 
 using namespace calf_plugins;

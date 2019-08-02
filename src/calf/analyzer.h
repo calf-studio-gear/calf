@@ -58,6 +58,11 @@ private:
 
     
 public:
+    using frequency_response_line_graph::get_graph;
+    using frequency_response_line_graph::get_moving;
+    using frequency_response_line_graph::get_gridline;
+    using frequency_response_line_graph::get_layers;
+
     uint32_t srate;
     analyzer();
     void process(float L, float R);

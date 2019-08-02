@@ -142,6 +142,8 @@ template<typename FilterClass, typename Metadata>
 class filter_module_with_inertia: public audio_module<Metadata>, public FilterClass,
 public frequency_response_line_graph
 {
+    using FilterClass::calculate_filter;
+    using FilterClass::freq_gain;
 public:
     /// These are pointers to the ins, outs, params arrays in the main class
     typedef filter_module_with_inertia inertia_filter_module;
@@ -446,6 +448,7 @@ public:
 class envelopefilter_audio_module: public audio_module<envelopefilter_metadata>, public dsp::biquad_filter_module,
 public frequency_response_line_graph
 {
+    using dsp::biquad_filter_module::freq_gain;
 public:
     uint32_t srate;
     bool is_active;

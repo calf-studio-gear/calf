@@ -319,6 +319,7 @@ public:
     using drawbar_organ::note_on;
     using drawbar_organ::note_off;
     using drawbar_organ::control_change;
+    using drawbar_organ::pitch_bend;
     enum { param_count = drawbar_organ::param_count};
     dsp::organ_parameters par_values;
     uint32_t srate;
