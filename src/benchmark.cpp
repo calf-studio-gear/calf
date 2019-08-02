@@ -50,6 +50,17 @@ using namespace dsp;
 using namespace osctl;
 #endif
 
+namespace calf_plugins {
+
+#define PER_MODULE_ITEM(name, isSynth, jackname) \
+    template<> const char *plugin_metadata<name##_metadata>::port_names[]; \
+    template<> parameter_properties plugin_metadata<name##_metadata>::param_props[]; \
+    template<> ladspa_plugin_info plugin_metadata<name##_metadata>::plugin_info;
+
+#include <calf/modulelist.h>
+    
+}
+
 bool benchmark_globals::warned = false;
 
 template<int BUF_SIZE>

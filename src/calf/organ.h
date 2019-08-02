@@ -341,9 +341,9 @@ public:
     void deactivate();
     uint32_t process(uint32_t offset, uint32_t nsamples, uint32_t inputs_mask, uint32_t outputs_mask);
     /// No CV inputs for now
-    bool is_cv(int param_no) { return false; }
+    bool is_cv(int param_no) const { return false; }
     /// Practically all the stuff here is noisy
-    bool is_noisy(int param_no) { return true; }
+    bool is_noisy(int param_no) const { return true; }
     void execute(int cmd_no);
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;

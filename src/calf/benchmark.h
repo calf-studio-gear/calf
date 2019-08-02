@@ -19,7 +19,7 @@
  * Boston, MA  02110-1301  USA
  */
 #ifndef __CALF_BENCHMARK_H
-#define __CALF_BENCHMAR_H
+#define __CALF_BENCHMARK_H
 
 #include <time.h>
 #include <sys/time.h>

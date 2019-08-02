@@ -721,8 +721,7 @@ uint32_t equalizer30band_audio_module::process(uint32_t offset, uint32_t numsamp
 **********************************************************************/
 
 filterclavier_audio_module::filterclavier_audio_module() 
-: filter_module_with_inertia<biquad_filter_module, filterclavier_metadata>(ins, outs, params)
-, min_gain(1.0)
+: min_gain(1.0)
 , max_gain(32.0)
 , last_note(-1)
 , last_velocity(-1)
