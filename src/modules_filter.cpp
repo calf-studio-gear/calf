@@ -658,7 +658,7 @@ void equalizer30band_audio_module::set_sample_rate(uint32_t sr)
     for(unsigned int i = 0; i < eq_arrL.size(); i++)
     {
         eq_arrL[i]->setSampleRate(srate);
-        eq_arrL[i]->setSampleRate(srate);
+        eq_arrR[i]->setSampleRate(srate);//maybe a typo flaw, by vlee78
     }
 
     int meter[] = {param_level_in_vuL, param_level_in_vuR, param_level_out_vuL, param_level_out_vuR};
