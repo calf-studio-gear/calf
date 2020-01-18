@@ -532,9 +532,9 @@ public:
 
     audio_module() {
         progress_report = NULL;
-        memset(ins, 0, sizeof(ins));
-        memset(outs, 0, sizeof(outs));
-        memset(params, 0, sizeof(params));
+        memset(ins, 0, sizeof(ins) * sizeof(ins[0]));
+        memset(outs, 0, sizeof(outs) * sizeof(outs[0]));
+        memset(params, 0, sizeof(params) * sizeof(params[0]));
         questionable_data_reported_in = false;
         questionable_data_reported_out = false;
     }
