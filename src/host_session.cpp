@@ -19,6 +19,7 @@
  * 02110-1301, USA.
  */
 
+#include <stdlib.h>
 #include <calf/giface.h>
 #include <calf/host_session.h>
 #include <calf/gui.h>
@@ -282,8 +283,8 @@ void host_session::connect()
                     {
                         fprintf(stderr, "Cannot connect input to plugin %s - the plugin no input ports\n", plugins[0]->name.c_str());
                     } else {
-                        client.connect("system:capture_1", cnp + plugins[0]->get_inputs()[0].name);
-                        client.connect("system:capture_2", cnp + plugins[0]->get_inputs()[1].name);
+                        client.connect(getenv("CALF_IN_1")?getenv("CALF_IN_1"):"system:capture_1", cnp + plugins[0]->get_inputs()[0].name);
+                        client.connect(getenv("CALF_IN_2")?getenv("CALF_IN_2"):"system:capture_2", cnp + plugins[0]->get_inputs()[1].name);
                     }
                 }
                 else
@@ -306,8 +307,8 @@ void host_session::connect()
             {
                 fprintf(stderr, "Cannot connect plugin %s to output - incompatible ports\n", plugins[last]->name.c_str());
             } else {
-                client.connect(cnp + plugins[last]->get_outputs()[0].name, "system:playback_1");
-                client.connect(cnp + plugins[last]->get_outputs()[1].name, "system:playback_2");
+                client.connect(cnp + plugins[last]->get_outputs()[0].name, getenv("CALF_OUT_1")?getenv("CALF_OUT_1"):"system:playback_1");
+                client.connect(cnp + plugins[last]->get_outputs()[1].name, getenv("CALF_OUT_2")?getenv("CALF_OUT_2"):"system:playback_2");
             }
         }
         if (autoconnect_midi != "") {
