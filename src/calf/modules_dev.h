@@ -78,7 +78,7 @@ public:
     /// Handle pitch bend message.
     inline void pitch_bend(int channel, int value)
     {
-        fluid_synth_pitch_bend(synth, 0, value + 0x2000);
+        fluid_synth_pitch_bend(synth, channel, value + 0x2000);
     }
     /// Handle control change messages.
     void control_change(int channel, int controller, int value);
