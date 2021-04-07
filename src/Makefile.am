@@ -55,9 +55,9 @@ pkglib_LTLIBRARIES += libcalflv2gui.la
 libcalflv2gui_la_SOURCES = gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp
 
 if USE_DEBUG
-libcalflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static  -Wl,-z,nodelete
+libcalflv2gui_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat $(GUI_DEPS_LIBS) -disable-static  -Wl,-z,nodelete
 else
-libcalflv2gui_la_LDFLAGS = -rpath $(lv2dir) -avoid-version -module -lexpat -export-symbols-regex "lv2ui_descriptor" $(GUI_DEPS_LIBS) -disable-static  -Wl,-z,nodelete
+libcalflv2gui_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -export-symbols-regex "lv2ui_descriptor" $(GUI_DEPS_LIBS) -disable-static  -Wl,-z,nodelete
 endif
 endif
 
@@ -79,7 +79,10 @@ if USE_GUI
 endif
 if USE_LV2
 	install -d -m 755 $(DESTDIR)$(lv2dir)
-	ln -sf $(pkglibdir)/calf.so $(DESTDIR)$(lv2dir)/calf.so
+	ln -sf $(pkglibdir)/libcalf.so $(DESTDIR)$(lv2dir)/calf.so
+if USE_LV2_GUI
+	ln -sf $(pkglibdir)/libcalflv2gui.so $(DESTDIR)$(lv2dir)/calflv2gui.so
+endif
 	rm -f $(DESTDIR)$(lv2dir)/*.ttl
 	$(top_builddir)/src/calfmakerdf -m ttl -p $(DESTDIR)$(lv2dir)/ -d $(DESTDIR)$(pkgdatadir)/
 if USE_SORDI
