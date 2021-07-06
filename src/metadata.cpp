@@ -1649,6 +1649,32 @@ CALF_PLUGIN_INFO(crusher) = { 0x8587, "Crusher", "Calf Crusher", "Calf Studio Ge
 
 ////////////////////////////////////////////////////////////////////////////
 
+CALF_PORT_NAMES(psyclipper) = {"In L", "In R", "Out L", "Out R"};
+
+CALF_PORT_PROPS(psyclipper) = {
+    BYPASS_AND_LEVEL_PARAMS
+    METERING_PARAMS
+    { 1,      0.0625, 1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_KNOB | PF_UNIT_DBFS, NULL, "clip_level", "Clip Level" },
+    { 0,           0,           1,     0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "diff_only", "Hear Difference" },
+    { 0.5f,      0.f,         1.f,   0,  PF_FLOAT | PF_SCALE_LINEAR | PF_CTL_KNOB | PF_UNIT_COEF | PF_PROP_GRAPH, NULL, "adaptive_distortion", "Adaptive Distortion" },
+    { 10,           0,           20,   0,  PF_INT | PF_SCALE_LINEAR | PF_UNIT_COEF | PF_CTL_KNOB, NULL, "iterations", "Iterations" },
+    { 1,           0,           1,   0,  PF_BOOL | PF_CTL_TOGGLE, NULL, "auto_level", "Auto-level" },
+    { 14,        -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection125", "Protection 125Hz" },
+    { 16,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection250", "Protection 250Hz" },
+    { 18,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection500", "Protection 500Hz" },
+    { 20,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection1000", "Protection 1000Hz" },
+    { 20,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection2000", "Protection 2000Hz" },
+    { 20,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection4000", "Protection 4000Hz" },
+    { 15,         -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection8000", "Protection 8000Hz" },
+    { 5,          -10,         20,    0, PF_INT | PF_SCALE_LINEAR | PF_CTL_FADER | PF_UNIT_DB, NULL, "protection16000", "Protection 16000Hz" },
+    { 1,           0.125,     1,     0,  PF_FLOAT | PF_SCALE_GAIN | PF_CTL_METER | PF_CTLO_LABEL | PF_CTLO_REVERSE | PF_UNIT_DB | PF_PROP_OUTPUT | PF_PROP_OPTIONAL| PF_PROP_GRAPH, NULL, "margin_shift", "Protection Margin Reduction" },
+    {}
+};
+
+CALF_PLUGIN_INFO(psyclipper) = { 0x8523, "PsyClipper", "Calf Psychoachoustic Clipper", "Calf Studio Gear", calf_plugins::calf_copyright_info, "DistortionPlugin" };
+
+////////////////////////////////////////////////////////////////////////////
+
 CALF_PORT_NAMES(monosynth) = {
     "Out L", "Out R",
 };

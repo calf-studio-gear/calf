@@ -84,6 +84,7 @@ var items = [
             ["Tape Simulator", "Tape Simulator.html", "images/Calf - Tape Simulator.jpg"],
             ["Vinyl", "Vinyl.html", "images/Calf - Vinyl.jpg"],
             ["Crusher", "Crusher.html", "images/Calf - Crusher.jpg"],
+            ["Psychoacoustic Clipper", "Psychoacoustic Clipper.html", "images/Calf - Psychoacoustic Clipper.jpg"],
         ],
         "icons/distortion.png"
     ],

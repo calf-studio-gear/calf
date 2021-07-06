@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="scripts/prettyPhoto.css" />
+        <link type="text/css" rel="stylesheet" href="scripts/style.css" />
+        <script language="javascript" type="text/javascript" src="scripts/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/jquery.prettyPhoto.js"></script>
+        <script language="javascript" type="text/javascript" src="scripts/manual.js"></script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <h1>Psychoacoustic Clipper</h1>
+            <a href="images/Calf - Limiter.jpg" title="Calf - Psychoacoustic Clipper" class="prettyPhoto"><img class="thumbnail" src="images/Calf - Psychoacoustic Clipper.jpg" /></a>
+            <h2>Functionality</h2>
+            <p>
+                The Psychoacoustic Clipper clips the signal while avoiding sizzling or crackling distortion. The end result sounds somewhere between a limiter and a normal clipper.<br /><br />
+                The clipper uses block-based FFT filtering to remove distortion that isn't masked by the sounds in the input.
+                Because the filtering introduces overshoots, the clipper repeats the clipping-filtering process a few times to  achieve peak level control.<br /><br />
+            </p>
+            <h2>Theory</h2>
+            <p>
+                Sometimes clipping sounds fine. Sometimes it sounds horrible. The difference is in the spectral content of the sound being clipped.
+                Sounds that have sparse spectral content (i.e. solo piano or vocal) can expose even just a little bit of clipping.
+                Sounds that have dense spectral content (i.e. snare drum) tend to hide clipping distortion well.<br /><br />
+                The psy-clipper compares the spectrum of the input and the spectrum of the distortion, and removes the part of the distortion that would "stick out". Example with piano:<br /><br />
+                <table>
+                    <tr>
+                        <td>original</td>
+                        <td>normal clipper</td>
+                        <td>psy-clipper</td>
+                    </tr>
+                    <tr>
+                        <td><img src="images/Calf - Psychoacoustic Clipper - example original.jpg"/></td>
+                        <td><img src="images/Calf - Psychoacoustic Clipper - example clipped.jpg"/></td>
+                        <td><img src="images/Calf - Psychoacoustic Clipper - example psyclipped.jpg"/></td>
+                    </tr>
+                </table>
+            </p>
+            <h2>Controls</h2>
+            <ul>
+                <li><strong>Input (knob):</strong> Raise the volume before the signal is sent to the clipper.</li>
+                <li><strong>Input L/R (VU-meter):</strong> The level of the original signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the original signal raises above 0dB (it doesn't clip your signal)</li>
+                <li><strong>Output L/R (VU-meter):</strong> The level of the compressed and made up signal</li>
+                <li><strong>0dB (LED):</strong> Flashes if the level of the output signal raises above 0dB (it may clip your signal depending on your host and your systems' bitrate!)</li>
+                <li><strong>Output (knob):</strong> Raise the overall volume after the compression stage</li>
+                <li><strong>Bypass:</strong> Don't process anything, just bypass the signal</li>
+                <li><strong>Auto-level:</strong> If enabled, scales the output signal to 0 dBFS, effectively applying a gain equal to the inverse of the limit setting - adding back the removed amplitude in the process.</li>
+                <li><strong>Clip Level:</strong> The level to clip the input signal at.</li>
+                <li><strong>Hear Difference:</strong> If enabled, the output will contain only the difference between the input signal and the clipped signal (the distortion introduced by the clipper).</li>
+                <li><strong>Iterations:</strong> How many times the clipping-filtering process should be repeated for each block. Higher settings can improve quality but also increase CPU usage.</li>
+                <li><strong>Adaptive Distortion:</strong> How easily the clipper gives up distortion control to reach the peak level target. With a high number of iterations, the adaptive distortion can be reduced without losing peak control. Conversely, with a low number of iterations, the adaptive distortion must be increased to avoid overshoots.</li>
+                <li><strong>Protection Margin:</strong> Sets how many dB the distortion should be kept below the signal. Note that Adaptive Distortion will reduce the protection margin based on the remaining peak level to achieve peak control. Increasing the margin of a band can cause Adaptive Distortion to work harder and reduce the margin of other bands.</li>
+                <li><strong>Protection Margin Reduction:</strong> Shows the effect of Adaptive Distortion. The margin adjustment is applied equally to all frequencies.</li>
+            </ul>
+            <div class="footer"><a href="index.html" title="Index">Index</a><a href="#" title="Top">Top</a></a></div>
+        </div>
+    </body>
+</html>

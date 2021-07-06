@@ -1,0 +1,95 @@
+<table rows="3" cols="1" spacing-x="0" spacing-y="0">
+    <table attach-x="0" attach-y="0" expand-y="0" expand-x="1" spacing="5" rows="1" cols="7">
+        <label param="level_in" attach-x="0" attach-y="0" expand-x="0" />
+        <knob param="level_in" attach-x="0" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_in" attach-x="0" attach-y="3" expand-x="0" />
+        
+        <label attach-x="1" attach-y="0" expand-x="1" text="Input level" />
+        <vumeter param="meter_inL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="1" expand-x="1" />
+        <vumeter param="meter_inR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="1" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="1" attach-y="3" expand-x="1" />
+        
+        <label attach-x="2" attach-y="0" expand-x="0" text="Clip" />
+        <led param="clip_inL" attach-x="2" attach-y="1" expand-x="0" />
+        <led param="clip_inR" attach-x="2" attach-y="2" expand-x="0" />
+        
+        <label attach-x="3" attach-y="0" expand-x="0"  param="bypass"/>
+        <toggle attach-x="3" attach-y="1" expand-x="0" attach-h="2" param="bypass" icon="bypass"/>
+        
+        <label param="auto_level" attach-x="4" attach-y="0" expand-x="0"/>
+        <toggle param="auto_level" attach-x="4" attach-y="1" attach-h="2" expand-x="0"/>
+        
+        <label attach-x="5" attach-y="0" expand-x="1" text="Output level"/>
+        <vumeter param="meter_outL" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="1" expand-x="1" />
+        <vumeter param="meter_outR" position="2" mode="0" hold="1.5" falloff="2.5" attach-x="5" attach-y="2" expand-x="1" />
+        <meterscale param="meter_outR" marker="0 0.0625 0.125 0.25 0.5 0.71 1" dots="1" position="2" mode="0" attach-x="5" attach-y="3" expand-x="1" />
+        
+        <label attach-x="6" attach-y="0" expand-x="0" text="Clip"/>
+        <led param="clip_outL" mode="1" attach-x="6" attach-y="1" expand-x="0" />
+        <led param="clip_outR" mode="1" attach-x="6" attach-y="2" expand-x="0" />
+        
+        <label param="level_out" attach-x="7" attach-y="0" expand-x="0" />
+        <knob param="level_out" attach-x="7" attach-y="1" attach-h="2" expand-x="0" type="1" />
+        <value param="level_out" attach-x="7" attach-y="3" expand-x="0" />
+    </table>
+
+    <frame attach-x="0" attach-y="1" label="Limit" expand="0" fill="1">
+        <hbox homogeneous="0" spacing="25">
+            <vbox>
+                <label param="clip_level" />
+                <knob param="clip_level" size="5" type="2" ticks="0 0.0625 0.125 0.25 0.5 1" />
+                <value param="clip_level" />
+            </vbox>
+            <vbox spacing="5">
+                <label param="diff_only" />
+                <toggle param="diff_only" icon="listen"/>
+                <label text=""/>
+            </vbox>
+            <vbox>
+                 <label param="iterations"/>
+                 <knob param="iterations" size="3"/>
+                 <value param="iterations"/>
+            </vbox>
+            <vbox>
+                 <label param="adaptive_distortion"/>
+                 <knob param="adaptive_distortion" size="3" ticks="0 0.5 1"/>
+                 <value param="adaptive_distortion"/>
+            </vbox>
+            <vbox>
+            <label text="Protection Margin (Advanced)"/>
+                <table rows="3" cols="9" spacing-x="0" spacing-y="0">
+                    <label text="dB" attach-x="0" attach-y="0" />
+                    <label text="Hz" attach-x="0" attach-y="2" />
+                    <value  param="protection125"   attach-x="1"  attach-y="0"/>
+                    <vscale param="protection125"   attach-x="1"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="125" attach-x="1" attach-y="2" />
+                    <value  param="protection250"   attach-x="2"  attach-y="0"/>
+                    <vscale param="protection250"   attach-x="2"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="250" attach-x="2" attach-y="2" />
+                    <value  param="protection500"   attach-x="3"  attach-y="0"/>
+                    <vscale param="protection500"   attach-x="3"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="500" attach-x="3" attach-y="2" />
+                    <value  param="protection1000"   attach-x="4"  attach-y="0"/>
+                    <vscale param="protection1000"   attach-x="4"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="1000" attach-x="4" attach-y="2" />
+                    <value  param="protection2000"   attach-x="5"  attach-y="0"/>
+                    <vscale param="protection2000"   attach-x="5"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="2000" attach-x="5" attach-y="2" />
+                    <value  param="protection4000"   attach-x="6"  attach-y="0"/>
+                    <vscale param="protection4000"   attach-x="6"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="4000" attach-x="6" attach-y="2" />
+                    <value  param="protection8000"   attach-x="7"  attach-y="0"/>
+                    <vscale param="protection8000"   attach-x="7"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="8000" attach-x="7" attach-y="2" />
+                    <value  param="protection16000"   attach-x="8"  attach-y="0"/>
+                    <vscale param="protection16000"   attach-x="8"  attach-y="1" inverted="1" size="1" height="160"/>
+                    <label  text="16000" attach-x="8" attach-y="2" />
+                </table>
+            </vbox>
+        </hbox>
+    </frame>
+    <frame attach-x="0" attach-y="2" label="Protection Margin Reduction" expand="1" fill="1">
+        <vumeter param="margin_shift" mode="2" hold="1.5" falloff="25" position="2" />
+    </frame>
+
+</table>

@@ -62,6 +62,7 @@
     // Distrotion
     PER_MODULE_ITEM(saturator,           false, "saturator")
     PER_MODULE_ITEM(crusher,             false, "crusher")
+    PER_MODULE_ITEM(psyclipper,          false, "psyclipper")
     
     // Spectral
     PER_MODULE_ITEM(exciter,             false, "exciter")
