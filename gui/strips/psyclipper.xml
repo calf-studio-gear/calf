@@ -1,0 +1,18 @@
+<hbox homogeneous="1" spacing="5">
+    <vbox>
+        <label param="clip_level" />
+        <knob param="clip_level" type="2" ticks="0 0.0625 0.125 0.25 0.5 1" />
+        <value param="clip_level" />
+    </vbox>
+    <vbox>
+        <label param="iterations" />
+        <knob param="iterations" />
+        <value param="iterations" />
+    </vbox>
+    <vbox>
+        <label param="adaptive_distortion" />
+        <knob param="adaptive_distortion" />
+        <value param="adaptive_distortion" />
+    </vbox>
+    <toggle param="bypass" icon="bypass"/>
+</hbox>

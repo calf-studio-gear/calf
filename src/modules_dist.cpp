@@ -31,6 +31,7 @@ FORWARD_DECLARE_METADATA(bassenhancer)
 FORWARD_DECLARE_METADATA(vinyl)
 FORWARD_DECLARE_METADATA(tapesimulator)
 FORWARD_DECLARE_METADATA(crusher)
+FORWARD_DECLARE_METADATA(psyclipper)
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -1273,3 +1274,157 @@ bool crusher_audio_module::get_gridline(int index, int subindex, int phase, floa
 {
     return bitreduction.get_gridline(subindex, phase, pos, vertical, legend, context);
 }
+
+/**********************************************************************
+ * PSYCHOACOUSTIC CLIPPER by Jason Jang
+**********************************************************************/
+
+psyclipper_audio_module::psyclipper_audio_module()
+{
+    is_active = false;
+    srate = 0;
+    // need to know sample rate before we can create the clippers
+    clipper[0] = NULL;
+    clipper[1] = NULL;
+}
+
+psyclipper_audio_module::~psyclipper_audio_module()
+{
+    for(int i = 0; i < 2; i++) {
+        if(clipper[i]) {
+            delete clipper[i];
+        }
+    }
+}
+
+void psyclipper_audio_module::activate()
+{
+    is_active = true;
+    // set all filters and strips
+    params_changed();
+}
+
+void psyclipper_audio_module::deactivate()
+{
+    is_active = false;
+}
+
+void psyclipper_audio_module::params_changed()
+{
+    bool bypass = *params[param_bypass] > 0.5f;
+    int iterations = bypass ? 0 : *params[param_iterations];
+    for(int i = 0; i < 2; i++) {
+        clipper[i]->set_clip_level(*params[param_limit]);
+        clipper[i]->set_iterations(iterations);
+        clipper[i]->set_adaptive_distortion_strength(*params[param_adaptive_distortion]);
+    }
+
+    int margin_curve[10][2] = {
+        {0, (int)*params[param_protection125],},
+        {125, (int)*params[param_protection125]},
+        {250, (int)*params[param_protection250]},
+        {500, (int)*params[param_protection500]},
+        {1000, (int)*params[param_protection1000]},
+        {2000, (int)*params[param_protection2000]},
+        {4000, (int)*params[param_protection4000]},
+        {8000, (int)*params[param_protection8000]},
+        {16000, (int)*params[param_protection16000]},
+        {20000, -10},
+    };
+    if(memcmp(old_margin_curve, margin_curve, sizeof(old_margin_curve))) {
+        memcpy(old_margin_curve, margin_curve, sizeof(old_margin_curve));
+        for(int i = 0; i < 2; i++) {
+            clipper[i]->set_margin_curve(margin_curve, 10);
+        }
+    }
+}
+
+void psyclipper_audio_module::set_sample_rate(uint32_t sr)
+{
+    int meter[] = {param_meter_inL, param_meter_inR,  param_meter_outL, param_meter_outR, param_margin_shift};
+    int clip[] = {param_clip_inL, param_clip_inR, param_clip_outL, param_clip_outR, -1};
+    meters.init(params, meter, clip, 5, sr);
+
+    if(!clipper[0] || sr != srate) {
+        int fftSize = sr > 100000 ? 1024 : sr > 50000 ? 512 : 256;
+        for(int i = 0; i < 2; i++) {
+            if(clipper[i]) {
+                delete clipper[i];
+            }
+            clipper[i] = new shaping_clipper(sr, fftSize, 1.0);
+            in_buffer[i].resize(clipper[i]->get_feed_size());
+            out_buffer[i].resize(clipper[i]->get_feed_size());
+        }
+        buffer_offset = 0;
+    }
+    srate = sr;
+}
+
+uint32_t psyclipper_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
+{
+    bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
+    bool diff_only = *params[param_diff_only] > 0.5f;
+    numsamples += offset;
+    if(bypassed || !clipper[0]) {
+        // everything bypassed
+        while(offset < numsamples) {
+            outs[0][offset] = ins[0][offset];
+            outs[1][offset] = ins[1][offset];
+            float values[] = {0, 0, 0, 0, 1};
+            meters.process(values);
+            ++offset;
+        }
+    } else {
+
+        while(offset < numsamples) {
+            int samples_to_process = std::min<int>(clipper[0]->get_feed_size() - buffer_offset, numsamples - offset);
+            for(int i = 0; i < samples_to_process; i++) {
+                float inL = ins[0][offset];
+                float inR = ins[1][offset];
+
+                // in level
+                inR *= *params[param_level_in];
+                inL *= *params[param_level_in];
+
+                // add to input buffer
+                in_buffer[0][buffer_offset] = inL;
+                in_buffer[1][buffer_offset] = inR;
+
+                // take from output buffer
+                float outL = out_buffer[0][buffer_offset];
+                float outR = out_buffer[1][buffer_offset];
+
+                // autolevel
+                if (*params[param_auto_level]) {
+                    outL /= *params[param_limit];
+                    outR /= *params[param_limit];
+                }
+
+                // out level
+                outL *= *params[param_level_out];
+                outR *= *params[param_level_out];
+
+                // send to output
+                outs[0][offset] = outL;
+                outs[1][offset] = outR;
+                buffer_offset++;
+                offset++;
+
+                float values[] = {inL, inR, outL, outR, last_margin_shift};
+                meters.process (values);
+
+            }
+            if(buffer_offset == clipper[0]->get_feed_size()) {
+                // just filled the input buffer and emptied the output buffer
+                float margin_shift_left, margin_shift_right;
+                clipper[0]->feed(in_buffer[0].data(), out_buffer[0].data(), diff_only, &margin_shift_left);
+                clipper[1]->feed(in_buffer[1].data(), out_buffer[1].data(), diff_only, &margin_shift_right);
+                buffer_offset = 0;
+                last_margin_shift = 1.0 / std::max(margin_shift_left, margin_shift_right);
+            }
+        }
+    } // process (no bypass)
+    meters.fall(numsamples);
+    return outputs_mask;
+}
+

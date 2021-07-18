@@ -30,6 +30,7 @@
 #include "metadata.h"
 #include "plugin_tools.h"
 #include <fluidsynth.h>
+#include "shaping_clipper.h"
 
 
 namespace calf_plugins {
@@ -217,6 +218,33 @@ public:
     bool get_graph(int index, int subindex, int phase, float *data, int points, cairo_iface *context, int *mode) const;
     bool get_layers(int index, int generation, unsigned int &layers) const;
     bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const;
+};
+
+/**********************************************************************
+ * PSYCHOACOUSTIC CLIPPER by Jason Jang
+**********************************************************************/
+
+class psyclipper_audio_module: public audio_module<psyclipper_metadata>, public line_graph_iface {
+private:
+    typedef psyclipper_audio_module AM;
+    shaping_clipper *clipper[2];
+    std::vector<float> in_buffer[2];
+    std::vector<float> out_buffer[2];
+    int buffer_offset;
+    dsp::bypass bypass;
+    vumeters meters;
+    float last_margin_shift;
+    int old_margin_curve[10][2];
+public:
+    uint32_t srate;
+    bool is_active;
+    psyclipper_audio_module();
+    ~psyclipper_audio_module();
+    void activate();
+    void deactivate();
+    void params_changed();
+    uint32_t process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask);
+    void set_sample_rate(uint32_t sr);
 };
 
 };

@@ -715,6 +715,28 @@ struct crusher_metadata: public plugin_metadata<crusher_metadata>
            param_count };
     PLUGIN_NAME_ID_LABEL("crusher", "crusher", "Crusher")
 };
+/// Jason's psychoacoustic clipper - metadata
+struct psyclipper_metadata: public plugin_metadata<psyclipper_metadata>
+{
+    enum { in_count = 2, out_count = 2, ins_optional = 0, outs_optional = 0, support_midi = false, require_midi = false, rt_capable = true, require_instance_access = false };
+    enum { param_bypass, param_level_in, param_level_out,
+           STEREO_VU_METER_PARAMS,
+           param_limit, param_diff_only,
+           param_adaptive_distortion,
+           param_iterations,
+           param_auto_level,
+           param_protection125,
+           param_protection250,
+           param_protection500,
+           param_protection1000,
+           param_protection2000,
+           param_protection4000,
+           param_protection8000,
+           param_protection16000,
+           param_margin_shift,
+           param_count };
+    PLUGIN_NAME_ID_LABEL("psyclipper", "psyclipper", "Psychoacoustic Clipper")
+};
 /// Markus's Stereo Module - metadata
 struct stereo_metadata: public plugin_metadata<stereo_metadata>
 {
