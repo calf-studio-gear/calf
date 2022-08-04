@@ -324,7 +324,7 @@ char *calf_plugins::load_gui_xml(const std::string &plugin_id)
     try {
         return strdup(calf_utils::load_file((std::string(PKGLIBDIR) + "/" + plugin_id + ".xml").c_str()).c_str());
     }
-    catch(file_exception e)
+    catch(file_exception &e)
     {
         return NULL;
     }
