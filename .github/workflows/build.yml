@@ -40,7 +40,7 @@ jobs:
       - name: autogen
         run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install" CC=clang CXX=clang++
+        run: ./configure --prefix "$PWD/install" CC=clang CXX=clang++ LDFLAGS="-fuse-ld=lld"
       - name: Build
         run: make
       - name: Build tests
@@ -51,7 +51,7 @@ jobs:
         run: make installcheck
   macos:
     name: macos
-    runs-on: macos-11
+    runs-on: macos-13
     steps:
       - name: Install dependencies
         run: brew install automake fluid-synth
