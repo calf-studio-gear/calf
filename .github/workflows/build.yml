@@ -81,13 +81,15 @@ jobs:
         run: |
           choco install msys2
           refreshenv
+          export MSYS2_PATH_TYPE=inherit
+          export MSYS2_ARG_CONV_EXCL="*"
+          export MSYS2_ENV_CONV_EXCL="GITHUB_PATH"
           echo 'C:\tools\msys64\usr\bin' | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
-        shell: cmd
+        shell: bash
       - name: Install libtoolize
         run: |
-          msys2 -Sy
-          msys2 -Syu
-          msys2 -S mingw-w64-x86_64-libtool
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm mingw-w64-x86_64-libtool
         shell: bash
       - name: Build
         run: |
