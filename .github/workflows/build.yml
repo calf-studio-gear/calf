@@ -28,7 +28,7 @@ jobs:
       - name: Install check
         run: make installcheck
   linux-clang:
-    name: linux-clang
+    name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -62,7 +62,7 @@ jobs:
       - name: autogen
         run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install"
+        run: ./configure --prefix "$PWD/install" LDFLAGS="-std=c++11"
       - name: Build
         run: make
       - name: Build tests
