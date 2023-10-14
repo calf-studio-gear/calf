@@ -49,3 +49,25 @@ jobs:
         run: make install
       - name: Install check
         run: make installcheck
+  macos:
+    name: macos
+    runs-on: macos-11
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: autogen
+        run: ./autogen.sh
+      - name: Configure
+        run: ./configure --prefix "$PWD/install"
+      - name: Build
+        run: make
+      - name: Build tests
+        run: make check
+      - name: Install
+        run: make install
+      - name: Install check
+        run: make installcheck
