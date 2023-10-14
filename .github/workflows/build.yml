@@ -6,7 +6,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   linux-gcc:
-    if: false
     name: linux-gcc
     runs-on: ubuntu-latest
     steps:
@@ -29,7 +28,6 @@ jobs:
       - name: Install check
         run: make installcheck
   linux-clang-with-lld:
-    if: false
     name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +50,6 @@ jobs:
       - name: Install check
         run: make installcheck
   macos:
-    if: false
     name: macos
     runs-on: macos-13
     steps:
@@ -71,8 +68,8 @@ jobs:
       - name: Build tests
         run: make check
       # install does not work yet, but seems less critical for now
-  mingw-64:
-    name: mingw-64
+  mingw-64-cross:
+    name: mingw-64-cross
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
