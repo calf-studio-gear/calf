@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        run: sudo apt-get --yes install fluidsynth
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
       - name: Check out
         uses: actions/checkout@v3
         with:
