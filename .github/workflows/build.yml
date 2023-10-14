@@ -70,11 +70,21 @@ jobs:
       # install does not work yet, but seems less critical for now
   mingw-64:
     name: mingw-64
-    runs-on: windows-2019
+    runs-on: windows-latest
     defaults:
       run:
         shell: bash
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up MinGW
+        run: |
+          choco install mingw
+          refreshenv
+        shell: cmd
+      - name: Install libtoolize
+        run: mingw-get install libtool
+        shell: cmd
       - name: Info
         run: gcc --version
       - name: Check out
