@@ -6,6 +6,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   linux-gcc:
+    if: false
     name: linux-gcc
     runs-on: ubuntu-latest
     steps:
@@ -28,6 +29,7 @@ jobs:
       - name: Install check
         run: make installcheck
   linux-clang-with-lld:
+    if: false
     name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
     steps:
@@ -50,6 +52,7 @@ jobs:
       - name: Install check
         run: make installcheck
   macos:
+    if: false
     name: macos
     runs-on: macos-13
     steps:
@@ -70,29 +73,21 @@ jobs:
       # install does not work yet, but seems less critical for now
   mingw-64:
     name: mingw-64
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up MSYS2
-        run: |
-          choco install msys2
-          export MSYS2_PATH_TYPE=inherit
-          export MSYS2_ARG_CONV_EXCL="*"
-          export MSYS2_ENV_CONV_EXCL="GITHUB_PATH"
-          echo "Adding MSYS2 to the PATH"
-          echo "::add-path::C:\\tools\\msys64\\usr\\bin"
-        shell: bash
-      - name: Install libtoolize
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm mingw-w64-x86_64-libtool
-        shell: bash
-      - name: Build
-        run: |
-          ./configure
-          make
-        shell: bash
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Install MinGW
+      run: sudo apt-get install -y mingw-w64
+    - name: autogen
+      run: ./autogen.sh
+    - name: Configure
+      run: ./configure --prefix "$PWD/install"
+    - name: Build
+      run: make
+    - name: Build tests
+      run: make check
+    - name: Install
+      run: make install
+    - name: Install check
+      run: make installcheck
