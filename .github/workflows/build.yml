@@ -9,6 +9,8 @@ jobs:
     name: linux
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: apt-get --yes install fluidsynth
       - name: Check out
         uses: actions/checkout@v3
         with:
