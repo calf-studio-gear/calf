@@ -5,8 +5,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  linux:
-    name: linux
+  linux-gcc:
+    name: linux-gcc
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -19,6 +19,28 @@ jobs:
         run: ./autogen.sh
       - name: Configure
         run: ./configure --prefix "$PWD/install"
+      - name: Build
+        run: make
+      - name: Build tests
+        run: make check
+      - name: Install
+        run: make install
+      - name: Install check
+        run: make installcheck
+  linux-clang:
+    name: linux-clang
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: autogen
+        run: ./autogen.sh
+      - name: Configure
+        run: ./configure --prefix "$PWD/install" CC=clang CXX=clang++
       - name: Build
         run: make
       - name: Build tests
