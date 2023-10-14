@@ -1,0 +1,23 @@
+---
+name: build
+'on': [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux:
+    name: linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: autogen
+        run: ./autogen.sh
+      - name: Configure
+        run: ./configure --prefix "$PWD/install"
+      - name: Build
+        run: make
+      - name: Build tests
+        run: make check
+      - name: Install
+        run: make install
+      - name: Install check
+        run: make installcheck
