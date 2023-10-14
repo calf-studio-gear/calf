@@ -27,7 +27,7 @@ jobs:
         run: make install
       - name: Install check
         run: make installcheck
-  linux-clang:
+  linux-clang-with-lld:
     name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
     steps:
@@ -63,6 +63,28 @@ jobs:
         run: ./autogen.sh
       - name: Configure
         run: ./configure --prefix "$PWD/install" CXXFLAGS="-std=c++11"
+      - name: Build
+        run: make
+      - name: Build tests
+        run: make check
+      # install does not work yet, but seems less critical for now
+  mingw-64:
+    name: mingw-64
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Info
+        run: gcc --version
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: autogen
+        run: ./autogen.sh
+      - name: Configure
+        run: ./configure --prefix "$PWD/install"
       - name: Build
         run: make
       - name: Build tests
