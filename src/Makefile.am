@@ -39,7 +39,11 @@ calfbenchmark_LDADD = libcalf.la
 
 libcalf_la_SOURCES = audio_fx.cpp analyzer.cpp lv2wrap.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp modules_pitch.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp pffft.c shaping_clipper.cpp
 libcalf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) $(GLIB_DEPS_LIBS)
+if USE_DEBUG
 libcalf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static
+else
+libcalf_la_LDFLAGS = -rpath $(pkglibdir) -avoid-version -module -lexpat -disable-static -export-symbols-regex "lv2_descriptor"
+endif
 
 if USE_LV2_GUI
 

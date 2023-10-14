@@ -62,7 +62,7 @@ jobs:
       - name: autogen
         run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install" LDFLAGS="-std=c++11"
+        run: ./configure --prefix "$PWD/install" CXXFLAGS="-std=c++11"
       - name: Build
         run: make
       - name: Build tests
