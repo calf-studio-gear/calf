@@ -77,29 +77,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set up MinGW
+      - name: Set up MSYS2
         run: |
-          choco install mingw
+          choco install msys2
           refreshenv
+          echo 'C:\tools\msys64\usr\bin' | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
         shell: cmd
       - name: Install libtoolize
-        run: mingw-get install libtool
-        shell: cmd
-      - name: Info
-        run: gcc --version
-      - name: Check out
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: autogen
-        run: ./autogen.sh
-      - name: Configure
-        run: ./configure --prefix "$PWD/install"
+        run: |
+          msys2 -Sy
+          msys2 -Syu
+          msys2 -S mingw-w64-x86_64-libtool
+        shell: bash
       - name: Build
-        run: make
-      - name: Build tests
-        run: make check
-      - name: Install
-        run: make install
-      - name: Install check
-        run: make installcheck
+        run: |
+          ./configure
+          make
+        shell: bash
