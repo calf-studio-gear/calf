@@ -54,7 +54,7 @@ jobs:
     runs-on: macos-11
     steps:
       - name: Install dependencies
-        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
+        run: brew install fluid-synth
       - name: Check out
         uses: actions/checkout@v3
         with:
