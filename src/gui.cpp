@@ -26,8 +26,6 @@
 
 #include <iostream>
 
-#include <sys/stat.h>
-
 using namespace calf_plugins;
 using namespace std;
 
@@ -518,7 +516,7 @@ gui_environment::gui_environment()
     } else {
         //if $XDG_CONFIG_HOME/calf does not exist, create it
         if(!g_file_test(calf_conf_dir, G_FILE_TEST_EXISTS))
-            mkdir(calf_conf_dir, 0644);
+            g_mkdir_with_parents(calf_conf_dir, 0644);
 
         if(g_file_test(calf_conf_dir, G_FILE_TEST_IS_DIR))
             filename = fn_under_conf;
