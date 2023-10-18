@@ -517,7 +517,8 @@ gui_environment::gui_environment()
         filename = fn_under_home;
     } else {
         //if $XDG_CONFIG_HOME/calf does not exist, create it
-        mkdir(calf_conf_dir, 0644);
+        if(!g_file_test(calf_conf_dir, G_FILE_TEST_EXISTS))
+            mkdir(calf_conf_dir, 0644);
 
         if(g_file_test(calf_conf_dir, G_FILE_TEST_IS_DIR))
             filename = fn_under_conf;
