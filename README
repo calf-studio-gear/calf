@@ -1,6 +1,8 @@
 Calf Studio gear
 ================
 
++[![Build status](https://github.com/calf-studio-gear/calf/actions/workflows/build.yml/badge.svg)](https://github.com/calf-studio-gear/calf/actions/workflows/build.yml)
+
 Calf Studio Gear is an audio plug-in pack for LV2 and JACK environments
 under LINUX operating systems. The suite contains lots of effects
 (delay, modulation, signal processing, filters, equalizers, dynamics,

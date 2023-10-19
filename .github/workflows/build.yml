@@ -68,14 +68,17 @@ jobs:
       - name: Build tests
         run: make check
       # install does not work yet, but seems less critical for now
-  mingw-64-cross:
-    name: mingw-64-cross
+  mingw-cross:
+    strategy:
+      matrix:
+        arch: ['32', '64']
+    name: mingw-${{ matrix.arch }}-cross
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Install dependencies
-      run: sudo apt-get install -y mingw-w64 fluidsynth libfluidsynth-dev
+      run: sudo apt-get install -y mingw-w${{ matrix.arch }} fluidsynth libfluidsynth-dev
     - name: autogen
       run: ./autogen.sh
     - name: Configure
