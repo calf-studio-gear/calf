@@ -7,7 +7,7 @@ lv2dir = $(with_lv2_dir)/calf.lv2
 bin_PROGRAMS = 
 noinst_LTLIBRARIES =
 
-noinst_PROGRAMS = calfbenchmark
+# noinst_PROGRAMS = calfbenchmark
 pkglib_LTLIBRARIES = libcalf.la
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(srcdir)
@@ -34,8 +34,8 @@ noinst_PROGRAMS += calfmakerdf
 calfmakerdf_SOURCES = makerdf.cpp
 calfmakerdf_LDADD = libcalf.la
 
-calfbenchmark_SOURCES = benchmark.cpp
-calfbenchmark_LDADD = libcalf.la
+# calfbenchmark_SOURCES = benchmark.cpp
+# calfbenchmark_LDADD = libcalf.la
 
 libcalf_la_SOURCES = audio_fx.cpp analyzer.cpp lv2wrap.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp modules_pitch.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp pffft.c shaping_clipper.cpp
 libcalf_la_LIBADD = $(FLUIDSYNTH_DEPS_LIBS) $(GLIB_DEPS_LIBS)
