@@ -74,13 +74,13 @@ jobs:
         compiler:
           - { name: 'mingw', bits: '32' }
           - { name: 'mingw-w64', bits: '64' }
-    name: mingw-${matrix.compiler.bits}-cross
+    name: mingw-${{matrix.compiler.bits}}-cross
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Install dependencies
-      run: sudo apt-get install -y ${matrix.compiler.name} fluidsynth libfluidsynth-dev
+      run: sudo apt-get install -y ${{matrix.compiler.name}} fluidsynth libfluidsynth-dev
     - name: autogen
       run: ./autogen.sh
     - name: Configure
