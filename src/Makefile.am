@@ -8,6 +8,7 @@ bin_PROGRAMS =
 noinst_LTLIBRARIES =
 
 # noinst_PROGRAMS = calfbenchmark
+noinst_PROGRAMS =
 pkglib_LTLIBRARIES = libcalf.la
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(srcdir)
