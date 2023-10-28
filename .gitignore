@@ -35,3 +35,4 @@ dist/*
 .cproject
 .project
 compile
+!config.h.cmake.in
