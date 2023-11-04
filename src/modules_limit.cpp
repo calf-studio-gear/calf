@@ -116,6 +116,8 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     } else {
         asc_led   -= std::min(asc_led, numsamples);
 
+        // allocate fickdich on the stack before entering loop
+        STACKALLOC(float, fickdich, limiter.overall_buffer_size);
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -135,7 +137,6 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             float tmpR;
             
             // process gain reduction
-            STACKALLOC(float, fickdich, limiter.overall_buffer_size);
             for (int i = 0; i < *params[param_oversampling]; i ++) {
                 tmpL = samplesL[i];
                 tmpR = samplesR[i];
