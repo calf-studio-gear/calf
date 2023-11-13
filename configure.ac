@@ -159,6 +159,19 @@ else
 fi
 AC_MSG_RESULT($is_compiler_gcc)
 
+AC_MSG_CHECKING([whether the linker supports -z,nodelete])
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,-z,nodelete"
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+    [[]])],
+    [linker_supports_nodelete="yes"],
+    [linker_supports_nodelete="no"],
+    [linker_supports_nodelete="no"])
+AC_MSG_RESULT([$linker_supports_nodelete])
+LDFLAGS="$save_LDFLAGS"
+
+AM_CONDITIONAL(HAVE_LD_NODELETE, test "$linker_supports_nodelete" = "yes")
+
 ############################################################################################
 # Compute status shell variables
 
